@@ -1,0 +1,14 @@
+syntax = "proto3";
+package lidofinance.interchainadapter.interchainadapter;
+
+import "gogoproto/gogo.proto";
+import "interchainadapter/params.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/lidofinance/interchain-adapter/x/interchainadapter/types";
+
+// GenesisState defines the interchainadapter module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  // this line is used by starport scaffolding # genesis/proto/state
+}
