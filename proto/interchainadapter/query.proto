@@ -4,16 +4,16 @@ package lidofinance.interchainadapter.interchainadapter;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "interchainadapter/params.proto";
+import "interchainqueries/params.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/lidofinance/interchain-adapter/x/interchainadapter/types";
+option go_package = "github.com/lidofinance/interchain-adapter/x/interchainqueries/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/lidofinance/interchainadapter/interchainadapter/params";
+    option (google.api.http).get = "/lidofinance/interchainqueries/interchainqueries/params";
   }
   // this line is used by starport scaffolding # 2
 }

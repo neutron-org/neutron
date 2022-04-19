@@ -2,7 +2,7 @@
 import { Writer, Reader } from "protobufjs/minimal";
 
 export const protobufPackage =
-  "lidofinance.interchainadapter.interchainadapter";
+  "lidofinance.interchainqueries.interchainqueries";
 
 /** Params defines the parameters for the module. */
 export interface Params {}

@@ -6,8 +6,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keepertest "github.com/lidofinance/interchain-adapter/testutil/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/types"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {

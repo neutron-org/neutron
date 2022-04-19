@@ -1,12 +1,12 @@
-package interchainadapter
+package interchainqueries
 
 import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/types"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
 // NewHandler ...

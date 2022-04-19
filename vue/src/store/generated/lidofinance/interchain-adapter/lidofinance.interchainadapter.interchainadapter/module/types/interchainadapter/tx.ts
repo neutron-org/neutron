@@ -1,6 +1,6 @@
 /* eslint-disable */
 export const protobufPackage =
-  "lidofinance.interchainadapter.interchainadapter";
+  "lidofinance.interchainqueries.interchainqueries";
 
 /** Msg defines the Msg service. */
 export interface Msg {}

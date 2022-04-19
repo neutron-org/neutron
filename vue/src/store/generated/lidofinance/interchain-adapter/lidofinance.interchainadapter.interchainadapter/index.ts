@@ -89,7 +89,7 @@ export default {
 	},
 	actions: {
 		init({ dispatch, rootGetters }) {
-			console.log('Vuex module: lidofinance.interchainadapter.interchainadapter initialized!')
+			console.log('Vuex module: lidofinance.interchainqueries.interchainqueries initialized!')
 			if (rootGetters['common/env/client']) {
 				rootGetters['common/env/client'].on('newblock', () => {
 					dispatch('StoreUpdate')

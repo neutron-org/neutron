@@ -3,7 +3,7 @@ import { Reader, Writer } from "protobufjs/minimal";
 import { Params } from "../interchainadapter/params";
 
 export const protobufPackage =
-  "lidofinance.interchainadapter.interchainadapter";
+  "lidofinance.interchainqueries.interchainqueries";
 
 /** QueryParamsRequest is request type for the Query/Params RPC method. */
 export interface QueryParamsRequest {}
@@ -125,7 +125,7 @@ export class QueryClientImpl implements Query {
   Params(request: QueryParamsRequest): Promise<QueryParamsResponse> {
     const data = QueryParamsRequest.encode(request).finish();
     const promise = this.rpc.request(
-      "lidofinance.interchainadapter.interchainadapter.Query",
+      "lidofinance.interchainqueries.interchainqueries.Query",
       "Params",
       data
     );

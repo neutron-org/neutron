@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/types"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 	"github.com/spf13/cobra"
 )
 

@@ -1,4 +1,4 @@
-package interchainadapter
+package interchainqueries
 
 import (
 	"math/rand"
@@ -10,8 +10,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	"github.com/lidofinance/interchain-adapter/testutil/sample"
-	interchainadaptersimulation "github.com/lidofinance/interchain-adapter/x/interchainadapter/simulation"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/types"
+	interchainadaptersimulation "github.com/lidofinance/interchain-adapter/x/interchainqueries/simulation"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
 // avoid unused import issue

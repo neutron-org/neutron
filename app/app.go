@@ -97,9 +97,9 @@ import (
 
 	"github.com/lidofinance/interchain-adapter/docs"
 
-	interchainadaptermodule "github.com/lidofinance/interchain-adapter/x/interchainadapter"
-	interchainadaptermodulekeeper "github.com/lidofinance/interchain-adapter/x/interchainadapter/keeper"
-	interchainadaptermoduletypes "github.com/lidofinance/interchain-adapter/x/interchainadapter/types"
+	interchainadaptermodule "github.com/lidofinance/interchain-adapter/x/interchainqueries"
+	interchainadaptermodulekeeper "github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
+	interchainadaptermoduletypes "github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 

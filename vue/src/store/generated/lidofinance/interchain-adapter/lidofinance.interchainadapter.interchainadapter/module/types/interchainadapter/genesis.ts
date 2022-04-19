@@ -3,9 +3,9 @@ import { Params } from "../interchainadapter/params";
 import { Writer, Reader } from "protobufjs/minimal";
 
 export const protobufPackage =
-  "lidofinance.interchainadapter.interchainadapter";
+  "lidofinance.interchainqueries.interchainqueries";
 
-/** GenesisState defines the interchainadapter module's genesis state. */
+/** GenesisState defines the interchainqueries module's genesis state. */
 export interface GenesisState {
   /** this line is used by starport scaffolding # genesis/proto/state */
   params: Params | undefined;

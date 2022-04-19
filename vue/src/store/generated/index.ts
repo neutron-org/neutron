@@ -44,7 +44,7 @@ export default {
   CosmosIbcGoIbcCoreClientV1: load(CosmosIbcGoIbcCoreClientV1, 'ibc.core.client.v1'),
   CosmosIbcGoIbcCoreConnectionV1: load(CosmosIbcGoIbcCoreConnectionV1, 'ibc.core.connection.v1'),
   CosmosIbcGoIbcCorePortV1: load(CosmosIbcGoIbcCorePortV1, 'ibc.core.port.v1'),
-  LidofinanceInterchainAdapterLidofinanceInterchainadapterInterchainadapter: load(LidofinanceInterchainAdapterLidofinanceInterchainadapterInterchainadapter, 'lidofinance.interchainadapter.interchainadapter'),
+  LidofinanceInterchainAdapterLidofinanceInterchainadapterInterchainadapter: load(LidofinanceInterchainAdapterLidofinanceInterchainadapterInterchainadapter, 'lidofinance.interchainqueries.interchainqueries'),
   
 }
 

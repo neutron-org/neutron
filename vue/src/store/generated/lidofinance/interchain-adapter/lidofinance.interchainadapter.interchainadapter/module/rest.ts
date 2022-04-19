@@ -225,7 +225,7 @@ export class HttpClient<SecurityDataType = unknown> {
 }
 
 /**
- * @title interchainadapter/genesis.proto
+ * @title interchainqueries/genesis.proto
  * @version version not set
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
@@ -235,7 +235,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    * @tags Query
    * @name QueryParams
    * @summary Parameters queries the parameters of the module.
-   * @request GET:/lidofinance/interchainadapter/interchainadapter/params
+   * @request GET:/lidofinance/interchainqueries/interchainqueries/params
    */
   queryParams = (params: RequestParams = {}) =>
     this.request<InterchainadapterQueryParamsResponse, RpcStatus>({

@@ -1,4 +1,4 @@
-package interchainadapter
+package interchainqueries
 
 import (
 	"encoding/json"
@@ -16,9 +16,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/client/cli"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/types"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/client/cli"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
 var (

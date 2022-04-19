@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/lidofinance/interchain-adapter/x/interchainadapter/types"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
 type msgServer struct {
