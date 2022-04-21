@@ -34,7 +34,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-// NewRootCmd creates a new root command for wasmd. It is called once in the
+// NewRootCmd creates a new root command for interchain-adapterd. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := params.MakeEncodingConfig()
@@ -229,14 +229,14 @@ func (ac appCreator) appExport(
 	appOpts servertypes.AppOptions,
 ) (servertypes.ExportedApp, error) {
 
-	var wasmApp *app.App
+	var interchainapp *app.App
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home is not set")
 	}
 
 	loadLatest := height == -1
-	wasmApp = app.New(
+	interchainapp = app.New(
 		logger,
 		db,
 		traceStore,
@@ -249,10 +249,10 @@ func (ac appCreator) appExport(
 	)
 
 	if height != -1 {
-		if err := wasmApp.LoadHeight(height); err != nil {
+		if err := interchainapp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return wasmApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return interchainapp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
 }
