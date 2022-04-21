@@ -3,9 +3,10 @@ package keeper_test
 import (
 	"testing"
 
-	testkeeper "github.com/lidofinance/interchain-adapter/testutil/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 	"github.com/stretchr/testify/require"
+
+	testkeeper "github.com/lidofinance/interchain-adapter/testutil/interchaintxs/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 func TestGetParams(t *testing.T) {

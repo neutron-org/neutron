@@ -1,8 +1,9 @@
-package interchainqueries
+package interchaintxs
 
 import (
 	"encoding/json"
 	"fmt"
+
 	// this line is used by starport scaffolding # 1
 
 	"github.com/gorilla/mux"
@@ -16,9 +17,10 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/client/cli"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
+
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/client/cli"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 var (
@@ -45,11 +47,11 @@ func (AppModuleBasic) Name() string {
 }
 
 func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
-	types.RegisterCodec(cdc)
+	types.RegisterLegacyAminoCodec(cdc)
 }
 
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	types.RegisterCodec(cdc)
+	types.RegisterLegacyAminoCodec(cdc)
 }
 
 // RegisterInterfaces registers the module's interface types
@@ -122,9 +124,9 @@ func (am AppModule) Name() string {
 	return am.AppModuleBasic.Name()
 }
 
-// Route returns the capability module's message routing key.
+// Deprecated: Route returns the capability module's message routing key.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
+	return sdk.Route{}
 }
 
 // QuerierRoute returns the capability module's query routing key.

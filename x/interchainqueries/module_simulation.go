@@ -9,7 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/lidofinance/interchain-adapter/testutil/sample"
+
+	"github.com/lidofinance/interchain-adapter/testutil/interchainqueries/sample"
 	interchainadaptersimulation "github.com/lidofinance/interchain-adapter/x/interchainqueries/simulation"
 	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )

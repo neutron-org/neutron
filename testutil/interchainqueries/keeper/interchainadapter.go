@@ -9,12 +9,13 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
+
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
 func InterchainadapterKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keepertest "github.com/lidofinance/interchain-adapter/testutil/keeper"
+
+	keepertest "github.com/lidofinance/interchain-adapter/testutil/interchainqueries/keeper"
 	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
 	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )

@@ -184,7 +184,6 @@ export interface ExistenceProof {
  * then there is no valid proof for the given key.
  */
 export interface NonExistenceProof {
-  /** TODO: remove this as unnecessary??? we prove a range */
   key: Uint8Array;
   left: ExistenceProof | undefined;
   right: ExistenceProof | undefined;
@@ -331,7 +330,6 @@ export interface CompressedExistenceProof {
 }
 
 export interface CompressedNonExistenceProof {
-  /** TODO: remove this as unnecessary??? we prove a range */
   key: Uint8Array;
   left: CompressedExistenceProof | undefined;
   right: CompressedExistenceProof | undefined;

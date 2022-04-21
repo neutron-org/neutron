@@ -1,0 +1,44 @@
+syntax = "proto3";
+package lidofinance.interchainadapter.interchaintxs;
+
+option go_package = "github.com/lidofinance/interchain-adapter/x/interchaintxs/types";
+
+import "gogoproto/gogo.proto";
+import "google/api/http.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/any.proto";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc RegisterInterchainAccount(MsgRegisterInterchainAccount) returns (MsgRegisterInterchainAccountResponse) {
+    option (google.api.http) = {
+      post : "/lidofinance/interchainadapter/interchaintxs/tx/v1/account"
+      body : "*"
+    };
+  };
+}
+
+// MsgRegisterInterchainAccount is used to register an account on a remote zone.
+message MsgRegisterInterchainAccount {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string connection_id = 1 [ (gogoproto.moretags) = "yaml:\"connection_id\"" ];
+  string owner = 2 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
+}
+
+// MsgRegisterInterchainAccountResponse is the response type for MsgRegisterInterchainAccount.
+message MsgRegisterInterchainAccountResponse {}
+
+// MsgSubmitTx defines the payload for Msg/SubmitTx
+message MsgSubmitTx {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string owner                       = 1;
+  string connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
+  repeated google.protobuf.Any msgs            = 3;
+}
+
+// MsgSubmitTxResponse defines the response for Msg/SubmitTx
+message MsgSubmitTxResponse {}
