@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
@@ -31,6 +33,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		QueryType:        msg.QueryType,
 		ZoneId:           msg.ZoneId,
 		UpdatePeriod:     msg.UpdatePeriod,
+		ConnectionId:     msg.ConnectionId,
 		LastLocalHeight:  0,
 		LastRemoteHeight: 0,
 	}
@@ -41,16 +44,41 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 }
 
 func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResult) (*types.MsgSubmitQueryResultResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	query, err := k.GetQueryByID(ctx, msg.QueryId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get query by id: %w", err)
+	}
+
+	resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
+		ConnectionId:   query.ConnectionId,
+		RevisionNumber: 1,
+		RevisionHeight: msg.Height,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get consensus state: %w", err)
+	}
+
+	consensusState, err := ibcclienttypes.UnpackConsensusState(resp.ConsensusState)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack consesus state: %w", err)
+	}
+
 	for _, result := range msg.KVResults {
-		proof, err := types2.ConvertProofs(result.Proof)
+		proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert crypto.ProofOps to MerkleProof: %w", err)
 		}
 
-		if err := proof.VerifyMembership(types2.GetSDKSpecs(), nil, nil, nil); err != nil {
+		path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
+
+		if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
 			return nil, fmt.Errorf("failed to verify proof: %w", err)
 		}
 	}
+
+	// TODO: save result to a storage
 	return nil, nil
 }
 

@@ -20,7 +20,8 @@ message MsgRegisterInterchainQuery {
   string query_data = 1;
   string query_type = 2;
   string zone_id = 3;
-  uint64 update_period = 4;
+  string connection_id = 4;
+  uint64 update_period = 5;
 }
 
 message MsgRegisterInterchainQueryResponse {
@@ -28,17 +29,18 @@ message MsgRegisterInterchainQueryResponse {
 }
 
 message MsgSubmitQueryResult {
-  uint64 id = 1;
+  uint64 query_id = 1;
   uint64 height = 2;
 
   repeated StorageValue KVResults = 3;
 }
 
 message StorageValue {
-  bytes key = 1;
-  bytes value = 2;
+  string storage_prefix = 1;
+  bytes key = 2;
+  bytes value = 3;
 
-  tendermint.crypto.ProofOps Proof = 3;
+  tendermint.crypto.ProofOps Proof = 4;
 }
 
 message MsgSubmitQueryResultResponse {

@@ -72,6 +72,22 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) {
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
 }
 
+func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery, error) {
+	store := ctx.KVStore(k.storeKey)
+
+	bz := store.Get(types.GetRegisteredQueryByIDKey(id))
+	if bz == nil {
+		return nil, fmt.Errorf("there is no query with id: %v", id)
+	}
+
+	var query types.RegisteredQuery
+	if err := k.cdc.Unmarshal(bz, &query); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal registered query: %w", err)
+	}
+
+	return &query, nil
+}
+
 func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, queryInfo types.RegisteredQuery) (stop bool)) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RegistetedQueryKey)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
