@@ -391,6 +391,7 @@ func New(
 		keys[interchainadaptermoduletypes.StoreKey],
 		keys[interchainadaptermoduletypes.MemStoreKey],
 		app.GetSubspace(interchainadaptermoduletypes.ModuleName),
+		app.IBCKeeper,
 	)
 	interchainadapterModule := interchainadaptermodule.NewAppModule(appCodec, app.InterchainadapterKeeper, app.AccountKeeper, app.BankKeeper)
 
