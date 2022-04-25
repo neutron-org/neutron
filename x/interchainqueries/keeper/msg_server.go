@@ -34,10 +34,11 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		ZoneId:           msg.ZoneId,
 		UpdatePeriod:     msg.UpdatePeriod,
 		ConnectionId:     msg.ConnectionId,
-		LastLocalHeight:  0,
+		LastLocalHeight:  uint64(ctx.BlockHeight()),
 		LastRemoteHeight: 0,
 	}
 
+	k.SetLastRegisteredQueryKey(ctx, lastID)
 	k.SaveQuery(ctx, registeredQuery)
 
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil

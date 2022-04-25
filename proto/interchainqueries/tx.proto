@@ -22,6 +22,7 @@ message MsgRegisterInterchainQuery {
   string zone_id = 3;
   string connection_id = 4;
   uint64 update_period = 5;
+  string sender = 6;
 }
 
 message MsgRegisterInterchainQueryResponse {
@@ -31,8 +32,9 @@ message MsgRegisterInterchainQueryResponse {
 message MsgSubmitQueryResult {
   uint64 query_id = 1;
   uint64 height = 2;
+  string sender = 3;
 
-  repeated StorageValue KVResults = 3;
+  repeated StorageValue KVResults = 4;
 }
 
 message StorageValue {
