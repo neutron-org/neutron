@@ -15,4 +15,4 @@ interchain-adapterd gentx test 1000000000stake --chain-id testnet
 interchain-adapterd collect-gentxs
 
 # Now its safe to start `gaiad`
-#interchain-adapterd start --mode validator
+interchain-adapterd start --mode validator --minimum-gas-prices 0.25stake
