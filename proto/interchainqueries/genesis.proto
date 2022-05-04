@@ -7,6 +7,17 @@ import "interchainqueries/params.proto";
 
 option go_package = "github.com/lidofinance/interchain-adapter/x/interchainqueries/types";
 
+message RegisteredQuery {
+  uint64 id = 1;
+  string query_data = 2;
+  string query_type = 3;
+  string zone_id = 4;
+  string connection_id = 5;
+  uint64 update_period = 6;
+  uint64 last_local_height = 7;
+  uint64 last_remote_height = 8;
+}
+
 // GenesisState defines the interchainadapter module's genesis state.
 message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];

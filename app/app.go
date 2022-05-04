@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -272,6 +273,8 @@ func New(
 		cdc:               cdc,
 		appCodec:          appCodec,
 		interfaceRegistry: interfaceRegistry,
+		legacyRouter:      authmiddleware.NewLegacyRouter(),
+		MsgSvcRouter:      authmiddleware.NewMsgServiceRouter(interfaceRegistry),
 		invCheckPeriod:    invCheckPeriod,
 		keys:              keys,
 		tkeys:             tkeys,
@@ -379,6 +382,7 @@ func New(
 		keys[interchainquieriestypes.StoreKey],
 		keys[interchainquieriestypes.MemStoreKey],
 		app.GetSubspace(interchainquieriestypes.ModuleName),
+		app.IBCKeeper,
 	)
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
@@ -534,6 +538,7 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
+	app.setTxHandler(encodingConfig.TxConfig, cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents)))
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -545,6 +550,30 @@ func New(
 	app.ScopedTransferKeeper = scopedTransferKeeper
 
 	return app
+}
+
+func (app *App) setTxHandler(txConfig client.TxConfig, indexEventsStr []string) {
+	indexEvents := map[string]struct{}{}
+	for _, e := range indexEventsStr {
+		indexEvents[e] = struct{}{}
+	}
+	txHandler, err := authmiddleware.NewDefaultTxHandler(authmiddleware.TxHandlerOptions{
+		Debug:            app.Trace(),
+		IndexEvents:      indexEvents,
+		LegacyRouter:     app.legacyRouter,
+		MsgServiceRouter: app.MsgSvcRouter,
+		AccountKeeper:    app.AccountKeeper,
+		BankKeeper:       app.BankKeeper,
+		FeegrantKeeper:   app.FeeGrantKeeper,
+		SignModeHandler:  txConfig.SignModeHandler(),
+		SigGasConsumer:   authmiddleware.DefaultSigVerificationGasConsumer,
+		TxDecoder:        txConfig.TxDecoder(),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	app.SetTxHandler(txHandler)
 }
 
 // Name returns the name of the App

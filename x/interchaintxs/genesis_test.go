@@ -18,7 +18,7 @@ func TestGenesis(t *testing.T) {
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
-	k, ctx := keepertest.InterchainadapterKeeper(t)
+	k, ctx := keepertest.InterchainQueriesKeeper(t)
 	interchaintxs.InitGenesis(ctx, *k, genesisState)
 	got := interchaintxs.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)

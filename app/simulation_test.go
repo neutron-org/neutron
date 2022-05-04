@@ -70,7 +70,7 @@ func BenchmarkSimulation(b *testing.B) {
 		require.NoError(b, err)
 	})
 
-	encoding := app.MakeEncodingConfig(app.ModuleBasics)
+	encoding := app.MakeEncodingConfig()
 
 	app := app.New(
 		logger,
