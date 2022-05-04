@@ -10,8 +10,8 @@ import (
 )
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgRegisterInterchainAccount{}, "interchaintxs/MsgRegisterInterchainAccount", nil)
-	cdc.RegisterConcrete(&MsgSubmitTx{}, "interchaintxs/MsgSubmitTx", nil)
+	cdc.RegisterConcrete(&MsgRegisterInterchainAccount{}, "/lidofinance.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount", nil)
+	cdc.RegisterConcrete(&MsgSubmitTx{}, "/lidofinance.interchainadapter.interchaintxs.v1.MsgSubmitTx", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -23,10 +23,10 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
+// TODO: as far as I understand, this should be removed, but currently
+//  the testutil (which also probably should be removed) uses this
+//  variable.
 var (
-	// TODO: as far as I understand, this should be removed, but currently
-	//  the testutil (which also probably should be removed) uses this
-	//  variable.
 	Amino     = codec.NewLegacyAmino()
 	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
 )

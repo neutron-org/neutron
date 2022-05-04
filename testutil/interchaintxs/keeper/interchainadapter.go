@@ -18,7 +18,7 @@ import (
 	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
-func InterchainadapterKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
