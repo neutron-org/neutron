@@ -14,7 +14,7 @@ const (
 	QuerierRoute = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_interchainadapter"
+	MemStoreKey = "mem_interchaintxs"
 )
 
 // Prefix bytes for the epoch persistent store

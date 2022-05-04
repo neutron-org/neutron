@@ -14,7 +14,7 @@ const (
 	QuerierRoute = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_interchainadapter"
+	MemStoreKey = "mem_interchainqueries"
 )
 
 func KeyPrefix(p string) []byte {
