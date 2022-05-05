@@ -1,13 +1,48 @@
 syntax = "proto3";
 package lidofinance.interchainadapter.interchainqueries;
 
+import "tendermint/crypto/proof.proto";
+
 // this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/lidofinance/interchain-adapter/x/interchainqueries/types";
 
 // Msg defines the Msg service.
 service Msg {
+  rpc RegisterInterchainQuery(MsgRegisterInterchainQuery)
+      returns (MsgRegisterInterchainQueryResponse);
+  rpc SubmitQueryResult(MsgSubmitQueryResult)
+      returns (MsgSubmitQueryResultResponse);
   // this line is used by starport scaffolding # proto/tx/rpc
 }
 
 // this line is used by starport scaffolding # proto/tx/message
+
+message MsgRegisterInterchainQuery {
+  string query_data = 1;
+  string query_type = 2;
+  string zone_id = 3;
+  string connection_id = 4;
+  uint64 update_period = 5;
+  string sender = 6;
+}
+
+message MsgRegisterInterchainQueryResponse { uint64 id = 1; }
+
+message MsgSubmitQueryResult {
+  uint64 query_id = 1;
+  uint64 height = 2;
+  string sender = 3;
+
+  repeated StorageValue KVResults = 4;
+}
+
+message StorageValue {
+  string storage_prefix = 1;
+  bytes key = 2;
+  bytes value = 3;
+
+  tendermint.crypto.ProofOps Proof = 4;
+}
+
+message MsgSubmitQueryResultResponse {}
