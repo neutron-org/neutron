@@ -17,11 +17,13 @@ import (
 
 // InterchainTxTimeout defines the IBC timeout of the interchain transaction.
 // TODO: move to module parameters.
-const InterchainTxTimeout = time.Minute
+const InterchainTxTimeout = time.Hour * 24 * 7
 
 type msgServer struct {
 	Keeper
 }
+
+var _ types.MsgServer = msgServer{}
 
 // NewMsgServerImpl returns an implementation of the MsgServer interface
 // for the provided Keeper.
@@ -87,5 +89,3 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *proto.MsgSubmitTx) (*proto.
 
 	return &types.MsgSubmitTxResponse{}, nil
 }
-
-var _ types.MsgServer = msgServer{}
