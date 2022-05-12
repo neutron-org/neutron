@@ -2,6 +2,7 @@ syntax = "proto3";
 package lidofinance.interchainadapter.interchainqueries;
 
 import "tendermint/crypto/proof.proto";
+import "tendermint/abci/types.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
@@ -31,10 +32,14 @@ message MsgRegisterInterchainQueryResponse {
 
 message MsgSubmitQueryResult {
   uint64 query_id = 1;
-  uint64 height = 2;
-  string sender = 3;
+  string sender = 2;
+  QueryResult result = 3;
+}
 
-  repeated StorageValue KVResults = 4;
+message QueryResult {
+  repeated StorageValue kv_results = 1;
+  repeated TxValue txs = 2;
+  uint64 height = 3;
 }
 
 message StorageValue {
@@ -43,6 +48,19 @@ message StorageValue {
   bytes value = 3;
 
   tendermint.crypto.ProofOps Proof = 4;
+}
+
+message TxValue {
+  tendermint.abci.ResponseDeliverTx tx = 1;
+  MerkleProof delivery_proof = 2;
+  MerkleProof inclusion_proof = 3;
+}
+
+message MerkleProof {
+  int64 total = 1;
+  int64 index = 2;
+  bytes leaf_hash = 3;
+  repeated bytes aunts = 4;
 }
 
 message MsgSubmitQueryResultResponse {
