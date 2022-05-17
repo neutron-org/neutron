@@ -20,8 +20,10 @@ service Query {
         "/lidofinance/interchainqueries/interchainqueries/params";
   }
 
-  rpc RegisteredQueries(QueryRegisteredQueriesRequest) returns (QueryRegisteredQueriesResponse) {
-    option (google.api.http).get = "/lidofinance/interchainqueries/interchainqueries/registered_queries";
+  rpc RegisteredQueries(QueryRegisteredQueriesRequest)
+      returns (QueryRegisteredQueriesResponse) {
+    option (google.api.http).get =
+        "/lidofinance/interchainqueries/interchainqueries/registered_queries";
   }
 
   rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
@@ -42,7 +44,8 @@ message QueryParamsResponse {
 message QueryRegisteredQueriesRequest {}
 
 message QueryRegisteredQueriesResponse {
-  repeated RegisteredQuery registered_queries = 1 [ (gogoproto.nullable) = false ];
+  repeated RegisteredQuery registered_queries = 1
+      [ (gogoproto.nullable) = false ];
 }
 
 message QueryRegisteredQueryResultRequest {

@@ -10,8 +10,10 @@ option go_package = "github.com/lidofinance/interchain-adapter/x/interchainqueri
 
 // Msg defines the Msg service.
 service Msg {
-  rpc RegisterInterchainQuery(MsgRegisterInterchainQuery) returns (MsgRegisterInterchainQueryResponse);
-  rpc SubmitQueryResult(MsgSubmitQueryResult) returns (MsgSubmitQueryResultResponse);
+  rpc RegisterInterchainQuery(MsgRegisterInterchainQuery)
+      returns (MsgRegisterInterchainQueryResponse);
+  rpc SubmitQueryResult(MsgSubmitQueryResult)
+      returns (MsgSubmitQueryResultResponse);
   // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -26,9 +28,7 @@ message MsgRegisterInterchainQuery {
   string sender = 6;
 }
 
-message MsgRegisterInterchainQueryResponse {
-  uint64 id = 1;
-}
+message MsgRegisterInterchainQueryResponse { uint64 id = 1; }
 
 message MsgSubmitQueryResult {
   uint64 query_id = 1;
@@ -67,3 +67,4 @@ message MerkleProof {
 message MsgSubmitQueryResultResponse {
 
 }
+

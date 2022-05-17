@@ -3,11 +3,12 @@ package interchainqueries_test
 import (
 	"testing"
 
-	keepertest "github.com/lidofinance/interchain-adapter/testutil/keeper"
-	"github.com/lidofinance/interchain-adapter/testutil/nullify"
+	"github.com/stretchr/testify/require"
+
+	keepertest "github.com/lidofinance/interchain-adapter/testutil/interchainqueries/keeper"
+	"github.com/lidofinance/interchain-adapter/testutil/interchainqueries/nullify"
 	"github.com/lidofinance/interchain-adapter/x/interchainqueries"
 	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {

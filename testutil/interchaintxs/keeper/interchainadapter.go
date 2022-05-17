@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -9,15 +10,16 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
+
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
-func InterchainQueriesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -41,7 +43,7 @@ func InterchainQueriesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil, // TODO: do a real ibc keeper
+		icacontrollerkeeper.Keeper{}, // TODO: do a real ibc keeper
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

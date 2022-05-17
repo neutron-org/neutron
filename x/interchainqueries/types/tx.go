@@ -13,7 +13,7 @@ func (msg MsgSubmitQueryResult) Type() string {
 }
 
 func (msg MsgSubmitQueryResult) ValidateBasic() error {
-	// TODO
+	// TODO: add basic validation.
 	return nil
 }
 

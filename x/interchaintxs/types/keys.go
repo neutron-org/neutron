@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleName defines the module name
-	ModuleName = "interchainqueries"
+	ModuleName = "interchaintxs"
 
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
@@ -14,7 +14,16 @@ const (
 	QuerierRoute = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_interchainadapter"
+	MemStoreKey = "mem_interchaintxs"
+)
+
+// Prefix bytes for the epoch persistent store
+const (
+	PrefixHubAddress = "prefix_hub_address"
+)
+
+var (
+	KeyHubAddress = []byte("hub_address")
 )
 
 func KeyPrefix(p string) []byte {
