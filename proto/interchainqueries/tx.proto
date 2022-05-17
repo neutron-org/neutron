@@ -54,6 +54,7 @@ message TxValue {
   tendermint.abci.ResponseDeliverTx tx = 1;
   MerkleProof delivery_proof = 2;
   MerkleProof inclusion_proof = 3;
+  uint64 height = 4;
 }
 
 message MerkleProof {
