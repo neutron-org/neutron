@@ -22,9 +22,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	// TODO: we need to pass both the marshaled packet & the acknowledgement bytes in a single message,
-	//  and it should be easy for the contract to parse it. I don't want to use JSON (it's super ugly
-	//  in this context); maybe we should generate a separate proto-message that will reference the
-	//  channeltypes.Packet?
+	//  and it should be easy for the contract to parse it. We should possibly just use JSON for that.
 	_, err = k.Sudo(ctx, hubContractAddress, append(acknowledgementPacketBz, acknowledgement...))
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo the hub contract on packet acknowledgement", err)
@@ -35,6 +33,8 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 }
 
 // HandleTimeout passes the timeout data to the Hub contract via a Sudo call.
+// Since all ICA channels are ORDERED, a single timeout shuts down a channel.
+// The affected zone should be paused after a timeout.
 func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) error {
 	hubContractAddress, err := k.GetHubAddress(ctx)
 	if err != nil {
