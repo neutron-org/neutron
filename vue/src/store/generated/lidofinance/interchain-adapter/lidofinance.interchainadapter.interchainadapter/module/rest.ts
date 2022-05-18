@@ -235,11 +235,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    * @tags Query
    * @name QueryParams
    * @summary Parameters queries the parameters of the module.
-   * @request GET:/lidofinance/interchainqueries/interchainqueries/params
+   * @request GET:/lidofinance/interchain-adapter/interchainqueries/params
    */
   queryParams = (params: RequestParams = {}) =>
     this.request<InterchainadapterQueryParamsResponse, RpcStatus>({
-      path: `/lidofinance/interchainadapter/interchainadapter/params`,
+      path: `/lidofinance/interchain-adapter/interchainadapter/params`,
       method: "GET",
       format: "json",
       ...params,

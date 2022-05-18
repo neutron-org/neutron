@@ -12,9 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+	"github.com/ignite-hq/cli/ignite/pkg/cosmoscmd"
 	"github.com/lidofinance/interchain-adapter/app"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 )
 
@@ -23,7 +25,7 @@ func init() {
 }
 
 type SimApp interface {
-	app.App
+	cosmoscmd.App
 	GetBaseApp() *baseapp.BaseApp
 	AppCodec() codec.Codec
 	SimulationManager() *module.SimulationManager
@@ -35,17 +37,17 @@ type SimApp interface {
 	InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain
 }
 
-var defaultConsensusParams = &tmtypes.ConsensusParams{
-	Block: tmtypes.BlockParams{
+var defaultConsensusParams = &abci.ConsensusParams{
+	Block: &abci.BlockParams{
 		MaxBytes: 200000,
 		MaxGas:   2000000,
 	},
-	Evidence: tmtypes.EvidenceParams{
+	Evidence: &tmproto.EvidenceParams{
 		MaxAgeNumBlocks: 302400,
 		MaxAgeDuration:  504 * time.Hour, // 3 weeks is the max duration
 		MaxBytes:        10000,
 	},
-	Validator: tmtypes.ValidatorParams{
+	Validator: &tmproto.ValidatorParams{
 		PubKeyTypes: []string{
 			tmtypes.ABCIPubKeyTypeEd25519,
 		},
@@ -70,7 +72,7 @@ func BenchmarkSimulation(b *testing.B) {
 		require.NoError(b, err)
 	})
 
-	encoding := app.MakeEncodingConfig()
+	encoding := cosmoscmd.MakeEncodingConfig(app.ModuleBasics)
 
 	app := app.New(
 		logger,
@@ -84,7 +86,8 @@ func BenchmarkSimulation(b *testing.B) {
 		simapp.EmptyAppOptions{},
 	)
 
-	simApp := app
+	simApp, ok := app.(SimApp)
+	require.True(b, ok, "can't use simapp")
 
 	// Run randomized simulations
 	_, simParams, simErr := simulation.SimulateFromSeed(
@@ -93,14 +96,14 @@ func BenchmarkSimulation(b *testing.B) {
 		simApp.GetBaseApp(),
 		simapp.AppStateFn(simApp.AppCodec(), simApp.SimulationManager()),
 		simulationtypes.RandomAccounts,
-		simapp.SimulationOperations(app, simApp.AppCodec(), config),
+		simapp.SimulationOperations(simApp, simApp.AppCodec(), config),
 		simApp.ModuleAccountAddrs(),
 		config,
 		simApp.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	err = simapp.CheckExportSimulation(app, config, simParams)
+	err = simapp.CheckExportSimulation(simApp, config, simParams)
 	require.NoError(b, err)
 	require.NoError(b, simErr)
 

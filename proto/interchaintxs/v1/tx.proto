@@ -32,7 +32,7 @@ message MsgRegisterInterchainAccount {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string from_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string from_address = 1;
   string connection_id = 2 [ (gogoproto.moretags) = "yaml:\"connection_id\"" ];
   string owner = 3 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
 }
@@ -46,12 +46,12 @@ message MsgSubmitTx {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string from_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string from_address = 1;
   // Owner is supposed to be the unique identifier, e.g., lido/kava.
   // This identifier will be a part of the portID that we'll claim our
   // capability for.
   string owner = 2;
-  string connection_id = 3 [ (gogoproto.moretags) = "yaml:\"connection_id\"" ];
+  string connection_id = 3;
   repeated google.protobuf.Any msgs = 4;
 }
 

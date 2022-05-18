@@ -10,14 +10,12 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/lidofinance/interchain-adapter/testutil/interchainqueries/sample"
 	interchainadaptersimulation "github.com/lidofinance/interchain-adapter/x/interchaintxs/simulation"
 	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 // avoid unused import issue
 var (
-	_ = sample.AccAddress
 	_ = interchainadaptersimulation.FindAccount
 	_ = simappparams.StakePerAccount
 	_ = simulation.MsgEntryKind

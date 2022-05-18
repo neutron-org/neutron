@@ -19,7 +19,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 		switch msg := msg.(type) {
 		case *types.MsgRegisterInterchainQuery:
-			res, err := msgServer.RegisterInterchainQuery(ctx, msg)
+			res, err := msgServer.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:

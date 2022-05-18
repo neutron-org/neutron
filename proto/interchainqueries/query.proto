@@ -45,7 +45,7 @@ message QueryRegisteredQueriesRequest {}
 
 message QueryRegisteredQueriesResponse {
   repeated RegisteredQuery registered_queries = 1
-      [ (gogoproto.nullable) = false ];
+  [ (gogoproto.nullable) = false ];
 }
 
 message QueryRegisteredQueryResultRequest {
