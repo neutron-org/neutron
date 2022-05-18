@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -42,6 +43,7 @@ func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
+		icacontrollerkeeper.Keeper{}, // TODO: do a real ibc keeper
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

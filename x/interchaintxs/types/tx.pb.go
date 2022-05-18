@@ -111,7 +111,10 @@ var xxx_messageInfo_MsgRegisterInterchainAccountResponse proto.InternalMessageIn
 
 // MsgSubmitTx defines the payload for Msg/SubmitTx
 type MsgSubmitTx struct {
-	FromAddress  string       `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// Owner is supposed to be the unique identifier, e.g., lido/kava.
+	// This identifier will be a part of the portID that we'll claim our
+	// capability for.
 	Owner        string       `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
 	ConnectionId string       `protobuf:"bytes,3,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty" yaml:"connection_id"`
 	Msgs         []*types.Any `protobuf:"bytes,4,rep,name=msgs,proto3" json:"msgs,omitempty"`

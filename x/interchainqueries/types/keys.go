@@ -21,16 +21,22 @@ const (
 
 const (
 	prefixRegisteredQuery = iota + 1
+	prefixRegisteredQueryResult
 )
 
 var (
-	RegistetedQueryKey = []byte{prefixRegisteredQuery}
+	RegisteredQueryKey       = []byte{prefixRegisteredQuery}
+	RegisteredQueryResultKey = []byte{prefixRegisteredQueryResult}
 
 	LastRegisteredQueryIdKey = []byte{0x64}
 )
 
 func GetRegisteredQueryByIDKey(id uint64) []byte {
-	return append(RegistetedQueryKey, sdk.Uint64ToBigEndian(id)...)
+	return append(RegisteredQueryKey, sdk.Uint64ToBigEndian(id)...)
+}
+
+func GetRegisteredQueryResultByIDKey(id uint64) []byte {
+	return append(RegisteredQueryResultKey, sdk.Uint64ToBigEndian(id)...)
 }
 
 func KeyPrefix(p string) []byte {

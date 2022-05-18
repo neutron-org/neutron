@@ -55,7 +55,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 		ConnectionId:   query.ConnectionId,
 		RevisionNumber: 1,
-		RevisionHeight: msg.Height,
+		RevisionHeight: msg.Result.Height,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get consensus state: %w", err)
@@ -66,7 +66,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		return nil, fmt.Errorf("failed to unpack consesus state: %w", err)
 	}
 
-	for _, result := range msg.KVResults {
+	for _, result := range msg.Result.KvResults {
 		proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert crypto.ProofOps to MerkleProof: %w", err)
@@ -79,8 +79,13 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		}
 	}
 
-	// TODO: save result to a storage
-	return nil, nil
+	for _, _ = range msg.Result.Txs {
+		// TODO: verify txs
+	}
+
+	k.SaveQueryResult(ctx, msg.QueryId, msg.Result)
+
+	return &types.MsgSubmitQueryResultResponse{}, nil
 }
 
 var _ types.MsgServer = msgServer{}

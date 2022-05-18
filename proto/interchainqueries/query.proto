@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "interchainqueries/params.proto";
 import "interchainqueries/genesis.proto";
+import "interchainqueries/tx.proto";
 
 // this line is used by starport scaffolding # 1
 
@@ -24,6 +25,10 @@ service Query {
     option (google.api.http).get =
         "/lidofinance/interchainqueries/interchainqueries/registered_queries";
   }
+
+  rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
+    option (google.api.http).get = "/lidofinance/interchainqueries/interchainqueries/query_result";
+  }
   // this line is used by starport scaffolding # 2
 }
 
@@ -41,6 +46,14 @@ message QueryRegisteredQueriesRequest {}
 message QueryRegisteredQueriesResponse {
   repeated RegisteredQuery registered_queries = 1
       [ (gogoproto.nullable) = false ];
+}
+
+message QueryRegisteredQueryResultRequest {
+  uint64 query_id = 1;
+}
+
+message QueryRegisteredQueryResultResponse {
+  QueryResult result = 1;
 }
 
 // this line is used by starport scaffolding # 3
