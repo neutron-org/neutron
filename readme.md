@@ -12,3 +12,9 @@ make install
 ```shell
 ./start.sh
 ```
+
+## Generate proto
+
+```shell
+ignite generate proto-go
+```
