@@ -81,7 +81,9 @@ func BenchmarkSimulation(b *testing.B) {
 		app.DefaultNodeHome,
 		0,
 		encoding,
+		app.GetEnabledProposals(),
 		simapp.EmptyAppOptions{},
+		nil,
 	)
 
 	simApp := app
