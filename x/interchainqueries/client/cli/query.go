@@ -12,7 +12,7 @@ import (
 	// "github.com/cosmos/cosmos-sdk/client/flags"
 	// sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

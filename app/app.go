@@ -7,7 +7,7 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	icahost "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"io"
 	"net/http"
@@ -99,7 +99,7 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
-	appparams "github.com/lidofinance/interchain-adapter/app/params"
+	appparams "github.com/lidofinance/gaia-wasm-zone/app/params"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -109,20 +109,20 @@ import (
 
 	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
 
-	"github.com/lidofinance/interchain-adapter/docs"
+	"github.com/lidofinance/gaia-wasm-zone/docs"
 
-	interchainqueriesmodulekeeper "github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
-	interchainqueriesmoduletypes "github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
+	interchainqueriesmodulekeeper "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
+	interchainqueriesmoduletypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs"
-	interchaintxskeeper "github.com/lidofinance/interchain-adapter/x/interchaintxs/keeper"
-	interchaintxstypes "github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs"
+	interchaintxskeeper "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
+	interchaintxstypes "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const (
 	AccountAddressPrefix = "cosmos"
-	Name                 = "interchain-adapter"
+	Name                 = "gaia-wasm-zoned"
 )
 
 var (

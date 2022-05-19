@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 )
 
 // GetParams get all parameters as types.Params

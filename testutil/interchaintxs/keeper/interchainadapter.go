@@ -15,8 +15,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

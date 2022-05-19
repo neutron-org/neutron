@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/lidofinance/interchain-adapter/testutil/interchaintxs/keeper"
-	"github.com/lidofinance/interchain-adapter/testutil/interchaintxs/nullify"
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs"
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	keepertest "github.com/lidofinance/gaia-wasm-zone/testutil/interchaintxs/keeper"
+	"github.com/lidofinance/gaia-wasm-zone/testutil/interchaintxs/nullify"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 func TestGenesis(t *testing.T) {

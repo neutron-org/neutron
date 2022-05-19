@@ -4,7 +4,7 @@ import (
 	"os"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/lidofinance/interchain-adapter/app"
+	"github.com/lidofinance/gaia-wasm-zone/app"
 )
 
 func main() {

@@ -15,7 +15,7 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 type (

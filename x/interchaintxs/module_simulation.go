@@ -10,8 +10,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	interchainadaptersimulation "github.com/lidofinance/interchain-adapter/x/interchaintxs/simulation"
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	interchainadaptersimulation "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/simulation"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 // avoid unused import issue

@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "interchaintxs/v1/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/lidofinance/interchain-adapter/x/interchaintxs/types";
+option go_package = "github.com/lidofinance/gaia-wasm-zoned/x/interchaintxs/types";
 
 // GenesisState defines the interchainadapter module's genesis state.
 message GenesisState {

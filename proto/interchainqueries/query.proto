@@ -10,7 +10,7 @@ import "interchainqueries/tx.proto";
 
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/lidofinance/interchain-adapter/x/interchainqueries/types";
+option go_package = "github.com/lidofinance/gaia-wasm-zoned/x/interchainqueries/types";
 
 // Query defines the gRPC querier service.
 service Query {

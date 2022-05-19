@@ -18,9 +18,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/client/cli"
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/client/cli"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 var (

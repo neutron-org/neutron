@@ -10,7 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

@@ -11,8 +11,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
-	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
-	proto "github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	proto "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 // InterchainTxTimeout defines the IBC timeout of the interchain transaction.
