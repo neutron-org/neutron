@@ -220,7 +220,6 @@ var (
 )
 
 var (
-	//_ cosmoscmd.App           = (*App)(nil)
 	_ servertypes.Application = (*App)(nil)
 	_ simapp.App              = (*App)(nil)
 )
@@ -270,7 +269,6 @@ type App struct {
 	EvidenceKeeper      evidencekeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
 	FeeGrantKeeper      feegrantkeeper.Keeper
-	//MonitoringKeeper    monitoringpkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper        capabilitykeeper.ScopedKeeper
@@ -445,21 +443,6 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 
-	//scopedMonitoringKeeper := app.CapabilityKeeper.ScopeToModule(monitoringptypes.ModuleName)
-	//app.MonitoringKeeper = *monitoringpkeeper.NewKeeper(
-	//	appCodec,
-	//	keys[monitoringptypes.StoreKey],
-	//	keys[monitoringptypes.MemStoreKey],
-	//	app.GetSubspace(monitoringptypes.ModuleName),
-	//	app.StakingKeeper,
-	//	app.IBCKeeper.ClientKeeper,
-	//	app.IBCKeeper.ConnectionKeeper,
-	//	app.IBCKeeper.ChannelKeeper,
-	//	&app.IBCKeeper.PortKeeper,
-	//	scopedMonitoringKeeper,
-	//)
-	//monitoringModule := monitoringp.NewAppModule(appCodec, app.MonitoringKeeper)
-
 	app.InterchainQueriesKeeper = *interchainqueriesmodulekeeper.NewKeeper(
 		appCodec,
 		keys[interchainqueriesmoduletypes.StoreKey],
@@ -511,8 +494,6 @@ func New(
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
-	//ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
-	//ibcRouter.AddRoute(monitoringptypes.ModuleName, monitoringModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	if len(enabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
@@ -613,7 +594,6 @@ func New(
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
-		//monitoringptypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		wasm.ModuleName,
@@ -645,7 +625,6 @@ func New(
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
 		icatypes.ModuleName,
-		//monitoringptypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		wasm.ModuleName,
@@ -673,7 +652,6 @@ func New(
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
-		//monitoringModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
@@ -738,7 +716,6 @@ func New(
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.ScopedWasmKeeper = scopedWasmKeeper
-	//app.ScopedMonitoringKeeper = scopedMonitoringKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
 
 	return app
@@ -853,7 +830,6 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 
 	// register app's OpenAPI routes.
 	apiSvr.Router.Handle("/static/openapi.yml", http.FileServer(http.FS(docs.Docs)))
-	//apiSvr.Router.HandleFunc("/", openapiconsole.Handler(Name, "/static/openapi.yml"))
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
