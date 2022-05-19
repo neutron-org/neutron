@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "interchainqueries/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/lidofinance/gaia-wasm-zoned/x/interchainqueries/types";
+option go_package = "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types";
 
 message RegisteredQuery {
   uint64 id = 1;

@@ -3,7 +3,7 @@ package lidofinance.interchainadapter.interchaintxs;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/lidofinance/gaia-wasm-zoned/x/interchaintxs/types";
+option go_package = "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types";
 
 // Params defines the parameters for the module.
 message Params { option (gogoproto.goproto_stringer) = false; }
