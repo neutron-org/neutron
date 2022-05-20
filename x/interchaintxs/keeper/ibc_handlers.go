@@ -94,5 +94,6 @@ func (k *Keeper) HandleChanOpenAck(
 // TODO: Sudo is actually a part of the wasmd keeper. When cosmos/wasmd is finalized, we need
 // 	to import it and use the original sudo call.
 func (k *Keeper) Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error) {
+	//return k.wasmKeeper.Sudo(ctx, contractAddress, msg)
 	return nil, nil
 }

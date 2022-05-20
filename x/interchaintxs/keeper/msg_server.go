@@ -39,7 +39,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *proto.MsgR
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
 
-	return nil, nil
+	return &proto.MsgRegisterInterchainAccountResponse{}, nil
 }
 
 func (k Keeper) SubmitTx(goCtx context.Context, msg *proto.MsgSubmitTx) (*proto.MsgSubmitTxResponse, error) {

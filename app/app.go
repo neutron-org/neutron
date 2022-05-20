@@ -275,6 +275,7 @@ type App struct {
 	ScopedTransferKeeper   capabilitykeeper.ScopedKeeper
 	ScopedMonitoringKeeper capabilitykeeper.ScopedKeeper
 	ScopedWasmKeeper       capabilitykeeper.ScopedKeeper
+	ScopedInterTxKeeper    capabilitykeeper.ScopedKeeper
 
 	InterchainQueriesKeeper interchainqueriesmodulekeeper.Keeper
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
@@ -349,6 +350,7 @@ func New(
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	scopedInterTxKeeper := app.CapabilityKeeper.ScopeToModule(interchaintxstypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/scopedKeeper
 
 	// add keepers
@@ -410,10 +412,6 @@ func New(
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 	)
 
-	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
-	icaControllerIBCModule := icacontroller.NewIBCModule(app.ICAControllerKeeper, interchaintxs.NewIBCModule(app.InterchainTxsKeeper))
-	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
-
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
@@ -455,8 +453,14 @@ func New(
 		keys[interchaintxstypes.StoreKey],
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.GetSubspace(interchaintxstypes.ModuleName),
+		&app.wasmKeeper,
 		app.ICAControllerKeeper,
+		scopedInterTxKeeper,
 	)
+
+	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
+	icaControllerIBCModule := icacontroller.NewIBCModule(app.ICAControllerKeeper, interchaintxs.NewIBCModule(app.InterchainTxsKeeper))
+	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
@@ -716,6 +720,7 @@ func New(
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.ScopedWasmKeeper = scopedWasmKeeper
+	app.ScopedInterTxKeeper = scopedInterTxKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
 
 	return app
