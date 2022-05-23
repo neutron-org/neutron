@@ -3,6 +3,8 @@ package cli
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	// "strings"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -28,6 +30,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 
 	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdQueryRegisteredQueries())
+	cmd.AddCommand(CmdQueryRegisteredQueryResult())
 	// this line is used by starport scaffolding # 1
 
 	return cmd
@@ -44,6 +47,35 @@ func CmdQueryRegisteredQueries() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			res, err := queryClient.RegisteredQueries(context.Background(), &types.QueryRegisteredQueriesRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdQueryRegisteredQueryResult() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "query-result [query-id]",
+		Short: "queries result for registered query",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			queryID, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse query id: %w", err)
+			}
+
+			res, err := queryClient.QueryResult(context.Background(), &types.QueryRegisteredQueryResultRequest{QueryId: queryID})
 			if err != nil {
 				return err
 			}
