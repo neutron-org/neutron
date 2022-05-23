@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

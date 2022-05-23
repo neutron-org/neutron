@@ -2,8 +2,8 @@ package interchainqueries
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

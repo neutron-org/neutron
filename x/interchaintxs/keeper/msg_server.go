@@ -7,12 +7,12 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
-	proto "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
+	proto "github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 // InterchainTxTimeout defines the IBC timeout of the interchain transaction.
@@ -39,7 +39,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *proto.MsgR
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
 
-	return &proto.MsgRegisterInterchainAccountResponse{}, nil
+	return nil, nil
 }
 
 func (k Keeper) SubmitTx(goCtx context.Context, msg *proto.MsgSubmitTx) (*proto.MsgSubmitTxResponse, error) {

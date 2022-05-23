@@ -12,7 +12,7 @@ SIMAPP = ./app
 DOCKER := $(shell which docker)
 BUF_IMAGE=bufbuild/buf@sha256:9dc5d6645f8f8a2d5aaafc8957fbbb5ea64eada98a84cb09654e8f49d6f73b3e
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(BUF_IMAGE)
-HTTPS_GIT := https://github.com/lidofinance/gaia-wasm-zone.git
+HTTPS_GIT := https://github.com/lidofinance/interchain-adapter.git
 
 export GO111MODULE = on
 
@@ -55,8 +55,8 @@ build_tags_comma_sep := $(subst $(empty),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=gaia-wasm-zone \
-		  -X github.com/cosmos/cosmos-sdk/version.AppName=gaia-wasm-zoned \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=interchain-adapter \
+		  -X github.com/cosmos/cosmos-sdk/version.AppName=interchain-adapterd \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
@@ -78,11 +78,11 @@ build: go.sum
 ifeq ($(OS),Windows_NT)
 	exit 1
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/gaia-wasm-zoned ./cmd/gaia-wasm-zoned
+	go build -mod=readonly $(BUILD_FLAGS) -o build/interchain-adapterd ./cmd/interchain-adapterd
 endif
 
 install: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/gaia-wasm-zoned
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/interchain-adapterd
 
 ########################################
 ### Tools & dependencies
@@ -98,7 +98,7 @@ go.sum: go.mod
 draw-deps:
 	@# requires brew install graphviz or apt-get install graphviz
 	go get github.com/RobotsAndPencils/goviz
-	@goviz -i ./cmd/gaia-wasm-zoned -d 2 | dot -Tpng -o dependency-graph.png
+	@goviz -i ./cmd/interchain-adapterd -d 2 | dot -Tpng -o dependency-graph.png
 
 clean:
 	rm -rf snapcraft-local.yaml build/
@@ -176,30 +176,3 @@ proto-check-breaking:
 	go-mod-cache draw-deps clean build format \
 	test test-all test-build test-cover test-unit test-race \
 	test-sim-import-export \
-
-init: kill-dev install
-	@echo "Initializing both blockchains..."
-	./network/init.sh
-	./network/start.sh
-	@echo "Initializing relayer..."
-	./network/hermes/restore-keys.sh
-	./network/hermes/create-conn.sh
-
-init-golang-rly: kill-dev install
-	@echo "Initializing both blockchains..."
-	./network/init.sh
-	./network/start.sh
-	@echo "Initializing relayer..."
-	./network/relayer/interchain-acc-config/rly.sh
-
-start:
-	@echo "Starting up test network"
-	./network/start.sh
-
-start-rly:
-	./network/hermes/start.sh
-
-kill-dev:
-	@echo "Killing gaia-wasm-zoned and removing previous data"
-	-@rm -rf ./data
-	-@killall gaia-wasm-zoned 2>/dev/null

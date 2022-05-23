@@ -34,10 +34,6 @@ func (m *MsgRegisterInterchainAccount) Type() string {
 	return "register-interchain-account"
 }
 
-func (m MsgRegisterInterchainAccount) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
-}
-
 //----------------------------------------------------------------
 
 func (m *MsgSubmitTx) ValidateBasic() error {
@@ -81,10 +77,6 @@ func (m *MsgSubmitTx) GetTxMsgs() (sdkMsgs []sdk.Msg, err error) {
 	}
 
 	return
-}
-
-func (m MsgSubmitTx) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 // PackTxMsgAny marshals the sdk.Msg payload to a protobuf Any type

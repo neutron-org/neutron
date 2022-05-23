@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	"testing"
 
@@ -16,8 +15,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
@@ -44,9 +43,7 @@ func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,                             // TODO: do a real wasm keeper
-		icacontrollerkeeper.Keeper{},    // TODO: do a real ibc keeper
-		capabilitykeeper.ScopedKeeper{}, // TODO: do a real scoped keeper
+		icacontrollerkeeper.Keeper{}, // TODO: do a real ibc keeper
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

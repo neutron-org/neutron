@@ -3,7 +3,6 @@ package keeper
 import (
 	"errors"
 	"fmt"
-	"github.com/CosmWasm/wasmd/x/wasm"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 
@@ -16,7 +15,7 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 type (
@@ -28,7 +27,6 @@ type (
 		scopedKeeper capabilitykeeper.ScopedKeeper
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
-		wasmKeeper          *wasm.Keeper
 	}
 )
 
@@ -38,9 +36,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 
-	wasmKeeper *wasm.Keeper,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
-	scopedKeeper capabilitykeeper.ScopedKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -54,8 +50,6 @@ func NewKeeper(
 		paramstore: ps,
 
 		icaControllerKeeper: icaControllerKeeper,
-		scopedKeeper:        scopedKeeper,
-		wasmKeeper:          wasmKeeper,
 	}
 }
 

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/lidofinance/gaia-wasm-zone/testutil/interchaintxs/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	testkeeper "github.com/lidofinance/interchain-adapter/testutil/interchaintxs/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 func TestGetParams(t *testing.T) {

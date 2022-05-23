@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/cosmos/cosmos-sdk/std"
-	"github.com/lidofinance/gaia-wasm-zone/app/params"
+	"github.com/lidofinance/interchain-adapter/app/params"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing

@@ -18,9 +18,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/client/cli"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/client/cli"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/keeper"
+	"github.com/lidofinance/interchain-adapter/x/interchaintxs/types"
 )
 
 var (
@@ -126,7 +126,7 @@ func (am AppModule) Name() string {
 
 // Deprecated: Route returns the capability module's message routing key.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
+	return sdk.Route{}
 }
 
 // QuerierRoute returns the capability module's query routing key.

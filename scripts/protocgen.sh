@@ -34,5 +34,5 @@ done
 #$(find "$(pwd)/proto" -maxdepth 5 -name '*.proto')
 
 # move proto files to the right places
-cp -r github.com/lidofinance/gaia-wasm-zone/* ./
+cp -r github.com/lidofinance/interchain-adapter/* ./
 rm -rf github.com
