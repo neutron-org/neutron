@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/keeper"
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 )
 
 // NewHandler ...
@@ -19,7 +19,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 		switch msg := msg.(type) {
 		case *types.MsgRegisterInterchainQuery:
-			res, err := msgServer.RegisterInterchainQuery(ctx, msg)
+			res, err := msgServer.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:

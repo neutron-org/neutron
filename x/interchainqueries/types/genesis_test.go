@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/lidofinance/interchain-adapter/x/interchainqueries/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 	"github.com/stretchr/testify/require"
 )
 

@@ -1,52 +1,50 @@
-# interchainadapter
-**interchainadapter** is a blockchain built using Cosmos SDK and Tendermint and created with [Starport](https://starport.com).
+# Gaia Wasm Zone
 
-## Get started
+## Requirments
+* Go 1.18
+* Ignite Cli
+* Hermes IBC Relayer
 
-```
-starport chain serve
-```
+### How to install Ignite CLI
 
-`serve` command installs dependencies, builds, initializes, and starts your blockchain in development.
-
-### Configure
-
-Your blockchain in development can be configured with `config.yml`. To learn more, see the [Starport docs](https://docs.starport.com).
-
-### Web Frontend
-
-Starport has scaffolded a Vue.js-based web app in the `vue` directory. Run the following commands to install dependencies and start the app:
-
-```
-cd vue
-npm install
-npm run serve
+```shell
+curl https://get.ignite.com/cli! | bash
 ```
 
-The frontend app is built using the `@starport/vue` and `@starport/vuex` packages. For details, see the [monorepo for Starport front-end development](https://github.com/tendermint/vue).
+### How to install Hermes IBC Relayer
 
-## Release
-To release a new version of your blockchain, create and push a new tag with `v` prefix. A new draft release with the configured targets will be created.
-
-```
-git tag v0.1
-git push origin v0.1
+```shell
+cargo install --version 0.14.1 ibc-relayer-cli --bin hermes --locked
 ```
 
-After a draft release is created, make your final changes from the release page and publish it.
+## Build and Install Gaia Wasm Zone
 
-### Install
-To install the latest version of your blockchain node's binary, execute the following command on your machine:
-
+```shell
+make install
 ```
-curl https://get.starport.com/lidofinance/interchain-adapter@latest! | sudo bash
+
+## Run local testnet node instance
+
+```shell
+./start.sh
 ```
-`lidofinance/interchain-adapter` should match the `username` and `repo_name` of the Github repository to which the source code was pushed. Learn more about [the install process](https://github.com/allinbits/starport-installer).
 
-## Learn more
+## Run local testnet node instances connected via IBC
 
-- [Starport](https://starport.com)
-- [Tutorials](https://docs.starport.com/guide)
-- [Starport docs](https://docs.starport.com)
-- [Cosmos SDK docs](https://docs.cosmos.network)
-- [Developer Chat](https://discord.gg/H6wGTY8sxw)
+### Bootstrap two chains and create an IBC connection
+
+```shell
+make init
+```
+
+### Start relayer
+
+```shell
+make start-rly
+```
+
+## Generate proto
+
+```shell
+ignite generate proto-go
+```

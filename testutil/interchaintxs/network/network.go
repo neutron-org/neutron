@@ -19,7 +19,7 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/lidofinance/interchain-adapter/app"
+	"github.com/lidofinance/gaia-wasm-zone/app"
 )
 
 type (
@@ -39,10 +39,7 @@ func New(t *testing.T, configs ...network.Config) *network.Network {
 	} else {
 		cfg = configs[0]
 	}
-	net, err := network.New(t, "", cfg)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+	net := network.New(t, cfg)
 	t.Cleanup(net.Cleanup)
 	return net
 }
@@ -61,7 +58,9 @@ func DefaultConfig() network.Config {
 			return app.New(
 				val.Ctx.Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.Ctx.Config.RootDir, 0,
 				encoding,
+				app.GetEnabledProposals(),
 				simapp.EmptyAppOptions{},
+				nil,
 				baseapp.SetPruning(storetypes.NewPruningOptionsFromString(val.AppConfig.Pruning)),
 				baseapp.SetMinGasPrices(val.AppConfig.MinGasPrices),
 			)
