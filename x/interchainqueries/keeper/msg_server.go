@@ -54,7 +54,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 	resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 		ConnectionId:   query.ConnectionId,
-		RevisionNumber: 2,
+		RevisionNumber: 2, // TODO: this should not be hard-coded.
 		RevisionHeight: msg.Result.Height + 1,
 	})
 	if err != nil {
