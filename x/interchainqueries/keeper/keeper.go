@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -91,10 +93,96 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, query *types.QueryResult) {
 	store := ctx.KVStore(k.storeKey)
 
-	bz := k.cdc.MustMarshal(query)
+	cleanResult := clearQueryResult(query)
+	bz := k.cdc.MustMarshal(&cleanResult)
+
 	store.Set(types.GetRegisteredQueryResultByIDKey(id), bz)
 }
 
+// We don't need to store proofs or transactions, so we just remove unnecessary fields
+func clearQueryResult(result *types.QueryResult) types.QueryResult {
+	storageValues := make([]*types.StorageValue, 0, len(result.KvResults))
+	for _, v := range result.KvResults {
+		storageValues = append(storageValues, &types.StorageValue{
+			StoragePrefix: v.StoragePrefix,
+			Key:           v.Key,
+			Value:         v.Value,
+			Proof:         nil,
+		})
+	}
+
+	cleanResult := types.QueryResult{
+		KvResults: storageValues,
+		Blocks:    nil,
+		Height:    result.Height,
+	}
+
+	return cleanResult
+}
+
+// SaveTransactions save transactions to the storage and updates LastSubmittedTransactionID
+func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []types.Block) error {
+	lastSubmittedTxID := k.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
+
+	for _, block := range blocks {
+		header, err := ibcclienttypes.UnpackHeader(block.Header)
+		if err != nil {
+			return fmt.Errorf("failed to unpack block header: %w", err)
+		}
+
+		tmHeader, ok := header.(*tendermintLightClientTypes.Header)
+		if !ok {
+			return fmt.Errorf("failed to cast header to tendermint Header: %w", err)
+		}
+
+		for _, tx := range block.Txs {
+			lastSubmittedTxID += 1
+			if err = k.SaveSubmittedTransaction(ctx, queryID, lastSubmittedTxID, uint64(tmHeader.Header.Height), tx.Data); err != nil {
+				return fmt.Errorf("failed save submitted transaction: %w", err)
+			}
+		}
+	}
+
+	k.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastSubmittedTxID)
+
+	return nil
+}
+
+// SaveSubmittedTransaction saves a transaction data into the storage with a key (SubmittedTxKey + bigEndianBytes(queryID) + bigEndianBytes(txID))
+func (k Keeper) SaveSubmittedTransaction(ctx sdk.Context, queryID uint64, txID uint64, height uint64, txData []byte) error {
+	txBz, err := (&types.Transaction{
+		Height: height,
+		Data:   txData,
+	}).Marshal()
+	if err != nil {
+		return fmt.Errorf("failed to marshal transaction: %w", err)
+	}
+
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetSubmittedTransactionIDForQueryKey(queryID, txID)
+
+	store.Set(key, txBz)
+
+	return nil
+}
+
+// GetLastSubmittedTransactionIDForQuery returns last transaction id which was submitted for a query with queryID
+func (k Keeper) GetLastSubmittedTransactionIDForQuery(ctx sdk.Context, queryID uint64) uint64 {
+	store := ctx.KVStore(k.storeKey)
+	bytes := store.Get(types.GetLastSubmittedTransactionIDForQueryKey(queryID))
+	if bytes == nil {
+		return 0
+	}
+	return sdk.BigEndianToUint64(bytes)
+}
+
+// SetLastSubmittedTransactionIDForQuery sets a last transaction id which was submitted for a query with queryID
+func (k Keeper) SetLastSubmittedTransactionIDForQuery(ctx sdk.Context, queryID uint64, transactionID uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetLastSubmittedTransactionIDForQueryKey(queryID), sdk.Uint64ToBigEndian(transactionID))
+}
+
+// GetQueryResultByID returns a QueryResult for query with id
 func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResult, error) {
 	store := ctx.KVStore(k.storeKey)
 
@@ -109,6 +197,24 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 	}
 
 	return &query, nil
+}
+
+// GetSubmittedTransactions returns a list of transactions from start ID to end ID
+func (k Keeper) GetSubmittedTransactions(ctx sdk.Context, queryID uint64, start uint64, end uint64) ([]*types.Transaction, error) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := store.Iterator(types.GetSubmittedTransactionIDForQueryKey(queryID, start), types.GetSubmittedTransactionIDForQueryKey(queryID, end))
+	defer iterator.Close()
+
+	transactions := make([]*types.Transaction, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var tx types.Transaction
+		if err := tx.Unmarshal(iterator.Value()); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal transaction: %w", err)
+		}
+		transactions = append(transactions, &tx)
+	}
+
+	return transactions, nil
 }
 
 func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, queryInfo types.RegisteredQuery) (stop bool)) {

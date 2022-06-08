@@ -38,3 +38,14 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
 }
+
+func (k Keeper) QueryTransactions(goCtx context.Context, request *types.QuerySubmittedTransactionsRequest) (*types.QuerySubmittedTransactionsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	result, err := k.GetSubmittedTransactions(ctx, request.QueryId, request.Start, request.End)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get query result bu query id: %w", err)
+	}
+
+	return &types.QuerySubmittedTransactionsResponse{Transactions: result}, nil
+}
