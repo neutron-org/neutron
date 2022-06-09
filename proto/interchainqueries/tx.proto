@@ -53,8 +53,14 @@ message StorageValue {
 }
 
 message Block {
-  google.protobuf.Any header = 1;
-  repeated TxValue txs = 2;
+  // We need to know block X+1 to verify result of transaction for block X
+  // since LastResultsHash is root hash of all results from the txs from the previous block
+  google.protobuf.Any next_block_header = 1;
+
+  // We need to know block X to verify inclusion of transaction for block X
+  google.protobuf.Any header = 2;
+
+  repeated TxValue txs = 3;
 }
 
 message TxValue {

@@ -1,7 +1,13 @@
 package types
 
 import (
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/ibc-go/v3/modules/core/exported"
+)
+
+var (
+	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
 )
 
 func (msg MsgSubmitQueryResult) Route() string {
@@ -54,4 +60,18 @@ func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 		panic(err.Error())
 	}
 	return []sdk.AccAddress{senderAddr}
+}
+
+// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
+func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	for _, b := range msg.Result.Blocks {
+		var header exported.Header
+		if err := unpacker.UnpackAny(b.Header, &header); err != nil {
+			return err
+		}
+		if err := unpacker.UnpackAny(b.NextBlockHeader, &header); err != nil {
+			return err
+		}
+	}
+	return nil
 }

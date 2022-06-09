@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -11,6 +12,7 @@ import (
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 type msgServer struct {
@@ -30,18 +32,19 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	lastID += 1
 
 	registeredQuery := types.RegisteredQuery{
-		Id:               lastID,
-		QueryData:        msg.QueryData,
-		QueryType:        msg.QueryType,
-		ZoneId:           msg.ZoneId,
-		UpdatePeriod:     msg.UpdatePeriod,
-		ConnectionId:     msg.ConnectionId,
-		LastLocalHeight:  uint64(ctx.BlockHeight()),
-		LastRemoteHeight: 0,
+		Id:                lastID,
+		QueryData:         msg.QueryData,
+		QueryType:         msg.QueryType,
+		ZoneId:            msg.ZoneId,
+		UpdatePeriod:      msg.UpdatePeriod,
+		ConnectionId:      msg.ConnectionId,
+		LastEmittedHeight: uint64(ctx.BlockHeight()),
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
-	k.SaveQuery(ctx, registeredQuery)
+	if err := k.SaveQuery(ctx, registeredQuery); err != nil {
+		return nil, fmt.Errorf("failed to save query: %w", err)
+	}
 
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
 }
@@ -54,32 +57,34 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		return nil, fmt.Errorf("failed to get query by id: %w", err)
 	}
 
-	resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
-		ConnectionId:   query.ConnectionId,
-		RevisionNumber: 1,
-		RevisionHeight: msg.Result.Height,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get consensus state: %w", err)
-	}
-
-	consensusState, err := ibcclienttypes.UnpackConsensusState(resp.ConsensusState)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unpack consesus state: %w", err)
-	}
-
-	consensusState.ClientType()
-
-	for _, result := range msg.Result.KvResults {
-		proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
+	if msg.Result.KvResults != nil {
+		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
+			ConnectionId:   query.ConnectionId,
+			RevisionNumber: 2,
+			RevisionHeight: msg.Result.Height + 1,
+		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert crypto.ProofOps to MerkleProof: %w", err)
+			return nil, fmt.Errorf("failed to get consensus state: %w", err)
 		}
 
-		path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
+		consensusState, err := ibcclienttypes.UnpackConsensusState(resp.ConsensusState)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unpack consesus state: %w", err)
+		}
 
-		if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
-			return nil, fmt.Errorf("failed to verify proof: %w", err)
+		consensusState.ClientType()
+
+		for _, result := range msg.Result.KvResults {
+			proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert crypto.ProofOps to MerkleProof: %w", err)
+			}
+
+			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
+
+			if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
+				return nil, fmt.Errorf("failed to verify proof: %w", err)
+			}
 		}
 	}
 
@@ -93,21 +98,41 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, fmt.Errorf("failed to vefify header and update client state: %w", err)
 		}
 
+		nextHeader, err := ibcclienttypes.UnpackHeader(block.NextBlockHeader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unpack block header: %w", err)
+		}
+
+		if err = k.ibcKeeper.ClientKeeper.UpdateClient(ctx, msg.ClientId, nextHeader); err != nil {
+			return nil, fmt.Errorf("failed to vefify header and update client state: %w", err)
+		}
+
 		tmHeader, ok := header.(*tendermintLightClientTypes.Header)
 		if !ok {
 			return nil, fmt.Errorf("failed to cast header to tendermint Header: %w", err)
 		}
 
+		tmNextHeader, ok := nextHeader.(*tendermintLightClientTypes.Header)
+		if !ok {
+			return nil, fmt.Errorf("failed to cast header to tendermint Header: %w", err)
+		}
+
+		if tmNextHeader.Header.Height != tmHeader.Header.Height+1 {
+			return nil, fmt.Errorf("block.NextBlockHeader with height %d is not a next header for header with height %d", tmNextHeader.Header.Height, tmHeader.Header.Height)
+		}
+
 		for _, tx := range block.Txs {
+			// verify inclusion proof
 			inclusionProof, err := merkle.ProofFromProto(tx.InclusionProof)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert proto proof to merkle proof: %w", err)
 			}
 
-			if err = inclusionProof.Verify(tmHeader.Header.DataHash, tx.Data); err != nil {
+			if err = inclusionProof.Verify(tmHeader.Header.DataHash, tmtypes.Tx(tx.Data).Hash()); err != nil {
 				return nil, fmt.Errorf("failed to verify inclusion proof: %w", err)
 			}
 
+			// verify delivery proof
 			deliveryProof, err := merkle.ProofFromProto(tx.DeliveryProof)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert proto proof to merkle proof: %w", err)
@@ -120,17 +145,25 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 				return nil, fmt.Errorf("failed to marshal ResponseDeliveryTx: %w", err)
 			}
 
-			if err = deliveryProof.Verify(tmHeader.Header.LastResultsHash, responseTxBz); err != nil {
+			if err = deliveryProof.Verify(tmNextHeader.Header.LastResultsHash, responseTxBz); err != nil {
 				return nil, fmt.Errorf("failed to verify delivery proof: %w", err)
 			}
 
+			// check that transaction was successful
+			if tx.Response.Code != abci.CodeTypeOK {
+				return nil, fmt.Errorf("tx %s is unsuccessful: ResponseDelivery.Code = %d", hex.EncodeToString(tmtypes.Tx(tx.Data).Hash()), tx.Response.Code)
+			}
+
+			// check that inclusion proof and delivery proof are for the same transaction
 			if deliveryProof.Index != inclusionProof.Index {
 				return nil, fmt.Errorf("inclusion proof index and delivery proof index are not equal: %d != %d", inclusionProof.Index, deliveryProof.Index)
 			}
 		}
 	}
 
-	k.SaveQueryResult(ctx, msg.QueryId, msg.Result)
+	if err = k.SaveQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
+		return nil, fmt.Errorf("failed to save query result: %w", err)
+	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil
 }

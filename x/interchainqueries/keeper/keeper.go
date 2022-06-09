@@ -67,11 +67,17 @@ func (k Keeper) SetLastRegisteredQueryKey(ctx sdk.Context, id uint64) {
 	store.Set(types.LastRegisteredQueryIdKey, sdk.Uint64ToBigEndian(id))
 }
 
-func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) {
+func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {
 	store := ctx.KVStore(k.storeKey)
 
-	bz := k.cdc.MustMarshal(&query)
+	bz, err := k.cdc.Marshal(&query)
+	if err != nil {
+		return fmt.Errorf("failed to save registered query: %w", err)
+	}
+
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
+
+	return nil
 }
 
 func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery, error) {
@@ -90,13 +96,34 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 	return &query, nil
 }
 
-func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, query *types.QueryResult) {
+func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, query *types.QueryResult) error {
 	store := ctx.KVStore(k.storeKey)
 
-	cleanResult := clearQueryResult(query)
-	bz := k.cdc.MustMarshal(&cleanResult)
+	if query.Blocks != nil {
+		if err := k.SaveTransactions(ctx, id, query.Blocks); err != nil {
+			return fmt.Errorf("failed to save transactions: %w", err)
+		}
+	}
 
-	store.Set(types.GetRegisteredQueryResultByIDKey(id), bz)
+	if query.KvResults != nil {
+		cleanResult := clearQueryResult(query)
+		bz, err := k.cdc.Marshal(&cleanResult)
+		if err != nil {
+			return fmt.Errorf("failed to marshal query result: %w", err)
+		}
+
+		store.Set(types.GetRegisteredQueryResultByIDKey(id), bz)
+
+		if err = k.UpdateLastRemoteHeight(ctx, id, query.Height); err != nil {
+			return fmt.Errorf("failed to update last remote height for a query with id %d: %w", id, err)
+		}
+
+		if err = k.UpdateLastLocalHeight(ctx, id, uint64(ctx.BlockHeight())); err != nil {
+			return fmt.Errorf("failed to update last local height for a query with id %d: %w", id, err)
+		}
+	}
+
+	return nil
 }
 
 // We don't need to store proofs or transactions, so we just remove unnecessary fields
@@ -121,9 +148,10 @@ func clearQueryResult(result *types.QueryResult) types.QueryResult {
 }
 
 // SaveTransactions save transactions to the storage and updates LastSubmittedTransactionID
-func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []types.Block) error {
+func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*types.Block) error {
 	lastSubmittedTxID := k.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
 
+	maxHeight := int64(0)
 	for _, block := range blocks {
 		header, err := ibcclienttypes.UnpackHeader(block.Header)
 		if err != nil {
@@ -141,6 +169,18 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []types
 				return fmt.Errorf("failed save submitted transaction: %w", err)
 			}
 		}
+
+		if tmHeader.Header.Height > maxHeight {
+			maxHeight = tmHeader.Header.Height
+		}
+	}
+
+	if err := k.UpdateLastRemoteHeight(ctx, queryID, uint64(maxHeight)); err != nil {
+		return fmt.Errorf("failed to update last remote height for a query with id %d: %w", queryID, err)
+	}
+
+	if err := k.UpdateLastLocalHeight(ctx, queryID, uint64(ctx.BlockHeight())); err != nil {
+		return fmt.Errorf("failed to update last local height for a query with id %d: %w", queryID, err)
 	}
 
 	k.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastSubmittedTxID)
@@ -215,6 +255,45 @@ func (k Keeper) GetSubmittedTransactions(ctx sdk.Context, queryID uint64, start 
 	}
 
 	return transactions, nil
+}
+
+func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalHeight uint64) error {
+	store := ctx.KVStore(k.storeKey)
+
+	bz := store.Get(types.GetRegisteredQueryByIDKey(queryID))
+	if bz == nil {
+		return fmt.Errorf("query with ID %d not found", queryID)
+	}
+
+	var query types.RegisteredQuery
+	if err := k.cdc.Unmarshal(bz, &query); err != nil {
+		return fmt.Errorf("failed to unmarshal registered query: %w", err)
+	}
+
+	query.LastSubmittedResultLocalHeight = newLocalHeight
+
+	return k.SaveQuery(ctx, query)
+}
+
+func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemoteHeight uint64) error {
+	store := ctx.KVStore(k.storeKey)
+
+	bz := store.Get(types.GetRegisteredQueryByIDKey(queryID))
+	if bz == nil {
+		return fmt.Errorf("query with ID %d not found", queryID)
+	}
+
+	var query types.RegisteredQuery
+	if err := k.cdc.Unmarshal(bz, &query); err != nil {
+		return fmt.Errorf("failed to unmarshal registered query: %w", err)
+	}
+
+	if query.LastSubmittedResultRemoteHeight >= newRemoteHeight {
+		return nil
+	}
+
+	query.LastSubmittedResultRemoteHeight = newRemoteHeight
+	return k.SaveQuery(ctx, query)
 }
 
 func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, queryInfo types.RegisteredQuery) (stop bool)) {

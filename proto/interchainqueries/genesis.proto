@@ -14,8 +14,10 @@ message RegisteredQuery {
   string zone_id = 4;
   string connection_id = 5;
   uint64 update_period = 6;
-  uint64 last_local_height = 7;
-  uint64 last_remote_height = 8;
+  uint64 last_emitted_height = 7;
+
+  uint64 last_submitted_result_local_height = 8;
+  uint64 last_submitted_result_remote_height = 9;
 }
 
 // GenesisState defines the interchainadapter module's genesis state.

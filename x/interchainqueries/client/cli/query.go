@@ -31,6 +31,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdQueryRegisteredQueries())
 	cmd.AddCommand(CmdQueryRegisteredQueryResult())
+	cmd.AddCommand(CmdQueryTransactionsSearchResult())
 	// this line is used by starport scaffolding # 1
 
 	return cmd
@@ -76,6 +77,49 @@ func CmdQueryRegisteredQueryResult() *cobra.Command {
 			}
 
 			res, err := queryClient.QueryResult(context.Background(), &types.QueryRegisteredQueryResultRequest{QueryId: queryID})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdQueryTransactionsSearchResult() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "query-transactions-search-result [query-id] [start] [end]",
+		Short: "queries result for transactions search",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			queryID, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse query id: %w", err)
+			}
+
+			start, err := strconv.ParseUint(args[1], 10, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse start: %w", err)
+			}
+
+			end, err := strconv.ParseUint(args[2], 10, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse end: %w", err)
+			}
+
+			res, err := queryClient.QueryTransactions(context.Background(), &types.QuerySubmittedTransactionsRequest{
+				QueryId: queryID,
+				Start:   start,
+				End:     end,
+			})
 			if err != nil {
 				return err
 			}
