@@ -7,6 +7,7 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	icahost "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"io"
@@ -222,6 +223,7 @@ var (
 var (
 	_ servertypes.Application = (*App)(nil)
 	_ simapp.App              = (*App)(nil)
+	_ ibctesting.TestingApp   = (*App)(nil)
 )
 
 func init() {
@@ -242,6 +244,8 @@ type App struct {
 	cdc               *codec.LegacyAmino
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
+
+	encodingConfig appparams.EncodingConfig
 
 	invCheckPeriod uint
 
@@ -290,6 +294,22 @@ type App struct {
 	sm *module.SimulationManager
 }
 
+func (app *App) GetStakingKeeper() stakingkeeper.Keeper {
+	return app.StakingKeeper
+}
+
+func (app *App) GetIBCKeeper() *ibckeeper.Keeper {
+	return app.IBCKeeper
+}
+
+func (app *App) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
+	return app.ScopedIBCKeeper
+}
+
+func (app *App) GetTxConfig() client.TxConfig {
+	return app.encodingConfig.TxConfig
+}
+
 // New returns a reference to an initialized blockchain app
 func New(
 	logger log.Logger,
@@ -334,6 +354,7 @@ func New(
 		keys:              keys,
 		tkeys:             tkeys,
 		memKeys:           memKeys,
+		encodingConfig:    encodingConfig,
 	}
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, cdc, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])

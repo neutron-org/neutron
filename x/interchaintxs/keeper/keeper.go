@@ -1,11 +1,8 @@
 package keeper
 
 import (
-	"errors"
 	"fmt"
 	"github.com/CosmWasm/wasmd/x/wasm"
-
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -64,13 +61,15 @@ func NewKeeper(
 // TODO: implement setting the address of the Hub smart contract (it doesn't seem like this should
 // 	be in the paramtypes.Subspace, right?)
 func (k Keeper) GetHubAddress(ctx sdk.Context) (sdk.AccAddress, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PrefixHubAddress))
-	bz := store.Get(types.KeyHubAddress)
-	if len(bz) == 0 {
-		return nil, errors.New("hub address not found")
-	}
+	return sdk.AccAddress("hub_address"), nil // Just for now while setting the hub address is not available
 
-	return sdk.AccAddressFromBech32(string(bz))
+	//store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PrefixHubAddress))
+	//bz := store.Get(types.KeyHubAddress)
+	//if len(bz) == 0 {
+	//	return nil, errors.New("hub address not found")
+	//}
+	//
+	//return sdk.AccAddressFromBech32(string(bz))
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {

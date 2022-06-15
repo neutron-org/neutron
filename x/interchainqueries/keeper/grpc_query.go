@@ -2,10 +2,9 @@ package keeper
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 )
 
@@ -33,7 +32,7 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 
 	result, err := k.GetQueryResultByID(ctx, request.QueryId)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get query result bu query id: %w", err)
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result bu query id: %v", err)
 	}
 
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
@@ -44,7 +43,7 @@ func (k Keeper) QueryTransactions(goCtx context.Context, request *types.QuerySub
 
 	result, err := k.GetSubmittedTransactions(ctx, request.QueryId, request.Start, request.End)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get query result bu query id: %w", err)
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result bu query id: %v", err)
 	}
 
 	return &types.QuerySubmittedTransactionsResponse{Transactions: result}, nil

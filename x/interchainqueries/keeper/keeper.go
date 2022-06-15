@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 
@@ -72,7 +73,7 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {
 
 	bz, err := k.cdc.Marshal(&query)
 	if err != nil {
-		return fmt.Errorf("failed to save registered query: %w", err)
+		return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal registered query: %v", err)
 	}
 
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
@@ -85,12 +86,12 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 
 	bz := store.Get(types.GetRegisteredQueryByIDKey(id))
 	if bz == nil {
-		return nil, fmt.Errorf("there is no query with id: %v", id)
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "there is no query with id: %v", id)
 	}
 
 	var query types.RegisteredQuery
 	if err := k.cdc.Unmarshal(bz, &query); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal registered query: %w", err)
+		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
 	}
 
 	return &query, nil
@@ -101,7 +102,7 @@ func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, query *types.QueryRe
 
 	if query.Blocks != nil {
 		if err := k.SaveTransactions(ctx, id, query.Blocks); err != nil {
-			return fmt.Errorf("failed to save transactions: %w", err)
+			return sdkerrors.Wrapf(types.ErrInternal, "failed to save transactions: %v", err)
 		}
 	}
 
@@ -109,17 +110,17 @@ func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, query *types.QueryRe
 		cleanResult := clearQueryResult(query)
 		bz, err := k.cdc.Marshal(&cleanResult)
 		if err != nil {
-			return fmt.Errorf("failed to marshal query result: %w", err)
+			return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal query result: %v", err)
 		}
 
 		store.Set(types.GetRegisteredQueryResultByIDKey(id), bz)
 
 		if err = k.UpdateLastRemoteHeight(ctx, id, query.Height); err != nil {
-			return fmt.Errorf("failed to update last remote height for a query with id %d: %w", id, err)
+			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last remote height for a query with id %d: %v", id, err)
 		}
 
 		if err = k.UpdateLastLocalHeight(ctx, id, uint64(ctx.BlockHeight())); err != nil {
-			return fmt.Errorf("failed to update last local height for a query with id %d: %w", id, err)
+			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last local height for a query with id %d: %v", id, err)
 		}
 	}
 
@@ -155,18 +156,18 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*type
 	for _, block := range blocks {
 		header, err := ibcclienttypes.UnpackHeader(block.Header)
 		if err != nil {
-			return fmt.Errorf("failed to unpack block header: %w", err)
+			return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
 		}
 
 		tmHeader, ok := header.(*tendermintLightClientTypes.Header)
 		if !ok {
-			return fmt.Errorf("failed to cast header to tendermint Header: %w", err)
+			return sdkerrors.Wrapf(types.ErrInvalidType, "failed to cast header to tendermint Header: %v", err)
 		}
 
 		for _, tx := range block.Txs {
 			lastSubmittedTxID += 1
 			if err = k.SaveSubmittedTransaction(ctx, queryID, lastSubmittedTxID, uint64(tmHeader.Header.Height), tx.Data); err != nil {
-				return fmt.Errorf("failed save submitted transaction: %w", err)
+				return sdkerrors.Wrapf(types.ErrInternal, "failed save submitted transaction: %v", err)
 			}
 		}
 
@@ -176,11 +177,11 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*type
 	}
 
 	if err := k.UpdateLastRemoteHeight(ctx, queryID, uint64(maxHeight)); err != nil {
-		return fmt.Errorf("failed to update last remote height for a query with id %d: %w", queryID, err)
+		return sdkerrors.Wrapf(types.ErrInternal, "failed to update last remote height for a query with id %d: %v", queryID, err)
 	}
 
 	if err := k.UpdateLastLocalHeight(ctx, queryID, uint64(ctx.BlockHeight())); err != nil {
-		return fmt.Errorf("failed to update last local height for a query with id %d: %w", queryID, err)
+		return sdkerrors.Wrapf(types.ErrInternal, "failed to update last local height for a query with id %d: %v", queryID, err)
 	}
 
 	k.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastSubmittedTxID)
@@ -195,7 +196,7 @@ func (k Keeper) SaveSubmittedTransaction(ctx sdk.Context, queryID uint64, txID u
 		Data:   txData,
 	}).Marshal()
 	if err != nil {
-		return fmt.Errorf("failed to marshal transaction: %w", err)
+		return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal transaction: %v", err)
 	}
 
 	store := ctx.KVStore(k.storeKey)
@@ -228,12 +229,12 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 
 	bz := store.Get(types.GetRegisteredQueryResultByIDKey(id))
 	if bz == nil {
-		return nil, fmt.Errorf("there is no query result with id: %v", id)
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "there is no query result with id: %v", id)
 	}
 
 	var query types.QueryResult
 	if err := k.cdc.Unmarshal(bz, &query); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal registered query: %w", err)
+		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
 	}
 
 	return &query, nil
@@ -249,7 +250,7 @@ func (k Keeper) GetSubmittedTransactions(ctx sdk.Context, queryID uint64, start 
 	for ; iterator.Valid(); iterator.Next() {
 		var tx types.Transaction
 		if err := tx.Unmarshal(iterator.Value()); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal transaction: %w", err)
+			return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal transaction: %v", err)
 		}
 		transactions = append(transactions, &tx)
 	}
@@ -262,12 +263,12 @@ func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalH
 
 	bz := store.Get(types.GetRegisteredQueryByIDKey(queryID))
 	if bz == nil {
-		return fmt.Errorf("query with ID %d not found", queryID)
+		return sdkerrors.Wrapf(types.ErrInvalidQueryID, "query with ID %d not found", queryID)
 	}
 
 	var query types.RegisteredQuery
 	if err := k.cdc.Unmarshal(bz, &query); err != nil {
-		return fmt.Errorf("failed to unmarshal registered query: %w", err)
+		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
 	}
 
 	query.LastSubmittedResultLocalHeight = newLocalHeight
@@ -280,12 +281,12 @@ func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemot
 
 	bz := store.Get(types.GetRegisteredQueryByIDKey(queryID))
 	if bz == nil {
-		return fmt.Errorf("query with ID %d not found", queryID)
+		return sdkerrors.Wrapf(types.ErrInvalidQueryID, "query with ID %d not found", queryID)
 	}
 
 	var query types.RegisteredQuery
 	if err := k.cdc.Unmarshal(bz, &query); err != nil {
-		return fmt.Errorf("failed to unmarshal registered query: %w", err)
+		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
 	}
 
 	if query.LastSubmittedResultRemoteHeight >= newRemoteHeight {
