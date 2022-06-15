@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -91,8 +92,20 @@ func SubmitTxCmd() *cobra.Command {
 					return fmt.Errorf("json input was not provided; failed to read file with tx messages: %w", err)
 				}
 
-				if err := cdc.UnmarshalInterfaceJSON(contents, &txMsgs); err != nil {
-					return fmt.Errorf("error unmarshalling sdk msgs file: %w", err)
+				var rawTxMsgs struct {
+					Msgs []json.RawMessage `json:"msgs"`
+				}
+
+				if err := json.Unmarshal(contents, &rawTxMsgs); err != nil {
+					panic(err)
+				}
+
+				for _, txMsg := range rawTxMsgs.Msgs {
+					var sdkMsg sdk.Msg
+					if err := cdc.UnmarshalInterfaceJSON(txMsg, &sdkMsg); err != nil {
+						panic(err)
+					}
+					txMsgs = append(txMsgs, sdkMsg)
 				}
 			}
 

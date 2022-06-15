@@ -101,3 +101,15 @@ func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
 
 	return any, nil
 }
+
+func (msg MsgSubmitTx) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	var (
+		sdkMsg sdk.Msg
+	)
+	for _, m := range msg.Msgs {
+		if err := unpacker.UnpackAny(m, &sdkMsg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
