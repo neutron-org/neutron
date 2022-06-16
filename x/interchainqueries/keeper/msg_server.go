@@ -54,8 +54,8 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 	resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 		ConnectionId:   query.ConnectionId,
-		RevisionNumber: 1,
-		RevisionHeight: msg.Result.Height,
+		RevisionNumber: 2, // TODO: this should not be hard-coded.
+		RevisionHeight: msg.Result.Height + 1,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get consensus state: %w", err)
