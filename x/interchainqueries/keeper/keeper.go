@@ -97,30 +97,30 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 	return &query, nil
 }
 
-func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, query *types.QueryResult) error {
+func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, result *types.QueryResult) error {
 	store := ctx.KVStore(k.storeKey)
 
-	if query.Blocks != nil {
-		if err := k.SaveTransactions(ctx, id, query.Blocks); err != nil {
+	if result.Blocks != nil {
+		if err := k.SaveTransactions(ctx, id, result.Blocks); err != nil {
 			return sdkerrors.Wrapf(types.ErrInternal, "failed to save transactions: %v", err)
 		}
 	}
 
-	if query.KvResults != nil {
-		cleanResult := clearQueryResult(query)
+	if result.KvResults != nil {
+		cleanResult := clearQueryResult(result)
 		bz, err := k.cdc.Marshal(&cleanResult)
 		if err != nil {
-			return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal query result: %v", err)
+			return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal result result: %v", err)
 		}
 
 		store.Set(types.GetRegisteredQueryResultByIDKey(id), bz)
 
-		if err = k.UpdateLastRemoteHeight(ctx, id, query.Height); err != nil {
-			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last remote height for a query with id %d: %v", id, err)
+		if err = k.UpdateLastRemoteHeight(ctx, id, result.Height); err != nil {
+			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last remote height for a result with id %d: %v", id, err)
 		}
 
 		if err = k.UpdateLastLocalHeight(ctx, id, uint64(ctx.BlockHeight())); err != nil {
-			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last local height for a query with id %d: %v", id, err)
+			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last local height for a result with id %d: %v", id, err)
 		}
 	}
 
@@ -290,7 +290,7 @@ func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemot
 	}
 
 	if query.LastSubmittedResultRemoteHeight >= newRemoteHeight {
-		return nil
+		return sdkerrors.Wrapf(types.ErrInvalidHeight, "can't save query result for height %d: result height can't be less then last submitted query result height %d", newRemoteHeight, query.LastSubmittedResultRemoteHeight)
 	}
 
 	query.LastSubmittedResultRemoteHeight = newRemoteHeight

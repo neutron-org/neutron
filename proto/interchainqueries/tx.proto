@@ -42,6 +42,7 @@ message QueryResult {
   repeated StorageValue kv_results = 1;
   repeated Block blocks = 2;
   uint64 height = 3;
+  uint64 revision = 4;
 }
 
 message StorageValue {

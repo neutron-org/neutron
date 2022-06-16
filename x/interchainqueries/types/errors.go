@@ -16,15 +16,11 @@ var (
 	ErrInvalidZoneID       = sdkerrors.Register(ModuleName, 1105, "invalid zone id")
 	ErrInvalidQueryType    = sdkerrors.Register(ModuleName, 1106, "invalid query type")
 	ErrInvalidQueryData    = sdkerrors.Register(ModuleName, 1107, "invalid query data")
-
-	ErrProtoMarshal   = sdkerrors.Register(ModuleName, 1108, "failed to marshal protobuf bytes")
-	ErrProtoUnmarshal = sdkerrors.Register(ModuleName, 1109, "failed to unmarshal protobuf bytes")
-
-	ErrInvalidType = sdkerrors.Register(ModuleName, 1110, "invalid type")
-
-	ErrInternal = sdkerrors.Register(ModuleName, 1111, "internal error")
-
-	ErrInvalidProof = sdkerrors.Register(ModuleName, 1112, "merkle proof is invalid")
-
-	ErrInvalidHeader = sdkerrors.Register(ModuleName, 1113, "header is invalid")
+	ErrProtoMarshal        = sdkerrors.Register(ModuleName, 1108, "failed to marshal protobuf bytes")
+	ErrProtoUnmarshal      = sdkerrors.Register(ModuleName, 1109, "failed to unmarshal protobuf bytes")
+	ErrInvalidType         = sdkerrors.Register(ModuleName, 1110, "invalid type")
+	ErrInternal            = sdkerrors.Register(ModuleName, 1111, "internal error")
+	ErrInvalidProof        = sdkerrors.Register(ModuleName, 1112, "merkle proof is invalid")
+	ErrInvalidHeader       = sdkerrors.Register(ModuleName, 1113, "header is invalid")
+	ErrInvalidHeight       = sdkerrors.Register(ModuleName, 1114, "height is invalid")
 )

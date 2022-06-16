@@ -69,7 +69,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	if msg.Result.KvResults != nil {
 		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 			ConnectionId:   query.ConnectionId,
-			RevisionNumber: 0,
+			RevisionNumber: msg.Result.Revision,
 			RevisionHeight: msg.Result.Height + 1,
 		})
 		if err != nil {
@@ -98,7 +98,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	for _, block := range msg.Result.Blocks {
 		tmHeader, tmNextHeader, err := k.unpackAndVerifyHeaders(ctx, msg.ClientId, block)
 		if err != nil {
-			return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack and verify headers: %v", err)
+			return nil, sdkerrors.Wrapf(types.ErrInvalidHeader, "failed to unpack and verify headers: %v", err)
 		}
 
 		for _, tx := range block.Txs {

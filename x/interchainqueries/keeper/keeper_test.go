@@ -121,12 +121,12 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 }
 
 func (s *KeeperTestSuite) GetGaiaWasmZoneApp(chain *ibctesting.TestChain) *app.App {
-	test_app, ok := chain.App.(*app.App)
+	testApp, ok := chain.App.(*app.App)
 	if !ok {
 		panic("not GaiaWasmZone app")
 	}
 
-	return test_app
+	return testApp
 }
 
 func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
@@ -302,8 +302,9 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks: nil,
-						Height: uint64(resp.Height),
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -349,8 +350,9 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks: nil,
-						Height: uint64(resp.Height),
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -396,8 +398,62 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks: nil,
-						Height: uint64(resp.Height),
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
+				}
+			},
+			true,
+		},
+		{
+			"query result height is too old",
+			func() {
+
+				registerMsg := itypes.MsgRegisterInterchainQuery{
+					ConnectionId: suite.path.EndpointA.ConnectionID,
+					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryType:    "x/staking/DelegatorDelegations",
+					ZoneId:       "osmosis",
+					UpdatePeriod: 1,
+					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+				}
+
+				msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
+				suite.Require().NoError(err)
+
+				suite.NoError(suite.path.EndpointB.UpdateClient())
+				suite.NoError(suite.path.EndpointA.UpdateClient())
+
+				// pretend like we have a very new query result
+				suite.NoError(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(suite.chainA.GetContext(), res.Id, 9999))
+
+				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
+				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
+				resp := suite.chainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.chainB.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+
+				msg = itypes.MsgSubmitQueryResult{
+					QueryId:  res.Id,
+					Sender:   TestOwnerAddress,
+					ClientId: suite.path.EndpointA.ClientID,
+					Result: &itypes.QueryResult{
+						KvResults: []*itypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: host.StoreKey,
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
 				}
 			},
@@ -405,22 +461,25 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 	}
 
-	for _, tt := range tests {
-		suite.SetupTest()
+	for i, tc := range tests {
+		tt := tc
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+			suite.SetupTest()
 
-		tt.malleate()
+			tt.malleate()
 
-		msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+			msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
 
-		res, err := msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &msg)
+			res, err := msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &msg)
 
-		if tt.expectErr {
-			suite.Require().Error(err)
-			suite.Require().Nil(res)
-		} else {
-			suite.Require().NoError(err)
-			suite.Require().NotNil(res)
-		}
+			if tt.expectErr {
+				suite.Require().Error(err)
+				suite.Require().Nil(res)
+			} else {
+				suite.Require().NoError(err)
+				suite.Require().NotNil(res)
+			}
+		})
 	}
 }
 
