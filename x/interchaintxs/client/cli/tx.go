@@ -97,13 +97,13 @@ func SubmitTxCmd() *cobra.Command {
 				}
 
 				if err := json.Unmarshal(contents, &rawTxMsgs); err != nil {
-					panic(err)
+					return fmt.Errorf("cannot unmarshal msgs array: %w", err)
 				}
 
 				for _, txMsg := range rawTxMsgs.Msgs {
 					var sdkMsg sdk.Msg
 					if err := cdc.UnmarshalInterfaceJSON(txMsg, &sdkMsg); err != nil {
-						panic(err)
+						return fmt.Errorf("cannot unmarshal submessage: %w", err)
 					}
 					txMsgs = append(txMsgs, sdkMsg)
 				}
