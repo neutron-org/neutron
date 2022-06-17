@@ -23,4 +23,5 @@ var (
 	ErrInvalidProof        = sdkerrors.Register(ModuleName, 1112, "merkle proof is invalid")
 	ErrInvalidHeader       = sdkerrors.Register(ModuleName, 1113, "header is invalid")
 	ErrInvalidHeight       = sdkerrors.Register(ModuleName, 1114, "height is invalid")
+	ErrInvalidBlock        = sdkerrors.Register(ModuleName, 1115, "block is invalid")
 )

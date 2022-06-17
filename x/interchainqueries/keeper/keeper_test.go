@@ -47,7 +47,7 @@ type KeeperTestSuite struct {
 }
 
 func (suite *KeeperTestSuite) SetupTest() {
-	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 3)
+	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 2)
 	suite.chainA = suite.coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.chainB = suite.coordinator.GetChain(ibctesting.GetChainID(2))
 
@@ -278,7 +278,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
 
-				suite.NoError(suite.path.EndpointB.UpdateClient())
+				//suite.NoError(suite.path.EndpointB.UpdateClient())
 				suite.NoError(suite.path.EndpointA.UpdateClient())
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs

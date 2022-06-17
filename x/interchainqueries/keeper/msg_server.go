@@ -2,14 +2,12 @@ package keeper
 
 import (
 	"context"
-	"encoding/hex"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
-	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 type msgServer struct {
@@ -96,15 +94,8 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	}
 
 	for _, block := range msg.Result.Blocks {
-		tmHeader, tmNextHeader, err := k.unpackAndVerifyHeaders(ctx, msg.ClientId, block)
-		if err != nil {
-			return nil, sdkerrors.Wrapf(types.ErrInvalidHeader, "failed to unpack and verify headers: %v", err)
-		}
-
-		for _, tx := range block.Txs {
-			if err = verifyTransaction(tmHeader, tmNextHeader, tx); err != nil {
-				return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to verify transaction %s: %v", hex.EncodeToString(tmtypes.Tx(tx.Data).Hash()), err)
-			}
+		if err := k.VerifyBlock(ctx, msg.ClientId, block); err != nil {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidBlock, "failed to verify block: %v", err)
 		}
 	}
 
