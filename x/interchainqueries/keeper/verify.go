@@ -55,6 +55,8 @@ func checkHeadersOrder(header *tendermintLightClientTypes.Header, nextHeader *te
 	return nil
 }
 
+// VerifyHeaders verify that headers are valid tendermint headers, checks them on validity by trying to find trusted consensus state for it
+// and checks that they are sequential (tl;dr header.Height + 1 == nextHeader.Height)
 func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.Header, nextHeader exported.Header) error {
 	if err := k.checkHeader(ctx, clientID, header); err != nil {
 		return sdkerrors.Wrapf(types.ErrInvalidHeader, "failed to verify header: %v", err)
@@ -117,6 +119,12 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, clientID string, block *types.Block
 	return nil
 }
 
+// verifyTransaction verifies that some transaction is included in block, and the transaction was executed successfully.
+// The function checks:
+// * transaction is included in block - header.DataHash merkle root contains transactions hash;
+// * transactions was executed successfully - transaction's responseDeliveryTx.Code == 0;
+// * transaction's responseDeliveryTx is legitimate - nextHeaderLastResultsDataHash merkle root contains
+// deterministicResponseDeliverTx(ResponseDeliveryTx).Bytes()
 func verifyTransaction(header *tendermintLightClientTypes.Header, nextHeader *tendermintLightClientTypes.Header, tx *types.TxValue) error {
 	// verify inclusion proof
 	inclusionProof, err := merkle.ProofFromProto(tx.InclusionProof)
@@ -158,7 +166,19 @@ func verifyTransaction(header *tendermintLightClientTypes.Header, nextHeader *te
 	return nil
 }
 
-// checkHeader checks header on validity by trying to find trusted consensus state for it
+// checkHeader checks if the provided header is valid.
+// It returns an error if:
+// - the client or header provided are not parseable to tendermint types
+// - the header is invalid
+// - header revision is not equal to trusted header revision
+// - header valset commit verification fails
+// - header timestamp is past the trusting period in relation to the consensus state
+// - header timestamp is less than or equal to the consensus state timestamp
+//
+// Unlike CheckHeaderAndUpdateState in ibc-go https://github.com/cosmos/ibc-go/blob/9680cb91a61384593c4521484a071ad3c95c9b34/modules/light-clients/07-tendermint/types/update.go#L52
+// IT WILL NOT RETURN AN ERROR IF HEADER HEIGHT IS LESS THAN OR EQUAL TO THE TRUSTED HEADER HEIGHT.
+// It is done on purpose since the interchain query relayer can submit transaction and headers for them with heights less than or equal to the trusted header height.
+// Instead of returning an error the function tries to find an old trusted consensus state and tries to verify the header in relation to an old consensus state.
 func (k Keeper) checkHeader(ctx sdk.Context, clientID string, header exported.Header) error {
 	tmHeader, ok := header.(*tendermintLightClientTypes.Header)
 	if !ok {
@@ -184,8 +204,8 @@ func (k Keeper) checkHeader(ctx sdk.Context, clientID string, header exported.He
 		)
 	}
 
-	// we can't verify an old header with with some newer consensus state
-	// in this case we are trying to find some old consensus state
+	// we can't verify an old header with the newer consensus state
+	// in this case we are trying to find an old consensus state
 	if tmHeader.GetHeight().LTE(tmHeader.TrustedHeight) {
 		consensusStatesResponse, err := k.ibcKeeper.ClientKeeper.ConsensusStates(sdk.WrapSDKContext(ctx), &ibcclienttypes.QueryConsensusStatesRequest{
 			ClientId: clientID,
@@ -200,6 +220,7 @@ func (k Keeper) checkHeader(ctx sdk.Context, clientID string, header exported.He
 		}
 
 		for _, cs := range consensusStatesResponse.GetConsensusStates() {
+			// we found one, try to unpack it, change trusted height in the header and try to verify it
 			if tmHeader.GetHeight().GT(cs.Height) {
 				consensusStateInterface, err := ibcclienttypes.UnpackConsensusState(cs.ConsensusState)
 				if err != nil {

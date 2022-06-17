@@ -4,12 +4,14 @@ import (
 	"fmt"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/lidofinance/gaia-wasm-zone/app"
 	"github.com/lidofinance/gaia-wasm-zone/testutil"
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
+	iqtypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 	itypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -135,9 +137,9 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 	var msg itypes.MsgRegisterInterchainQuery
 
 	tests := []struct {
-		name      string
-		malleate  func()
-		expectErr bool
+		name        string
+		malleate    func()
+		expectedErr error
 	}{
 		{
 			"invalid connection",
@@ -148,10 +150,10 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 					QueryType:    "type",
 					ZoneId:       "id",
 					UpdatePeriod: 1,
-					Sender:       "wow",
+					Sender:       TestOwnerAddress,
 				}
 			},
-			true,
+			iqtypes.ErrInvalidConnectionID,
 		},
 		{
 			"valid",
@@ -165,7 +167,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 				}
 			},
-			false,
+			nil,
 		},
 	}
 
@@ -178,8 +180,8 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 
 		res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &msg)
 
-		if tt.expectErr {
-			suite.Require().Error(err)
+		if tt.expectedErr != nil {
+			suite.Require().ErrorIs(err, tt.expectedErr)
 			suite.Require().Nil(res)
 		} else {
 			suite.Require().NoError(err)
@@ -194,18 +196,41 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	var msg itypes.MsgSubmitQueryResult
 
 	tests := []struct {
-		name      string
-		malleate  func()
-		expectErr bool
+		name          string
+		malleate      func()
+		expectedError error
 	}{
 		{
 			"invalid query id",
 			func() {
+				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
+				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
+				resp := suite.chainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.chainB.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+
 				msg = itypes.MsgSubmitQueryResult{
-					QueryId: 1,
+					QueryId:  1,
+					Sender:   TestOwnerAddress,
+					ClientId: suite.path.EndpointA.ClientID,
+					Result: &itypes.QueryResult{
+						KvResults: []*itypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: host.StoreKey,
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
 				}
 			},
-			true,
+			iqtypes.ErrInvalidQueryID,
 		},
 		{
 			"empty result",
@@ -229,7 +254,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					ClientId: suite.path.EndpointA.ClientID,
 				}
 			},
-			true,
+			iqtypes.ErrEmptyResult,
 		},
 		{
 			"empty kv results and blocks",
@@ -259,7 +284,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			true,
+			iqtypes.ErrEmptyResult,
 		},
 		{
 			"valid KV storage proof",
@@ -308,10 +333,10 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			false,
+			nil,
 		},
 		{
-			"invalid header for KV storage",
+			"header with invalid height",
 			func() {
 				registerMsg := itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
@@ -356,7 +381,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			true,
+			ibcclienttypes.ErrConsensusStateNotFound,
 		},
 		{
 			"invalid KV storage value",
@@ -404,7 +429,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			true,
+			iqtypes.ErrInvalidProof,
 		},
 		{
 			"query result height is too old",
@@ -457,7 +482,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			true,
+			iqtypes.ErrInvalidHeight,
 		},
 	}
 
@@ -472,8 +497,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 			res, err := msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &msg)
 
-			if tt.expectErr {
-				suite.Require().Error(err)
+			if tt.expectedError != nil {
+				suite.Require().ErrorIs(err, tt.expectedError)
 				suite.Require().Nil(res)
 			} else {
 				suite.Require().NoError(err)

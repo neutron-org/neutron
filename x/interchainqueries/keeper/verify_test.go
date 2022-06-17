@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	iqtypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -141,55 +142,99 @@ func UpdateClient(endpoint *ibctesting.Endpoint) (err error) {
 }
 
 func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
-	var (
-		header     ibctmtypes.Header
-		nextHeader ibctmtypes.Header
-		clientID   string
-	)
 
 	tests := []struct {
-		name      string
-		malleate  func()
-		expectErr bool
+		name          string
+		run           func() error
+		expectedError error
 	}{
 		{
 			"valid headers",
-			func() {
+			func() error {
 				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
 
-				clientID = suite.path.EndpointA.ClientID
+				clientID := suite.path.EndpointA.ClientID
 
-				h, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				header, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
-				header = *h
 
 				CommitBlock(suite.coordinator, suite.chainB)
-				nh, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
-				nextHeader = *nh
+
+				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
 			},
-			false,
+			nil,
 		},
 		{
 			"headers are not sequential",
-			func() {
+			func() error {
 				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
 
-				clientID = suite.path.EndpointA.ClientID
+				clientID := suite.path.EndpointA.ClientID
 
-				h, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				header, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
-				header = *h
 
 				// skip one block to set nextHeader's height + 2
 				CommitBlock(suite.coordinator, suite.chainB)
 				CommitBlock(suite.coordinator, suite.chainB)
 
-				nh, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
-				nextHeader = *nh
+
+				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
 			},
-			true,
+			iqtypes.ErrInvalidHeader,
+		},
+		{
+			"header has some malicious field",
+			func() error {
+				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+
+				clientID := suite.path.EndpointA.ClientID
+
+				header, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				suite.Require().NoError(err)
+
+				header.SignedHeader.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
+
+				CommitBlock(suite.coordinator, suite.chainB)
+
+				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				suite.Require().NoError(err)
+
+				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
+			},
+			iqtypes.ErrInvalidHeader,
+		},
+		{
+			"headers from the past (when client on chain A has the most recent consensus state and relayer try to submit old headers from chain B)",
+			func() error {
+				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+
+				clientID := suite.path.EndpointA.ClientID
+
+				oldHeader := *suite.chainB.LastHeader
+				CommitBlock(suite.coordinator, suite.chainB)
+				oldNextHeader := *suite.chainB.LastHeader
+
+				for i := 0; i < 30; i++ {
+					suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+				}
+
+				headerWithTrustedHeight, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				suite.Require().NoError(err)
+
+				oldHeader.TrustedHeight = headerWithTrustedHeight.TrustedHeight
+				oldHeader.TrustedValidators = headerWithTrustedHeight.TrustedValidators
+
+				oldNextHeader.TrustedHeight = headerWithTrustedHeight.TrustedHeight
+				oldNextHeader.TrustedValidators = headerWithTrustedHeight.TrustedValidators
+
+				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, &oldHeader, &oldNextHeader)
+			},
+			nil,
 		},
 	}
 
@@ -198,12 +243,10 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
 			suite.SetupTest()
 
-			tt.malleate()
+			err := tt.run()
 
-			err := suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, &header, &nextHeader)
-
-			if tt.expectErr {
-				suite.Require().Error(err)
+			if tt.expectedError != nil {
+				suite.Require().ErrorIs(err, tt.expectedError)
 			} else {
 				suite.Require().NoError(err)
 			}

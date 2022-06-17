@@ -102,7 +102,7 @@ func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, result *types.QueryR
 
 	if result.Blocks != nil {
 		if err := k.SaveTransactions(ctx, id, result.Blocks); err != nil {
-			return sdkerrors.Wrapf(types.ErrInternal, "failed to save transactions: %v", err)
+			return sdkerrors.Wrapf(err, "failed to save transactions: %v", err)
 		}
 	}
 
@@ -116,11 +116,11 @@ func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, result *types.QueryR
 		store.Set(types.GetRegisteredQueryResultByIDKey(id), bz)
 
 		if err = k.UpdateLastRemoteHeight(ctx, id, result.Height); err != nil {
-			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last remote height for a result with id %d: %v", id, err)
+			return sdkerrors.Wrapf(err, "failed to update last remote height for a result with id %d: %v", id, err)
 		}
 
 		if err = k.UpdateLastLocalHeight(ctx, id, uint64(ctx.BlockHeight())); err != nil {
-			return sdkerrors.Wrapf(types.ErrInternal, "failed to update last local height for a result with id %d: %v", id, err)
+			return sdkerrors.Wrapf(err, "failed to update last local height for a result with id %d: %v", id, err)
 		}
 	}
 
@@ -167,7 +167,7 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*type
 		for _, tx := range block.Txs {
 			lastSubmittedTxID += 1
 			if err = k.SaveSubmittedTransaction(ctx, queryID, lastSubmittedTxID, uint64(tmHeader.Header.Height), tx.Data); err != nil {
-				return sdkerrors.Wrapf(types.ErrInternal, "failed save submitted transaction: %v", err)
+				return sdkerrors.Wrapf(err, "failed save submitted transaction: %v", err)
 			}
 		}
 
@@ -177,11 +177,11 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*type
 	}
 
 	if err := k.UpdateLastRemoteHeight(ctx, queryID, uint64(maxHeight)); err != nil {
-		return sdkerrors.Wrapf(types.ErrInternal, "failed to update last remote height for a query with id %d: %v", queryID, err)
+		return sdkerrors.Wrapf(err, "failed to update last remote height for a query with id %d: %v", queryID, err)
 	}
 
 	if err := k.UpdateLastLocalHeight(ctx, queryID, uint64(ctx.BlockHeight())); err != nil {
-		return sdkerrors.Wrapf(types.ErrInternal, "failed to update last local height for a query with id %d: %v", queryID, err)
+		return sdkerrors.Wrapf(err, "failed to update last local height for a query with id %d: %v", queryID, err)
 	}
 
 	k.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastSubmittedTxID)

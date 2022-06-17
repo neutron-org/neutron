@@ -22,7 +22,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQuery) (*types.MsgRegisterInterchainQueryResponse, error) {
 	if err := msg.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid msg: %v", err)
+		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -46,7 +46,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
 	if err := k.SaveQuery(ctx, registeredQuery); err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to save query: %v", err)
+		return nil, sdkerrors.Wrapf(err, "failed to save query: %v", err)
 	}
 
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
@@ -54,14 +54,14 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResult) (*types.MsgSubmitQueryResultResponse, error) {
 	if err := msg.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid msg: %v", err)
+		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	query, err := k.GetQueryByID(ctx, msg.QueryId)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query by id: %v", err)
+		return nil, sdkerrors.Wrapf(err, "failed to get query by id: %v", err)
 	}
 
 	if msg.Result.KvResults != nil {
@@ -95,12 +95,12 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 	for _, block := range msg.Result.Blocks {
 		if err := k.VerifyBlock(ctx, msg.ClientId, block); err != nil {
-			return nil, sdkerrors.Wrapf(types.ErrInvalidBlock, "failed to verify block: %v", err)
+			return nil, sdkerrors.Wrapf(err, "failed to verify block: %v", err)
 		}
 	}
 
 	if err = k.SaveQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to save query result: %v", err)
+		return nil, sdkerrors.Wrapf(err, "failed to save query result: %v", err)
 	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil
