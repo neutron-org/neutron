@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
@@ -14,6 +16,7 @@ import (
 	tmprotoversion "github.com/tendermint/tendermint/proto/tendermint/version"
 	tmtypes "github.com/tendermint/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/version"
+	"math"
 	"time"
 )
 
@@ -141,6 +144,38 @@ func UpdateClient(endpoint *ibctesting.Endpoint) (err error) {
 	return err
 }
 
+func (suite *KeeperTestSuite) findBestTrustedHeight(dstChain *ibctesting.TestChain, height uint64) ibcclienttypes.Height {
+	consensusStatesResponse, err := dstChain.App.GetIBCKeeper().ClientKeeper.ConsensusStates(types.WrapSDKContext(dstChain.GetContext()), &ibcclienttypes.QueryConsensusStatesRequest{
+		ClientId: suite.path.EndpointA.ClientID,
+		Pagination: &query.PageRequest{
+			Limit:      math.MaxUint64,
+			Reverse:    true,
+			CountTotal: true,
+		},
+	})
+	suite.Require().NoError(err)
+
+	minDiff := uint64(math.MaxUint64)
+	bestHeight := ibcclienttypes.Height{
+		RevisionNumber: 0,
+		RevisionHeight: 0,
+	}
+
+	for _, cs := range consensusStatesResponse.ConsensusStates {
+		if bestHeight.IsZero() {
+			bestHeight = cs.GetHeight()
+			continue
+		}
+
+		if height >= cs.Height.RevisionHeight && (height-cs.Height.RevisionHeight) < minDiff {
+			bestHeight = cs.Height
+			minDiff = height - cs.Height.RevisionHeight
+		}
+	}
+
+	return bestHeight
+}
+
 func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 	tests := []struct {
@@ -197,9 +232,9 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				header, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				header.SignedHeader.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
-
 				CommitBlock(suite.coordinator, suite.chainB)
+
+				header.SignedHeader.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
 
 				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
@@ -223,7 +258,23 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 					suite.Require().NoError(UpdateClient(suite.path.EndpointA))
 				}
 
-				headerWithTrustedHeight, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				consensusStatesResponse, err := suite.chainA.App.GetIBCKeeper().ClientKeeper.ConsensusStates(types.WrapSDKContext(suite.chainA.GetContext()), &ibcclienttypes.QueryConsensusStatesRequest{
+					ClientId: suite.path.EndpointA.ClientID,
+					Pagination: &query.PageRequest{
+						Limit:      math.MaxUint64,
+						Reverse:    true,
+						CountTotal: true,
+					},
+				})
+				suite.Require().NoError(err)
+				for _, cs := range consensusStatesResponse.GetConsensusStates() {
+					fmt.Println("WOWOWOWO", cs.Height, oldHeader.Header.Height)
+				}
+
+				headerWithTrustedHeight, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID, ibcclienttypes.Height{
+					RevisionNumber: 0,
+					RevisionHeight: 13,
+				})
 				suite.Require().NoError(err)
 
 				oldHeader.TrustedHeight = headerWithTrustedHeight.TrustedHeight
