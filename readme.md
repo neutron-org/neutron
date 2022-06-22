@@ -75,6 +75,22 @@ gaia-wasm-zoned tx interchainqueries register-interchain-query test-2 connection
 gaia-wasm-zoned tx bank send $(gaia-wasm-zoned keys show demowallet2 -a --keyring-backend test --home ./data/test-2) cosmos1mjk79fjjgpplak5wq838w0yd982gzkyfrk07am 1000stake --from demowallet2 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-2 --keyring-backend test --home ./data/test-2 --node tcp://127.0.0.1:26657
 ```
 
+4. After relayer process query events, you can see submitted results:
+* Updated info about registered queries:
+```shell
+gaia-wasm-zoned query interchainqueries registered-queries --node tcp://127.0.0.1:16657
+```
+
+* Result for KV storage query (in our case DelegatorDelegations and this query id is 1):
+```shell
+gaia-wasm-zoned query interchainqueries query-result 1 --node tcp://127.0.0.1:16657
+```
+
+* Result for transactions search query (in our case MsgBankSend and this query id is 2, and we set limit and offser to 1 and 100 respectively):
+```shell
+gaia-wasm-zoned query interchainqueries query-transactions-search-result 2 1 100 --node tcp://127.0.0.1:16657
+```
+
 
 ### terminal 3
 
