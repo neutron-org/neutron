@@ -86,7 +86,7 @@ gaia-wasm-zoned query interchainqueries registered-queries --node tcp://127.0.0.
 gaia-wasm-zoned query interchainqueries query-result 1 --node tcp://127.0.0.1:16657
 ```
 
-* Result for transactions search query (in our case MsgBankSend and this query id is 2, and we set limit and offser to 1 and 100 respectively):
+* Result for transactions search query (in our case MsgBankSend and this query id is 2, and we set limit and offset to 1 and 100 respectively):
 ```shell
 gaia-wasm-zoned query interchainqueries query-transactions-search-result 2 1 100 --node tcp://127.0.0.1:16657
 ```

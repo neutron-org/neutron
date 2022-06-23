@@ -29,7 +29,7 @@ func (k Keeper) EndBlocker(ctx sdk.Context) {
 			events = append(events, event)
 			registeredQuery.LastEmittedHeight = uint64(ctx.BlockHeight())
 			if err := k.SaveQuery(ctx, registeredQuery); err != nil {
-				k.Logger(ctx).Error("failed to save query: %v", err)
+				k.Logger(ctx).Error("failed to save query: %w", err)
 			}
 
 		}
