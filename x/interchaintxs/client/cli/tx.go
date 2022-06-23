@@ -68,7 +68,7 @@ func RegisterInterchainAccountCmd() *cobra.Command {
 func SubmitTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json]",
-		Short:   "Register an interchain account",
+		Short:   "Submit interchain tx",
 		Aliases: []string{"submit", "s"},
 		Args:    cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
