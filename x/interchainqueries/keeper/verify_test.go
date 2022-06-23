@@ -258,19 +258,6 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 					suite.Require().NoError(UpdateClient(suite.path.EndpointA))
 				}
 
-				consensusStatesResponse, err := suite.chainA.App.GetIBCKeeper().ClientKeeper.ConsensusStates(types.WrapSDKContext(suite.chainA.GetContext()), &ibcclienttypes.QueryConsensusStatesRequest{
-					ClientId: suite.path.EndpointA.ClientID,
-					Pagination: &query.PageRequest{
-						Limit:      math.MaxUint64,
-						Reverse:    true,
-						CountTotal: true,
-					},
-				})
-				suite.Require().NoError(err)
-				for _, cs := range consensusStatesResponse.GetConsensusStates() {
-					fmt.Println("WOWOWOWO", cs.Height, oldHeader.Header.Height)
-				}
-
 				headerWithTrustedHeight, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID, ibcclienttypes.Height{
 					RevisionNumber: 0,
 					RevisionHeight: 13,
