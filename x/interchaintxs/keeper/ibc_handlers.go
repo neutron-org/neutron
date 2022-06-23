@@ -127,8 +127,7 @@ func (k *Keeper) Sudo(
 	})
 
 	if err != nil {
-		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "sequence", request.Sequence, "dst_channel",
-			request.DestinationChannel, "dst_port", request.DestinationPort, "height", request.TimeoutHeight)
+		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
 	}
 
