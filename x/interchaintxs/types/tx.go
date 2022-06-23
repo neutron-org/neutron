@@ -9,6 +9,10 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 )
 
+var (
+	_ codectypes.UnpackInterfacesMessage = MsgSubmitTx{}
+)
+
 func (m *MsgRegisterInterchainAccount) ValidateBasic() error {
 	if len(m.ConnectionId) == 0 {
 		return errors.New("empty connection id")
@@ -102,6 +106,7 @@ func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
 	return any, nil
 }
 
+// implements UnpackInterfacesMessage.UnpackInterfaces (https://github.com/cosmos/cosmos-sdk/blob/d07d35f29e0a0824b489c552753e8798710ff5a8/codec/types/interface_registry.go#L60)
 func (msg MsgSubmitTx) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	var (
 		sdkMsg sdk.Msg
