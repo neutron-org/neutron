@@ -8,13 +8,13 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 )
 
-type SudoMessageType uint
+type SudoMessageType string
 
 const (
-	SudoMessageTypeOpenAck SudoMessageType = iota
-	SudoMessageTypeResponse
-	SudoMessageTypeTimeout
-	SudoMessageTypeError
+	SudoMessageTypeOpenAck  = "OpenAck"
+	SudoMessageTypeResponse = "Response"
+	SudoMessageTypeTimeout  = "Timeout"
+	SudoMessageTypeError    = "Error"
 )
 
 type SudoMessage struct {
