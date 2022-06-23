@@ -11,10 +11,10 @@ import (
 type SudoMessageType uint
 
 const (
-	OpenAck SudoMessageType = iota
-	Response
-	Timeout
-	Error
+	SudoMessageTypeOpenAck SudoMessageType = iota
+	SudoMessageTypeResponse
+	SudoMessageTypeTimeout
+	SudoMessageTypeError
 )
 
 type SudoMessage struct {
@@ -41,9 +41,9 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	// maybe later we'll retrieve actual errors from events
 	errorText := ack.GetError()
 	if errorText != "" {
-		_, err = k.Sudo(ctx, Error, hubContractAddress, packet, []byte{}, []byte(errorText))
+		_, err = k.Sudo(ctx, SudoMessageTypeError, hubContractAddress, packet, []byte{}, []byte(errorText))
 	} else {
-		_, err = k.Sudo(ctx, Response, hubContractAddress, packet, ack.GetResult(), []byte{})
+		_, err = k.Sudo(ctx, SudoMessageTypeResponse, hubContractAddress, packet, ack.GetResult(), []byte{})
 	}
 
 	if err != nil {
@@ -64,7 +64,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) erro
 		return sdkerrors.Wrap(err, "failed to GetHubAddress")
 	}
 
-	_, err = k.Sudo(ctx, Timeout, hubContractAddress, packet, []byte{}, []byte{})
+	_, err = k.Sudo(ctx, SudoMessageTypeTimeout, hubContractAddress, packet, []byte{}, []byte{})
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo the hub contract on packet timeout", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet timeout")
@@ -92,7 +92,7 @@ func (k *Keeper) HandleChanOpenAck(
 	//  and it should be easy for the contract to parse it. I don't want to use JSON (it's super ugly
 	//  in this context); maybe we should generate a separate proto-message that will reference the
 	//  channeltypes.Packet?
-	_, err = k.Sudo(ctx, OpenAck, hubContractAddress, channeltypes.Packet{}, []byte(portID+channelID+counterPartyChannelId+counterpartyVersion), []byte{})
+	_, err = k.Sudo(ctx, SudoMessageTypeOpenAck, hubContractAddress, channeltypes.Packet{}, []byte(portID+channelID+counterPartyChannelId+counterpartyVersion), []byte{})
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo the hub contract on packet timeout", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet timeout")
