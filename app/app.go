@@ -2,6 +2,12 @@ package app
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
@@ -9,11 +15,6 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 
 	wasmapp "github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -117,7 +118,9 @@ import (
 	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs"
 	interchaintxskeeper "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
 	interchaintxstypes "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
+	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 const (
@@ -305,6 +308,9 @@ func New(
 	wasmOpts []wasm.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
+
+	wasmTypes.MaxWasmSize = 10 * 800 * 1024
+
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
