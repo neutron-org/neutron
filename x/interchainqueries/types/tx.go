@@ -25,7 +25,7 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
 
-	if msg.Result.KvResults == nil && msg.Result.Blocks == nil {
+	if len(msg.Result.KvResults) == 0 && len(msg.Result.Blocks) == 0 {
 		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
 
