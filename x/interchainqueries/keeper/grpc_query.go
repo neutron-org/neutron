@@ -10,6 +10,17 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
+func (k Keeper) RegisteredQuery(goCtx context.Context, request *types.QueryRegisteredQueryRequest) (*types.QueryRegisteredQueryResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	registeredQuery, err := k.GetQueryByID(ctx, request.QueryId)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get registered query by query id: %v", err)
+	}
+
+	return &types.QueryRegisteredQueryResponse{RegisteredQuery: registeredQuery}, nil
+}
+
 func (k Keeper) RegisteredQueries(goCtx context.Context, _ *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -32,7 +43,7 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 
 	result, err := k.GetQueryResultByID(ctx, request.QueryId)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result bu query id: %v", err)
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result by query id: %v", err)
 	}
 
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
@@ -43,7 +54,7 @@ func (k Keeper) QueryTransactions(goCtx context.Context, request *types.QuerySub
 
 	result, err := k.GetSubmittedTransactions(ctx, request.QueryId, request.Start, request.End)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result bu query id: %v", err)
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result by query id: %v", err)
 	}
 
 	return &types.QuerySubmittedTransactionsResponse{Transactions: result}, nil

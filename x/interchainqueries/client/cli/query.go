@@ -30,9 +30,39 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 
 	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdQueryRegisteredQueries())
+	cmd.AddCommand(CmdQueryRegisteredQuery())
 	cmd.AddCommand(CmdQueryRegisteredQueryResult())
 	cmd.AddCommand(CmdQueryTransactionsSearchResult())
 	// this line is used by starport scaffolding # 1
+
+	return cmd
+}
+
+func CmdQueryRegisteredQuery() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "registered-query [id]",
+		Short: "queries all the interchain queries in the module",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			queryID, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse query id: %w", err)
+			}
+
+			res, err := queryClient.RegisteredQuery(context.Background(), &types.QueryRegisteredQueryRequest{QueryId: queryID})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
 }
