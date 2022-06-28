@@ -118,9 +118,7 @@ import (
 	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs"
 	interchaintxskeeper "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
 	interchaintxstypes "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
-
 	// this line is used by starport scaffolding # stargate/app/moduleImport
-	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 const (
@@ -308,8 +306,6 @@ func New(
 	wasmOpts []wasm.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
-
-	wasmTypes.MaxWasmSize = 10 * 800 * 1024
 
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino

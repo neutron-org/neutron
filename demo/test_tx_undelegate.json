@@ -1,0 +1,17 @@
+{
+  "@type": "/lidofinance.interchainadapter.interchaintxs.v1.MsgSubmitTx",
+  "from_address": "cosmos1m9l358xunhhwds0568za49mzhvuxx9uxre5tud",
+  "owner": "cosmos1mjk79fjjgpplak5wq838w0yd982gzkyfrk07am",
+  "connection_id": "connection-0",
+  "msgs": [
+    {
+      "@type": "/cosmos.staking.v1beta1.MsgUndelegate",
+      "delegator_address": "cosmos1t5rejj0jgw63fc2mjqxdqjh6cdhhwak6rrsx5sjuc6npkpqd553s50gqpl",
+      "validator_address": "cosmosvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnmxnh3k",
+      "amount": {
+        "denom": "stake",
+        "amount": "500"
+      }
+    }
+  ]
+}

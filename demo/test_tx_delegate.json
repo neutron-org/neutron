@@ -6,7 +6,7 @@
   "msgs": [
     {
       "@type": "/cosmos.staking.v1beta1.MsgDelegate",
-      "delegator_address": "cosmos1awzs6zxuyyjkqutvmlj8f9ygjjgpwnhfsnz359c23xlg5crye3xsj62589",
+      "delegator_address": "cosmos1t5rejj0jgw63fc2mjqxdqjh6cdhhwak6rrsx5sjuc6npkpqd553s50gqpl",
       "validator_address": "cosmosvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnmxnh3k",
       "amount": {
         "denom": "stake",
