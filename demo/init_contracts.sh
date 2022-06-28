@@ -13,7 +13,7 @@ CODE_ID=`../build/gaia-wasm-zoned query tx $TX_HASH --chain-id test-1 --home ../
 echo "Code id:" $CODE_ID
 
 
-TX_HASH=`../build/gaia-wasm-zoned tx wasm instantiate $CODE_ID '{"zone_id":"xxx", "owner":"'$OWNER'"}' \
+TX_HASH=`../build/gaia-wasm-zoned tx wasm instantiate $CODE_ID '{}' \
      --admin $OWNER --label=hub --chain-id test-1 --from $OWNER --gas 20000000 \
      --gas-adjustment 1.4 --gas-prices 0.5stake --keyring-backend test \
      --home ../data/test-1 --node tcp://127.0.0.1:16657 \
