@@ -21,6 +21,9 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgRegisterInterchainAccount:
 			res, err := msgServer.RegisterInterchainAccount(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgSubmitTx:
+			res, err := msgServer.SubmitTx(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)

@@ -1,7 +1,7 @@
-vue/node_modules
-vue/dist
+build/
 release/
 .idea/
 .vscode/
 .DS_Store
 data
+.mutagen.yml
