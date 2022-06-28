@@ -192,6 +192,7 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*type
 // SaveSubmittedTransaction saves a transaction data into the storage with a key (SubmittedTxKey + bigEndianBytes(queryID) + bigEndianBytes(txID))
 func (k Keeper) SaveSubmittedTransaction(ctx sdk.Context, queryID uint64, txID uint64, height uint64, txData []byte) error {
 	txBz, err := (&types.Transaction{
+		Id:     txID,
 		Height: height,
 		Data:   txData,
 	}).Marshal()

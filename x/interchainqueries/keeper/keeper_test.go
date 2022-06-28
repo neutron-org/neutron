@@ -521,6 +521,7 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 	for i := 0; i < 10; i++ {
 
 		tx := itypes.Transaction{
+			Id:     lastID,
 			Height: 0,
 			Data:   append([]byte("data"), byte(i)),
 		}
@@ -548,6 +549,7 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 	for i := 0; i < 20; i++ {
 
 		tx := itypes.Transaction{
+			Id:     lastID,
 			Height: 1,
 			Data:   append([]byte("another data"), byte(i)),
 		}
