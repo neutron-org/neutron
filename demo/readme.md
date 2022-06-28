@@ -1,8 +1,8 @@
-# h1 Demo scripts
+# Demo scripts
 
 These scripts can be used to test interchain transactions with deployed wasm contracts
 
-## h2 Requirements
+## Requirements
 
 1. have wasm contracts be build in `./../lido-interchain-staking-contracts/artifacts`
 2. have gaia build and run like `make build && make init && make start-rly`
