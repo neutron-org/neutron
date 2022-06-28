@@ -1,0 +1,37 @@
+name: PR
+
+on:
+  pull_request:
+    types: [assigned, unassigned, labeled, unlabeled, opened, edited, closed, reopened, synchronize, converted_to_draft, ready_for_review, locked, unlocked, review_requested, review_request_removed]
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  pr_commented:
+    # This job only runs for pull request comments
+    name: PR comment
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            User @${{ github.actor }} commented PR #${{ github.event.issue.number }} "${{ github.event.issue.title }}" (${{ github.event.issue.pull_request.html_url }})
+
+  pull_requests_and_review:
+    name: Pull request action or review
+    if: ${{ !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send Notification
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          User @${{ github.actor }} updated PR #${{ github.event.number }} "${{ github.event.pull_request.title }}", action "${{ github.event.action }}" (${{ github.event.pull_request.html_url }})
