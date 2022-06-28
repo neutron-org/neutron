@@ -34,7 +34,7 @@ type SudoMessageOpenAck struct {
 type OpenAckDetails struct {
 	PortID                string `json:"port_id"`
 	ChannelID             string `json:"channel_id"`
-	CounterPartyChannelId string `json:"counter_party_channel_id"`
+	CounterpartyChannelId string `json:"counterparty_channel_id"`
 	CounterpartyVersion   string `json:"counterparty_version"`
 }
 
@@ -93,7 +93,7 @@ func (k *Keeper) HandleChanOpenAck(
 	ctx sdk.Context,
 	portID,
 	channelID,
-	counterPartyChannelId,
+	counterpartyChannelId,
 	counterpartyVersion string,
 ) error {
 	hubContractAddress, err := k.GetHubAddress(ctx)
@@ -105,7 +105,7 @@ func (k *Keeper) HandleChanOpenAck(
 	_, err = k.SudoOpenAck(ctx, hubContractAddress, OpenAckDetails{
 		PortID:                portID,
 		ChannelID:             channelID,
-		CounterPartyChannelId: counterPartyChannelId,
+		CounterpartyChannelId: counterpartyChannelId,
 		CounterpartyVersion:   counterpartyVersion,
 	})
 	if err != nil {
