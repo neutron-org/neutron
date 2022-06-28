@@ -53,6 +53,7 @@ message MsgSubmitTx {
   string owner = 2;
   string connection_id = 3;
   repeated google.protobuf.Any msgs = 4;
+  string memo = 5;
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx

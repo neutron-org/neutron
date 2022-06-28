@@ -67,10 +67,10 @@ func RegisterInterchainAccountCmd() *cobra.Command {
 
 func SubmitTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json]",
+		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json] [memo]",
 		Short:   "Submit interchain tx",
 		Aliases: []string{"submit", "s"},
-		Args:    cobra.ExactArgs(3),
+		Args:    cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -81,6 +81,7 @@ func SubmitTxCmd() *cobra.Command {
 			connectionID := args[0]
 			owner := args[1]
 			pathToMsgs := args[2]
+			memo := args[3]
 
 			cdc := codec.NewProtoCodec(clientCtx.InterfaceRegistry)
 
@@ -123,6 +124,7 @@ func SubmitTxCmd() *cobra.Command {
 				ConnectionId: connectionID,
 				Owner:        owner,
 				Msgs:         anyMsgs,
+				Memo:         memo,
 			}
 			if err = msg.ValidateBasic(); err != nil {
 				return err
