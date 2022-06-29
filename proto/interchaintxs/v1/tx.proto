@@ -54,6 +54,8 @@ message MsgSubmitTx {
   string connection_id = 3;
   repeated google.protobuf.Any msgs = 4;
   string memo = 5;
+  // Operation is necessary for acknowledgement/timeout/error dispatching to the right handler
+  string operation = 6;
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx

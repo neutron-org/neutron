@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
@@ -75,10 +77,12 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *proto.MsgSubmitTx) (*proto.
 		return nil, sdkerrors.Wrap(err, "failed to SerializeCosmosTx")
 	}
 
+	packetMemo := packMemo(msg.Operation, msg.Memo)
+
 	packetData := icatypes.InterchainAccountPacketData{
 		Type: icatypes.EXECUTE_TX,
 		Data: data,
-		Memo: msg.Memo,
+		Memo: packetMemo,
 	}
 
 	timeoutTimestamp := time.Now().Add(InterchainTxTimeout).UnixNano()
@@ -89,4 +93,25 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *proto.MsgSubmitTx) (*proto.
 	}
 
 	return &types.MsgSubmitTxResponse{}, nil
+}
+
+//TODO: packMemo, unpackMemo should live in other place? Or maybe better encode through structs and json?
+//FIXME: memo seems like a big security vulnerability, cause we can put in memo all we want?
+const memoSeparator = ";"
+
+func packMemo(operation, memo string) string {
+	return operation + memoSeparator + memo
+}
+
+func unpackMemo(packetMemo string) (operation, memo string, err error) {
+	res := strings.Split(packetMemo, memoSeparator)
+
+	if len(res) != 2 {
+		err = fmt.Errorf("could not unpack interchain packet memo=%s", packetMemo)
+		return
+	}
+
+	operation = res[0]
+	memo = res[1]
+	return
 }
