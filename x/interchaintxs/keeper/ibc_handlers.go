@@ -1,10 +1,41 @@
 package keeper
 
 import (
+	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 )
+
+type SudoMessageTimeout struct {
+	Timeout struct {
+		Request channeltypes.Packet `json:"request"`
+	} `json:"timeout"`
+}
+type SudoMessageResponse struct {
+	Response struct {
+		Request channeltypes.Packet `json:"request"`
+		Message []byte              `json:"data"`
+	} `json:"response"`
+}
+
+type SudoMessageError struct {
+	Error struct {
+		Request channeltypes.Packet `json:"request"`
+		Details string              `json:"details"`
+	} `json:"error"`
+}
+
+type SudoMessageOpenAck struct {
+	OpenAck OpenAckDetails `json:"open_ack"`
+}
+
+type OpenAckDetails struct {
+	PortID                string `json:"port_id"`
+	ChannelID             string `json:"channel_id"`
+	CounterpartyChannelId string `json:"counterparty_channel_id"`
+	CounterpartyVersion   string `json:"counterparty_version"`
+}
 
 // HandleAcknowledgement passes the acknowledgement data to the Hub contract via a Sudo call.
 func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) error {
@@ -14,16 +45,20 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		return sdkerrors.Wrap(err, "failed to GetHubAddress")
 	}
 
-	acknowledgementPacketBz, err := packet.Marshal()
-	if err != nil {
-		k.Logger(ctx).Error("failed to marshal acknowledgement packet", "error", err, "sequence", packet.Sequence, "dst_channel",
-			packet.DestinationChannel, "dst_port", packet.DestinationPort, "height", packet.TimeoutHeight)
-		return sdkerrors.Wrap(err, "failed to marshal Timeout packet")
+	var ack channeltypes.Acknowledgement
+	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 packet acknowledgement: %v", err)
 	}
 
-	// TODO: we need to pass both the marshaled packet & the acknowledgement bytes in a single message,
-	//  and it should be easy for the contract to parse it. We should possibly just use JSON for that.
-	_, err = k.Sudo(ctx, hubContractAddress, append(acknowledgementPacketBz, acknowledgement...))
+	// Actually we have only one kind of error returned from acknowledgement
+	// maybe later we'll retrieve actual errors from events
+	errorText := ack.GetError()
+	if errorText != "" {
+		_, err = k.SudoError(ctx, hubContractAddress, packet, errorText)
+	} else {
+		_, err = k.SudoResponse(ctx, hubContractAddress, packet, ack.GetResult())
+	}
+
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo the hub contract on packet acknowledgement", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet acknowledgement")
@@ -42,14 +77,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) erro
 		return sdkerrors.Wrap(err, "failed to GetHubAddress")
 	}
 
-	timeoutPacketBz, err := packet.Marshal()
-	if err != nil {
-		k.Logger(ctx).Error("failed to marshal timeout packet", "error", err, "sequence", packet.Sequence, "dst_channel",
-			packet.DestinationChannel, "dst_port", packet.DestinationPort, "height", packet.TimeoutHeight)
-		return sdkerrors.Wrap(err, "failed to marshal Timeout packet")
-	}
-
-	_, err = k.Sudo(ctx, hubContractAddress, timeoutPacketBz)
+	_, err = k.SudoTimeout(ctx, hubContractAddress, packet)
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo the hub contract on packet timeout", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet timeout")
@@ -64,7 +92,7 @@ func (k *Keeper) HandleChanOpenAck(
 	ctx sdk.Context,
 	portID,
 	channelID,
-	counterPartyChannelId,
+	counterpartyChannelId,
 	counterpartyVersion string,
 ) error {
 	hubContractAddress, err := k.GetHubAddress(ctx)
@@ -73,14 +101,15 @@ func (k *Keeper) HandleChanOpenAck(
 		return sdkerrors.Wrap(err, "failed to GetHubAddress")
 	}
 
-	// TODO: we need to pass both the marshaled arguments bytes in a single message,
-	//  and it should be easy for the contract to parse it. I don't want to use JSON (it's super ugly
-	//  in this context); maybe we should generate a separate proto-message that will reference the
-	//  channeltypes.Packet?
-	_, err = k.Sudo(ctx, hubContractAddress, []byte(portID+channelID+counterPartyChannelId+counterpartyVersion))
+	_, err = k.SudoOpenAck(ctx, hubContractAddress, OpenAckDetails{
+		PortID:                portID,
+		ChannelID:             channelID,
+		CounterpartyChannelId: counterpartyChannelId,
+		CounterpartyVersion:   counterpartyVersion,
+	})
 	if err != nil {
-		k.Logger(ctx).Error("failed to Sudo the hub contract on packet timeout", err)
-		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet timeout")
+		k.Logger(ctx).Error("failed to Sudo the hub contract on packet openAck", err)
+		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet openAck")
 	}
 
 	return nil
@@ -91,9 +120,114 @@ func (k *Keeper) HandleChanOpenAck(
 // place any access controls on it, that is the responsibility or the app developer (who passes the wasm.Keeper in
 // app.go).
 //
-// TODO: Sudo is actually a part of the wasmd keeper. When cosmos/wasmd is finalized, we need
-// 	to import it and use the original sudo call.
-func (k *Keeper) Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error) {
-	//return k.wasmKeeper.Sudo(ctx, contractAddress, msg)
-	return nil, nil
+func (k *Keeper) SudoResponse(
+	ctx sdk.Context,
+	contractAddress sdk.AccAddress,
+	request channeltypes.Packet,
+	msg []byte,
+) ([]byte, error) {
+	k.Logger(ctx).Info("SudoResponse", "contractAddress", contractAddress, "request", request, "msg", msg)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
+
+	x := SudoMessageResponse{}
+	x.Response.Message = msg
+	x.Response.Request = request
+	m, err := json.Marshal(x)
+	if err != nil {
+		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+	}
+	k.Logger(ctx).Info("SudoResponse sending request", "data", string(m))
+
+	r, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
+	k.Logger(ctx).Info("SudoResponse received response", "err", err, "response", string(r))
+
+	return r, err
+}
+
+func (k *Keeper) SudoTimeout(
+	ctx sdk.Context,
+	contractAddress sdk.AccAddress,
+	request channeltypes.Packet,
+) ([]byte, error) {
+	k.Logger(ctx).Info("SudoTimeout", "contractAddress", contractAddress, "request", request)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
+
+	x := SudoMessageTimeout{}
+	x.Timeout.Request = request
+	m, err := json.Marshal(x)
+	if err != nil {
+		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+	}
+	k.Logger(ctx).Info("SudoTimeout sending request", "data", string(m))
+
+	r, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
+	k.Logger(ctx).Info("SudoTimeout received response", "err", err, "response", string(r))
+
+	return r, err
+}
+
+func (k *Keeper) SudoError(
+	ctx sdk.Context,
+	contractAddress sdk.AccAddress,
+	request channeltypes.Packet,
+	details string,
+) ([]byte, error) {
+	k.Logger(ctx).Info("SudoError", "contractAddress", contractAddress, "request", request)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
+
+	x := SudoMessageError{}
+	x.Error.Request = request
+	x.Error.Details = details
+	m, err := json.Marshal(x)
+	if err != nil {
+		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+	}
+	k.Logger(ctx).Info("SudoError sending request", "data", string(m))
+
+	r, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
+	k.Logger(ctx).Info("SudoError received response", "err", err, "response", string(r))
+
+	return r, err
+}
+
+func (k *Keeper) SudoOpenAck(
+	ctx sdk.Context,
+	contractAddress sdk.AccAddress,
+	details OpenAckDetails,
+) ([]byte, error) {
+	k.Logger(ctx).Info("SudoOpenAck", "contractAddress", contractAddress)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
+
+	x := SudoMessageOpenAck{}
+	x.OpenAck = details
+	m, err := json.Marshal(x)
+	if err != nil {
+		k.Logger(ctx).Error("failed to marshal sudo message", "error", err)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+	}
+	k.Logger(ctx).Info("SudoOpenAck sending request", "data", string(m))
+
+	r, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
+	k.Logger(ctx).Info("SudoOpenAck received response", "err", err, "response", string(r))
+
+	return r, err
 }

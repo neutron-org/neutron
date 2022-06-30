@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -67,7 +68,7 @@ func RegisterInterchainAccountCmd() *cobra.Command {
 func SubmitTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json]",
-		Short:   "Register an interchain account",
+		Short:   "Submit interchain tx",
 		Aliases: []string{"submit", "s"},
 		Args:    cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -91,8 +92,20 @@ func SubmitTxCmd() *cobra.Command {
 					return fmt.Errorf("json input was not provided; failed to read file with tx messages: %w", err)
 				}
 
-				if err := cdc.UnmarshalInterfaceJSON(contents, &txMsgs); err != nil {
-					return fmt.Errorf("error unmarshalling sdk msgs file: %w", err)
+				var rawTxMsgs struct {
+					Msgs []json.RawMessage `json:"msgs"`
+				}
+
+				if err := json.Unmarshal(contents, &rawTxMsgs); err != nil {
+					return fmt.Errorf("cannot unmarshal msgs array: %w", err)
+				}
+
+				for _, txMsg := range rawTxMsgs.Msgs {
+					var sdkMsg sdk.Msg
+					if err := cdc.UnmarshalInterfaceJSON(txMsg, &sdkMsg); err != nil {
+						return fmt.Errorf("cannot unmarshal submessage: %w", err)
+					}
+					txMsgs = append(txMsgs, sdkMsg)
 				}
 			}
 

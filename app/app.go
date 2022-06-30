@@ -2,6 +2,12 @@ package app
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
@@ -10,11 +16,6 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 
 	wasmapp "github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -325,6 +326,7 @@ func New(
 	wasmOpts []wasm.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
+
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
