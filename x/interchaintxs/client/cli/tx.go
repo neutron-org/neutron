@@ -81,7 +81,11 @@ func SubmitTxCmd() *cobra.Command {
 			connectionID := args[0]
 			owner := args[1]
 			pathToMsgs := args[2]
-			memo := args[3]
+			memo := ""
+
+			if len(args) > 3 {
+				memo = args[3]
+			}
 
 			cdc := codec.NewProtoCodec(clientCtx.InterfaceRegistry)
 
