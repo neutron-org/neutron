@@ -70,7 +70,7 @@ func SubmitTxCmd() *cobra.Command {
 		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json] [memo]",
 		Short:   "Submit interchain tx",
 		Aliases: []string{"submit", "s"},
-		Args:    cobra.ExactArgs(4),
+		Args:    cobra.MinimumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
