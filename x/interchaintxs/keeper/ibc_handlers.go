@@ -31,9 +31,10 @@ type SudoMessageError struct {
 }
 
 type RequestPacketData struct {
-	Data      []byte `json:"data,omitempty"`
-	Memo      string `json:"memo,omitempty"`
-	Operation string `json:"operation,omitempty"`
+	Memo         string `json:"memo,omitempty"`
+	Operation    string `json:"operation,omitempty"`
+	ConnectionID string `json:"connection_id,omitempty"`
+	Data         []byte `json:"data,omitempty"`
 }
 
 type SudoMessageOpenAck struct {
@@ -50,9 +51,15 @@ type OpenAckDetails struct {
 // HandleAcknowledgement passes the acknowledgement data to the Hub contract via a Sudo call.
 func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) error {
 	hubContractAddress, err := k.GetHubAddress(ctx)
+
 	if err != nil {
 		k.Logger(ctx).Error("failed to GetHubAddress", err)
 		return sdkerrors.Wrap(err, "failed to GetHubAddress")
+	}
+
+	connectionID, _, err := k.ibcKeeper.ChannelKeeper.GetChannelConnection(ctx, packet.SourcePort, packet.SourceChannel)
+	if err != nil {
+		return sdkerrors.Wrapf(err, "failed to connectionID from packet port and channel: %v", err)
 	}
 
 	var ack channeltypes.Acknowledgement
@@ -72,10 +79,10 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	// maybe later we'll retrieve actual errors from events
 	errorText := ack.GetError()
 	if errorText != "" {
-		_, err = k.SudoError(ctx, hubContractAddress, packet, packetData, errorText)
+		_, err = k.SudoError(ctx, hubContractAddress, packet, packetData, errorText, connectionID)
 	} else {
 		k.Logger(ctx).Info("HandleAcknowledgement", "ack", ack.String())
-		_, err = k.SudoResponse(ctx, hubContractAddress, packet, packetData, ack.GetResult())
+		_, err = k.SudoResponse(ctx, hubContractAddress, packet, packetData, ack.GetResult(), connectionID)
 	}
 
 	if err != nil {
@@ -96,7 +103,12 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) erro
 		return sdkerrors.Wrap(err, "failed to GetHubAddress")
 	}
 
-	_, err = k.SudoTimeout(ctx, hubContractAddress, packet)
+	connectionID, _, err := k.ibcKeeper.ChannelKeeper.GetChannelConnection(ctx, packet.SourcePort, packet.SourceChannel)
+	if err != nil {
+		return sdkerrors.Wrapf(err, "failed to connectionID from packet port and channel: %v", err)
+	}
+
+	_, err = k.SudoTimeout(ctx, hubContractAddress, packet, connectionID)
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo the hub contract on packet timeout", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet timeout")
@@ -145,6 +157,7 @@ func (k *Keeper) SudoResponse(
 	request channeltypes.Packet,
 	packetData icatypes.InterchainAccountPacketData,
 	msg []byte,
+	connectionID string,
 ) ([]byte, error) {
 	k.Logger(ctx).Info("SudoResponse", "contractAddress", contractAddress, "request", request, "msg", msg)
 
@@ -162,7 +175,7 @@ func (k *Keeper) SudoResponse(
 	x := SudoMessageResponse{}
 	x.Response.Message = msg
 	x.Response.Request = request
-	x.Response.RequestPacketData = RequestPacketData{Data: packetData.Data, Memo: memo, Operation: operation}
+	x.Response.RequestPacketData = RequestPacketData{Data: packetData.Data, Memo: memo, Operation: operation, ConnectionID: connectionID}
 	m, err := json.Marshal(x)
 	if err != nil {
 		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
@@ -180,6 +193,7 @@ func (k *Keeper) SudoTimeout(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
 	request channeltypes.Packet,
+	connectionID string,
 ) ([]byte, error) {
 	k.Logger(ctx).Info("SudoTimeout", "contractAddress", contractAddress, "request", request)
 
@@ -204,7 +218,7 @@ func (k *Keeper) SudoTimeout(
 
 	x := SudoMessageTimeout{}
 	x.Timeout.Request = request
-	x.Timeout.RequestPacketData = RequestPacketData{Data: packetData.Data, Memo: memo, Operation: operation}
+	x.Timeout.RequestPacketData = RequestPacketData{Data: packetData.Data, Memo: memo, Operation: operation, ConnectionID: connectionID}
 	m, err := json.Marshal(x)
 	if err != nil {
 		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
@@ -224,6 +238,7 @@ func (k *Keeper) SudoError(
 	request channeltypes.Packet,
 	packetData icatypes.InterchainAccountPacketData,
 	details string,
+	connectionID string,
 ) ([]byte, error) {
 	k.Logger(ctx).Info("SudoError", "contractAddress", contractAddress, "request", request)
 
@@ -241,7 +256,7 @@ func (k *Keeper) SudoError(
 	x := SudoMessageError{}
 	x.Error.Request = request
 	x.Error.Details = details
-	x.Error.RequestPacketData = RequestPacketData{Data: packetData.Data, Memo: memo, Operation: operation}
+	x.Error.RequestPacketData = RequestPacketData{Data: packetData.Data, Memo: memo, Operation: operation, ConnectionID: connectionID}
 	m, err := json.Marshal(x)
 	if err != nil {
 		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)

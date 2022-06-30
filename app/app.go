@@ -479,6 +479,7 @@ func New(
 		&app.wasmKeeper,
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
+		app.IBCKeeper,
 	)
 
 	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)

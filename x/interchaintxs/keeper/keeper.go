@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 
@@ -27,6 +28,7 @@ type (
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
 		wasmKeeper          *wasm.Keeper
+		ibcKeeper           *ibckeeper.Keeper
 	}
 )
 
@@ -39,6 +41,7 @@ func NewKeeper(
 	wasmKeeper *wasm.Keeper,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
+	ibcKeeper *ibckeeper.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -54,6 +57,7 @@ func NewKeeper(
 		icaControllerKeeper: icaControllerKeeper,
 		scopedKeeper:        scopedKeeper,
 		wasmKeeper:          wasmKeeper,
+		ibcKeeper:           ibcKeeper,
 	}
 }
 
