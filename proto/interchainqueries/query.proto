@@ -26,8 +26,18 @@ service Query {
         "/lidofinance/interchainqueries/interchainqueries/registered_queries";
   }
 
+  rpc RegisteredQuery(QueryRegisteredQueryRequest)
+      returns (QueryRegisteredQueryResponse) {
+    option (google.api.http).get =
+        "/lidofinance/interchainqueries/interchainqueries/registered_query";
+  }
+
   rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
     option (google.api.http).get = "/lidofinance/interchainqueries/interchainqueries/query_result";
+  }
+
+  rpc QueryTransactions(QuerySubmittedTransactionsRequest) returns (QuerySubmittedTransactionsResponse) {
+    option (google.api.http).get = "/lidofinance/interchainqueries/interchainqueries/query_transactions";
   }
   // this line is used by starport scaffolding # 2
 }
@@ -48,12 +58,36 @@ message QueryRegisteredQueriesResponse {
   [ (gogoproto.nullable) = false ];
 }
 
+message QueryRegisteredQueryRequest {
+  uint64 query_id = 1;
+}
+
+message QueryRegisteredQueryResponse {
+  RegisteredQuery registered_query = 1;
+}
+
 message QueryRegisteredQueryResultRequest {
   uint64 query_id = 1;
 }
 
 message QueryRegisteredQueryResultResponse {
   QueryResult result = 1;
+}
+
+message QuerySubmittedTransactionsRequest {
+  uint64 query_id = 1;
+  uint64 start = 2;
+  uint64 end = 3;
+}
+
+message QuerySubmittedTransactionsResponse {
+  repeated Transaction transactions = 1;
+}
+
+message Transaction {
+  uint64 id = 1;
+  uint64 height = 2;
+  bytes data = 3;
 }
 
 // this line is used by starport scaffolding # 3

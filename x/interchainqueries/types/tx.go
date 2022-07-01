@@ -1,7 +1,15 @@
 package types
 
 import (
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/ibc-go/v3/modules/core/exported"
+	"strings"
+)
+
+var (
+	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
 )
 
 func (msg MsgSubmitQueryResult) Route() string {
@@ -13,7 +21,30 @@ func (msg MsgSubmitQueryResult) Type() string {
 }
 
 func (msg MsgSubmitQueryResult) ValidateBasic() error {
-	// TODO: add basic validation.
+	if msg.Result == nil {
+		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
+	}
+
+	if len(msg.Result.KvResults) == 0 && len(msg.Result.Blocks) == 0 {
+		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
+	}
+
+	if msg.QueryId == 0 {
+		return sdkerrors.Wrap(ErrInvalidQueryID, "query id cannot be equal zero")
+	}
+
+	if strings.TrimSpace(msg.Sender) == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	}
+
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+	}
+
+	if strings.TrimSpace(msg.ClientId) == "" && msg.Result.Blocks != nil {
+		return sdkerrors.Wrap(ErrInvalidClientID, "client id cannot be empty")
+	}
+
 	return nil
 }
 
@@ -39,7 +70,34 @@ func (msg MsgRegisterInterchainQuery) Type() string {
 }
 
 func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
-	// TODO
+	if msg.UpdatePeriod == 0 {
+		return sdkerrors.Wrap(ErrInvalidUpdatePeriod, "update period cannot be equal zero")
+	}
+
+	if strings.TrimSpace(msg.Sender) == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	}
+
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+	}
+
+	if strings.TrimSpace(msg.ConnectionId) == "" {
+		return sdkerrors.Wrap(ErrInvalidConnectionID, "connection id cannot be empty")
+	}
+
+	if strings.TrimSpace(msg.ZoneId) == "" {
+		return sdkerrors.Wrap(ErrInvalidZoneID, "zone id cannot be empty")
+	}
+
+	if strings.TrimSpace(msg.QueryType) == "" {
+		return sdkerrors.Wrap(ErrInvalidQueryType, "query type cannot be empty")
+	}
+
+	if strings.TrimSpace(msg.QueryData) == "" {
+		return sdkerrors.Wrap(ErrInvalidQueryData, "query data cannot be empty")
+	}
+
 	return nil
 }
 
@@ -54,4 +112,18 @@ func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 		panic(err.Error())
 	}
 	return []sdk.AccAddress{senderAddr}
+}
+
+// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
+func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	for _, b := range msg.Result.Blocks {
+		var header exported.Header
+		if err := unpacker.UnpackAny(b.Header, &header); err != nil {
+			return err
+		}
+		if err := unpacker.UnpackAny(b.NextBlockHeader, &header); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/json"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
@@ -127,13 +126,17 @@ func (k *Keeper) SudoResponse(
 	request channeltypes.Packet,
 	msg []byte,
 ) ([]byte, error) {
-
 	k.Logger(ctx).Info("SudoResponse", "contractAddress", contractAddress, "request", request, "msg", msg)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
+
 	x := SudoMessageResponse{}
 	x.Response.Message = msg
 	x.Response.Request = request
 	m, err := json.Marshal(x)
-
 	if err != nil {
 		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
@@ -151,13 +154,16 @@ func (k *Keeper) SudoTimeout(
 	contractAddress sdk.AccAddress,
 	request channeltypes.Packet,
 ) ([]byte, error) {
-
 	k.Logger(ctx).Info("SudoTimeout", "contractAddress", contractAddress, "request", request)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
 
 	x := SudoMessageTimeout{}
 	x.Timeout.Request = request
 	m, err := json.Marshal(x)
-
 	if err != nil {
 		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
@@ -176,13 +182,17 @@ func (k *Keeper) SudoError(
 	request channeltypes.Packet,
 	details string,
 ) ([]byte, error) {
-
 	k.Logger(ctx).Info("SudoError", "contractAddress", contractAddress, "request", request)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
+
 	x := SudoMessageError{}
 	x.Error.Request = request
 	x.Error.Details = details
 	m, err := json.Marshal(x)
-
 	if err != nil {
 		k.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
@@ -200,13 +210,16 @@ func (k *Keeper) SudoOpenAck(
 	contractAddress sdk.AccAddress,
 	details OpenAckDetails,
 ) ([]byte, error) {
-
 	k.Logger(ctx).Info("SudoOpenAck", "contractAddress", contractAddress)
+
+	// basically just for unit tests right now. But i think we will have the same logic in the production
+	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
 
 	x := SudoMessageOpenAck{}
 	x.OpenAck = details
 	m, err := json.Marshal(x)
-
 	if err != nil {
 		k.Logger(ctx).Error("failed to marshal sudo message", "error", err)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")

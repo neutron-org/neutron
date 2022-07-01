@@ -8,14 +8,16 @@ import "interchainqueries/params.proto";
 option go_package = "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types";
 
 message RegisteredQuery {
-  uint64 id = 1;
-  string query_data = 2;
-  string query_type = 3;
-  string zone_id = 4;
-  string connection_id = 5;
-  uint64 update_period = 6;
-  uint64 last_local_height = 7;
-  uint64 last_remote_height = 8;
+  uint64 id = 1; // unique id of registered query
+  string query_data = 2; // JSON encoded data of query
+  string query_type = 3; // is used to identify the query (i.e. /cosmos.staking.v1beta1.Query/AllDelegations)
+  string zone_id = 4; // is used to identify the chain of interest
+  string connection_id = 5; // is IBC connection ID for getting ConsensusState to verify proofs
+  uint64 update_period = 6; // is used to say how often the query must be updated
+  uint64 last_emitted_height = 7; // is used to say when the event to update the query result was emitted
+
+  uint64 last_submitted_result_local_height = 8; // is the last block height of the local chain when the query's result was updated
+  uint64 last_submitted_result_remote_height = 9; // is the last block height of the remote chain when the query's result was updateds
 }
 
 // GenesisState defines the interchainadapter module's genesis state.
