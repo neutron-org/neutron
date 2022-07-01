@@ -155,21 +155,18 @@ func (suite *KeeperTestSuite) findBestTrustedHeight(dstChain *ibctesting.TestCha
 	})
 	suite.Require().NoError(err)
 
-	minDiff := uint64(math.MaxUint64)
 	bestHeight := ibcclienttypes.Height{
 		RevisionNumber: 0,
 		RevisionHeight: 0,
 	}
 
 	for _, cs := range consensusStatesResponse.ConsensusStates {
-		if bestHeight.IsZero() {
-			bestHeight = cs.GetHeight()
-			continue
-		}
-
-		if height >= cs.Height.RevisionHeight && (height-cs.Height.RevisionHeight) < minDiff {
+		if height >= cs.Height.RevisionHeight && cs.Height.RevisionHeight > bestHeight.RevisionHeight {
 			bestHeight = cs.Height
-			minDiff = height - cs.Height.RevisionHeight
+			// we won't find anything better
+			if cs.Height.RevisionHeight == height {
+				break
+			}
 		}
 	}
 
