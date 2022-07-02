@@ -5,6 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 type SudoMessageTimeout struct {
@@ -39,10 +40,10 @@ type OpenAckDetails struct {
 
 // HandleAcknowledgement passes the acknowledgement data to the Hub contract via a Sudo call.
 func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) error {
-	hubContractAddress, err := k.GetHubAddress(ctx)
+	contractAddress, err := types.ICAOwner(packet.SourcePort).GetContract()
 	if err != nil {
-		k.Logger(ctx).Error("failed to GetHubAddress", err)
-		return sdkerrors.Wrap(err, "failed to GetHubAddress")
+		k.Logger(ctx).Error("failed to get contract from source port: %v", err)
+		return sdkerrors.Wrap(err, "failed to get contract")
 	}
 
 	var ack channeltypes.Acknowledgement
@@ -54,13 +55,13 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	// maybe later we'll retrieve actual errors from events
 	errorText := ack.GetError()
 	if errorText != "" {
-		_, err = k.SudoError(ctx, hubContractAddress, packet, errorText)
+		_, err = k.SudoError(ctx, contractAddress, packet, errorText)
 	} else {
-		_, err = k.SudoResponse(ctx, hubContractAddress, packet, ack.GetResult())
+		_, err = k.SudoResponse(ctx, contractAddress, packet, ack.GetResult())
 	}
 
 	if err != nil {
-		k.Logger(ctx).Error("failed to Sudo the hub contract on packet acknowledgement", err)
+		k.Logger(ctx).Error("failed to Sudo contract on packet acknowledgement", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet acknowledgement")
 	}
 
@@ -71,15 +72,15 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 // Since all ICA channels are ORDERED, a single timeout shuts down a channel.
 // The affected zone should be paused after a timeout.
 func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) error {
-	hubContractAddress, err := k.GetHubAddress(ctx)
+	contractAddress, err := types.ICAOwner(packet.SourcePort).GetContract()
 	if err != nil {
-		k.Logger(ctx).Error("failed to GetHubAddress", err)
-		return sdkerrors.Wrap(err, "failed to GetHubAddress")
+		k.Logger(ctx).Error("failed to get contract from source port: %v", err)
+		return sdkerrors.Wrap(err, "failed to get contract")
 	}
 
-	_, err = k.SudoTimeout(ctx, hubContractAddress, packet)
+	_, err = k.SudoTimeout(ctx, contractAddress, packet)
 	if err != nil {
-		k.Logger(ctx).Error("failed to Sudo the hub contract on packet timeout", err)
+		k.Logger(ctx).Error("failed to Sudo contract on packet timeout", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet timeout")
 	}
 
@@ -95,13 +96,13 @@ func (k *Keeper) HandleChanOpenAck(
 	counterpartyChannelId,
 	counterpartyVersion string,
 ) error {
-	hubContractAddress, err := k.GetHubAddress(ctx)
+	contractAddress, err := types.ICAOwner(portID).GetContract()
 	if err != nil {
-		k.Logger(ctx).Error("failed to GetHubAddress", err)
-		return sdkerrors.Wrap(err, "failed to GetHubAddress")
+		k.Logger(ctx).Error("failed to get contract from source port: %v", err)
+		return sdkerrors.Wrap(err, "failed to get contract")
 	}
 
-	_, err = k.SudoOpenAck(ctx, hubContractAddress, OpenAckDetails{
+	_, err = k.SudoOpenAck(ctx, contractAddress, OpenAckDetails{
 		PortID:                portID,
 		ChannelID:             channelID,
 		CounterpartyChannelId: counterpartyChannelId,

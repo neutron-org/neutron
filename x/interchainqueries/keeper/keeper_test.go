@@ -13,6 +13,7 @@ import (
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
 	iqtypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 	itypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	ictxstypes "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"testing"
@@ -95,7 +96,7 @@ func SetupICAPath(path *ibctesting.Path, owner string) error {
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
 func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) error {
-	portID, err := icatypes.NewControllerPortID(owner)
+	portID, err := icatypes.NewControllerPortID(ictxstypes.NewICAOwner(owner, "owner").String())
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 		return fmt.Errorf("not GaiaWasmZoneApp")
 	}
 
-	if err := a.ICAControllerKeeper.RegisterInterchainAccount(endpoint.Chain.GetContext(), endpoint.ConnectionID, owner); err != nil {
+	if err := a.ICAControllerKeeper.RegisterInterchainAccount(endpoint.Chain.GetContext(), endpoint.ConnectionID, ictxstypes.NewICAOwner(owner, "owner").String()); err != nil {
 		return err
 	}
 
