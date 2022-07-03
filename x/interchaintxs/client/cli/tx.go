@@ -69,7 +69,7 @@ func RegisterInterchainAccountCmd() *cobra.Command {
 
 func SubmitTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "submit-tx connection-id owner path/to/sdk_msgs.json --memo memo",
+		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json] --memo memo",
 		Short:   "Submit interchain tx",
 		Aliases: []string{"submit", "s"},
 		Args:    cobra.ExactArgs(3),
