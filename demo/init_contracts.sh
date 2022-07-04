@@ -5,7 +5,7 @@ cd $(dirname "$0")
 OWNER=$(gaia-wasm-zoned keys show rly1 -a --keyring-backend test --home ../data/test-1);
 
 echo "Owner" $OWNER
-echo "Depoy Hub:" 
+echo "Deploy Hub:"
 TX_HASH=$(../build/gaia-wasm-zoned tx wasm store ./../../lido-interchain-staking-contracts/artifacts/lido_interchain_hub.wasm --chain-id test-1 --from demowallet1 --gas 20000000 --gas-adjustment 1.4 --gas-prices 0.5stake --keyring-backend test --home ../data/test-1 --node tcp://127.0.0.1:16657 -y | grep txhash | cut -d " " -f 2)
 echo "Tx hash:" $TX_HASH
 sleep 5;
@@ -19,13 +19,13 @@ TX_HASH=`../build/gaia-wasm-zoned tx wasm instantiate $CODE_ID '{}' \
      --home ../data/test-1 --node tcp://127.0.0.1:16657 \
      -y | grep txhash | cut -d " " -f 2)
 
-echo "instantiate Tx hash: " $TX_HASH
+echo "Instantiate Tx hash: " $TX_HASH
 sleep 3;
 HUB_CONTRACT_ADDRESS=$(../build/gaia-wasm-zoned query tx $TX_HASH --chain-id test-1 --home ../data/test-1 --node tcp://127.0.0.1:16657 --output json | jq -r '.logs | .[] | .events | .[] |select(.type=="instantiate") | .attributes | .[] | select(.key=="_contract_address") | .value')
 echo "Hub Contract address: " $HUB_CONTRACT_ADDRESS
 
 echo ""
-echo "Depoy validator registry" 
+echo "Deploy validator registry"
 TX_HASH=`../build/gaia-wasm-zoned tx wasm store ./../../lido-interchain-staking-contracts/artifacts/lido_interchain_validators_registry.wasm --chain-id test-1 --from demowallet1 --gas 20000000 --gas-adjustment 1.4 --gas-prices 0.5stake --keyring-backend test --home ../data/test-1 --node tcp://127.0.0.1:16657 -y | grep txhash | cut -d " " -f 2`
 echo "Tx hash:" $TX_HASH
 sleep 2;
@@ -33,7 +33,7 @@ VALIDATOR_CODE_ID=`../build/gaia-wasm-zoned query tx $TX_HASH --chain-id test-1 
 echo "Validator registry code id:" $VALIDATOR_CODE_ID
 
 echo ""
-echo "Depoy interchain queries" 
+echo "Deploy interchain queries"
 TX_HASH=`../build/gaia-wasm-zoned tx wasm store ./../../lido-interchain-staking-contracts/artifacts/lido_interchain_queries.wasm --chain-id test-1 --from demowallet1 --gas 20000000 --gas-adjustment 1.4 --gas-prices 0.5stake --keyring-backend test --home ../data/test-1 --node tcp://127.0.0.1:16657 -y | grep txhash | cut -d " " -f 2`
 echo "Tx hash:" $TX_HASH
 sleep 2;
