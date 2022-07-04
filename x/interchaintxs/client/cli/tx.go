@@ -16,7 +16,7 @@ import (
 	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
-const Memo = "memo"
+const FlagMemo = "memo"
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd() *cobra.Command {
@@ -69,7 +69,7 @@ func RegisterInterchainAccountCmd() *cobra.Command {
 
 func SubmitTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json] --memo memo",
+		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json]",
 		Short:   "Submit interchain tx",
 		Aliases: []string{"submit", "s"},
 		Args:    cobra.ExactArgs(3),
@@ -84,7 +84,7 @@ func SubmitTxCmd() *cobra.Command {
 			owner := args[1]
 			pathToMsgs := args[2]
 
-			memo, err := cmd.Flags().GetString(Memo)
+			memo, err := cmd.Flags().GetString(FlagMemo)
 			if err != nil {
 				return err
 			}
@@ -140,7 +140,7 @@ func SubmitTxCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(Memo, "", "Memo for transaction")
+	cmd.Flags().String(FlagMemo, "", "Memo for transaction")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
