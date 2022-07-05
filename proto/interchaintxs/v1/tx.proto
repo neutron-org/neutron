@@ -1,7 +1,7 @@
 syntax = "proto3";
-package lidofinance.interchainadapter.interchaintxs.v1;
+package neutron_org.interchainadapter.interchaintxs.v1;
 
-option go_package = "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/gaia-wasm-zone/x/interchaintxs/types";
 
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
@@ -14,14 +14,14 @@ service Msg {
   rpc RegisterInterchainAccount(MsgRegisterInterchainAccount)
       returns (MsgRegisterInterchainAccountResponse) {
     option (google.api.http) = {
-      post : "/lidofinance/interchainadapter/interchaintxs/tx/v1/register/"
+      post : "/neutron_org/interchainadapter/interchaintxs/tx/v1/register/"
              "interchain/account"
       body : "*"
     };
   };
   rpc SubmitTx(MsgSubmitTx) returns (MsgSubmitTxResponse) {
     option (google.api.http) = {
-      post : "/lidofinance/interchainadapter/interchaintxs/tx/v1/submit/tx"
+      post : "/neutron_org/interchainadapter/interchaintxs/tx/v1/submit/tx"
       body : "*"
     };
   };
@@ -47,7 +47,7 @@ message MsgSubmitTx {
   option (gogoproto.goproto_getters) = false;
 
   string from_address = 1;
-  // Owner is supposed to be the unique identifier, e.g., lido/kava.
+  // Owner is supposed to be the unique identifier, e.g., neutron/kava.
   // This identifier will be a part of the portID that we'll claim our
   // capability for.
   string owner = 2;

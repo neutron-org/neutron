@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-	"github.com/lidofinance/gaia-wasm-zone/app"
+	"github.com/neutron-org/neutron/app"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 )

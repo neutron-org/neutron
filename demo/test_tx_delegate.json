@@ -1,5 +1,5 @@
 {
-  "@type": "/lidofinance.interchainadapter.interchaintxs.v1.MsgSubmitTx",
+  "@type": "/neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx",
   "from_address": "cosmos1m9l358xunhhwds0568za49mzhvuxx9uxre5tud",
   "owner": "cosmos1mjk79fjjgpplak5wq838w0yd982gzkyfrk07am",
   "connection_id": "connection-0",

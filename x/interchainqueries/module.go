@@ -16,9 +16,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/client/cli"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/x/interchainqueries/client/cli"
+	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 var (

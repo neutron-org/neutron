@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
 var _ types.QueryServer = Keeper{}

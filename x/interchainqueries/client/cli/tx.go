@@ -12,7 +12,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

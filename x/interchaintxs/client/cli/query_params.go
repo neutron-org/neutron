@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/spf13/cobra"
 )
 

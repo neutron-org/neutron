@@ -19,7 +19,7 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/lidofinance/gaia-wasm-zone/app"
+	"github.com/neutron-org/neutron/app"
 )
 
 type (

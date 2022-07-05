@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
 // NewHandler ...

@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 var _ types.QueryServer = Keeper{}

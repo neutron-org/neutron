@@ -443,15 +443,15 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"lidofinance", "interchainqueries", "params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"neutron_org", "interchainqueries", "params"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_RegisteredQueries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"lidofinance", "interchainqueries", "registered_queries"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_RegisteredQueries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"neutron_org", "interchainqueries", "registered_queries"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_RegisteredQuery_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"lidofinance", "interchainqueries", "registered_query"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_RegisteredQuery_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"neutron_org", "interchainqueries", "registered_query"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryResult_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"lidofinance", "interchainqueries", "query_result"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_QueryResult_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"neutron_org", "interchainqueries", "query_result"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryTransactions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"lidofinance", "interchainqueries", "query_transactions"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_QueryTransactions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 1, 2, 2}, []string{"neutron_org", "interchainqueries", "query_transactions"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
