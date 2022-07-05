@@ -44,11 +44,11 @@ ignite generate proto-go
 ```
 
 
-# Testing with 2 lido-chains (easier for development)
+# Testing with 2 neutron-chains (easier for development)
 
 ### terminal 1
 
-1. Start 2 lido-chains and an IBC relayer:
+1. Start 2 neutron-chains and an IBC relayer:
 ```
 make init && make start-rly
 ```
@@ -88,7 +88,7 @@ gaia-wasm-zoned query interchainqueries query-transactions-search-result 2 1 100
 
 ### terminal 3
 
-1. `git clone git@github.com:lidofinance/cosmos-query-relayer.git`
+1. `git clone git@github.com:neutron-org/cosmos-query-relayer.git`
 2. `cd cosmos-query-relayer`
-3. `cp configs/dev.example.2-lido-chains.yml configs/dev.yml`
+3. `cp configs/dev.example.2-neutron-chains.yml configs/dev.yml`
 4. `make dev`

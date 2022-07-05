@@ -1,5 +1,5 @@
 syntax = "proto3";
-package lidofinance.interchainadapter.interchaintxs;
+package neutron_org.interchainadapter.interchaintxs;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -7,14 +7,14 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "interchaintxs/v1/params.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/gaia-wasm-zone/x/interchaintxs/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get =
-        "/lidofinance/interchaintxs/interchaintxs/params";
+        "/neutron_org/interchaintxs/interchaintxs/params";
   }
   // this line is used by starport scaffolding # 2
 }

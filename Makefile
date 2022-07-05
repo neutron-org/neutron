@@ -12,7 +12,7 @@ SIMAPP = ./app
 DOCKER := $(shell which docker)
 BUF_IMAGE=bufbuild/buf@sha256:9dc5d6645f8f8a2d5aaafc8957fbbb5ea64eada98a84cb09654e8f49d6f73b3e
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(BUF_IMAGE)
-HTTPS_GIT := https://github.com/lidofinance/gaia-wasm-zone.git
+HTTPS_GIT := https://github.com/neutron-org/gaia-wasm-zone.git
 
 export GO111MODULE = on
 

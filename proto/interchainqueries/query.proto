@@ -1,5 +1,5 @@
 syntax = "proto3";
-package lidofinance.interchainadapter.interchainqueries;
+package neutron_org.interchainadapter.interchainqueries;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -10,34 +10,34 @@ import "interchainqueries/tx.proto";
 
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/gaia-wasm-zone/x/interchainqueries/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get =
-        "/lidofinance/interchainqueries/interchainqueries/params";
+        "/neutron_org/interchainqueries/interchainqueries/params";
   }
 
   rpc RegisteredQueries(QueryRegisteredQueriesRequest)
       returns (QueryRegisteredQueriesResponse) {
     option (google.api.http).get =
-        "/lidofinance/interchainqueries/interchainqueries/registered_queries";
+        "/neutron_org/interchainqueries/interchainqueries/registered_queries";
   }
 
   rpc RegisteredQuery(QueryRegisteredQueryRequest)
       returns (QueryRegisteredQueryResponse) {
     option (google.api.http).get =
-        "/lidofinance/interchainqueries/interchainqueries/registered_query";
+        "/neutron_org/interchainqueries/interchainqueries/registered_query";
   }
 
   rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
-    option (google.api.http).get = "/lidofinance/interchainqueries/interchainqueries/query_result";
+    option (google.api.http).get = "/neutron_org/interchainqueries/interchainqueries/query_result";
   }
 
   rpc QueryTransactions(QuerySubmittedTransactionsRequest) returns (QuerySubmittedTransactionsResponse) {
-    option (google.api.http).get = "/lidofinance/interchainqueries/interchainqueries/query_transactions";
+    option (google.api.http).get = "/neutron_org/interchainqueries/interchainqueries/query_transactions";
   }
   // this line is used by starport scaffolding # 2
 }

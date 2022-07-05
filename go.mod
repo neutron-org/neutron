@@ -1,4 +1,4 @@
-module github.com/lidofinance/gaia-wasm-zone
+module github.com/neutron-org/neutron
 
 go 1.18
 
