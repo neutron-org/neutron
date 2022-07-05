@@ -3,7 +3,7 @@ package neutron_org.interchainadapter.interchaintxs;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/gaia-wasm-zone/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
 // Params defines the parameters for the module.
 message Params { option (gogoproto.goproto_stringer) = false; }

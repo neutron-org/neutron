@@ -1,18 +1,18 @@
-gaia-wasm-zoned init my-node --chain-id testnet
+neutrond init my-node --chain-id testnet
 
 # Create a key to hold your validator account
-gaia-wasm-zoned keys add test
+neutrond keys add test
 
 # Add that key into the genesis.app_state.accounts array in the genesis file
 # NOTE: this command lets you set the number of coins. Make sure this account has some coins
 # with the genesis.app_state.staking.params.bond_denom denom, the default is staking
-gaia-wasm-zoned add-genesis-account $(gaia-wasm-zoned keys show test -a) 1000000000000000stake,1000000000validatortoken
+neutrond add-genesis-account $(neutrond keys show test -a) 1000000000000000stake,1000000000validatortoken
 
 # Generate the transaction that creates your validator
-gaia-wasm-zoned gentx test 1000000000stake --chain-id testnet
+neutrond gentx test 1000000000stake --chain-id testnet
 
 # Add the generated bonding transaction to the genesis file
-gaia-wasm-zoned collect-gentxs
+neutrond collect-gentxs
 
-# Now its safe to start `gaiad`
-gaia-wasm-zoned start --minimum-gas-prices 0.25stake
+# Now its safe to start `neutrond`
+neutrond start --minimum-gas-prices 0.25stake

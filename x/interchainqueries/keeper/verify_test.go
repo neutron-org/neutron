@@ -2,6 +2,9 @@ package keeper_test
 
 import (
 	"fmt"
+	"math"
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -16,8 +19,6 @@ import (
 	tmprotoversion "github.com/tendermint/tendermint/proto/tendermint/version"
 	tmtypes "github.com/tendermint/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/version"
-	"math"
-	"time"
 )
 
 // CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow
@@ -194,7 +195,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
+				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
 			},
 			nil,
 		},
@@ -215,7 +216,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
+				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
 			},
 			iqtypes.ErrInvalidHeader,
 		},
@@ -236,7 +237,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
+				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
 			},
 			iqtypes.ErrInvalidHeader,
 		},
@@ -267,7 +268,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				oldNextHeader.TrustedHeight = headerWithTrustedHeight.TrustedHeight
 				oldNextHeader.TrustedValidators = headerWithTrustedHeight.TrustedValidators
 
-				return suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, &oldHeader, &oldNextHeader)
+				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, &oldHeader, &oldNextHeader)
 			},
 			nil,
 		},

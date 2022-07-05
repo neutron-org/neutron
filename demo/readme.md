@@ -5,7 +5,7 @@ These scripts can be used to test interchain transactions with deployed wasm con
 ## Requirements
 
 1. have wasm contracts be build in `./../lido-interchain-staking-contracts/artifacts`
-2. have gaia build and run like `make build && make init && make start-rly`
+2. have neutron build and run like `make build && make init && make start-rly`
 
 ## How to test
 
