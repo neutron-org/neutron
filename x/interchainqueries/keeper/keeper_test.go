@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"fmt"
+	"testing"
+
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -16,7 +18,6 @@ import (
 	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
 )
 
 var (
@@ -106,7 +107,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 
 	a, ok := endpoint.Chain.App.(*app.App)
 	if !ok {
-		return fmt.Errorf("not GaiaWasmZoneApp")
+		return fmt.Errorf("not NeutronZoneApp")
 	}
 
 	if err := a.ICAControllerKeeper.RegisterInterchainAccount(endpoint.Chain.GetContext(), endpoint.ConnectionID, icaOwner.String()); err != nil {
@@ -124,10 +125,10 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 	return nil
 }
 
-func (s *KeeperTestSuite) GetGaiaWasmZoneApp(chain *ibctesting.TestChain) *app.App {
+func (s *KeeperTestSuite) GetNeutronZoneApp(chain *ibctesting.TestChain) *app.App {
 	testApp, ok := chain.App.(*app.App)
 	if !ok {
-		panic("not GaiaWasmZone app")
+		panic("not NeutronZone app")
 	}
 
 	return testApp
@@ -178,7 +179,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 
 		tt.malleate()
 
-		msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+		msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 		res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &msg)
 
@@ -246,7 +247,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 				}
 
-				msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
@@ -270,7 +271,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 				}
 
-				msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
@@ -300,7 +301,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 				}
 
-				msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
@@ -349,7 +350,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 				}
 
-				msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
@@ -397,7 +398,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 				}
 
-				msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
@@ -446,7 +447,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 				}
 
-				msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
@@ -455,7 +456,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.path.EndpointA.UpdateClient())
 
 				// pretend like we have a very new query result
-				suite.NoError(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(suite.chainA.GetContext(), res.Id, 9999))
+				suite.NoError(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(suite.chainA.GetContext(), res.Id, 9999))
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
@@ -495,7 +496,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 			tt.malleate()
 
-			msgSrv := keeper.NewMsgServerImpl(suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper)
+			msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
 
 			res, err := msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &msg)
 
@@ -515,7 +516,7 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 	queryID := uint64(1)
 
 	ctx := suite.chainA.GetContext()
-	queriesKeeper := suite.GetGaiaWasmZoneApp(suite.chainA).InterchainQueriesKeeper
+	queriesKeeper := suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper
 
 	lastID := queriesKeeper.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
 

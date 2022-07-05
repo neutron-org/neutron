@@ -34,5 +34,5 @@ done
 #$(find "$(pwd)/proto" -maxdepth 5 -name '*.proto')
 
 # move proto files to the right places
-cp -r github.com/neutron-org/gaia-wasm-zone/* ./
+cp -r github.com/neutron-org/neutron/* ./
 rm -rf github.com
