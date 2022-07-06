@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const delimeter = "."
+const delimiter = "."
 
 type ICAOwner string
 
@@ -16,11 +16,11 @@ func (i ICAOwner) String() string {
 }
 
 func NewICAOwner(contractAddress, owner string) ICAOwner {
-	return ICAOwner(contractAddress + delimeter + owner)
+	return ICAOwner(contractAddress + delimiter + owner)
 }
 
 func (i ICAOwner) GetContract() (sdk.AccAddress, error) {
-	splittedOwner := strings.Split(strings.ReplaceAll(string(i), icatypes.PortPrefix, ""), delimeter)
+	splittedOwner := strings.Split(strings.ReplaceAll(string(i), icatypes.PortPrefix, ""), delimiter)
 	if len(splittedOwner) < 2 {
 		return nil, sdkerrors.Wrap(ErrInvalidICAOwner, "invalid ICA owner format")
 	}
