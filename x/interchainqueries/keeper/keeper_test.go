@@ -96,7 +96,8 @@ func SetupICAPath(path *ibctesting.Path, owner string) error {
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
 func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) error {
-	portID, err := icatypes.NewControllerPortID(ictxstypes.NewICAOwner(owner, "owner").String())
+	icaOwner, _ := ictxstypes.NewICAOwner(TestOwnerAddress, "owner_id")
+	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
 		return err
 	}
@@ -108,7 +109,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 		return fmt.Errorf("not GaiaWasmZoneApp")
 	}
 
-	if err := a.ICAControllerKeeper.RegisterInterchainAccount(endpoint.Chain.GetContext(), endpoint.ConnectionID, ictxstypes.NewICAOwner(owner, "owner").String()); err != nil {
+	if err := a.ICAControllerKeeper.RegisterInterchainAccount(endpoint.Chain.GetContext(), endpoint.ConnectionID, icaOwner.String()); err != nil {
 		return err
 	}
 

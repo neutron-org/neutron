@@ -34,7 +34,12 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, types.NewICAOwner(msg.FromAddress, msg.Owner).String()); err != nil {
+	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.Owner)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
+	}
+
+	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String()); err != nil {
 		k.Logger(ctx).Error("failed to create RegisterInterchainAccount:", "error", err, "owner", msg.Owner, "connection_id", msg.ConnectionId)
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
@@ -45,8 +50,12 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	icaOwner := types.NewICAOwner(msg.FromAddress, msg.Owner).String()
-	portID, err := icatypes.NewControllerPortID(icaOwner)
+	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.Owner)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
+	}
+
+	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
 		k.Logger(ctx).Error("failed to create NewControllerPortID:", "error", err, "owner", icaOwner)
 		return nil, sdkerrors.Wrap(err, "failed to create NewControllerPortID")

@@ -9,21 +9,52 @@ import (
 
 const delimiter = "."
 
-type ICAOwner string
+type ICAOwner struct {
+	contractAddress sdk.AccAddress
+	owner           string
+}
 
 func (i ICAOwner) String() string {
-	return string(i)
+	return i.contractAddress.String() + delimiter + i.owner
 }
 
-func NewICAOwner(contractAddress, owner string) ICAOwner {
-	return ICAOwner(contractAddress + delimiter + owner)
+func NewICAOwner(contractAddress, owner string) (ICAOwner, error) {
+	// this is production version of the code
+	// must be uncommented when the contracts are ready to send IC txs
+	//
+	//sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddress)
+	//if err != nil {
+	//	return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
+	//}
+	//return ICAOwner{contractAddress: sdkContractAddress}, nil
+
+	// this is ONLY for the demo scripts to see that Sudo actually works
+	// this means anyone can set contractAddress
+	sdkContractAddress, err := sdk.AccAddressFromBech32(owner)
+	if err != nil {
+		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
+	}
+	return ICAOwner{contractAddress: sdkContractAddress}, nil
 }
 
-func (i ICAOwner) GetContract() (sdk.AccAddress, error) {
-	splittedOwner := strings.Split(strings.ReplaceAll(string(i), icatypes.PortPrefix, ""), delimiter)
+func ICAOwnerFromPort(port string) (ICAOwner, error) {
+	splittedOwner := strings.Split(strings.ReplaceAll(port, icatypes.PortPrefix, ""), delimiter)
 	if len(splittedOwner) < 2 {
-		return nil, sdkerrors.Wrap(ErrInvalidICAOwner, "invalid ICA owner format")
+		return ICAOwner{}, sdkerrors.Wrap(ErrInvalidICAOwner, "invalid ICA owner format")
 	}
 
-	return sdk.AccAddressFromBech32(splittedOwner[0])
+	contractAddress, err := sdk.AccAddressFromBech32(splittedOwner[0])
+	if err != nil {
+		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
+	}
+
+	return ICAOwner{contractAddress: contractAddress, owner: splittedOwner[1]}, nil
+}
+
+func (i ICAOwner) GetContract() sdk.AccAddress {
+	return i.contractAddress
+}
+
+func (i ICAOwner) GetOwner() string {
+	return i.owner
 }

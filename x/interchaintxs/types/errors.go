@@ -8,6 +8,6 @@ import (
 
 // x/interchaintxs module sentinel errors
 var (
-	ErrSample          = sdkerrors.Register(ModuleName, 1100, "sample error")
-	ErrInvalidICAOwner = sdkerrors.Register(ModuleName, 1101, "invalid interchain account owner")
+	ErrInvalidICAOwner       = sdkerrors.Register(ModuleName, 1100, "invalid interchain account owner")
+	ErrInvalidAccountAddress = sdkerrors.Register(ModuleName, 1101, "invalid account address")
 )
