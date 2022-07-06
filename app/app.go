@@ -123,8 +123,6 @@ import (
 )
 
 const (
-	// should we use our own prefix name?
-	AccountAddressPrefix = "cosmos"
 	Name                 = "neutrond"
 )
 
