@@ -113,35 +113,131 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
+// this line is used by starport scaffolding # 3
+type QueryInterchainAccountAddressRequest struct {
+	// Owner address is the owner of the interchain account on the controller chain
+	OwnerAddress string `protobuf:"bytes,1,opt,name=owner_address,json=ownerAddress,proto3" json:"owner_address,omitempty"`
+	ConnectionId string `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+}
+
+func (m *QueryInterchainAccountAddressRequest) Reset()         { *m = QueryInterchainAccountAddressRequest{} }
+func (m *QueryInterchainAccountAddressRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryInterchainAccountAddressRequest) ProtoMessage()    {}
+func (*QueryInterchainAccountAddressRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_85130b102faab7ea, []int{2}
+}
+func (m *QueryInterchainAccountAddressRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryInterchainAccountAddressRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryInterchainAccountAddressRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryInterchainAccountAddressRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryInterchainAccountAddressRequest.Merge(m, src)
+}
+func (m *QueryInterchainAccountAddressRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryInterchainAccountAddressRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryInterchainAccountAddressRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryInterchainAccountAddressRequest proto.InternalMessageInfo
+
+// Query response for an interchain account address
+type QueryInterchainAccountAddressResponse struct {
+	// The corresponding interchain account address on the host chain
+	InterchainAccountAddress string `protobuf:"bytes,1,opt,name=interchain_account_address,json=interchainAccountAddress,proto3" json:"interchain_account_address,omitempty"`
+}
+
+func (m *QueryInterchainAccountAddressResponse) Reset()         { *m = QueryInterchainAccountAddressResponse{} }
+func (m *QueryInterchainAccountAddressResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryInterchainAccountAddressResponse) ProtoMessage()    {}
+func (*QueryInterchainAccountAddressResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_85130b102faab7ea, []int{3}
+}
+func (m *QueryInterchainAccountAddressResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryInterchainAccountAddressResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryInterchainAccountAddressResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryInterchainAccountAddressResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryInterchainAccountAddressResponse.Merge(m, src)
+}
+func (m *QueryInterchainAccountAddressResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryInterchainAccountAddressResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryInterchainAccountAddressResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryInterchainAccountAddressResponse proto.InternalMessageInfo
+
+func (m *QueryInterchainAccountAddressResponse) GetInterchainAccountAddress() string {
+	if m != nil {
+		return m.InterchainAccountAddress
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "neutron.interchainadapter.interchaintxs.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "neutron.interchainadapter.interchaintxs.QueryParamsResponse")
+	proto.RegisterType((*QueryInterchainAccountAddressRequest)(nil), "neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressRequest")
+	proto.RegisterType((*QueryInterchainAccountAddressResponse)(nil), "neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse")
 }
 
 func init() { proto.RegisterFile("interchaintxs/v1/query.proto", fileDescriptor_85130b102faab7ea) }
 
 var fileDescriptor_85130b102faab7ea = []byte{
-	// 320 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x91, 0x31, 0x4f, 0x02, 0x31,
-	0x14, 0xc7, 0xaf, 0x46, 0x19, 0xce, 0xad, 0x32, 0x18, 0x82, 0xd5, 0xb0, 0x68, 0x34, 0xb4, 0x01,
-	0xdc, 0x74, 0x62, 0xd7, 0x28, 0xa3, 0x5b, 0x0f, 0x9a, 0xd2, 0x44, 0xfa, 0x4a, 0xdb, 0x23, 0xb0,
-	0xfa, 0x09, 0x4c, 0xfc, 0x32, 0xce, 0x4e, 0x8c, 0x24, 0x2e, 0x4e, 0xc6, 0x70, 0x7e, 0x10, 0xc3,
-	0xf5, 0xd4, 0x9c, 0x2c, 0xc4, 0xad, 0x7d, 0xfd, 0xff, 0x7f, 0xef, 0xfd, 0xfb, 0xe2, 0xba, 0xd2,
-	0x5e, 0xd8, 0xfe, 0x90, 0x2b, 0xed, 0xa7, 0x8e, 0x4d, 0x5a, 0x6c, 0x9c, 0x0a, 0x3b, 0xa3, 0xc6,
-	0x82, 0x07, 0x7c, 0xac, 0x45, 0xea, 0x2d, 0x68, 0xfa, 0xab, 0xe2, 0x03, 0x6e, 0xbc, 0xb0, 0xb4,
-	0xe4, 0xab, 0x55, 0x25, 0x48, 0xc8, 0x3d, 0x6c, 0x75, 0x0a, 0xf6, 0x5a, 0x5d, 0x02, 0xc8, 0x7b,
-	0xc1, 0xb8, 0x51, 0x8c, 0x6b, 0x0d, 0x9e, 0x7b, 0x05, 0xda, 0x15, 0xaf, 0xa7, 0x7d, 0x70, 0x23,
-	0x70, 0x2c, 0xe1, 0x4e, 0x84, 0xae, 0x6c, 0xd2, 0x4a, 0x84, 0xe7, 0x2d, 0x66, 0xb8, 0x54, 0x3a,
-	0x17, 0x17, 0xda, 0x83, 0xb5, 0x31, 0x0d, 0xb7, 0x7c, 0x54, 0xa0, 0x1a, 0xd5, 0x18, 0xdf, 0xae,
-	0x00, 0x37, 0x79, 0xb1, 0x27, 0xc6, 0xa9, 0x70, 0xbe, 0x31, 0x88, 0xf7, 0x4a, 0x55, 0x67, 0x40,
-	0x3b, 0x81, 0xaf, 0xe2, 0x4a, 0x30, 0xef, 0xa3, 0x23, 0x74, 0xb2, 0xdb, 0x66, 0x74, 0xc3, 0x94,
-	0x34, 0x80, 0xba, 0xdb, 0xf3, 0xf7, 0xc3, 0xa8, 0x57, 0x40, 0xda, 0x2f, 0x28, 0xde, 0xc9, 0xdb,
-	0xe0, 0x67, 0x14, 0x57, 0x82, 0x04, 0x5f, 0x6c, 0xcc, 0x5c, 0x9f, 0xbb, 0x76, 0xf9, 0x3f, 0x73,
-	0x88, 0xd7, 0xe8, 0x3c, 0xbc, 0x7e, 0x3e, 0x6d, 0x35, 0xf1, 0x19, 0x2b, 0x28, 0xac, 0xfc, 0x77,
-	0xe5, 0x5b, 0x08, 0xd1, 0xbd, 0x9e, 0x2f, 0x09, 0x5a, 0x2c, 0x09, 0xfa, 0x58, 0x12, 0xf4, 0x98,
-	0x91, 0x68, 0x91, 0x91, 0xe8, 0x2d, 0x23, 0xd1, 0xdd, 0xb9, 0x54, 0x7e, 0x98, 0x26, 0xb4, 0x0f,
-	0xa3, 0x6f, 0x60, 0x13, 0xac, 0xfc, 0x81, 0x4f, 0xff, 0x00, 0xfd, 0xcc, 0x08, 0x97, 0x54, 0xf2,
-	0xbd, 0x74, 0xbe, 0x02, 0x00, 0x00, 0xff, 0xff, 0x86, 0xcb, 0xd5, 0x71, 0x5f, 0x02, 0x00, 0x00,
+	// 448 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x53, 0xbf, 0x6e, 0xd3, 0x40,
+	0x18, 0xb7, 0x0b, 0x44, 0x70, 0xc0, 0x72, 0x74, 0xb0, 0xac, 0xe2, 0x20, 0x03, 0x02, 0x81, 0xea,
+	0x53, 0x5a, 0x26, 0xe8, 0xd2, 0x6e, 0x1d, 0x5a, 0x41, 0x46, 0x96, 0xe8, 0x6c, 0x9f, 0xdc, 0x93,
+	0xc8, 0x7d, 0xee, 0xdd, 0xb9, 0xb4, 0x4c, 0x88, 0x89, 0x11, 0x89, 0x17, 0xe8, 0x63, 0x20, 0xf1,
+	0x02, 0x19, 0x23, 0xb1, 0x30, 0x21, 0x94, 0x30, 0xf0, 0x18, 0xc8, 0x77, 0x97, 0x44, 0x4e, 0x14,
+	0x25, 0x20, 0xb6, 0xe4, 0xf3, 0xef, 0xcf, 0xf7, 0xfb, 0x7d, 0x36, 0xda, 0xe2, 0x42, 0x33, 0x99,
+	0x9d, 0x50, 0x2e, 0xf4, 0xb9, 0x22, 0x67, 0x1d, 0x72, 0x5a, 0x31, 0x79, 0x91, 0x94, 0x12, 0x34,
+	0xe0, 0x47, 0x82, 0x55, 0x5a, 0x82, 0x48, 0x66, 0x28, 0x9a, 0xd3, 0x52, 0x33, 0x99, 0x34, 0x78,
+	0xe1, 0x66, 0x01, 0x05, 0x18, 0x0e, 0xa9, 0x7f, 0x59, 0x7a, 0xb8, 0x55, 0x00, 0x14, 0x6f, 0x18,
+	0xa1, 0x25, 0x27, 0x54, 0x08, 0xd0, 0x54, 0x73, 0x10, 0xca, 0x3d, 0x7d, 0x92, 0x81, 0xea, 0x83,
+	0x22, 0x29, 0x55, 0xcc, 0xba, 0x92, 0xb3, 0x4e, 0xca, 0x34, 0xed, 0x90, 0x92, 0x16, 0x5c, 0x18,
+	0xb0, 0xc3, 0xde, 0x5d, 0x58, 0xb3, 0xa4, 0x92, 0xf6, 0x9d, 0x54, 0xbc, 0x89, 0xf0, 0xab, 0x5a,
+	0xe0, 0xa5, 0x19, 0x76, 0xd9, 0x69, 0xc5, 0x94, 0x8e, 0x73, 0x74, 0xa7, 0x31, 0x55, 0x25, 0x08,
+	0xc5, 0xf0, 0x11, 0x6a, 0x59, 0x72, 0xe0, 0xdf, 0xf3, 0x1f, 0xdf, 0xdc, 0x21, 0xc9, 0x9a, 0x29,
+	0x13, 0x2b, 0x74, 0x70, 0x75, 0xf0, 0xa3, 0xed, 0x75, 0x9d, 0x48, 0xfc, 0x0e, 0x3d, 0x30, 0x2e,
+	0x87, 0x53, 0xe8, 0x7e, 0x96, 0x41, 0x25, 0xf4, 0x7e, 0x9e, 0x4b, 0xa6, 0x26, 0xdb, 0xe0, 0xfb,
+	0xe8, 0x36, 0xbc, 0x15, 0x4c, 0xf6, 0xa8, 0x9d, 0x1b, 0xf7, 0x1b, 0xdd, 0x5b, 0x66, 0xe8, 0xb0,
+	0x35, 0x28, 0x03, 0x21, 0x58, 0x56, 0x67, 0xef, 0xf1, 0x3c, 0xd8, 0xb0, 0xa0, 0xd9, 0xf0, 0x30,
+	0x7f, 0x7e, 0xfd, 0xe3, 0x65, 0xdb, 0xfb, 0x7d, 0xd9, 0xf6, 0x62, 0x86, 0x1e, 0xae, 0xf0, 0x76,
+	0x99, 0xf7, 0x50, 0x38, 0x8b, 0xd2, 0xa3, 0x16, 0x34, 0xb7, 0x49, 0xc0, 0x97, 0xa8, 0xec, 0xbc,
+	0xbf, 0x82, 0xae, 0x19, 0x1f, 0xfc, 0xc5, 0x47, 0x2d, 0xdb, 0x02, 0x7e, 0xb1, 0x76, 0x6d, 0x8b,
+	0xa7, 0x09, 0xf7, 0xfe, 0x8d, 0x6c, 0xd3, 0xc4, 0xbb, 0x1f, 0xbe, 0xfd, 0xfa, 0xbc, 0xb1, 0x8d,
+	0x9f, 0x12, 0xa7, 0x42, 0x9a, 0xaf, 0x47, 0xf3, 0x9f, 0xbd, 0x13, 0xfe, 0xea, 0xa3, 0x60, 0x59,
+	0x4f, 0xf8, 0xe8, 0xef, 0xf6, 0x59, 0x71, 0xeb, 0xf0, 0xf8, 0x7f, 0xc9, 0xb9, 0xc0, 0xde, 0xc1,
+	0xf1, 0x60, 0x14, 0xf9, 0xc3, 0x51, 0xe4, 0xff, 0x1c, 0x45, 0xfe, 0xa7, 0x71, 0xe4, 0x0d, 0xc7,
+	0x91, 0xf7, 0x7d, 0x1c, 0x79, 0xaf, 0x9f, 0x15, 0x5c, 0x9f, 0x54, 0x69, 0x92, 0x41, 0x7f, 0x52,
+	0xc7, 0x36, 0xc8, 0x62, 0x5a, 0xcd, 0xf9, 0x5c, 0x1d, 0xfa, 0xa2, 0x64, 0x2a, 0x6d, 0x99, 0x0f,
+	0x67, 0xf7, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x3a, 0x47, 0x9c, 0xdb, 0x00, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -158,6 +254,7 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Parameters queries the parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	InterchainAccountAddress(ctx context.Context, in *QueryInterchainAccountAddressRequest, opts ...grpc.CallOption) (*QueryInterchainAccountAddressResponse, error)
 }
 
 type queryClient struct {
@@ -177,10 +274,20 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
+func (c *queryClient) InterchainAccountAddress(ctx context.Context, in *QueryInterchainAccountAddressRequest, opts ...grpc.CallOption) (*QueryInterchainAccountAddressResponse, error) {
+	out := new(QueryInterchainAccountAddressResponse)
+	err := c.cc.Invoke(ctx, "/neutron.interchainadapter.interchaintxs.Query/InterchainAccountAddress", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	InterchainAccountAddress(context.Context, *QueryInterchainAccountAddressRequest) (*QueryInterchainAccountAddressResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -189,6 +296,9 @@ type UnimplementedQueryServer struct {
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
+}
+func (*UnimplementedQueryServer) InterchainAccountAddress(ctx context.Context, req *QueryInterchainAccountAddressRequest) (*QueryInterchainAccountAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InterchainAccountAddress not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -213,6 +323,24 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_InterchainAccountAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryInterchainAccountAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).InterchainAccountAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/neutron.interchainadapter.interchaintxs.Query/InterchainAccountAddress",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).InterchainAccountAddress(ctx, req.(*QueryInterchainAccountAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "neutron.interchainadapter.interchaintxs.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -220,6 +348,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Params",
 			Handler:    _Query_Params_Handler,
+		},
+		{
+			MethodName: "InterchainAccountAddress",
+			Handler:    _Query_InterchainAccountAddress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -282,6 +414,73 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryInterchainAccountAddressRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryInterchainAccountAddressRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryInterchainAccountAddressRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConnectionId) > 0 {
+		i -= len(m.ConnectionId)
+		copy(dAtA[i:], m.ConnectionId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConnectionId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OwnerAddress) > 0 {
+		i -= len(m.OwnerAddress)
+		copy(dAtA[i:], m.OwnerAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OwnerAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryInterchainAccountAddressResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryInterchainAccountAddressResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryInterchainAccountAddressResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.InterchainAccountAddress) > 0 {
+		i -= len(m.InterchainAccountAddress)
+		copy(dAtA[i:], m.InterchainAccountAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.InterchainAccountAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -310,6 +509,36 @@ func (m *QueryParamsResponse) Size() (n int) {
 	_ = l
 	l = m.Params.Size()
 	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryInterchainAccountAddressRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OwnerAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ConnectionId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryInterchainAccountAddressResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.InterchainAccountAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -430,6 +659,202 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryInterchainAccountAddressRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryInterchainAccountAddressRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryInterchainAccountAddressRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OwnerAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OwnerAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConnectionId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryInterchainAccountAddressResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryInterchainAccountAddressResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryInterchainAccountAddressResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InterchainAccountAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.InterchainAccountAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

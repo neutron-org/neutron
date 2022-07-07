@@ -16,6 +16,7 @@ service Query {
     option (google.api.http).get =
         "/neutron/interchaintxs/interchaintxs/params";
   }
+  rpc InterchainAccountAddress(QueryInterchainAccountAddressRequest) returns (QueryInterchainAccountAddressResponse) {}
   // this line is used by starport scaffolding # 2
 }
 
@@ -29,3 +30,17 @@ message QueryParamsResponse {
 }
 
 // this line is used by starport scaffolding # 3
+message QueryInterchainAccountAddressRequest {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // Owner address is the owner of the interchain account on the controller chain
+  string owner_address = 1;
+  string connection_id = 2;
+}
+
+// Query response for an interchain account address
+message QueryInterchainAccountAddressResponse {
+  // The corresponding interchain account address on the host chain
+  string interchain_account_address = 1;
+}
