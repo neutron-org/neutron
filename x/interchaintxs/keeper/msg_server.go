@@ -88,6 +88,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	packetData := icatypes.InterchainAccountPacketData{
 		Type: icatypes.EXECUTE_TX,
 		Data: data,
+		Memo: msg.Memo,
 	}
 
 	timeoutTimestamp := time.Now().Add(InterchainTxTimeout).UnixNano()
