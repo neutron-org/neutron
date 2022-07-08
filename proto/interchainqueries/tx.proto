@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron_org.interchainadapter.interchainqueries;
+package neutron.interchainadapter.interchainqueries;
 
 import "tendermint/crypto/proof.proto";
 import "tendermint/abci/types.proto";

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron_org.interchainadapter.interchaintxs.v1;
+package neutron.interchainadapter.interchaintxs.v1;
 
 option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
@@ -14,14 +14,14 @@ service Msg {
   rpc RegisterInterchainAccount(MsgRegisterInterchainAccount)
       returns (MsgRegisterInterchainAccountResponse) {
     option (google.api.http) = {
-      post : "/neutron_org/interchainadapter/interchaintxs/tx/v1/register/"
+      post : "/neutron/interchainadapter/interchaintxs/tx/v1/register/"
              "interchain/account"
       body : "*"
     };
   };
   rpc SubmitTx(MsgSubmitTx) returns (MsgSubmitTxResponse) {
     option (google.api.http) = {
-      post : "/neutron_org/interchainadapter/interchaintxs/tx/v1/submit/tx"
+      post : "/neutron/interchainadapter/interchaintxs/tx/v1/submit/tx"
       body : "*"
     };
   };
