@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const delimiter = "."
+const Delimiter = "."
 
 type ICAOwner struct {
 	contractAddress     sdk.AccAddress
@@ -15,7 +15,7 @@ type ICAOwner struct {
 }
 
 func (i ICAOwner) String() string {
-	return i.contractAddress.String() + delimiter + i.interchainAccountID
+	return i.contractAddress.String() + Delimiter + i.interchainAccountID
 }
 
 func NewICAOwner(contractAddress, interchainAccountID string) (ICAOwner, error) {
@@ -38,7 +38,7 @@ func NewICAOwner(contractAddress, interchainAccountID string) (ICAOwner, error) 
 }
 
 func ICAOwnerFromPort(port string) (ICAOwner, error) {
-	splittedOwner := strings.Split(strings.TrimPrefix(port, icatypes.PortPrefix), delimiter)
+	splittedOwner := strings.SplitN(strings.TrimPrefix(port, icatypes.PortPrefix), Delimiter, 2)
 	if len(splittedOwner) < 2 {
 		return ICAOwner{}, sdkerrors.Wrap(ErrInvalidICAOwner, "invalid ICA interchainAccountID format")
 	}
