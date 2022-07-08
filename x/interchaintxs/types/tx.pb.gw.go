@@ -238,9 +238,9 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 }
 
 var (
-	pattern_Msg_RegisterInterchainAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7}, []string{"neutron_org", "interchainadapter", "interchaintxs", "tx", "v1", "register", "interchain", "account"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Msg_RegisterInterchainAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7}, []string{"neutron", "interchainadapter", "interchaintxs", "tx", "v1", "register", "interchain", "account"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Msg_SubmitTx_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 3}, []string{"neutron_org", "interchainadapter", "interchaintxs", "tx", "v1", "submit"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Msg_SubmitTx_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 3}, []string{"neutron", "interchainadapter", "interchaintxs", "tx", "v1", "submit"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

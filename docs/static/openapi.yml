@@ -29501,7 +29501,7 @@ paths:
           format: uint64
       tags:
         - Query
-  /neutron_org/interchainqueries/interchainqueries/params:
+  /neutron/interchainqueries/interchainqueries/params:
     get:
       summary: Parameters queries the parameters of the module.
       operationId: NeutronOrgInterchainadapterInterchainqueriesParams
@@ -29537,7 +29537,7 @@ paths:
                   additionalProperties: {}
       tags:
         - Query
-  /neutron_org/interchainqueries/interchainqueries/query_result:
+  /neutron/interchainqueries/interchainqueries/query_result:
     get:
       operationId: NeutronOrgInterchainadapterInterchainqueriesQueryResult
       responses:
@@ -29713,7 +29713,7 @@ paths:
           format: uint64
       tags:
         - Query
-  /neutron_org/interchainqueries/interchainqueries/registered_queries:
+  /neutron/interchainqueries/interchainqueries/registered_queries:
     get:
       operationId: NeutronOrgInterchainadapterInterchainqueriesRegisteredQueries
       responses:
@@ -50918,7 +50918,7 @@ definitions:
     description: >-
       QueryAppVersionResponse is the response type for the Query/AppVersion RPC
       method.
-  neutron_org.interchainadapter.interchainqueries.MerkleProof:
+  neutron.interchainadapter.interchainqueries.MerkleProof:
     type: object
     properties:
       total:
@@ -50935,25 +50935,25 @@ definitions:
         items:
           type: string
           format: byte
-  neutron_org.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse:
+  neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse:
     type: object
     properties:
       id:
         type: string
         format: uint64
-  neutron_org.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse:
+  neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse:
     type: object
-  neutron_org.interchainadapter.interchainqueries.Params:
+  neutron.interchainadapter.interchainqueries.Params:
     type: object
     description: Params defines the parameters for the module.
-  neutron_org.interchainadapter.interchainqueries.QueryParamsResponse:
+  neutron.interchainadapter.interchainqueries.QueryParamsResponse:
     type: object
     properties:
       params:
         description: params holds all the parameters of this module.
         type: object
     description: QueryParamsResponse is response type for the Query/Params RPC method.
-  neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse:
+  neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse:
     type: object
     properties:
       registered_queries:
@@ -50981,7 +50981,7 @@ definitions:
             last_remote_height:
               type: string
               format: uint64
-  neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse:
+  neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse:
     type: object
     properties:
       result:
@@ -51122,7 +51122,7 @@ definitions:
           height:
             type: string
             format: uint64
-  neutron_org.interchainadapter.interchainqueries.QueryResult:
+  neutron.interchainadapter.interchainqueries.QueryResult:
     type: object
     properties:
       kv_results:
@@ -51260,7 +51260,7 @@ definitions:
       height:
         type: string
         format: uint64
-  neutron_org.interchainadapter.interchainqueries.RegisteredQuery:
+  neutron.interchainadapter.interchainqueries.RegisteredQuery:
     type: object
     properties:
       id:
@@ -51283,7 +51283,7 @@ definitions:
       last_remote_height:
         type: string
         format: uint64
-  neutron_org.interchainadapter.interchainqueries.StorageValue:
+  neutron.interchainadapter.interchainqueries.StorageValue:
     type: object
     properties:
       storage_prefix:
@@ -51315,7 +51315,7 @@ definitions:
                 The data could be arbitrary format, providing nessecary data
                 for example neighbouring node hash
         title: ProofOps is Merkle proof defined by the list of ProofOps
-  neutron_org.interchainadapter.interchainqueries.TxValue:
+  neutron.interchainadapter.interchainqueries.TxValue:
     type: object
     properties:
       tx:

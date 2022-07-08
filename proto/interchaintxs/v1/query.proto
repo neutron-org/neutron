@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron_org.interchainadapter.interchaintxs;
+package neutron.interchainadapter.interchaintxs;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -14,7 +14,7 @@ service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get =
-        "/neutron_org/interchaintxs/interchaintxs/params";
+        "/neutron/interchaintxs/interchaintxs/params";
   }
   // this line is used by starport scaffolding # 2
 }

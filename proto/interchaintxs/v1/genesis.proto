@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron_org.interchainadapter.interchaintxs;
+package neutron.interchainadapter.interchaintxs;
 
 import "gogoproto/gogo.proto";
 import "interchaintxs/v1/params.proto";
