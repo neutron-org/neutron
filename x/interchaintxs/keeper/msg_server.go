@@ -34,13 +34,13 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.Owner)
+	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
 	}
 
 	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String()); err != nil {
-		k.Logger(ctx).Error("failed to create RegisterInterchainAccount:", "error", err, "owner", msg.Owner, "connection_id", msg.ConnectionId)
+		k.Logger(ctx).Error("failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "connection_id", msg.ConnectionId)
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
 
@@ -50,7 +50,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.Owner)
+	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
 	}

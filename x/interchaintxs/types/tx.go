@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,8 +19,12 @@ func (m *MsgRegisterInterchainAccount) ValidateBasic() error {
 		return errors.New("empty connection id")
 	}
 
-	if len(m.Owner) == 0 {
-		return errors.New("empty owner")
+	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", m.FromAddress)
+	}
+
+	if len(m.InterchainAccountId) == 0 {
+		return errors.New("empty interchainAccountID")
 	}
 
 	return nil
@@ -49,8 +54,12 @@ func (m *MsgSubmitTx) ValidateBasic() error {
 		return errors.New("empty connection id")
 	}
 
-	if len(m.Owner) == 0 {
-		return errors.New("empty owner")
+	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", m.FromAddress)
+	}
+
+	if len(m.InterchainAccountId) == 0 {
+		return errors.New("empty interchainAccountID")
 	}
 
 	if len(m.Msgs) == 0 {

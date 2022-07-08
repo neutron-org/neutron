@@ -12,7 +12,6 @@ import (
 	"github.com/lidofinance/gaia-wasm-zone/testutil"
 	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
 	iqtypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
-	itypes "github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
 	ictxstypes "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -136,7 +135,7 @@ func (s *KeeperTestSuite) GetGaiaWasmZoneApp(chain *ibctesting.TestChain) *app.A
 func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 	suite.SetupTest()
 
-	var msg itypes.MsgRegisterInterchainQuery
+	var msg iqtypes.MsgRegisterInterchainQuery
 
 	tests := []struct {
 		name        string
@@ -146,7 +145,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		{
 			"invalid connection",
 			func() {
-				msg = itypes.MsgRegisterInterchainQuery{
+				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: "unknown",
 					QueryData:    "kek",
 					QueryType:    "type",
@@ -160,7 +159,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		{
 			"valid",
 			func() {
-				msg = itypes.MsgRegisterInterchainQuery{
+				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
@@ -195,7 +194,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	suite.SetupTest()
 
-	var msg itypes.MsgSubmitQueryResult
+	var msg iqtypes.MsgSubmitQueryResult
 
 	tests := []struct {
 		name          string
@@ -214,12 +213,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Prove:  true,
 				})
 
-				msg = itypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   TestOwnerAddress,
 					ClientId: suite.path.EndpointA.ClientID,
-					Result: &itypes.QueryResult{
-						KvResults: []*itypes.StorageValue{{
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
@@ -237,7 +236,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"empty result",
 			func() {
-				registerMsg := itypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
@@ -251,7 +250,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
 
-				msg = itypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
 					ClientId: suite.path.EndpointA.ClientID,
 				}
@@ -261,7 +260,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"empty kv results and blocks",
 			func() {
-				registerMsg := itypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
@@ -275,11 +274,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
 
-				msg = itypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResult{
 					Sender:   TestOwnerAddress,
 					QueryId:  res.Id,
 					ClientId: suite.path.EndpointA.ClientID,
-					Result: &itypes.QueryResult{
+					Result: &iqtypes.QueryResult{
 						KvResults: nil,
 						Blocks:    nil,
 						Height:    0,
@@ -291,7 +290,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"valid KV storage proof",
 			func() {
-				registerMsg := itypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
@@ -317,12 +316,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Prove:  true,
 				})
 
-				msg = itypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
 					Sender:   TestOwnerAddress,
 					ClientId: suite.path.EndpointA.ClientID,
-					Result: &itypes.QueryResult{
-						KvResults: []*itypes.StorageValue{{
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
@@ -340,7 +339,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"header with invalid height",
 			func() {
-				registerMsg := itypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
@@ -365,12 +364,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Prove:  true,
 				})
 
-				msg = itypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
 					Sender:   TestOwnerAddress,
 					ClientId: suite.path.EndpointA.ClientID,
-					Result: &itypes.QueryResult{
-						KvResults: []*itypes.StorageValue{{
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
@@ -388,7 +387,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"invalid KV storage value",
 			func() {
-				registerMsg := itypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
@@ -413,12 +412,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Prove:  true,
 				})
 
-				msg = itypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
 					Sender:   TestOwnerAddress,
 					ClientId: suite.path.EndpointA.ClientID,
-					Result: &itypes.QueryResult{
-						KvResults: []*itypes.StorageValue{{
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         []byte("some evil data"),
@@ -437,7 +436,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"query result height is too old",
 			func() {
 
-				registerMsg := itypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
@@ -466,12 +465,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Prove:  true,
 				})
 
-				msg = itypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
 					Sender:   TestOwnerAddress,
 					ClientId: suite.path.EndpointA.ClientID,
-					Result: &itypes.QueryResult{
-						KvResults: []*itypes.StorageValue{{
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
@@ -519,10 +518,10 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 
 	lastID := queriesKeeper.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
 
-	submittedTransactions := make([]*itypes.Transaction, 0)
+	submittedTransactions := make([]*iqtypes.Transaction, 0)
 	for i := 0; i < 10; i++ {
 
-		tx := itypes.Transaction{
+		tx := iqtypes.Transaction{
 			Id:     lastID,
 			Height: 0,
 			Data:   append([]byte("data"), byte(i)),
@@ -547,10 +546,10 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 
 	lastID = queriesKeeper.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
 
-	submittedTransactions = make([]*itypes.Transaction, 0)
+	submittedTransactions = make([]*iqtypes.Transaction, 0)
 	for i := 0; i < 20; i++ {
 
-		tx := itypes.Transaction{
+		tx := iqtypes.Transaction{
 			Id:     lastID,
 			Height: 1,
 			Data:   append([]byte("another data"), byte(i)),

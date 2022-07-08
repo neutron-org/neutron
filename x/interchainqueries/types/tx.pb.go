@@ -363,7 +363,7 @@ func (m *StorageValue) GetProof() *crypto.ProofOps {
 }
 
 type Block struct {
-	// We need to know block X+1 to verify result of transaction for block X
+	// We need to know block X+1 to verify response of transaction for block X
 	// since LastResultsHash is root hash of all results from the txs from the previous block
 	NextBlockHeader *types.Any `protobuf:"bytes,1,opt,name=next_block_header,json=nextBlockHeader,proto3" json:"next_block_header,omitempty"`
 	// We need to know block X to verify inclusion of transaction for block X
