@@ -62,7 +62,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo contract on packet acknowledgement", err)
-		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet acknowledgement")
+		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet acknowledgement")
 	}
 
 	return nil
@@ -81,7 +81,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) erro
 	_, err = k.SudoTimeout(ctx, icaOwner.GetContract(), packet)
 	if err != nil {
 		k.Logger(ctx).Error("failed to Sudo contract on packet timeout", err)
-		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet timeout")
+		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet timeout")
 	}
 
 	return nil
@@ -109,8 +109,8 @@ func (k *Keeper) HandleChanOpenAck(
 		CounterpartyVersion:   counterpartyVersion,
 	})
 	if err != nil {
-		k.Logger(ctx).Error("failed to Sudo the hub contract on packet openAck", err)
-		return sdkerrors.Wrap(err, "failed to Sudo the hub contract on packet openAck")
+		k.Logger(ctx).Error("failed to Sudo the contract on packet openAck", err)
+		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet openAck")
 	}
 
 	return nil
