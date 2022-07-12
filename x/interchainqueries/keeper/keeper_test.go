@@ -35,6 +35,8 @@ var (
 
 func init() {
 	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp
+	config := app.GetDefaultConfig()
+	config.Seal()
 }
 
 type KeeperTestSuite struct {
