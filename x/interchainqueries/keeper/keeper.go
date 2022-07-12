@@ -230,7 +230,7 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 
 	bz := store.Get(types.GetRegisteredQueryResultByIDKey(id))
 	if bz == nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "there is no query result with id: %v", id)
+		return nil, types.ErrNoQueryResult
 	}
 
 	var query types.QueryResult
