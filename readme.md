@@ -62,7 +62,7 @@ make init && make start-rly
 ### terminal 2
 1. Register an interchain query to get delegations of delegator on remote chain:
 ```
-neutrond tx interchainqueries register-interchain-query test-2 connection-0 x/staking/DelegatorDelegations '{"delegator": "cosmos1qnk2n4nlkpw9xfqntladh74w6ujtulwn7j8za9"}' 1 --from demowallet1 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-1 --keyring-backend test --home ./data/test-1 --node tcp://127.0.0.1:16657
+neutrond tx interchainqueries register-interchain-query test-2 connection-0 x/staking/DelegatorDelegations '{"delegator": "neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z"}' 1 --from demowallet1 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-1 --keyring-backend test --home ./data/test-1 --node tcp://127.0.0.1:16657
 ```
 
 2. Register an interchain query to search transactions on remote chain by some event (in this case it'll try to find all transactions for bank transfer):
@@ -72,7 +72,7 @@ neutrond tx interchainqueries register-interchain-query test-2 connection-0 x/tx
 
 3. Execute a bank transfer transaction on remote chain for the interchain query above:
 ```
-neutrond tx bank send $(neutrond keys show demowallet2 -a --keyring-backend test --home ./data/test-2) cosmos1mjk79fjjgpplak5wq838w0yd982gzkyfrk07am 1000stake --from demowallet2 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-2 --keyring-backend test --home ./data/test-2 --node tcp://127.0.0.1:26657
+neutrond tx bank send $(neutrond keys show demowallet2 -a --keyring-backend test --home ./data/test-2) neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u 1000stake --from demowallet2 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-2 --keyring-backend test --home ./data/test-2 --node tcp://127.0.0.1:26657
 ```
 
 4. After relayer process query events, you can see submitted results:

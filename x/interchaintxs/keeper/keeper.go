@@ -63,7 +63,7 @@ func NewKeeper(
 // 	be in the paramtypes.Subspace, right?)
 func (k Keeper) GetHubAddress(ctx sdk.Context) (sdk.AccAddress, error) {
 	//TODO: remove hardcoded address as we have some way to set it
-	return sdk.AccAddressFromBech32("cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr")
+	return sdk.AccAddressFromBech32("neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq")
 	// store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PrefixHubAddress))
 	// bz := store.Get(types.KeyHubAddress)
 	// if len(bz) == 0 {

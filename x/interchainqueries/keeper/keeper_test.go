@@ -21,7 +21,7 @@ import (
 
 var (
 	// TestOwnerAddress defines a reusable bech32 address for testing purposes
-	TestOwnerAddress = "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"
+	TestOwnerAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 
 	// TestVersion defines a resuable interchainaccounts version string for testing purposes
 	TestVersion = string(icatypes.ModuleCdc.MustMarshalJSON(&icatypes.Metadata{
@@ -161,11 +161,11 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			func() {
 				msg = itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 			},
 			nil,
@@ -238,11 +238,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func() {
 				registerMsg := itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
@@ -262,11 +262,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func() {
 				registerMsg := itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
@@ -292,11 +292,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func() {
 				registerMsg := itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
@@ -341,11 +341,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func() {
 				registerMsg := itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
@@ -389,11 +389,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func() {
 				registerMsg := itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
@@ -438,11 +438,11 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				registerMsg := itypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"}`,
+					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
