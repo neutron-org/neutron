@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -11,6 +12,8 @@ func TestICAOwner(t *testing.T) {
 		contractAddress     string
 		interchainAccountID string
 	)
+	cfg := app.GetDefaultConfig()
+	cfg.Seal()
 
 	for _, tc := range []struct {
 		desc                         string
@@ -21,9 +24,9 @@ func TestICAOwner(t *testing.T) {
 		{
 			desc:                         "valid",
 			expectedErr:                  nil,
-			expectedStringRepresentation: "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs" + types.Delimiter + "id_1",
+			expectedStringRepresentation: "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh" + types.Delimiter + "id_1",
 			malleate: func() (types.ICAOwner, error) {
-				contractAddress = "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"
+				contractAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 				interchainAccountID = "id_1"
 				return types.NewICAOwner(contractAddress, interchainAccountID)
 			},
@@ -31,10 +34,10 @@ func TestICAOwner(t *testing.T) {
 		{
 			desc:        "Delimiter in the middle of the interchain account id",
 			expectedErr: nil,
-			expectedStringRepresentation: "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs" + types.Delimiter +
+			expectedStringRepresentation: "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh" + types.Delimiter +
 				("id_1" + types.Delimiter + "another_data"),
 			malleate: func() (types.ICAOwner, error) {
-				contractAddress = "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs"
+				contractAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 				interchainAccountID = "id_1" + types.Delimiter + "another_data"
 
 				portID := contractAddress + types.Delimiter + interchainAccountID
