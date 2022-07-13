@@ -13,7 +13,7 @@ These scripts can be used to test interchain transactions with deployed wasm con
 2. make sure you don't see any errors
 3. run `./demo/register-interchain-account.sh`
 4. make sure you don't see any errors
-5. here you can check OpenAck answer from hub contract by `cat ./data/test-*.log | grep Sudo`
+5. here you can check OpenAck answer from contract by `cat ./data/test-*.log | grep Sudo`
 6. you should see some `SudoOpenAck received response`
 7. now we can execute transactions
 8. run `./demo/send_delegate.sh`

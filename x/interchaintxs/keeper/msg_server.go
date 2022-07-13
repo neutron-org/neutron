@@ -12,7 +12,7 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
 	"github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
-	proto "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
+	ictxtypes "github.com/lidofinance/gaia-wasm-zone/x/interchaintxs/types"
 )
 
 // InterchainTxTimeout defines the IBC timeout of the interchain transaction.
@@ -31,23 +31,33 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *proto.MsgRegisterInterchainAccount) (*proto.MsgRegisterInterchainAccountResponse, error) {
+func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, msg.Owner); err != nil {
-		k.Logger(ctx).Error("failed to create RegisterInterchainAccount:", "error", err, "owner", msg.Owner, "connection_id", msg.ConnectionId)
+	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
+	}
+
+	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String()); err != nil {
+		k.Logger(ctx).Error("failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "connection_id", msg.ConnectionId)
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
 
-	return &proto.MsgRegisterInterchainAccountResponse{}, nil
+	return &ictxtypes.MsgRegisterInterchainAccountResponse{}, nil
 }
 
-func (k Keeper) SubmitTx(goCtx context.Context, msg *proto.MsgSubmitTx) (*proto.MsgSubmitTxResponse, error) {
+func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	portID, err := icatypes.NewControllerPortID(msg.Owner)
+	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
-		k.Logger(ctx).Error("failed to create NewControllerPortID:", "error", err, "owner", msg.Owner)
+		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
+	}
+
+	portID, err := icatypes.NewControllerPortID(icaOwner.String())
+	if err != nil {
+		k.Logger(ctx).Error("failed to create NewControllerPortID:", "error", err, "owner", icaOwner)
 		return nil, sdkerrors.Wrap(err, "failed to create NewControllerPortID")
 	}
 

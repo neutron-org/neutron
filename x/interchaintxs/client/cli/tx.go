@@ -36,7 +36,7 @@ func GetTxCmd() *cobra.Command {
 
 func RegisterInterchainAccountCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "register-interchain-account [connection-id] [owner]",
+		Use:     "register-interchain-account [connection-id] [interchain_account_id]",
 		Short:   "Register an interchain account",
 		Aliases: []string{"register", "r"},
 		Args:    cobra.ExactArgs(2),
@@ -47,12 +47,12 @@ func RegisterInterchainAccountCmd() *cobra.Command {
 			}
 			fromAddress := clientCtx.GetFromAddress()
 			connectionID := args[0]
-			owner := args[1]
+			interchainAccountID := args[1]
 
 			msg := types.MsgRegisterInterchainAccount{
-				FromAddress:  fromAddress.String(),
-				ConnectionId: connectionID,
-				Owner:        owner,
+				FromAddress:         fromAddress.String(),
+				ConnectionId:        connectionID,
+				InterchainAccountId: interchainAccountID,
 			}
 			if err = msg.ValidateBasic(); err != nil {
 				return err
@@ -69,7 +69,7 @@ func RegisterInterchainAccountCmd() *cobra.Command {
 
 func SubmitTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "submit-tx [connection-id] [owner] [path/to/sdk_msgs.json]",
+		Use:     "submit-tx [connection-id] [interchain_account_id] [path/to/sdk_msgs.json]",
 		Short:   "Submit interchain tx",
 		Aliases: []string{"submit", "s"},
 		Args:    cobra.ExactArgs(3),
@@ -81,7 +81,7 @@ func SubmitTxCmd() *cobra.Command {
 
 			sender := clientCtx.GetFromAddress()
 			connectionID := args[0]
-			owner := args[1]
+			interchainAccountID := args[1]
 			pathToMsgs := args[2]
 
 			memo, err := cmd.Flags().GetString(FlagMemo)
@@ -126,11 +126,11 @@ func SubmitTxCmd() *cobra.Command {
 			}
 
 			msg := types.MsgSubmitTx{
-				FromAddress:  sender.String(),
-				ConnectionId: connectionID,
-				Owner:        owner,
-				Msgs:         anyMsgs,
-				Memo:         memo,
+				FromAddress:         sender.String(),
+				ConnectionId:        connectionID,
+				InterchainAccountId: interchainAccountID,
+				Msgs:                anyMsgs,
+				Memo:                memo,
 			}
 			if err = msg.ValidateBasic(); err != nil {
 				return err

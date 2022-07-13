@@ -23,12 +23,6 @@ cargo install --version 0.14.1 ibc-relayer-cli --bin hermes --locked
 make install
 ```
 
-## Run local testnet node instance
-
-```shell
-./start.sh
-```
-
 ## Run local testnet node instances connected via IBC
 
 ### Bootstrap two chains and create an IBC connection
