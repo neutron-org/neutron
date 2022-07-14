@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/x/sudo"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 
@@ -27,6 +28,7 @@ type (
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
 		wasmKeeper          *wasm.Keeper
+		sudoHandler         sudo.SudoHandler
 	}
 )
 
@@ -54,6 +56,7 @@ func NewKeeper(
 		icaControllerKeeper: icaControllerKeeper,
 		scopedKeeper:        scopedKeeper,
 		wasmKeeper:          wasmKeeper,
+		sudoHandler:         sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
 	}
 }
 

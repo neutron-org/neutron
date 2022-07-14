@@ -128,7 +128,6 @@ require (
 )
 
 replace (
-	// github.com/CosmWasm/wasmd v0.27.0 => ../wasmd
 	github.com/CosmWasm/wasmd v0.27.0 => github.com/swelf19/wasmd v0.27.1-0.20220705054332-4f6cf43be829
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
