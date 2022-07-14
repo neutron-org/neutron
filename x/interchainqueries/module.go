@@ -16,9 +16,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/client/cli"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/x/interchainqueries/client/cli"
+	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 var (
@@ -139,6 +139,7 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	types.RegisterMsgServer(cfg.MsgServer(),keeper.NewMsgServerImpl(am.keeper))
 }
 
 // RegisterInvariants registers the capability module's invariants.

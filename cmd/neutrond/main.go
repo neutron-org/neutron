@@ -4,10 +4,13 @@ import (
 	"os"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/lidofinance/gaia-wasm-zone/app"
+	"github.com/neutron-org/neutron/app"
 )
 
 func main() {
+	config := app.GetDefaultConfig()
+	config.Seal()
+
 	rootCmd, _ := NewRootCmd()
 	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
 		os.Exit(1)

@@ -6,9 +6,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	keepertest "github.com/lidofinance/gaia-wasm-zone/testutil/interchainqueries/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/keeper"
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	keepertest "github.com/neutron-org/neutron/testutil/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {

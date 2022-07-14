@@ -1,25 +1,27 @@
 package cli
 
 import (
-	"context"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/spf13/cobra"
 )
 
-func CmdQueryParams() *cobra.Command {
+func CmdInterchainAccountCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "params",
-		Short: "shows the parameters of the module",
-		Args:  cobra.NoArgs,
+		Use:  "interchainaccounts [connection-id] [owner-account]",
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 
 			queryClient := types.NewQueryClient(clientCtx)
-
-			res, err := queryClient.Params(context.Background(), &types.QueryParamsRequest{})
+			res, err := queryClient.InterchainAccountAddress(cmd.Context(), &types.QueryInterchainAccountAddressRequest{
+				OwnerAddress: args[1],
+				ConnectionId: args[0],
+			})
 			if err != nil {
 				return err
 			}

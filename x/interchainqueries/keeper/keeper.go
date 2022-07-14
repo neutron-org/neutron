@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/lidofinance/gaia-wasm-zone/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 type (

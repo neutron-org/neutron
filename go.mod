@@ -1,4 +1,4 @@
-module github.com/lidofinance/gaia-wasm-zone
+module github.com/neutron-org/neutron
 
 go 1.18
 
@@ -118,7 +118,7 @@ require (
 	go.etcd.io/bbolt v1.3.6 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5 // indirect
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
@@ -128,6 +128,8 @@ require (
 )
 
 replace (
+	// github.com/CosmWasm/wasmd v0.27.0 => ../wasmd
+	github.com/CosmWasm/wasmd v0.27.0 => github.com/swelf19/wasmd v0.27.1-0.20220705054332-4f6cf43be829
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2

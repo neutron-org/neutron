@@ -2,12 +2,13 @@ package main
 
 import (
 	"errors"
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/prometheus/client_golang/prometheus"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -27,8 +28,8 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/lidofinance/gaia-wasm-zone/app"
-	"github.com/lidofinance/gaia-wasm-zone/app/params"
+	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/app/params"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	tmcfg "github.com/tendermint/tendermint/config"
@@ -37,7 +38,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-// NewRootCmd creates a new root command for gaia-wasm-zoned. It is called once in the
+// NewRootCmd creates a new root command for neutrond. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := app.MakeEncodingConfig()

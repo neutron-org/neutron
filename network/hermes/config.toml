@@ -95,12 +95,12 @@ rpc_addr = 'http://127.0.0.1:16657'
 grpc_addr = 'http://127.0.0.1:8090'
 websocket_addr = 'ws://127.0.0.1:16657/websocket'
 rpc_timeout = '10s'
-account_prefix = 'cosmos'
+account_prefix = 'neutron'
 key_name = 'testkey'
 store_prefix = 'ibc'
 default_gas = 100000
 max_gas = 3000000
-gas_price = { price = 0.001, denom = 'stake' }
+gas_price = { price = 0.0025, denom = 'stake' }
 gas_adjustment = 0.1
 max_msg_num = 30
 max_tx_size = 2097152
@@ -116,12 +116,12 @@ rpc_addr = 'http://127.0.0.1:26657'
 grpc_addr = 'http://127.0.0.1:9090'
 websocket_addr = 'ws://127.0.0.1:26657/websocket'
 rpc_timeout = '10s'
-account_prefix = 'cosmos'
+account_prefix = 'neutron'
 key_name = 'testkey'
 store_prefix = 'ibc'
 default_gas = 100000
 max_gas = 3000000
-gas_price = { price = 0.001, denom = 'stake' }
+gas_price = { price = 0.0025, denom = 'stake' }
 gas_adjustment = 0.1
 max_msg_num = 30
 max_tx_size = 2097152
