@@ -102,6 +102,7 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	appparams "github.com/neutron-org/neutron/app/params"
+	owasm "github.com/neutron-org/neutron/wasmbinding"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -496,6 +497,8 @@ func New(
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
+
+	wasmOpts = append(owasm.RegisterCustomPlugins(), wasmOpts...)
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
