@@ -490,6 +490,7 @@ func New(
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 
+	// TODO: remove comment below? we moved from starport
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	wasmDir := filepath.Join(homePath, "wasm")
@@ -498,7 +499,7 @@ func New(
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
 
-	wasmOpts = append(owasm.RegisterCustomPlugins(), wasmOpts...)
+	wasmOpts = append(owasm.RegisterCustomPlugins(&app.ICAControllerKeeper), wasmOpts...)
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
