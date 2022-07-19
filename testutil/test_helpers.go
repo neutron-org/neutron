@@ -13,7 +13,7 @@ import (
 func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	encoding := app.MakeEncodingConfig()
 	db := dbm.NewMemDB()
-	test_app := app.New(
+	testApp := app.New(
 		log.NewNopLogger(),
 		db,
 		nil,
@@ -26,5 +26,5 @@ func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		simapp.EmptyAppOptions{},
 		nil,
 	)
-	return test_app, app.NewDefaultGenesisState(test_app.AppCodec())
+	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
 }
