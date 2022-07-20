@@ -11,10 +11,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/neutron-org/neutron/x/interchainqueries/client/cli"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/x/sudo"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 )

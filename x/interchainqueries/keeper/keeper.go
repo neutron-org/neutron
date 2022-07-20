@@ -7,7 +7,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
-	"github.com/neutron-org/neutron/x/sudo"
+	"github.com/neutron-org/neutron/internal/sudo"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
