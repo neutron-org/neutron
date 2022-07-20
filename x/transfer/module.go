@@ -35,13 +35,10 @@ func (im IBCModule) OnAcknowledgementPacket(
 ) error {
 	err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to process OnAcknowledgementPacket")
+		return sdkerrors.Wrap(err, "failed to process original OnAcknowledgementPacket")
 	}
-	err = im.HandleAcknowledgement(ctx, packet, acknowledgement)
-	if err != nil {
-		return sdkerrors.Wrap(err, "failed to process OnAcknowledgementPacket")
-	}
-	return nil
+	return im.HandleAcknowledgement(ctx, packet, acknowledgement)
+
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
@@ -52,11 +49,7 @@ func (im IBCModule) OnTimeoutPacket(
 ) error {
 	err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to process OnTimeoutPacket")
+		return sdkerrors.Wrap(err, "failed to process original OnTimeoutPacket")
 	}
-	err = im.HandleTimeout(ctx, packet)
-	if err != nil {
-		return sdkerrors.Wrap(err, "failed to process OnTimeoutPacket")
-	}
-	return nil
+	return im.HandleTimeout(ctx, packet)
 }
