@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -94,7 +95,9 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	}
 
 	for _, block := range msg.Result.Blocks {
-		if err := k.VerifyBlock(ctx, msg.ClientId, block); err != nil {
+		// todo(oopcode): set the owner properly
+		// if err := k.VerifyBlock(ctx, query.Owner, msg.ClientId, block); err != nil {
+		if err := k.VerifyBlock(ctx, sdk.AccAddress{}, msg.ClientId, block); err != nil {
 			return nil, sdkerrors.Wrapf(err, "failed to verify block: %v", err)
 		}
 	}

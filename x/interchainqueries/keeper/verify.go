@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -84,7 +85,7 @@ func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.
 }
 
 // VerifyBlock verifies headers and transaction in the block
-func (k Keeper) VerifyBlock(ctx sdk.Context, clientID string, block *types.Block) error {
+func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, clientID string, block *types.Block) error {
 	header, err := ibcclienttypes.UnpackHeader(block.Header)
 	if err != nil {
 		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
@@ -110,8 +111,13 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, clientID string, block *types.Block
 	}
 
 	for _, tx := range block.Txs {
-		if err = verifyTransaction(tmHeader, tmNextHeader, tx); err != nil {
+		if err = k.verifyTransaction(ctx, tmHeader, tmNextHeader, tx); err != nil {
 			return sdkerrors.Wrapf(types.ErrInternal, "failed to verify transaction %s: %v", hex.EncodeToString(tmtypes.Tx(tx.Data).Hash()), err)
+		}
+
+		// Let the query owner contract check the query result (e.g., the sender / recipient / amount)
+		if _, err := k.sudoHandler.SudoCheckTxQueryResult(ctx, queryOwner, tmHeader.Header.Height, tx.Data); err != nil {
+			return sdkerrors.Wrapf(err, "contract %s rejected transaction query result", queryOwner)
 		}
 	}
 
@@ -124,7 +130,12 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, clientID string, block *types.Block
 // * transactions was executed successfully - transaction's responseDeliveryTx.Code == 0;
 // * transaction's responseDeliveryTx is legitimate - nextHeaderLastResultsDataHash merkle root contains
 // deterministicResponseDeliverTx(ResponseDeliveryTx).Bytes()
-func verifyTransaction(header *tendermintLightClientTypes.Header, nextHeader *tendermintLightClientTypes.Header, tx *types.TxValue) error {
+func (k Keeper) verifyTransaction(
+	ctx sdk.Context,
+	header *tendermintLightClientTypes.Header,
+	nextHeader *tendermintLightClientTypes.Header,
+	tx *types.TxValue,
+) error {
 	// verify inclusion proof
 	inclusionProof, err := merkle.ProofFromProto(tx.InclusionProof)
 	if err != nil {

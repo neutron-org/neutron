@@ -9,12 +9,20 @@ The package contains the code to postprocess incoming from a relayer acknowledge
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
+
+type SudoMessageCheckTxQueryResult struct {
+	Result struct {
+		Height int64  `json:"height"`
+		Data   []byte `json:"data"`
+	} `json:"result"`
+}
 
 type SudoMessageTimeout struct {
 	Timeout struct {
@@ -80,9 +88,10 @@ func (s *SudoHandler) SudoResponse(
 	x.Response.Request = request
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
-		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+		s.Logger(ctx).Error("failed to marshal SudoMessageResponse message", "error", err, "request", request)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageResponse message")
 	}
+
 	s.Logger(ctx).Info("SudoResponse sending request", "data", string(m))
 
 	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
@@ -107,9 +116,10 @@ func (s *SudoHandler) SudoTimeout(
 	x.Timeout.Request = request
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
-		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+		s.Logger(ctx).Error("failed to marshal SudoMessageTimeout message", "error", err, "request", request)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageTimeout message")
 	}
+
 	s.Logger(ctx).Info("SudoTimeout sending request", "data", string(m))
 
 	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
@@ -136,9 +146,10 @@ func (s *SudoHandler) SudoError(
 	x.Error.Details = details
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal sudo message", "error", err, "request", request)
-		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+		s.Logger(ctx).Error("failed to marshal SudoMessageError message", "error", err, "request", request)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageError message")
 	}
+
 	s.Logger(ctx).Info("SudoError sending request", "data", string(m))
 
 	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
@@ -163,10 +174,39 @@ func (s *SudoHandler) SudoOpenAck(
 	x.OpenAck = details
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal sudo message", "error", err)
-		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessage")
+		s.Logger(ctx).Error("failed to marshal SudoMessageOpenAck message", "error", err)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageOpenAck message")
 	}
 	s.Logger(ctx).Info("SudoOpenAck sending request", "data", string(m))
+
+	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	s.Logger(ctx).Info("SudoOpenAck received response", "err", err, "response", string(r))
+
+	return r, err
+}
+
+func (s *SudoHandler) SudoCheckTxQueryResult(
+	ctx sdk.Context,
+	contractAddress sdk.AccAddress,
+	height int64,
+	data []byte,
+) ([]byte, error) {
+	s.Logger(ctx).Info("SudoCheckTxQueryResult", "contractAddress", contractAddress)
+
+	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
+	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		return nil, nil
+	}
+
+	x := SudoMessageCheckTxQueryResult{}
+	x.Result.Height = height
+	x.Result.Data = data
+
+	m, err := json.Marshal(x)
+	if err != nil {
+		s.Logger(ctx).Error("failed to marshal SudoMessageCheckTxQueryResult message", "error", err)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageCheckTxQueryResult message")
+	}
 
 	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	s.Logger(ctx).Info("SudoOpenAck received response", "err", err, "response", string(r))
