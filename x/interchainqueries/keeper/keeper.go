@@ -2,13 +2,12 @@ package keeper
 
 import (
 	"fmt"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -16,6 +15,11 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
+)
+
+const (
+	DEFAULT_SUBMITTED_TRANSACTIONS_LIMIT   = 100
+	MAX_SUBMITTED_TRANSACTIONS_QUERY_LIMIT = 500
 )
 
 type (
@@ -242,9 +246,17 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 }
 
 // GetSubmittedTransactions returns a list of transactions from start ID to end ID
-func (k Keeper) GetSubmittedTransactions(ctx sdk.Context, queryID uint64, start uint64, end uint64) ([]*types.Transaction, error) {
+func (k Keeper) GetSubmittedTransactions(ctx sdk.Context, queryID uint64, start uint64, limit uint64) ([]*types.Transaction, error) {
+	if limit == 0 {
+		limit = 100
+	}
+
+	if limit > MAX_SUBMITTED_TRANSACTIONS_QUERY_LIMIT {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to query submitted transactions, max query limit %d, got %d", MAX_SUBMITTED_TRANSACTIONS_QUERY_LIMIT, limit)
+	}
+
 	store := ctx.KVStore(k.storeKey)
-	iterator := store.Iterator(types.GetSubmittedTransactionIDForQueryKey(queryID, start), types.GetSubmittedTransactionIDForQueryKey(queryID, end))
+	iterator := store.Iterator(types.GetSubmittedTransactionIDForQueryKey(queryID, start), types.GetSubmittedTransactionIDForQueryKey(queryID, start+limit))
 	defer iterator.Close()
 
 	transactions := make([]*types.Transaction, 0)

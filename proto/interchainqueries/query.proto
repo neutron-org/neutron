@@ -77,7 +77,7 @@ message QueryRegisteredQueryResultResponse {
 message QuerySubmittedTransactionsRequest {
   uint64 query_id = 1;
   uint64 start = 2;
-  uint64 end = 3;
+  uint64 limit = 3;
 }
 
 message QuerySubmittedTransactionsResponse {

@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"testing"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
@@ -538,12 +539,12 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 	}
 	queriesKeeper.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastID)
 
-	start, end := 4, 9
+	start, limit := 4, 5
 
-	txs, err := queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(end))
+	txs, err := queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(limit))
 	suite.NoError(err)
 
-	suite.Equal(txs, submittedTransactions[start:end])
+	suite.Equal(txs, submittedTransactions[start:start+limit])
 
 	// check the same but with multiple query IDS, they should not conflict with each other
 	queryID = uint64(2)
@@ -551,7 +552,7 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 	lastID = queriesKeeper.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
 
 	submittedTransactions = make([]*iqtypes.Transaction, 0)
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 120; i++ {
 
 		tx := iqtypes.Transaction{
 			Id:     lastID,
@@ -566,12 +567,22 @@ func (suite *KeeperTestSuite) TestQueryTransactions() {
 	}
 	queriesKeeper.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastID)
 
-	start, end = 3, 8
+	start = 3
 
-	txs, err = queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(end))
+	txs, err = queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(limit))
 	suite.NoError(err)
 
-	suite.Equal(txs, submittedTransactions[start:end])
+	suite.Equal(txs, submittedTransactions[start:start+limit])
+
+	// default limit
+	txs, err = queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(0))
+	suite.NoError(err)
+
+	suite.Equal(txs, submittedTransactions[3:103])
+
+	// query limit exceed
+	txs, err = queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(501))
+	suite.ErrorIs(err, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to query submitted transactions, max query limit %d, got %d", keeper.MAX_SUBMITTED_TRANSACTIONS_QUERY_LIMIT, 501))
 }
 
 func TestKeeperTestSuite(t *testing.T) {

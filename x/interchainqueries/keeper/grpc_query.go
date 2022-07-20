@@ -52,7 +52,7 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 func (k Keeper) QueryTransactions(goCtx context.Context, request *types.QuerySubmittedTransactionsRequest) (*types.QuerySubmittedTransactionsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	result, err := k.GetSubmittedTransactions(ctx, request.QueryId, request.Start, request.End)
+	result, err := k.GetSubmittedTransactions(ctx, request.QueryId, request.Start, request.Limit)
 	if err != nil {
 		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result by query id: %v", err)
 	}

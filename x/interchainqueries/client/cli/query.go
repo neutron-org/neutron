@@ -122,7 +122,7 @@ func CmdQueryRegisteredQueryResult() *cobra.Command {
 
 func CmdQueryTransactionsSearchResult() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "query-transactions-search-result [query-id] [start] [end]",
+		Use:   "query-transactions-search-result [query-id] [start] [limit]",
 		Short: "queries result for transactions search",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -140,7 +140,7 @@ func CmdQueryTransactionsSearchResult() *cobra.Command {
 				return fmt.Errorf("failed to parse start: %w", err)
 			}
 
-			end, err := strconv.ParseUint(args[2], 10, 64)
+			limit, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
 				return fmt.Errorf("failed to parse end: %w", err)
 			}
@@ -148,7 +148,7 @@ func CmdQueryTransactionsSearchResult() *cobra.Command {
 			res, err := queryClient.QueryTransactions(context.Background(), &types.QuerySubmittedTransactionsRequest{
 				QueryId: queryID,
 				Start:   start,
-				End:     end,
+				Limit:   limit,
 			})
 			if err != nil {
 				return err
