@@ -23,8 +23,11 @@ func (k Keeper) EndBlocker(ctx sdk.Context) {
 				sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(registeredQuery.Id, 10)),
 				sdk.NewAttribute(types.AttributeKeyZoneID, registeredQuery.ZoneId),
 				sdk.NewAttribute(types.AttributeQueryType, registeredQuery.QueryType),
-				sdk.NewAttribute(types.AttributeQueryData, registeredQuery.QueryData),
+				sdk.NewAttribute(types.AttributeTransactionsFilterQuery, registeredQuery.TransactionsFilter),
 			)
+			for _, key := range registeredQuery.Keys {
+				event = event.AppendAttributes(sdk.NewAttribute(types.AttributeKVQueryKey, key.ToString()))
+			}
 
 			events = append(events, event)
 			registeredQuery.LastEmittedHeight = uint64(ctx.BlockHeight())

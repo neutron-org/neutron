@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"bytes"
 	"context"
+	ics23 "github.com/confio/ics23/go"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -35,13 +37,14 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	lastID += 1
 
 	registeredQuery := types.RegisteredQuery{
-		Id:                lastID,
-		QueryData:         msg.QueryData,
-		QueryType:         msg.QueryType,
-		ZoneId:            msg.ZoneId,
-		UpdatePeriod:      msg.UpdatePeriod,
-		ConnectionId:      msg.ConnectionId,
-		LastEmittedHeight: uint64(ctx.BlockHeight()),
+		Id:                 lastID,
+		TransactionsFilter: msg.TransactionsFilter,
+		Keys:               msg.Keys,
+		QueryType:          msg.QueryType,
+		ZoneId:             msg.ZoneId,
+		UpdatePeriod:       msg.UpdatePeriod,
+		ConnectionId:       msg.ConnectionId,
+		LastEmittedHeight:  uint64(ctx.BlockHeight()),
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
@@ -65,6 +68,10 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	}
 
 	if msg.Result.KvResults != nil {
+		if !types.InterchainQueryType(query.QueryType).IsKV() {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
+		}
+
 		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 			ConnectionId:   query.ConnectionId,
 			RevisionNumber: msg.Result.Revision,
@@ -79,31 +86,63 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack consesus state: %v", err)
 		}
 
-		for _, result := range msg.Result.KvResults {
+		for index, result := range msg.Result.KvResults {
 			proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
 			if err != nil {
 				return nil, sdkerrors.Wrapf(types.ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
 			}
 
+			if !bytes.Equal(result.Key, query.Keys[index].Key) {
+				return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV key from result is not equal to registered query key: %v != %v", result.Key, query.Keys[index].Key)
+			}
+
+			if result.StoragePrefix != query.Keys[index].Path {
+				return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV path from result is not equal to registered query storage prefix: %v != %v", result.StoragePrefix, query.Keys[index].Path)
+			}
+
 			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
 
-			if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
-				return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
+			switch proof.GetProofs()[0].GetProof().(type) {
+			case *ics23.CommitmentProof_Nonexist:
+				if err := proof.VerifyNonMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path); err != nil {
+					return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
+				}
+				result.Value = nil
+			case *ics23.CommitmentProof_Exist:
+				if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
+					return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
+				}
+			default:
+				return nil, sdkerrors.Wrap(types.ErrInvalidProof, "unknown proof type")
 			}
 		}
-	}
 
-	for _, block := range msg.Result.Blocks {
-		if err := k.VerifyBlock(ctx, msg.ClientId, block); err != nil {
-			return nil, sdkerrors.Wrapf(err, "failed to verify block: %v", err)
+		if err = k.SaveQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
+			return nil, sdkerrors.Wrapf(err, "failed to save query result: %v", err)
 		}
+
+		return &types.MsgSubmitQueryResultResponse{}, nil
 	}
 
-	if err = k.SaveQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
-		return nil, sdkerrors.Wrapf(err, "failed to save query result: %v", err)
+	if msg.Result.Blocks != nil {
+		if !types.InterchainQueryType(query.QueryType).IsTX() {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
+		}
+
+		for _, block := range msg.Result.Blocks {
+			if err := k.VerifyBlock(ctx, msg.ClientId, block); err != nil {
+				return nil, sdkerrors.Wrapf(err, "failed to verify block: %v", err)
+			}
+		}
+
+		if err = k.SaveQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
+			return nil, sdkerrors.Wrapf(err, "failed to save query result: %v", err)
+		}
+
+		return &types.MsgSubmitQueryResultResponse{}, nil
 	}
 
-	return &types.MsgSubmitQueryResultResponse{}, nil
+	return nil, sdkerrors.Wrap(types.ErrEmptyResult, "query result can't be empty")
 }
 
 var _ types.MsgServer = msgServer{}

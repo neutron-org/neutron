@@ -90,12 +90,8 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInvalidZoneID, "zone id cannot be empty")
 	}
 
-	if strings.TrimSpace(msg.QueryType) == "" {
-		return sdkerrors.Wrap(ErrInvalidQueryType, "query type cannot be empty")
-	}
-
-	if strings.TrimSpace(msg.QueryData) == "" {
-		return sdkerrors.Wrap(ErrInvalidQueryData, "query data cannot be empty")
+	if !InterchainQueryType(msg.QueryType).IsValid() {
+		return sdkerrors.Wrap(ErrInvalidQueryType, "invalid query type")
 	}
 
 	return nil

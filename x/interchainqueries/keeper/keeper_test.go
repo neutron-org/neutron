@@ -150,26 +150,43 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			"invalid connection",
 			func() {
 				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId: "unknown",
-					QueryData:    "kek",
-					QueryType:    "type",
-					ZoneId:       "id",
-					UpdatePeriod: 1,
-					Sender:       TestOwnerAddress,
+					ConnectionId:       "unknown",
+					TransactionsFilter: "{}",
+					Keys:               nil,
+					QueryType:          iqtypes.InterchainQueryTypeTX,
+					ZoneId:             "id",
+					UpdatePeriod:       1,
+					Sender:             TestOwnerAddress,
 				}
 			},
 			iqtypes.ErrInvalidConnectionID,
 		},
 		{
+			"invalid query type",
+			func() {
+				msg = iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "unknown",
+					TransactionsFilter: "{}",
+					Keys:               nil,
+					QueryType:          "invalid_type",
+					ZoneId:             "id",
+					UpdatePeriod:       1,
+					Sender:             TestOwnerAddress,
+				}
+			},
+			iqtypes.ErrInvalidQueryType,
+		},
+		{
 			"valid",
 			func() {
 				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-					QueryType:    "x/staking/DelegatorDelegations",
-					ZoneId:       "osmosis",
-					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					ConnectionId:       suite.path.EndpointA.ConnectionID,
+					TransactionsFilter: "{}",
+					Keys:               nil,
+					QueryType:          iqtypes.InterchainQueryTypeTX,
+					ZoneId:             "osmosis",
+					UpdatePeriod:       1,
+					Sender:             "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 			},
 			nil,
@@ -241,12 +258,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"empty result",
 			func() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-					QueryType:    "x/staking/DelegatorDelegations",
-					ZoneId:       "osmosis",
-					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					ConnectionId:       suite.path.EndpointA.ConnectionID,
+					TransactionsFilter: "{}",
+					Keys:               nil,
+					QueryType:          iqtypes.InterchainQueryTypeTX,
+					ZoneId:             "osmosis",
+					UpdatePeriod:       1,
+					Sender:             "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
@@ -265,12 +283,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"empty kv results and blocks",
 			func() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-					QueryType:    "x/staking/DelegatorDelegations",
-					ZoneId:       "osmosis",
-					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					ConnectionId:       suite.path.EndpointA.ConnectionID,
+					TransactionsFilter: "{}",
+					Keys:               nil,
+					QueryType:          iqtypes.InterchainQueryTypeTX,
+					ZoneId:             "osmosis",
+					UpdatePeriod:       1,
+					Sender:             "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
@@ -294,10 +313,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"valid KV storage proof",
 			func() {
+				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
+
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-					QueryType:    "x/staking/DelegatorDelegations",
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    iqtypes.InterchainQueryTypeKV,
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
@@ -311,8 +334,159 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				//suite.NoError(suite.path.EndpointB.UpdateClient())
 				suite.NoError(suite.path.EndpointA.UpdateClient())
 
-				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
+				resp := suite.chainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.chainB.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+
+				msg = iqtypes.MsgSubmitQueryResult{
+					QueryId:  res.Id,
+					Sender:   TestOwnerAddress,
+					ClientId: suite.path.EndpointA.ClientID,
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: host.StoreKey,
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
+				}
+			},
+			nil,
+		},
+		{
+			"non-registered key in KV result",
+			func() {
 				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
+
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId: suite.path.EndpointA.ConnectionID,
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    iqtypes.InterchainQueryTypeKV,
+					ZoneId:       "osmosis",
+					UpdatePeriod: 1,
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+				}
+
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
+
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
+				suite.Require().NoError(err)
+
+				//suite.NoError(suite.path.EndpointB.UpdateClient())
+				suite.NoError(suite.path.EndpointA.UpdateClient())
+
+				resp := suite.chainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.chainB.LastHeader.Header.Height - 1,
+					Data:   []byte("non-registered key"),
+					Prove:  true,
+				})
+
+				msg = iqtypes.MsgSubmitQueryResult{
+					QueryId:  res.Id,
+					Sender:   TestOwnerAddress,
+					ClientId: suite.path.EndpointA.ClientID,
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: host.StoreKey,
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
+				}
+			},
+			iqtypes.ErrInvalidSubmittedResult,
+		},
+		{
+			"non-registered path in KV result",
+			func() {
+				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
+
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId: suite.path.EndpointA.ConnectionID,
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    iqtypes.InterchainQueryTypeKV,
+					ZoneId:       "osmosis",
+					UpdatePeriod: 1,
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+				}
+
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
+
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
+				suite.Require().NoError(err)
+
+				//suite.NoError(suite.path.EndpointB.UpdateClient())
+				suite.NoError(suite.path.EndpointA.UpdateClient())
+
+				resp := suite.chainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.chainB.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+
+				msg = iqtypes.MsgSubmitQueryResult{
+					QueryId:  res.Id,
+					Sender:   TestOwnerAddress,
+					ClientId: suite.path.EndpointA.ClientID,
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: "non-registered-path",
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+						Blocks:   nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
+				}
+			},
+			iqtypes.ErrInvalidSubmittedResult,
+		},
+		{
+			"non existence KV proof",
+			func() {
+				clientKey := []byte("non_existed_key")
+
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId: suite.path.EndpointA.ConnectionID,
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    iqtypes.InterchainQueryTypeKV,
+					ZoneId:       "osmosis",
+					UpdatePeriod: 1,
+					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+				}
+
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper)
+
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.chainA.GetContext()), &registerMsg)
+				suite.Require().NoError(err)
+
+				//suite.NoError(suite.path.EndpointB.UpdateClient())
+				suite.NoError(suite.path.EndpointA.UpdateClient())
+
 				resp := suite.chainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
 					Height: suite.chainB.LastHeader.Header.Height - 1,
@@ -343,10 +517,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"header with invalid height",
 			func() {
+				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-					QueryType:    "x/staking/DelegatorDelegations",
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    iqtypes.InterchainQueryTypeKV,
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
@@ -360,7 +537,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.path.EndpointB.UpdateClient())
 				suite.NoError(suite.path.EndpointA.UpdateClient())
 
-				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
 				resp := suite.chainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
 					Height: suite.chainB.LastHeader.Header.Height,
@@ -391,10 +567,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"invalid KV storage value",
 			func() {
+				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
+
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-					QueryType:    "x/staking/DelegatorDelegations",
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    iqtypes.InterchainQueryTypeKV,
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
@@ -408,7 +588,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.path.EndpointB.UpdateClient())
 				suite.NoError(suite.path.EndpointA.UpdateClient())
 
-				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
 				resp := suite.chainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
 					Height: suite.chainB.LastHeader.Header.Height - 1,
@@ -440,10 +619,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"query result height is too old",
 			func() {
 
+				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
+
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.path.EndpointA.ConnectionID,
-					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-					QueryType:    "x/staking/DelegatorDelegations",
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    iqtypes.InterchainQueryTypeKV,
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
@@ -460,8 +643,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// pretend like we have a very new query result
 				suite.NoError(suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(suite.chainA.GetContext(), res.Id, 9999))
 
-				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
-				clientKey := host.FullClientStateKey(suite.path.EndpointB.ClientID)
 				resp := suite.chainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
 					Height: suite.chainB.LastHeader.Header.Height - 1,
