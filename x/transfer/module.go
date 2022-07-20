@@ -3,6 +3,7 @@ package transfer
 import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
@@ -34,9 +35,13 @@ func (im IBCModule) OnAcknowledgementPacket(
 ) error {
 	err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	if err != nil {
-		return err
+		return sdkerrors.Wrap(err, "failed to process OnAcknowledgementPacket")
 	}
-	return im.HandleAcknowledgement(ctx, packet, acknowledgement)
+	err = im.HandleAcknowledgement(ctx, packet, acknowledgement)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to process OnAcknowledgementPacket")
+	}
+	return nil
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
@@ -47,7 +52,11 @@ func (im IBCModule) OnTimeoutPacket(
 ) error {
 	err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 	if err != nil {
-		return err
+		return sdkerrors.Wrap(err, "failed to process OnTimeoutPacket")
 	}
-	return im.HandleTimeout(ctx, packet)
+	err = im.HandleTimeout(ctx, packet)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to process OnTimeoutPacket")
+	}
+	return nil
 }

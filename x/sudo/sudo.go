@@ -56,11 +56,6 @@ func NewSudoHandler(wasmKeeper *wasm.Keeper, moduleName string) SudoHandler {
 	}
 }
 
-// Sudo allows privileged access to a contract. This can never be called by an external tx, but only by
-// another native Go module directly, or on-chain governance (if sudo proposals are enabled). Thus, the keeper doesn't
-// place any access controls on it, that is the responsibility or the app developer (who passes the wasm.Keeper in
-// app.go).
-//
 func (s *SudoHandler) SudoResponse(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
@@ -69,7 +64,7 @@ func (s *SudoHandler) SudoResponse(
 ) ([]byte, error) {
 	s.Logger(ctx).Info("SudoResponse", "contractAddress", contractAddress, "request", request, "msg", msg)
 
-	// basically just for unit tests right now. But i think we will have the same logic in the production
+	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
 		return nil, nil
 	}
@@ -97,7 +92,7 @@ func (s *SudoHandler) SudoTimeout(
 ) ([]byte, error) {
 	s.Logger(ctx).Info("SudoTimeout", "contractAddress", contractAddress, "request", request)
 
-	// basically just for unit tests right now. But i think we will have the same logic in the production
+	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
 		return nil, nil
 	}
@@ -125,7 +120,7 @@ func (s *SudoHandler) SudoError(
 ) ([]byte, error) {
 	s.Logger(ctx).Info("SudoError", "contractAddress", contractAddress, "request", request)
 
-	// basically just for unit tests right now. But i think we will have the same logic in the production
+	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
 		return nil, nil
 	}
@@ -153,7 +148,7 @@ func (s *SudoHandler) SudoOpenAck(
 ) ([]byte, error) {
 	s.Logger(ctx).Info("SudoOpenAck", "contractAddress", contractAddress)
 
-	// basically just for unit tests right now. But i think we will have the same logic in the production
+	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
 		return nil, nil
 	}
