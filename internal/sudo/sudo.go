@@ -24,7 +24,7 @@ type SudoMessageTimeout struct {
 type SudoMessageResponse struct {
 	Response struct {
 		Request channeltypes.Packet `json:"request"`
-		Message []byte              `json:"data"`
+		Data    []byte              `json:"data"`
 	} `json:"response"`
 }
 
@@ -76,7 +76,7 @@ func (s *SudoHandler) SudoResponse(
 	}
 
 	x := SudoMessageResponse{}
-	x.Response.Message = msg
+	x.Response.Data = msg
 	x.Response.Request = request
 	m, err := json.Marshal(x)
 	if err != nil {
