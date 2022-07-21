@@ -115,7 +115,7 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, clientID
 			return sdkerrors.Wrapf(types.ErrInternal, "failed to verify transaction %s: %v", hex.EncodeToString(tmtypes.Tx(tx.Data).Hash()), err)
 		}
 
-		// Let the query owner contract check the query result (e.g., the sender / recipient / amount)
+		// Let the query owner contract process the query result (e.g., the sender / recipient / amount).
 		if _, err := k.sudoHandler.SudoCheckTxQueryResult(ctx, queryOwner, tmHeader.Header.Height, tx.Data); err != nil {
 			return sdkerrors.Wrapf(err, "contract %s rejected transaction query result", queryOwner)
 		}

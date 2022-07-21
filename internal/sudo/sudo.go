@@ -18,10 +18,11 @@ import (
 )
 
 type SudoMessageCheckTxQueryResult struct {
-	Result struct {
-		Height int64  `json:"height"`
-		Data   []byte `json:"data"`
-	} `json:"result"`
+	CheckTxQueryResult struct {
+		QueryID uint64 `json:"query_id"`
+		Height  uint64 `json:"height"`
+		Data    []byte `json:"data"`
+	} `json:"check_tx_query_result"`
 }
 
 type SudoMessageTimeout struct {
@@ -29,10 +30,11 @@ type SudoMessageTimeout struct {
 		Request channeltypes.Packet `json:"request"`
 	} `json:"timeout"`
 }
+
 type SudoMessageResponse struct {
 	Response struct {
 		Request channeltypes.Packet `json:"request"`
-		Data    []byte              `json:"data"`
+		Data    []byte              `json:"data"` // Message data
 	} `json:"response"`
 }
 
@@ -185,6 +187,10 @@ func (s *SudoHandler) SudoOpenAck(
 	return r, err
 }
 
+// SudoCheckTxQueryResult is used to pass a tx query result to the contract that registered the query
+// to check whether the transaction actually satisfies the initial query arguments.
+//
+// Please note that this callback can be potentially used by the contact to execute business logic.
 func (s *SudoHandler) SudoCheckTxQueryResult(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
@@ -199,8 +205,8 @@ func (s *SudoHandler) SudoCheckTxQueryResult(
 	}
 
 	x := SudoMessageCheckTxQueryResult{}
-	x.Result.Height = height
-	x.Result.Data = data
+	x.CheckTxQueryResult.Height = uint64(height)
+	x.CheckTxQueryResult.Data = data
 
 	m, err := json.Marshal(x)
 	if err != nil {
