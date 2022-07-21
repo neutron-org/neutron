@@ -38,10 +38,10 @@ func GetTxCmd() *cobra.Command {
 
 func RegisterInterchainQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "register-interchain-query [zone-id] [connection-id] [query-data] [update-period] [query_type]",
+		Use:     "register-interchain-query [zone-id] [connection-id] [update-period] [query_type]",
 		Short:   "Register an interchain query",
 		Aliases: []string{"register", "r"},
-		Args:    cobra.ExactArgs(5),
+		Args:    cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -50,12 +50,12 @@ func RegisterInterchainQueryCmd() *cobra.Command {
 			sender := clientCtx.GetFromAddress()
 			zoneID := args[0]
 			connectionID := args[1]
-			updatePeriod, err := strconv.ParseUint(args[3], 10, 64)
+			updatePeriod, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
 				return fmt.Errorf("failed to parse update-period: %w", err)
 			}
 
-			queryType := types.InterchainQueryType(args[4])
+			queryType := types.InterchainQueryType(args[3])
 			if !queryType.IsValid() {
 				return fmt.Errorf("invalid query type: must be %s or %s, got %s", types.InterchainQueryTypeKV, types.InterchainQueryTypeTX, queryType)
 			}
