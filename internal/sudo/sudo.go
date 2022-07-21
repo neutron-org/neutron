@@ -1,5 +1,11 @@
 package sudo
 
+/*
+Wasm contracts have the special entrypoint called sudo. The main purpose of the entrypoint is to be called from a trusted cosmos module, e.g. via a governance process.
+We use the entrypoint to send back an ibc acknowledgement for an ibc transaction.
+The package contains the code to postprocess incoming from a relayer acknowledgement and pass it to the  ibc transaction contract initiator
+*/
+
 import (
 	"encoding/json"
 	"fmt"

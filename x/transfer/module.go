@@ -11,6 +11,11 @@ import (
 	"github.com/neutron-org/neutron/internal/sudo"
 )
 
+/*
+	In addition to original ack processing of ibc transfer acknowledgement we want to pass the acknowledgement to originating wasm contract.
+	The package contains a code to achieve the purpose.
+*/
+
 type IBCModule struct {
 	keeper      keeper.Keeper
 	sudoHandler sudo.SudoHandler
@@ -27,6 +32,7 @@ func NewIBCModule(k keeper.Keeper, wasmKeeper *wasm.Keeper) IBCModule {
 }
 
 // OnAcknowledgementPacket implements the IBCModule interface.
+// Wrapper struct shadows(overrides) the OnAcknowledgementPacket method to achieve the package's purpose.
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
