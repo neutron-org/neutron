@@ -56,10 +56,10 @@ make init && make start-rly
 ### terminal 2
 1. Register an interchain query to get a delegation from delegator `neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z` to validator `neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx` on remote chain.
 ```
-neutrond tx interchainqueries register-interchain-query test-2 connection-0 5 kv --kv-keys staking/311404eca9d67fb05c5324135ffadbfaaed724be7dd31404eca9d67fb05c5324135ffadbfaaed724be7dd3 --from demowallet1 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-1 --keyring-backend test --home ./data/test-1 --node tcp://127.0.0.1:16657
+neutrond tx interchainqueries register-interchain-query test-2 connection-0 5 kv staking/311404eca9d67fb05c5324135ffadbfaaed724be7dd31404eca9d67fb05c5324135ffadbfaaed724be7dd3 --from demowallet1 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-1 --keyring-backend test --home ./data/test-1 --node tcp://127.0.0.1:16657
 ```
 <details>
-  <summary>What is --kv-keys?</summary>
+  <summary>What is staking/311404eca9d67fb05c5324135ffadbfaaed724be7dd31404eca9d67fb05c5324135ffadbfaaed724be7dd3?</summary>
 
 `--kv-keys` is a flag that allows to register an interchain query that wants to read raw data from KV-storage on remote chain by some key.
 
@@ -103,7 +103,7 @@ staking/311404eca9d67fb05c5324135ffadbfaaed724be7dd31404eca9d67fb05c5324135ffadb
 
 2. Register an interchain query to search transactions on remote chain by some event (in this case it'll try to find all transactions for bank transfer):
 ```
-neutrond tx interchainqueries register-interchain-query test-2 connection-0 1 tx --tx-filter '{"message.module": "bank"}' --from demowallet1 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-1 --keyring-backend test --home ./data/test-1 --node tcp://127.0.0.1:16657
+neutrond tx interchainqueries register-interchain-query test-2 connection-0 1 tx '{"message.module": "bank"}' --from demowallet1 --gas 10000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id test-1 --keyring-backend test --home ./data/test-1 --node tcp://127.0.0.1:16657
 ```
 
 3. Execute a bank transfer transaction on remote chain for the interchain query above:
