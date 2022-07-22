@@ -4,6 +4,9 @@ const (
 	// AttributeKeyQueryID represents the key for event attribute delivering the query ID of a
 	// registered interchain query.
 	AttributeKeyQueryID = "query_id"
+	// AttributeKeyOwner represents the key for event attribute delivering the address of the
+	// registrator of an interchain query.
+	AttributeKeyOwner = "owner"
 	// AttributeKeyZoneID represents the key for event attribute delivering the zone ID where the
 	// event has been produced.
 	AttributeKeyZoneID = "zone_id"
