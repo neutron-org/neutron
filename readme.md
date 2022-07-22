@@ -85,6 +85,7 @@ Bech32 Acc: neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z
 Bech32 Val: neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx
 ```
 Results are the same because it's a self-delegation of a validator.
+
 3. Now we need to add length (in bytes) prefixes to these addresses (we can do it easily in python console).:
 ```python
 >>> hex(len("04ECA9D67FB05C5324135FFADBFAAED724BE7DD3")//2) + "04ECA9D67FB05C5324135FFADBFAAED724BE7DD3"
