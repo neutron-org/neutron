@@ -19,22 +19,11 @@ func (i ICAOwner) String() string {
 }
 
 func NewICAOwner(contractAddress, interchainAccountID string) (ICAOwner, error) {
-	// this is production version of the code
-	// must be uncommented when the contracts are ready to send IC txs
-	//
-	//sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddress)
-	//if err != nil {
-	//	return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
-	//}
-	//return ICAOwner{contractAddress: sdkContractAddress, interchainAccountID: interchainAccountID}, nil
-
-	// this is ONLY for the demo scripts to see that Sudo actually works
-	// this means anyone can set contractAddress
-	sdkContractAddress, err := sdk.AccAddressFromBech32(interchainAccountID)
+	sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddress)
 	if err != nil {
 		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
 	}
-	return ICAOwner{contractAddress: sdkContractAddress}, nil
+	return ICAOwner{contractAddress: sdkContractAddress, interchainAccountID: interchainAccountID}, nil
 }
 
 func ICAOwnerFromPort(port string) (ICAOwner, error) {
