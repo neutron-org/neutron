@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/wasmbinding"
 	"io"
 	"net/http"
 	"os"
@@ -102,7 +103,6 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	appparams "github.com/neutron-org/neutron/app/params"
-	owasm "github.com/neutron-org/neutron/wasmbinding"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -314,18 +314,18 @@ func (app *App) GetTxConfig() client.TxConfig {
 
 // New returns a reference to an initialized blockchain app
 func New(
-		logger log.Logger,
-		db dbm.DB,
-		traceStore io.Writer,
-		loadLatest bool,
-		skipUpgradeHeights map[int64]bool,
-		homePath string,
-		invCheckPeriod uint,
-		encodingConfig appparams.EncodingConfig,
-		enabledProposals []wasm.ProposalType,
-		appOpts servertypes.AppOptions,
-		wasmOpts []wasm.Option,
-		baseAppOptions ...func(*baseapp.BaseApp),
+	logger log.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	loadLatest bool,
+	skipUpgradeHeights map[int64]bool,
+	homePath string,
+	invCheckPeriod uint,
+	encodingConfig appparams.EncodingConfig,
+	enabledProposals []wasm.ProposalType,
+	appOpts servertypes.AppOptions,
+	wasmOpts []wasm.Option,
+	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 
 	appCodec := encodingConfig.Marshaler
@@ -451,8 +451,8 @@ func New(
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
-	
-	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.wasmKeeper)
+
+	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, app.WasmKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -494,7 +494,7 @@ func New(
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
 
-	wasmOpts = append(owasm.RegisterCustomPlugins(&app.ICAControllerKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.ICAControllerKeeper), wasmOpts...)
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
@@ -519,8 +519,6 @@ func New(
 		wasmOpts...,
 	)
 	app.WasmKeeper = &wasmKeeper
-	//app.WasmKeeper.SetParams(ctx, wasmtypes.DefaultParams())
-	//app.WasmKeeper.SetParams(ctx)
 
 	// this line is used by starport scaffolding # ibc/app/router
 	if len(enabledProposals) != 0 {
@@ -907,9 +905,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
 	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
-	p := (wasm.DefaultParams()) //.ParamSetPairs()
-	paramsKeeper.Subspace(wasm.ModuleName).WithKeyTable(paramstypes.NewKeyTable(p.ParamSetPairs()[0], p.ParamSetPairs()[1]))
-	// this line is used by starport scaffolding # stargate/app/paramSubspace
+	paramsKeeper.Subspace(wasm.ModuleName)
 
 	return paramsKeeper
 }

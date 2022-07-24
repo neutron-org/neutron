@@ -10,6 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/require"
@@ -21,25 +22,30 @@ import (
 	"testing"
 )
 
-type CustomQueryTestSuite struct {
-	keeper_test.KeeperTestSuite
-}
-
 var defaultFunds = sdk.NewCoins(
 	sdk.NewInt64Coin("stake", 100000000),
 )
 
 var (
-	testFromAddress  = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
-	testConnectionId = "connection-0"
+	testFromAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
+	//testConnectionId = "connection-0"
 	//testInterchainAccountId = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 )
 
 func TestInterchainAccountAddress(t *testing.T) {
-	cfg := app.GetDefaultConfig()
-	cfg.Seal()
+	//cfg := app.GetDefaultConfig()
+	//cfg.Seal()
 	owner := keeper.RandomAccountAddress(t)
-	neutron, ctx := SetupCustomApp(t, owner) // TODO: probably don't need same address to be the owner of reflected contract, so try with other address
+	//neutron, ctx := SetupCustomApp(t, owner) // TODO: probably don't need same address to be the owner of reflected contract, so try with other address
+	testingstruct := testutil.SetupIBCConnection(t)
+	testConnectionId := testingstruct.Path.EndpointA.ConnectionID
+	neutron, ok := testingstruct.ChainA.App.(*app.App)
+	require.True(t, ok)
+	ctx := neutron.NewContext(true, tmproto.Header{Height: neutron.LastBlockHeight()})
+
+	storeReflectCode(t, ctx, neutron, owner)
+	cInfo := neutron.WasmKeeper.GetCodeInfo(ctx, 1)
+	require.NotNil(t, cInfo)
 
 	fundAccount(t, ctx, neutron, owner, defaultFunds)
 
@@ -161,7 +167,6 @@ func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.App, sdk.Context) {
 	//panic(neutron.WasmKeeper.GetParams(ctx))
 
 	storeReflectCode(t, ctx, neutron, addr)
-
 	cInfo := wasmKeeper.GetCodeInfo(ctx, 1)
 	require.NotNil(t, cInfo)
 

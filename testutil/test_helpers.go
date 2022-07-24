@@ -33,10 +33,10 @@ type TestIBCConnectionStruct struct {
 	coordinator *ibctesting.Coordinator
 
 	// testing chains used for convenience and readability
-	chainA *ibctesting.TestChain
-	chainB *ibctesting.TestChain
+	ChainA *ibctesting.TestChain
+	ChainB *ibctesting.TestChain
 
-	path *ibctesting.Path
+	Path *ibctesting.Path
 }
 
 func SetupIBCConnection(t *testing.T) *TestIBCConnectionStruct {
@@ -46,15 +46,15 @@ func SetupIBCConnection(t *testing.T) *TestIBCConnectionStruct {
 
 	var testIBCConnection TestIBCConnectionStruct
 
-	testIBCConnection.coordinator = ibctesting.NewCoordinator(testIBCConnection.T(), 2)
-	testIBCConnection.chainA = testIBCConnection.coordinator.GetChain(ibctesting.GetChainID(1))
-	testIBCConnection.chainB = testIBCConnection.coordinator.GetChain(ibctesting.GetChainID(2))
+	testIBCConnection.coordinator = ibctesting.NewCoordinator(t, 2)
+	testIBCConnection.ChainA = testIBCConnection.coordinator.GetChain(ibctesting.GetChainID(1))
+	testIBCConnection.ChainB = testIBCConnection.coordinator.GetChain(ibctesting.GetChainID(2))
 
-	testIBCConnection.path = NewICAPath(testIBCConnection.chainA, testIBCConnection.chainB)
+	testIBCConnection.Path = NewICAPath(testIBCConnection.ChainA, testIBCConnection.ChainB)
 
-	testIBCConnection.coordinator.SetupConnections(testIBCConnection.path)
+	testIBCConnection.coordinator.SetupConnections(testIBCConnection.Path)
 
-	err := SetupICAPath(testIBCConnection.path, TestOwnerAddress)
+	err := SetupICAPath(testIBCConnection.Path, TestOwnerAddress)
 	require.NoError(t, err)
 
 	return &testIBCConnection
