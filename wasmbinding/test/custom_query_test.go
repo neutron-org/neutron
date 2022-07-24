@@ -2,17 +2,18 @@ package test
 
 import (
 	"encoding/json"
+	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -20,18 +21,24 @@ import (
 	"testing"
 )
 
+type CustomQueryTestSuite struct {
+	keeper_test.KeeperTestSuite
+}
+
 var defaultFunds = sdk.NewCoins(
 	sdk.NewInt64Coin("stake", 100000000),
 )
 
 var (
-	testFromAddress  = "test_from_address"
+	testFromAddress  = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 	testConnectionId = "connection-0"
 	//testInterchainAccountId = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 )
 
 func TestInterchainAccountAddress(t *testing.T) {
-	owner := RandomAccountAddress()
+	cfg := app.GetDefaultConfig()
+	cfg.Seal()
+	owner := keeper.RandomAccountAddress(t)
 	neutron, ctx := SetupCustomApp(t, owner) // TODO: probably don't need same address to be the owner of reflected contract, so try with other address
 
 	fundAccount(t, ctx, neutron, owner, defaultFunds)
@@ -40,7 +47,7 @@ func TestInterchainAccountAddress(t *testing.T) {
 	msg := ictxtypes.MsgRegisterInterchainAccount{
 		FromAddress:         testFromAddress,  // contract address
 		ConnectionId:        testConnectionId, // new connection id
-		InterchainAccountId: owner.String(),   // owner
+		InterchainAccountId: testFromAddress,  // owner
 	}
 	_, err := neutron.InterchainTxsKeeper.RegisterInterchainAccount(sdk.WrapSDKContext(ctx), &msg)
 	require.NoError(t, err)
@@ -98,15 +105,20 @@ func queryCustom(t *testing.T, ctx sdk.Context, neutron *app.App, contract sdk.A
 
 func storeReflectCode(t *testing.T, ctx sdk.Context, neutron *app.App, addr sdk.AccAddress) {
 	govKeeper := neutron.GovKeeper
-	wasmCode, err := ioutil.ReadFile("../testdata/neutron_reflect.wasm")
+	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
 	require.NoError(t, err)
+
+	// TODO: rewrite using this
+	//codeId, err := keeper.NewDefaultPermissionKeeper(neutron.WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
 
 	src := wasmtypes.StoreCodeProposalFixture(func(p *wasmtypes.StoreCodeProposal) {
 		p.RunAs = addr.String()
 		p.WASMByteCode = wasmCode
 	})
-
-	// when stored
+	govKeeper.SetProposalID(ctx, govtypes.DefaultStartingProposalID)
+	govKeeper.SetDepositParams(ctx, govtypes.DefaultDepositParams())
+	govKeeper.SetVotingParams(ctx, govtypes.DefaultVotingParams())
+	govKeeper.SetTallyParams(ctx, govtypes.DefaultTallyParams())
 	storedProposal, err := govKeeper.SubmitProposal(ctx, src)
 	require.NoError(t, err)
 
@@ -136,27 +148,17 @@ func fundAccount(t *testing.T, ctx sdk.Context, neutron *app.App, addr sdk.AccAd
 	require.NoError(t, err)
 }
 
-// we need to make this deterministic (same every test run), as content might affect gas costs
-func keyPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
-	key := ed25519.GenPrivKey()
-	pub := key.PubKey()
-	addr := sdk.AccAddress(pub.Address())
-	return key, pub, addr
-}
-
-func RandomAccountAddress() sdk.AccAddress {
-	_, _, addr := keyPubAddr()
-	return addr
-}
-
-func RandomBech32AccountAddress() string {
-	return RandomAccountAddress().String()
-}
-
 func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.App, sdk.Context) {
-	neutron, _ := SetupTestingApp()
+	neutron, _ := setupTestingApp()
 	ctx := neutron.NewContext(true, tmproto.Header{Height: neutron.LastBlockHeight()})
 	wasmKeeper := neutron.WasmKeeper
+
+	//wasmparams := wasmKeeper.GetParams(ctx)
+	//wasmparams.CodeUploadAccess = wasmtypes.AllowEverybody
+	neutron.WasmKeeper.SetParams(ctx, wasmtypes.DefaultParams())
+	//paramsTest := wasmKeeper.GetParams(ctx)
+	//err := wasmKeeper.Va
+	//panic(neutron.WasmKeeper.GetParams(ctx))
 
 	storeReflectCode(t, ctx, neutron, addr)
 
@@ -166,8 +168,8 @@ func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.App, sdk.Context) {
 	return neutron, ctx
 }
 
-// SetupTestingApp initializes the IBC-go testing application
-func SetupTestingApp() (*app.App, map[string]json.RawMessage) {
+// setupTestingApp initializes the IBC-go testing application
+func setupTestingApp() (*app.App, map[string]json.RawMessage) {
 	encoding := app.MakeEncodingConfig()
 	db := dbm.NewMemDB()
 	testApp := app.New(
@@ -179,9 +181,23 @@ func SetupTestingApp() (*app.App, map[string]json.RawMessage) {
 		app.DefaultNodeHome,
 		0,
 		encoding,
-		app.GetEnabledProposals(),
+		//app.GetEnabledProposals(),
+		wasm.EnableAllProposals,
 		simapp.EmptyAppOptions{},
 		nil,
 	)
-	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
+	genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
+	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	if err != nil {
+		panic(err)
+	}
+
+	testApp.InitChain(
+		abci.RequestInitChain{
+			Validators:      []abci.ValidatorUpdate{},
+			ConsensusParams: simapp.DefaultConsensusParams,
+			AppStateBytes:   stateBytes,
+		},
+	)
+	return testApp, genesisState
 }

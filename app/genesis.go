@@ -2,6 +2,8 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 )
@@ -17,5 +19,15 @@ type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
 func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
-	return ModuleBasics.DefaultGenesis(cdc)
+	encCfg := MakeEncodingConfig()
+	// here we override wasm config to make it permissioned by default
+	wasmGen := wasm.GenesisState{
+		Params: wasmtypes.Params{
+			CodeUploadAccess:             wasmtypes.AllowEverybody,
+			InstantiateDefaultPermission: wasmtypes.AccessTypeEverybody,
+		},
+	}
+	gen := ModuleBasics.DefaultGenesis(cdc)
+	gen[wasm.ModuleName] = encCfg.Marshaler.MustMarshalJSON(&wasmGen)
+	return gen
 }
