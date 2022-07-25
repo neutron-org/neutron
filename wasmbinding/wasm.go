@@ -7,6 +7,7 @@ import (
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 )
 
+// RegisterCustomPlugins returns wasmkeeper.Option that we can use to connect handlers for implemented custom queries and messages to the App
 func RegisterCustomPlugins(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *interchainqueriesmodulekeeper.Keeper) []wasmkeeper.Option {
 	wasmQueryPlugin := NewQueryPlugin(icaControllerKeeper, icqKeeper)
 

@@ -4,8 +4,9 @@ import "github.com/neutron-org/neutron/x/interchainqueries/types"
 
 // NeutronQuery contains neutron custom queries.
 type NeutronQuery struct {
-	/// Registered Interchain Query Result for specified
-	InterchainQueryResult    *InterchainQueryResult    `json:"interchain_query_result,omitempty"`
+	/// Registered Interchain Query Result for specified QueryID
+	InterchainQueryResult *InterchainQueryResult `json:"interchain_query_result,omitempty"`
+	/// Interchain account address for specified ConnectionID and OwnerAddress
 	InterchainAccountAddress *InterchainAccountAddress `json:"interchain_account_address,omitempty"`
 }
 

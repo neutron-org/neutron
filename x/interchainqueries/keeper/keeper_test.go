@@ -79,7 +79,7 @@ func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 
 // SetupICAPath invokes the InterchainAccounts entrypoint and subsequent channel handshake handlers
 func SetupICAPath(path *ibctesting.Path, owner string) error {
-	if err := RegisterInterchainAccount(path.EndpointA, owner); err != nil {
+	if err := RegisterInterchainAccount(path.EndpointA); err != nil {
 		return err
 	}
 
@@ -99,7 +99,7 @@ func SetupICAPath(path *ibctesting.Path, owner string) error {
 }
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
-func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) error {
+func RegisterInterchainAccount(endpoint *ibctesting.Endpoint) error {
 	icaOwner, _ := ictxstypes.NewICAOwner(TestOwnerAddress, "owner_id")
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
