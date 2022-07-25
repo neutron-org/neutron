@@ -44,7 +44,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			}
 
 			res := bindings.InterchainAccountAddressResponse{
-				InterchainAccountAddress: interchainAccountAddress,
+				InterchainAccountAddress: &interchainAccountAddress,
 			}
 
 			bz, err := json.Marshal(res)

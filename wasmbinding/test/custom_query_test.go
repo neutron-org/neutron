@@ -2,16 +2,20 @@ package test
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
+	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"io/ioutil"
 	"testing"
 )
@@ -20,8 +24,12 @@ var defaultFunds = sdk.NewCoins(
 	sdk.NewInt64Coin("stake", 100000000),
 )
 
-func TestInterchainAccountAddress(t *testing.T) {
-	owner := keeper.RandomAccountAddress(t)
+func init() {
+	config := app.GetDefaultConfig()
+	config.Seal()
+}
+
+func TestInterchainQueryResult(t *testing.T) {
 	// Setup IBC chains and create connection between them
 	ibcStruct := testutil.SetupIBCConnection(t)
 	neutron, ok := ibcStruct.ChainA.App.(*app.App)
@@ -30,12 +38,88 @@ func TestInterchainAccountAddress(t *testing.T) {
 	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
 
 	// Store code and instantiate reflect contract
+	owner := keeper.RandomAccountAddress(t)
 	codeId := storeReflectCode(t, ctx, neutron, owner)
 	fundAccount(t, ctx, neutron, owner, defaultFunds)
 	contractAddress := instantiateReflectContract(t, ctx, neutron, owner, codeId)
 	require.NotEmpty(t, contractAddress)
 
-	// Query account address
+	// Register and submit query result
+	lastID := neutron.InterchainQueriesKeeper.GetLastRegisteredQueryKey(ctx) + 1
+	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
+	registeredQuery := iqtypes.RegisteredQuery{
+		Id:                lastID,
+		QueryData:         `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
+		QueryType:         "x/staking/DelegatorDelegations",
+		ZoneId:            "osmosis",
+		UpdatePeriod:      1,
+		ConnectionId:      ibcStruct.Path.EndpointA.ConnectionID,
+		LastEmittedHeight: uint64(ctx.BlockHeight()),
+	}
+	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
+	err := neutron.InterchainQueriesKeeper.SaveQuery(ctx, registeredQuery)
+	require.NoError(t, err)
+
+	clientKey := host.FullClientStateKey(ibcStruct.Path.EndpointB.ClientID)
+	chainBResp := ibcStruct.ChainB.App.Query(abci.RequestQuery{
+		Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+		Height: ibcStruct.ChainB.LastHeader.Header.Height - 1,
+		Data:   clientKey,
+		Prove:  true,
+	})
+
+	expectedQueryResult := &iqtypes.QueryResult{
+		KvResults: []*iqtypes.StorageValue{{
+			Key:           chainBResp.Key,
+			Proof:         chainBResp.ProofOps,
+			Value:         chainBResp.Value,
+			StoragePrefix: host.StoreKey,
+		}},
+		// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+		Blocks:   nil,
+		Height:   uint64(chainBResp.Height),
+		Revision: ibcStruct.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+	}
+	err = neutron.InterchainQueriesKeeper.SaveQueryResult(ctx, lastID, expectedQueryResult)
+	require.NoError(t, err)
+
+	// Query interchain query result
+	query := bindings.NeutronQuery{
+		InterchainQueryResult: &bindings.InterchainQueryResult{
+			QueryID: lastID,
+		},
+	}
+	resp := bindings.InterchainQueryResultResponse{}
+	queryCustom(t, ctx, neutron, contractAddress, query, &resp)
+
+	require.EqualValues(t, uint64(chainBResp.Height), resp.Result.Height)
+	require.EqualValues(t, ibcStruct.ChainA.LastHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
+	require.Empty(t, resp.Result.Blocks)
+	require.NotEmpty(t, resp.Result.KvResults)
+	require.EqualValues(t, []*iqtypes.StorageValue{{
+		Key:           chainBResp.Key,
+		Proof:         nil,
+		Value:         chainBResp.Value,
+		StoragePrefix: host.StoreKey,
+	}}, resp.Result.KvResults)
+}
+
+func TestInterchainAccountAddress(t *testing.T) {
+	// Setup IBC chains and create connection between them
+	ibcStruct := testutil.SetupIBCConnection(t)
+	neutron, ok := ibcStruct.ChainA.App.(*app.App)
+	require.True(t, ok)
+
+	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
+
+	// Store code and instantiate reflect contract
+	owner := keeper.RandomAccountAddress(t)
+	codeId := storeReflectCode(t, ctx, neutron, owner)
+	fundAccount(t, ctx, neutron, owner, defaultFunds)
+	contractAddress := instantiateReflectContract(t, ctx, neutron, owner, codeId)
+	require.NotEmpty(t, contractAddress)
+
+	// Query real account address
 	icaOwner, err := ictxtypes.NewICAOwner(testutil.TestOwnerAddress, "owner_id")
 	require.NoError(t, err)
 
@@ -49,7 +133,7 @@ func TestInterchainAccountAddress(t *testing.T) {
 	queryCustom(t, ctx, neutron, contractAddress, query, &resp)
 
 	expected := "neutron128vd3flgem54995jslqpr9rq4zj5n0eu0rlqj9rr9a24qjf9wc9qyuvj84"
-	require.EqualValues(t, expected, resp.InterchainAccountAddress)
+	require.EqualValues(t, expected, *resp.InterchainAccountAddress)
 }
 
 type ReflectQuery struct {

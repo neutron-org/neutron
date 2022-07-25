@@ -1,5 +1,7 @@
 package bindings
 
+import "github.com/neutron-org/neutron/x/interchainqueries/types"
+
 // NeutronQuery contains neutron custom queries.
 type NeutronQuery struct {
 	/// Registered Interchain Query Result for specified
@@ -12,7 +14,7 @@ type InterchainQueryResult struct {
 }
 
 type InterchainQueryResultResponse struct {
-	Result string `json:"result"` // TODO: real result type
+	Result *types.QueryResult `json:"result,omitempty"` // TODO: real result type
 }
 
 type InterchainAccountAddress struct {
@@ -21,5 +23,5 @@ type InterchainAccountAddress struct {
 }
 
 type InterchainAccountAddressResponse struct {
-	InterchainAccountAddress string `json:"interchain_account_address"`
+	InterchainAccountAddress *string `json:"interchain_account_address,omitempty"`
 }

@@ -41,9 +41,6 @@ type TestIBCConnectionStruct struct {
 
 func SetupIBCConnection(t *testing.T) *TestIBCConnectionStruct {
 	ibctesting.DefaultTestingAppInit = SetupTestingApp
-	config := app.GetDefaultConfig()
-	config.Seal()
-
 	var testIBCConnection TestIBCConnectionStruct
 
 	testIBCConnection.coordinator = ibctesting.NewCoordinator(t, 2)

@@ -1,12 +1,16 @@
 package wasmbinding
 
-import icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
+import (
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
+	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
+)
 
 type QueryPlugin struct {
-	ICAControllerKeeper *icacontrollerkeeper.Keeper
+	icaControllerKeeper *icacontrollerkeeper.Keeper
+	icqKeeper           *icqkeeper.Keeper
 }
 
 // NewQueryPlugin returns a reference to a new QueryPlugin.
-func NewQueryPlugin(ICAControllerKeeper *icacontrollerkeeper.Keeper) *QueryPlugin {
-	return &QueryPlugin{ICAControllerKeeper: ICAControllerKeeper}
+func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper) *QueryPlugin {
+	return &QueryPlugin{icaControllerKeeper: icaControllerKeeper, icqKeeper: icqKeeper}
 }
