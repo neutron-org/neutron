@@ -6,22 +6,17 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
-	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
+	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"io/ioutil"
 	"testing"
-)
-
-var defaultFunds = sdk.NewCoins(
-	sdk.NewInt64Coin("stake", 100000000),
 )
 
 func init() {
@@ -40,14 +35,13 @@ func TestInterchainQueryResult(t *testing.T) {
 	// Store code and instantiate reflect contract
 	owner := keeper.RandomAccountAddress(t)
 	codeId := storeReflectCode(t, ctx, neutron, owner)
-	fundAccount(t, ctx, neutron, owner, defaultFunds)
 	contractAddress := instantiateReflectContract(t, ctx, neutron, owner, codeId)
 	require.NotEmpty(t, contractAddress)
 
 	// Register and submit query result
 	lastID := neutron.InterchainQueriesKeeper.GetLastRegisteredQueryKey(ctx) + 1
 	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
-	registeredQuery := iqtypes.RegisteredQuery{
+	registeredQuery := icqtypes.RegisteredQuery{
 		Id:                lastID,
 		QueryData:         `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 		QueryType:         "x/staking/DelegatorDelegations",
@@ -68,8 +62,8 @@ func TestInterchainQueryResult(t *testing.T) {
 		Prove:  true,
 	})
 
-	expectedQueryResult := &iqtypes.QueryResult{
-		KvResults: []*iqtypes.StorageValue{{
+	expectedQueryResult := &icqtypes.QueryResult{
+		KvResults: []*icqtypes.StorageValue{{
 			Key:           chainBResp.Key,
 			Proof:         chainBResp.ProofOps,
 			Value:         chainBResp.Value,
@@ -96,7 +90,7 @@ func TestInterchainQueryResult(t *testing.T) {
 	require.EqualValues(t, ibcStruct.ChainA.LastHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
 	require.Empty(t, resp.Result.Blocks)
 	require.NotEmpty(t, resp.Result.KvResults)
-	require.EqualValues(t, []*iqtypes.StorageValue{{
+	require.EqualValues(t, []*icqtypes.StorageValue{{
 		Key:           chainBResp.Key,
 		Proof:         nil,
 		Value:         chainBResp.Value,
@@ -115,12 +109,11 @@ func TestInterchainAccountAddress(t *testing.T) {
 	// Store code and instantiate reflect contract
 	owner := keeper.RandomAccountAddress(t)
 	codeId := storeReflectCode(t, ctx, neutron, owner)
-	fundAccount(t, ctx, neutron, owner, defaultFunds)
 	contractAddress := instantiateReflectContract(t, ctx, neutron, owner, codeId)
 	require.NotEmpty(t, contractAddress)
 
 	// Query real account address
-	icaOwner, err := ictxtypes.NewICAOwner(testutil.TestOwnerAddress, "owner_id")
+	icaOwner, err := ictxtypes.NewICAOwner(testutil.TestOwnerAddress, testutil.TestInterchainId)
 	require.NoError(t, err)
 
 	query := bindings.NeutronQuery{
@@ -186,14 +179,4 @@ func instantiateReflectContract(t *testing.T, ctx sdk.Context, neutron *app.App,
 	require.NoError(t, err)
 
 	return addr
-}
-
-func fundAccount(t *testing.T, ctx sdk.Context, neutron *app.App, addr sdk.AccAddress, coins sdk.Coins) {
-	err := simapp.FundAccount(
-		neutron.BankKeeper,
-		ctx,
-		addr,
-		coins,
-	)
-	require.NoError(t, err)
 }

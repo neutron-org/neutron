@@ -19,6 +19,8 @@ var (
 	// TestOwnerAddress defines a reusable bech32 address for testing purposes
 	TestOwnerAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 
+	TestInterchainId = "owner_id"
+
 	// TestVersion defines a reusable interchainaccounts version string for testing purposes
 	TestVersion = string(icatypes.ModuleCdc.MustMarshalJSON(&icatypes.Metadata{
 		Version:                icatypes.Version,
@@ -92,7 +94,7 @@ func SetupICAPath(path *ibctesting.Path, owner string) error {
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
 func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) error {
-	icaOwner, _ := ictxstypes.NewICAOwner(TestOwnerAddress, "owner_id")
+	icaOwner, _ := ictxstypes.NewICAOwner(TestOwnerAddress, TestInterchainId)
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
 		return err

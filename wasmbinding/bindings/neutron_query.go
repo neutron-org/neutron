@@ -14,7 +14,7 @@ type InterchainQueryResult struct {
 }
 
 type InterchainQueryResultResponse struct {
-	Result *types.QueryResult `json:"result,omitempty"` // TODO: real result type
+	Result *types.QueryResult `json:"result,omitempty"`
 }
 
 type InterchainAccountAddress struct {
