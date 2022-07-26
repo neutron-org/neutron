@@ -35,7 +35,7 @@ func RegisterInterchainQueryCmd() *cobra.Command {
 		Use:     "register-interchain-query [zone-id] [connection-id] [update-period] [query_type] [query-data]",
 		Short:   "Register an interchain query",
 		Aliases: []string{"register", "r"},
-		Args:    cobra.ExactArgs(4),
+		Args:    cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -54,7 +54,7 @@ func RegisterInterchainQueryCmd() *cobra.Command {
 				return fmt.Errorf("invalid query type: must be %s or %s, got %s", types.InterchainQueryTypeKV, types.InterchainQueryTypeTX, queryType)
 			}
 
-			queryData := args[5]
+			queryData := args[4]
 
 			var (
 				txFilter string
