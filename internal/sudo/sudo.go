@@ -194,6 +194,7 @@ func (s *SudoHandler) SudoOpenAck(
 func (s *SudoHandler) SudoCheckTxQueryResult(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
+	queryID uint64,
 	height int64,
 	data []byte,
 ) ([]byte, error) {
@@ -201,10 +202,12 @@ func (s *SudoHandler) SudoCheckTxQueryResult(
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		s.Logger(ctx).Error("SudoCheckTxQueryResult: contract was not found", "contractAddress", contractAddress)
 		return nil, nil
 	}
 
 	x := SudoMessageCheckTxQueryResult{}
+	x.CheckTxQueryResult.QueryID = queryID
 	x.CheckTxQueryResult.Height = uint64(height)
 	x.CheckTxQueryResult.Data = data
 
@@ -215,7 +218,7 @@ func (s *SudoHandler) SudoCheckTxQueryResult(
 	}
 
 	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
-	s.Logger(ctx).Info("SudoOpenAck received response", "err", err, "response", string(r))
+	s.Logger(ctx).Info("SudoCheckTxQueryResult received response", "err", err, "response", string(r))
 
 	return r, err
 }

@@ -85,7 +85,7 @@ func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.
 }
 
 // VerifyBlock verifies headers and transaction in the block
-func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, clientID string, block *types.Block) error {
+func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID uint64, clientID string, block *types.Block) error {
 	header, err := ibcclienttypes.UnpackHeader(block.Header)
 	if err != nil {
 		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
@@ -116,7 +116,7 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, clientID
 		}
 
 		// Let the query owner contract process the query result (e.g., the sender / recipient / amount).
-		if _, err := k.sudoHandler.SudoCheckTxQueryResult(ctx, queryOwner, tmHeader.Header.Height, tx.Data); err != nil {
+		if _, err := k.sudoHandler.SudoCheckTxQueryResult(ctx, queryOwner, queryID, tmHeader.Header.Height, tx.Data); err != nil {
 			return sdkerrors.Wrapf(err, "contract %s rejected transaction query result", queryOwner)
 		}
 	}

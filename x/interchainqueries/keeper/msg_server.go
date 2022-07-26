@@ -94,13 +94,12 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		}
 	}
 
-	query.Owner = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
 	if err != nil {
 		return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
 	}
 	for _, block := range msg.Result.Blocks {
-		if err := k.VerifyBlock(ctx, queryOwner, msg.ClientId, block); err != nil {
+		if err := k.VerifyBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, block); err != nil {
 			return nil, sdkerrors.Wrapf(err, "failed to verify block: %v", err)
 		}
 	}
