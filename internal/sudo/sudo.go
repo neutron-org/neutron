@@ -17,12 +17,12 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 )
 
-type SudoMessageCheckTxQueryResult struct {
-	CheckTxQueryResult struct {
+type SudoMessageTxQueryResult struct {
+	TxQueryResult struct {
 		QueryID uint64 `json:"query_id"`
 		Height  uint64 `json:"height"`
 		Data    []byte `json:"data"`
-	} `json:"check_tx_query_result"`
+	} `json:"tx_query_result"`
 }
 
 type SudoMessageTimeout struct {
@@ -187,18 +187,18 @@ func (s *SudoHandler) SudoOpenAck(
 	return r, err
 }
 
-// SudoCheckTxQueryResult is used to pass a tx query result to the contract that registered the query
+// SudoTxQueryResult is used to pass a tx query result to the contract that registered the query
 // to check whether the transaction actually satisfies the initial query arguments.
 //
 // Please note that this callback can be potentially used by the contact to execute business logic.
-func (s *SudoHandler) SudoCheckTxQueryResult(
+func (s *SudoHandler) SudoTxQueryResult(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
 	queryID uint64,
 	height int64,
 	data []byte,
 ) ([]byte, error) {
-	s.Logger(ctx).Info("SudoCheckTxQueryResult", "contractAddress", contractAddress)
+	s.Logger(ctx).Info("SudoTxQueryResult", "contractAddress", contractAddress)
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
@@ -206,19 +206,19 @@ func (s *SudoHandler) SudoCheckTxQueryResult(
 		return nil, nil
 	}
 
-	x := SudoMessageCheckTxQueryResult{}
-	x.CheckTxQueryResult.QueryID = queryID
-	x.CheckTxQueryResult.Height = uint64(height)
-	x.CheckTxQueryResult.Data = data
+	x := SudoMessageTxQueryResult{}
+	x.TxQueryResult.QueryID = queryID
+	x.TxQueryResult.Height = uint64(height)
+	x.TxQueryResult.Data = data
 
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal SudoMessageCheckTxQueryResult message", "error", err)
-		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageCheckTxQueryResult message")
+		s.Logger(ctx).Error("failed to marshal SudoMessageTxQueryResult message", "error", err)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageTxQueryResult message")
 	}
 
 	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
-	s.Logger(ctx).Info("SudoCheckTxQueryResult received response", "err", err, "response", string(r))
+	s.Logger(ctx).Info("SudoTxQueryResult received response", "err", err, "response", string(r))
 
 	return r, err
 }

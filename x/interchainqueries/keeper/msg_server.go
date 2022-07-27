@@ -93,20 +93,21 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 				return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
 			}
 		}
+
+		if err = k.SaveKVQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
+			return nil, sdkerrors.Wrapf(err, "failed to save query result: %v", err)
+		}
 	}
 
 	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
 	if err != nil {
 		return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
 	}
-	for _, block := range msg.Result.Blocks {
-		if err := k.VerifyBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, block); err != nil {
-			return nil, sdkerrors.Wrapf(err, "failed to verify block: %v", err)
-		}
-	}
 
-	if err = k.SaveQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
-		return nil, sdkerrors.Wrapf(err, "failed to save query result: %v", err)
+	for _, block := range msg.Result.Blocks {
+		if err := k.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, block); err != nil {
+			return nil, sdkerrors.Wrapf(err, "failed to ProcessBlock: %v", err)
+		}
 	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil

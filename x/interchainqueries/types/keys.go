@@ -49,8 +49,8 @@ func GetSubmittedTransactionIDForQueryKeyPrefix(queryID uint64) []byte {
 	return append(SubmittedTxKey, sdk.Uint64ToBigEndian(queryID)...)
 }
 
-func GetSubmittedTransactionIDForQueryKey(queryID uint64, transactionID uint64) []byte {
-	return append(GetSubmittedTransactionIDForQueryKeyPrefix(queryID), sdk.Uint64ToBigEndian(transactionID)...)
+func GetSubmittedTransactionIDForQueryKey(queryID uint64, txHash []byte) []byte {
+	return append(GetSubmittedTransactionIDForQueryKeyPrefix(queryID), txHash...)
 }
 
 func GetRegisteredQueryResultByIDKey(id uint64) []byte {

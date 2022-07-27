@@ -84,8 +84,8 @@ func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.
 	return nil
 }
 
-// VerifyBlock verifies headers and transaction in the block
-func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID uint64, clientID string, block *types.Block) error {
+// ProcessBlock verifies headers and transaction in the block
+func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID uint64, clientID string, block *types.Block) error {
 	header, err := ibcclienttypes.UnpackHeader(block.Header)
 	if err != nil {
 		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
@@ -102,22 +102,36 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID 
 
 	tmHeader, ok := header.(*tendermintLightClientTypes.Header)
 	if !ok {
-		return sdkerrors.Wrapf(types.ErrInvalidType, "failed to cast header to tendermint Header: %v", err)
+		ctx.Logger().Debug("ProcessBlock: failed to cast current header to tendermint Header", "query_id", queryID)
+		return sdkerrors.Wrap(types.ErrInvalidType, "failed to cast current header to tendermint Header")
 	}
 
 	tmNextHeader, ok := nextHeader.(*tendermintLightClientTypes.Header)
 	if !ok {
-		return sdkerrors.Wrapf(types.ErrInvalidType, "failed to cast header to tendermint Header: %v", err)
+		ctx.Logger().Debug("ProcessBlock: failed to cast next header to tendermint Header", "query_id", queryID)
+		return sdkerrors.Wrap(types.ErrInvalidType, "failed to cast next header to tendermint header")
 	}
 
 	for _, tx := range block.Txs {
-		if err = k.verifyTransaction(ctx, tmHeader, tmNextHeader, tx); err != nil {
-			return sdkerrors.Wrapf(types.ErrInternal, "failed to verify transaction %s: %v", hex.EncodeToString(tmtypes.Tx(tx.Data).Hash()), err)
-		}
+		var txHash = tmtypes.Tx(tx.Data).Hash()
+		if !k.CheckTransactionAlreadySubmitted(ctx, queryID, txHash) {
+			// Check that cryptography is O.K. (tx is included in the block, tx was executed successfully)
+			if err = k.verifyTransaction(tmHeader, tmNextHeader, tx); err != nil {
+				ctx.Logger().Debug("ProcessBlock: failed to verifyTransaction",
+					"error", err, "query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
+				return sdkerrors.Wrapf(types.ErrInternal, "failed to verifyTransaction %s: %v", hex.EncodeToString(txHash), err)
+			}
 
-		// Let the query owner contract process the query result (e.g., the sender / recipient / amount).
-		if _, err := k.sudoHandler.SudoCheckTxQueryResult(ctx, queryOwner, queryID, tmHeader.Header.Height, tx.Data); err != nil {
-			return sdkerrors.Wrapf(err, "contract %s rejected transaction query result", queryOwner)
+			k.SaveTransactionAsSubmitted(ctx, queryID, txHash)
+
+			// Let the query owner contract process the query result.
+			if _, err := k.sudoHandler.SudoTxQueryResult(ctx, queryOwner, queryID, tmHeader.Header.Height, tx.Data); err != nil {
+				return sdkerrors.Wrapf(err, "contract %s rejected transaction query result (tx_hash: %s)",
+					queryOwner, hex.EncodeToString(txHash))
+			}
+		} else {
+			ctx.Logger().Debug("ProcessBlock: transaction was already submitted",
+				"query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
 		}
 	}
 
@@ -131,7 +145,6 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID 
 // * transaction's responseDeliveryTx is legitimate - nextHeaderLastResultsDataHash merkle root contains
 // deterministicResponseDeliverTx(ResponseDeliveryTx).Bytes()
 func (k Keeper) verifyTransaction(
-	ctx sdk.Context,
 	header *tendermintLightClientTypes.Header,
 	nextHeader *tendermintLightClientTypes.Header,
 	tx *types.TxValue,

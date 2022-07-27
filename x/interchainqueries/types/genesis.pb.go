@@ -36,7 +36,7 @@ type RegisteredQuery struct {
 	ZoneId string `protobuf:"bytes,5,opt,name=zone_id,json=zoneId,proto3" json:"zone_id,omitempty"`
 	// The IBC connection ID for getting ConsensusState to verify proofs.
 	ConnectionId string `protobuf:"bytes,6,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	// Parameter that defines how often the query must be updated.
+	//  Parameter that defines how often the query must be updated.
 	UpdatePeriod uint64 `protobuf:"varint,7,opt,name=update_period,json=updatePeriod,proto3" json:"update_period,omitempty"`
 	// The local height when the event to update the query result was emitted last time.
 	LastEmittedHeight uint64 `protobuf:"varint,8,opt,name=last_emitted_height,json=lastEmittedHeight,proto3" json:"last_emitted_height,omitempty"`
