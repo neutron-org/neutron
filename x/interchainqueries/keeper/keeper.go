@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
@@ -306,7 +307,10 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
 		query := types.RegisteredQuery{}
-		k.cdc.MustUnmarshal(iterator.Value(), &query)
+		if err := k.cdc.Unmarshal(iterator.Value(), &query); err != nil {
+			k.Logger(ctx).Error("failed to unmarshal registered query %s when iterating: %w", iterator.Key(), err)
+			continue
+		}
 		stop := fn(i, query)
 
 		if stop {
