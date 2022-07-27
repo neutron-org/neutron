@@ -202,7 +202,7 @@ func (s *SudoHandler) SudoCheckTxQueryResult(
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
-		s.Logger(ctx).Error("SudoCheckTxQueryResult: contract was not found", "contractAddress", contractAddress)
+		s.Logger(ctx).Error("contract was not found", "contractAddress", contractAddress)
 		return nil, nil
 	}
 
