@@ -37,6 +37,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	registeredQuery := types.RegisteredQuery{
 		Id:                lastID,
+		Owner:             msg.Sender,
 		QueryData:         msg.QueryData,
 		QueryType:         msg.QueryType,
 		ZoneId:            msg.ZoneId,

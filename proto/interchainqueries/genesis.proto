@@ -23,9 +23,9 @@ message RegisteredQuery {
   uint64 update_period = 7;
   // The local height when the event to update the query result was emitted last time.
   uint64 last_emitted_height = 8;
-  // The local chain last block height when the query's result was updated.
+  // The local chain last block height when the query result was updated.
   uint64 last_submitted_result_local_height = 9;
-  // The remote chain last block height when the query's result was updated.
+  // The remote chain last block height when the query result was updated.
   uint64 last_submitted_result_remote_height = 10;
 }
 
