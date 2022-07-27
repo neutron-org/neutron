@@ -84,28 +84,38 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		for _, result := range msg.Result.KvResults {
 			proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
 			if err != nil {
+				ctx.Logger().Info("SubmitQueryResult: failed to ConvertProofs",
+					"error", err, "query_id", msg.QueryId)
 				return nil, sdkerrors.Wrapf(types.ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
 			}
 
 			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
 
 			if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
+				ctx.Logger().Info("SubmitQueryResult: failed to VerifyMembership",
+					"error", err, "query_id", msg.QueryId)
 				return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
 			}
 		}
 
 		if err = k.SaveKVQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
-			return nil, sdkerrors.Wrapf(err, "failed to save query result: %v", err)
+			ctx.Logger().Error("SubmitQueryResult: failed to SaveKVQueryResult",
+				"error", err, "query_id", msg.QueryId)
+			return nil, sdkerrors.Wrapf(err, "failed to SaveKVQueryResult: %v", err)
 		}
 	}
 
 	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
 	if err != nil {
+		ctx.Logger().Error("SubmitQueryResult: failed to decode owner contract address",
+			"error", err, "query_id", msg.QueryId)
 		return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
 	}
 
 	for _, block := range msg.Result.Blocks {
 		if err := k.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, block); err != nil {
+			ctx.Logger().Info("SubmitQueryResult: failed to ProcessBlock",
+				"error", err, "query_id", msg.QueryId)
 			return nil, sdkerrors.Wrapf(err, "failed to ProcessBlock: %v", err)
 		}
 	}

@@ -157,7 +157,7 @@ func (k Keeper) SaveTransactionAsSubmitted(ctx sdk.Context, queryID uint64, txHa
 	store.Set(key, []byte{1})
 }
 
-func (k Keeper) CheckTransactionAlreadySubmitted(ctx sdk.Context, queryID uint64, txHash []byte) bool {
+func (k Keeper) CheckTransactionIsAlreadySubmitted(ctx sdk.Context, queryID uint64, txHash []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetSubmittedTransactionIDForQueryKey(queryID, txHash)
 

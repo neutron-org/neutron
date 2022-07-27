@@ -19,7 +19,7 @@ message RegisteredQuery {
   string zone_id = 5;
   // The IBC connection ID for getting ConsensusState to verify proofs.
   string connection_id = 6;
-  //  Parameter that defines how often the query must be updated.
+  // Parameter that defines how often the query must be updated.
   uint64 update_period = 7;
   // The local height when the event to update the query result was emitted last time.
   uint64 last_emitted_height = 8;
