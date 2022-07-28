@@ -230,7 +230,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -285,7 +285,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					ClientId: suite.path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
 						KvResults: nil,
-						Blocks:    nil,
+						Block:     nil,
 						Height:    0,
 					},
 				}
@@ -333,7 +333,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -381,7 +381,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -429,7 +429,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -482,7 +482,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
