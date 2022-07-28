@@ -112,16 +112,15 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, sdkerrors.Wrapf(err, "failed to SaveKVQueryResult: %v", err)
 		}
 	}
+	if msg.Result.Block != nil && msg.Result.Block.Tx != nil {
+		queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
+		if err != nil {
+			ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
+				"error", err, "query", query, "message", msg)
+			return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
+		}
 
-	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
-	if err != nil {
-		ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
-			"error", err, "query", query, "message", msg)
-		return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
-	}
-
-	for _, block := range msg.Result.Blocks {
-		if err := k.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, block); err != nil {
+		if err := k.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, msg.Result.Block); err != nil {
 			ctx.Logger().Debug("SubmitQueryResult: failed to ProcessBlock",
 				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(err, "failed to ProcessBlock: %v", err)

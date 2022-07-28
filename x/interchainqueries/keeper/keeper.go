@@ -140,24 +140,24 @@ func clearQueryResult(result *types.QueryResult) types.QueryResult {
 
 	cleanResult := types.QueryResult{
 		KvResults: storageValues,
-		Blocks:    nil,
+		Block:     nil,
 		Height:    result.Height,
 	}
 
 	return cleanResult
 }
 
-// SaveTransactionAsSubmitted simply stores a key (SubmittedTxKey + bigEndianBytes(queryID) + tx_hash) with
+// SaveTransactionAsProcessed simply stores a key (SubmittedTxKey + bigEndianBytes(queryID) + tx_hash) with
 // mock data. This key can be used to check whether a certain transaction was already submitted for a specific
 // transaction query.
-func (k Keeper) SaveTransactionAsSubmitted(ctx sdk.Context, queryID uint64, txHash []byte) {
+func (k Keeper) SaveTransactionAsProcessed(ctx sdk.Context, queryID uint64, txHash []byte) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetSubmittedTransactionIDForQueryKey(queryID, txHash)
 
 	store.Set(key, []byte{1})
 }
 
-func (k Keeper) CheckTransactionIsAlreadySubmitted(ctx sdk.Context, queryID uint64, txHash []byte) bool {
+func (k Keeper) CheckTransactionIsAlreadyProcessed(ctx sdk.Context, queryID uint64, txHash []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetSubmittedTransactionIDForQueryKey(queryID, txHash)
 
