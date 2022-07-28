@@ -164,22 +164,6 @@ func (k Keeper) CheckTransactionIsAlreadySubmitted(ctx sdk.Context, queryID uint
 	return store.Has(key)
 }
 
-// GetLastSubmittedTransactionIDForQuery returns last transaction id which was submitted for a query with queryID
-func (k Keeper) GetLastSubmittedTransactionIDForQuery(ctx sdk.Context, queryID uint64) uint64 {
-	store := ctx.KVStore(k.storeKey)
-	bytes := store.Get(types.GetLastSubmittedTransactionIDForQueryKey(queryID))
-	if bytes == nil {
-		return 0
-	}
-	return sdk.BigEndianToUint64(bytes)
-}
-
-// SetLastSubmittedTransactionIDForQuery sets a last transaction id which was submitted for a query with queryID
-func (k Keeper) SetLastSubmittedTransactionIDForQuery(ctx sdk.Context, queryID uint64, transactionID uint64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetLastSubmittedTransactionIDForQueryKey(queryID), sdk.Uint64ToBigEndian(transactionID))
-}
-
 // GetQueryResultByID returns a QueryResult for query with id
 func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResult, error) {
 	store := ctx.KVStore(k.storeKey)
