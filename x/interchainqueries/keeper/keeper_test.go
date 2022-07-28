@@ -166,10 +166,25 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			"invalid query type",
 			func() {
 				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       "unknown",
+					ConnectionId:       suite.path.EndpointA.ConnectionID,
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          "invalid_type",
+					ZoneId:             "id",
+					UpdatePeriod:       1,
+					Sender:             TestOwnerAddress,
+				}
+			},
+			iqtypes.ErrInvalidQueryType,
+		},
+		{
+			"invalid transactions filter format",
+			func() {
+				msg = iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       suite.path.EndpointA.ConnectionID,
+					TransactionsFilter: "&)(^Y(*&(*&(&(*",
+					Keys:               nil,
+					QueryType:          iqtypes.InterchainQueryTypeTX,
 					ZoneId:             "id",
 					UpdatePeriod:       1,
 					Sender:             TestOwnerAddress,

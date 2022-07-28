@@ -32,7 +32,7 @@ func GetTxCmd() *cobra.Command {
 
 func RegisterInterchainQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "register-interchain-query [zone-id] [connection-id] [update-period] [query_type] [query-data]",
+		Use:     "register-interchain-query [zone-id] [connection-id] [update-period] [query_type] [query_data]",
 		Short:   "Register an interchain query",
 		Aliases: []string{"register", "r"},
 		Args:    cobra.ExactArgs(5),

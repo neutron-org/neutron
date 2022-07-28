@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strings"
 )
@@ -45,6 +46,12 @@ const (
 	kvKeysDelimiter  = ","
 )
 
+func IsValidJSON(s string) bool {
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
+
+}
+
 type InterchainQueryType string
 
 func (icqt InterchainQueryType) IsValid() bool {
@@ -64,17 +71,17 @@ func (kv KVKey) ToString() string {
 }
 
 func KVKeyFromString(s string) (KVKey, error) {
-	splittedString := strings.Split(s, pathKeyDelimiter)
-	if len(splittedString) < 2 {
+	splitString := strings.Split(s, pathKeyDelimiter)
+	if len(splitString) < 2 {
 		return KVKey{}, sdkerrors.Wrap(ErrInvalidType, "invalid kv key type")
 	}
 
-	bzKey, err := hex.DecodeString(splittedString[1])
+	bzKey, err := hex.DecodeString(splitString[1])
 	if err != nil {
 		return KVKey{}, sdkerrors.Wrapf(err, "invalid key encoding")
 	}
 	return KVKey{
-		Path: splittedString[0],
+		Path: splitString[0],
 		Key:  bzKey,
 	}, nil
 }
@@ -82,10 +89,10 @@ func KVKeyFromString(s string) (KVKey, error) {
 type KVKeys []*KVKey
 
 func KVKeysFromString(str string) (KVKeys, error) {
-	splittedString := strings.Split(str, kvKeysDelimiter)
-	kvKeys := make(KVKeys, 0, len(splittedString))
+	splitString := strings.Split(str, kvKeysDelimiter)
+	kvKeys := make(KVKeys, 0, len(splitString))
 
-	for _, s := range splittedString {
+	for _, s := range splitString {
 		key, err := KVKeyFromString(s)
 		if err != nil {
 			return nil, err
