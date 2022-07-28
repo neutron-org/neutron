@@ -1,38 +1,24 @@
 package wasmbinding
 
 import (
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	icatypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
 // GetInterchainQueryResult is a function, not method, so the message_plugin can use it
 func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*types.QueryResult, error) {
-	result, err := qp.icqKeeper.GetQueryResultByID(ctx, queryID)
-
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "could not find query result for queryID=%d: %v", queryID, err)
-	}
-
-	return result, nil
+	return qp.icqKeeper.GetQueryResultByID(ctx, queryID)
 }
 
-func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, ownerAddress, connectionId string) (string, error) {
-	if ownerAddress == "" || connectionId == "" {
-		return "", wasmvmtypes.InvalidRequest{Err: "invalid request params for interchain account address"}
-	}
+func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *icatypes.QueryInterchainAccountAddressRequest) (*icatypes.QueryInterchainAccountAddressResponse, error) {
+	return qp.icaControllerKeeper.InterchainAccountAddress(sdk.WrapSDKContext(ctx), req)
+}
 
-	portID, err := icatypes.NewControllerPortID(ownerAddress)
-	if err != nil {
-		return "", sdkerrors.Wrapf(err, "could not find account for ownerAddress=%s: %v", ownerAddress, err)
-	}
+func (qp *QueryPlugin) GetRegisteredInterchainQueries(ctx sdk.Context, req *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
+	return qp.icqKeeper.GetRegisteredQueries(ctx, req)
+}
 
-	addr, found := qp.icaControllerKeeper.GetInterchainAccountAddress(ctx, connectionId, portID)
-	if !found {
-		return "", sdkerrors.Wrapf(err, "no account found for portID=%s: %v", portID, err)
-	}
-
-	return addr, nil
+func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *types.QueryRegisteredQueryRequest) (*types.RegisteredQuery, error) {
+	return qp.icqKeeper.GetQueryByID(ctx, req.QueryId)
 }

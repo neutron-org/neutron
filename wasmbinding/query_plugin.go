@@ -1,8 +1,8 @@
 package wasmbinding
 
 import (
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
+	icacontrollerkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 )
 
 type QueryPlugin struct {

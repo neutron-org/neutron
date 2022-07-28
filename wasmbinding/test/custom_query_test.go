@@ -43,8 +43,7 @@ func TestInterchainQueryResult(t *testing.T) {
 	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
 	registeredQuery := icqtypes.RegisteredQuery{
 		Id:                lastID,
-		QueryData:         `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-		QueryType:         "x/staking/DelegatorDelegations",
+		QueryType:         "kv",
 		ZoneId:            "osmosis",
 		UpdatePeriod:      1,
 		ConnectionId:      ibcStruct.Path.EndpointA.ConnectionID,
@@ -79,11 +78,11 @@ func TestInterchainQueryResult(t *testing.T) {
 
 	// Query interchain query result
 	query := bindings.NeutronQuery{
-		InterchainQueryResult: &bindings.InterchainQueryResult{
-			QueryID: lastID,
+		InterchainQueryResult: &icqtypes.QueryRegisteredQueryResultRequest{
+			QueryId: lastID,
 		},
 	}
-	resp := bindings.InterchainQueryResultResponse{}
+	resp := icqtypes.QueryRegisteredQueryResultResponse{}
 	queryCustom(t, ctx, neutron, contractAddress, query, &resp)
 
 	require.EqualValues(t, uint64(chainBResp.Height), resp.Result.Height)
@@ -117,16 +116,16 @@ func TestInterchainAccountAddress(t *testing.T) {
 	require.NoError(t, err)
 
 	query := bindings.NeutronQuery{
-		InterchainAccountAddress: &bindings.InterchainAccountAddress{
+		InterchainAccountAddress: &ictxtypes.QueryInterchainAccountAddressRequest{
 			OwnerAddress: icaOwner.String(),
-			ConnectionID: ibcStruct.Path.EndpointA.ConnectionID,
+			ConnectionId: ibcStruct.Path.EndpointA.ConnectionID,
 		},
 	}
-	resp := bindings.InterchainAccountAddressResponse{}
+	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
 	queryCustom(t, ctx, neutron, contractAddress, query, &resp)
 
 	expected := "neutron128vd3flgem54995jslqpr9rq4zj5n0eu0rlqj9rr9a24qjf9wc9qyuvj84"
-	require.EqualValues(t, expected, *resp.InterchainAccountAddress)
+	require.EqualValues(t, expected, resp.InterchainAccountAddress)
 }
 
 type ReflectQuery struct {

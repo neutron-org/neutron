@@ -21,9 +21,12 @@ func (k Keeper) RegisteredQuery(goCtx context.Context, request *types.QueryRegis
 	return &types.QueryRegisteredQueryResponse{RegisteredQuery: registeredQuery}, nil
 }
 
-func (k Keeper) RegisteredQueries(goCtx context.Context, _ *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
+func (k Keeper) RegisteredQueries(goCtx context.Context, req *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	return k.GetRegisteredQueries(ctx, req)
+}
 
+func (k Keeper) GetRegisteredQueries(ctx sdk.Context, _ *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
