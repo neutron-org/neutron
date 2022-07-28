@@ -43,7 +43,8 @@ func TestInterchainQueryResult(t *testing.T) {
 	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
 	registeredQuery := icqtypes.RegisteredQuery{
 		Id:                lastID,
-		QueryType:         "kv",
+		QueryData:         `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
+		QueryType:         "x/staking/DelegatorDelegations",
 		ZoneId:            "osmosis",
 		UpdatePeriod:      1,
 		ConnectionId:      ibcStruct.Path.EndpointA.ConnectionID,
