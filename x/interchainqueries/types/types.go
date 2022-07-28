@@ -7,14 +7,34 @@ import (
 )
 
 const (
-	AttributeKeyQueryID              = "query_id"
-	AttributeKeyZoneID               = "zone_id"
-	AttributeQueryType               = "type"
-	AttributeKeyKVQuery              = "kv_key"
+	// AttributeKeyQueryID represents the key for event attribute delivering the query ID of a
+	// registered interchain query.
+	AttributeKeyQueryID = "query_id"
+
+	// AttributeKeyOwner represents the key for event attribute delivering the address of the
+	// registrator of an interchain query.
+	AttributeKeyOwner = "owner"
+
+	// AttributeKeyZoneID represents the key for event attribute delivering the zone ID where the
+	// event has been produced.
+	AttributeKeyZoneID = "zone_id"
+
+	// AttributeKeyQueryType represents the key for event attribute delivering the query type
+	// identifier (e.g. 'kv' or 'tx')
+	AttributeKeyQueryType = "type"
+
+	// AttributeKeyKVQuery represents the keys of the storage we want to get from remote chain for event attribute delivering the keys
+	// of an interchain query.
+	AttributeKeyKVQuery = "kv_key"
+
+	// AttributeTransactionsFilterQuery represents the transactions filter for event attribute delivering the filter
+	// of an interchain query.
 	AttributeTransactionsFilterQuery = "tx_filter"
 
+	// AttributeValueCategory represents the value for the 'module' event attribute.
 	AttributeValueCategory = ModuleName
-	AttributeValueQuery    = "query"
+	// AttributeValueQuery represents the value for the 'action' event attribute.
+	AttributeValueQuery = "query"
 )
 
 const (

@@ -8,33 +8,38 @@ import "interchainqueries/params.proto";
 option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 
 message RegisteredQuery {
-  uint64 id = 1; // unique id of registered query
+  // unique id of registered query
+  uint64 id = 1;
+
+  // The address that registered the query.
+  string owner = 2;
+
   // defines a query type: `kv` or `tx` now
-  string query_type = 2;
+  string query_type = 3;
 
   // is used to define KV-storage keys for which we want to get values from remote chain
-  repeated KVKey keys = 3;
+  repeated KVKey keys = 4;
 
   // is used to define a filter for transaction search ICQ
-  string transactions_filter = 4;
+  string transactions_filter = 5;
 
   // is used to identify the chain of interest
-  string zone_id = 5;
+  string zone_id = 6;
 
   // is IBC connection ID for getting ConsensusState to verify proofs
-  string connection_id = 6;
+  string connection_id = 7;
 
   // is used to say how often the query must be updated
-  uint64 update_period = 7;
+  uint64 update_period = 8;
 
   // is used to say when the event to update the query result was emitted
-  uint64 last_emitted_height = 8;
+  uint64 last_emitted_height = 9;
 
   // is the last block height of the local chain when the query's result was updated
-  uint64 last_submitted_result_local_height = 9;
+  uint64 last_submitted_result_local_height = 10;
 
   // is the last block height of the remote chain when the query's result was updated
-  uint64 last_submitted_result_remote_height = 10;
+  uint64 last_submitted_result_remote_height = 11;
 }
 
 message KVKey {

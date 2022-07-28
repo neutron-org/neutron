@@ -16,6 +16,7 @@ import (
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
