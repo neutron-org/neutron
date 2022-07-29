@@ -43,6 +43,20 @@ make start-rly
 ignite generate proto-go
 ```
 
+## Running with docker
+
+First of all build image
+```shell
+make build-docker-image
+```
+
+Then you can start/stop with
+```shell
+make start-docker-container
+make stop-docker-container
+```
+
+
 
 # Testing with 2 neutron-chains (easier for development)
 

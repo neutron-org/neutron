@@ -203,3 +203,12 @@ kill-dev:
 	@echo "Killing neutrond and removing previous data"
 	-@rm -rf ./data
 	-@killall neutrond 2>/dev/null
+
+build-docker-image:
+	@docker build . -t neutron
+
+start-docker-container:
+	@docker run --rm --name neutron -d -p 1316:1316 -p 1317:1317 -p 26657:26657 -p 26656:26656 -p 16657:16657 -p 16656:16656 neutron
+
+stop-docker-container:
+	@docker stop neutron
