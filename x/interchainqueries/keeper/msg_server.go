@@ -60,13 +60,15 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	ctx.Logger().Debug("SubmitQueryResult", "message", msg)
 
 	if err := msg.ValidateBasic(); err != nil {
-		ctx.Logger().Debug("SubmitQueryResult: failed to validate message", "message", msg)
+		ctx.Logger().Debug("SubmitQueryResult: failed to validate message",
+			"error", err, "message", msg)
 		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
 	}
 
 	query, err := k.GetQueryByID(ctx, msg.QueryId)
 	if err != nil {
-		ctx.Logger().Debug("SubmitQueryResult: failed to GetQueryByID", "query_id", msg.QueryId)
+		ctx.Logger().Debug("SubmitQueryResult: failed to GetQueryByID",
+			"error", err, "query_id", msg.QueryId)
 		return nil, sdkerrors.Wrapf(err, "failed to get query by id: %v", err)
 	}
 
@@ -78,14 +80,14 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		})
 		if err != nil {
 			ctx.Logger().Debug("SubmitQueryResult: failed to get ConnectionConsensusState",
-				"query", query, "message", msg)
+				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(ibcclienttypes.ErrConsensusStateNotFound, "failed to get consensus state: %v", err)
 		}
 
 		consensusState, err := ibcclienttypes.UnpackConsensusState(resp.ConsensusState)
 		if err != nil {
 			ctx.Logger().Error("SubmitQueryResult: failed to UnpackConsensusState",
-				"query", query, "message", msg)
+				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack consesus state: %v", err)
 		}
 
