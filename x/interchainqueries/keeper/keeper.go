@@ -154,7 +154,7 @@ func (k Keeper) SaveTransactionAsProcessed(ctx sdk.Context, queryID uint64, txHa
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetSubmittedTransactionIDForQueryKey(queryID, txHash)
 
-	store.Set(key, []byte{1})
+	store.Set(key, []byte{})
 }
 
 func (k Keeper) CheckTransactionIsAlreadyProcessed(ctx sdk.Context, queryID uint64, txHash []byte) bool {

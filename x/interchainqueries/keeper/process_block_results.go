@@ -84,7 +84,8 @@ func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.
 	return nil
 }
 
-// ProcessBlock verifies headers and transaction in the block
+// ProcessBlock verifies headers and transaction in the block, and then passes the tx query result to
+// the querying contract's sudo handler.
 func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID uint64, clientID string, block *types.Block) error {
 	header, err := ibcclienttypes.UnpackHeader(block.Header)
 	if err != nil {

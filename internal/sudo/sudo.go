@@ -17,6 +17,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 )
 
+// SudoMessageTxQueryResult is the messages that gets passed to a contract's
+// sudo handler when a tx was submitted for a tx query.
 type SudoMessageTxQueryResult struct {
 	TxQueryResult struct {
 		QueryID uint64 `json:"query_id"`
@@ -188,9 +190,9 @@ func (s *SudoHandler) SudoOpenAck(
 }
 
 // SudoTxQueryResult is used to pass a tx query result to the contract that registered the query
-// to check whether the transaction actually satisfies the initial query arguments.
-//
-// Please note that this callback can be potentially used by the contact to execute business logic.
+// to:
+// 		1. check whether the transaction actually satisfies the initial query arguments;
+// 		2. execute business logic related to the tx query result / save the result to state.
 func (s *SudoHandler) SudoTxQueryResult(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
