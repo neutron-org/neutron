@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -36,6 +37,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	registeredQuery := types.RegisteredQuery{
 		Id:                lastID,
+		Owner:             msg.Sender,
 		QueryData:         msg.QueryData,
 		QueryType:         msg.QueryType,
 		ZoneId:            msg.ZoneId,
