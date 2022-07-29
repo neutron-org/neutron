@@ -27,6 +27,12 @@ type SudoMessageTxQueryResult struct {
 	} `json:"tx_query_result"`
 }
 
+type SudoMessageKVQueryResult struct {
+	KVQueryResult struct {
+		QueryID uint64 `json:"query_id"`
+	} `json:"kv_query_result"`
+}
+
 type SudoMessageTimeout struct {
 	Timeout struct {
 		Request channeltypes.Packet `json:"request"`
@@ -204,7 +210,7 @@ func (s *SudoHandler) SudoTxQueryResult(
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
-		s.Logger(ctx).Error("contract was not found", "contractAddress", contractAddress)
+		s.Logger(ctx).Debug("SudoTxQueryResult: contract not found", "contractAddress", contractAddress)
 		return nil, nil
 	}
 
@@ -219,8 +225,42 @@ func (s *SudoHandler) SudoTxQueryResult(
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageTxQueryResult message")
 	}
 
-	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
-	s.Logger(ctx).Info("SudoTxQueryResult received response", "err", err, "response", string(r))
+	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	if err != nil {
+		s.Logger(ctx).Debug("SudoTxQueryResult: failed to Sudo", "error", err)
+		return nil, err
+	}
 
-	return r, err
+	return resp, nil
+}
+
+func (s *SudoHandler) SudoKVQueryResult(
+	ctx sdk.Context,
+	contractAddress sdk.AccAddress,
+	queryID uint64,
+) ([]byte, error) {
+	s.Logger(ctx).Info("SudoKVQueryResult", "contractAddress", contractAddress)
+
+	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
+	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+		s.Logger(ctx).Debug("contract was not found", "contractAddress", contractAddress)
+		return nil, nil
+	}
+
+	x := SudoMessageKVQueryResult{}
+	x.KVQueryResult.QueryID = queryID
+
+	m, err := json.Marshal(x)
+	if err != nil {
+		s.Logger(ctx).Error("SudoKVQueryResult: failed to marshal SudoMessageKVQueryResult message", "error", err)
+		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageKVQueryResult message")
+	}
+
+	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	if err != nil {
+		s.Logger(ctx).Debug("SudoKVQueryResult: failed to Sudo", "error", err)
+		return nil, err
+	}
+
+	return resp, nil
 }
