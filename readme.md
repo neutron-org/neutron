@@ -78,7 +78,7 @@ Bech32 Val: neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx
 ```
 2. Decode bech32 encoded address `neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx` to get hex representation:
 ```bash
-foo@bar % neutrond debug addr neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z
+foo@bar % neutrond debug addr neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx
 Address: [4 236 169 214 127 176 92 83 36 19 95 250 219 250 174 215 36 190 125 211]
 Address (hex): 04ECA9D67FB05C5324135FFADBFAAED724BE7DD3
 Bech32 Acc: neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z
