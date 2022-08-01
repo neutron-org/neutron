@@ -19,6 +19,11 @@ import (
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
+const (
+	LabelRegisterInterchainQuery = "register_interchain_query"
+	LabelSubmitQueryResult       = "submit_query_result"
+)
+
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
@@ -59,6 +64,7 @@ func (k Keeper) GetLastRegisteredQueryKey(ctx sdk.Context) uint64 {
 	store := ctx.KVStore(k.storeKey)
 	bytes := store.Get(types.LastRegisteredQueryIdKey)
 	if bytes == nil {
+		k.Logger(ctx).Debug("Last registered query key don't exists, GetLastRegisteredQueryKey returns 0")
 		return 0
 	}
 	return sdk.BigEndianToUint64(bytes)
@@ -78,7 +84,7 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {
 	}
 
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
-
+	k.Logger(ctx).Debug("SaveQuery successful", "query", query)
 	return nil
 }
 
@@ -124,7 +130,7 @@ func (k Keeper) SaveQueryResult(ctx sdk.Context, id uint64, result *types.QueryR
 			return sdkerrors.Wrapf(err, "failed to update last local height for a result with id %d: %v", id, err)
 		}
 	}
-
+	k.Logger(ctx).Debug("Successfully saved query result", "result", &result)
 	return nil
 }
 
@@ -170,6 +176,7 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*type
 			if err = k.SaveSubmittedTransaction(ctx, queryID, lastSubmittedTxID, uint64(tmHeader.Header.Height), tx.Data); err != nil {
 				return sdkerrors.Wrapf(err, "failed save submitted transaction: %v", err)
 			}
+			k.Logger(ctx).Debug("Successfully saved submitted transaction", "tx", tx)
 		}
 
 		if tmHeader.Header.Height > maxHeight {
@@ -187,6 +194,7 @@ func (k Keeper) SaveTransactions(ctx sdk.Context, queryID uint64, blocks []*type
 
 	k.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastSubmittedTxID)
 
+	k.Logger(ctx).Debug("Successfully saved transactions", "quantity", len(blocks))
 	return nil
 }
 
@@ -223,6 +231,7 @@ func (k Keeper) GetLastSubmittedTransactionIDForQuery(ctx sdk.Context, queryID u
 func (k Keeper) SetLastSubmittedTransactionIDForQuery(ctx sdk.Context, queryID uint64, transactionID uint64) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetLastSubmittedTransactionIDForQueryKey(queryID), sdk.Uint64ToBigEndian(transactionID))
+	k.Logger(ctx).Debug("Successfully SetLastSubmittedTransactionIDForQuery", "query_id", queryID, "tx_id", transactionID)
 }
 
 // GetQueryResultByID returns a QueryResult for query with id
@@ -292,10 +301,12 @@ func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemot
 	}
 
 	if query.LastSubmittedResultRemoteHeight >= newRemoteHeight {
+		k.Logger(ctx).Debug(" UpdateRemoteHeight")
 		return sdkerrors.Wrapf(types.ErrInvalidHeight, "can't save query result for height %d: result height can't be less or equal then last submitted query result height %d", newRemoteHeight, query.LastSubmittedResultRemoteHeight)
 	}
 
 	query.LastSubmittedResultRemoteHeight = newRemoteHeight
+	k.Logger(ctx).Debug("Updated last remote height on given query", "queryID", queryID, "new remote height", newRemoteHeight)
 	return k.SaveQuery(ctx, query)
 }
 
@@ -308,7 +319,6 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 	for ; iterator.Valid(); iterator.Next() {
 		query := types.RegisteredQuery{}
 		if err := k.cdc.Unmarshal(iterator.Value(), &query); err != nil {
-			k.Logger(ctx).Error("failed to unmarshal registered query %s when iterating: %w", iterator.Key(), err)
 			continue
 		}
 		stop := fn(i, query)
@@ -318,4 +328,5 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 		}
 		i++
 	}
+	k.Logger(ctx).Debug("Iterated over registered queries", "quantity", i)
 }

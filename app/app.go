@@ -360,6 +360,7 @@ func New(
 	}
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, cdc, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
+	logger.Debug("Params keeper initialized")
 
 	// set the BaseApp's parameter store
 	bApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
@@ -450,7 +451,7 @@ func New(
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
-	
+
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.wasmKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -724,6 +725,7 @@ func New(
 			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper),
 		)
 		if err != nil {
+			logger.Error("failed to register snapshot extension", "error", err)
 			panic(fmt.Errorf("failed to register snapshot extension: %s", err))
 		}
 	}

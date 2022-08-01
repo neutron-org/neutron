@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	"time"
 
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
@@ -32,23 +33,28 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainAccount)
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	k.Logger(ctx).Debug("Registering interchain account", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
+		k.Logger(ctx).Error("Registering interchain account failed: failed to create LabelRegisterInterchainAccount", "error", err)
 		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
 	}
 
 	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String()); err != nil {
-		k.Logger(ctx).Error("failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "connection_id", msg.ConnectionId)
-		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
+		k.Logger(ctx).Error("Register interchain account failed: failed to create LabelRegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "msg", &msg)
+		return nil, sdkerrors.Wrap(err, "failed to LabelRegisterInterchainAccount")
 	}
 
 	return &ictxtypes.MsgRegisterInterchainAccountResponse{}, nil
 }
 
 func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelSubmitTx)
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	k.Logger(ctx).Debug("Submitting tx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
@@ -57,31 +63,31 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
-		k.Logger(ctx).Error("failed to create NewControllerPortID:", "error", err, "owner", icaOwner)
+		k.Logger(ctx).Error("SubmitTx failed: failed to create NewControllerPortID:", "error", err, "owner", icaOwner)
 		return nil, sdkerrors.Wrap(err, "failed to create NewControllerPortID")
 	}
 
 	channelID, found := k.icaControllerKeeper.GetActiveChannelID(ctx, msg.ConnectionId, portID)
 	if !found {
-		k.Logger(ctx).Error("failed to GetActiveChannelID", "connection_id", msg.ConnectionId, "port_id", portID)
+		k.Logger(ctx).Error("SubmitTx failed: failed to GetActiveChannelID", "connection_id", msg.ConnectionId, "port_id", portID)
 		return nil, sdkerrors.Wrapf(icatypes.ErrActiveChannelNotFound, "failed to GetActiveChannelID for port %s", portID)
 	}
 
 	chanCap, found := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
 	if !found {
-		k.Logger(ctx).Error("failed to GetCapability", "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
+		k.Logger(ctx).Error("SubmitTx failed: failed to GetCapability", "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "failed to GetCapability")
 	}
 
 	sdkMsgs, err := msg.GetTxMsgs()
 	if err != nil {
-		k.Logger(ctx).Error("failed to GetTxMsgs", "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
+		k.Logger(ctx).Error("SubmitTx failed: failed to GetTxMsgs", "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to GetTxMsgs")
 	}
 
 	data, err := icatypes.SerializeCosmosTx(k.cdc, sdkMsgs)
 	if err != nil {
-		k.Logger(ctx).Error("failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
+		k.Logger(ctx).Error("SubmitTx failed: failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SerializeCosmosTx")
 	}
 
@@ -94,7 +100,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	timeoutTimestamp := time.Now().Add(InterchainTxTimeout).UnixNano()
 	_, err = k.icaControllerKeeper.SendTx(ctx, chanCap, msg.ConnectionId, portID, packetData, uint64(timeoutTimestamp))
 	if err != nil {
-		k.Logger(ctx).Error("failed to SendTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
+		k.Logger(ctx).Error("SubmitTx failed", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SendTx")
 	}
 
