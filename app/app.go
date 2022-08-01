@@ -450,7 +450,7 @@ func New(
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
-	
+
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.wasmKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -471,6 +471,7 @@ func New(
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
+		&app.wasmKeeper,
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,

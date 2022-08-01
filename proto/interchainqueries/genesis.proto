@@ -3,7 +3,6 @@ package neutron.interchainadapter.interchainqueries;
 
 import "gogoproto/gogo.proto";
 import "interchainqueries/params.proto";
-// this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 
