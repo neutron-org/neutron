@@ -162,8 +162,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(err, "failed to ProcessBlock: %v", err)
 		}
-
-		return nil, sdkerrors.Wrap(types.ErrEmptyResult, "query result can't be empty")
 	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil
