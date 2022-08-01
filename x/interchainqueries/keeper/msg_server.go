@@ -121,7 +121,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, sdkerrors.Wrapf(err, "failed to SaveKVQueryResult: %v", err)
 		}
 
-		if msg.Result.GetAllowKVCallbacks() {
+		if msg.Result.GetAllowKvCallbacks() {
 			// Let the query owner contract process the query result.
 			if _, err := k.sudoHandler.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
 				ctx.Logger().Debug("ProcessBlock: failed to SudoKVQueryResult",
