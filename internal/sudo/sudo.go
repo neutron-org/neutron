@@ -86,7 +86,7 @@ func (s *SudoHandler) SudoResponse(
 	request channeltypes.Packet,
 	msg []byte,
 ) ([]byte, error) {
-	s.Logger(ctx).Info("SudoResponse", "contractAddress", contractAddress, "request", request, "msg", msg)
+	s.Logger(ctx).Debug("SudoResponse", "contractAddress", contractAddress, "request", request, "msg", msg)
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
@@ -98,16 +98,19 @@ func (s *SudoHandler) SudoResponse(
 	x.Response.Request = request
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal SudoMessageResponse message", "error", err, "request", request)
+		s.Logger(ctx).Error("SudoResponse: failed to marshal SudoMessageResponse message",
+			"error", err, "request", request, "contract_address", contractAddress)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageResponse message")
 	}
 
-	s.Logger(ctx).Info("SudoResponse sending request", "data", string(m))
+	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	if err != nil {
+		s.Logger(ctx).Debug("SudoResponse: failed to Sudo",
+			"error", err, "contract_address", contractAddress)
+		return nil, err
+	}
 
-	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
-	s.Logger(ctx).Info("SudoResponse received response", "err", err, "response", string(r))
-
-	return r, err
+	return resp, nil
 }
 
 func (s *SudoHandler) SudoTimeout(
@@ -126,16 +129,21 @@ func (s *SudoHandler) SudoTimeout(
 	x.Timeout.Request = request
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal SudoMessageTimeout message", "error", err, "request", request)
+		s.Logger(ctx).Error("failed to marshal SudoMessageTimeout message",
+			"error", err, "request", request, "contract_address", contractAddress)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageTimeout message")
 	}
 
 	s.Logger(ctx).Info("SudoTimeout sending request", "data", string(m))
 
-	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
-	s.Logger(ctx).Info("SudoTimeout received response", "err", err, "response", string(r))
+	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	if err != nil {
+		s.Logger(ctx).Debug("SudoTimeout: failed to Sudo",
+			"error", err, "contract_address", contractAddress)
+		return nil, err
+	}
 
-	return r, err
+	return resp, nil
 }
 
 func (s *SudoHandler) SudoError(
@@ -144,7 +152,7 @@ func (s *SudoHandler) SudoError(
 	request channeltypes.Packet,
 	details string,
 ) ([]byte, error) {
-	s.Logger(ctx).Info("SudoError", "contractAddress", contractAddress, "request", request)
+	s.Logger(ctx).Debug("SudoError", "contractAddress", contractAddress, "request", request)
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
@@ -156,16 +164,19 @@ func (s *SudoHandler) SudoError(
 	x.Error.Details = details
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal SudoMessageError message", "error", err, "request", request)
+		s.Logger(ctx).Error("SudoError: failed to marshal SudoMessageError message",
+			"error", err, "contract_address", contractAddress, "request", request)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageError message")
 	}
 
-	s.Logger(ctx).Info("SudoError sending request", "data", string(m))
+	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	if err != nil {
+		s.Logger(ctx).Debug("SudoError: failed to Sudo",
+			"error", err, "contract_address", contractAddress)
+		return nil, err
+	}
 
-	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
-	s.Logger(ctx).Info("SudoError received response", "err", err, "response", string(r))
-
-	return r, err
+	return resp, nil
 }
 
 func (s *SudoHandler) SudoOpenAck(
@@ -173,7 +184,7 @@ func (s *SudoHandler) SudoOpenAck(
 	contractAddress sdk.AccAddress,
 	details OpenAckDetails,
 ) ([]byte, error) {
-	s.Logger(ctx).Info("SudoOpenAck", "contractAddress", contractAddress)
+	s.Logger(ctx).Debug("SudoOpenAck", "contractAddress", contractAddress)
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
@@ -184,15 +195,20 @@ func (s *SudoHandler) SudoOpenAck(
 	x.OpenAck = details
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal SudoMessageOpenAck message", "error", err)
+		s.Logger(ctx).Error("SudoOpenAck: failed to marshal SudoMessageOpenAck message",
+			"error", err, "contract_address", contractAddress)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageOpenAck message")
 	}
 	s.Logger(ctx).Info("SudoOpenAck sending request", "data", string(m))
 
-	r, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
-	s.Logger(ctx).Info("SudoOpenAck received response", "err", err, "response", string(r))
+	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	if err != nil {
+		s.Logger(ctx).Debug("SudoOpenAck: failed to Sudo",
+			"error", err, "contract_address", contractAddress)
+		return nil, err
+	}
 
-	return r, err
+	return resp, nil
 }
 
 // SudoTxQueryResult is used to pass a tx query result to the contract that registered the query
@@ -206,7 +222,7 @@ func (s *SudoHandler) SudoTxQueryResult(
 	height int64,
 	data []byte,
 ) ([]byte, error) {
-	s.Logger(ctx).Info("SudoTxQueryResult", "contractAddress", contractAddress)
+	s.Logger(ctx).Debug("SudoTxQueryResult", "contractAddress", contractAddress)
 
 	// TODO: basically just for unit tests right now. But i think we will have the same logic in the production
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
@@ -221,13 +237,15 @@ func (s *SudoHandler) SudoTxQueryResult(
 
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal SudoMessageTxQueryResult message", "error", err)
+		s.Logger(ctx).Error("failed to marshal SudoMessageTxQueryResult message",
+			"error", err, "contract_address", contractAddress)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageTxQueryResult message")
 	}
 
 	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		s.Logger(ctx).Debug("SudoTxQueryResult: failed to Sudo", "error", err)
+		s.Logger(ctx).Debug("SudoTxQueryResult: failed to Sudo",
+			"error", err, "contract_address", contractAddress)
 		return nil, err
 	}
 
@@ -252,13 +270,15 @@ func (s *SudoHandler) SudoKVQueryResult(
 
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("SudoKVQueryResult: failed to marshal SudoMessageKVQueryResult message", "error", err)
+		s.Logger(ctx).Error("SudoKVQueryResult: failed to marshal SudoMessageKVQueryResult message",
+			"error", err, "contract_address", contractAddress)
 		return nil, sdkerrors.Wrap(err, "failed to marshal SudoMessageKVQueryResult message")
 	}
 
 	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		s.Logger(ctx).Debug("SudoKVQueryResult: failed to Sudo", "error", err)
+		s.Logger(ctx).Debug("SudoKVQueryResult: failed to Sudo",
+			"error", err, "contract_address", contractAddress)
 		return nil, err
 	}
 
