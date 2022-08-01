@@ -1,11 +1,12 @@
 package types
 
 import (
+	"strings"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
-	"strings"
 )
 
 var (
@@ -25,7 +26,7 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
 
-	if len(msg.Result.KvResults) == 0 && len(msg.Result.Blocks) == 0 {
+	if len(msg.Result.KvResults) == 0 && msg.Result.Block == nil {
 		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
 
@@ -41,7 +42,7 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
-	if strings.TrimSpace(msg.ClientId) == "" && msg.Result.Blocks != nil {
+	if strings.TrimSpace(msg.ClientId) == "" && msg.Result.Block != nil {
 		return sdkerrors.Wrap(ErrInvalidClientID, "client id cannot be empty")
 	}
 
@@ -118,14 +119,14 @@ func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
 func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	for _, b := range msg.Result.Blocks {
-		var header exported.Header
-		if err := unpacker.UnpackAny(b.Header, &header); err != nil {
-			return err
-		}
-		if err := unpacker.UnpackAny(b.NextBlockHeader, &header); err != nil {
-			return err
-		}
+	var header exported.Header
+	if err := unpacker.UnpackAny(msg.Result.GetBlock().GetHeader(), &header); err != nil {
+		return err
 	}
+
+	if err := unpacker.UnpackAny(msg.Result.GetBlock().GetNextBlockHeader(), &header); err != nil {
+		return err
+	}
+
 	return nil
 }

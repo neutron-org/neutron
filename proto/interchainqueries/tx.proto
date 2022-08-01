@@ -57,7 +57,7 @@ message MsgSubmitQueryResult {
 
 message QueryResult {
   repeated StorageValue kv_results = 1;
-  repeated Block blocks = 2;
+  Block block = 2;
   uint64 height = 3;
   uint64 revision = 4;
 }
@@ -84,7 +84,7 @@ message Block {
   // We need to know block X to verify inclusion of transaction for block X
   google.protobuf.Any header = 2;
 
-  repeated TxValue txs = 3;
+  TxValue tx = 3;
 }
 
 message TxValue {

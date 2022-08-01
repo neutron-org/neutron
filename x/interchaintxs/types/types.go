@@ -1,10 +1,11 @@
 package types
 
 import (
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	"strings"
 )
 
 const Delimiter = "."
@@ -23,6 +24,7 @@ func NewICAOwner(contractAddress, interchainAccountID string) (ICAOwner, error) 
 	if err != nil {
 		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
 	}
+
 	return ICAOwner{contractAddress: sdkContractAddress, interchainAccountID: interchainAccountID}, nil
 }
 
