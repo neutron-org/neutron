@@ -230,7 +230,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -285,7 +285,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					ClientId: suite.path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
 						KvResults: nil,
-						Blocks:    nil,
+						Block:     nil,
 						Height:    0,
 					},
 				}
@@ -333,7 +333,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -381,7 +381,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -429,7 +429,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -482,7 +482,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							StoragePrefix: host.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
-						Blocks:   nil,
+						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.chainA.LastHeader.GetHeight().GetRevisionNumber(),
 					},
@@ -512,67 +512,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			}
 		})
 	}
-}
-
-// test that GetSubmittedTransactions with start/end works properly
-func (suite *KeeperTestSuite) TestQueryTransactions() {
-	queryID := uint64(1)
-
-	ctx := suite.chainA.GetContext()
-	queriesKeeper := suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper
-
-	lastID := queriesKeeper.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
-
-	submittedTransactions := make([]*iqtypes.Transaction, 0)
-	for i := 0; i < 10; i++ {
-
-		tx := iqtypes.Transaction{
-			Id:     lastID,
-			Height: 0,
-			Data:   append([]byte("data"), byte(i)),
-		}
-
-		suite.NoError(queriesKeeper.SaveSubmittedTransaction(ctx, queryID, lastID, tx.Height, tx.Data))
-		lastID += 1
-
-		submittedTransactions = append(submittedTransactions, &tx)
-	}
-	queriesKeeper.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastID)
-
-	start, end := 4, 9
-
-	txs, err := queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(end))
-	suite.NoError(err)
-
-	suite.Equal(txs, submittedTransactions[start:end])
-
-	// check the same but with multiple query IDS, they should not conflict with each other
-	queryID = uint64(2)
-
-	lastID = queriesKeeper.GetLastSubmittedTransactionIDForQuery(ctx, queryID)
-
-	submittedTransactions = make([]*iqtypes.Transaction, 0)
-	for i := 0; i < 20; i++ {
-
-		tx := iqtypes.Transaction{
-			Id:     lastID,
-			Height: 1,
-			Data:   append([]byte("another data"), byte(i)),
-		}
-
-		suite.NoError(queriesKeeper.SaveSubmittedTransaction(ctx, queryID, lastID, tx.Height, tx.Data))
-		lastID += 1
-
-		submittedTransactions = append(submittedTransactions, &tx)
-	}
-	queriesKeeper.SetLastSubmittedTransactionIDForQuery(ctx, queryID, lastID)
-
-	start, end = 3, 8
-
-	txs, err = queriesKeeper.GetSubmittedTransactions(ctx, queryID, uint64(start), uint64(end))
-	suite.NoError(err)
-
-	suite.Equal(txs, submittedTransactions[start:end])
 }
 
 func TestKeeperTestSuite(t *testing.T) {
