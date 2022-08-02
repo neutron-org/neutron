@@ -40,7 +40,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
-		k.Logger(ctx).Error("RegisterInterchainAccount: failed to create RegisterInterchainAccount", "error", err)
+		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount", "error", err)
 		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
 	}
 
@@ -56,7 +56,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelSubmitTx)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.Logger(ctx).Debug("SubmiЕx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
+	k.Logger(ctx).Debug("SubmiTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
@@ -102,6 +102,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	timeoutTimestamp := time.Now().Add(InterchainTxTimeout).UnixNano()
 	_, err = k.icaControllerKeeper.SendTx(ctx, chanCap, msg.ConnectionId, portID, packetData, uint64(timeoutTimestamp))
 	if err != nil {
+		// usually we use DEBUG level for such errors, but in this case we have checked full input before running SendTX, so error here may be critical
 		k.Logger(ctx).Error("SubmitTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SendTx")
 	}
