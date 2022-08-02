@@ -128,18 +128,15 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
-	// Query real account address
-	icaOwner, err := ictxtypes.NewICAOwner(testutil.TestOwnerAddress, testutil.TestInterchainId)
-	suite.Require().NoError(err)
-
 	query := bindings.NeutronQuery{
 		InterchainAccountAddress: &ictxtypes.QueryInterchainAccountAddressRequest{
-			OwnerAddress: icaOwner.String(),
-			ConnectionId: suite.Path.EndpointA.ConnectionID,
+			OwnerAddress:        testutil.TestOwnerAddress,
+			InterchainAccountId: testutil.TestInterchainId,
+			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 		},
 	}
 	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
-	err = suite.queryCustom(ctx, contractAddress, query, &resp)
+	err := suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
 	expected := "neutron128vd3flgem54995jslqpr9rq4zj5n0eu0rlqj9rr9a24qjf9wc9qyuvj84"
@@ -157,19 +154,16 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
-	// Query real account address
-	icaOwner, err := ictxtypes.NewICAOwner(testutil.TestOwnerAddress, "unknown_owner_id")
-	suite.Require().NoError(err)
-
 	query := bindings.NeutronQuery{
 		InterchainAccountAddress: &ictxtypes.QueryInterchainAccountAddressRequest{
-			OwnerAddress: icaOwner.String(),
-			ConnectionId: suite.Path.EndpointA.ConnectionID,
+			OwnerAddress:        testutil.TestOwnerAddress,
+			InterchainAccountId: "wrong_account_id",
+			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 		},
 	}
 	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
 	expectedErrorMsg := "Generic error: Querier contract error: codespace: interchaintxs, code: 1102: query wasm contract failed"
-	err = suite.queryCustom(ctx, contractAddress, query, &resp)
+	err := suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().Errorf(err, expectedErrorMsg)
 }
 
@@ -178,7 +172,7 @@ type ReflectQuery struct {
 }
 
 type ChainRequest struct {
-	Request wasmvmtypes.QueryRequest `json:"request"`
+	Reflect wasmvmtypes.QueryRequest `json:"reflect"`
 }
 
 type ChainResponse struct {
@@ -189,11 +183,10 @@ func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.A
 	msgBz, err := json.Marshal(request)
 	suite.Require().NoError(err)
 
-	query := ReflectQuery{
-		Chain: &ChainRequest{
-			Request: wasmvmtypes.QueryRequest{Custom: msgBz},
-		},
+	query := ChainRequest{
+		Reflect: wasmvmtypes.QueryRequest{Custom: msgBz},
 	}
+
 	queryBz, err := json.Marshal(query)
 	if err != nil {
 		return err
@@ -214,6 +207,7 @@ func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.A
 }
 
 func (suite *CustomQuerierTestSuite) storeReflectCode(ctx sdk.Context, addr sdk.AccAddress) uint64 {
+	/// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
 	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
 	suite.Require().NoError(err)
 

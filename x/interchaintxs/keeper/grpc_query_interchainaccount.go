@@ -13,8 +13,13 @@ func (k Keeper) InterchainAccountAddress(c context.Context, req *types.QueryInte
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
+	
+	icaOwner, err := types.NewICAOwner(req.OwnerAddress, req.InterchainAccountId)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "could not find account: %s", err)
+	}
 
-	portID, err := icatypes.NewControllerPortID(req.OwnerAddress)
+	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "could not find account: %s", err)
 	}

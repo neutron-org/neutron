@@ -34,9 +34,12 @@ message QueryInterchainAccountAddressRequest {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
-  // Owner address is the owner of the interchain account on the controller chain
+  // owner_address is the owner of the interchain account on the controller chain
   string owner_address = 1;
-  string connection_id = 2;
+  // interchain_account_id is an identifier of your interchain account from which you want to execute msgs
+  string interchain_account_id = 2;
+  // connection_id is an IBC connection identifier between Neutron and remote chain
+  string connection_id = 3;
 }
 
 // Query response for an interchain account address
