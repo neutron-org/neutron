@@ -219,7 +219,6 @@ func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemot
 	}
 
 	if query.LastSubmittedResultRemoteHeight >= newRemoteHeight {
-		k.Logger(ctx).Debug(" UpdateRemoteHeight")
 		return sdkerrors.Wrapf(types.ErrInvalidHeight, "can't save query result for height %d: result height can't be less or equal then last submitted query result height %d", newRemoteHeight, query.LastSubmittedResultRemoteHeight)
 	}
 

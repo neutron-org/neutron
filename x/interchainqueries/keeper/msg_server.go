@@ -26,7 +26,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQuery) (*types.MsgRegisterInterchainQueryResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	ctx.Logger().Debug("Registering interchain query", "msg", msg)
+	ctx.Logger().Debug("RegisterInterchainQuery", "msg", msg)
 
 	if err := msg.ValidateBasic(); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to validate message", "message", msg)

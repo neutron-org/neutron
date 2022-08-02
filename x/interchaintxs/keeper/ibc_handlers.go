@@ -49,15 +49,15 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleTimeout)
 	icaOwner, err := types.ICAOwnerFromPort(packet.SourcePort)
-	k.Logger(ctx).Debug("Handling timeout")
+	k.Logger(ctx).Debug("HandleTimeout")
 	if err != nil {
-		k.Logger(ctx).Error("HandleTimeout failed: failed to get ica owner from source port", "error", err)
+		k.Logger(ctx).Error("v: failed to get ica owner from source port", "error", err)
 		return sdkerrors.Wrap(err, "failed to get ica owner from port")
 	}
 
 	_, err = k.sudoHandler.SudoTimeout(ctx, icaOwner.GetContract(), packet)
 	if err != nil {
-		k.Logger(ctx).Error("HandleTimeout failed: failed to Sudo contract on packet timeout", "error", err)
+		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet timeout")
 	}
 
@@ -74,7 +74,7 @@ func (k *Keeper) HandleChanOpenAck(
 	counterpartyVersion string,
 ) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelLabelHandleChanOpenAck)
-	k.Logger(ctx).Debug("Handling chan open ack", "port_id", portID, "channel_id", channelID, "counterparty_channel_id", counterpartyChannelId, "counterparty_version", counterpartyVersion)
+	k.Logger(ctx).Debug("HandleChanOpenAck", "port_id", portID, "channel_id", channelID, "counterparty_channel_id", counterpartyChannelId, "counterparty_version", counterpartyVersion)
 	icaOwner, err := types.ICAOwnerFromPort(portID)
 	if err != nil {
 		k.Logger(ctx).Error("HandleChanOpenAck: failed to get ica owner from source port", "error", err)
