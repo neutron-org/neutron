@@ -3,22 +3,20 @@ package interchainqueries
 import (
 	"encoding/json"
 	"fmt"
-	// this line is used by starport scaffolding # 1
-
-	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
-
-	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/neutron-org/neutron/x/interchainqueries/client/cli"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	"github.com/spf13/cobra"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
@@ -101,6 +99,8 @@ type AppModule struct {
 	keeper        keeper.Keeper
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
+
+	sudoHandler sudo.SudoHandler
 }
 
 func NewAppModule(

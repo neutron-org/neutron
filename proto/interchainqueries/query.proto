@@ -35,11 +35,6 @@ service Query {
   rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/interchainqueries/query_result";
   }
-
-  rpc QueryTransactions(QuerySubmittedTransactionsRequest) returns (QuerySubmittedTransactionsResponse) {
-    option (google.api.http).get = "/neutron/interchainqueries/interchainqueries/query_transactions";
-  }
-  // this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -74,20 +69,8 @@ message QueryRegisteredQueryResultResponse {
   QueryResult result = 1;
 }
 
-message QuerySubmittedTransactionsRequest {
-  uint64 query_id = 1;
-  uint64 start = 2;
-  uint64 end = 3;
-}
-
-message QuerySubmittedTransactionsResponse {
-  repeated Transaction transactions = 1;
-}
-
 message Transaction {
   uint64 id = 1;
   uint64 height = 2;
   bytes data = 3;
 }
-
-// this line is used by starport scaffolding # 3

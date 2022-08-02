@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -83,8 +84,9 @@ func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.
 	return nil
 }
 
-// VerifyBlock verifies headers and transaction in the block
-func (k Keeper) VerifyBlock(ctx sdk.Context, clientID string, block *types.Block) error {
+// ProcessBlock verifies headers and transaction in the block, and then passes the tx query result to
+// the querying contract's sudo handler.
+func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID uint64, clientID string, block *types.Block) error {
 	header, err := ibcclienttypes.UnpackHeader(block.Header)
 	if err != nil {
 		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
@@ -101,18 +103,41 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, clientID string, block *types.Block
 
 	tmHeader, ok := header.(*tendermintLightClientTypes.Header)
 	if !ok {
-		return sdkerrors.Wrapf(types.ErrInvalidType, "failed to cast header to tendermint Header: %v", err)
+		ctx.Logger().Debug("ProcessBlock: failed to cast current header to tendermint Header", "query_id", queryID)
+		return sdkerrors.Wrap(types.ErrInvalidType, "failed to cast current header to tendermint Header")
 	}
 
 	tmNextHeader, ok := nextHeader.(*tendermintLightClientTypes.Header)
 	if !ok {
-		return sdkerrors.Wrapf(types.ErrInvalidType, "failed to cast header to tendermint Header: %v", err)
+		ctx.Logger().Debug("ProcessBlock: failed to cast next header to tendermint Header", "query_id", queryID)
+		return sdkerrors.Wrap(types.ErrInvalidType, "failed to cast next header to tendermint header")
 	}
 
-	for _, tx := range block.Txs {
-		if err = verifyTransaction(tmHeader, tmNextHeader, tx); err != nil {
-			return sdkerrors.Wrapf(types.ErrInternal, "failed to verify transaction %s: %v", hex.EncodeToString(tmtypes.Tx(tx.Data).Hash()), err)
+	var (
+		tx     = block.GetTx()
+		txData = tx.GetData()
+		txHash = tmtypes.Tx(txData).Hash()
+	)
+	if !k.CheckTransactionIsAlreadyProcessed(ctx, queryID, txHash) {
+		// Check that cryptography is O.K. (tx is included in the block, tx was executed successfully)
+		if err = k.verifyTransaction(tmHeader, tmNextHeader, tx); err != nil {
+			ctx.Logger().Debug("ProcessBlock: failed to verifyTransaction",
+				"error", err, "query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
+			return sdkerrors.Wrapf(types.ErrInternal, "failed to verifyTransaction %s: %v", hex.EncodeToString(txHash), err)
 		}
+
+		// Let the query owner contract process the query result.
+		if _, err := k.sudoHandler.SudoTxQueryResult(ctx, queryOwner, queryID, tmHeader.Header.Height, txData); err != nil {
+			ctx.Logger().Debug("ProcessBlock: failed to SudoTxQueryResult",
+				"error", err, "query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
+			return sdkerrors.Wrapf(err, "contract %s rejected transaction query result (tx_hash: %s)",
+				queryOwner, hex.EncodeToString(txHash))
+		}
+
+		k.SaveTransactionAsProcessed(ctx, queryID, txHash)
+	} else {
+		ctx.Logger().Debug("ProcessBlock: transaction was already submitted",
+			"query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
 	}
 
 	return nil
@@ -124,7 +149,11 @@ func (k Keeper) VerifyBlock(ctx sdk.Context, clientID string, block *types.Block
 // * transactions was executed successfully - transaction's responseDeliveryTx.Code == 0;
 // * transaction's responseDeliveryTx is legitimate - nextHeaderLastResultsDataHash merkle root contains
 // deterministicResponseDeliverTx(ResponseDeliveryTx).Bytes()
-func verifyTransaction(header *tendermintLightClientTypes.Header, nextHeader *tendermintLightClientTypes.Header, tx *types.TxValue) error {
+func (k Keeper) verifyTransaction(
+	header *tendermintLightClientTypes.Header,
+	nextHeader *tendermintLightClientTypes.Header,
+	tx *types.TxValue,
+) error {
 	// verify inclusion proof
 	inclusionProof, err := merkle.ProofFromProto(tx.InclusionProof)
 	if err != nil {

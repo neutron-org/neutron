@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -49,15 +50,4 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 		return nil, sdkerrors.Wrapf(err, "failed to get query result by query id: %v", err)
 	}
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
-}
-
-func (k Keeper) QueryTransactions(goCtx context.Context, request *types.QuerySubmittedTransactionsRequest) (*types.QuerySubmittedTransactionsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	result, err := k.GetSubmittedTransactions(ctx, request.QueryId, request.Start, request.End)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get query result by query id: %v", err)
-	}
-
-	return &types.QuerySubmittedTransactionsResponse{Transactions: result}, nil
 }
