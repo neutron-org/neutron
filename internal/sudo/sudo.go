@@ -252,6 +252,8 @@ func (s *SudoHandler) SudoTxQueryResult(
 	return resp, nil
 }
 
+// SudoKVQueryResult is used to pass a kv query id to the contract that registered the query
+// when a query result is provided by the relayer.
 func (s *SudoHandler) SudoKVQueryResult(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,

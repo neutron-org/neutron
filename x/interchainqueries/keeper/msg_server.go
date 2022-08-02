@@ -76,7 +76,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	if err != nil {
 		ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
 			"error", err, "query", query, "message", msg)
-		return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
+		return nil, sdkerrors.Wrapf(err, "failed to decode owner contract address (%s)", query.Owner)
 	}
 
 	if msg.Result.KvResults != nil {
