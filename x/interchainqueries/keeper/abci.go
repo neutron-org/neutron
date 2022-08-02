@@ -12,6 +12,7 @@ import (
 // EndBlocker of interchainquery module
 func (k Keeper) EndBlocker(ctx sdk.Context) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+
 	events := sdk.Events{}
 
 	// emit events for periodic queries
@@ -40,6 +41,6 @@ func (k Keeper) EndBlocker(ctx sdk.Context) {
 
 	if len(events) > 0 {
 		ctx.EventManager().EmitEvents(events)
-		k.Logger(ctx).Debug("Endblocker processed events", "events", events)
+		k.Logger(ctx).Debug("Endblocker: processed events", "events", events)
 	}
 }

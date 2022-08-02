@@ -25,6 +25,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQuery) (*types.MsgRegisterInterchainQueryResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("RegisterInterchainQuery", "msg", msg)
 
@@ -62,6 +63,8 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 }
 
 func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResult) (*types.MsgSubmitQueryResultResponse, error) {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	ctx.Logger().Debug("SubmitQueryResult", "message", msg)

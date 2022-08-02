@@ -34,6 +34,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainAccount)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("RegisterInterchainAccount", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
 
@@ -53,8 +54,9 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 
 func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelSubmitTx)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.Logger(ctx).Debug("Submit tx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
+	k.Logger(ctx).Debug("SubmiЕx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
@@ -87,7 +89,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 
 	data, err := icatypes.SerializeCosmosTx(k.cdc, sdkMsgs)
 	if err != nil {
-		k.Logger(ctx).Debug("SubmitTx failed: failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
+		k.Logger(ctx).Debug("SubmitTx: failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SerializeCosmosTx")
 	}
 
@@ -100,7 +102,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	timeoutTimestamp := time.Now().Add(InterchainTxTimeout).UnixNano()
 	_, err = k.icaControllerKeeper.SendTx(ctx, chanCap, msg.ConnectionId, portID, packetData, uint64(timeoutTimestamp))
 	if err != nil {
-		k.Logger(ctx).Error("SubmitTx failed", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
+		k.Logger(ctx).Error("SubmitTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SendTx")
 	}
 
