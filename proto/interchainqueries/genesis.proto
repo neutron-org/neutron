@@ -3,21 +3,30 @@ package neutron.interchainadapter.interchainqueries;
 
 import "gogoproto/gogo.proto";
 import "interchainqueries/params.proto";
-// this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 
 message RegisteredQuery {
-  uint64 id = 1; // unique id of registered query
-  string query_data = 2; // JSON encoded data of query
-  string query_type = 3; // is used to identify the query (i.e. /cosmos.staking.v1beta1.Query/AllDelegations)
-  string zone_id = 4; // is used to identify the chain of interest
-  string connection_id = 5; // is IBC connection ID for getting ConsensusState to verify proofs
-  uint64 update_period = 6; // is used to say how often the query must be updated
-  uint64 last_emitted_height = 7; // is used to say when the event to update the query result was emitted
-
-  uint64 last_submitted_result_local_height = 8; // is the last block height of the local chain when the query's result was updated
-  uint64 last_submitted_result_remote_height = 9; // is the last block height of the remote chain when the query's result was updateds
+  // The unique id of the registered query.
+  uint64 id = 1;
+  // The address that registered the query.
+  string owner = 2;
+  // The JSON encoded data of the query.
+  string query_data = 3;
+  // The query type identifier (i.e. /cosmos.staking.v1beta1.Query/AllDelegations).
+  string query_type = 4;
+  // The chain of interest identifier.
+  string zone_id = 5;
+  // The IBC connection ID for getting ConsensusState to verify proofs.
+  string connection_id = 6;
+  // Parameter that defines how often the query must be updated.
+  uint64 update_period = 7;
+  // The local height when the event to update the query result was emitted last time.
+  uint64 last_emitted_height = 8;
+  // The local chain last block height when the query result was updated.
+  uint64 last_submitted_result_local_height = 9;
+  // The remote chain last block height when the query result was updated.
+  uint64 last_submitted_result_remote_height = 10;
 }
 
 // GenesisState defines the interchainadapter module's genesis state.

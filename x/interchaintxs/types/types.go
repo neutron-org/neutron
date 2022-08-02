@@ -1,10 +1,11 @@
 package types
 
 import (
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	"strings"
 )
 
 const Delimiter = "."
@@ -19,36 +20,26 @@ func (i ICAOwner) String() string {
 }
 
 func NewICAOwner(contractAddress, interchainAccountID string) (ICAOwner, error) {
-	// this is production version of the code
-	// must be uncommented when the contracts are ready to send IC txs
-	//
-	//sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddress)
-	//if err != nil {
-	//	return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
-	//}
-	//return ICAOwner{contractAddress: sdkContractAddress, interchainAccountID: interchainAccountID}, nil
-
-	// this is ONLY for the demo scripts to see that Sudo actually works
-	// this means anyone can set contractAddress
-	sdkContractAddress, err := sdk.AccAddressFromBech32(interchainAccountID)
+	sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddress)
 	if err != nil {
 		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
 	}
-	return ICAOwner{contractAddress: sdkContractAddress}, nil
+
+	return ICAOwner{contractAddress: sdkContractAddress, interchainAccountID: interchainAccountID}, nil
 }
 
 func ICAOwnerFromPort(port string) (ICAOwner, error) {
-	splittedOwner := strings.SplitN(strings.TrimPrefix(port, icatypes.PortPrefix), Delimiter, 2)
-	if len(splittedOwner) < 2 {
+	splitOwner := strings.SplitN(strings.TrimPrefix(port, icatypes.PortPrefix), Delimiter, 2)
+	if len(splitOwner) < 2 {
 		return ICAOwner{}, sdkerrors.Wrap(ErrInvalidICAOwner, "invalid ICA interchainAccountID format")
 	}
 
-	contractAddress, err := sdk.AccAddressFromBech32(splittedOwner[0])
+	contractAddress, err := sdk.AccAddressFromBech32(splitOwner[0])
 	if err != nil {
 		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
 	}
 
-	return ICAOwner{contractAddress: contractAddress, interchainAccountID: splittedOwner[1]}, nil
+	return ICAOwner{contractAddress: contractAddress, interchainAccountID: splitOwner[1]}, nil
 }
 
 func (i ICAOwner) GetContract() sdk.AccAddress {

@@ -119,11 +119,12 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs"
 	interchaintxskeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	// this line is used by starport scaffolding # stargate/app/moduleImport
+
+	transferSudo "github.com/neutron-org/neutron/x/transfer"
 )
 
 const (
-	Name                 = "neutrond"
+	Name = "neutrond"
 )
 
 var (
@@ -449,7 +450,8 @@ func New(
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
-	transferIBCModule := transfer.NewIBCModule(app.TransferKeeper)
+
+	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.wasmKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -469,6 +471,7 @@ func New(
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
+		&app.wasmKeeper,
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
