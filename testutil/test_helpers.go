@@ -9,10 +9,9 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/neutron-org/neutron/app"
 	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-	"testing"
 )
 
 var (
@@ -31,8 +30,15 @@ var (
 	}))
 )
 
-type TestIBCConnectionStruct struct {
-	coordinator *ibctesting.Coordinator
+func init() {
+	ibctesting.DefaultTestingAppInit = SetupTestingApp
+	config := app.GetDefaultConfig()
+	config.Seal()
+}
+
+type IBCConnectionTestSuite struct {
+	suite.Suite
+	Coordinator *ibctesting.Coordinator
 
 	// testing chains used for convenience and readability
 	ChainA *ibctesting.TestChain
@@ -41,22 +47,25 @@ type TestIBCConnectionStruct struct {
 	Path *ibctesting.Path
 }
 
-func SetupIBCConnection(t *testing.T) *TestIBCConnectionStruct {
-	ibctesting.DefaultTestingAppInit = SetupTestingApp
-	var testIBCConnection TestIBCConnectionStruct
+func (suite *IBCConnectionTestSuite) SetupTest() {
+	suite.Coordinator = ibctesting.NewCoordinator(suite.T(), 2)
+	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
+	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 
-	testIBCConnection.coordinator = ibctesting.NewCoordinator(t, 2)
-	testIBCConnection.ChainA = testIBCConnection.coordinator.GetChain(ibctesting.GetChainID(1))
-	testIBCConnection.ChainB = testIBCConnection.coordinator.GetChain(ibctesting.GetChainID(2))
+	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
 
-	testIBCConnection.Path = NewICAPath(testIBCConnection.ChainA, testIBCConnection.ChainB)
+	suite.Coordinator.SetupConnections(suite.Path)
 
-	testIBCConnection.coordinator.SetupConnections(testIBCConnection.Path)
+	suite.NoError(SetupICAPath(suite.Path, TestOwnerAddress))
+}
 
-	err := SetupICAPath(testIBCConnection.Path, TestOwnerAddress)
-	require.NoError(t, err)
+func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestChain) *app.App {
+	testApp, ok := chain.App.(*app.App)
+	if !ok {
+		panic("not NeutronZone app")
+	}
 
-	return &testIBCConnection
+	return testApp
 }
 
 func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {

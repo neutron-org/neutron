@@ -48,7 +48,6 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 	if err != nil {
 		return nil, sdkerrors.Wrapf(err, "failed to get query result by query id: %v", err)
 	}
-
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
 }
 

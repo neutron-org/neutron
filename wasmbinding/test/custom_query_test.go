@@ -8,35 +8,30 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
-	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"io/ioutil"
 	"testing"
 )
 
-func init() {
-	config := app.GetDefaultConfig()
-	config.Seal()
+type CustomQuerierTestSuite struct {
+	testutil.IBCConnectionTestSuite
 }
 
-func TestInterchainQueryResult(t *testing.T) {
-	// Setup IBC chains and create connection between them
-	ibcStruct := testutil.SetupIBCConnection(t)
-	neutron, ok := ibcStruct.ChainA.App.(*app.App)
-	require.True(t, ok)
+func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
+	neutron := suite.GetNeutronZoneApp(suite.ChainA)
 
-	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
+	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
 
 	// Store code and instantiate reflect contract
-	owner := keeper.RandomAccountAddress(t)
-	codeId := storeReflectCode(t, ctx, neutron, owner)
-	contractAddress := instantiateReflectContract(t, ctx, neutron, owner, codeId)
-	require.NotEmpty(t, contractAddress)
+	owner := keeper.RandomAccountAddress(suite.T())
+	codeId := suite.storeReflectCode(ctx, owner)
+	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	suite.Require().NotEmpty(contractAddress)
 
 	// Register and submit query result
 	lastID := neutron.InterchainQueriesKeeper.GetLastRegisteredQueryKey(ctx) + 1
@@ -47,17 +42,17 @@ func TestInterchainQueryResult(t *testing.T) {
 		QueryType:         "x/staking/DelegatorDelegations",
 		ZoneId:            "osmosis",
 		UpdatePeriod:      1,
-		ConnectionId:      ibcStruct.Path.EndpointA.ConnectionID,
+		ConnectionId:      suite.Path.EndpointA.ConnectionID,
 		LastEmittedHeight: uint64(ctx.BlockHeight()),
 	}
 	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
 	err := neutron.InterchainQueriesKeeper.SaveQuery(ctx, registeredQuery)
-	require.NoError(t, err)
+	suite.Require().NoError(err)
 
-	clientKey := host.FullClientStateKey(ibcStruct.Path.EndpointB.ClientID)
-	chainBResp := ibcStruct.ChainB.App.Query(abci.RequestQuery{
+	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
+	chainBResp := suite.ChainB.App.Query(abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
-		Height: ibcStruct.ChainB.LastHeader.Header.Height - 1,
+		Height: suite.ChainB.LastHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
 	})
@@ -72,10 +67,10 @@ func TestInterchainQueryResult(t *testing.T) {
 		// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 		Blocks:   nil,
 		Height:   uint64(chainBResp.Height),
-		Revision: ibcStruct.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+		Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
 	}
 	err = neutron.InterchainQueriesKeeper.SaveQueryResult(ctx, lastID, expectedQueryResult)
-	require.NoError(t, err)
+	suite.Require().NoError(err)
 
 	// Query interchain query result
 	query := bindings.NeutronQuery{
@@ -84,13 +79,14 @@ func TestInterchainQueryResult(t *testing.T) {
 		},
 	}
 	resp := icqtypes.QueryRegisteredQueryResultResponse{}
-	queryCustom(t, ctx, neutron, contractAddress, query, &resp)
+	err = suite.queryCustom(ctx, contractAddress, query, &resp)
+	suite.Require().NoError(err)
 
-	require.EqualValues(t, uint64(chainBResp.Height), resp.Result.Height)
-	require.EqualValues(t, ibcStruct.ChainA.LastHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
-	require.Empty(t, resp.Result.Blocks)
-	require.NotEmpty(t, resp.Result.KvResults)
-	require.EqualValues(t, []*icqtypes.StorageValue{{
+	suite.Require().Equal(uint64(chainBResp.Height), resp.Result.Height)
+	suite.Require().Equal(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), resp.Result.Revision)
+	suite.Require().Empty(resp.Result.Blocks)
+	suite.Require().NotEmpty(resp.Result.KvResults)
+	suite.Require().Equal([]*icqtypes.StorageValue{{
 		Key:           chainBResp.Key,
 		Proof:         nil,
 		Value:         chainBResp.Value,
@@ -98,35 +94,83 @@ func TestInterchainQueryResult(t *testing.T) {
 	}}, resp.Result.KvResults)
 }
 
-func TestInterchainAccountAddress(t *testing.T) {
-	// Setup IBC chains and create connection between them
-	ibcStruct := testutil.SetupIBCConnection(t)
-	neutron, ok := ibcStruct.ChainA.App.(*app.App)
-	require.True(t, ok)
+func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
+	neutron := suite.GetNeutronZoneApp(suite.ChainA)
 
-	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
+	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
 
 	// Store code and instantiate reflect contract
-	owner := keeper.RandomAccountAddress(t)
-	codeId := storeReflectCode(t, ctx, neutron, owner)
-	contractAddress := instantiateReflectContract(t, ctx, neutron, owner, codeId)
-	require.NotEmpty(t, contractAddress)
+	owner := keeper.RandomAccountAddress(suite.T())
+	codeId := suite.storeReflectCode(ctx, owner)
+	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	// Query interchain query result
+	query := bindings.NeutronQuery{
+		InterchainQueryResult: &icqtypes.QueryRegisteredQueryResultRequest{
+			QueryId: 1,
+		},
+	}
+	resp := icqtypes.QueryRegisteredQueryResultResponse{}
+	err := suite.queryCustom(ctx, contractAddress, query, &resp)
+	expectedErrMag := "Generic error: Querier contract error: codespace: interchainqueries, code: 1115: query wasm contract failed"
+	suite.Require().Errorf(err, expectedErrMag)
+}
+
+func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
+	neutron := suite.GetNeutronZoneApp(suite.ChainA)
+
+	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+
+	// Store code and instantiate reflect contract
+	owner := keeper.RandomAccountAddress(suite.T())
+	codeId := suite.storeReflectCode(ctx, owner)
+	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	suite.Require().NotEmpty(contractAddress)
 
 	// Query real account address
 	icaOwner, err := ictxtypes.NewICAOwner(testutil.TestOwnerAddress, testutil.TestInterchainId)
-	require.NoError(t, err)
+	suite.Require().NoError(err)
 
 	query := bindings.NeutronQuery{
 		InterchainAccountAddress: &ictxtypes.QueryInterchainAccountAddressRequest{
 			OwnerAddress: icaOwner.String(),
-			ConnectionId: ibcStruct.Path.EndpointA.ConnectionID,
+			ConnectionId: suite.Path.EndpointA.ConnectionID,
 		},
 	}
 	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
-	queryCustom(t, ctx, neutron, contractAddress, query, &resp)
+	err = suite.queryCustom(ctx, contractAddress, query, &resp)
+	suite.Require().NoError(err)
 
 	expected := "neutron128vd3flgem54995jslqpr9rq4zj5n0eu0rlqj9rr9a24qjf9wc9qyuvj84"
-	require.EqualValues(t, expected, resp.InterchainAccountAddress)
+	suite.Require().Equal(expected, resp.InterchainAccountAddress)
+}
+
+func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
+	neutron := suite.GetNeutronZoneApp(suite.ChainA)
+
+	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+
+	// Store code and instantiate reflect contract
+	owner := keeper.RandomAccountAddress(suite.T())
+	codeId := suite.storeReflectCode(ctx, owner)
+	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	// Query real account address
+	icaOwner, err := ictxtypes.NewICAOwner(testutil.TestOwnerAddress, "unknown_owner_id")
+	suite.Require().NoError(err)
+
+	query := bindings.NeutronQuery{
+		InterchainAccountAddress: &ictxtypes.QueryInterchainAccountAddressRequest{
+			OwnerAddress: icaOwner.String(),
+			ConnectionId: suite.Path.EndpointA.ConnectionID,
+		},
+	}
+	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
+	expectedErrorMsg := "Generic error: Querier contract error: codespace: interchaintxs, code: 1102: query wasm contract failed"
+	err = suite.queryCustom(ctx, contractAddress, query, &resp)
+	suite.Require().Errorf(err, expectedErrorMsg)
 }
 
 type ReflectQuery struct {
@@ -141,9 +185,9 @@ type ChainResponse struct {
 	Data []byte `json:"data"`
 }
 
-func queryCustom(t *testing.T, ctx sdk.Context, neutron *app.App, contract sdk.AccAddress, request bindings.NeutronQuery, response interface{}) {
+func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.AccAddress, request interface{}, response interface{}) error {
 	msgBz, err := json.Marshal(request)
-	require.NoError(t, err)
+	suite.Require().NoError(err)
 
 	query := ReflectQuery{
 		Chain: &ChainRequest{
@@ -151,32 +195,43 @@ func queryCustom(t *testing.T, ctx sdk.Context, neutron *app.App, contract sdk.A
 		},
 	}
 	queryBz, err := json.Marshal(query)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
-	resBz, err := neutron.WasmKeeper.QuerySmart(ctx, contract, queryBz)
-	require.NoError(t, err)
+	resBz, err := suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(ctx, contract, queryBz)
+	if err != nil {
+		return err
+	}
+
 	var resp ChainResponse
 	err = json.Unmarshal(resBz, &resp)
-	require.NoError(t, err)
-	err = json.Unmarshal(resp.Data, response)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(resp.Data, response)
 }
 
-func storeReflectCode(t *testing.T, ctx sdk.Context, neutron *app.App, addr sdk.AccAddress) uint64 {
+func (suite *CustomQuerierTestSuite) storeReflectCode(ctx sdk.Context, addr sdk.AccAddress) uint64 {
 	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
-	require.NoError(t, err)
+	suite.Require().NoError(err)
 
-	codeID, err := keeper.NewDefaultPermissionKeeper(neutron.WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
-	require.NoError(t, err)
+	codeID, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
+	suite.Require().NoError(err)
 
 	return codeID
 }
 
-func instantiateReflectContract(t *testing.T, ctx sdk.Context, neutron *app.App, funder sdk.AccAddress, codeID uint64) sdk.AccAddress {
+func (suite *CustomQuerierTestSuite) instantiateReflectContract(ctx sdk.Context, funder sdk.AccAddress, codeID uint64) sdk.AccAddress {
 	initMsgBz := []byte("{}")
-	contractKeeper := keeper.NewDefaultPermissionKeeper(neutron.WasmKeeper)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
 	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
-	require.NoError(t, err)
+	suite.Require().NoError(err)
 
 	return addr
+}
+
+func TestKeeperTestSuite(t *testing.T) {
+	suite.Run(t, new(CustomQuerierTestSuite))
 }
