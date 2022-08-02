@@ -79,7 +79,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrap(err, "failed to GetTxMsgs")
 	}
 
-	data, err := icatypes.SerializeCosmosTx(k.cdc, sdkMsgs)
+	data, err := icatypes.SerializeCosmosTx(k.Codec, sdkMsgs)
 	if err != nil {
 		k.Logger(ctx).Error("failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SerializeCosmosTx")

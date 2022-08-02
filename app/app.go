@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/wasmbinding"
 	"io"
 	"net/http"
 	"os"
@@ -286,7 +287,7 @@ type App struct {
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
-	wasmKeeper wasm.Keeper
+	WasmKeeper wasm.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -451,7 +452,7 @@ func New(
 	)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
 
-	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.wasmKeeper)
+	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -471,14 +472,14 @@ func New(
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
-		&app.wasmKeeper,
+		&app.WasmKeeper,
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
 		keys[interchaintxstypes.StoreKey],
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.GetSubspace(interchaintxstypes.ModuleName),
-		&app.wasmKeeper,
+		&app.WasmKeeper,
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
 	)
@@ -498,10 +499,12 @@ func New(
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
 
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(app.InterchainTxsKeeper, app.InterchainQueriesKeeper), wasmOpts...)
+
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
-	supportedFeatures := "iterator,staking,stargate"
-	app.wasmKeeper = wasm.NewKeeper(
+	supportedFeatures := "iterator,staking,stargate,neutron"
+	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
 		keys[wasm.StoreKey],
 		app.GetSubspace(wasm.ModuleName),
@@ -525,12 +528,12 @@ func New(
 	ibcRouter := ibcporttypes.NewRouter()
 	// this line is used by starport scaffolding # ibc/app/router
 	if len(enabledProposals) != 0 {
-		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
+		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
-		AddRoute(interchaintxstypes.ModuleName, icaControllerIBCModule).AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper))
+		AddRoute(interchaintxstypes.ModuleName, icaControllerIBCModule).AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper))
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
@@ -560,7 +563,7 @@ func New(
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
-		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -678,7 +681,7 @@ func New(
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
-		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		interchainQueriesModule,
@@ -722,7 +725,7 @@ func New(
 	// see cmd/wasmd/root.go: 206 - 214 approx
 	if manager := app.SnapshotManager(); manager != nil {
 		err := manager.RegisterExtensions(
-			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper),
+			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.WasmKeeper),
 		)
 		if err != nil {
 			panic(fmt.Errorf("failed to register snapshot extension: %s", err))
@@ -737,7 +740,7 @@ func New(
 		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
 
 		// Initialize pinned codes in wasmvm as they are not persisted there
-		if err := app.wasmKeeper.InitializePinnedCodes(ctx); err != nil {
+		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
 			tmos.Exit(fmt.Sprintf("failed initialize pinned codes %s", err))
 		}
 	}

@@ -58,44 +58,11 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.chainA = suite.coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.chainB = suite.coordinator.GetChain(ibctesting.GetChainID(2))
 
-	suite.path = NewICAPath(suite.chainA, suite.chainB)
+	suite.path = testutil.NewICAPath(suite.chainA, suite.chainB)
 
 	suite.coordinator.SetupConnections(suite.path)
 
-	suite.NoError(SetupICAPath(suite.path, TestOwnerAddress))
-}
-
-func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
-	path := ibctesting.NewPath(chainA, chainB)
-	path.EndpointA.ChannelConfig.PortID = icatypes.PortID
-	path.EndpointB.ChannelConfig.PortID = icatypes.PortID
-	path.EndpointA.ChannelConfig.Order = channeltypes.ORDERED
-	path.EndpointB.ChannelConfig.Order = channeltypes.ORDERED
-	path.EndpointA.ChannelConfig.Version = TestVersion
-	path.EndpointB.ChannelConfig.Version = TestVersion
-
-	return path
-}
-
-// SetupICAPath invokes the InterchainAccounts entrypoint and subsequent channel handshake handlers
-func SetupICAPath(path *ibctesting.Path, owner string) error {
-	if err := RegisterInterchainAccount(path.EndpointA, owner); err != nil {
-		return err
-	}
-
-	if err := path.EndpointB.ChanOpenTry(); err != nil {
-		return err
-	}
-
-	if err := path.EndpointA.ChanOpenAck(); err != nil {
-		return err
-	}
-
-	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
-		return err
-	}
-
-	return nil
+	suite.NoError(testutil.SetupICAPath(suite.path, TestOwnerAddress))
 }
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
