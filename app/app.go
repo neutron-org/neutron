@@ -472,7 +472,7 @@ func New(
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
-		&app.wasmKeeper,
+		&app.WasmKeeper,
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
