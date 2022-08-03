@@ -2,23 +2,88 @@ package wasmbinding
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	icatypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-// GetInterchainQueryResult is a function, not method, so the message_plugin can use it
-func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*types.QueryResult, error) {
-	return qp.icqKeeper.GetQueryResultByID(ctx, queryID)
+func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*bindings.QueryRegisteredQueryResultResponse, error) {
+	grpcResp, err := qp.icqKeeper.GetQueryResultByID(ctx, queryID)
+	if err != nil {
+		return nil, err
+	}
+	resp := bindings.QueryResult{
+		KvResults: make([]*bindings.StorageValue, 0, len(grpcResp.KvResults)),
+		Height:    grpcResp.GetHeight(),
+		Revision:  grpcResp.GetRevision(),
+	}
+	for _, grpcKv := range grpcResp.GetKvResults() {
+		kv := bindings.StorageValue{
+			StoragePrefix: grpcKv.GetStoragePrefix(),
+			Key:           grpcKv.GetKey(),
+			Value:         grpcKv.GetValue(),
+		}
+		resp.KvResults = append(resp.KvResults, &kv)
+	}
+
+	return &bindings.QueryRegisteredQueryResultResponse{Result: &resp}, nil
 }
 
-func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *icatypes.QueryInterchainAccountAddressRequest) (*icatypes.QueryInterchainAccountAddressResponse, error) {
-	return qp.icaControllerKeeper.InterchainAccountAddress(sdk.WrapSDKContext(ctx), req)
+func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *bindings.QueryInterchainAccountAddressRequest) (*bindings.QueryInterchainAccountAddressResponse, error) {
+
+	grpcReq := icatypes.QueryInterchainAccountAddressRequest{
+		OwnerAddress:        req.OwnerAddress,
+		InterchainAccountId: req.InterchainAccountId,
+		ConnectionId:        req.ConnectionId,
+	}
+
+	grpcResp, err := qp.icaControllerKeeper.InterchainAccountAddress(sdk.WrapSDKContext(ctx), &grpcReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &bindings.QueryInterchainAccountAddressResponse{InterchainAccountAddress: grpcResp.GetInterchainAccountAddress()}, nil
 }
 
-func (qp *QueryPlugin) GetRegisteredInterchainQueries(ctx sdk.Context, req *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
-	return qp.icqKeeper.GetRegisteredQueries(ctx, req)
+func (qp *QueryPlugin) GetRegisteredInterchainQueries(ctx sdk.Context) (*bindings.QueryRegisteredQueriesResponse, error) {
+	grpcResp, err := qp.icqKeeper.GetRegisteredQueries(ctx, &types.QueryRegisteredQueriesRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	resp := bindings.QueryRegisteredQueriesResponse{RegisteredQueries: make([]bindings.RegisteredQuery, 0, len(grpcResp.GetRegisteredQueries()))}
+	for _, grpcQuery := range grpcResp.GetRegisteredQueries() {
+		query := mapGRPCRegisteredQueryToWasmBindings(grpcQuery)
+		resp.RegisteredQueries = append(resp.RegisteredQueries, query)
+	}
+	return &resp, nil
 }
 
-func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *types.QueryRegisteredQueryRequest) (*types.RegisteredQuery, error) {
-	return qp.icqKeeper.GetQueryByID(ctx, req.QueryId)
+func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindings.QueryRegisteredQueryRequest) (*bindings.QueryRegisteredQueryResponse, error) {
+	grpcResp, err := qp.icqKeeper.GetQueryByID(ctx, req.QueryId)
+	if err != nil {
+		return nil, err
+	}
+	if grpcResp == nil {
+		return nil, sdkerrors.Wrapf(types.ErrEmptyResult, "interchain query response empty for query id %d", req.QueryId)
+	}
+	query := mapGRPCRegisteredQueryToWasmBindings(*grpcResp)
+
+	return &bindings.QueryRegisteredQueryResponse{RegisteredQuery: &query}, nil
+}
+
+func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {
+	return bindings.RegisteredQuery{
+		Id:                              grpcQuery.GetId(),
+		Owner:                           grpcQuery.GetOwner(),
+		QueryData:                       grpcQuery.GetQueryData(),
+		QueryType:                       grpcQuery.GetQueryType(),
+		ZoneId:                          grpcQuery.GetZoneId(),
+		ConnectionId:                    grpcQuery.GetConnectionId(),
+		UpdatePeriod:                    grpcQuery.GetUpdatePeriod(),
+		LastEmittedHeight:               grpcQuery.GetLastEmittedHeight(),
+		LastSubmittedResultLocalHeight:  grpcQuery.GetLastSubmittedResultLocalHeight(),
+		LastSubmittedResultRemoteHeight: grpcQuery.GetLastSubmittedResultRemoteHeight(),
+	}
 }

@@ -6,7 +6,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
-	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // CustomQuerier returns a function that is an implementation of custom querier mechanism for specific messages
@@ -26,11 +25,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 				return nil, sdkerrors.Wrapf(err, "failed to get interchain query result: %v", err)
 			}
 
-			res := icqtypes.QueryRegisteredQueryResultResponse{
-				Result: response,
-			}
-
-			bz, err := json.Marshal(res)
+			bz, err := json.Marshal(response)
 			if err != nil {
 				return nil, sdkerrors.Wrapf(err, "failed to marshal interchain query result: %v", err)
 			}
@@ -50,7 +45,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 		case contractQuery.RegisteredInterchainQueries != nil:
-			registeredQueries, err := qp.GetRegisteredInterchainQueries(ctx, contractQuery.RegisteredInterchainQueries)
+			registeredQueries, err := qp.GetRegisteredInterchainQueries(ctx)
 			if err != nil {
 				return nil, sdkerrors.Wrapf(err, "failed to get registered queries: %v", err)
 			}
@@ -67,11 +62,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 				return nil, sdkerrors.Wrapf(err, "failed to get registered queries: %v", err)
 			}
 
-			resp := icqtypes.QueryRegisteredQueryResponse{
-				RegisteredQuery: registeredQuery,
-			}
-
-			bz, err := json.Marshal(resp)
+			bz, err := json.Marshal(registeredQuery)
 			if err != nil {
 				return nil, sdkerrors.Wrapf(err, "failed to marshal interchain account query response: %v", err)
 			}

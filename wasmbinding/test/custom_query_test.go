@@ -74,7 +74,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 
 	// Query interchain query result
 	query := bindings.NeutronQuery{
-		InterchainQueryResult: &icqtypes.QueryRegisteredQueryResultRequest{
+		InterchainQueryResult: &bindings.QueryRegisteredQueryResultRequest{
 			QueryId: lastID,
 		},
 	}
@@ -107,7 +107,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 
 	// Query interchain query result
 	query := bindings.NeutronQuery{
-		InterchainQueryResult: &icqtypes.QueryRegisteredQueryResultRequest{
+		InterchainQueryResult: &bindings.QueryRegisteredQueryResultRequest{
 			QueryId: 1,
 		},
 	}
@@ -129,7 +129,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
-		InterchainAccountAddress: &ictxtypes.QueryInterchainAccountAddressRequest{
+		InterchainAccountAddress: &bindings.QueryInterchainAccountAddressRequest{
 			OwnerAddress:        testutil.TestOwnerAddress,
 			InterchainAccountId: testutil.TestInterchainId,
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
@@ -155,7 +155,7 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
-		InterchainAccountAddress: &ictxtypes.QueryInterchainAccountAddressRequest{
+		InterchainAccountAddress: &bindings.QueryInterchainAccountAddressRequest{
 			OwnerAddress:        testutil.TestOwnerAddress,
 			InterchainAccountId: "wrong_account_id",
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
