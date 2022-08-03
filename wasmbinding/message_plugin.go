@@ -38,8 +38,12 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if msg.Custom != nil {
 		var contractMsg bindings.NeutronMsg
 		if err := json.Unmarshal(msg.Custom, &contractMsg); err != nil {
-			ctx.Logger().Debug("failed to decode incoming custom message from", contractAddr.String())
-			return nil, nil, sdkerrors.Wrap(err, "decode custom Cosmos message failed")
+			ctx.Logger().Debug("json.Unmarshal: failed to decode incoming custom cosmos message",
+				"from_address", contractAddr.String(),
+				"message", string(msg.Custom),
+				"error", err,
+			)
+			return nil, nil, sdkerrors.Wrap(err, "failed to decode incoming custom cosmos message")
 		}
 		if contractMsg.SubmitTx != nil {
 			return m.submitTx(ctx, contractAddr, contractMsg.SubmitTx)
@@ -51,21 +55,34 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 			return m.registerInterchainQuery(ctx, contractAddr, contractMsg.RegisterInterchainQuery)
 		}
 	}
+
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 }
 
 func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) ([]sdk.Event, [][]byte, error) {
 	response, err := m.PerformSubmitTx(ctx, contractAddr, submitTx)
 	if err != nil {
-		ctx.Logger().Info(contractAddr.String(), "fail submit interchain tx", "error", err)
-		return nil, nil, sdkerrors.Wrap(err, "perform submit interchain tx failed")
+		ctx.Logger().Debug(contractAddr.String(), "PerformSubmitTx: failed to submit interchain transaction",
+			"connection_id", submitTx.ConnectionId,
+			"interchain_account_id", submitTx.InterchainAccountId,
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit interchain transaction")
 	}
-	ctx.Logger().Info(contractAddr.String(), "success submit interchain tx")
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Info(contractAddr.String(), "fail marshal json", "error", err)
+		ctx.Logger().Debug(contractAddr.String(), "json.Marshal: failed to marshal submitTx response to JSON",
+			"connection_id", submitTx.ConnectionId,
+			"interchain_account_id", submitTx.InterchainAccountId,
+			"error", err,
+		)
 		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
 	}
+
+	ctx.Logger().Info(contractAddr.String(), "interchain transaction submitted",
+		"connection_id", submitTx.ConnectionId,
+		"interchain_account_id", submitTx.InterchainAccountId,
+	)
 	return nil, [][]byte{data}, nil
 }
 
@@ -83,28 +100,40 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		})
 	}
 	if err := tx.UnpackInterfaces(m.Keeper.Codec); err != nil {
-		ctx.Logger().Info(contractAddr.String(), "fail unpack interfaces", "error", err)
-		return nil, sdkerrors.Wrap(err, "unpack interfaces failed")
+		return nil, sdkerrors.Wrap(err, "failed to unpack interfaces to send interchain transaction")
 	}
 	response, err := m.Ictxmsgserver.SubmitTx(sdk.WrapSDKContext(ctx), &tx)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "submit interchaintx failed")
+		return nil, sdkerrors.Wrap(err, "failed to submit interchain transaction")
 	}
+
 	return (*bindings.SubmitTxResponse)(response), nil
 }
 
 func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) ([]sdk.Event, [][]byte, error) {
 	response, err := m.PerformRegisterInterchainAccount(ctx, contractAddr, reg)
 	if err != nil {
-		ctx.Logger().Info(contractAddr.String(), "fail register interchain account", "error", err)
-		return nil, nil, sdkerrors.Wrap(err, "perform register interchain account failed")
+		ctx.Logger().Debug("PerformRegisterInterchainAccount: failed to register interchain account",
+			"connection_id", reg.ConnectionId,
+			"interchain_account_id", reg.InterchainAccountId,
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to register interchain account")
 	}
-	ctx.Logger().Info(contractAddr.String(), "success register interchain account")
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Info(contractAddr.String(), "fail marshal json", "error", err)
+		ctx.Logger().Debug(contractAddr.String(), "json.Marshal: failed to marshal register interchain account response to JSON",
+			"connection_id", reg.ConnectionId,
+			"interchain_account_id", reg.InterchainAccountId,
+			"error", err,
+		)
 		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
 	}
+
+	ctx.Logger().Info(contractAddr.String(), "registered interchain account",
+		"connection_id", reg.ConnectionId,
+		"interchain_account_id", reg.InterchainAccountId,
+	)
 	return nil, [][]byte{data}, nil
 }
 
@@ -116,7 +145,7 @@ func (m *CustomMessenger) PerformRegisterInterchainAccount(ctx sdk.Context, cont
 	}
 	response, err := m.Ictxmsgserver.RegisterInterchainAccount(sdk.WrapSDKContext(ctx), &msg)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "register interchain account failed")
+		return nil, sdkerrors.Wrap(err, "failed to register interchain account")
 	}
 	return (*bindings.RegisterInterchainAccountResponse)(response), nil
 }
@@ -124,15 +153,37 @@ func (m *CustomMessenger) PerformRegisterInterchainAccount(ctx sdk.Context, cont
 func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) ([]sdk.Event, [][]byte, error) {
 	response, err := m.PerformRegisterInterchainQuery(ctx, contractAddr, reg)
 	if err != nil {
-		ctx.Logger().Info(contractAddr.String(), "fail register interchain query", "error", err)
-		return nil, nil, sdkerrors.Wrap(err, "perform register interchain query failed")
+		ctx.Logger().Debug("PerformRegisterInterchainQuery: failed to register interchain query",
+			"query_type", reg.QueryType,
+			"query_data", reg.QueryData,
+			"zone_id", reg.ZoneId,
+			"connection_id", reg.ConnectionId,
+			"update_period", reg.UpdatePeriod,
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to register interchain query")
 	}
-	ctx.Logger().Info(contractAddr.String(), "success register interchain query")
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Info(contractAddr.String(), "fail marshal json", "error", err)
+		ctx.Logger().Debug(contractAddr.String(), "json.Marshal: failed to marshal register interchain query response to JSON",
+			"query_type", reg.QueryType,
+			"query_data", reg.QueryData,
+			"zone_id", reg.ZoneId,
+			"connection_id", reg.ConnectionId,
+			"update_period", reg.UpdatePeriod,
+			"error", err,
+		)
 		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
 	}
+
+	ctx.Logger().Info(contractAddr.String(), "registered interchain query",
+		"query_type", reg.QueryType,
+		"query_data", reg.QueryData,
+		"zone_id", reg.ZoneId,
+		"connection_id", reg.ConnectionId,
+		"update_period", reg.UpdatePeriod,
+		"query_id", response.Id,
+	)
 	return nil, [][]byte{data}, nil
 }
 
@@ -147,7 +198,8 @@ func (m *CustomMessenger) PerformRegisterInterchainQuery(ctx sdk.Context, contra
 	}
 	response, err := m.Icqmsgserver.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "register interchain query failed")
+		return nil, sdkerrors.Wrap(err, "failed to register interchain query")
 	}
+
 	return (*bindings.RegisterInterchainQueryResponse)(response), nil
 }
