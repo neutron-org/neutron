@@ -62,7 +62,8 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) ([]sdk.Event, [][]byte, error) {
 	response, err := m.PerformSubmitTx(ctx, contractAddr, submitTx)
 	if err != nil {
-		ctx.Logger().Debug(contractAddr.String(), "PerformSubmitTx: failed to submit interchain transaction",
+		ctx.Logger().Debug("PerformSubmitTx: failed to submit interchain transaction",
+			"from_address", contractAddr.String(),
 			"connection_id", submitTx.ConnectionId,
 			"interchain_account_id", submitTx.InterchainAccountId,
 			"error", err,
@@ -71,7 +72,8 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 	}
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug(contractAddr.String(), "json.Marshal: failed to marshal submitTx response to JSON",
+		ctx.Logger().Debug("json.Marshal: failed to marshal submitTx response to JSON",
+			"from_address", contractAddr.String(),
 			"connection_id", submitTx.ConnectionId,
 			"interchain_account_id", submitTx.InterchainAccountId,
 			"error", err,
@@ -79,7 +81,8 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
 	}
 
-	ctx.Logger().Info(contractAddr.String(), "interchain transaction submitted",
+	ctx.Logger().Info("interchain transaction submitted",
+		"from_address", contractAddr.String(),
 		"connection_id", submitTx.ConnectionId,
 		"interchain_account_id", submitTx.InterchainAccountId,
 	)
@@ -114,6 +117,7 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 	response, err := m.PerformRegisterInterchainAccount(ctx, contractAddr, reg)
 	if err != nil {
 		ctx.Logger().Debug("PerformRegisterInterchainAccount: failed to register interchain account",
+			"from_address", contractAddr.String(),
 			"connection_id", reg.ConnectionId,
 			"interchain_account_id", reg.InterchainAccountId,
 			"error", err,
@@ -122,7 +126,8 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 	}
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug(contractAddr.String(), "json.Marshal: failed to marshal register interchain account response to JSON",
+		ctx.Logger().Debug("json.Marshal: failed to marshal register interchain account response to JSON",
+			"from_address", contractAddr.String(),
 			"connection_id", reg.ConnectionId,
 			"interchain_account_id", reg.InterchainAccountId,
 			"error", err,
@@ -130,7 +135,8 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
 	}
 
-	ctx.Logger().Info(contractAddr.String(), "registered interchain account",
+	ctx.Logger().Info("registered interchain account",
+		"from_address", contractAddr.String(),
 		"connection_id", reg.ConnectionId,
 		"interchain_account_id", reg.InterchainAccountId,
 	)
@@ -154,6 +160,7 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 	response, err := m.PerformRegisterInterchainQuery(ctx, contractAddr, reg)
 	if err != nil {
 		ctx.Logger().Debug("PerformRegisterInterchainQuery: failed to register interchain query",
+			"from_address", contractAddr.String(),
 			"query_type", reg.QueryType,
 			"query_data", reg.QueryData,
 			"zone_id", reg.ZoneId,
@@ -165,7 +172,8 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 	}
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug(contractAddr.String(), "json.Marshal: failed to marshal register interchain query response to JSON",
+		ctx.Logger().Debug("json.Marshal: failed to marshal register interchain query response to JSON",
+			"from_address", contractAddr.String(),
 			"query_type", reg.QueryType,
 			"query_data", reg.QueryData,
 			"zone_id", reg.ZoneId,
@@ -176,7 +184,8 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
 	}
 
-	ctx.Logger().Info(contractAddr.String(), "registered interchain query",
+	ctx.Logger().Info("registered interchain query",
+		"from_address", contractAddr.String(),
 		"query_type", reg.QueryType,
 		"query_data", reg.QueryData,
 		"zone_id", reg.ZoneId,
