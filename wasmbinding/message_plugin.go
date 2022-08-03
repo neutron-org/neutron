@@ -14,13 +14,13 @@ import (
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-func CustomMessageDecorator(ictx ictxkeeper.Keeper, icq icqkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
-			Keeper:        ictx,
+			Keeper:        *ictx,
 			Wrapped:       old,
-			Ictxmsgserver: ictxkeeper.NewMsgServerImpl(ictx),
-			Icqmsgserver:  icqkeeper.NewMsgServerImpl(icq),
+			Ictxmsgserver: ictxkeeper.NewMsgServerImpl(*ictx),
+			Icqmsgserver:  icqkeeper.NewMsgServerImpl(*icq),
 		}
 	}
 }
