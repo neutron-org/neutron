@@ -109,19 +109,21 @@ func TestSubmitTx(t *testing.T) {
 
 	// Craft SubmitTx message
 	memo := "Jimmy"
+	msgs := `[{"type_url":"/cosmos.staking.v1beta1.MsgDelegate","value":[26,10,10,5,115,116,97,107,101,18,1,48]}]`
 	msgStr := []byte(fmt.Sprintf(
 		`
 {
 	"submit_tx": {
 		"connection_id": "%s",
 		"interchain_account_id": "%s",
-		"msgs": [],
+		"msgs": %s,
 		"memo": "%s"
 	}
 }
 		`,
 		ibcStruct.Path.EndpointA.ConnectionID,
 		testutil.TestInterchainId,
+		msgs,
 		memo,
 	))
 	var msg json.RawMessage
@@ -133,6 +135,7 @@ func TestSubmitTx(t *testing.T) {
 	require.NoError(t, err)
 	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
 	messenger := wasmbinding.CustomMessenger{}
+	messenger.Keeper = neutron.InterchainTxsKeeper
 	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
 	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
 	events, data, err := messenger.DispatchMsg(ctx, owner, ibcStruct.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{

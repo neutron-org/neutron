@@ -105,6 +105,9 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 	if err := tx.UnpackInterfaces(m.Keeper.Codec); err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to unpack interfaces to send interchain transaction")
 	}
+	if err := tx.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitTx message")
+	}
 	response, err := m.Ictxmsgserver.SubmitTx(sdk.WrapSDKContext(ctx), &tx)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to submit interchain transaction")
@@ -148,6 +151,9 @@ func (m *CustomMessenger) PerformRegisterInterchainAccount(ctx sdk.Context, cont
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
+	}
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")
 	}
 	response, err := m.Ictxmsgserver.RegisterInterchainAccount(sdk.WrapSDKContext(ctx), &msg)
 	if err != nil {
@@ -204,6 +210,9 @@ func (m *CustomMessenger) PerformRegisterInterchainQuery(ctx sdk.Context, contra
 		ConnectionId: reg.ConnectionId,
 		UpdatePeriod: reg.UpdatePeriod,
 		Sender:       contractAddr.String(),
+	}
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming RegisterInterchainQuery message")
 	}
 	response, err := m.Icqmsgserver.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
 	if err != nil {
