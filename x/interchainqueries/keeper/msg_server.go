@@ -82,6 +82,13 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		return nil, sdkerrors.Wrapf(err, "failed to get query by id: %v", err)
 	}
 
+	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
+	if err != nil {
+		ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
+			"error", err, "query", query, "message", msg)
+		return nil, sdkerrors.Wrapf(err, "failed to decode owner contract address (%s)", query.Owner)
+	}
+
 	if msg.Result.KvResults != nil {
 		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
 			ConnectionId:   query.ConnectionId,
@@ -123,15 +130,19 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(err, "failed to SaveKVQueryResult: %v", err)
 		}
-	}
-	if msg.Result.Block != nil && msg.Result.Block.Tx != nil {
-		queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
-		if err != nil {
-			ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
-				"error", err, "query", query, "message", msg)
-			return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
-		}
 
+		if msg.Result.GetAllowKvCallbacks() {
+			// Let the query owner contract process the query result.
+			if _, err := k.sudoHandler.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
+				ctx.Logger().Debug("ProcessBlock: failed to SudoKVQueryResult",
+					"error", err, "query_id", query.GetId())
+				return nil, sdkerrors.Wrapf(err, "contract %s rejected KV query result (query_id: %d)",
+					queryOwner, query.GetId())
+			}
+		}
+	}
+
+	if msg.Result.Block != nil && msg.Result.Block.Tx != nil {
 		if err := k.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, msg.Result.Block); err != nil {
 			ctx.Logger().Debug("SubmitQueryResult: failed to ProcessBlock",
 				"error", err, "query", query, "message", msg)
