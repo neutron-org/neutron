@@ -6,25 +6,23 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-func init() {
-	config := app.GetDefaultConfig()
-	config.Seal()
+type CustomMessengerTestSuite struct {
+	testutil.IBCConnectionTestSuite
 }
 
-func TestRegisterInterchainAccount(t *testing.T) {
-	// Setup IBC chains and create connection between them
-	ibcStruct := testutil.SetupIBCConnection(t)
-	neutron, ok := ibcStruct.ChainA.App.(*app.App)
-	require.True(t, ok)
+func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
+	neutron := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	messenger := wasmbinding.CustomMessenger{}
+	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
 
 	// Craft RegisterInterchainAccount message
 	msgStr := []byte(fmt.Sprintf(
@@ -36,30 +34,27 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	}
 }
 		`,
-		ibcStruct.Path.EndpointA.ConnectionID,
+		suite.Path.EndpointA.ConnectionID,
 		testutil.TestInterchainId,
 	))
 	var msg json.RawMessage
 	err := json.Unmarshal(msgStr, &msg)
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
-	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
-	messenger := wasmbinding.CustomMessenger{}
-	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
-	events, data, err := messenger.DispatchMsg(ctx, keeper.RandomAccountAddress(t), ibcStruct.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := messenger.DispatchMsg(ctx, keeper.RandomAccountAddress(suite.T()), suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
-	require.NoError(t, err)
-	require.Nil(t, events)
-	require.Equal(t, [][]byte{[]byte(`{}`)}, data)
+	suite.NoError(err)
+	suite.Nil(events)
+	suite.Equal([][]byte{[]byte(`{}`)}, data)
 }
 
-func TestRegisterInterchainQuery(t *testing.T) {
-	// Setup IBC chains and create connection between them
-	ibcStruct := testutil.SetupIBCConnection(t)
-	neutron, ok := ibcStruct.ChainA.App.(*app.App)
-	require.True(t, ok)
+func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
+	neutron := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	messenger := wasmbinding.CustomMessenger{}
+	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
 
 	// Craft RegisterInterchainQuery message
 	queryType := "/cosmos.staking.v1beta1.Query/AllDelegations"
@@ -79,33 +74,28 @@ func TestRegisterInterchainQuery(t *testing.T) {
 		`,
 		queryType,
 		queryData,
-		ibcStruct.ChainB.ChainID,
-		ibcStruct.Path.EndpointA.ConnectionID,
+		suite.ChainB.ChainID,
+		suite.Path.EndpointA.ConnectionID,
 		updatePeriod,
 	))
 	var msg json.RawMessage
 	err := json.Unmarshal(msgStr, &msg)
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// Dispatch RegisterInterchainQuery message
 	owner, err := sdk.AccAddressFromBech32(testutil.TestOwnerAddress)
-	require.NoError(t, err)
-	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
-	messenger := wasmbinding.CustomMessenger{}
-	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
-	events, data, err := messenger.DispatchMsg(ctx, owner, ibcStruct.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	suite.NoError(err)
+	events, data, err := messenger.DispatchMsg(ctx, owner, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
-	require.NoError(t, err)
-	require.Nil(t, events)
-	require.Equal(t, [][]byte{[]byte(`{"id":1}`)}, data)
+	suite.NoError(err)
+	suite.Nil(events)
+	suite.Equal([][]byte{[]byte(`{"id":1}`)}, data)
 }
 
-func TestSubmitTx(t *testing.T) {
-	// Setup IBC chains and create connection between them
-	ibcStruct := testutil.SetupIBCConnection(t)
-	neutron, ok := ibcStruct.ChainA.App.(*app.App)
-	require.True(t, ok)
+func (suite *CustomMessengerTestSuite) TestSubmitTx() {
+	neutron := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
 
 	// Craft SubmitTx message
 	memo := "Jimmy"
@@ -121,27 +111,30 @@ func TestSubmitTx(t *testing.T) {
 	}
 }
 		`,
-		ibcStruct.Path.EndpointA.ConnectionID,
+		suite.Path.EndpointA.ConnectionID,
 		testutil.TestInterchainId,
 		msgs,
 		memo,
 	))
 	var msg json.RawMessage
 	err := json.Unmarshal(msgStr, &msg)
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// Dispatch SubmitTx message
 	owner, err := sdk.AccAddressFromBech32(testutil.TestOwnerAddress)
-	require.NoError(t, err)
-	ctx := neutron.NewContext(true, ibcStruct.ChainA.CurrentHeader)
+	suite.NoError(err)
 	messenger := wasmbinding.CustomMessenger{}
 	messenger.Keeper = neutron.InterchainTxsKeeper
 	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
 	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
-	events, data, err := messenger.DispatchMsg(ctx, owner, ibcStruct.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := messenger.DispatchMsg(ctx, owner, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
-	require.NoError(t, err)
-	require.Nil(t, events)
-	require.Equal(t, [][]byte{[]byte(`{}`)}, data)
+	suite.NoError(err)
+	suite.Nil(events)
+	suite.Equal([][]byte{[]byte(`{}`)}, data)
+}
+
+func TestMessengerTestSuite(t *testing.T) {
+	suite.Run(t, new(CustomMessengerTestSuite))
 }

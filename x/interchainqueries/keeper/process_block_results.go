@@ -89,15 +89,18 @@ func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.
 func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID uint64, clientID string, block *types.Block) error {
 	header, err := ibcclienttypes.UnpackHeader(block.Header)
 	if err != nil {
+		ctx.Logger().Debug("ProcessBlock: failed to unpack block header", "error", err)
 		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
 	}
 
 	nextHeader, err := ibcclienttypes.UnpackHeader(block.NextBlockHeader)
 	if err != nil {
+		ctx.Logger().Debug("ProcessBlock: failed to unpack block header", "error", err)
 		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
 	}
 
 	if err := k.VerifyHeaders(ctx, clientID, header, nextHeader); err != nil {
+		ctx.Logger().Debug("ProcessBlock: failed to verify headers", "error", err)
 		return sdkerrors.Wrapf(types.ErrInvalidHeader, "failed to verify headers: %v", err)
 	}
 
@@ -139,7 +142,6 @@ func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID
 		ctx.Logger().Debug("ProcessBlock: transaction was already submitted",
 			"query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
 	}
-
 	return nil
 }
 

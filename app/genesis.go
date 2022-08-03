@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 

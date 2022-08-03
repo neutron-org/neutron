@@ -19,6 +19,11 @@ import (
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
+const (
+	LabelRegisterInterchainQuery = "register_interchain_query"
+	LabelSubmitQueryResult       = "submit_query_result"
+)
+
 type (
 	Keeper struct {
 		cdc         codec.BinaryCodec
@@ -63,6 +68,7 @@ func (k Keeper) GetLastRegisteredQueryKey(ctx sdk.Context) uint64 {
 	store := ctx.KVStore(k.storeKey)
 	bytes := store.Get(types.LastRegisteredQueryIdKey)
 	if bytes == nil {
+		k.Logger(ctx).Debug("Last registered query key don't exists, GetLastRegisteredQueryKey returns 0")
 		return 0
 	}
 	return sdk.BigEndianToUint64(bytes)
@@ -82,7 +88,7 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {
 	}
 
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
-
+	k.Logger(ctx).Debug("SaveQuery successful", "query", query)
 	return nil
 }
 
@@ -122,7 +128,7 @@ func (k Keeper) SaveKVQueryResult(ctx sdk.Context, id uint64, result *types.Quer
 			return sdkerrors.Wrapf(err, "failed to update last local height for a result with id %d: %v", id, err)
 		}
 	}
-
+	k.Logger(ctx).Debug("Successfully saved query result", "result", &result)
 	return nil
 }
 
@@ -217,6 +223,7 @@ func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemot
 	}
 
 	query.LastSubmittedResultRemoteHeight = newRemoteHeight
+	k.Logger(ctx).Debug("Updated last remote height on given query", "queryID", queryID, "new remote height", newRemoteHeight)
 	return k.SaveQuery(ctx, query)
 }
 
@@ -229,7 +236,6 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 	for ; iterator.Valid(); iterator.Next() {
 		query := types.RegisteredQuery{}
 		if err := k.cdc.Unmarshal(iterator.Value(), &query); err != nil {
-			k.Logger(ctx).Error("failed to unmarshal registered query %s when iterating: %w", iterator.Key(), err)
 			continue
 		}
 		stop := fn(i, query)
@@ -239,4 +245,5 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 		}
 		i++
 	}
+	k.Logger(ctx).Debug("Iterated over registered queries", "quantity", i)
 }

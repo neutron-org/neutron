@@ -17,6 +17,14 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
+const (
+	LabelSubmitTx                  = "submit_tx"
+	LabelHandleAcknolwlegment      = "handle_ack"
+	LabelLabelHandleChanOpenAck    = "handle_chan_open_ack"
+	LabelRegisterInterchainAccount = "register_interchain_account"
+	LabelHandleTimeout             = "handle_timeout"
+)
+
 type (
 	Keeper struct {
 		Codec        codec.BinaryCodec
