@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+  node:
+    build: ./
+    volumes:
+      - data:/opt/neutron/data
+    ports:     
+      - 1316:1316
+      - 1317:1317
+      - 26657:26657
+      - 26656:26656
+      - 16657:16657
+      - 16656:16656
+  relayer:
+    image: neutron-org/cosmos-query-relayer
+    entrypoint: ./run.sh
+    volumes:
+      - data:/data
+    depends_on:
+      - "node"
+    ports:
+      - 9999:9999
+    environment:
+      - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
+      - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://node:16657
+      - RELAYER_NEUTRON_CHAIN_CHAIN_ID=test-1
+      - RELAYER_NEUTRON_CHAIN_GAS_PRICES=0.5stake
+      - RELAYER_NEUTRON_CHAIN_HOME_DIR=/data/test-1
+      - RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=demowallet1
+      - RELAYER_NEUTRON_CHAIN_TIMEOUT=1000s
+      - RELAYER_NEUTRON_CHAIN_GAS_ADJUSTMENT=1.4
+      - RELAYER_NEUTRON_CHAIN_TX_BROADCAST_TYPE=BroadcastTxCommit
+      - RELAYER_NEUTRON_CHAIN_CONNECTION_ID=connection-0
+      - RELAYER_NEUTRON_CHAIN_CLIENT_ID=07-tendermint-0
+      - RELAYER_NEUTRON_CHAIN_DEBUG=true
+      - RELAYER_NEUTRON_CHAIN_KEY=demowallet1
+      - RELAYER_NEUTRON_CHAIN_ACCOUNT_PREFIX=neutron
+      - RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=test
+      - RELAYER_NEUTRON_CHAIN_OUTPUT_FORMAT=json
+      - RELAYER_NEUTRON_CHAIN_SIGN_MODE_STR=direct
+      - RELAYER_TARGET_CHAIN_RPC_ADDR=tcp://node:26657
+      - RELAYER_TARGET_CHAIN_CHAIN_ID=test-2
+      - RELAYER_TARGET_CHAIN_GAS_PRICES=0.5stake
+      - RELAYER_TARGET_CHAIN_HOME_DIR=/data/test-2
+      - RELAYER_TARGET_CHAIN_TIMEOUT=1000s
+      - RELAYER_TARGET_CHAIN_GAS_ADJUSTMENT=1.0
+      - RELAYER_TARGET_CHAIN_CONNECTION_ID=connection-0
+      - RELAYER_TARGET_CHAIN_CLIENT_ID=07-tendermint-0
+      - RELAYER_TARGET_CHAIN_DEBUG=true
+      - RELAYER_TARGET_CHAIN_ACCOUNT_PREFIX=neutron
+      - RELAYER_TARGET_CHAIN_VALIDATOR_ACCOUNT_PREFIX=neutronvaloper
+      - RELAYER_TARGET_CHAIN_KEYRING_BACKEND=test
+      - RELAYER_TARGET_CHAIN_OUTPUT_FORMAT=json
+      - RELAYER_TARGET_CHAIN_SIGN_MODE_STR=direct
+      - RELAYER_REGISTRY_ADDRESSES=
+volumes:
+  data:
+    external: false
+networks:
+  local:
