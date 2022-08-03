@@ -6,6 +6,9 @@ type ProtobufAny struct {
 	Value   []byte `json:"value"`
 }
 
+// NeutronMsg is used like a sum type to hold one of custom Neutron messages.
+// Follow https://github.com/neutron-org/neutron-contracts/tree/main/packages/bindings/src/msg.rs
+// for more information.
 type NeutronMsg struct {
 	SubmitTx                  *SubmitTx                  `json:"submit_tx,omitempty"`
 	RegisterInterchainAccount *RegisterInterchainAccount `json:"register_interchain_account,omitempty"`
@@ -13,7 +16,6 @@ type NeutronMsg struct {
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
-// Owner is address on local chain, FromAddress is address on remote chain.
 type SubmitTx struct {
 	ConnectionId        string        `json:"connection_id"`
 	InterchainAccountId string        `json:"interchain_account_id"`
