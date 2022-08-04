@@ -27,7 +27,7 @@ const (
 
 type (
 	Keeper struct {
-		cdc          codec.BinaryCodec
+		Codec        codec.BinaryCodec
 		storeKey     storetypes.StoreKey
 		memKey       storetypes.StoreKey
 		paramstore   paramtypes.Subspace
@@ -55,7 +55,7 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
+		Codec:      cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,

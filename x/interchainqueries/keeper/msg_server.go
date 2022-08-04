@@ -67,7 +67,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	ctx.Logger().Debug("SubmitQueryResult", "message", msg)
+	ctx.Logger().Debug("SubmitQueryResult", "query_id", msg.QueryId)
 
 	if err := msg.ValidateBasic(); err != nil {
 		ctx.Logger().Debug("SubmitQueryResult: failed to validate message",
