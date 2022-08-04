@@ -48,27 +48,27 @@ type QueryRegisteredQueriesResponse struct {
 
 type RegisteredQuery struct {
 	// The unique id of the registered query.
-	Id uint64 `json:"id,omitempty"`
+	Id uint64 `json:"id"`
 	// The address that registered the query.
-	Owner string `json:"owner,omitempty"`
+	Owner string `json:"owner"`
 	// The KV-storage keys for which we want to get values from remote chain
-	Keys []*types.KVKey `json:"keys,omitempty"`
+	Keys []*types.KVKey `json:"keys"`
 	// The filter for transaction search ICQ
-	TransactionsFilter string `json:"transactions_filter,omitempty"`
+	TransactionsFilter string `json:"transactions_filter"`
 	// The query type identifier (i.e. /cosmos.staking.v1beta1.Query/AllDelegations).
-	QueryType string `json:"query_type,omitempty"`
+	QueryType string `json:"query_type"`
 	// The chain of interest identifier.
-	ZoneId string `json:"zone_id,omitempty"`
+	ZoneId string `json:"zone_id"`
 	// The IBC connection ID for getting ConsensusState to verify proofs.
-	ConnectionId string `json:"connection_id,omitempty"`
+	ConnectionId string `json:"connection_id"`
 	// Parameter that defines how often the query must be updated.
-	UpdatePeriod uint64 `json:"update_period,omitempty"`
+	UpdatePeriod uint64 `json:"update_period"`
 	// The local height when the event to update the query result was emitted last time.
-	LastEmittedHeight uint64 `json:"last_emitted_height,omitempty"`
+	LastEmittedHeight uint64 `json:"last_emitted_height"`
 	// The local chain last block height when the query result was updated.
-	LastSubmittedResultLocalHeight uint64 `json:"last_submitted_result_local_height,omitempty"`
+	LastSubmittedResultLocalHeight uint64 `json:"last_submitted_result_local_height"`
 	// The remote chain last block height when the query result was updated.
-	LastSubmittedResultRemoteHeight uint64 `json:"last_submitted_result_remote_height,omitempty"`
+	LastSubmittedResultRemoteHeight uint64 `json:"last_submitted_result_remote_height"`
 }
 
 // Query response for an interchain account address
