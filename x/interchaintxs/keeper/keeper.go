@@ -17,9 +17,17 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
+const (
+	LabelSubmitTx                  = "submit_tx"
+	LabelHandleAcknolwlegment      = "handle_ack"
+	LabelLabelHandleChanOpenAck    = "handle_chan_open_ack"
+	LabelRegisterInterchainAccount = "register_interchain_account"
+	LabelHandleTimeout             = "handle_timeout"
+)
+
 type (
 	Keeper struct {
-		cdc          codec.BinaryCodec
+		Codec        codec.BinaryCodec
 		storeKey     storetypes.StoreKey
 		memKey       storetypes.StoreKey
 		paramstore   paramtypes.Subspace
@@ -47,7 +55,7 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
+		Codec:      cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,

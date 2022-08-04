@@ -60,6 +60,7 @@ message QueryResult {
   Block block = 2;
   uint64 height = 3;
   uint64 revision = 4;
+  bool allow_kv_callbacks = 5;
 }
 
 message StorageValue {

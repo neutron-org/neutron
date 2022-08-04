@@ -43,6 +43,31 @@ make start-rly
 ignite generate proto-go
 ```
 
+## Running with docker
+
+First of all build image
+```shell
+make build-docker-image
+```
+
+Then you can start/stop with
+```shell
+make start-docker-container
+make stop-docker-container
+```
+
+## Running with docker + relayer
+```shell
+ssh-add ./.ssh/id_rsa
+make start-cosmopark
+make stop-cosmopark
+```
+
+Make sure you delete node image if you use the whole thing in dev purposes
+```shell
+@docker rmi neutron_node
+```
+
 
 # Testing with 2 neutron-chains (easier for development)
 

@@ -147,7 +147,7 @@ func UpdateClient(endpoint *ibctesting.Endpoint) (err error) {
 
 func (suite *KeeperTestSuite) findBestTrustedHeight(dstChain *ibctesting.TestChain, height uint64) ibcclienttypes.Height {
 	consensusStatesResponse, err := dstChain.App.GetIBCKeeper().ClientKeeper.ConsensusStates(types.WrapSDKContext(dstChain.GetContext()), &ibcclienttypes.QueryConsensusStatesRequest{
-		ClientId: suite.path.EndpointA.ClientID,
+		ClientId: suite.Path.EndpointA.ClientID,
 		Pagination: &query.PageRequest{
 			Limit:      math.MaxUint64,
 			Reverse:    true,
@@ -184,79 +184,79 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 		{
 			"valid headers",
 			func() error {
-				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+				suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 
-				clientID := suite.path.EndpointA.ClientID
+				clientID := suite.Path.EndpointA.ClientID
 
-				header, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				header, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				CommitBlock(suite.coordinator, suite.chainB)
-				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				CommitBlock(suite.Coordinator, suite.ChainB)
+				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
+				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, header, nextHeader)
 			},
 			nil,
 		},
 		{
 			"headers are not sequential",
 			func() error {
-				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+				suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 
-				clientID := suite.path.EndpointA.ClientID
+				clientID := suite.Path.EndpointA.ClientID
 
-				header, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				header, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
 				// skip one block to set nextHeader's height + 2
-				CommitBlock(suite.coordinator, suite.chainB)
-				CommitBlock(suite.coordinator, suite.chainB)
+				CommitBlock(suite.Coordinator, suite.ChainB)
+				CommitBlock(suite.Coordinator, suite.ChainB)
 
-				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
+				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, header, nextHeader)
 			},
 			iqtypes.ErrInvalidHeader,
 		},
 		{
 			"header has some malicious field",
 			func() error {
-				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+				suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 
-				clientID := suite.path.EndpointA.ClientID
+				clientID := suite.Path.EndpointA.ClientID
 
-				header, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				header, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				CommitBlock(suite.coordinator, suite.chainB)
+				CommitBlock(suite.Coordinator, suite.ChainB)
 
 				header.SignedHeader.Header.LastResultsHash = []byte("malicious hash with length 32!!!")
 
-				nextHeader, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID)
+				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, header, nextHeader)
+				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, header, nextHeader)
 			},
 			iqtypes.ErrInvalidHeader,
 		},
 		{
 			"headers from the past (when client on chain A has the most recent consensus state and relayer try to submit old headers from chain B)",
 			func() error {
-				suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+				suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 
-				clientID := suite.path.EndpointA.ClientID
+				clientID := suite.Path.EndpointA.ClientID
 
-				oldHeader := *suite.chainB.LastHeader
-				CommitBlock(suite.coordinator, suite.chainB)
-				oldNextHeader := *suite.chainB.LastHeader
+				oldHeader := *suite.ChainB.LastHeader
+				CommitBlock(suite.Coordinator, suite.ChainB)
+				oldNextHeader := *suite.ChainB.LastHeader
 
 				for i := 0; i < 30; i++ {
-					suite.Require().NoError(UpdateClient(suite.path.EndpointA))
+					suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 				}
 
-				headerWithTrustedHeight, err := suite.path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.path.EndpointA.Counterparty.Chain, suite.path.EndpointB.ClientID, ibcclienttypes.Height{
+				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
 					RevisionNumber: 0,
 					RevisionHeight: 13,
 				})
@@ -268,7 +268,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				oldNextHeader.TrustedHeight = headerWithTrustedHeight.TrustedHeight
 				oldNextHeader.TrustedValidators = headerWithTrustedHeight.TrustedValidators
 
-				return suite.GetNeutronZoneApp(suite.chainA).InterchainQueriesKeeper.VerifyHeaders(suite.chainA.GetContext(), clientID, &oldHeader, &oldNextHeader)
+				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, &oldHeader, &oldNextHeader)
 			},
 			nil,
 		},
