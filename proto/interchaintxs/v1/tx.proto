@@ -34,7 +34,7 @@ message MsgRegisterInterchainAccount {
 
   string from_address = 1;
   string connection_id = 2 [ (gogoproto.moretags) = "yaml:\"connection_id\"" ];
-  string interchain_account_id = 3 [ (gogoproto.moretags) = "yaml:\"owner\"" ];
+  string interchain_account_id = 3 [ (gogoproto.moretags) = "yaml:\"interchain_account_id\"" ];
 }
 
 // MsgRegisterInterchainAccountResponse is the response type for

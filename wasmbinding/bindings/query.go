@@ -1,6 +1,9 @@
 package bindings
 
-import "github.com/neutron-org/neutron/x/interchainqueries/types"
+import (
+	"encoding/json"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
+)
 
 // NeutronQuery contains neutron custom queries.
 type NeutronQuery struct {
@@ -69,6 +72,24 @@ type RegisteredQuery struct {
 	LastSubmittedResultLocalHeight uint64 `json:"last_submitted_result_local_height"`
 	// The remote chain last block height when the query result was updated.
 	LastSubmittedResultRemoteHeight uint64 `json:"last_submitted_result_remote_height"`
+}
+
+func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
+	type AliasRQ RegisteredQuery
+
+	a := struct {
+		AliasRQ
+	}{
+		AliasRQ: (AliasRQ)(rq),
+	}
+
+	// We want keys be as empty array in Json ('[]'), not 'null'
+	// It's easier to work with on smart-contracts side
+	if a.Keys == nil {
+		a.Keys = make([]*types.KVKey, 0)
+	}
+
+	return json.Marshal(a)
 }
 
 // Query response for an interchain account address
