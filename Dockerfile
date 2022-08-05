@@ -1,4 +1,4 @@
-FROM golang:1.18-buster
+FROM golang:1.18-bullseye
 EXPOSE 16657
 EXPOSE 16656
 EXPOSE 6060
