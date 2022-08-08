@@ -20,6 +20,10 @@ type msgServer struct {
 	Keeper
 }
 
+const (
+	TransactionsQueryType = "x/tx/RecipientTransactions"
+)
+
 // NewMsgServerImpl returns an implementation of the MsgServer interface
 // for the provided Keeper.
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
@@ -75,6 +79,74 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	}
 
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
+}
+
+func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRemoveInterchainQueryRequest) (*types.MsgRemoveInterchainQueryResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx.Logger().Debug("RemoveInterchainQuery", "msg", msg)
+
+	if err := msg.ValidateBasic(); err != nil {
+		ctx.Logger().Debug("RemoveInterchainQuery: failed to validate message", "message", msg)
+		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
+	}
+
+	query, err := k.GetQueryByID(ctx, msg.GetQueryId())
+	if err != nil {
+		ctx.Logger().Debug("RemoveInterchainQuery: failed to GetQueryByID",
+			"error", err, "query_id", msg.QueryId)
+		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
+	}
+	if query.GetOwner() != msg.GetSender() {
+		ctx.Logger().Error("RemoveInterchainQuery: authorization failed",
+			"msg", msg)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
+	}
+	k.RemoveQueryByID(ctx, query.Id)
+	if query.GetQueryType() != TransactionsQueryType {
+		k.removeQueryResultByID(ctx, query.Id)
+	}
+	// NOTE: I do not see easy way to remove list of processed txs without knowing tx hash
+
+	return &types.MsgRemoveInterchainQueryResponse{}, nil
+}
+
+func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUpdateInterchainQueryRequest) (*types.MsgUpdateInterchainQueryResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx.Logger().Debug("UpdateInterchainQuery", "msg", msg)
+
+	if err := msg.ValidateBasic(); err != nil {
+		ctx.Logger().Debug("UpdateInterchainQuery: failed to validate message", "message", msg)
+		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
+	}
+
+	query, err := k.GetQueryByID(ctx, msg.GetQueryId())
+	if err != nil {
+		ctx.Logger().Debug("UpdateInterchainQuery: failed to GetQueryByID",
+			"error", err, "query_id", msg.QueryId)
+		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
+	}
+	if query.GetOwner() != msg.GetSender() {
+		ctx.Logger().Error("UpdateInterchainQuery: authorization failed",
+			"msg", msg)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
+	}
+	save := false
+	if msg.GetNewUpdatePeriod() > 0 {
+		save = true
+		query.UpdatePeriod = msg.GetNewUpdatePeriod()
+	}
+	if len(msg.GetNewKeys()) > 0 {
+		save = true
+		query.Keys = msg.GetNewKeys()
+	}
+	if save {
+		err = k.SaveQuery(ctx, *query)
+		if err != nil {
+			ctx.Logger().Debug("UpdateInterchainQuery: failed to save query", "message", &msg, "error", err)
+			return nil, sdkerrors.Wrapf(err, "failed to save query by query id: %v", err)
+		}
+	}
+	return &types.MsgUpdateInterchainQueryResponse{}, nil
 }
 
 func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResult) (*types.MsgSubmitQueryResultResponse, error) {

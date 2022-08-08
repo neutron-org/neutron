@@ -15,6 +15,8 @@ type NeutronMsg struct {
 	SubmitTx                  *SubmitTx                  `json:"submit_tx,omitempty"`
 	RegisterInterchainAccount *RegisterInterchainAccount `json:"register_interchain_account,omitempty"`
 	RegisterInterchainQuery   *RegisterInterchainQuery   `json:"register_interchain_query,omitempty"`
+	UpdateInterchainQuery     *UpdateInterchainQuery     `json:"update_interchain_query,omitempty"`
+	RemoveInterchainQuery     *RemoveInterchainQuery     `json:"remove_interchain_query,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -50,4 +52,20 @@ type RegisterInterchainQuery struct {
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery
 type RegisterInterchainQueryResponse struct {
 	Id uint64 `json:"id"`
+}
+
+type RemoveInterchainQuery struct {
+	QueryId uint64 `json:"query_id"`
+}
+
+type RemoveInterchainQueryResponse struct {
+}
+
+type UpdateInterchainQuery struct {
+	QueryId         uint64         `json:"query_id,omitempty"`
+	NewKeys         []*types.KVKey `json:"new_keys,omitempty"`
+	NewUpdatePeriod uint64         `json:"new_update_period,omitempty"`
+}
+
+type UpdateInterchainQueryResponse struct {
 }

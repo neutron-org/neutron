@@ -105,6 +105,11 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 	return &query, nil
 }
 
+func (k Keeper) RemoveQueryByID(ctx sdk.Context, id uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.GetRegisteredQueryByIDKey(id))
+}
+
 func (k Keeper) SaveKVQueryResult(ctx sdk.Context, id uint64, result *types.QueryResult) error {
 	store := ctx.KVStore(k.storeKey)
 
@@ -182,6 +187,11 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 	}
 
 	return &query, nil
+}
+
+func (k Keeper) removeQueryResultByID(ctx sdk.Context, id uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.GetRegisteredQueryResultByIDKey(id))
 }
 
 func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalHeight uint64) error {

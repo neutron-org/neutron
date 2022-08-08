@@ -130,3 +130,64 @@ func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker
 
 	return nil
 }
+
+func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
+	if msg.GetQueryId() == 0 {
+		return sdkerrors.Wrap(ErrInvalidSubmittedResult, "query_id data cannot be neither empty nor equals to 0")
+	}
+
+	if strings.TrimSpace(msg.Sender) == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	}
+
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+	}
+
+	return nil
+}
+
+func (msg MsgRemoveInterchainQueryRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+
+}
+
+func (msg MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil { // should never happen as valid basic rejects invalid addresses
+		panic(err.Error())
+	}
+	return []sdk.AccAddress{senderAddr}
+}
+
+func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
+	if msg.GetQueryId() == 0 {
+		return sdkerrors.Wrap(ErrInvalidSubmittedResult, "query_id data cannot be neither empty nor equals to 0")
+	}
+
+	if len(msg.GetNewKeys()) == 0 && msg.GetNewUpdatePeriod() == 0 {
+		return sdkerrors.Wrap(ErrInvalidSubmittedResult, "one of new_keys or new_update_period should be set")
+	}
+
+	if strings.TrimSpace(msg.Sender) == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	}
+
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+	}
+	return nil
+}
+
+func (msg MsgUpdateInterchainQueryRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+
+}
+
+func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil { // should never happen as valid basic rejects invalid addresses
+		panic(err.Error())
+	}
+	return []sdk.AccAddress{senderAddr}
+}
