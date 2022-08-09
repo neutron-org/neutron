@@ -5,6 +5,9 @@ import (
 	"math"
 	"time"
 
+	"github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/neutron-org/neutron/testutil"
+
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -175,7 +178,6 @@ func (suite *KeeperTestSuite) findBestTrustedHeight(dstChain *ibctesting.TestCha
 }
 
 func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
-
 	tests := []struct {
 		name          string
 		run           func() error
@@ -279,8 +281,21 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
 			suite.SetupTest()
 
-			err := tt.run()
+			var (
+				ctx           = suite.ChainA.GetContext()
+				contractOwner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+			)
 
+			// Store code and instantiate reflect contract.
+			// TODO: this relative path is super ugly, we need to fix this.
+			codeId := suite.StoreReflectCode(ctx, contractOwner, "../../../wasmbinding/testdata/reflect.wasm")
+			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+			suite.Require().NotEmpty(contractAddress)
+
+			err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+			suite.Require().NoError(err)
+
+			err = tt.run()
 			if tt.expectedError != nil {
 				suite.Require().ErrorIs(err, tt.expectedError)
 			} else {

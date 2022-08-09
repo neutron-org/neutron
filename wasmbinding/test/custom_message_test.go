@@ -102,7 +102,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, contractOwner)
+	codeId := suite.StoreReflectCode(ctx, contractOwner, "../testdata/reflect.wasm")
 	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 

@@ -72,9 +72,9 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 	return testApp
 }
 
-func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.AccAddress) uint64 {
+func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
 	// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
-	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
+	wasmCode, err := ioutil.ReadFile(path)
 	suite.Require().NoError(err)
 
 	codeID, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
