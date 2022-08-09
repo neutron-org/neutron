@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/neutron-org/neutron/internal/sudo"
 
@@ -35,7 +36,7 @@ type (
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
 		wasmKeeper          *wasm.Keeper
-		sudoHandler         sudo.SudoHandler
+		sudoHandler         sudo.Handler
 	}
 )
 

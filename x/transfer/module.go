@@ -18,7 +18,7 @@ import (
 
 type IBCModule struct {
 	keeper      keeper.Keeper
-	sudoHandler sudo.SudoHandler
+	sudoHandler sudo.Handler
 	transfer.IBCModule
 }
 

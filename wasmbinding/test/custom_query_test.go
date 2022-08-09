@@ -3,6 +3,9 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"testing"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
@@ -14,8 +17,6 @@ import (
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"io/ioutil"
-	"testing"
 )
 
 type CustomQuerierTestSuite struct {
@@ -207,7 +208,7 @@ func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.A
 }
 
 func (suite *CustomQuerierTestSuite) storeReflectCode(ctx sdk.Context, addr sdk.AccAddress) uint64 {
-	/// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
+	// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
 	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
 	suite.Require().NoError(err)
 

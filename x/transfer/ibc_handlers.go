@@ -24,14 +24,13 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
 
-	// Actually we have only one kind of error returned from acknowledgement
-	// maybe later we'll retrieve actual errors from events
-	errorText := ack.GetError()
-	if errorText != "" {
-		im.keeper.Logger(ctx).Error(errorText, "CheckTx", ctx.IsCheckTx())
-		_, err = im.sudoHandler.SudoError(ctx, senderAddress, packet, errorText)
-	} else {
+	if ack.Success() {
 		_, err = im.sudoHandler.SudoResponse(ctx, senderAddress, packet, ack.GetResult())
+	} else {
+		// Actually we have only one kind of error returned from acknowledgement
+		// maybe later we'll retrieve actual errors from events
+		im.keeper.Logger(ctx).Error(ack.GetError(), "CheckTx", ctx.IsCheckTx())
+		_, err = im.sudoHandler.SudoError(ctx, senderAddress, packet, ack.GetError())
 	}
 
 	if err != nil {

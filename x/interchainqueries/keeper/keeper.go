@@ -32,7 +32,7 @@ type (
 		paramstore  paramtypes.Subspace
 		ibcKeeper   *ibckeeper.Keeper
 		wasmKeeper  *wasm.Keeper
-		sudoHandler sudo.SudoHandler
+		sudoHandler sudo.Handler
 	}
 )
 

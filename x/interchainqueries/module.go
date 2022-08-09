@@ -100,7 +100,7 @@ type AppModule struct {
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 
-	sudoHandler sudo.SudoHandler
+	sudoHandler sudo.Handler
 }
 
 func NewAppModule(
