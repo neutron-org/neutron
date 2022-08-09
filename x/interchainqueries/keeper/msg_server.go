@@ -139,7 +139,10 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
 
+			// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
+			// and call corresponding method to verify it
 			switch proof.GetProofs()[0].GetProof().(type) {
+			// we can get non-existence proof if someone queried some key which is not exists in the storage on remote chain
 			case *ics23.CommitmentProof_Nonexist:
 				if err := proof.VerifyNonMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path); err != nil {
 					ctx.Logger().Debug("SubmitQueryResult: failed to VerifyNonMembership",

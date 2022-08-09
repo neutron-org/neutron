@@ -22,7 +22,7 @@ var (
 	// TestOwnerAddress defines a reusable bech32 address for testing purposes
 	TestOwnerAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 
-	// TestVersion defines a reusable interChainAccounts version string for testing purposes
+	// TestVersion defines a reusable interchainAccounts version string for testing purposes
 	TestVersion = string(icatypes.ModuleCdc.MustMarshalJSON(&icatypes.Metadata{
 		Version:                icatypes.Version,
 		ControllerConnectionId: ibctesting.FirstConnectionID,
@@ -348,7 +348,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
 				suite.Require().NoError(err)
 
-				//suite.NoError(suite.Path.EndpointB.UpdateClient())
+				suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
