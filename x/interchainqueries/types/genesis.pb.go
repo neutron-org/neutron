@@ -5,12 +5,11 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/gogo/protobuf/gogoproto"
+	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -160,8 +159,10 @@ func (m *RegisteredQuery) GetLastSubmittedResultRemoteHeight() uint64 {
 }
 
 type KVKey struct {
+	// Path (storage prefix) to the storage where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
 	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	Key  []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	// Key you want to read from the storage
+	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (m *KVKey) Reset()         { *m = KVKey{} }
