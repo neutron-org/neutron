@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -39,6 +40,17 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("RegisterInterchainAccount", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
 
+	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to parse sender address", "sender_address", msg.FromAddress)
+		return nil, fmt.Errorf("failed to parse sender address: %v", err)
+	}
+
+	if !k.WasmKeeper.HasContractInfo(ctx, senderAddr) {
+		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "sender_address", msg.FromAddress)
+		return nil, fmt.Errorf("%s is not a contract address", msg.FromAddress)
+	}
+
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount", "error", err)
@@ -57,7 +69,18 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelSubmitTx)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.Logger(ctx).Debug("SubmitTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
+	k.Logger(ctx).Debug("SubmitTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
+
+	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "sender_address", msg.FromAddress)
+		return nil, fmt.Errorf("failed to parse sender address: %v", err)
+	}
+
+	if !k.WasmKeeper.HasContractInfo(ctx, senderAddr) {
+		k.Logger(ctx).Debug("SubmitTx: contract not found", "sender_address", msg.FromAddress)
+		return nil, fmt.Errorf("%s is not a contract address", msg.FromAddress)
+	}
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {

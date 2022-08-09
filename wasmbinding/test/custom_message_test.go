@@ -20,8 +20,17 @@ type CustomMessengerTestSuite struct {
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
-	neutron := suite.GetNeutronZoneApp(suite.ChainA)
-	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	var (
+		neutron       = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx           = suite.ChainA.GetContext()
+		contractOwner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(ctx, contractOwner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
 	messenger := wasmbinding.CustomMessenger{}
 	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
 
@@ -43,7 +52,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
-	events, data, err := messenger.DispatchMsg(ctx, keeper.RandomAccountAddress(suite.T()), suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := messenger.DispatchMsg(ctx, contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
 	suite.NoError(err)
