@@ -3,11 +3,9 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"testing"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
@@ -30,8 +28,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 
 	// Store code and instantiate reflect contract
 	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner)
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Register and submit query result
@@ -102,8 +100,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 
 	// Store code and instantiate reflect contract
 	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner)
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Query interchain query result
@@ -125,8 +123,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 
 	// Store code and instantiate reflect contract
 	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner)
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
@@ -151,8 +149,8 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 
 	// Store code and instantiate reflect contract
 	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner)
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
@@ -205,26 +203,6 @@ func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.A
 	}
 
 	return json.Unmarshal(resp.Data, response)
-}
-
-func (suite *CustomQuerierTestSuite) storeReflectCode(ctx sdk.Context, addr sdk.AccAddress) uint64 {
-	// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
-	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
-	suite.Require().NoError(err)
-
-	codeID, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
-	suite.Require().NoError(err)
-
-	return codeID
-}
-
-func (suite *CustomQuerierTestSuite) instantiateReflectContract(ctx sdk.Context, funder sdk.AccAddress, codeID uint64) sdk.AccAddress {
-	initMsgBz := []byte("{}")
-	contractKeeper := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
-	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
-	suite.Require().NoError(err)
-
-	return addr
 }
 
 func TestKeeperTestSuite(t *testing.T) {

@@ -3,6 +3,8 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,7 +13,6 @@ import (
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type CustomMessengerTestSuite struct {
@@ -94,8 +95,19 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 }
 
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
-	neutron := suite.GetNeutronZoneApp(suite.ChainA)
-	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	var (
+		neutron       = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx           = suite.ChainA.GetContext()
+		contractOwner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(ctx, contractOwner)
+	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+	suite.Require().NoError(err)
 
 	// Craft SubmitTx message
 	memo := "Jimmy"
@@ -117,17 +129,15 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 		memo,
 	))
 	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+	err = json.Unmarshal(msgStr, &msg)
 	suite.NoError(err)
 
 	// Dispatch SubmitTx message
-	owner, err := sdk.AccAddressFromBech32(testutil.TestOwnerAddress)
-	suite.NoError(err)
 	messenger := wasmbinding.CustomMessenger{}
 	messenger.Keeper = neutron.InterchainTxsKeeper
 	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
 	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
-	events, data, err := messenger.DispatchMsg(ctx, owner, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := messenger.DispatchMsg(ctx, contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
 	suite.NoError(err)

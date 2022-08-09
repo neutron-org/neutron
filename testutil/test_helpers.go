@@ -3,6 +3,12 @@ package testutil
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
+	"github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/cosmos/cosmos-sdk/simapp"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
@@ -55,8 +61,6 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
 
 	suite.Coordinator.SetupConnections(suite.Path)
-
-	suite.NoError(SetupICAPath(suite.Path, TestOwnerAddress))
 }
 
 func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestChain) *app.App {
@@ -66,6 +70,26 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 	}
 
 	return testApp
+}
+
+func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.AccAddress) uint64 {
+	// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
+	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
+	suite.Require().NoError(err)
+
+	codeID, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
+	suite.Require().NoError(err)
+
+	return codeID
+}
+
+func (suite *IBCConnectionTestSuite) InstantiateReflectContract(ctx sdk.Context, funder sdk.AccAddress, codeID uint64) sdk.AccAddress {
+	initMsgBz := []byte("{}")
+	contractKeeper := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
+	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
+	suite.Require().NoError(err)
+
+	return addr
 }
 
 func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
@@ -103,7 +127,7 @@ func SetupICAPath(path *ibctesting.Path, owner string) error {
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
 func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) error {
-	icaOwner, _ := ictxstypes.NewICAOwner(TestOwnerAddress, TestInterchainId)
+	icaOwner, _ := ictxstypes.NewICAOwner(owner, TestInterchainId)
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
 		return err

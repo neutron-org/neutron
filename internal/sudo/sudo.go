@@ -189,15 +189,15 @@ func (s *Handler) SudoError(
 	return resp, nil
 }
 
-func (s *Handler) SudoOpenAck(
+func (s *Handler) SudoOnChanOpenAck(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
 	details OpenAckDetails,
 ) ([]byte, error) {
-	s.Logger(ctx).Debug("SudoOpenAck", "contractAddress", contractAddress)
+	s.Logger(ctx).Debug("SudoOnChanOpenAck", "contractAddress", contractAddress)
 
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
-		s.Logger(ctx).Debug("SudoOpenAck: contract not found", "contractAddress", contractAddress)
+		s.Logger(ctx).Debug("SudoOnChanOpenAck: contract not found", "contractAddress", contractAddress)
 		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
 	}
 
@@ -205,15 +205,15 @@ func (s *Handler) SudoOpenAck(
 	x.OpenAck = details
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("SudoOpenAck: failed to marshal MessageOnChanOpenAck message",
+		s.Logger(ctx).Error("SudoOnChanOpenAck: failed to marshal MessageOnChanOpenAck message",
 			"error", err, "contract_address", contractAddress)
 		return nil, sdkerrors.Wrap(err, "failed to marshal MessageOnChanOpenAck message")
 	}
-	s.Logger(ctx).Info("SudoOpenAck sending request", "data", string(m))
+	s.Logger(ctx).Info("SudoOnChanOpenAck sending request", "data", string(m))
 
 	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		s.Logger(ctx).Debug("SudoOpenAck: failed to Sudo",
+		s.Logger(ctx).Debug("SudoOnChanOpenAck: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
 		return nil, err
 	}
