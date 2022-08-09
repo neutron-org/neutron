@@ -59,7 +59,7 @@ type RegisteredQuery struct {
 	Keys []*types.KVKey `json:"keys"`
 	// The filter for transaction search ICQ
 	TransactionsFilter string `json:"transactions_filter"`
-	// The query type identifier (i.e. /cosmos.staking.v1beta1.Query/AllDelegations).
+	// The query type identifier (i.e. 'kv' or 'tx' for now).
 	QueryType string `json:"query_type"`
 	// The chain of interest identifier.
 	ZoneId string `json:"zone_id"`
