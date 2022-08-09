@@ -2,8 +2,9 @@ package keeper
 
 import (
 	"context"
-	"github.com/cosmos/cosmos-sdk/telemetry"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/telemetry"
 
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"

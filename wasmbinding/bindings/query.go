@@ -2,6 +2,7 @@ package bindings
 
 import (
 	"encoding/json"
+
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 

@@ -2,6 +2,7 @@ package interchainqueries
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )

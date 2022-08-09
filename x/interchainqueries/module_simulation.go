@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+
 	"github.com/neutron-org/neutron/testutil/interchainqueries/sample"
 	interchainadaptersimulation "github.com/neutron-org/neutron/x/interchainqueries/simulation"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"

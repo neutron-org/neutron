@@ -3,15 +3,17 @@ package testutil
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/simapp"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-	"github.com/neutron-org/neutron/app"
-	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/neutron-org/neutron/app"
+	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
 var (

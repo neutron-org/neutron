@@ -1,10 +1,12 @@
 package types_test
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestICAOwner(t *testing.T) {

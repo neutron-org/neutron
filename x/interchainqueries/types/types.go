@@ -3,8 +3,9 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strings"
+
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (

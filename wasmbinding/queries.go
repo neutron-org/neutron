@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	icatypes "github.com/neutron-org/neutron/x/interchaintxs/types"

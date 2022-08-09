@@ -3,8 +3,9 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {
