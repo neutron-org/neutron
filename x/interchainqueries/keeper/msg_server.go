@@ -154,7 +154,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 					return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
 				}
 			default:
-				return nil, sdkerrors.Wrap(types.ErrInvalidProof, "unknown proof type")
+				return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "unknown proof type %T", proof.GetProofs()[0].GetProof())
 			}
 
 			queryOwner, err := sdk.AccAddressFromBech32(query.Owner)

@@ -62,15 +62,14 @@ func RegisterInterchainQueryCmd() *cobra.Command {
 				kvKeys   []*types.KVKey
 			)
 
-			if queryType.IsTX() {
-				txFilter = queryData
-			}
-
-			if queryType.IsKV() {
+			switch queryType {
+			case types.InterchainQueryTypeKV:
 				kvKeys, err = types.KVKeysFromString(queryData)
 				if err != nil {
 					return fmt.Errorf("failed to parse KV keys from string: %w", err)
 				}
+			case types.InterchainQueryTypeTX:
+				txFilter = queryData
 			}
 
 			msg := types.MsgRegisterInterchainQuery{
