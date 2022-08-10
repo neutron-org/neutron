@@ -33,12 +33,12 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "sender_address", msg.Sender)
+		k.Logger(ctx).Debug("RegisterInterchainQuery: failed to parse sender address", "sender_address", msg.Sender)
 		return nil, fmt.Errorf("failed to parse sender address: %v", err)
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
-		k.Logger(ctx).Debug("SubmitTx: contract not found", "sender_address", msg.Sender)
+		k.Logger(ctx).Debug("RegisterInterchainQuery: contract not found", "sender_address", msg.Sender)
 		return nil, fmt.Errorf("%s is not a contract address", msg.Sender)
 	}
 
@@ -79,7 +79,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	ctx.Logger().Debug("SubmitQueryResult", "query_id", msg.QueryId)
 
 	if err := msg.ValidateBasic(); err != nil {
