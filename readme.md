@@ -86,9 +86,7 @@ neutrond tx interchainqueries register-interchain-query test-2 connection-0 5 kv
 <details>
   <summary>What is staking/311404eca9d67fb05c5324135ffadbfaaed724be7dd31404eca9d67fb05c5324135ffadbfaaed724be7dd3?</summary>
 
-`--kv-keys` is a flag that allows to register an interchain query that wants to read raw data from KV-storage on remote chain by some key.
-
-At first we should compose the correct key for the query. Any delegation stores in KV-storage under this key ([cosmos-sdk code](https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L176)):
+At first, we should compose the correct key for the query. Any delegation stores in KV-storage under this key ([cosmos-sdk code](https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L176)):
 ```
 0x31 + lengthPrefixed(delegator_address_bytes) + lengthPrefixed(validator_address_bytes)
 ```
@@ -116,7 +114,7 @@ Results are the same because it's a self-delegation of a validator.
 >>> hex(len("04ECA9D67FB05C5324135FFADBFAAED724BE7DD3")//2) + "04ECA9D67FB05C5324135FFADBFAAED724BE7DD3"
 '0x1404ECA9D67FB05C5324135FFADBFAAED724BE7DD3'
 ```
-4. Now we can compose a full KV key for to get a delegation (we don't `0x` prefix in hex values):
+4. Now we can compose a full KV key to get a delegation (we don't `0x` prefix in hex values):
 ```
 0x31 + 0x1404ECA9D67FB05C5324135FFADBFAAED724BE7DD3 + 0x1404ECA9D67FB05C5324135FFADBFAAED724BE7DD3 = 311404eca9d67fb05c5324135ffadbfaaed724be7dd31404eca9d67fb05c5324135ffadbfaaed724be7dd3
 ```

@@ -248,3 +248,9 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 	}
 	k.Logger(ctx).Debug("Iterated over registered queries", "quantity", i)
 }
+
+func (k Keeper) isRegisteredQueryExist(ctx sdk.Context, id uint64) bool {
+	store := ctx.KVStore(k.storeKey)
+
+	return store.Has(types.GetRegisteredQueryByIDKey(id))
+}
