@@ -7,30 +7,14 @@ import (
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
-	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
-)
-
-var (
-	// TestOwnerAddress defines a reusable bech32 address for testing purposes
-	TestOwnerAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
-
-	// TestVersion defines a reusable interchainaccounts version string for testing purposes
-	TestVersion = string(icatypes.ModuleCdc.MustMarshalJSON(&icatypes.Metadata{
-		Version:                icatypes.Version,
-		ControllerConnectionId: ibctesting.FirstConnectionID,
-		HostConnectionId:       ibctesting.FirstConnectionID,
-		Encoding:               icatypes.EncodingProtobuf,
-		TxType:                 icatypes.TxTypeSDKMultiMsg,
-	}))
 )
 
 type KeeperTestSuite struct {
@@ -109,18 +93,16 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 }
 
 func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
-	suite.SetupTest()
-
 	var msg iqtypes.MsgSubmitQueryResult
 
 	tests := []struct {
 		name          string
-		malleate      func()
+		malleate      func(sender string)
 		expectedError error
 	}{
 		{
 			"invalid query id",
-			func() {
+			func(sender string) {
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
@@ -132,7 +114,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
-					Sender:   TestOwnerAddress,
+					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
@@ -152,14 +134,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"empty result",
-			func() {
+			func(sender string) {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					Sender:       sender,
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -176,14 +158,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"empty kv results and blocks",
-			func() {
+			func(sender string) {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					Sender:       sender,
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -192,7 +174,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					Sender:   TestOwnerAddress,
+					Sender:   sender,
 					QueryId:  res.Id,
 					ClientId: suite.Path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
@@ -206,14 +188,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"valid KV storage proof",
-			func() {
+			func(sender string) {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					Sender:       sender,
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -235,7 +217,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
-					Sender:   TestOwnerAddress,
+					Sender:   sender, // A bit weird that query owner submits the results, but it doesn't really matter
 					ClientId: suite.Path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
@@ -244,7 +226,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Value:         resp.Value,
 							StoragePrefix: host.StoreKey,
 						}},
-						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
+						// and we don't have access to it here
 						Block:    nil,
 						Height:   uint64(resp.Height),
 						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
@@ -255,14 +238,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"header with invalid height",
-			func() {
+			func(sender string) {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					Sender:       sender,
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -283,7 +266,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
-					Sender:   TestOwnerAddress,
+					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
@@ -303,14 +286,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"invalid KV storage value",
-			func() {
+			func(sender string) {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					Sender:       sender,
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -331,7 +314,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
-					Sender:   TestOwnerAddress,
+					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
@@ -351,7 +334,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"query result height is too old",
-			func() {
+			func(sender string) {
 
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
@@ -359,7 +342,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					Sender:       sender,
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -384,7 +367,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
-					Sender:   TestOwnerAddress,
+					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
@@ -409,7 +392,21 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
 			suite.SetupTest()
 
-			tt.malleate()
+			var (
+				ctx           = suite.ChainA.GetContext()
+				contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+			)
+
+			// Store code and instantiate reflect contract.
+			// TODO: this relative path is super ugly, we need to fix this.
+			codeId := suite.StoreReflectCode(ctx, contractOwner, "../../../wasmbinding/testdata/reflect.wasm")
+			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+			suite.Require().NotEmpty(contractAddress)
+
+			err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+			suite.Require().NoError(err)
+
+			tt.malleate(contractAddress.String())
 
 			msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
