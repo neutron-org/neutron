@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -36,39 +38,37 @@ type KeeperTestSuite struct {
 }
 
 func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
-	suite.SetupTest()
-
 	var msg iqtypes.MsgRegisterInterchainQuery
 
 	tests := []struct {
 		name        string
-		malleate    func()
+		malleate    func(sender string)
 		expectedErr error
 	}{
 		{
 			"invalid connection",
-			func() {
+			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: "unknown",
 					QueryData:    "kek",
 					QueryType:    "type",
 					ZoneId:       "id",
 					UpdatePeriod: 1,
-					Sender:       TestOwnerAddress,
+					Sender:       sender,
 				}
 			},
 			iqtypes.ErrInvalidConnectionID,
 		},
 		{
 			"valid",
-			func() {
+			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					QueryData:    `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
 					QueryType:    "x/staking/DelegatorDelegations",
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
-					Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
+					Sender:       sender,
 				}
 			},
 			nil,
@@ -78,7 +78,21 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 	for _, tt := range tests {
 		suite.SetupTest()
 
-		tt.malleate()
+		var (
+			ctx           = suite.ChainA.GetContext()
+			contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+		)
+
+		// Store code and instantiate reflect contract.
+		// TODO: this relative path is super ugly, we need to fix this.
+		codeId := suite.StoreReflectCode(ctx, contractOwner, "../../../wasmbinding/testdata/reflect.wasm")
+		contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+		suite.Require().NotEmpty(contractAddress)
+
+		err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+		suite.Require().NoError(err)
+
+		tt.malleate(contractAddress.String())
 
 		msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 

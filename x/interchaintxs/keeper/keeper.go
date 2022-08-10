@@ -35,7 +35,7 @@ type (
 		scopedKeeper capabilitykeeper.ScopedKeeper
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
-		WasmKeeper          *wasm.Keeper
+		wasmKeeper          *wasm.Keeper
 		sudoHandler         sudo.Handler
 	}
 )
@@ -63,7 +63,7 @@ func NewKeeper(
 
 		icaControllerKeeper: icaControllerKeeper,
 		scopedKeeper:        scopedKeeper,
-		WasmKeeper:          wasmKeeper,
+		wasmKeeper:          wasmKeeper,
 		sudoHandler:         sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
 	}
 }

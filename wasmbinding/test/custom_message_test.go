@@ -7,7 +7,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -61,8 +60,19 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
-	neutron := suite.GetNeutronZoneApp(suite.ChainA)
-	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	var (
+		neutron       = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx           = suite.ChainA.GetContext()
+		contractOwner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(ctx, contractOwner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+	suite.Require().NoError(err)
+
 	messenger := wasmbinding.CustomMessenger{}
 	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
 
@@ -89,13 +99,10 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 		updatePeriod,
 	))
 	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+	err = json.Unmarshal(msgStr, &msg)
 	suite.NoError(err)
 
-	// Dispatch RegisterInterchainQuery message
-	owner, err := sdk.AccAddressFromBech32(testutil.TestOwnerAddress)
-	suite.NoError(err)
-	events, data, err := messenger.DispatchMsg(ctx, owner, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := messenger.DispatchMsg(ctx, contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
 	suite.NoError(err)

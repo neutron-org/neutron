@@ -2,8 +2,10 @@ package keeper
 
 import (
 	"context"
-	"github.com/cosmos/cosmos-sdk/telemetry"
+	"fmt"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/telemetry"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -28,6 +30,17 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("RegisterInterchainQuery", "msg", msg)
+
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "sender_address", msg.Sender)
+		return nil, fmt.Errorf("failed to parse sender address: %v", err)
+	}
+
+	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
+		k.Logger(ctx).Debug("SubmitTx: contract not found", "sender_address", msg.Sender)
+		return nil, fmt.Errorf("%s is not a contract address", msg.Sender)
+	}
 
 	if err := msg.ValidateBasic(); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to validate message", "message", msg)

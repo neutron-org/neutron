@@ -46,7 +46,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		return nil, fmt.Errorf("failed to parse sender address: %v", err)
 	}
 
-	if !k.WasmKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "sender_address", msg.FromAddress)
 		return nil, fmt.Errorf("%s is not a contract address", msg.FromAddress)
 	}
@@ -77,7 +77,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, fmt.Errorf("failed to parse sender address: %v", err)
 	}
 
-	if !k.WasmKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("SubmitTx: contract not found", "sender_address", msg.FromAddress)
 		return nil, fmt.Errorf("%s is not a contract address", msg.FromAddress)
 	}
