@@ -43,8 +43,8 @@ const (
 	InterchainQueryTypeKV = "kv"
 	InterchainQueryTypeTX = "tx"
 
-	pathKeyDelimiter = "/"
-	kvKeysDelimiter  = ","
+	kvPathKeyDelimiter = "/"
+	kvKeysDelimiter    = ","
 )
 
 func IsValidJSON(s string) bool {
@@ -68,11 +68,11 @@ func (icqt InterchainQueryType) IsTX() bool {
 }
 
 func (kv KVKey) ToString() string {
-	return kv.Path + pathKeyDelimiter + hex.EncodeToString(kv.Key)
+	return kv.Path + kvPathKeyDelimiter + hex.EncodeToString(kv.Key)
 }
 
 func KVKeyFromString(s string) (KVKey, error) {
-	splitString := strings.Split(s, pathKeyDelimiter)
+	splitString := strings.Split(s, kvPathKeyDelimiter)
 	if len(splitString) < 2 {
 		return KVKey{}, sdkerrors.Wrap(ErrInvalidType, "invalid kv key type")
 	}
