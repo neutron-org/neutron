@@ -46,7 +46,7 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, _ *types.QueryRegisteredQu
 func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegisteredQueryResultRequest) (*types.QueryRegisteredQueryResultResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !k.isRegisteredQueryExist(ctx, request.QueryId) {
+	if !k.checkRegisteredQueryExists(ctx, request.QueryId) {
 		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "query with id %d doesn't exist", request.QueryId)
 	}
 

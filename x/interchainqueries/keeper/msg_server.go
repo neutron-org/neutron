@@ -176,7 +176,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			if msg.Result.GetAllowKvCallbacks() {
 				// Let the query owner contract process the query result.
 				if _, err := k.sudoHandler.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
-					ctx.Logger().Debug("ProcessBlock: failed to SudoKVQueryResult",
+					ctx.Logger().Debug("SubmitQueryResult: failed to SudoKVQueryResult",
 						"error", err, "query_id", query.GetId())
 					return nil, sdkerrors.Wrapf(err, "contract %s rejected KV query result (query_id: %d)",
 						queryOwner, query.GetId())
