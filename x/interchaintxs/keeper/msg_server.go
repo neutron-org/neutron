@@ -19,8 +19,7 @@ import (
 )
 
 // InterchainTxTimeout defines the IBC timeout of the interchain transaction.
-// TODO: move to module parameters.
-const InterchainTxTimeout = time.Hour * 24 * 7
+const InterchainTxTimeout = time.Hour * 24 * 30
 
 type msgServer struct {
 	Keeper

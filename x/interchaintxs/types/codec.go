@@ -23,9 +23,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
-// TODO: as far as I understand, this should be removed, but currently
-//  the testutil (which also probably should be removed) uses this
-//  variable.
 var (
 	Amino     = codec.NewLegacyAmino()
 	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
