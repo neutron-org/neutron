@@ -1,10 +1,11 @@
 package keeper
 
 import (
-	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strconv"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -27,7 +28,8 @@ func (k Keeper) EndBlocker(ctx sdk.Context) {
 				sdk.NewAttribute(types.AttributeKeyOwner, registeredQuery.Owner),
 				sdk.NewAttribute(types.AttributeKeyZoneID, registeredQuery.ZoneId),
 				sdk.NewAttribute(types.AttributeKeyQueryType, registeredQuery.QueryType),
-				sdk.NewAttribute(types.AttributeKeyQueryParameters, registeredQuery.QueryData),
+				sdk.NewAttribute(types.AttributeTransactionsFilterQuery, registeredQuery.TransactionsFilter),
+				sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(registeredQuery.Keys).String()),
 			)
 			events = append(events, event)
 			registeredQuery.LastEmittedHeight = uint64(ctx.BlockHeight())

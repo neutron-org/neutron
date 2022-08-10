@@ -9,24 +9,43 @@ option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 message RegisteredQuery {
   // The unique id of the registered query.
   uint64 id = 1;
+
   // The address that registered the query.
   string owner = 2;
-  // The JSON encoded data of the query.
-  string query_data = 3;
-  // The query type identifier (i.e. /cosmos.staking.v1beta1.Query/AllDelegations).
-  string query_type = 4;
+
+  // The query type identifier: `kv` or `tx` now
+  string query_type = 3;
+
+  // The KV-storage keys for which we want to get values from remote chain
+  repeated KVKey keys = 4;
+
+  // The filter for transaction search ICQ
+  string transactions_filter = 5;
+
   // The chain of interest identifier.
-  string zone_id = 5;
-  // The IBC connection ID for getting ConsensusState to verify proofs.
-  string connection_id = 6;
+  string zone_id = 6;
+
+  // The IBC connection ID for getting ConsensusState to verify proofs
+  string connection_id = 7;
+
   // Parameter that defines how often the query must be updated.
-  uint64 update_period = 7;
+  uint64 update_period = 8;
+
   // The local height when the event to update the query result was emitted last time.
-  uint64 last_emitted_height = 8;
+  uint64 last_emitted_height = 9;
+
   // The local chain last block height when the query result was updated.
-  uint64 last_submitted_result_local_height = 9;
+  uint64 last_submitted_result_local_height = 10;
+
   // The remote chain last block height when the query result was updated.
-  uint64 last_submitted_result_remote_height = 10;
+  uint64 last_submitted_result_remote_height = 11;
+}
+
+message KVKey {
+  // Path (storage prefix) to the storage where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+  string path = 1;
+  // Key you want to read from the storage
+  bytes key = 2;
 }
 
 // GenesisState defines the interchainadapter module's genesis state.

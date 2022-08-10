@@ -3,19 +3,21 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"testing"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	"github.com/stretchr/testify/suite"
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	"github.com/stretchr/testify/suite"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"io/ioutil"
-	"testing"
 )
 
 type CustomQuerierTestSuite struct {
@@ -34,12 +36,15 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	suite.Require().NotEmpty(contractAddress)
 
 	// Register and submit query result
+	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 	lastID := neutron.InterchainQueriesKeeper.GetLastRegisteredQueryKey(ctx) + 1
 	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
 	registeredQuery := icqtypes.RegisteredQuery{
-		Id:                lastID,
-		QueryData:         `{"delegator": "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"}`,
-		QueryType:         "x/staking/DelegatorDelegations",
+		Id: lastID,
+		Keys: []*icqtypes.KVKey{
+			{Path: host.StoreKey, Key: clientKey},
+		},
+		QueryType:         icqtypes.InterchainQueryTypeKV,
 		ZoneId:            "osmosis",
 		UpdatePeriod:      1,
 		ConnectionId:      suite.Path.EndpointA.ConnectionID,
@@ -49,7 +54,6 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	err := neutron.InterchainQueriesKeeper.SaveQuery(ctx, registeredQuery)
 	suite.Require().NoError(err)
 
-	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 	chainBResp := suite.ChainB.App.Query(abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
 		Height: suite.ChainB.LastHeader.Header.Height - 1,

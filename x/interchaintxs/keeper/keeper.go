@@ -2,7 +2,9 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
+
 	"github.com/neutron-org/neutron/internal/sudo"
 
 	"github.com/cosmos/cosmos-sdk/codec"

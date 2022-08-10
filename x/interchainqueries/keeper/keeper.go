@@ -5,6 +5,7 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/internal/sudo"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -246,4 +247,10 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 		i++
 	}
 	k.Logger(ctx).Debug("Iterated over registered queries", "quantity", i)
+}
+
+func (k Keeper) checkRegisteredQueryExists(ctx sdk.Context, id uint64) bool {
+	store := ctx.KVStore(k.storeKey)
+
+	return store.Has(types.GetRegisteredQueryByIDKey(id))
 }

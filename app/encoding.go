@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/cosmos/cosmos-sdk/std"
+
 	"github.com/neutron-org/neutron/app/params"
 )
 

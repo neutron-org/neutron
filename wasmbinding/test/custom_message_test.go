@@ -3,15 +3,20 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
+	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type CustomMessengerTestSuite struct {
@@ -57,29 +62,25 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
 
 	// Craft RegisterInterchainQuery message
-	queryType := "/cosmos.staking.v1beta1.Query/AllDelegations"
-	queryData := "{}"
-	updatePeriod := 20
-	msgStr := []byte(fmt.Sprintf(
-		`
-{
-	"register_interchain_query": {
-		"query_type": "%s",
-		"query_data": "%s",
-		"zone_id": "%s",
-		"connection_id": "%s",
-		"update_period": %d
+	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
+	updatePeriod := uint64(20)
+
+	regMsg := bindings.RegisterInterchainQuery{
+		QueryType: icqtypes.InterchainQueryTypeKV,
+		Keys: []*icqtypes.KVKey{
+			{Path: host.StoreKey, Key: clientKey},
+		},
+		TransactionsFilter: "{}",
+		ZoneId:             suite.ChainB.ChainID,
+		ConnectionId:       suite.Path.EndpointA.ConnectionID,
+		UpdatePeriod:       updatePeriod,
 	}
-}
-		`,
-		queryType,
-		queryData,
-		suite.ChainB.ChainID,
-		suite.Path.EndpointA.ConnectionID,
-		updatePeriod,
-	))
-	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+
+	fullMsg := bindings.NeutronMsg{
+		RegisterInterchainQuery: &regMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainQuery message

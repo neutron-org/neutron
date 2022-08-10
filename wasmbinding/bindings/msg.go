@@ -1,5 +1,7 @@
 package bindings
 
+import "github.com/neutron-org/neutron/x/interchainqueries/types"
+
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
 type ProtobufAny struct {
 	TypeURL string `json:"type_url"`
@@ -37,11 +39,12 @@ type RegisterInterchainAccountResponse struct{}
 
 // RegisterInterchainQuery creates a query for remote chain.
 type RegisterInterchainQuery struct {
-	QueryType    string `json:"query_type"`
-	QueryData    string `json:"query_data"`
-	ZoneId       string `json:"zone_id"`
-	ConnectionId string `json:"connection_id"`
-	UpdatePeriod uint64 `json:"update_period"`
+	QueryType          string         `json:"query_type"`
+	Keys               []*types.KVKey `json:"keys"`
+	TransactionsFilter string         `json:"transactions_filter"`
+	ZoneId             string         `json:"zone_id"`
+	ConnectionId       string         `json:"connection_id"`
+	UpdatePeriod       uint64         `json:"update_period"`
 }
 
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery
