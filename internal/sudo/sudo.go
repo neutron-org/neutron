@@ -12,7 +12,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
@@ -110,14 +109,14 @@ func (s *Handler) SudoResponse(
 	if err != nil {
 		s.Logger(ctx).Error("SudoResponse: failed to marshal MessageResponse message",
 			"error", err, "request", request, "contract_address", contractAddress)
-		return nil, sdkerrors.Wrap(err, "failed to marshal MessageResponse message")
+		return nil, fmt.Errorf("failed to marshal MessageResponse: %v", err)
 	}
 
 	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoResponse: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, err
+		return nil, fmt.Errorf("failed to Sudo: %v", err)
 	}
 
 	return resp, nil
@@ -141,7 +140,7 @@ func (s *Handler) SudoTimeout(
 	if err != nil {
 		s.Logger(ctx).Error("failed to marshal MessageTimeout message",
 			"error", err, "request", request, "contract_address", contractAddress)
-		return nil, sdkerrors.Wrap(err, "failed to marshal MessageTimeout message")
+		return nil, fmt.Errorf("failed to marshal MessageTimeout: %v", err)
 	}
 
 	s.Logger(ctx).Info("SudoTimeout sending request", "data", string(m))
@@ -150,7 +149,7 @@ func (s *Handler) SudoTimeout(
 	if err != nil {
 		s.Logger(ctx).Debug("SudoTimeout: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, err
+		return nil, fmt.Errorf("failed to Sudo: %v", err)
 	}
 
 	return resp, nil
@@ -176,14 +175,14 @@ func (s *Handler) SudoError(
 	if err != nil {
 		s.Logger(ctx).Error("SudoError: failed to marshal MessageError message",
 			"error", err, "contract_address", contractAddress, "request", request)
-		return nil, sdkerrors.Wrap(err, "failed to marshal MessageError message")
+		return nil, fmt.Errorf("failed to marshal MessageError: %v", err)
 	}
 
 	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoError: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, err
+		return nil, fmt.Errorf("failed to Sudo: %v", err)
 	}
 
 	return resp, nil
@@ -207,7 +206,7 @@ func (s *Handler) SudoOnChanOpenAck(
 	if err != nil {
 		s.Logger(ctx).Error("SudoOnChanOpenAck: failed to marshal MessageOnChanOpenAck message",
 			"error", err, "contract_address", contractAddress)
-		return nil, sdkerrors.Wrap(err, "failed to marshal MessageOnChanOpenAck message")
+		return nil, fmt.Errorf("failed to marshal MessageOnChanOpenAck: %v", err)
 	}
 	s.Logger(ctx).Info("SudoOnChanOpenAck sending request", "data", string(m))
 
@@ -215,7 +214,7 @@ func (s *Handler) SudoOnChanOpenAck(
 	if err != nil {
 		s.Logger(ctx).Debug("SudoOnChanOpenAck: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, err
+		return nil, fmt.Errorf("failed to Sudo: %v", err)
 	}
 
 	return resp, nil
@@ -248,14 +247,14 @@ func (s *Handler) SudoTxQueryResult(
 	if err != nil {
 		s.Logger(ctx).Error("failed to marshal MessageTxQueryResult message",
 			"error", err, "contract_address", contractAddress)
-		return nil, sdkerrors.Wrap(err, "failed to marshal MessageTxQueryResult message")
+		return nil, fmt.Errorf("failed to marshal MessageTxQueryResult: %v", err)
 	}
 
 	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoTxQueryResult: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, err
+		return nil, fmt.Errorf("failed to Sudo: %v", err)
 	}
 
 	return resp, nil
@@ -282,14 +281,14 @@ func (s *Handler) SudoKVQueryResult(
 	if err != nil {
 		s.Logger(ctx).Error("SudoKVQueryResult: failed to marshal MessageKVQueryResult message",
 			"error", err, "contract_address", contractAddress)
-		return nil, sdkerrors.Wrap(err, "failed to marshal MessageKVQueryResult message")
+		return nil, fmt.Errorf("failed to marshal MessageKVQueryResult: %v", err)
 	}
 
 	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoKVQueryResult: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, err
+		return nil, fmt.Errorf("failed to Sudo: %v", err)
 	}
 
 	return resp, nil
