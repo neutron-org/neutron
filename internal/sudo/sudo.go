@@ -245,7 +245,7 @@ func (s *Handler) SudoTxQueryResult(
 
 	m, err := json.Marshal(x)
 	if err != nil {
-		s.Logger(ctx).Error("failed to marshal MessageTxQueryResult message",
+		s.Logger(ctx).Error("SudoTxQueryResult: failed to marshal MessageTxQueryResult message",
 			"error", err, "contract_address", contractAddress)
 		return nil, fmt.Errorf("failed to marshal MessageTxQueryResult: %v", err)
 	}
