@@ -5,7 +5,6 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "interchaintxs/v1/params.proto";
-// this line is used by starport scaffolding # 1
 
 option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
@@ -17,7 +16,6 @@ service Query {
         "/neutron/interchaintxs/interchaintxs/params";
   }
   rpc InterchainAccountAddress(QueryInterchainAccountAddressRequest) returns (QueryInterchainAccountAddressResponse) {}
-  // this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -29,7 +27,6 @@ message QueryParamsResponse {
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-// this line is used by starport scaffolding # 3
 message QueryInterchainAccountAddressRequest {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;

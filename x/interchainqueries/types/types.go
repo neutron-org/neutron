@@ -89,21 +89,6 @@ func KVKeyFromString(s string) (KVKey, error) {
 
 type KVKeys []*KVKey
 
-func KVKeysFromString(str string) (KVKeys, error) {
-	splitString := strings.Split(str, kvKeysDelimiter)
-	kvKeys := make(KVKeys, 0, len(splitString))
-
-	for _, s := range splitString {
-		key, err := KVKeyFromString(s)
-		if err != nil {
-			return nil, err
-		}
-		kvKeys = append(kvKeys, &key)
-	}
-
-	return kvKeys, nil
-}
-
 func (keys KVKeys) String() string {
 	if len(keys) == 0 {
 		return ""

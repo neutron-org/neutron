@@ -7,7 +7,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	"github.com/stretchr/testify/suite"
 
@@ -17,7 +16,6 @@ import (
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
-	"github.com/stretchr/testify/suite"
 )
 
 type CustomMessengerTestSuite struct {
@@ -101,7 +99,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 		RegisterInterchainQuery: &regMsg,
 	}
 
-	msg, err = json.Marshal(fullMsg)
+	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
 	events, data, err := messenger.DispatchMsg(ctx, contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{

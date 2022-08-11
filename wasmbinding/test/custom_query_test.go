@@ -3,9 +3,6 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"testing"
-
 	"testing"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -19,8 +16,6 @@ import (
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	"github.com/stretchr/testify/suite"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 type CustomQuerierTestSuite struct {
@@ -179,10 +174,6 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 	expectedErrorMsg := "Generic error: Querier contract error: codespace: interchaintxs, code: 1102: query wasm contract failed"
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().Errorf(err, expectedErrorMsg)
-}
-
-type ReflectQuery struct {
-	Chain *ChainRequest `json:"chain,omitempty"`
 }
 
 type ChainRequest struct {

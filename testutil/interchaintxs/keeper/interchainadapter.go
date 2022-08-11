@@ -2,10 +2,6 @@ package keeper
 
 import (
 	"testing"
-	"testing"
-
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -15,12 +11,13 @@ import (
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
-	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
+
+	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
 func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

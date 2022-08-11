@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/neutron-org/neutron/testutil"
-
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -22,6 +20,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/version"
 
+	"github.com/neutron-org/neutron/testutil"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 

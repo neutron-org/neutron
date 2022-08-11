@@ -16,16 +16,3 @@ const (
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_interchaintxs"
 )
-
-// Prefix bytes for the epoch persistent store
-const (
-	PrefixHubAddress = "prefix_hub_address"
-)
-
-var (
-	KeyHubAddress = []byte("hub_address")
-)
-
-func KeyPrefix(p string) []byte {
-	return []byte(p)
-}
