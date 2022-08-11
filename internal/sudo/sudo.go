@@ -270,7 +270,7 @@ func (s *Handler) SudoKVQueryResult(
 	s.Logger(ctx).Info("SudoKVQueryResult", "contractAddress", contractAddress)
 
 	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
-		s.Logger(ctx).Debug("contract was not found", "contractAddress", contractAddress)
+		s.Logger(ctx).Debug("SudoKVQueryResult: contract was not found", "contractAddress", contractAddress)
 		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
 	}
 
