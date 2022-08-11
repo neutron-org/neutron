@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -44,6 +45,10 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, _ *types.QueryRegisteredQu
 
 func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegisteredQueryResultRequest) (*types.QueryRegisteredQueryResultResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if !k.checkRegisteredQueryExists(ctx, request.QueryId) {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "query with id %d doesn't exist", request.QueryId)
+	}
 
 	result, err := k.GetQueryResultByID(ctx, request.QueryId)
 	if err != nil {

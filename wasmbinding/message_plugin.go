@@ -2,11 +2,13 @@ package wasmbinding
 
 import (
 	"encoding/json"
+
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -175,7 +177,8 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 		ctx.Logger().Debug("PerformRegisterInterchainQuery: failed to register interchain query",
 			"from_address", contractAddr.String(),
 			"query_type", reg.QueryType,
-			"query_data", reg.QueryData,
+			"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
+			"transactions_filter", reg.TransactionsFilter,
 			"zone_id", reg.ZoneId,
 			"connection_id", reg.ConnectionId,
 			"update_period", reg.UpdatePeriod,
@@ -188,8 +191,8 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 	if err != nil {
 		ctx.Logger().Debug("json.Marshal: failed to marshal register interchain query response to JSON",
 			"from_address", contractAddr.String(),
-			"query_type", reg.QueryType,
-			"query_data", reg.QueryData,
+			"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
+			"transactions_filter", reg.TransactionsFilter,
 			"zone_id", reg.ZoneId,
 			"connection_id", reg.ConnectionId,
 			"update_period", reg.UpdatePeriod,
@@ -201,7 +204,8 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 	ctx.Logger().Debug("registered interchain query",
 		"from_address", contractAddr.String(),
 		"query_type", reg.QueryType,
-		"query_data", reg.QueryData,
+		"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
+		"transactions_filter", reg.TransactionsFilter,
 		"zone_id", reg.ZoneId,
 		"connection_id", reg.ConnectionId,
 		"update_period", reg.UpdatePeriod,
@@ -212,12 +216,13 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 
 func (m *CustomMessenger) PerformRegisterInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) (*bindings.RegisterInterchainQueryResponse, error) {
 	msg := icqtypes.MsgRegisterInterchainQuery{
-		QueryData:    reg.QueryData,
-		QueryType:    reg.QueryType,
-		ZoneId:       reg.ZoneId,
-		ConnectionId: reg.ConnectionId,
-		UpdatePeriod: reg.UpdatePeriod,
-		Sender:       contractAddr.String(),
+		Keys:               reg.Keys,
+		TransactionsFilter: reg.TransactionsFilter,
+		QueryType:          reg.QueryType,
+		ZoneId:             reg.ZoneId,
+		ConnectionId:       reg.ConnectionId,
+		UpdatePeriod:       reg.UpdatePeriod,
+		Sender:             contractAddr.String(),
 	}
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to validate incoming RegisterInterchainQuery message")

@@ -14,7 +14,6 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -22,6 +21,8 @@ import (
 	tmprotoversion "github.com/tendermint/tendermint/proto/tendermint/version"
 	tmtypes "github.com/tendermint/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/version"
+
+	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow

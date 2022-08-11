@@ -9,10 +9,11 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	tmtypes "github.com/tendermint/tendermint/types"
+
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // deterministicResponseDeliverTx strips non-deterministic fields from

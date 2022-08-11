@@ -2,12 +2,13 @@ package app
 
 import (
 	"fmt"
-	"github.com/neutron-org/neutron/wasmbinding"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/neutron-org/neutron/wasmbinding"
 
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
@@ -15,8 +16,9 @@ import (
 	icahost "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-	"github.com/neutron-org/neutron/x/interchainqueries"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	"github.com/neutron-org/neutron/x/interchainqueries"
 
 	wasmapp "github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -102,13 +104,14 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
-	appparams "github.com/neutron-org/neutron/app/params"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+
+	appparams "github.com/neutron-org/neutron/app/params"
 
 	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
 

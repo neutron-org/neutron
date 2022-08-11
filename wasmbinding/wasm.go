@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 )
