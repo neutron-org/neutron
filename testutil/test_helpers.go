@@ -73,7 +73,7 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 }
 
 func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
-	// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
+	// wasm file built with https://github.com/neutron-org/neutron-contracts/tree/main/contracts/reflect
 	wasmCode, err := ioutil.ReadFile(path)
 	suite.Require().NoError(err)
 
