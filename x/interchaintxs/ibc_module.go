@@ -75,8 +75,7 @@ func (im IBCModule) OnChanOpenConfirm(
 }
 
 // OnChanCloseInit implements the IBCModule interface. We don't need to implement this handler.
-// TODO: even a single timeout will close our channels, because ICA uses ordered
-//  channels. We need to understand how to re-establish closed channels.
+// Handler will be implemented in https://p2pvalidator.atlassian.net/browse/LSC-137
 func (im IBCModule) OnChanCloseInit(
 	ctx sdk.Context,
 	portID,
@@ -95,7 +94,7 @@ func (im IBCModule) OnChanCloseConfirm(
 }
 
 // OnRecvPacket implements the IBCModule interface. A successful acknowledgement
-// is returned if the packet data is successfully decoded and the receive application
+// is returned if the packet data is successfully decoded and the receiving application
 // logic returns without error.
 func (im IBCModule) OnRecvPacket(
 	_ctx sdk.Context,

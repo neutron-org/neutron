@@ -193,7 +193,7 @@ var (
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		wasm.AppModuleBasic{},
-		//monitoringp.AppModuleBasic{}, // TODO: ???
+		// monitoringp.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModule{},
 	)
@@ -267,11 +267,11 @@ type App struct {
 	FeeGrantKeeper      feegrantkeeper.Keeper
 
 	// make scoped keepers public for test purposes
-	ScopedIBCKeeper        capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper   capabilitykeeper.ScopedKeeper
-	ScopedMonitoringKeeper capabilitykeeper.ScopedKeeper
-	ScopedWasmKeeper       capabilitykeeper.ScopedKeeper
-	ScopedInterTxKeeper    capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
+	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
+	// ScopedMonitoringKeeper capabilitykeeper.ScopedKeeper
+	ScopedWasmKeeper    capabilitykeeper.ScopedKeeper
+	ScopedInterTxKeeper capabilitykeeper.ScopedKeeper
 
 	InterchainQueriesKeeper interchainqueriesmodulekeeper.Keeper
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
@@ -552,7 +552,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		//monitoringModule,
+		// monitoringModule,
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,

@@ -287,8 +287,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 			)
 
 			// Store code and instantiate reflect contract.
-			// TODO: this relative path is super ugly, we need to fix this.
-			codeId := suite.StoreReflectCode(ctx, contractOwner, "../../../wasmbinding/testdata/reflect.wasm")
+			codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
 			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
 			suite.Require().NotEmpty(contractAddress)
 

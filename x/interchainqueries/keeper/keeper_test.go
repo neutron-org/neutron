@@ -16,6 +16,10 @@ import (
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
+var (
+	reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
+)
+
 type KeeperTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
@@ -99,8 +103,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		)
 
 		// Store code and instantiate reflect contract.
-		// TODO: this relative path is super ugly, we need to fix this.
-		codeId := suite.StoreReflectCode(ctx, contractOwner, "../../../wasmbinding/testdata/reflect.wasm")
+		codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
 		contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
 		suite.Require().NotEmpty(contractAddress)
 
@@ -593,8 +596,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			)
 
 			// Store code and instantiate reflect contract.
-			// TODO: this relative path is super ugly, we need to fix this.
-			codeId := suite.StoreReflectCode(ctx, contractOwner, "../../../wasmbinding/testdata/reflect.wasm")
+			codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
 			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
 			suite.Require().NotEmpty(contractAddress)
 
