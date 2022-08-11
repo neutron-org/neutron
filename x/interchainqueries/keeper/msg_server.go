@@ -171,13 +171,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			}
 		}
 
-		queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
-		if err != nil {
-			ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
-				"error", err, "query", query, "message", msg)
-			return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
-		}
-
 		if err = k.SaveKVQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
 			ctx.Logger().Error("SubmitQueryResult: failed to SaveKVQueryResult",
 				"error", err, "query", query, "message", msg)
