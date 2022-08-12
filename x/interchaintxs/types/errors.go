@@ -9,4 +9,5 @@ var (
 	ErrInvalidICAOwner           = sdkerrors.Register(ModuleName, 1100, "invalid interchain account interchainAccountID")
 	ErrInvalidAccountAddress     = sdkerrors.Register(ModuleName, 1101, "invalid account address")
 	ErrInterchainAccountNotFound = sdkerrors.Register(ModuleName, 1102, "interchain account not found")
+	ErrNotContract               = sdkerrors.Register(ModuleName, 1113, "not a contract")
 )

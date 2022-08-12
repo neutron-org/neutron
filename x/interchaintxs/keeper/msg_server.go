@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -40,12 +39,12 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to parse sender address", "sender_address", msg.FromAddress)
-		return nil, fmt.Errorf("failed to parse sender address: %v", err)
+		return nil, sdkerrors.Wrap(err, "failed to parse sender address")
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "sender_address", msg.FromAddress)
-		return nil, fmt.Errorf("%s is not a contract address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
@@ -71,12 +70,12 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
 		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "sender_address", msg.FromAddress)
-		return nil, fmt.Errorf("failed to parse sender address: %v", err)
+		return nil, sdkerrors.Wrap(err, "failed to parse sender address")
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("SubmitTx: contract not found", "sender_address", msg.FromAddress)
-		return nil, fmt.Errorf("%s is not a contract address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
