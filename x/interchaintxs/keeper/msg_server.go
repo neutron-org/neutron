@@ -38,12 +38,12 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 
 	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
-		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to parse sender address", "sender_address", msg.FromAddress)
-		return nil, sdkerrors.Wrap(err, "failed to parse sender address")
+		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to parse sender address", "from_address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
-		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "sender_address", msg.FromAddress)
+		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "from_address", msg.FromAddress)
 		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
@@ -69,12 +69,12 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 
 	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
-		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "sender_address", msg.FromAddress)
-		return nil, sdkerrors.Wrap(err, "failed to parse sender address")
+		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "from_address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
-		k.Logger(ctx).Debug("SubmitTx: contract not found", "sender_address", msg.FromAddress)
+		k.Logger(ctx).Debug("SubmitTx: contract not found", "from_address", msg.FromAddress)
 		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
