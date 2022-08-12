@@ -3,11 +3,9 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"testing"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
@@ -25,14 +23,15 @@ type CustomQuerierTestSuite struct {
 }
 
 func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
-	neutron := suite.GetNeutronZoneApp(suite.ChainA)
-
-	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	var (
+		neutron = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx     = suite.ChainA.GetContext()
+		owner   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
 
 	// Store code and instantiate reflect contract
-	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Register and submit query result
@@ -99,14 +98,14 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 }
 
 func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
-	neutron := suite.GetNeutronZoneApp(suite.ChainA)
-
-	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	var (
+		ctx   = suite.ChainA.GetContext()
+		owner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
 
 	// Store code and instantiate reflect contract
-	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Query interchain query result
@@ -122,41 +121,47 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 }
 
 func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
-	neutron := suite.GetNeutronZoneApp(suite.ChainA)
-
-	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	var (
+		ctx   = suite.ChainA.GetContext()
+		owner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
 
 	// Store code and instantiate reflect contract
-	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+	suite.Require().NoError(err)
 
 	query := bindings.NeutronQuery{
 		InterchainAccountAddress: &bindings.QueryInterchainAccountAddressRequest{
-			OwnerAddress:        testutil.TestOwnerAddress,
+			OwnerAddress:        contractAddress.String(),
 			InterchainAccountId: testutil.TestInterchainId,
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 		},
 	}
 	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
-	err := suite.queryCustom(ctx, contractAddress, query, &resp)
+	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
-	expected := "neutron128vd3flgem54995jslqpr9rq4zj5n0eu0rlqj9rr9a24qjf9wc9qyuvj84"
+	expected := "neutron122eap6p6394jnspx4wzdr0ypteakrls929dpargf0jevz64c6yxsw59usj"
 	suite.Require().Equal(expected, resp.InterchainAccountAddress)
 }
 
 func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
-	neutron := suite.GetNeutronZoneApp(suite.ChainA)
-
-	ctx := neutron.NewContext(true, suite.ChainA.CurrentHeader)
+	var (
+		ctx   = suite.ChainA.GetContext()
+		owner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
 
 	// Store code and instantiate reflect contract
-	owner := keeper.RandomAccountAddress(suite.T())
-	codeId := suite.storeReflectCode(ctx, owner)
-	contractAddress := suite.instantiateReflectContract(ctx, owner, codeId)
+	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
 	suite.Require().NotEmpty(contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+	suite.Require().NoError(err)
 
 	query := bindings.NeutronQuery{
 		InterchainAccountAddress: &bindings.QueryInterchainAccountAddressRequest{
@@ -167,12 +172,8 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 	}
 	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
 	expectedErrorMsg := "Generic error: Querier contract error: codespace: interchaintxs, code: 1102: query wasm contract failed"
-	err := suite.queryCustom(ctx, contractAddress, query, &resp)
+	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().Errorf(err, expectedErrorMsg)
-}
-
-type ReflectQuery struct {
-	Chain *ChainRequest `json:"chain,omitempty"`
 }
 
 type ChainRequest struct {
@@ -208,26 +209,6 @@ func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.A
 	}
 
 	return json.Unmarshal(resp.Data, response)
-}
-
-func (suite *CustomQuerierTestSuite) storeReflectCode(ctx sdk.Context, addr sdk.AccAddress) uint64 {
-	/// wasm file build with https://github.com/neutron-org/neutron-contracts/tree/feat/reflect-contract
-	wasmCode, err := ioutil.ReadFile("../testdata/reflect.wasm")
-	suite.Require().NoError(err)
-
-	codeID, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
-	suite.Require().NoError(err)
-
-	return codeID
-}
-
-func (suite *CustomQuerierTestSuite) instantiateReflectContract(ctx sdk.Context, funder sdk.AccAddress, codeID uint64) sdk.AccAddress {
-	initMsgBz := []byte("{}")
-	contractKeeper := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
-	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
-	suite.Require().NoError(err)
-
-	return addr
 }
 
 func TestKeeperTestSuite(t *testing.T) {

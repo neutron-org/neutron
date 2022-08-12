@@ -6,12 +6,11 @@ import (
 	"io/ioutil"
 	"strconv"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	// "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -25,71 +24,7 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(RegisterInterchainQueryCmd())
 	cmd.AddCommand(SubmitQueryResultCmd())
-
-	return cmd
-}
-
-func RegisterInterchainQueryCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "register-interchain-query [zone-id] [connection-id] [update-period] [query-type] [query-data]",
-		Short:   "Register an interchain query",
-		Aliases: []string{"register", "r"},
-		Args:    cobra.ExactArgs(5),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			sender := clientCtx.GetFromAddress()
-			zoneID := args[0]
-			connectionID := args[1]
-			updatePeriod, err := strconv.ParseUint(args[2], 10, 64)
-			if err != nil {
-				return fmt.Errorf("failed to parse update-period: %w", err)
-			}
-
-			queryType := types.InterchainQueryType(args[3])
-			if !queryType.IsValid() {
-				return fmt.Errorf("invalid query type: must be %s or %s, got %s", types.InterchainQueryTypeKV, types.InterchainQueryTypeTX, queryType)
-			}
-
-			queryData := args[4]
-
-			var (
-				txFilter string
-				kvKeys   []*types.KVKey
-			)
-
-			switch queryType {
-			case types.InterchainQueryTypeKV:
-				kvKeys, err = types.KVKeysFromString(queryData)
-				if err != nil {
-					return fmt.Errorf("failed to parse KV keys from string: %w", err)
-				}
-			case types.InterchainQueryTypeTX:
-				txFilter = queryData
-			}
-
-			msg := types.MsgRegisterInterchainQuery{
-				TransactionsFilter: txFilter,
-				Keys:               kvKeys,
-				QueryType:          string(queryType),
-				ZoneId:             zoneID,
-				ConnectionId:       connectionID,
-				UpdatePeriod:       updatePeriod,
-				Sender:             sender.String(),
-			}
-			if err = msg.ValidateBasic(); err != nil {
-				return err
-			}
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
 }

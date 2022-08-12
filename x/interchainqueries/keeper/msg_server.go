@@ -7,7 +7,6 @@ import (
 
 	ics23 "github.com/confio/ics23/go"
 	"github.com/cosmos/cosmos-sdk/telemetry"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -32,6 +31,17 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("RegisterInterchainQuery", "msg", msg)
+
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		k.Logger(ctx).Debug("RegisterInterchainQuery: failed to parse sender address", "sender_address", msg.Sender)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+	}
+
+	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
+		k.Logger(ctx).Debug("RegisterInterchainQuery: contract not found", "sender_address", msg.Sender)
+		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
+	}
 
 	if err := msg.ValidateBasic(); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to validate message", "message", msg)
@@ -71,7 +81,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	ctx.Logger().Debug("SubmitQueryResult", "query_id", msg.QueryId)
 
 	if err := msg.ValidateBasic(); err != nil {
@@ -159,30 +168,23 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			default:
 				return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "unknown proof type %T", proof.GetProofs()[0].GetProof())
 			}
+		}
 
-			queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
-			if err != nil {
-				ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
-					"error", err, "query", query, "message", msg)
-				return nil, sdkerrors.Wrapf(types.ErrInternal, "failed to decode owner contract address: %v", err)
-			}
+		if err = k.SaveKVQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
+			ctx.Logger().Error("SubmitQueryResult: failed to SaveKVQueryResult",
+				"error", err, "query", query, "message", msg)
+			return nil, sdkerrors.Wrapf(err, "failed to SaveKVQueryResult: %v", err)
+		}
 
-			if err = k.SaveKVQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
-				ctx.Logger().Error("SubmitQueryResult: failed to SaveKVQueryResult",
-					"error", err, "query", query, "message", msg)
-				return nil, sdkerrors.Wrapf(err, "failed to SaveKVQueryResult: %v", err)
+		if msg.Result.GetAllowKvCallbacks() {
+			// Let the query owner contract process the query result.
+			if _, err := k.sudoHandler.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
+				ctx.Logger().Debug("SubmitQueryResult: failed to SudoKVQueryResult",
+					"error", err, "query_id", query.GetId())
+				return nil, sdkerrors.Wrapf(err, "contract %s rejected KV query result (query_id: %d)",
+					queryOwner, query.GetId())
 			}
-
-			if msg.Result.GetAllowKvCallbacks() {
-				// Let the query owner contract process the query result.
-				if _, err := k.sudoHandler.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
-					ctx.Logger().Debug("SubmitQueryResult: failed to SudoKVQueryResult",
-						"error", err, "query_id", query.GetId())
-					return nil, sdkerrors.Wrapf(err, "contract %s rejected KV query result (query_id: %d)",
-						queryOwner, query.GetId())
-				}
-				return &types.MsgSubmitQueryResultResponse{}, nil
-			}
+			return &types.MsgSubmitQueryResultResponse{}, nil
 		}
 	}
 

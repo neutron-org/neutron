@@ -33,8 +33,6 @@ var (
 	SubmittedTxKey = []byte{prefixSubmittedTx}
 
 	LastRegisteredQueryIdKey = []byte{0x64}
-
-	LastSubmittedTransactionIDKey = []byte{0x65}
 )
 
 func GetRegisteredQueryByIDKey(id uint64) []byte {

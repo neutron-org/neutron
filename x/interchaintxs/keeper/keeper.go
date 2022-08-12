@@ -21,7 +21,7 @@ import (
 
 const (
 	LabelSubmitTx                  = "submit_tx"
-	LabelHandleAcknolwlegment      = "handle_ack"
+	LabelHandleAcknowledgment      = "handle_ack"
 	LabelLabelHandleChanOpenAck    = "handle_chan_open_ack"
 	LabelRegisterInterchainAccount = "register_interchain_account"
 	LabelHandleTimeout             = "handle_timeout"
@@ -37,7 +37,7 @@ type (
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
 		wasmKeeper          *wasm.Keeper
-		sudoHandler         sudo.SudoHandler
+		sudoHandler         sudo.Handler
 	}
 )
 

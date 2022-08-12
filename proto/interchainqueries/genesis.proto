@@ -51,5 +51,4 @@ message KVKey {
 // GenesisState defines the interchainadapter module's genesis state.
 message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
-  // this line is used by starport scaffolding # genesis/proto/state
 }

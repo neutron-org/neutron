@@ -5,21 +5,18 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
-
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
 // InterchainTxTimeout defines the IBC timeout of the interchain transaction.
-// TODO: move to module parameters.
-const InterchainTxTimeout = time.Hour * 24 * 7
+const InterchainTxTimeout = time.Hour * 24 * 30
 
 type msgServer struct {
 	Keeper
@@ -39,6 +36,17 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("RegisterInterchainAccount", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
 
+	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to parse sender address", "from_address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
+	}
+
+	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
+		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "from_address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+	}
+
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount", "error", err)
@@ -57,7 +65,18 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelSubmitTx)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.Logger(ctx).Debug("SubmiTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
+	k.Logger(ctx).Debug("SubmitTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
+
+	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "from_address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
+	}
+
+	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
+		k.Logger(ctx).Debug("SubmitTx: contract not found", "from_address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+	}
 
 	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {

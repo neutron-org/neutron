@@ -10,9 +10,7 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-// NewHandler ...
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	// this line is used by starport scaffolding # handler/msgServer
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {

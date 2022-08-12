@@ -14,7 +14,7 @@ import (
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
 func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) error {
-	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleAcknolwlegment)
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleAcknowledgment)
 
 	k.Logger(ctx).Debug("Handling acknowledgement")
 	icaOwner, err := types.ICAOwnerFromPort(packet.SourcePort)
@@ -86,7 +86,7 @@ func (k *Keeper) HandleChanOpenAck(
 		return sdkerrors.Wrap(err, "failed to get ica owner from port")
 	}
 
-	_, err = k.sudoHandler.SudoOpenAck(ctx, icaOwner.GetContract(), sudo.OpenAckDetails{
+	_, err = k.sudoHandler.SudoOnChanOpenAck(ctx, icaOwner.GetContract(), sudo.OpenAckDetails{
 		PortID:                portID,
 		ChannelID:             channelID,
 		CounterpartyChannelId: counterpartyChannelId,
@@ -94,7 +94,7 @@ func (k *Keeper) HandleChanOpenAck(
 	})
 	if err != nil {
 		k.Logger(ctx).Error("HandleChanOpenAck: failed to Sudo contract on packet timeout", "error", err)
-		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet openAck")
+		return sdkerrors.Wrap(err, "failed to Sudo the contract OnChanOpenAck")
 	}
 
 	return nil
