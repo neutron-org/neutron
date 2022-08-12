@@ -1,4 +1,6 @@
-# Neutron Zone
+# Neutron
+
+**NOTE: current version is a WIP.**
 
 ## Requirments
 * Go 1.18
