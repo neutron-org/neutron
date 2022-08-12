@@ -22,4 +22,5 @@ var (
 	ErrInvalidHeader          = sdkerrors.Register(ModuleName, 1113, "header is invalid")
 	ErrInvalidHeight          = sdkerrors.Register(ModuleName, 1114, "height is invalid")
 	ErrNoQueryResult          = sdkerrors.Register(ModuleName, 1115, "no query result")
+	ErrNotContract            = sdkerrors.Register(ModuleName, 1116, "not a contract")
 )

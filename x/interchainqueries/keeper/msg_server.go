@@ -3,7 +3,6 @@ package keeper
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"time"
 
 	ics23 "github.com/confio/ics23/go"
@@ -36,12 +35,12 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainQuery: failed to parse sender address", "sender_address", msg.Sender)
-		return nil, fmt.Errorf("failed to parse sender address: %v", err)
+		return nil, sdkerrors.Wrap(err, "failed to parse sender address")
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainQuery: contract not found", "sender_address", msg.Sender)
-		return nil, fmt.Errorf("%s is not a contract address", msg.Sender)
+		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
