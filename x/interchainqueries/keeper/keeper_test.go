@@ -128,8 +128,6 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 }
 
 func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
-	suite.SetupTest()
-
 	var msg iqtypes.MsgUpdateInterchainQueryRequest
 	originalQuery := iqtypes.MsgRegisterInterchainQuery{
 		QueryType: iqtypes.InterchainQueryTypeKV,
@@ -192,7 +190,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			},
 		},
 		{
-			"valid query both query data and update period",
+			"valid query both query keys and update period",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,

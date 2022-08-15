@@ -20,10 +20,6 @@ type msgServer struct {
 	Keeper
 }
 
-const (
-	TransactionsQueryType = "x/tx/RecipientTransactions"
-)
-
 // NewMsgServerImpl returns an implementation of the MsgServer interface
 // for the provided Keeper.
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
@@ -97,15 +93,15 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 	if query.GetOwner() != msg.GetSender() {
-		ctx.Logger().Error("RemoveInterchainQuery: authorization failed",
+		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
 	k.RemoveQueryByID(ctx, query.Id)
-	if query.GetQueryType() != TransactionsQueryType {
+	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		k.removeQueryResultByID(ctx, query.Id)
 	}
-	// NOTE: I do not see easy way to remove list of processed txs without knowing tx hash
+	// NOTE: there is no easy way to remove the list of processed transactions without knowing transaction hashes
 
 	return &types.MsgRemoveInterchainQueryResponse{}, nil
 }
@@ -130,21 +126,16 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
-	save := false
 	if msg.GetNewUpdatePeriod() > 0 {
-		save = true
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
 	if len(msg.GetNewKeys()) > 0 {
-		save = true
 		query.Keys = msg.GetNewKeys()
 	}
-	if save {
-		err = k.SaveQuery(ctx, *query)
-		if err != nil {
-			ctx.Logger().Debug("UpdateInterchainQuery: failed to save query", "message", &msg, "error", err)
-			return nil, sdkerrors.Wrapf(err, "failed to save query by query id: %v", err)
-		}
+	err = k.SaveQuery(ctx, *query)
+	if err != nil {
+		ctx.Logger().Debug("UpdateInterchainQuery: failed to save query", "message", &msg, "error", err)
+		return nil, sdkerrors.Wrapf(err, "failed to save query by query id: %v", err)
 	}
 	return &types.MsgUpdateInterchainQueryResponse{}, nil
 }
