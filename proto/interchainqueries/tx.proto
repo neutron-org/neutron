@@ -37,6 +37,9 @@ message MsgRegisterInterchainQuery {
 
   // is the signer of the message
   string sender = 7;
+  
+  // min height
+  uint64 min_height = 8;
 }
 
 message MsgRegisterInterchainQueryResponse { uint64 id = 1; }

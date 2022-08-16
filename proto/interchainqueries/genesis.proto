@@ -39,6 +39,9 @@ message RegisteredQuery {
 
   // The remote chain last block height when the query result was updated.
   uint64 last_submitted_result_remote_height = 11;
+  
+  // The remote chain min height
+  uint64 min_height = 12;
 }
 
 message KVKey {
