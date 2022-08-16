@@ -27,6 +27,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdQueryRegisteredQueries())
 	cmd.AddCommand(CmdQueryRegisteredQuery())
 	cmd.AddCommand(CmdQueryRegisteredQueryResult())
+	cmd.AddCommand(CmdQueryRemoteHeight())
 
 	return cmd
 }
@@ -100,6 +101,30 @@ func CmdQueryRegisteredQueryResult() *cobra.Command {
 			}
 
 			res, err := queryClient.QueryResult(context.Background(), &types.QueryRegisteredQueryResultRequest{QueryId: queryID})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdQueryRemoteHeight() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "query-height [connection-id]",
+		Short: "queries remote height",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			connectionId := args[0]
+			queryClient := types.NewQueryClient(clientCtx)
+			println("connection id", connectionId)
+			res, err := queryClient.RemoteHeight(context.Background(), &types.QueryRemoteHeight{ConnectionId: connectionId})
 			if err != nil {
 				return err
 			}
