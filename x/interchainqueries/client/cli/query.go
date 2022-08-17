@@ -123,7 +123,6 @@ func CmdQueryLastRemoteHeight() *cobra.Command {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			connectionId := args[0]
 			queryClient := types.NewQueryClient(clientCtx)
-			println("connection id", connectionId)
 			res, err := queryClient.LastRemoteHeight(context.Background(), &types.QueryLastRemoteHeight{ConnectionId: connectionId})
 			if err != nil {
 				return err
