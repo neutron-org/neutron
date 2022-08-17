@@ -60,7 +60,7 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
 }
 
-func (k Keeper) RemoteHeight(goCtx context.Context, request *types.QueryRemoteHeight) (*types.QueryRemoteHeightResponse, error) {
+func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLastRemoteHeight) (*types.QueryLastRemoteHeightResponse, error) {
 	req := contypes.QueryConnectionClientStateRequest{ConnectionId: request.ConnectionId}
 	r, err := k.ibcKeeper.ConnectionClientState(goCtx, &req)
 	if err != nil {
@@ -74,5 +74,5 @@ func (k Keeper) RemoteHeight(goCtx context.Context, request *types.QueryRemoteHe
 		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "Can't unmarshal client state")
 	}
 
-	return &types.QueryRemoteHeightResponse{Height: m.LatestHeight.RevisionHeight}, err
+	return &types.QueryLastRemoteHeightResponse{Height: m.LatestHeight.RevisionHeight}, err
 }
