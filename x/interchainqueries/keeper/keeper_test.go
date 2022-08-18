@@ -100,7 +100,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 
 		var (
 			ctx           = suite.ChainA.GetContext()
-			contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+			contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 		)
 
 		// Store code and instantiate reflect contract.
@@ -247,11 +247,11 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalQuery.Keys,
 		},
 		{
-			"failed due auth error",
+			"failed due to auth error",
 			func(sender string) {
 				var (
 					ctx           = suite.ChainA.GetContext()
-					contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 				)
 				codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
 				newContractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
@@ -275,7 +275,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 
 			var (
 				ctx           = suite.ChainA.GetContext()
-				contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+				contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 			)
 
 			// Store code and instantiate reflect contract.
@@ -355,11 +355,11 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 			iqtypes.ErrInvalidQueryID,
 		},
 		{
-			"failed due auth error",
+			"failed due to auth error",
 			func(sender string) {
 				var (
 					ctx           = suite.ChainA.GetContext()
-					contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 				)
 				codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
 				newContractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
@@ -379,7 +379,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 
 			var (
 				ctx           = suite.ChainA.GetContext()
-				contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+				contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 			)
 
 			// Store code and instantiate reflect contract.
@@ -954,7 +954,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 			var (
 				ctx           = suite.ChainA.GetContext()
-				contractOwner = wasmKeeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+				contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 			)
 
 			// Store code and instantiate reflect contract.

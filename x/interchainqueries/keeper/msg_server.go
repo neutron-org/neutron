@@ -92,6 +92,7 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 			"error", err, "query_id", msg.QueryId)
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
+
 	if query.GetOwner() != msg.GetSender() {
 		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
 			"msg", msg)

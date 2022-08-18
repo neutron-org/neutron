@@ -115,22 +115,19 @@ func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {
 	// reuse register interchain query test to get query registered
 	suite.TestRegisterInterchainQuery()
 	// Craft UpdateInterchainQuery message
-	queryID := 1
-	newUpdatePeriod := 111
-	msgStr := []byte(fmt.Sprintf(
-		`
-{
-	"update_interchain_query": {
-		"query_id":%d,
-		"new_update_period": %d
+	queryID := uint64(1)
+	newUpdatePeriod := uint64(111)
+	updMsg := bindings.UpdateInterchainQuery{
+		QueryId:         queryID,
+		NewKeys:         nil,
+		NewUpdatePeriod: newUpdatePeriod,
 	}
-}
-		`,
-		queryID,
-		newUpdatePeriod,
-	))
-	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+
+	fullMsg := bindings.NeutronMsg{
+		UpdateInterchainQuery: &updMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
 	// Dispatch UpdateInterchainQuery message
@@ -144,22 +141,19 @@ func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {
 
 func (suite *CustomMessengerTestSuite) TestUpdateInterchainQueryFailed() {
 	// Craft UpdateInterchainQuery message
-	queryID := 1
-	newUpdatePeriod := 111
-	msgStr := []byte(fmt.Sprintf(
-		`
-{
-	"update_interchain_query": {
-		"query_id":%d,
-		"new_update_period": %d
+	queryID := uint64(1)
+	newUpdatePeriod := uint64(111)
+	updMsg := bindings.UpdateInterchainQuery{
+		QueryId:         queryID,
+		NewKeys:         nil,
+		NewUpdatePeriod: newUpdatePeriod,
 	}
-}
-		`,
-		queryID,
-		newUpdatePeriod,
-	))
-	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+
+	fullMsg := bindings.NeutronMsg{
+		UpdateInterchainQuery: &updMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
 	// Dispatch UpdateInterchainQuery message
@@ -178,19 +172,16 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQuery() {
 	// reuse register interchain query test to get query registered
 	suite.TestRegisterInterchainQuery()
 	// Craft RemoveInterchainQuery message
-	queryID := 1
-	msgStr := []byte(fmt.Sprintf(
-		`
-{
-	"remove_interchain_query": {
-		"query_id":%d
+	queryID := uint64(1)
+	remMsg := bindings.RemoveInterchainQuery{
+		QueryId: queryID,
 	}
-}
-		`,
-		queryID,
-	))
-	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+
+	fullMsg := bindings.NeutronMsg{
+		RemoveInterchainQuery: &remMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
 	// Dispatch RemoveInterchainQuery message
@@ -205,19 +196,16 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQuery() {
 
 func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 	// Craft RemoveInterchainQuery message
-	queryID := 1
-	msgStr := []byte(fmt.Sprintf(
-		`
-{
-	"remove_interchain_query": {
-		"query_id":%d
+	queryID := uint64(1)
+	remMsg := bindings.RemoveInterchainQuery{
+		QueryId: queryID,
 	}
-}
-		`,
-		queryID,
-	))
-	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+
+	fullMsg := bindings.NeutronMsg{
+		RemoveInterchainQuery: &remMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
 	// Dispatch RemoveInterchainQuery message
