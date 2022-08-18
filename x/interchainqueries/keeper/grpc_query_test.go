@@ -14,7 +14,6 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 		name string
 		run  func()
 	}{
-
 		{
 			"wrong connection id",
 			func() {
@@ -27,19 +26,11 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			"valid request",
 			func() {
 				ctx := suite.ChainA.GetContext()
-				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: "connection-0"})
+				r, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
+				suite.Require().Greater(r.Height, uint64(0))
 				suite.Require().NoError(err)
 			},
 		},
-		// {
-		// 	"valid request",
-		// 	func() {
-		// 		ctx := suite.ChainA.GetContext()
-		// 		_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx.Context(), &iqtypes.QueryLastRemoteHeight{ConnectionId: "t"})
-		// 		// suite.Require().Greater(uint64(resp.Height), 0)
-		// 		suite.Require().NoError(err)
-		// 	},
-		// },
 	}
 
 	for i, tc := range tests {
