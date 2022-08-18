@@ -26,8 +26,19 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			"valid request",
 			func() {
 				ctx := suite.ChainA.GetContext()
-				r, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
-				suite.Require().Greater(r.Height, uint64(0))
+
+				oldHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
+				suite.Require().NoError(err)
+				suite.Require().Greater(oldHeight.Height, uint64(0))
+
+				// update client N times
+				N := uint64(100)
+				for i := uint64(0); i < N; i++ {
+					suite.NoError(suite.Path.EndpointA.UpdateClient())
+				}
+
+				updatedHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
+				suite.Require().Equal(updatedHeight.Height, oldHeight.Height+N) // check that last remote height really equals oldHeight+N
 				suite.Require().NoError(err)
 			},
 		},
