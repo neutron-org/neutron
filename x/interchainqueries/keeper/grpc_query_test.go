@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -17,7 +19,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			"wrong connection id",
 			func() {
 				ctx := suite.ChainA.GetContext()
-				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx.Context(), &iqtypes.QueryLastRemoteHeight{ConnectionId: "test"})
+				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: "test"})
 				suite.Require().Error(err)
 			},
 		},
@@ -25,7 +27,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			"valid request",
 			func() {
 				ctx := suite.ChainA.GetContext()
-				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx.Context(), &iqtypes.QueryLastRemoteHeight{ConnectionId: "connection-0"})
+				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: "connection-0"})
 				suite.Require().NoError(err)
 			},
 		},
