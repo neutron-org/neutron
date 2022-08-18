@@ -33,6 +33,10 @@ service Query {
   rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/interchainqueries/query_result";
   }
+
+  rpc LastRemoteHeight(QueryLastRemoteHeight) returns (QueryLastRemoteHeightResponse) {
+    option (google.api.http).get = "/neutron/interchainqueries/interchainqueries/remote_height";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -71,4 +75,12 @@ message Transaction {
   uint64 id = 1;
   uint64 height = 2;
   bytes data = 3;
+}
+
+message QueryLastRemoteHeight {
+  string connection_id = 1;
+}
+
+message QueryLastRemoteHeightResponse {
+  uint64 height = 1;
 }

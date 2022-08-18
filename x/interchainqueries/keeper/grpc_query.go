@@ -6,6 +6,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	contypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
+	tndtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	"github.com/gogo/protobuf/proto"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -55,4 +58,21 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 		return nil, sdkerrors.Wrapf(err, "failed to get query result by query id: %v", err)
 	}
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
+}
+
+func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLastRemoteHeight) (*types.QueryLastRemoteHeightResponse, error) {
+	req := contypes.QueryConnectionClientStateRequest{ConnectionId: request.ConnectionId}
+	r, err := k.ibcKeeper.ConnectionClientState(goCtx, &req)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidConnectionID, "connection not found")
+	}
+	clientState := r.GetIdentifiedClientState().GetClientState()
+
+	m := new(tndtypes.ClientState)
+	err = proto.Unmarshal(clientState.Value, m)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "can't unmarshal client state")
+	}
+
+	return &types.QueryLastRemoteHeightResponse{Height: m.LatestHeight.RevisionHeight}, nil
 }
