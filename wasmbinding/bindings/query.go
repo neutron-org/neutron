@@ -111,6 +111,27 @@ type QueryResult struct {
 
 type StorageValue struct {
 	StoragePrefix string `json:"storage_prefix,omitempty"`
-	Key           []byte `json:"key,omitempty"`
-	Value         []byte `json:"value,omitempty"`
+	Key           []byte `json:"key"`
+	Value         []byte `json:"value"`
+}
+
+func (sv StorageValue) MarshalJSON() ([]byte, error) {
+	type AliasSV StorageValue
+
+	a := struct {
+		AliasSV
+	}{
+		AliasSV: (AliasSV)(sv),
+	}
+
+	// We want Key and Value be as empty arrays in Json ('[]'), not 'null'
+	// It's easier to work with on smart-contracts side
+	if a.Key == nil {
+		a.Key = make([]byte, 0)
+	}
+	if a.Value == nil {
+		a.Value = make([]byte, 0)
+	}
+
+	return json.Marshal(a)
 }
