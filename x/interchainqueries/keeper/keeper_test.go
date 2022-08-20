@@ -48,36 +48,6 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			iqtypes.ErrInvalidConnectionID,
 		},
 		{
-			"invalid query type",
-			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
-					Keys:               nil,
-					QueryType:          "invalid_type",
-					ZoneId:             "id",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-			},
-			iqtypes.ErrInvalidQueryType,
-		},
-		{
-			"invalid transactions filter format",
-			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "&)(^Y(*&(*&(&(*",
-					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "id",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-			},
-			iqtypes.ErrInvalidQueryType,
-		},
-		{
 			"valid",
 			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
@@ -165,62 +135,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				}
 			},
 			iqtypes.ErrInvalidQueryID,
-		},
-		{
-			"empty result",
-			func(sender string) {
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
-					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "osmosis",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-
-				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
-
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
-				suite.Require().NoError(err)
-
-				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					ClientId: suite.Path.EndpointA.ClientID,
-				}
-			},
-			iqtypes.ErrEmptyResult,
-		},
-		{
-			"empty kv results and blocks",
-			func(sender string) {
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
-					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "osmosis",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-
-				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
-
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
-				suite.Require().NoError(err)
-
-				msg = iqtypes.MsgSubmitQueryResult{
-					Sender:   sender,
-					QueryId:  res.Id,
-					ClientId: suite.Path.EndpointA.ClientID,
-					Result: &iqtypes.QueryResult{
-						KvResults: nil,
-						Block:     nil,
-						Height:    0,
-					},
-				}
-			},
-			iqtypes.ErrEmptyResult,
 		},
 		{
 			"valid KV storage proof",
