@@ -81,7 +81,7 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug("json.Marshal: failed to marshal UpdateInterchainQueryResponse response to JSON",
+		ctx.Logger().Error("json.Marshal: failed to marshal UpdateInterchainQueryResponse response to JSON",
 			"from_address", contractAddr.String(),
 			"msg", updateQuery,
 			"error", err,
@@ -129,7 +129,7 @@ func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sd
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug("json.Marshal: failed to marshal RemoveInterchainQueryResponse response to JSON",
+		ctx.Logger().Error("json.Marshal: failed to marshal RemoveInterchainQueryResponse response to JSON",
 			"from_address", contractAddr.String(),
 			"msg", removeQuery,
 			"error", err,
@@ -176,7 +176,7 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug("json.Marshal: failed to marshal submitTx response to JSON",
+		ctx.Logger().Error("json.Marshal: failed to marshal submitTx response to JSON",
 			"from_address", contractAddr.String(),
 			"connection_id", submitTx.ConnectionId,
 			"interchain_account_id", submitTx.InterchainAccountId,
@@ -236,7 +236,7 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug("json.Marshal: failed to marshal register interchain account response to JSON",
+		ctx.Logger().Error("json.Marshal: failed to marshal register interchain account response to JSON",
 			"from_address", contractAddr.String(),
 			"connection_id", reg.ConnectionId,
 			"interchain_account_id", reg.InterchainAccountId,
@@ -289,7 +289,7 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Debug("json.Marshal: failed to marshal register interchain query response to JSON",
+		ctx.Logger().Error("json.Marshal: failed to marshal register interchain query response to JSON",
 			"from_address", contractAddr.String(),
 			"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
 			"transactions_filter", reg.TransactionsFilter,

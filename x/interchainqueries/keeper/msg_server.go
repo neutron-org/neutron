@@ -123,7 +123,7 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 	if query.GetOwner() != msg.GetSender() {
-		ctx.Logger().Error("UpdateInterchainQuery: authorization failed",
+		ctx.Logger().Debug("UpdateInterchainQuery: authorization failed",
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
