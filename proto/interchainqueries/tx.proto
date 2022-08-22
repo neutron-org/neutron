@@ -14,6 +14,11 @@ service Msg {
       returns (MsgRegisterInterchainQueryResponse);
   rpc SubmitQueryResult(MsgSubmitQueryResult)
       returns (MsgSubmitQueryResultResponse);
+  rpc RemoveInterchainQuery(MsgRemoveInterchainQueryRequest)
+      returns (MsgRemoveInterchainQueryResponse);
+  rpc UpdateInterchainQuery(MsgUpdateInterchainQueryRequest)
+      returns (MsgUpdateInterchainQueryResponse);
+  // this line is used by starport scaffolding # proto/tx/rpc
 }
 
 message MsgRegisterInterchainQuery {
@@ -100,3 +105,18 @@ message MsgSubmitQueryResultResponse {
 
 }
 
+message MsgRemoveInterchainQueryRequest {
+  uint64 query_id = 1;
+  string sender = 2; // is the signer of the message
+}
+message MsgRemoveInterchainQueryResponse {
+}
+
+message MsgUpdateInterchainQueryRequest {
+  uint64 query_id = 1;
+  repeated KVKey new_keys = 2;
+  uint64 new_update_period = 3;
+  string sender = 4; // is the signer of the message
+}
+message MsgUpdateInterchainQueryResponse {
+}

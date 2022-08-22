@@ -116,8 +116,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 	}
 	resp := icqtypes.QueryRegisteredQueryResultResponse{}
 	err := suite.queryCustom(ctx, contractAddress, query, &resp)
-	expectedErrMag := "Generic error: Querier contract error: codespace: interchainqueries, code: 1115: query wasm contract failed"
-	suite.Require().Errorf(err, expectedErrMag)
+	expectedErrMsg := "Generic error: Querier contract error: codespace: interchainqueries, code: 1115: query wasm contract failed"
+	suite.Require().ErrorContains(err, expectedErrMsg)
 }
 
 func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
@@ -172,8 +172,10 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 	}
 	resp := ictxtypes.QueryInterchainAccountAddressResponse{}
 	expectedErrorMsg := "Generic error: Querier contract error: codespace: interchaintxs, code: 1102: query wasm contract failed"
+
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
-	suite.Require().Errorf(err, expectedErrorMsg)
+	suite.Require().ErrorContains(err, expectedErrorMsg)
+
 }
 
 type ChainRequest struct {

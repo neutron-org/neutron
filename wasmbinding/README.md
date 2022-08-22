@@ -11,3 +11,5 @@ This package allows for custom queries and custom messages sends from contract.
   - RegisterInterchainAccount - register an interchain account
   - SubmitTx - submit a transaction for execution on a remote chain
   - RegisterInterchainQuery - register an interchain query
+  - UpdateInterchainQuery - update an interchain query
+  - RemoveInterchainQuery - remove an interchain query
