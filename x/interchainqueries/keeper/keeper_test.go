@@ -38,7 +38,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "unknown",
-					TransactionsFilter: "{}",
+					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          iqtypes.InterchainQueryTypeTX,
 					ZoneId:             "id",
@@ -53,7 +53,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
+					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          "invalid_type",
 					ZoneId:             "id",
@@ -83,7 +83,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
+					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          iqtypes.InterchainQueryTypeTX,
 					ZoneId:             "osmosis",
@@ -533,7 +533,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string) {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
+					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          iqtypes.InterchainQueryTypeTX,
 					ZoneId:             "osmosis",
@@ -558,7 +558,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string) {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
+					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          iqtypes.InterchainQueryTypeTX,
 					ZoneId:             "osmosis",
