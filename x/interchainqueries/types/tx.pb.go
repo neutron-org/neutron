@@ -41,7 +41,7 @@ type MsgRegisterInterchainQuery struct {
 	ZoneId string `protobuf:"bytes,4,opt,name=zone_id,json=zoneId,proto3" json:"zone_id,omitempty"`
 	// is IBC connection ID for getting ConsensusState to verify proofs
 	ConnectionId string `protobuf:"bytes,5,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	// is used to say how often (in neutron blocks) the query must be updated
+	// is used to specify how often (in neutron blocks) the query must be updated
 	UpdatePeriod uint64 `protobuf:"varint,6,opt,name=update_period,json=updatePeriod,proto3" json:"update_period,omitempty"`
 	// is the signer of the message
 	Sender string `protobuf:"bytes,7,opt,name=sender,proto3" json:"sender,omitempty"`
