@@ -193,7 +193,6 @@ var (
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		wasm.AppModuleBasic{},
-		// monitoringp.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModule{},
 	)
@@ -269,9 +268,8 @@ type App struct {
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
-	// ScopedMonitoringKeeper capabilitykeeper.ScopedKeeper
-	ScopedWasmKeeper    capabilitykeeper.ScopedKeeper
-	ScopedInterTxKeeper capabilitykeeper.ScopedKeeper
+	ScopedWasmKeeper     capabilitykeeper.ScopedKeeper
+	ScopedInterTxKeeper  capabilitykeeper.ScopedKeeper
 
 	InterchainQueriesKeeper interchainqueriesmodulekeeper.Keeper
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
@@ -552,14 +550,13 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		// monitoringModule,
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
-	// there is nothing left over in the validator fee pool, so as to keep the
+	// there is nothing left over in the validator fee poo, to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
@@ -582,7 +579,6 @@ func New(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		icatypes.ModuleName,
-		//monitoringptypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		wasm.ModuleName,
