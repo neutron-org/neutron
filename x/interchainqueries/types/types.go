@@ -47,8 +47,14 @@ const (
 	kvKeysDelimiter    = ","
 )
 
-func IsValidJSON(s string) bool {
-	var js map[string]interface{}
+type FilterItem struct {
+	Field string
+	Op    string
+	Value interface{}
+}
+
+func IsValidTransactionFilterJSON(s string) bool {
+	var js []FilterItem
 	return json.Unmarshal([]byte(s), &js) == nil
 
 }

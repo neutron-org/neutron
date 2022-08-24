@@ -96,7 +96,7 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 	}
 
 	if InterchainQueryType(msg.QueryType).IsTX() {
-		if !IsValidJSON(msg.TransactionsFilter) {
+		if !IsValidTransactionFilterJSON(msg.TransactionsFilter) {
 			return sdkerrors.Wrap(ErrInvalidQueryType, "transactions filter must be a valid json string")
 		}
 	}
