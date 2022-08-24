@@ -72,7 +72,7 @@ func (msg MsgRegisterInterchainQuery) Type() string {
 
 func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 	if msg.UpdatePeriod == 0 {
-		return sdkerrors.Wrap(ErrInvalidUpdatePeriod, "update period cannot be equal zero")
+		return sdkerrors.Wrap(ErrInvalidUpdatePeriod, "update period can not be equal zero")
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
