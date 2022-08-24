@@ -10,6 +10,8 @@ import (
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	"github.com/stretchr/testify/suite"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
@@ -20,22 +22,29 @@ import (
 
 type CustomMessengerTestSuite struct {
 	testutil.IBCConnectionTestSuite
+	neutron         *app.App
+	ctx             sdk.Context
+	messenger       *wasmbinding.CustomMessenger
+	contractOwner   sdk.AccAddress
+	contractAddress sdk.AccAddress
+}
+
+func (suite *CustomMessengerTestSuite) SetupTest() {
+	suite.IBCConnectionTestSuite.SetupTest()
+	suite.neutron = suite.GetNeutronZoneApp(suite.ChainA)
+	suite.ctx = suite.ChainA.GetContext()
+	suite.messenger = &wasmbinding.CustomMessenger{}
+	suite.messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(suite.neutron.InterchainTxsKeeper)
+	suite.messenger.Keeper = suite.neutron.InterchainTxsKeeper
+	suite.messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(suite.neutron.InterchainQueriesKeeper)
+	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
-	var (
-		neutron       = suite.GetNeutronZoneApp(suite.ChainA)
-		ctx           = suite.ChainA.GetContext()
-		contractOwner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
-	)
-
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, contractOwner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
-	suite.Require().NotEmpty(contractAddress)
-
-	messenger := wasmbinding.CustomMessenger{}
-	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Craft RegisterInterchainAccount message
 	msgStr := []byte(fmt.Sprintf(
@@ -55,7 +64,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
-	events, data, err := messenger.DispatchMsg(ctx, contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
 	suite.NoError(err)
@@ -64,21 +73,13 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
-	var (
-		neutron       = suite.GetNeutronZoneApp(suite.ChainA)
-		ctx           = suite.ChainA.GetContext()
-		contractOwner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
-	)
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, contractOwner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
-	suite.Require().NotEmpty(contractAddress)
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
 
-	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
-
-	messenger := wasmbinding.CustomMessenger{}
-	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
 
 	// Craft RegisterInterchainQuery message
 	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
@@ -102,7 +103,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
-	events, data, err := messenger.DispatchMsg(ctx, contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
 	suite.NoError(err)
@@ -110,19 +111,122 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	suite.Equal([][]byte{[]byte(`{"id":1}`)}, data)
 }
 
+func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {
+	// reuse register interchain query test to get query registered
+	suite.TestRegisterInterchainQuery()
+	// Craft UpdateInterchainQuery message
+	queryID := uint64(1)
+	newUpdatePeriod := uint64(111)
+	updMsg := bindings.UpdateInterchainQuery{
+		QueryId:         queryID,
+		NewKeys:         nil,
+		NewUpdatePeriod: newUpdatePeriod,
+	}
+
+	fullMsg := bindings.NeutronMsg{
+		UpdateInterchainQuery: &updMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch UpdateInterchainQuery message
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	suite.Equal([][]byte{[]byte(`{}`)}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestUpdateInterchainQueryFailed() {
+	// Craft UpdateInterchainQuery message
+	queryID := uint64(1)
+	newUpdatePeriod := uint64(111)
+	updMsg := bindings.UpdateInterchainQuery{
+		QueryId:         queryID,
+		NewKeys:         nil,
+		NewUpdatePeriod: newUpdatePeriod,
+	}
+
+	fullMsg := bindings.NeutronMsg{
+		UpdateInterchainQuery: &updMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch UpdateInterchainQuery message
+	owner, err := sdk.AccAddressFromBech32(testutil.TestOwnerAddress)
+	suite.NoError(err)
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, owner, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	expectedErrMsg := "failed to update interchain query: failed to update interchain query: failed to get query by query id: there is no query with id: 1"
+	suite.Require().ErrorContains(err, expectedErrMsg)
+	suite.Nil(events)
+	suite.Nil(data)
+}
+
+func (suite *CustomMessengerTestSuite) TestRemoveInterchainQuery() {
+	// reuse register interchain query test to get query registered
+	suite.TestRegisterInterchainQuery()
+	// Craft RemoveInterchainQuery message
+	queryID := uint64(1)
+	remMsg := bindings.RemoveInterchainQuery{
+		QueryId: queryID,
+	}
+
+	fullMsg := bindings.NeutronMsg{
+		RemoveInterchainQuery: &remMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch RemoveInterchainQuery message
+	suite.NoError(err)
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	suite.Equal([][]byte{[]byte(`{}`)}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
+	// Craft RemoveInterchainQuery message
+	queryID := uint64(1)
+	remMsg := bindings.RemoveInterchainQuery{
+		QueryId: queryID,
+	}
+
+	fullMsg := bindings.NeutronMsg{
+		RemoveInterchainQuery: &remMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch RemoveInterchainQuery message
+	owner, err := sdk.AccAddressFromBech32(testutil.TestOwnerAddress)
+	suite.NoError(err)
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, owner, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	expectedErrMsg := "failed to remove interchain query: failed to remove interchain query: failed to get query by query id: there is no query with id: 1"
+	suite.Require().ErrorContains(err, expectedErrMsg)
+	suite.Nil(events)
+	suite.Nil(data)
+}
+
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
-	var (
-		neutron       = suite.GetNeutronZoneApp(suite.ChainA)
-		ctx           = suite.ChainA.GetContext()
-		contractOwner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
-	)
-
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, contractOwner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
-	suite.Require().NotEmpty(contractAddress)
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
 
-	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
+	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
 	// Craft SubmitTx message
@@ -149,11 +253,8 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.NoError(err)
 
 	// Dispatch SubmitTx message
-	messenger := wasmbinding.CustomMessenger{}
-	messenger.Keeper = neutron.InterchainTxsKeeper
-	messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(neutron.InterchainTxsKeeper)
-	messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(neutron.InterchainQueriesKeeper)
-	events, data, err := messenger.DispatchMsg(ctx, contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+
 		Custom: msg,
 	})
 	suite.NoError(err)
