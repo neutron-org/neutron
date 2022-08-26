@@ -49,6 +49,7 @@ services:
       - RELAYER_REGISTRY_ADDRESSES=
       - RELAYER_ALLOW_TX_QUERIES=true
       - RELAYER_ALLOW_KV_CALLBACKS=true
+      - RELAYER_STORAGE_PATH=storage/leveldb
 volumes:
   data:
     external: false
