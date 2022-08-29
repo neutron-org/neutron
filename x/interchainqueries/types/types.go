@@ -47,12 +47,6 @@ const (
 	kvKeysDelimiter    = ","
 )
 
-func IsValidJSON(s string) bool {
-	var js map[string]interface{}
-	return json.Unmarshal([]byte(s), &js) == nil
-
-}
-
 type InterchainQueryType string
 
 func (icqt InterchainQueryType) IsValid() bool {
@@ -118,4 +112,23 @@ func (keys KVKeys) String() string {
 	}
 
 	return b.String()
+}
+
+// TransactionsFilter represents the model of transactions filter parameter used in interchain
+// queries of type TX.
+type TransactionsFilter []TransactionsFilterItem
+
+// TransactionsFilterItem is a single condition for filtering transactions in search.
+type TransactionsFilterItem struct {
+	// Field is the field used in condition, e.g. tx.height or transfer.recipient.
+	Field string `json:"field"`
+	// Op is the operation for filtering, one of the following: eq, gt, gte, lt, lte.
+	Op string `json:"op"`
+	// Value is the value for comparison.
+	Value interface{} `json:"value"`
+}
+
+// ValidateTransactionsFilter checks if the passed string is a valid TransactionsFilter value.
+func ValidateTransactionsFilter(s string) error {
+	return json.Unmarshal([]byte(s), &TransactionsFilter{})
 }

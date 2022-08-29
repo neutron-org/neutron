@@ -48,7 +48,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					Sender:             TestAddress,
 				}
 			},
-			iqtypes.ErrInvalidQueryType,
+			iqtypes.ErrInvalidTransactionsFilter,
 		},
 		{
 			"invalid update period",
@@ -132,7 +132,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
 					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
+					QueryType:          iqtypes.InterchainQueryTypeKV,
 					ZoneId:             "osmosis",
 					UpdatePeriod:       1,
 					Sender:             TestAddress,
