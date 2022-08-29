@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -130,5 +131,49 @@ type TransactionsFilterItem struct {
 
 // ValidateTransactionsFilter checks if the passed string is a valid TransactionsFilter value.
 func ValidateTransactionsFilter(s string) error {
-	return json.Unmarshal([]byte(s), &TransactionsFilter{})
+	filters := TransactionsFilter{}
+	if err := json.Unmarshal([]byte(s), &filters); err != nil {
+		return fmt.Errorf("failed to unmarshal transactions filter: %w", err)
+	}
+	for idx, f := range filters {
+		for _, r := range forbiddenRunes {
+			if strings.ContainsRune(f.Field, r) {
+				return fmt.Errorf("transactions filter condition idx=%d is invalid: special symbols %v are not allowed", idx, forbiddenRunesAsStr())
+			}
+		}
+		if f.Field == "" {
+			return fmt.Errorf("transactions filter condition idx=%d is invalid: field couldn't be empty", idx)
+		}
+		switch value := f.Value.(type) {
+		case string:
+		case float32:
+			// despite json turns numbers into float, decimals are not allowed by tendermint API
+			if value != float32(int32(value)) {
+				return fmt.Errorf("transactions filter condition idx=%d is invalid: value %v can't be a decimal number", idx, value)
+			}
+		case float64:
+			// despite json turns numbers into float, decimals are not allowed by tendermint API
+			if value != float64(int64(value)) {
+				return fmt.Errorf("transactions filter condition idx=%d is invalid: value %v can't be a decimal number", idx, value)
+			}
+		default:
+			return fmt.Errorf("transactions filter condition idx=%d is invalid: value '%v' is expected to be on of: string, float, int", idx, f.Value)
+		}
+		switch strings.ToLower(f.Op) {
+		case "eq", "gt", "gte", "lt", "lte":
+		default:
+			return fmt.Errorf("transactions filter condition idx=%d is invalid: op '%s' is expected to be one of: eq, gt, gte, lt, lte", idx, f.Op)
+		}
+	}
+	return nil
+}
+
+var forbiddenRunes = []rune{'\t', '\n', '\r', '\\', '(', ')', '"', '\'', '=', '>', '<'}
+
+func forbiddenRunesAsStr() []string {
+	str := make([]string, 0, len(forbiddenRunes))
+	for _, r := range forbiddenRunes {
+		str = append(str, string(r))
+	}
+	return str
 }
