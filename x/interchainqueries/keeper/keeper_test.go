@@ -2,8 +2,9 @@ package keeper_test
 
 import (
 	"fmt"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"testing"
+
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
@@ -38,7 +39,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "unknown",
-					TransactionsFilter: "{}",
+					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          iqtypes.InterchainQueryTypeTX,
 					ZoneId:             "id",
@@ -53,7 +54,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "{}",
+					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          iqtypes.InterchainQueryTypeTX,
 					ZoneId:             "osmosis",
