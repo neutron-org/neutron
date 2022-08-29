@@ -195,7 +195,7 @@ var (
 		wasm.AppModuleBasic{},
 		// monitoringp.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
-		interchaintxs.AppModule{},
+		interchaintxs.AppModuleBasic{},
 	)
 
 	// module account permissions
