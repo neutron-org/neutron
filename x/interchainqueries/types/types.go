@@ -146,11 +146,6 @@ func ValidateTransactionsFilter(s string) error {
 		}
 		switch value := f.Value.(type) {
 		case string:
-		case float32:
-			// despite json turns numbers into float, decimals are not allowed by tendermint API
-			if value != float32(int32(value)) {
-				return fmt.Errorf("transactions filter condition idx=%d is invalid: value %v can't be a decimal number", idx, value)
-			}
 		case float64:
 			// despite json turns numbers into float, decimals are not allowed by tendermint API
 			if value != float64(int64(value)) {
