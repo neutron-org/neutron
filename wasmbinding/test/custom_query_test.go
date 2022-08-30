@@ -116,7 +116,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 	}
 	resp := icqtypes.QueryRegisteredQueryResultResponse{}
 	err := suite.queryCustom(ctx, contractAddress, query, &resp)
-	expectedErrMsg := "Generic error: Querier contract error: codespace: interchainqueries, code: 1116: query wasm contract failed"
+	expectedErrMsg := fmt.Sprintf("Generic error: Querier contract error: codespace: interchainqueries, code: %d: query wasm contract failed", icqtypes.ErrNoQueryResult.ABCICode())
 	suite.Require().ErrorContains(err, expectedErrMsg)
 }
 
