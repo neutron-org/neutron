@@ -15,9 +15,6 @@ import (
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-// InterchainTxTimeout defines the IBC timeout of the interchain transaction.
-const InterchainTxTimeout = time.Hour * 24 * 30
-
 type msgServer struct {
 	Keeper
 }

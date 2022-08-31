@@ -232,7 +232,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 	// Craft SubmitTx message
 	memo := "Jimmy"
-	timeout := "2000"
+	timeout := 2000
 	msgs := `[{"type_url":"/cosmos.staking.v1beta1.MsgDelegate","value":[26,10,10,5,115,116,97,107,101,18,1,48]}]`
 	msgStr := []byte(fmt.Sprintf(
 		`
@@ -242,7 +242,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 		"interchain_account_id": "%s",
 		"msgs": %s,
 		"memo": "%s",
-		"timeout": %s
+		"timeout": %d
 	}
 }
 		`,
