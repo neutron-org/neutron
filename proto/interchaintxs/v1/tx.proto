@@ -55,6 +55,8 @@ message MsgSubmitTx {
   string connection_id = 3;
   repeated google.protobuf.Any msgs = 4;
   string memo = 5;
+  // timeout in seconds after which the packet times out
+  uint64 timeout = 6;
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx
