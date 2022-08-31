@@ -41,7 +41,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 					ConnectionId:       "unknown",
 					TransactionsFilter: "[]",
 					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					ZoneId:             "id",
 					UpdatePeriod:       1,
 					Sender:             sender,
@@ -56,7 +56,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
 					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					ZoneId:             "osmosis",
 					UpdatePeriod:       1,
 					Sender:             sender,
@@ -101,7 +101,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	var msg iqtypes.MsgUpdateInterchainQueryRequest
 	originalQuery := iqtypes.MsgRegisterInterchainQuery{
-		QueryType: iqtypes.InterchainQueryTypeKV,
+		QueryType: string(iqtypes.InterchainQueryTypeKV),
 		Keys: []*iqtypes.KVKey{
 			{
 				Path: "somepath",
@@ -290,7 +290,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 
 	var msg iqtypes.MsgRemoveInterchainQueryRequest
 	originalQuery := iqtypes.MsgRegisterInterchainQuery{
-		QueryType:          iqtypes.InterchainQueryTypeKV,
+		QueryType:          string(iqtypes.InterchainQueryTypeKV),
 		Keys:               nil,
 		TransactionsFilter: "",
 		ZoneId:             "osmosis",
@@ -508,7 +508,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       sender,
@@ -560,7 +560,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       sender,
@@ -610,7 +610,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       sender,
@@ -662,7 +662,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       sender,
@@ -714,7 +714,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       sender,
@@ -764,7 +764,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       sender,
@@ -816,7 +816,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					ZoneId:       "osmosis",
 					UpdatePeriod: 1,
 					Sender:       sender,

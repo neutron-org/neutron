@@ -41,8 +41,8 @@ const (
 )
 
 const (
-	InterchainQueryTypeKV = "kv"
-	InterchainQueryTypeTX = "tx"
+	InterchainQueryTypeKV InterchainQueryType = "kv"
+	InterchainQueryTypeTX InterchainQueryType = "tx"
 
 	kvPathKeyDelimiter = "/"
 	kvKeysDelimiter    = ","

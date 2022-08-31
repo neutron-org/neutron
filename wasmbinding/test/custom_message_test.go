@@ -86,7 +86,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	updatePeriod := uint64(20)
 
 	regMsg := bindings.RegisterInterchainQuery{
-		QueryType: icqtypes.InterchainQueryTypeKV,
+		QueryType: string(icqtypes.InterchainQueryTypeKV),
 		Keys: []*icqtypes.KVKey{
 			{Path: host.StoreKey, Key: clientKey},
 		},
