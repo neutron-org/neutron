@@ -67,7 +67,7 @@ func (m *MsgSubmitTx) ValidateBasic() error {
 	}
 
 	if m.Timeout <= 0 {
-		return errors.New("timeout cannot be zero or less")
+		return sdkerrors.Wrapf(ErrInvalidTimeout, "timeout must be greater than zero")
 	}
 
 	return nil

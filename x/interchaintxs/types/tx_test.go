@@ -128,9 +128,26 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						TypeUrl: "msg",
 						Value:   []byte{100}, // just check that values are not nil
 					}},
+					Timeout: 1,
 				}
 			},
 			nil,
+		},
+		{
+			"invalid timeout",
+			func() sdktypes.Msg {
+				return &types.MsgSubmitTx{
+					FromAddress:         TestAddress,
+					ConnectionId:        "connection-id",
+					InterchainAccountId: "1",
+					Msgs: []*cosmosTypes.Any{{
+						TypeUrl: "msg",
+						Value:   []byte{100}, // just check that values are not nil
+					}},
+					Timeout: 0,
+				}
+			},
+			types.ErrInvalidTimeout,
 		},
 		{
 			"empty connection id",
@@ -143,6 +160,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						TypeUrl: "msg",
 						Value:   []byte{100}, // just check that values are not nil
 					}},
+					Timeout: 1,
 				}
 			},
 			types.ErrEmptyConnectionID,
@@ -158,6 +176,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						TypeUrl: "msg",
 						Value:   []byte{100}, // just check that values are not nil
 					}},
+					Timeout: 1,
 				}
 			},
 			types.ErrEmptyInterchainAccountID,
@@ -170,6 +189,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					ConnectionId:        "connection-id",
 					InterchainAccountId: "1",
 					Msgs:                nil,
+					Timeout:             1,
 				}
 			},
 			types.ErrNoMessages,
@@ -185,6 +205,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						TypeUrl: "msg",
 						Value:   []byte{100}, // just check that values are not nil
 					}},
+					Timeout: 1,
 				}
 			},
 			sdkerrors.ErrInvalidAddress,
@@ -200,6 +221,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						TypeUrl: "msg",
 						Value:   []byte{100}, // just check that values are not nil
 					}},
+					Timeout: 1,
 				}
 			},
 			sdkerrors.ErrInvalidAddress,

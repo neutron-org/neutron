@@ -13,4 +13,5 @@ var (
 	ErrEmptyInterchainAccountID  = sdkerrors.Register(ModuleName, 1104, "empty interchain account id")
 	ErrEmptyConnectionID         = sdkerrors.Register(ModuleName, 1105, "empty connection id")
 	ErrNoMessages                = sdkerrors.Register(ModuleName, 1106, "no messages provided")
+	ErrInvalidTimeout            = sdkerrors.Register(ModuleName, 1107, "invalid timeout")
 )
