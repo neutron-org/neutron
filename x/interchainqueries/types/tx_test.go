@@ -334,6 +334,156 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 	}
 }
 
+func TestMsgUpdateQueryRequestValidate(t *testing.T) {
+	tests := []struct {
+		name        string
+		malleate    func() sdktypes.Msg
+		expectedErr error
+	}{
+		{
+			"valid",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{{
+						Path: "staking",
+						Key:  []byte{1, 2, 3},
+					}},
+					NewUpdatePeriod: 10,
+					Sender:          TestAddress,
+				}
+			},
+			nil,
+		},
+		{
+			"empty keys and update_period",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:         1,
+					NewKeys:         nil,
+					NewUpdatePeriod: 0,
+					Sender:          TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+		},
+		{
+			"invalid query id",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 0,
+					NewKeys: []*iqtypes.KVKey{{
+						Path: "staking",
+						Key:  []byte{1, 2, 3},
+					}},
+					NewUpdatePeriod: 10,
+					Sender:          TestAddress,
+				}
+			},
+			iqtypes.ErrInvalidQueryID,
+		},
+		{
+			"empty sender",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{{
+						Path: "staking",
+						Key:  []byte{1, 2, 3},
+					}},
+					NewUpdatePeriod: 10,
+					Sender:          "",
+				}
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"invalid sender",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{{
+						Path: "staking",
+						Key:  []byte{1, 2, 3},
+					}},
+					NewUpdatePeriod: 10,
+					Sender:          "invalid-sender",
+				}
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+	}
+
+	for _, tt := range tests {
+		msg := tt.malleate()
+
+		if tt.expectedErr != nil {
+			require.ErrorIs(t, msg.ValidateBasic(), tt.expectedErr)
+		} else {
+			require.NoError(t, msg.ValidateBasic())
+		}
+	}
+}
+
+func TestMsgRemoveQueryRequestValidate(t *testing.T) {
+	tests := []struct {
+		name        string
+		malleate    func() sdktypes.Msg
+		expectedErr error
+	}{
+		{
+			"valid",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 1,
+					Sender:  TestAddress,
+				}
+			},
+			nil,
+		},
+		{
+			"invalid query id",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 0,
+					Sender:  TestAddress,
+				}
+			},
+			iqtypes.ErrInvalidQueryID,
+		},
+		{
+			"empty sender",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 1,
+					Sender:  "",
+				}
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"invalid sender",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 1,
+					Sender:  "invalid-sender",
+				}
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+	}
+
+	for _, tt := range tests {
+		msg := tt.malleate()
+
+		if tt.expectedErr != nil {
+			require.ErrorIs(t, msg.ValidateBasic(), tt.expectedErr)
+		} else {
+			require.NoError(t, msg.ValidateBasic())
+		}
+	}
+}
+
 func TestMsgRegisterInterchainQueryGetSigners(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -391,6 +541,50 @@ func TestMsgSubmitQueryResultGetSigners(t *testing.T) {
 						Height:   100,
 						Revision: 1,
 					},
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		msg := tt.malleate()
+		addr, _ := sdktypes.AccAddressFromBech32(TestAddress)
+		require.Equal(t, msg.GetSigners(), []sdktypes.AccAddress{addr})
+	}
+}
+
+func TestMsgUpdateQueryGetSigners(t *testing.T) {
+	tests := []struct {
+		name     string
+		malleate func() sdktypes.Msg
+	}{
+		{
+			"valid_signer",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					Sender: TestAddress,
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		msg := tt.malleate()
+		addr, _ := sdktypes.AccAddressFromBech32(TestAddress)
+		require.Equal(t, msg.GetSigners(), []sdktypes.AccAddress{addr})
+	}
+}
+
+func TestMsgRemoveQueryGetSigners(t *testing.T) {
+	tests := []struct {
+		name     string
+		malleate func() sdktypes.Msg
+	}{
+		{
+			"valid_signer",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRemoveInterchainQueryRequest{
+					Sender: TestAddress,
 				}
 			},
 		},

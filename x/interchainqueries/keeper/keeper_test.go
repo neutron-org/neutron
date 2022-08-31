@@ -204,20 +204,6 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalQuery.Keys,
 		},
 		{
-			"failed due to empty request",
-			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQueryRequest{
-					QueryId:         1,
-					NewKeys:         nil,
-					NewUpdatePeriod: 0,
-					Sender:          sender,
-				}
-			},
-			iqtypes.ErrInvalidSubmittedResult,
-			originalQuery.UpdatePeriod,
-			originalQuery.Keys,
-		},
-		{
 			"failed due to auth error",
 			func(sender string) {
 				var (
