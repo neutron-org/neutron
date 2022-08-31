@@ -67,8 +67,8 @@ func (m *MsgSubmitTx) ValidateBasic() error {
 		return errors.New("no messages provided")
 	}
 
-	if m.Timeout == 0 {
-		return errors.New("timeout cannot be zero")
+	if m.Timeout <= 0 {
+		return errors.New("timeout cannot be zero or less")
 	}
 
 	return nil

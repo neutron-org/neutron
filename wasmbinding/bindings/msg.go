@@ -25,7 +25,7 @@ type SubmitTx struct {
 	InterchainAccountId string        `json:"interchain_account_id"`
 	Msgs                []ProtobufAny `json:"msgs"`
 	Memo                string        `json:"memo"`
-	Timeout             int64         `json:"timeout"`
+	Timeout             uint64        `json:"timeout"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.
