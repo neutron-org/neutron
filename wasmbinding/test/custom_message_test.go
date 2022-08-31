@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
@@ -231,6 +232,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 	// Craft SubmitTx message
 	memo := "Jimmy"
+	timeout := 2000
 	msgs := `[{"type_url":"/cosmos.staking.v1beta1.MsgDelegate","value":[26,10,10,5,115,116,97,107,101,18,1,48]}]`
 	msgStr := []byte(fmt.Sprintf(
 		`
@@ -239,7 +241,8 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 		"connection_id": "%s",
 		"interchain_account_id": "%s",
 		"msgs": %s,
-		"memo": "%s"
+		"memo": "%s",
+		"timeout": %d
 	}
 }
 		`,
@@ -247,6 +250,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 		testutil.TestInterchainId,
 		msgs,
 		memo,
+		timeout,
 	))
 	var msg json.RawMessage
 	err = json.Unmarshal(msgStr, &msg)
