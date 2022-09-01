@@ -43,11 +43,6 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
 	}
 
-	if err := msg.ValidateBasic(); err != nil {
-		ctx.Logger().Debug("RegisterInterchainQuery: failed to validate message", "message", msg)
-		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
-	}
-
 	if _, err := k.ibcKeeper.ConnectionKeeper.Connection(goCtx, &ibcconnectiontypes.QueryConnectionRequest{ConnectionId: msg.ConnectionId}); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to get connection with ID", "message", msg)
 		return nil, sdkerrors.Wrapf(types.ErrInvalidConnectionID, "failed to get connection with ID '%s': %v", msg.ConnectionId, err)
@@ -81,11 +76,6 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("RemoveInterchainQuery", "msg", msg)
 
-	if err := msg.ValidateBasic(); err != nil {
-		ctx.Logger().Debug("RemoveInterchainQuery: failed to validate message", "message", msg)
-		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
-	}
-
 	query, err := k.GetQueryByID(ctx, msg.GetQueryId())
 	if err != nil {
 		ctx.Logger().Debug("RemoveInterchainQuery: failed to GetQueryByID",
@@ -110,11 +100,6 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUpdateInterchainQueryRequest) (*types.MsgUpdateInterchainQueryResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("UpdateInterchainQuery", "msg", msg)
-
-	if err := msg.ValidateBasic(); err != nil {
-		ctx.Logger().Debug("UpdateInterchainQuery: failed to validate message", "message", msg)
-		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
-	}
 
 	query, err := k.GetQueryByID(ctx, msg.GetQueryId())
 	if err != nil {
@@ -146,12 +131,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("SubmitQueryResult", "query_id", msg.QueryId)
-
-	if err := msg.ValidateBasic(); err != nil {
-		ctx.Logger().Debug("SubmitQueryResult: failed to validate message",
-			"error", err, "message", msg)
-		return nil, sdkerrors.Wrapf(err, "invalid msg: %v", err)
-	}
 
 	query, err := k.GetQueryByID(ctx, msg.QueryId)
 	if err != nil {

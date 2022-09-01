@@ -96,11 +96,10 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 	}
 
 	if InterchainQueryType(msg.QueryType).IsTX() {
-		if !IsValidTransactionFilterJSON(msg.TransactionsFilter) {
-			return sdkerrors.Wrap(ErrInvalidQueryType, "transactions filter must be a valid json string")
+		if err := ValidateTransactionsFilter(msg.TransactionsFilter); err != nil {
+			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 		}
 	}
-
 	return nil
 }
 
@@ -133,7 +132,7 @@ func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker
 
 func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
 	if msg.GetQueryId() == 0 {
-		return sdkerrors.Wrap(ErrInvalidSubmittedResult, "query_id cannot be empty or equal to 0")
+		return sdkerrors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
@@ -162,11 +161,11 @@ func (msg MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 
 func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 	if msg.GetQueryId() == 0 {
-		return sdkerrors.Wrap(ErrInvalidSubmittedResult, "query_id cannot be empty or equal to 0")
+		return sdkerrors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
 
 	if len(msg.GetNewKeys()) == 0 && msg.GetNewUpdatePeriod() == 0 {
-		return sdkerrors.Wrap(ErrInvalidSubmittedResult, "one of new_keys or new_update_period should be set")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "one of new_keys or new_update_period should be set")
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {

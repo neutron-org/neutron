@@ -194,7 +194,7 @@ var (
 		vesting.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
-		interchaintxs.AppModule{},
+		interchaintxs.AppModuleBasic{},
 	)
 
 	// module account permissions
