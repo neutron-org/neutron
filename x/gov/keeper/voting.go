@@ -13,10 +13,10 @@ import (
 )
 
 // queryVotingPowers queries the dao contract of user voting powers based on the given query msg
-func queryVotingPowers(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk.AccAddress, query *types.VotingPowersQuery) (types.VotingPowersResponse, error) {
+func queryVotingPowers(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk.AccAddress) (types.VotingPowersResponse, error) {
 	var votingPowersResponse types.VotingPowersResponse
 
-	req, err := json.Marshal(&types.QueryMsg{VotingPowers: query})
+	req, err := json.Marshal(&types.QueryMsg{VotingPowers: &types.VotingPowersQuery{}})
 	if err != nil {
 		return nil, sdkerrors.Wrapf(types.ErrFailedToQueryVesting, "failed to marshal query request: %s", err)
 	}
@@ -56,31 +56,13 @@ func GetTokensInDao(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk.Ac
 	tokensLocked := make(map[string]sdk.Int)
 	totalTokenAmount := sdk.ZeroInt()
 
-	votingPowersResponse, err := queryVotingPowers(ctx, k, contractAddr, &types.VotingPowersQuery{})
+	votingPowersResponse, err := queryVotingPowers(ctx, k, contractAddr)
 	if err != nil {
 		return nil, sdk.ZeroInt(), err
 	}
 
 	if err = incrementVotingPowers(votingPowersResponse, tokensLocked, &totalTokenAmount); err != nil {
 		return nil, sdk.ZeroInt(), err
-	}
-
-	for {
-		count := len(votingPowersResponse)
-		if count == 0 {
-			break
-		}
-
-		startAfter := votingPowersResponse[count-1].User
-
-		votingPowersResponse, err = queryVotingPowers(ctx, k, contractAddr, &types.VotingPowersQuery{StartAfter: startAfter})
-		if err != nil {
-			return nil, sdk.ZeroInt(), err
-		}
-
-		if err = incrementVotingPowers(votingPowersResponse, tokensLocked, &totalTokenAmount); err != nil {
-			return nil, sdk.ZeroInt(), err
-		}
 	}
 
 	return tokensLocked, totalTokenAmount, nil
