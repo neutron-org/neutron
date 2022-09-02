@@ -215,7 +215,7 @@ stop-docker-container:
 
 start-cosmopark:
 	@echo "\033[1;33mMake sure you have added your key with ssh-add"
-	@cd ./../cosmos-query-relayer/ && make build-docker
+	@cd ./../neutron-query-relayer/ && make build-docker
 	@docker-compose up -d
 
 stop-cosmopark:

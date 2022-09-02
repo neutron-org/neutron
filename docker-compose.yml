@@ -12,7 +12,7 @@ services:
       - 16657:16657
       - 16656:16656
   relayer:
-    image: neutron-org/cosmos-query-relayer
+    image: neutron-org/neutron-query-relayer
     entrypoint: ./run.sh
     volumes:
       - data:/data
