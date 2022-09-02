@@ -26,7 +26,7 @@ func (k Keeper) EndBlocker(ctx sdk.Context) {
 				sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQuery),
 				sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(registeredQuery.Id, 10)),
 				sdk.NewAttribute(types.AttributeKeyOwner, registeredQuery.Owner),
-				sdk.NewAttribute(types.AttributeKeyZoneID, registeredQuery.ZoneId),
+				sdk.NewAttribute(types.AttributeKeyConnectionID, registeredQuery.ConnectionId),
 				sdk.NewAttribute(types.AttributeKeyQueryType, registeredQuery.QueryType),
 				sdk.NewAttribute(types.AttributeTransactionsFilterQuery, registeredQuery.TransactionsFilter),
 				sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(registeredQuery.Keys).String()),

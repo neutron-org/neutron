@@ -42,7 +42,6 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 					TransactionsFilter: "[]",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "id",
 					UpdatePeriod:       1,
 					Sender:             sender,
 				}
