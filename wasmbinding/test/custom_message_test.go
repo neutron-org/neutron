@@ -92,7 +92,6 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 			{Path: host.StoreKey, Key: clientKey},
 		},
 		TransactionsFilter: "{}",
-		ZoneId:             suite.ChainB.ChainID,
 		ConnectionId:       suite.Path.EndpointA.ConnectionID,
 		UpdatePeriod:       updatePeriod,
 	}

@@ -31,17 +31,14 @@ message MsgRegisterInterchainQuery {
   // is used to define a filter for transaction search ICQ
   string transactions_filter = 3;
 
-  // is used to identify the chain of interest
-  string zone_id = 4;
-
   // is IBC connection ID for getting ConsensusState to verify proofs
-  string connection_id = 5;
+  string connection_id = 4;
 
   // is used to specify how often (in neutron blocks) the query must be updated
-  uint64 update_period = 6;
+  uint64 update_period = 5;
 
   // is the signer of the message
-  string sender = 7;
+  string sender = 6;
 }
 
 message MsgRegisterInterchainQueryResponse { uint64 id = 1; }
