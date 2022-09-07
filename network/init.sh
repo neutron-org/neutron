@@ -76,9 +76,9 @@ echo "Initializing dao contract in genesis..."
 # Upload the queries contract
 $BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home $CHAIN_DIR/$CHAINID_1
 # Instantiate the contract
-INIT_CONTRACT='{}'
-echo "Instantiate"
-$BINARY add-wasm-message  instantiate-contract 1 "$INIT_CONTRACT" --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --admin neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
+INIT_CONTRACT='{"owner":"neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u"}'
+#echo "Instantiate"
+$BINARY add-wasm-message  instantiate-contract 1 "$INIT_CONTRACT" --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --no-admin  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
 
 echo "Changing defaults and ports in app.toml and config.toml files..."
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://0.0.0.0:'"$P2PPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/config.toml
