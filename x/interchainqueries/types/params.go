@@ -19,7 +19,9 @@ func NewParams() Params {
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams()
+	params := NewParams()
+	params.KvQueryTtlPeriod = 518400 // One month, with block_time = 5s
+	return params
 }
 
 // ParamSetPairs get the params.ParamSet

@@ -16,9 +16,13 @@ func TestGenesis(t *testing.T) {
 		Params: types.DefaultParams(),
 	}
 
+	require.EqualValues(t, genesisState.Params, types.DefaultParams())
+
 	k, ctx := keepertest.InterchainQueriesKeeper(t)
 	interchainqueries.InitGenesis(ctx, *k, genesisState)
 	got := interchainqueries.ExportGenesis(ctx, *k)
+
+	require.EqualValues(t, got.Params, types.DefaultParams())
 	require.NotNil(t, got)
 
 	nullify.Fill(&genesisState)
