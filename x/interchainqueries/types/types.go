@@ -18,8 +18,8 @@ const (
 	// registrator of an interchain query.
 	AttributeKeyOwner = "owner"
 
-	// AttributeKeyConnectionID represents the key for event attribute delivering the connection ID where the
-	// event has been produced.
+	// AttributeKeyConnectionID represents the key for event attribute delivering the connection ID
+	// of an interchain query.
 	AttributeKeyConnectionID = "connection_id"
 
 	// AttributeKeyQueryType represents the key for event attribute delivering the query type
