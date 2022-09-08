@@ -24,7 +24,7 @@ func (k Keeper) Tally(ctx sdk.Context, proposal govtypes.Proposal) (passes bool,
 	//
 	// NOTE: for now we simply use the default contract address. later it may be a better idea to use
 	// a configurable parameter
-	tokensLocked, totalTokensLocked := MustGetTokensInVesting(ctx, k.wasmKeeper, DefaultContractAddr)
+	tokensLocked, totalTokensLocked := MustGetTokensInVoting(ctx, k.wasmKeeper, DefaultContractAddr)
 
 	// total amount of tokens that have voted in this poll; used to determine whether the poll reaches
 	// quorum and the pass threshold

@@ -50,7 +50,7 @@ func incrementVotingPowers(votingPowersResponse types.VotingPowersResponse, toke
 	return nil
 }
 
-// GetTokensInDao queries the vesting contract for an array of users who have tokens locked in the
+// GetTokensInDao queries the voting contract for an array of users who have tokens locked in the
 // contract and their respective amount, as well as computing the total amount of locked tokens.
 func GetTokensInDao(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk.AccAddress) (map[string]sdk.Int, sdk.Int, error) {
 	tokensLocked := make(map[string]sdk.Int)
@@ -68,8 +68,8 @@ func GetTokensInDao(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk.Ac
 	return tokensLocked, totalTokenAmount, nil
 }
 
-// MustGetTokensInVesting is the same with `GetTokensInDao`, but panics on error
-func MustGetTokensInVesting(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk.AccAddress) (map[string]sdk.Int, sdk.Int) {
+// MustGetTokensInVoting is the same with `GetTokensInDao`, but panics on error
+func MustGetTokensInVoting(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk.AccAddress) (map[string]sdk.Int, sdk.Int) {
 	tokensLocked, totalTokensLocked, err := GetTokensInDao(ctx, k, contractAddr)
 	if err != nil {
 		panic(fmt.Sprintf("failed to tally vote: %s", err))
