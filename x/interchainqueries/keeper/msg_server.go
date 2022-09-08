@@ -260,10 +260,16 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		if !types.InterchainQueryType(query.QueryType).IsTX() {
 			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
 		}
+
 		if err := k.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, msg.Result.Block); err != nil {
 			ctx.Logger().Debug("SubmitQueryResult: failed to ProcessBlock",
 				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(err, "failed to ProcessBlock: %v", err)
+		}
+
+		if err = k.UpdateLastLocalHeight(ctx, query.Id, uint64(ctx.BlockHeight())); err != nil {
+			return nil, sdkerrors.Wrapf(err,
+				"failed to update last local height for a result with id %d: %v", query.Id, err)
 		}
 	}
 

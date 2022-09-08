@@ -143,6 +143,7 @@ func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID
 		ctx.Logger().Debug("ProcessBlock: transaction was already submitted",
 			"query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
 	}
+
 	return nil
 }
 
