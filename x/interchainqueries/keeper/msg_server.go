@@ -275,7 +275,7 @@ func getQueryUpdatedEvents(query *types.RegisteredQuery) sdk.Events {
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryUpdated),
 			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
 			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
 			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
