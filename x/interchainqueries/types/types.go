@@ -36,8 +36,12 @@ const (
 
 	// AttributeValueCategory represents the value for the 'module' event attribute.
 	AttributeValueCategory = ModuleName
-	// AttributeValueQuery represents the value for the 'action' event attribute.
-	AttributeValueQuery = "query"
+
+	// AttributeValueQueryUpdated represents the value for the 'action' event attribute.
+	AttributeValueQueryUpdated = "query_updated"
+
+	// AttributeValueQueryRemoved represents the value for the 'action' event attribute.
+	AttributeValueQueryRemoved = "query_removed"
 )
 
 const (

@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"strconv"
 	"time"
 
 	ics23 "github.com/confio/ics23/go"
@@ -69,6 +70,8 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrapf(err, "failed to save query: %v", err)
 	}
 
+	ctx.EventManager().EmitEvents(getQueryUpdatedEvents(&registeredQuery))
+
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
 }
 
@@ -88,11 +91,27 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
+
 	k.RemoveQueryByID(ctx, query.Id)
 	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		k.removeQueryResultByID(ctx, query.Id)
 	}
-	// NOTE: there is no easy way to remove the list of processed transactions without knowing transaction hashes
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
+			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
+			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
+			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
+			sdk.NewAttribute(types.AttributeTransactionsFilterQuery, query.TransactionsFilter),
+			sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(query.Keys).String()),
+		),
+	})
+
+	// NOTE: there is no easy way to remove the list of processed transactions
+	// without knowing transaction hashes.
 
 	return &types.MsgRemoveInterchainQueryResponse{}, nil
 }
@@ -107,22 +126,28 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 			"error", err, "query_id", msg.QueryId)
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
+
 	if query.GetOwner() != msg.GetSender() {
 		ctx.Logger().Debug("UpdateInterchainQuery: authorization failed",
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
+
 	if msg.GetNewUpdatePeriod() > 0 {
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
 	if len(msg.GetNewKeys()) > 0 {
 		query.Keys = msg.GetNewKeys()
 	}
+
 	err = k.SaveQuery(ctx, *query)
 	if err != nil {
 		ctx.Logger().Debug("UpdateInterchainQuery: failed to save query", "message", &msg, "error", err)
 		return nil, sdkerrors.Wrapf(err, "failed to save query by query id: %v", err)
 	}
+
+	ctx.EventManager().EmitEvents(getQueryUpdatedEvents(query))
+
 	return &types.MsgUpdateInterchainQueryResponse{}, nil
 }
 
@@ -243,6 +268,21 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil
+}
+
+func getQueryUpdatedEvents(query *types.RegisteredQuery) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
+			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
+			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
+			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
+			sdk.NewAttribute(types.AttributeTransactionsFilterQuery, query.TransactionsFilter),
+			sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(query.Keys).String()),
+		),
+	}
 }
 
 var _ types.MsgServer = msgServer{}
