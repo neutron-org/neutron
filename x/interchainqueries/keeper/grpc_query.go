@@ -3,6 +3,9 @@ package keeper
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -31,7 +34,11 @@ func (k Keeper) RegisteredQueries(goCtx context.Context, req *types.QueryRegiste
 	return k.GetRegisteredQueries(ctx, req)
 }
 
-func (k Keeper) GetRegisteredQueries(ctx sdk.Context, _ *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
+func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
@@ -40,7 +47,10 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, _ *types.QueryRegisteredQu
 	for ; iterator.Valid(); iterator.Next() {
 		query := types.RegisteredQuery{}
 		k.cdc.MustUnmarshal(iterator.Value(), &query)
-		queries = append(queries, query)
+
+		if query.GetOwner() == req.GetOwner() {
+			queries = append(queries, query)
+		}
 	}
 
 	return &types.QueryRegisteredQueriesResponse{RegisteredQueries: queries}, nil
