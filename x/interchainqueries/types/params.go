@@ -8,8 +8,8 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyKvQueryTtlPeriod     = []byte("KvQueryTtlPeriod")
-	DefaultKvQueryTtlPeriod = uint64(518400) // One month, with block_time = 5s
+	KeyQuerySubmitTimeout     = []byte("QuerySubmitTimeout")
+	DefaultQuerySubmitTimeout = uint64(518400) // One month, with block_time = 5s
 )
 
 // ParamKeyTable the param key table for launch module
@@ -18,21 +18,21 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(kvQueryTtlPeriod uint64) Params {
+func NewParams(querySubmitTimeout uint64) Params {
 	return Params{
-		KvQueryTtlPeriod: kvQueryTtlPeriod,
+		QuerySubmitTimeout: querySubmitTimeout,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultKvQueryTtlPeriod)
+	return NewParams(DefaultQuerySubmitTimeout)
 }
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyKvQueryTtlPeriod, &p.KvQueryTtlPeriod, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, &p.QuerySubmitTimeout, func(value interface{}) error { return nil }),
 	}
 }
 

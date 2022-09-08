@@ -140,6 +140,13 @@ func (m *RegisteredQuery) GetLastSubmittedResultRemoteHeight() uint64 {
 	return 0
 }
 
+func (m *RegisteredQuery) GetDeposit() uint64 {
+	if m != nil {
+		return m.Deposit
+	}
+	return 0
+}
+
 type KVKey struct {
 	// Path (storage prefix) to the storage where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
 	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
@@ -301,6 +308,11 @@ func (m *RegisteredQuery) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.Deposit != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.Deposit))
+		i--
+		dAtA[i] = 0x60
+	}
 	if m.LastSubmittedResultRemoteHeight != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.LastSubmittedResultRemoteHeight))
 		i--
@@ -486,6 +498,9 @@ func (m *RegisteredQuery) Size() (n int) {
 	}
 	if m.LastSubmittedResultRemoteHeight != 0 {
 		n += 1 + sovGenesis(uint64(m.LastSubmittedResultRemoteHeight))
+	}
+	if m.Deposit != 0 {
+		n += 1 + sovGenesis(uint64(m.Deposit))
 	}
 	return n
 }
@@ -753,7 +768,20 @@ func (m *RegisteredQuery) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 8:
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConnectionId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastSubmittedResultLocalHeight", wireType)
 			}
@@ -787,6 +815,44 @@ func (m *RegisteredQuery) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.LastSubmittedResultRemoteHeight |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Deposit", wireType)
+			}
+			m.Deposit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Deposit |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 12:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Deposit", wireType)
+			}
+			m.Deposit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Deposit |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

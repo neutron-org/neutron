@@ -33,6 +33,9 @@ message RegisteredQuery {
 
   // The remote chain last block height when the query result was updated.
   uint64 last_submitted_result_remote_height = 9;
+
+  // Amount of coins deposited for the query.
+  uint64 deposit = 10;
 }
 
 message KVKey {

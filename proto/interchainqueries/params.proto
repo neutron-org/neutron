@@ -8,6 +8,6 @@ option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 // Params defines the parameters for the module.
 message Params { 
     option (gogoproto.goproto_stringer) = false; 
-    // Defines blocks period before inactive KV query will be removed
-    uint64 kv_query_ttl_period = 1;
+    // Defines amount of blocks required before query becomes available for removal by anybody
+    uint64 query_submit_timeout = 1;
 }
