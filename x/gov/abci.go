@@ -16,7 +16,7 @@ import (
 // same as the vanilla gov EndBlocker, except for we replace the `Tally`
 // function with our own implementation
 func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) {
-	defer telemetry.ModuleMeasureSince(govtypes.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
+	defer telemetry.ModuleMeasureSince(govtypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
 	logger := keeper.Logger(ctx)
 

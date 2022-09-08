@@ -110,3 +110,4 @@ sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' $
 
 # Update host chain genesis to allow x/bank/MsgSend ICA tx execution
 sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/cosmos.staking.v1beta1.MsgUndelegate\"]/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
+sed -i -e 's/\"voting_period\":.*/\"voting_period\": "20s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json

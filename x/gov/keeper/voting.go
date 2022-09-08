@@ -18,17 +18,17 @@ func queryVotingPowers(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk
 
 	req, err := json.Marshal(&types.QueryMsg{VotingPowers: &types.VotingPowersQuery{}})
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrFailedToQueryVesting, "failed to marshal query request: %s", err)
+		return nil, sdkerrors.Wrapf(types.ErrFailedToQueryVoting, "failed to marshal query request: %s", err)
 	}
 
 	res, err := k.QuerySmart(ctx, contractAddr, req)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrFailedToQueryVesting, "query returned error: %s", err)
+		return nil, sdkerrors.Wrapf(types.ErrFailedToQueryVoting, "query returned error: %s", err)
 	}
 
 	err = json.Unmarshal(res, &votingPowersResponse)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrFailedToQueryVesting, "failed to unmarshal query response: %s", err)
+		return nil, sdkerrors.Wrapf(types.ErrFailedToQueryVoting, "failed to unmarshal query response: %s", err)
 	}
 
 	return votingPowersResponse, nil
@@ -40,7 +40,7 @@ func queryVotingPowers(ctx sdk.Context, k wasmtypes.ViewKeeper, contractAddr sdk
 func incrementVotingPowers(votingPowersResponse types.VotingPowersResponse, tokensLocked map[string]sdk.Int, totalTockensLocked *sdk.Int) error {
 	for _, item := range votingPowersResponse {
 		if _, ok := tokensLocked[item.User]; ok {
-			return sdkerrors.Wrapf(types.ErrFailedToQueryVesting, "query response contains duplicate address: %s", item.User)
+			return sdkerrors.Wrapf(types.ErrFailedToQueryVoting, "query response contains duplicate address: %s", item.User)
 		}
 
 		tokensLocked[item.User] = sdk.Int(item.VotingPower)
