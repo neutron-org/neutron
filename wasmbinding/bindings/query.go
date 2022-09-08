@@ -67,8 +67,6 @@ type RegisteredQuery struct {
 	ConnectionId string `json:"connection_id"`
 	// Parameter that defines how often the query must be updated.
 	UpdatePeriod uint64 `json:"update_period"`
-	// The local height when the event to update the query result was emitted last time.
-	LastEmittedHeight uint64 `json:"last_emitted_height"`
 	// The local chain last block height when the query result was updated.
 	LastSubmittedResultLocalHeight uint64 `json:"last_submitted_result_local_height"`
 	// The remote chain last block height when the query result was updated.

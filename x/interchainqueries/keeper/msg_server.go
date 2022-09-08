@@ -61,7 +61,6 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		ZoneId:             msg.ZoneId,
 		UpdatePeriod:       msg.UpdatePeriod,
 		ConnectionId:       msg.ConnectionId,
-		LastEmittedHeight:  uint64(ctx.BlockHeight()),
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)

@@ -43,11 +43,10 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 		Keys: []*icqtypes.KVKey{
 			{Path: host.StoreKey, Key: clientKey},
 		},
-		QueryType:         string(icqtypes.InterchainQueryTypeKV),
-		ZoneId:            "osmosis",
-		UpdatePeriod:      1,
-		ConnectionId:      suite.Path.EndpointA.ConnectionID,
-		LastEmittedHeight: uint64(ctx.BlockHeight()),
+		QueryType:    string(icqtypes.InterchainQueryTypeKV),
+		ZoneId:       "osmosis",
+		UpdatePeriod: 1,
+		ConnectionId: suite.Path.EndpointA.ConnectionID,
 	}
 	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
 	err := neutron.InterchainQueriesKeeper.SaveQuery(ctx, registeredQuery)

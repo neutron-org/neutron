@@ -31,9 +31,6 @@ message RegisteredQuery {
   // Parameter that defines how often the query must be updated.
   uint64 update_period = 8;
 
-  // The local height when the event to update the query result was emitted last time.
-  uint64 last_emitted_height = 9;
-
   // The local chain last block height when the query result was updated.
   uint64 last_submitted_result_local_height = 10;
 
