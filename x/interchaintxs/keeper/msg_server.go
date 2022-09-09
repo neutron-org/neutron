@@ -116,6 +116,14 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		Memo: msg.Memo,
 	}
 
+	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, portID, channelID)
+	if !found {
+		return nil, sdkerrors.Wrapf(
+			channeltypes.ErrSequenceSendNotFound,
+			"source port: %s, source channel: %s", portID, channelID,
+		)
+	}
+
 	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(msg.Timeout) * time.Second).UnixNano()
 	_, err = k.icaControllerKeeper.SendTx(ctx, chanCap, msg.ConnectionId, portID, packetData, uint64(timeoutTimestamp))
 	if err != nil {
@@ -124,5 +132,8 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrap(err, "failed to SendTx")
 	}
 
-	return &types.MsgSubmitTxResponse{}, nil
+	return &types.MsgSubmitTxResponse{
+		SequenceId: sequence,
+		Channel:    channelID,
+	}, nil
 }

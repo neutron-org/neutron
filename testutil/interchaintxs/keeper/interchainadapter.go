@@ -44,6 +44,7 @@ func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
+		nil,                             // TODO: do a real channel keeper
 		nil,                             // TODO: do a real wasm keeper
 		icacontrollerkeeper.Keeper{},    // TODO: do a real ibc keeper
 		capabilitykeeper.ScopedKeeper{}, // TODO: do a real scoped keeper
