@@ -49,6 +49,21 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			iqtypes.ErrInvalidConnectionID,
 		},
 		{
+			"not enough deposit",
+			func(sender string) {
+				msg = iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					TransactionsFilter: "[]",
+					Keys:               nil,
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
+					ZoneId:             "osmosis",
+					UpdatePeriod:       1,
+					Sender:             sender,
+				}
+			},
+			sdkerrors.ErrInsufficientFunds,
+		},
+		{
 			"valid",
 			func(sender string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{

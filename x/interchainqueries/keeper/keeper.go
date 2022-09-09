@@ -289,7 +289,7 @@ func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo *types.RegisteredQuer
 
 	err = k.bank.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(queryInfo.GetDepositCoin()))
 	if err != nil {
-		return sdkerrors.Wrapf(err, types.ErrNotEnoughDeposit.Error(), queryInfo.GetDepositCoin())
+		return err
 	}
 
 	return nil

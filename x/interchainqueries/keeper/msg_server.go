@@ -67,7 +67,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	if err := k.CollectDeposit(ctx, registeredQuery); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to collect deposit", "message", &msg, "error", err)
-		return nil, sdkerrors.Wrapf(err, "failed to collect deposit: %v", err)
+		return nil, sdkerrors.Wrapf(err, "failed to collect deposit")
 	}
 
 	if err := k.SaveQuery(ctx, registeredQuery); err != nil {

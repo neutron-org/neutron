@@ -14,6 +14,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -42,8 +43,9 @@ func InterchainQueriesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,
-		nil,
+		nil, // TODO: do a real ibc keeper
+		nil, // TODO: do a real wasm keeper
+		*new(bankkeeper.Keeper),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
