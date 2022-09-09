@@ -10,4 +10,7 @@ message Params {
     option (gogoproto.goproto_stringer) = false; 
     // Defines amount of blocks required before query becomes available for removal by anybody
     uint64 query_submit_timeout = 1;
+
+    // Amount of coins deposited for the query.
+    uint64 query_deposit = 2;
 }

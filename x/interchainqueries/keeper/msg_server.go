@@ -64,6 +64,12 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
+
+	if err := k.CollectDeposit(ctx, registeredQuery); err != nil {
+		ctx.Logger().Debug("RegisterInterchainQuery: failed to collect deposit", "message", &msg, "error", err)
+		return nil, sdkerrors.Wrapf(err, "failed to collect deposit: %v", err)
+	}
+
 	if err := k.SaveQuery(ctx, registeredQuery); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to save query", "message", &msg, "error", err)
 		return nil, sdkerrors.Wrapf(err, "failed to save query: %v", err)
@@ -85,13 +91,15 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 
-	if query.GetOwner() != msg.GetSender() {
+	timoutBlock := query.LastSubmittedResultLocalHeight + k.GetParams(ctx).QuerySubmitTimeout
+	if uint64(ctx.BlockHeight()) <= timoutBlock && query.GetOwner() != msg.GetSender() {
 		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
 
 	k.RemoveQueryByID(ctx, query.Id)
+	k.MustPayOutDeposit(ctx, query.GetDepositCoin(), msg.GetSigners()[0])
 	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		k.removeQueryResultByID(ctx, query.Id)
 	}

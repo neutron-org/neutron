@@ -10,6 +10,8 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 var (
 	KeyQuerySubmitTimeout     = []byte("QuerySubmitTimeout")
 	DefaultQuerySubmitTimeout = uint64(518400) // One month, with block_time = 5s
+	KeyQueryDeposit           = []byte("QueryDeposit")
+	DefaultQueryDeposit       = uint64(1000000)
 )
 
 // ParamKeyTable the param key table for launch module
@@ -18,21 +20,23 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(querySubmitTimeout uint64) Params {
+func NewParams(querySubmitTimeout uint64, queryDeposit uint64) Params {
 	return Params{
 		QuerySubmitTimeout: querySubmitTimeout,
+		QueryDeposit:       queryDeposit,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultQuerySubmitTimeout)
+	return NewParams(DefaultQuerySubmitTimeout, DefaultQueryDeposit)
 }
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, &p.QuerySubmitTimeout, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyQueryDeposit, &p.QueryDeposit, func(value interface{}) error { return nil }),
 	}
 }
 

@@ -289,24 +289,17 @@ func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo *types.RegisteredQuer
 
 	err = k.bank.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, sdk.NewCoins(queryInfo.GetDepositCoin()))
 	if err != nil {
-		return sdkerrors.Wrapf(err, types.ErrNotEnoughDeposit.Error())
+		return sdkerrors.Wrapf(err, types.ErrNotEnoughDeposit.Error(), queryInfo.GetDepositCoin())
 	}
 
 	return nil
 }
 
-func (k *Keeper) MustPayOutDeposit(ctx sdk.Context, queryInfo *types.RegisteredQuery, signer sdk.AccAddress) {
-	owner, err := queryInfo.GetOwnerAddress()
+func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coin, sender sdk.AccAddress) error {
+	err := k.bank.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, sdk.NewCoins(deposit))
 	if err != nil {
-		panic(err.Error())
+		panic(types.ErrCannotPayDeposit.Error())
 	}
 
-	if signer.Equals(owner) {
-		deposit := queryInfo.GetDepositCoin()
-
-		err = k.bank.SendCoinsFromModuleToAccount(ctx, types.ModuleName, signer, sdk.NewCoins(deposit))
-		if err != nil {
-			panic(types.ErrCannotPayDeposit.Error())
-		}
-	}
+	return nil
 }
