@@ -44,7 +44,6 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 			{Path: host.StoreKey, Key: clientKey},
 		},
 		QueryType:         string(icqtypes.InterchainQueryTypeKV),
-		ZoneId:            "osmosis",
 		UpdatePeriod:      1,
 		ConnectionId:      suite.Path.EndpointA.ConnectionID,
 		LastEmittedHeight: uint64(ctx.BlockHeight()),

@@ -28,7 +28,6 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          "invalid_type",
-					ZoneId:             "id",
 					UpdatePeriod:       1,
 					Sender:             TestAddress,
 				}
@@ -43,7 +42,6 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					TransactionsFilter: "&)(^Y(*&(*&(&(*",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "id",
 					UpdatePeriod:       1,
 					Sender:             TestAddress,
 				}
@@ -58,7 +56,6 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "osmosis",
 					UpdatePeriod:       0,
 					Sender:             TestAddress,
 				}
@@ -73,7 +70,6 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "osmosis",
 					UpdatePeriod:       1,
 					Sender:             "",
 				}
@@ -88,7 +84,6 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "osmosis",
 					UpdatePeriod:       1,
 					Sender:             "cosmos14234_invalid_address",
 				}
@@ -103,27 +98,11 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "osmosis",
 					UpdatePeriod:       1,
 					Sender:             TestAddress,
 				}
 			},
 			iqtypes.ErrInvalidConnectionID,
-		},
-		{
-			"invalid zone id",
-			func() sdktypes.Msg {
-				return &iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       "connection-0",
-					TransactionsFilter: "{}",
-					Keys:               nil,
-					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "",
-					UpdatePeriod:       1,
-					Sender:             TestAddress,
-				}
-			},
-			iqtypes.ErrInvalidZoneID,
 		},
 		{
 			"valid",
@@ -133,7 +112,6 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
-					ZoneId:             "osmosis",
 					UpdatePeriod:       1,
 					Sender:             TestAddress,
 				}
@@ -497,7 +475,6 @@ func TestMsgRegisterInterchainQueryGetSigners(t *testing.T) {
 					TransactionsFilter: "{}",
 					Keys:               nil,
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
-					ZoneId:             "osmosis",
 					UpdatePeriod:       1,
 					Sender:             TestAddress,
 				}

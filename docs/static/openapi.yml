@@ -29734,8 +29734,6 @@ paths:
                       type: string
                     query_type:
                       type: string
-                    zone_id:
-                      type: string
                     connection_id:
                       type: string
                     update_period:
@@ -50968,8 +50966,6 @@ definitions:
               type: string
             query_type:
               type: string
-            zone_id:
-              type: string
             connection_id:
               type: string
             update_period:
@@ -51269,8 +51265,6 @@ definitions:
       query_data:
         type: string
       query_type:
-        type: string
-      zone_id:
         type: string
       connection_id:
         type: string

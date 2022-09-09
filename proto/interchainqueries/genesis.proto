@@ -22,23 +22,20 @@ message RegisteredQuery {
   // The filter for transaction search ICQ
   string transactions_filter = 5;
 
-  // The chain of interest identifier.
-  string zone_id = 6;
-
   // The IBC connection ID for getting ConsensusState to verify proofs
-  string connection_id = 7;
+  string connection_id = 6;
 
   // Parameter that defines how often the query must be updated.
-  uint64 update_period = 8;
+  uint64 update_period = 7;
 
   // The local height when the event to update the query result was emitted last time.
-  uint64 last_emitted_height = 9;
+  uint64 last_emitted_height = 8;
 
   // The local chain last block height when the query result was updated.
-  uint64 last_submitted_result_local_height = 10;
+  uint64 last_submitted_result_local_height = 9;
 
   // The remote chain last block height when the query result was updated.
-  uint64 last_submitted_result_remote_height = 11;
+  uint64 last_submitted_result_remote_height = 10;
 }
 
 message KVKey {

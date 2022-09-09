@@ -18,9 +18,9 @@ const (
 	// registrator of an interchain query.
 	AttributeKeyOwner = "owner"
 
-	// AttributeKeyZoneID represents the key for event attribute delivering the zone ID where the
-	// event has been produced.
-	AttributeKeyZoneID = "zone_id"
+	// AttributeKeyConnectionID represents the key for event attribute delivering the connection ID
+	// of an interchain query.
+	AttributeKeyConnectionID = "connection_id"
 
 	// AttributeKeyQueryType represents the key for event attribute delivering the query type
 	// identifier (e.g. 'kv' or 'tx')
