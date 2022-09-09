@@ -60,6 +60,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		QueryType:          msg.QueryType,
 		UpdatePeriod:       msg.UpdatePeriod,
 		ConnectionId:       msg.ConnectionId,
+		Deposit:            msg.Deposit,
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)

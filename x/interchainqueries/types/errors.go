@@ -23,4 +23,7 @@ var (
 	ErrInvalidHeight             = sdkerrors.Register(ModuleName, 1114, "height is invalid")
 	ErrNoQueryResult             = sdkerrors.Register(ModuleName, 1115, "no query result")
 	ErrNotContract               = sdkerrors.Register(ModuleName, 1116, "not a contract")
+	ErrNotEnoughDeposit          = sdkerrors.Register(ModuleName, 1117, "not enough deposit")
+	ErrCannotPayDeposit          = sdkerrors.Register(ModuleName, 1118, "can not pay deposit to signer")
+	ErrInvalidOwner              = sdkerrors.Register(ModuleName, 1119, "owner address is invalid: %s")
 )
