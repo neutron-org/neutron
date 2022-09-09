@@ -81,7 +81,6 @@ func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindi
 		Keys:                            grpcQuery.GetKeys(),
 		TransactionsFilter:              grpcQuery.GetTransactionsFilter(),
 		QueryType:                       grpcQuery.GetQueryType(),
-		ZoneId:                          grpcQuery.GetZoneId(),
 		ConnectionId:                    grpcQuery.GetConnectionId(),
 		UpdatePeriod:                    grpcQuery.GetUpdatePeriod(),
 		LastSubmittedResultLocalHeight:  grpcQuery.GetLastSubmittedResultLocalHeight(),

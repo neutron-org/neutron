@@ -45,7 +45,6 @@ type RegisterInterchainQuery struct {
 	QueryType          string         `json:"query_type"`
 	Keys               []*types.KVKey `json:"keys"`
 	TransactionsFilter string         `json:"transactions_filter"`
-	ZoneId             string         `json:"zone_id"`
 	ConnectionId       string         `json:"connection_id"`
 	UpdatePeriod       uint64         `json:"update_period"`
 }

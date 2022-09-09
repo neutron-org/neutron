@@ -61,8 +61,6 @@ type RegisteredQuery struct {
 	TransactionsFilter string `json:"transactions_filter"`
 	// The query type identifier (i.e. 'kv' or 'tx' for now).
 	QueryType string `json:"query_type"`
-	// The chain of interest identifier.
-	ZoneId string `json:"zone_id"`
 	// The IBC connection ID for getting ConsensusState to verify proofs.
 	ConnectionId string `json:"connection_id"`
 	// Parameter that defines how often the query must be updated.
