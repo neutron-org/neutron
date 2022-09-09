@@ -43,7 +43,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 		Keys: []*icqtypes.KVKey{
 			{Path: host.StoreKey, Key: clientKey},
 		},
-		QueryType:    string(icqtypes.InterchainQueryTypeKV),
+		QueryType: string(icqtypes.InterchainQueryTypeKV),
 
 		UpdatePeriod: 1,
 		ConnectionId: suite.Path.EndpointA.ConnectionID,
