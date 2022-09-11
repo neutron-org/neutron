@@ -14,6 +14,7 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 
+	neutrontypes "github.com/neutron-org/neutron/internal/types"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -68,7 +69,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrapf(err, "failed to save query: %v", err)
 	}
 
-	ctx.EventManager().EmitEvents(getQueryUpdatedEvents(&registeredQuery))
+	ctx.EventManager().EmitEvents(getEventsQueryUpdated(&registeredQuery))
 
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
 }
@@ -95,19 +96,7 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		k.removeQueryResultByID(ctx, query.Id)
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
-			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
-			sdk.NewAttribute(types.AttributeKeyConnectionID, query.ConnectionId),
-			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
-			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
-			sdk.NewAttribute(types.AttributeTransactionsFilterQuery, query.TransactionsFilter),
-			sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(query.Keys).String()),
-		),
-	})
+	ctx.EventManager().EmitEvents(getEventsQueryRemoved(query))
 
 	// NOTE: there is no easy way to remove the list of processed transactions
 	// without knowing transaction hashes.
@@ -145,7 +134,7 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 		return nil, sdkerrors.Wrapf(err, "failed to save query by query id: %v", err)
 	}
 
-	ctx.EventManager().EmitEvents(getQueryUpdatedEvents(query))
+	ctx.EventManager().EmitEvents(getEventsQueryUpdated(query))
 
 	return &types.MsgUpdateInterchainQueryResponse{}, nil
 }
@@ -275,12 +264,28 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	return &types.MsgSubmitQueryResultResponse{}, nil
 }
 
-func getQueryUpdatedEvents(query *types.RegisteredQuery) sdk.Events {
+func getEventsQueryUpdated(query *types.RegisteredQuery) sdk.Events {
 	return sdk.Events{
 		sdk.NewEvent(
-			sdk.EventTypeMessage,
+			neutrontypes.EventTypeNeutronMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryUpdated),
+			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
+			sdk.NewAttribute(types.AttributeKeyConnectionID, query.ConnectionId),
+			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
+			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
+			sdk.NewAttribute(types.AttributeTransactionsFilterQuery, query.TransactionsFilter),
+			sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(query.Keys).String()),
+		),
+	}
+}
+
+func getEventsQueryRemoved(query *types.RegisteredQuery) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			neutrontypes.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
 			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
 			sdk.NewAttribute(types.AttributeKeyConnectionID, query.ConnectionId),
 			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
