@@ -46,7 +46,12 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 		query := types.RegisteredQuery{}
 		k.cdc.MustUnmarshal(value, &query)
 
-		if req.GetOwner() == "" || query.GetOwner() == req.GetOwner() {
+		var (
+			passedOwnerFilter        = len(req.GetOwner()) == 0 || containsString(req.GetOwner(), query.GetOwner())
+			passesConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
+		)
+
+		if passedOwnerFilter && passesConnectionIDFilter {
 			queries = append(queries, query)
 		}
 
@@ -88,4 +93,14 @@ func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLast
 	}
 
 	return &types.QueryLastRemoteHeightResponse{Height: m.LatestHeight.RevisionHeight}, nil
+}
+
+func containsString(x []string, y string) bool {
+	for _, v := range x {
+		if v == y {
+			return true
+		}
+	}
+
+	return false
 }
