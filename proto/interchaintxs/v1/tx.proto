@@ -13,17 +13,17 @@ import "google/protobuf/any.proto";
 service Msg {
   rpc RegisterInterchainAccount(MsgRegisterInterchainAccount)
       returns (MsgRegisterInterchainAccountResponse) {
-    option (google.api.http) = {
-      post : "/neutron/interchainadapter/interchaintxs/tx/v1/register/"
-             "interchain/account"
-      body : "*"
-    };
+//    option (google.api.http) = {
+//      post : "/neutron/interchainadapter/interchaintxs/tx/v1/register/"
+//             "interchain/account"
+//      body : "*"
+//    };
   };
   rpc SubmitTx(MsgSubmitTx) returns (MsgSubmitTxResponse) {
-    option (google.api.http) = {
-      post : "/neutron/interchainadapter/interchaintxs/tx/v1/submit/tx"
-      body : "*"
-    };
+//    option (google.api.http) = {
+//      post : "/neutron/interchainadapter/interchaintxs/tx/v1/submit/tx"
+//      body : "*"
+//    };
   };
 }
 

@@ -49,8 +49,9 @@ message QueryParamsResponse {
 }
 
 message QueryRegisteredQueriesRequest {
-  string owner = 1;
-  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  repeated string owner = 1;
+  string connection_id = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 message QueryRegisteredQueriesResponse {
