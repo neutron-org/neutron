@@ -14,7 +14,6 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
 
-	neutrontypes "github.com/neutron-org/neutron/internal/types"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -267,7 +266,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 func getEventsQueryUpdated(query *types.RegisteredQuery) sdk.Events {
 	return sdk.Events{
 		sdk.NewEvent(
-			neutrontypes.EventTypeNeutronMessage,
+			types.EventTypeNeutronMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryUpdated),
 			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
@@ -283,7 +282,7 @@ func getEventsQueryUpdated(query *types.RegisteredQuery) sdk.Events {
 func getEventsQueryRemoved(query *types.RegisteredQuery) sdk.Events {
 	return sdk.Events{
 		sdk.NewEvent(
-			neutrontypes.EventTypeNeutronMessage,
+			types.EventTypeNeutronMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
 			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
