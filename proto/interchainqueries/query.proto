@@ -49,7 +49,7 @@ message QueryParamsResponse {
 }
 
 message QueryRegisteredQueriesRequest {
-  repeated string owner = 1;
+  repeated string owners = 1;
   string connection_id = 2;
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }

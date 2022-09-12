@@ -47,7 +47,7 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 		k.cdc.MustUnmarshal(value, &query)
 
 		var (
-			passedOwnerFilter        = len(req.GetOwner()) == 0 || containsString(req.GetOwner(), query.GetOwner())
+			passedOwnerFilter        = len(req.GetOwners()) == 0 || containsString(req.GetOwners(), query.GetOwner())
 			passesConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
 		)
 

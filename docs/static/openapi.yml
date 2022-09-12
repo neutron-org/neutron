@@ -33604,7 +33604,7 @@ paths:
                           "value": "1.212s"
                         }
       parameters:
-        - name: owner
+        - name: owners
           in: query
           required: false
           type: array
