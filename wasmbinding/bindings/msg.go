@@ -32,7 +32,7 @@ type SubmitTx struct {
 type SubmitTxResponse struct {
 	// SequenceId is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
 	SequenceId uint64 `json:"sequence_id"`
-	// Channek is a src channel on neutron side trasaction was submitted from
+	// Channel is a src channel on neutron side transaction was submitted from
 	Channel string `json:"channel"`
 }
 
