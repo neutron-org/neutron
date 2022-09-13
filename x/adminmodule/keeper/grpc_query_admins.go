@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
-	"github.com/cosmos/admin-module/x/adminmodule/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

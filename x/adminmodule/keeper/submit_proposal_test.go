@@ -2,11 +2,12 @@ package keeper_test
 
 import (
 	"errors"
+	"strings"
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"testing"
 )
 
 var TestProposal = govtypes.NewTextProposal("Test", "description")

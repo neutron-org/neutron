@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/cosmos/admin-module/x/adminmodule/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 	"github.com/stretchr/testify/require"
 )
 

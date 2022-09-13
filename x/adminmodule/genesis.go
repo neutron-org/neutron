@@ -1,9 +1,9 @@
 package adminmodule
 
 import (
-	"github.com/cosmos/admin-module/x/adminmodule/keeper"
-	"github.com/cosmos/admin-module/x/adminmodule/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/neutron-org/neutron/x/adminmodule/keeper"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

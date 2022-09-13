@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/cosmos/admin-module/x/adminmodule/types"
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"time"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 )
 
 // SubmitProposal create new proposal given a content
@@ -122,7 +123,7 @@ func (k Keeper) ActiveProposalQueueIterator(ctx sdk.Context, endTime time.Time) 
 }
 
 func (k Keeper) MarshalProposal(proposal govtypes.Proposal) ([]byte, error) {
-	bz, err := k.cdc.MarshalBinaryBare(&proposal)
+	bz, err := k.cdc.Marshal(&proposal)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +131,7 @@ func (k Keeper) MarshalProposal(proposal govtypes.Proposal) ([]byte, error) {
 }
 
 func (k Keeper) UnmarshalProposal(bz []byte, proposal *govtypes.Proposal) error {
-	err := k.cdc.UnmarshalBinaryBare(bz, proposal)
+	err := k.cdc.Unmarshal(bz, proposal)
 	if err != nil {
 		return err
 	}
