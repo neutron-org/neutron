@@ -99,6 +99,9 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	adminmodulemodule "github.com/neutron-org/neutron/x/adminmodule"
+	adminmodulemodulekeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
+	adminmodulemoduletypes "github.com/neutron-org/neutron/x/adminmodule/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -196,6 +199,7 @@ var (
 		gov.NewAppModuleBasic(getGovProposalHandlers()...),
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
+		adminmodulemodule.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -249,6 +253,7 @@ type App struct {
 
 	// keepers
 	AccountKeeper       authkeeper.AccountKeeper
+	AdminmoduleKeeper   adminmodulemodulekeeper.Keeper
 	AuthzKeeper         authzkeeper.Keeper
 	BankKeeper          bankkeeper.Keeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
@@ -332,6 +337,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey,
+		adminmodulemoduletypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -457,6 +463,22 @@ func New(
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate,neutron"
 
+	// register the proposal types
+	adminRouter := govtypes.NewRouter()
+	adminRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
+		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
+		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+
+	app.AdminmoduleKeeper = *adminmodulemodulekeeper.NewKeeper(
+		appCodec,
+		keys[adminmodulemoduletypes.StoreKey],
+		keys[adminmodulemoduletypes.MemStoreKey],
+		adminRouter,
+	)
+	adminModule := adminmodulemodule.NewAppModule(appCodec, app.AdminmoduleKeeper)
+
 	app.InterchainQueriesKeeper = *interchainqueriesmodulekeeper.NewKeeper(
 		appCodec,
 		keys[interchainqueriesmoduletypes.StoreKey],
@@ -562,6 +584,7 @@ func New(
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,
+		adminModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -571,6 +594,7 @@ func New(
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
+		adminmodulemoduletypes.ModuleName,
 		minttypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -595,6 +619,7 @@ func New(
 
 	app.mm.SetOrderEndBlockers(
 		crisistypes.ModuleName,
+		adminmodulemoduletypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		capabilitytypes.ModuleName,
@@ -646,6 +671,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		wasm.ModuleName,
+		adminmodulemoduletypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -889,6 +915,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
 	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
+	paramsKeeper.Subspace(adminmodulemoduletypes.ModuleName)
 
 	return paramsKeeper
 }
