@@ -125,7 +125,7 @@ require (
 )
 
 replace (
-	github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.1-0.20220912095145-d2f664b274e2
+	github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.0-keep-ibc-events
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
