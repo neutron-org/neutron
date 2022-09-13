@@ -472,12 +472,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 	tests := []struct {
 		name          string
-		malleate      func(sender string)
+		malleate      func(sender string, ctx sdktypes.Context)
 		expectedError error
 	}{
 		{
 			"invalid query id",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
@@ -509,7 +509,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"valid KV storage proof",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
@@ -523,7 +523,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				//suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -559,7 +559,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"non-registered key in KV result",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
@@ -574,7 +574,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
@@ -608,7 +608,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"non-registered path in KV result",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
@@ -623,7 +623,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -659,7 +659,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"non existence KV proof",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 				clientKey := []byte("non_existed_key")
 
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
@@ -674,7 +674,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				//suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -711,7 +711,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"header with invalid height",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
@@ -725,7 +725,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -760,7 +760,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"invalid KV storage value",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
@@ -774,7 +774,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -809,7 +809,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"query result height is too old",
-			func(sender string) {
+			func(sender string, ctx sdktypes.Context) {
 
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
@@ -825,14 +825,14 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// pretend like we have a very new query result
-				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(suite.ChainA.GetContext(), res.Id, 9999))
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, 9999))
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
@@ -869,12 +869,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			suite.SetupTest()
 
 			var (
+				ctx           = suite.ChainA.GetContext()
 				contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 			)
 
 			// Store code and instantiate reflect contract.
-			codeId := suite.StoreReflectCode(suite.ChainA.GetContext(), contractOwner, reflectContractPath)
-			contractAddress := suite.InstantiateReflectContract(suite.ChainA.GetContext(), contractOwner, codeId)
+			codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
+			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
 			suite.Require().NotEmpty(contractAddress)
 
 			err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -884,13 +885,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 			coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(10_000_000))))
 			bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
-			bankKeeper.SendCoins(suite.ChainA.GetContext(), senderAddress, contractAddress, coinsAmnt)
+			bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
 
-			tt.malleate(contractAddress.String())
+			tt.malleate(contractAddress.String(), ctx)
 
 			msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-			res, err := msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &msg)
+			res, err := msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(ctx), &msg)
 
 			if tt.expectedError != nil {
 				suite.Require().ErrorIs(err, tt.expectedError)
