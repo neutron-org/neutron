@@ -23,6 +23,7 @@ services:
     environment:
       - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
       - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://node:16657
+      - RELAYER_NEUTRON_CHAIN_REST_ADDR=https://node:1316
       - RELAYER_NEUTRON_CHAIN_CHAIN_ID=test-1
       - RELAYER_NEUTRON_CHAIN_HOME_DIR=/data/test-1
       - RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=demowallet3
