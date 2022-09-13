@@ -7,7 +7,7 @@ import (
 
 func (queryInfo *RegisteredQuery) GetOwnerAddress() (creator sdk.AccAddress, err error) {
 	creator, errCreator := sdk.AccAddressFromBech32(queryInfo.Owner)
-	return creator, sdkerrors.Wrapf(errCreator, ErrInvalidOwner.Error(), queryInfo.Owner)
+	return creator, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode owner address: %s", msg.Sender)
 }
 
 func (queryInfo *RegisteredQuery) GetDepositCoin() (wager sdk.Coin) {
