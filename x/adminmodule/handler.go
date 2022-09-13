@@ -3,10 +3,10 @@ package adminmodule
 import (
 	"fmt"
 
-	"github.com/cosmos/admin-module/x/adminmodule/keeper"
-	"github.com/cosmos/admin-module/x/adminmodule/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/neutron-org/neutron/x/adminmodule/keeper"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 )
 
 // NewHandler ...

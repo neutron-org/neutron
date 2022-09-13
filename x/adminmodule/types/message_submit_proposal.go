@@ -2,14 +2,15 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	distrTypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	clientUpdate "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	upgradeTypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	clientUpdate "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	"github.com/gogo/protobuf/proto"
 	"gopkg.in/yaml.v2"
 )

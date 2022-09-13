@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"fmt"
-	"github.com/cosmos/admin-module/x/adminmodule/types"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 )
 
 func (k msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitProposal) (*types.MsgSubmitProposalResponse, error) {

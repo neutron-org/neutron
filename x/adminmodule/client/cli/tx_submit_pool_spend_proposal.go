@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cosmos/admin-module/x/adminmodule/types"
+	"io/ioutil"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 )
 
 // NewSubmitPoolSpendProposalTxCmd implements the command to submit a community-pool-spend proposal
@@ -47,7 +48,7 @@ Where proposal.json contains:
 			if err != nil {
 				return err
 			}
-			proposal, err := ParseCommunityPoolSpendProposalWithDeposit(clientCtx.JSONMarshaler, args[0])
+			proposal, err := ParseCommunityPoolSpendProposalWithDeposit(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			}
@@ -81,7 +82,7 @@ Where proposal.json contains:
 }
 
 // ParseCommunityPoolSpendProposalWithDeposit reads and parses a CommunityPoolSpendProposalWithDeposit from a file.
-func ParseCommunityPoolSpendProposalWithDeposit(cdc codec.JSONMarshaler, proposalFile string) (distrtypes.CommunityPoolSpendProposalWithDeposit, error) {
+func ParseCommunityPoolSpendProposalWithDeposit(cdc codec.JSONCodec, proposalFile string) (distrtypes.CommunityPoolSpendProposalWithDeposit, error) {
 	proposal := distrtypes.CommunityPoolSpendProposalWithDeposit{}
 
 	contents, err := ioutil.ReadFile(proposalFile)

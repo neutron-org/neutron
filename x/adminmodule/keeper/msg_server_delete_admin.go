@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"fmt"
-	"github.com/cosmos/admin-module/x/adminmodule/types"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 )
 
 func (k msgServer) DeleteAdmin(goCtx context.Context, msg *types.MsgDeleteAdmin) (*types.MsgDeleteAdminResponse, error) {

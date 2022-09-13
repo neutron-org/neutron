@@ -2,11 +2,12 @@ package rest
 
 import (
 	"fmt"
-	"github.com/cosmos/admin-module/x/adminmodule/types"
+	"net/http"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/neutron-org/neutron/x/adminmodule/types"
 )
 
 func registerQueryRoutes(clientCtx client.Context, r *mux.Router) {
