@@ -3,7 +3,6 @@ package keeper
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -91,10 +90,6 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 			"error", err, "query_id", msg.QueryId)
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
-
-	fmt.Println("RemoveInterchainQuery")
-	fmt.Println(query)
-	fmt.Println(k.GetParams(ctx))
 
 	timeoutBlock := query.LastSubmittedResultLocalHeight + k.GetParams(ctx).QuerySubmitTimeout
 	if uint64(ctx.BlockHeight()) <= timeoutBlock && query.GetOwner() != msg.GetSender() {
