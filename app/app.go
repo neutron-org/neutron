@@ -89,7 +89,6 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v3/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v3/modules/core/02-client"
@@ -117,6 +116,7 @@ import (
 	interchaintxskeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	transferSudo "github.com/neutron-org/neutron/x/transfer"
+	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 )
 
 const (
@@ -262,7 +262,7 @@ type App struct {
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	EvidenceKeeper      evidencekeeper.Keeper
-	TransferKeeper      ibctransferkeeper.Keeper
+	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
 
 	// make scoped keepers public for test purposes
@@ -431,12 +431,12 @@ func New(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	// Create Transfer Keepers
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	transferModule := transfer.NewAppModule(app.TransferKeeper)
+	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
 
@@ -465,6 +465,7 @@ func New(
 		keys[interchaintxstypes.StoreKey],
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.GetSubspace(interchaintxstypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
 		&app.WasmKeeper,
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
