@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -91,6 +92,10 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 
+	fmt.Println("RemoveInterchainQuery")
+	fmt.Println(query)
+	fmt.Println(k.GetParams(ctx))
+
 	timeoutBlock := query.LastSubmittedResultLocalHeight + k.GetParams(ctx).QuerySubmitTimeout
 	if uint64(ctx.BlockHeight()) <= timeoutBlock && query.GetOwner() != msg.GetSender() {
 		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
@@ -99,7 +104,7 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 	}
 
 	k.RemoveQueryByID(ctx, query.Id)
-	k.MustPayOutDeposit(ctx, query.GetDepositCoin(), msg.GetSigners()[0])
+	k.MustPayOutDeposit(ctx, query.Deposit, msg.GetSigners()[0])
 	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		k.removeQueryResultByID(ctx, query.Id)
 	}

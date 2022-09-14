@@ -3,8 +3,8 @@ package bindings
 import (
 	"encoding/json"
 
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -75,7 +75,7 @@ type RegisteredQuery struct {
 	// The remote chain last block height when the query result was updated.
 	LastSubmittedResultRemoteHeight uint64 `json:"last_submitted_result_remote_height"`
 	// Amount of coins deposited for the query.
-	Deposit uint64 `json:"deposit"`
+	QueryDeposit sdktypes.Coins `json:"query_deposit"`
 }
 
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {

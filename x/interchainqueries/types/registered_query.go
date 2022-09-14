@@ -13,7 +13,3 @@ func (queryInfo *RegisteredQuery) GetOwnerAddress() (creator sdk.AccAddress, err
 
 	return creator, nil
 }
-
-func (queryInfo *RegisteredQuery) GetDepositCoin() (wager sdk.Coin) {
-	return sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(int64(queryInfo.Deposit)))
-}
