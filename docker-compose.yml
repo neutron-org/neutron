@@ -50,6 +50,7 @@ services:
       - RELAYER_ALLOW_TX_QUERIES=true
       - RELAYER_ALLOW_KV_CALLBACKS=true
       - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
+      - RELAYER_CHECK_SUBMITTED_TX_STATUS_DELAY=10
 volumes:
   data:
     external: false
