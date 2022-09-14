@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 
@@ -29,11 +30,12 @@ const (
 
 type (
 	Keeper struct {
-		Codec        codec.BinaryCodec
-		storeKey     storetypes.StoreKey
-		memKey       storetypes.StoreKey
-		paramstore   paramtypes.Subspace
-		scopedKeeper capabilitykeeper.ScopedKeeper
+		Codec         codec.BinaryCodec
+		storeKey      storetypes.StoreKey
+		memKey        storetypes.StoreKey
+		paramstore    paramtypes.Subspace
+		scopedKeeper  capabilitykeeper.ScopedKeeper
+		channelKeeper icatypes.ChannelKeeper
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
 		wasmKeeper          *wasm.Keeper
@@ -46,6 +48,7 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
+	channelKeeper icatypes.ChannelKeeper,
 
 	wasmKeeper *wasm.Keeper,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
@@ -57,10 +60,11 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		Codec:      cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
+		Codec:         cdc,
+		storeKey:      storeKey,
+		memKey:        memKey,
+		paramstore:    ps,
+		channelKeeper: channelKeeper,
 
 		icaControllerKeeper: icaControllerKeeper,
 		scopedKeeper:        scopedKeeper,
