@@ -295,11 +295,9 @@ func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo *types.RegisteredQuer
 	return nil
 }
 
-func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk.AccAddress) error {
+func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk.AccAddress) {
 	err := k.bank.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, deposit)
 	if err != nil {
-		panic(types.ErrCannotPayDeposit.Error())
+		panic(err.Error())
 	}
-
-	return nil
 }
