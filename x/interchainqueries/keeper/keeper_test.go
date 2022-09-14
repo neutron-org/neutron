@@ -401,45 +401,6 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestRemoveInterchainTransactionsInfoWithQuery() {
-	//TODO: find out a way to remove info about processed txs alongside with removing query itself.
-	//originalQuery := iqtypes.MsgRegisterInterchainQuery{
-	//	ConnectionId: suite.Path.EndpointA.ConnectionID,
-	//	QueryData:    `{"message.module": "bank"}`,
-	//	QueryType:    "x/tx/RecipientTransactions",
-	//	UpdatePeriod: 1,
-	//	Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
-	//}
-	//
-	//ctx := suite.ChainA.GetContext()
-	//queriesKeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
-	//
-	//msgSrv := keeper.NewMsgServerImpl(queriesKeeper)
-	//
-	//resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &originalQuery)
-	//suite.Require().NoError(err)
-	//suite.Require().NotNil(resRegister)
-	//queryID := uint64(1)
-	//
-	//for i := uint8(0); i < 255; i++ {
-	//	queriesKeeper.SaveTransactionAsProcessed(ctx, queryID, []byte{i})
-	//}
-	//for i := uint8(0); i < 255; i++ {
-	//	suite.Require().True(queriesKeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, []byte{i}))
-	//}
-	//
-	//msg := iqtypes.MsgRemoveInterchainQueryRequest{
-	//	QueryId: 1,
-	//	Sender:  "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
-	//}
-	//resRemove, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &msg)
-	//suite.Require().NoError(err)
-	//suite.Require().NotNil(resRemove)
-	//for i := uint8(0); i < 255; i++ {
-	//	suite.Require().False(queriesKeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, []byte{i}))
-	//}
-}
-
 func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	var msg iqtypes.MsgSubmitQueryResult
 
