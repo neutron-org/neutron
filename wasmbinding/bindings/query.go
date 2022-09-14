@@ -74,6 +74,8 @@ type RegisteredQuery struct {
 	LastSubmittedResultLocalHeight uint64 `json:"last_submitted_result_local_height"`
 	// The remote chain last block height when the query result was updated.
 	LastSubmittedResultRemoteHeight uint64 `json:"last_submitted_result_remote_height"`
+	// Amount of coins deposited for the query.
+	Deposit uint64 `json:"deposit"`
 }
 
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
