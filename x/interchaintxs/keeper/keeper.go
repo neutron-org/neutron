@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
