@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -47,7 +48,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
+	paramstore paramtypes.Subspace,
 	channelKeeper icatypes.ChannelKeeper,
 
 	wasmKeeper *wasm.Keeper,
@@ -55,15 +56,15 @@ func NewKeeper(
 	scopedKeeper capabilitykeeper.ScopedKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
+	if !paramstore.HasKeyTable() {
+		paramstore = paramstore.WithKeyTable(types.ParamKeyTable())
 	}
 
 	return &Keeper{
 		Codec:         cdc,
 		storeKey:      storeKey,
 		memKey:        memKey,
-		paramstore:    ps,
+		paramstore:    paramstore,
 		channelKeeper: channelKeeper,
 
 		icaControllerKeeper: icaControllerKeeper,
@@ -73,7 +74,7 @@ func NewKeeper(
 	}
 }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 

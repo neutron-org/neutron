@@ -59,7 +59,8 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=neutron \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=neutrond \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
+		  -X "github.com/neutron-org/neutron/app.EnableSpecificProposals=MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes"
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
