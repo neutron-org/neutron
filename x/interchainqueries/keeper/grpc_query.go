@@ -39,8 +39,10 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
-	queries := make([]types.RegisteredQuery, 0, req.Pagination.Limit)
+	var (
+		store   = prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
+		queries []types.RegisteredQuery
+	)
 
 	pageRes, err := querytypes.Paginate(store, req.Pagination, func(key, value []byte) error {
 		query := types.RegisteredQuery{}

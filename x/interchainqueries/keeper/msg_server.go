@@ -287,10 +287,6 @@ func getEventsQueryRemoved(query *types.RegisteredQuery) sdk.Events {
 			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
 			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
 			sdk.NewAttribute(types.AttributeKeyConnectionID, query.ConnectionId),
-			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
-			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
-			sdk.NewAttribute(types.AttributeTransactionsFilterQuery, query.TransactionsFilter),
-			sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(query.Keys).String()),
 		),
 	}
 }
