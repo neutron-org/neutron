@@ -3,7 +3,7 @@ module github.com/neutron-org/neutron
 go 1.18
 
 require (
-	github.com/CosmWasm/wasmd v0.27.0
+	github.com/CosmWasm/wasmd v0.28.0
 	github.com/CosmWasm/wasmvm v1.0.0
 	github.com/confio/ics23/go v0.7.0
 	github.com/cosmos/cosmos-sdk v0.45.5
@@ -13,11 +13,11 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/ignite/cli v0.23.0
-	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang v1.12.2
 	github.com/regen-network/cosmos-proto v0.3.1
-	github.com/spf13/cast v1.4.1
+	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.4.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.8.0
 	github.com/tendermint/tendermint v0.34.19
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
@@ -70,16 +70,13 @@ require (
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/go-git/gcfg v1.5.0 // indirect
-	github.com/go-git/go-billy/v5 v5.0.0 // indirect
-	github.com/go-git/go-git/v5 v5.1.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/goccy/go-yaml v1.9.4 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/gateway v1.1.0 // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -177,7 +174,7 @@ require (
 )
 
 replace (
-	github.com/CosmWasm/wasmd v0.27.0 => github.com/neutron-org/wasmd v0.27.1-0.20220705054332-4f6cf43be829
+	github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.0-keep-ibc-events
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2

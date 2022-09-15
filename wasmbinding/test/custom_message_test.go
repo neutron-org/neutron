@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
@@ -86,12 +87,11 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	updatePeriod := uint64(20)
 
 	regMsg := bindings.RegisterInterchainQuery{
-		QueryType: icqtypes.InterchainQueryTypeKV,
+		QueryType: string(icqtypes.InterchainQueryTypeKV),
 		Keys: []*icqtypes.KVKey{
 			{Path: host.StoreKey, Key: clientKey},
 		},
 		TransactionsFilter: "{}",
-		ZoneId:             suite.ChainB.ChainID,
 		ConnectionId:       suite.Path.EndpointA.ConnectionID,
 		UpdatePeriod:       updatePeriod,
 	}
@@ -231,6 +231,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 	// Craft SubmitTx message
 	memo := "Jimmy"
+	timeout := 2000
 	msgs := `[{"type_url":"/cosmos.staking.v1beta1.MsgDelegate","value":[26,10,10,5,115,116,97,107,101,18,1,48]}]`
 	msgStr := []byte(fmt.Sprintf(
 		`
@@ -239,7 +240,8 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 		"connection_id": "%s",
 		"interchain_account_id": "%s",
 		"msgs": %s,
-		"memo": "%s"
+		"memo": "%s",
+		"timeout": %d
 	}
 }
 		`,
@@ -247,6 +249,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 		testutil.TestInterchainId,
 		msgs,
 		memo,
+		timeout,
 	))
 	var msg json.RawMessage
 	err = json.Unmarshal(msgStr, &msg)
@@ -254,12 +257,18 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 	// Dispatch SubmitTx message
 	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
-
 		Custom: msg,
 	})
 	suite.NoError(err)
+
+	var response bindings.SubmitTxResponse
+	err = json.Unmarshal(data[0], &response)
+	suite.NoError(err)
+
+	suite.NoError(err)
 	suite.Nil(events)
-	suite.Equal([][]byte{[]byte(`{}`)}, data)
+	suite.Equal(uint64(1), response.SequenceId)
+	suite.Equal("channel-0", response.Channel)
 }
 
 func TestMessengerTestSuite(t *testing.T) {

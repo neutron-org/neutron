@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package neutron.interchainadapter.transfer;
+
+option go_package = "github.com/neutron-org/neutron/x/transfer/types";
+
+import "gogoproto/gogo.proto";
+import "ibc/applications/transfer/v1/query.proto";
+import "google/api/annotations.proto";
+
+// Query provides defines the gRPC querier service.
+service Query {
+  // DenomTrace queries a denomination trace information.
+  rpc DenomTrace(ibc.applications.transfer.v1.QueryDenomTraceRequest) returns (ibc.applications.transfer.v1.QueryDenomTraceResponse) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/denom_traces/{hash}";
+  }
+
+  // DenomTraces queries all denomination traces.
+  rpc DenomTraces(ibc.applications.transfer.v1.QueryDenomTracesRequest) returns (ibc.applications.transfer.v1.QueryDenomTracesResponse) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/denom_traces";
+  }
+
+  // Params queries all parameters of the ibc-transfer module.
+  rpc Params(ibc.applications.transfer.v1.QueryParamsRequest) returns (ibc.applications.transfer.v1.QueryParamsResponse) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/params";
+  }
+
+  // DenomHash queries a denomination hash information.
+  rpc DenomHash(ibc.applications.transfer.v1.QueryDenomHashRequest) returns (ibc.applications.transfer.v1.QueryDenomHashResponse) {
+    option (google.api.http).get = "/ibc/apps/transfer/v1/denom_hashes/{trace}";
+  }
+}

@@ -43,8 +43,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 		Keys: []*icqtypes.KVKey{
 			{Path: host.StoreKey, Key: clientKey},
 		},
-		QueryType:         icqtypes.InterchainQueryTypeKV,
-		ZoneId:            "osmosis",
+		QueryType:         string(icqtypes.InterchainQueryTypeKV),
 		UpdatePeriod:      1,
 		ConnectionId:      suite.Path.EndpointA.ConnectionID,
 		LastEmittedHeight: uint64(ctx.BlockHeight()),
@@ -116,7 +115,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 	}
 	resp := icqtypes.QueryRegisteredQueryResultResponse{}
 	err := suite.queryCustom(ctx, contractAddress, query, &resp)
-	expectedErrMsg := "Generic error: Querier contract error: codespace: interchainqueries, code: 1115: query wasm contract failed"
+	expectedErrMsg := fmt.Sprintf("Generic error: Querier contract error: codespace: interchainqueries, code: %d: query wasm contract failed", icqtypes.ErrNoQueryResult.ABCICode())
 	suite.Require().ErrorContains(err, expectedErrMsg)
 }
 

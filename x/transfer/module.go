@@ -4,12 +4,15 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
 	"github.com/neutron-org/neutron/internal/sudo"
+	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
+	neutrontypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
 /*
@@ -24,10 +27,10 @@ type IBCModule struct {
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k keeper.Keeper, wasmKeeper *wasm.Keeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, wasmKeeper *wasm.Keeper) IBCModule {
 	return IBCModule{
-		keeper:      k,
-		IBCModule:   transfer.NewIBCModule(k),
+		keeper:      k.Keeper,
+		IBCModule:   transfer.NewIBCModule(k.Keeper),
 		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
 	}
 }
@@ -59,4 +62,23 @@ func (im IBCModule) OnTimeoutPacket(
 		return sdkerrors.Wrap(err, "failed to process original OnTimeoutPacket")
 	}
 	return im.HandleTimeout(ctx, packet)
+}
+
+type AppModule struct {
+	transfer.AppModule
+	keeper wrapkeeper.KeeperTransferWrapper
+}
+
+// NewAppModule creates a new 20-transfer module
+func NewAppModule(k wrapkeeper.KeeperTransferWrapper) AppModule {
+	return AppModule{
+		AppModule: transfer.NewAppModule(k.Keeper),
+		keeper:    k,
+	}
+}
+
+// RegisterServices registers module services.
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
+	neutrontypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }

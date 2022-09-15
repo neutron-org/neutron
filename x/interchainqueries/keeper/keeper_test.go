@@ -41,43 +41,12 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 					ConnectionId:       "unknown",
 					TransactionsFilter: "[]",
 					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "id",
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					UpdatePeriod:       1,
 					Sender:             sender,
 				}
 			},
 			iqtypes.ErrInvalidConnectionID,
-		},
-		{
-			"invalid query type",
-			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "[]",
-					Keys:               nil,
-					QueryType:          "invalid_type",
-					ZoneId:             "id",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-			},
-			iqtypes.ErrInvalidQueryType,
-		},
-		{
-			"invalid transactions filter format",
-			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "&)(^Y(*&(*&(&(*",
-					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "id",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-			},
-			iqtypes.ErrInvalidQueryType,
 		},
 		{
 			"valid",
@@ -86,8 +55,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
 					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "osmosis",
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					UpdatePeriod:       1,
 					Sender:             sender,
 				}
@@ -131,7 +99,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	var msg iqtypes.MsgUpdateInterchainQueryRequest
 	originalQuery := iqtypes.MsgRegisterInterchainQuery{
-		QueryType: iqtypes.InterchainQueryTypeKV,
+		QueryType: string(iqtypes.InterchainQueryTypeKV),
 		Keys: []*iqtypes.KVKey{
 			{
 				Path: "somepath",
@@ -139,7 +107,6 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			},
 		},
 		TransactionsFilter: "",
-		ZoneId:             "osmosis",
 		ConnectionId:       suite.Path.EndpointA.ConnectionID,
 		UpdatePeriod:       1,
 		Sender:             "",
@@ -234,20 +201,6 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalQuery.Keys,
 		},
 		{
-			"failed due to empty request",
-			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQueryRequest{
-					QueryId:         1,
-					NewKeys:         nil,
-					NewUpdatePeriod: 0,
-					Sender:          sender,
-				}
-			},
-			iqtypes.ErrInvalidSubmittedResult,
-			originalQuery.UpdatePeriod,
-			originalQuery.Keys,
-		},
-		{
 			"failed due to auth error",
 			func(sender string) {
 				var (
@@ -320,10 +273,9 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 
 	var msg iqtypes.MsgRemoveInterchainQueryRequest
 	originalQuery := iqtypes.MsgRegisterInterchainQuery{
-		QueryType:          iqtypes.InterchainQueryTypeKV,
+		QueryType:          string(iqtypes.InterchainQueryTypeKV),
 		Keys:               nil,
 		TransactionsFilter: "",
-		ZoneId:             "osmosis",
 		ConnectionId:       suite.Path.EndpointA.ConnectionID,
 		UpdatePeriod:       1,
 		Sender:             "",
@@ -449,46 +401,6 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestRemoveInterchainTransactionsInfoWithQuery() {
-	//TODO: find out a way to remove info about processed txs alongside with removing query itself.
-	//originalQuery := iqtypes.MsgRegisterInterchainQuery{
-	//	ConnectionId: suite.Path.EndpointA.ConnectionID,
-	//	QueryData:    `{"message.module": "bank"}`,
-	//	QueryType:    "x/tx/RecipientTransactions",
-	//	ZoneId:       "osmosis",
-	//	UpdatePeriod: 1,
-	//	Sender:       "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
-	//}
-	//
-	//ctx := suite.ChainA.GetContext()
-	//queriesKeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
-	//
-	//msgSrv := keeper.NewMsgServerImpl(queriesKeeper)
-	//
-	//resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &originalQuery)
-	//suite.Require().NoError(err)
-	//suite.Require().NotNil(resRegister)
-	//queryID := uint64(1)
-	//
-	//for i := uint8(0); i < 255; i++ {
-	//	queriesKeeper.SaveTransactionAsProcessed(ctx, queryID, []byte{i})
-	//}
-	//for i := uint8(0); i < 255; i++ {
-	//	suite.Require().True(queriesKeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, []byte{i}))
-	//}
-	//
-	//msg := iqtypes.MsgRemoveInterchainQueryRequest{
-	//	QueryId: 1,
-	//	Sender:  "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
-	//}
-	//resRemove, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &msg)
-	//suite.Require().NoError(err)
-	//suite.Require().NotNil(resRemove)
-	//for i := uint8(0); i < 255; i++ {
-	//	suite.Require().False(queriesKeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, []byte{i}))
-	//}
-}
-
 func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	var msg iqtypes.MsgSubmitQueryResult
 
@@ -530,62 +442,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			iqtypes.ErrInvalidQueryID,
 		},
 		{
-			"empty result",
-			func(sender string) {
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "[]",
-					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "osmosis",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-
-				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
-
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
-				suite.Require().NoError(err)
-
-				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					ClientId: suite.Path.EndpointA.ClientID,
-				}
-			},
-			iqtypes.ErrEmptyResult,
-		},
-		{
-			"empty kv results and blocks",
-			func(sender string) {
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "[]",
-					Keys:               nil,
-					QueryType:          iqtypes.InterchainQueryTypeTX,
-					ZoneId:             "osmosis",
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-
-				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
-
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), &registerMsg)
-				suite.Require().NoError(err)
-
-				msg = iqtypes.MsgSubmitQueryResult{
-					Sender:   sender,
-					QueryId:  res.Id,
-					ClientId: suite.Path.EndpointA.ClientID,
-					Result: &iqtypes.QueryResult{
-						KvResults: nil,
-						Block:     nil,
-						Height:    0,
-					},
-				}
-			},
-			iqtypes.ErrEmptyResult,
-		},
-		{
 			"valid KV storage proof",
 			func(sender string) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
@@ -594,8 +450,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
-					ZoneId:       "osmosis",
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
 					Sender:       sender,
 				}
@@ -646,8 +501,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
-					ZoneId:       "osmosis",
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
 					Sender:       sender,
 				}
@@ -696,8 +550,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
-					ZoneId:       "osmosis",
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
 					Sender:       sender,
 				}
@@ -748,8 +601,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
-					ZoneId:       "osmosis",
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
 					Sender:       sender,
 				}
@@ -800,8 +652,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
-					ZoneId:       "osmosis",
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
 					Sender:       sender,
 				}
@@ -850,8 +701,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
-					ZoneId:       "osmosis",
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
 					Sender:       sender,
 				}
@@ -902,8 +752,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Keys: []*iqtypes.KVKey{
 						{Path: host.StoreKey, Key: clientKey},
 					},
-					QueryType:    iqtypes.InterchainQueryTypeKV,
-					ZoneId:       "osmosis",
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
 					Sender:       sender,
 				}

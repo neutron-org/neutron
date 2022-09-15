@@ -25,10 +25,16 @@ type SubmitTx struct {
 	InterchainAccountId string        `json:"interchain_account_id"`
 	Msgs                []ProtobufAny `json:"msgs"`
 	Memo                string        `json:"memo"`
+	Timeout             uint64        `json:"timeout"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.
-type SubmitTxResponse struct{}
+type SubmitTxResponse struct {
+	// SequenceId is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
+	SequenceId uint64 `json:"sequence_id"`
+	// Channel is a src channel on neutron side transaction was submitted from
+	Channel string `json:"channel"`
+}
 
 // RegisterInterchainAccount creates account on remote chain.
 type RegisterInterchainAccount struct {
@@ -44,7 +50,6 @@ type RegisterInterchainQuery struct {
 	QueryType          string         `json:"query_type"`
 	Keys               []*types.KVKey `json:"keys"`
 	TransactionsFilter string         `json:"transactions_filter"`
-	ZoneId             string         `json:"zone_id"`
 	ConnectionId       string         `json:"connection_id"`
 	UpdatePeriod       uint64         `json:"update_period"`
 }

@@ -55,7 +55,14 @@ message MsgSubmitTx {
   string connection_id = 3;
   repeated google.protobuf.Any msgs = 4;
   string memo = 5;
+  // timeout in seconds after which the packet times out
+  uint64 timeout = 6;
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx
-message MsgSubmitTxResponse {}
+message MsgSubmitTxResponse {
+  // channel's sequence_id for outgoing ibc packet. Unique per a channel.
+  uint64 sequence_id = 1;
+  // channel src channel on neutron side trasaction was submitted from
+  string channel = 2;
+}

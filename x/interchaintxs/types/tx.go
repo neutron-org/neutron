@@ -1,7 +1,6 @@
 package types
 
 import (
-	"errors"
 	"fmt"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -17,7 +16,7 @@ var (
 
 func (m *MsgRegisterInterchainAccount) ValidateBasic() error {
 	if len(m.ConnectionId) == 0 {
-		return errors.New("empty connection id")
+		return ErrEmptyConnectionID
 	}
 
 	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
@@ -25,7 +24,7 @@ func (m *MsgRegisterInterchainAccount) ValidateBasic() error {
 	}
 
 	if len(m.InterchainAccountId) == 0 {
-		return errors.New("empty interchainAccountID")
+		return ErrEmptyInterchainAccountID
 	}
 
 	return nil
@@ -52,7 +51,7 @@ func (m MsgRegisterInterchainAccount) GetSignBytes() []byte {
 
 func (m *MsgSubmitTx) ValidateBasic() error {
 	if len(m.ConnectionId) == 0 {
-		return errors.New("empty connection id")
+		return ErrEmptyConnectionID
 	}
 
 	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
@@ -60,11 +59,15 @@ func (m *MsgSubmitTx) ValidateBasic() error {
 	}
 
 	if len(m.InterchainAccountId) == 0 {
-		return errors.New("empty interchainAccountID")
+		return ErrEmptyInterchainAccountID
 	}
 
 	if len(m.Msgs) == 0 {
-		return errors.New("no messages provided")
+		return ErrNoMessages
+	}
+
+	if m.Timeout <= 0 {
+		return sdkerrors.Wrapf(ErrInvalidTimeout, "timeout must be greater than zero")
 	}
 
 	return nil

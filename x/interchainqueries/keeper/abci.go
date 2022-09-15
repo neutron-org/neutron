@@ -19,14 +19,14 @@ func (k Keeper) EndBlocker(ctx sdk.Context) {
 	// emit events for periodic queries
 	k.IterateRegisteredQueries(ctx, func(_ int64, registeredQuery types.RegisteredQuery) (stop bool) {
 		if uint64(ctx.BlockHeight()) >= registeredQuery.LastEmittedHeight+registeredQuery.UpdatePeriod {
-			k.Logger(ctx).Debug("EnddBlocker: interchainquery event emitted", "id", registeredQuery.Id)
+			k.Logger(ctx).Debug("EndBlocker: interchainquery event emitted", "id", registeredQuery.Id)
 			event := sdk.NewEvent(
 				sdk.EventTypeMessage,
 				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 				sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQuery),
 				sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(registeredQuery.Id, 10)),
 				sdk.NewAttribute(types.AttributeKeyOwner, registeredQuery.Owner),
-				sdk.NewAttribute(types.AttributeKeyZoneID, registeredQuery.ZoneId),
+				sdk.NewAttribute(types.AttributeKeyConnectionID, registeredQuery.ConnectionId),
 				sdk.NewAttribute(types.AttributeKeyQueryType, registeredQuery.QueryType),
 				sdk.NewAttribute(types.AttributeTransactionsFilterQuery, registeredQuery.TransactionsFilter),
 				sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(registeredQuery.Keys).String()),
@@ -43,6 +43,6 @@ func (k Keeper) EndBlocker(ctx sdk.Context) {
 
 	if len(events) > 0 {
 		ctx.EventManager().EmitEvents(events)
-		k.Logger(ctx).Debug("Endblocker: processed events", "events", events)
+		k.Logger(ctx).Debug("EndBlocker: processed events", "events", events)
 	}
 }

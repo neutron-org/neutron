@@ -199,6 +199,7 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		ConnectionId:        submitTx.ConnectionId,
 		Memo:                submitTx.Memo,
 		InterchainAccountId: submitTx.InterchainAccountId,
+		Timeout:             submitTx.Timeout,
 	}
 	for _, msg := range submitTx.Msgs {
 		tx.Msgs = append(tx.Msgs, &types.Any{
@@ -279,7 +280,6 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 			"query_type", reg.QueryType,
 			"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
 			"transactions_filter", reg.TransactionsFilter,
-			"zone_id", reg.ZoneId,
 			"connection_id", reg.ConnectionId,
 			"update_period", reg.UpdatePeriod,
 			"error", err,
@@ -293,7 +293,6 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 			"from_address", contractAddr.String(),
 			"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
 			"transactions_filter", reg.TransactionsFilter,
-			"zone_id", reg.ZoneId,
 			"connection_id", reg.ConnectionId,
 			"update_period", reg.UpdatePeriod,
 			"error", err,
@@ -306,7 +305,6 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 		"query_type", reg.QueryType,
 		"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
 		"transactions_filter", reg.TransactionsFilter,
-		"zone_id", reg.ZoneId,
 		"connection_id", reg.ConnectionId,
 		"update_period", reg.UpdatePeriod,
 		"query_id", response.Id,
@@ -319,7 +317,6 @@ func (m *CustomMessenger) PerformRegisterInterchainQuery(ctx sdk.Context, contra
 		Keys:               reg.Keys,
 		TransactionsFilter: reg.TransactionsFilter,
 		QueryType:          reg.QueryType,
-		ZoneId:             reg.ZoneId,
 		ConnectionId:       reg.ConnectionId,
 		UpdatePeriod:       reg.UpdatePeriod,
 		Sender:             contractAddr.String(),
