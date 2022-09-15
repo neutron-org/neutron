@@ -257,12 +257,18 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 	// Dispatch SubmitTx message
 	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
-
 		Custom: msg,
 	})
 	suite.NoError(err)
+
+	var response bindings.SubmitTxResponse
+	err = json.Unmarshal(data[0], &response)
+	suite.NoError(err)
+
+	suite.NoError(err)
 	suite.Nil(events)
-	suite.Equal([][]byte{[]byte(`{}`)}, data)
+	suite.Equal(uint64(1), response.SequenceId)
+	suite.Equal("channel-0", response.Channel)
 }
 
 func TestMessengerTestSuite(t *testing.T) {
