@@ -135,27 +135,6 @@ func (k Keeper) SaveKVQueryResult(ctx sdk.Context, id uint64, result *types.Quer
 	return nil
 }
 
-// We don't need to store proofs or transactions, so we just remove unnecessary fields
-func clearQueryResult(result *types.QueryResult) types.QueryResult {
-	storageValues := make([]*types.StorageValue, 0, len(result.KvResults))
-	for _, v := range result.KvResults {
-		storageValues = append(storageValues, &types.StorageValue{
-			StoragePrefix: v.StoragePrefix,
-			Key:           v.Key,
-			Value:         v.Value,
-			Proof:         nil,
-		})
-	}
-
-	cleanResult := types.QueryResult{
-		KvResults: storageValues,
-		Block:     nil,
-		Height:    result.Height,
-	}
-
-	return cleanResult
-}
-
 // SaveTransactionAsProcessed simply stores a key (SubmittedTxKey + bigEndianBytes(queryID) + tx_hash) with
 // mock data. This key can be used to check whether a certain transaction was already submitted for a specific
 // transaction query.
@@ -254,6 +233,27 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 		i++
 	}
 	k.Logger(ctx).Debug("Iterated over registered queries", "quantity", i)
+}
+
+// We don't need to store proofs or transactions, so we just remove unnecessary fields
+func clearQueryResult(result *types.QueryResult) types.QueryResult {
+	storageValues := make([]*types.StorageValue, 0, len(result.KvResults))
+	for _, v := range result.KvResults {
+		storageValues = append(storageValues, &types.StorageValue{
+			StoragePrefix: v.StoragePrefix,
+			Key:           v.Key,
+			Value:         v.Value,
+			Proof:         nil,
+		})
+	}
+
+	cleanResult := types.QueryResult{
+		KvResults: storageValues,
+		Block:     nil,
+		Height:    result.Height,
+	}
+
+	return cleanResult
 }
 
 func (k Keeper) checkRegisteredQueryExists(ctx sdk.Context, id uint64) bool {
