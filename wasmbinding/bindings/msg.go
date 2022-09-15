@@ -17,6 +17,7 @@ type NeutronMsg struct {
 	RegisterInterchainQuery   *RegisterInterchainQuery   `json:"register_interchain_query,omitempty"`
 	UpdateInterchainQuery     *UpdateInterchainQuery     `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery     `json:"remove_interchain_query,omitempty"`
+	AddAdmin                  *AddAdmin                  `json:"add_admin,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -52,6 +53,13 @@ type RegisterInterchainQuery struct {
 	TransactionsFilter string         `json:"transactions_filter"`
 	ConnectionId       string         `json:"connection_id"`
 	UpdatePeriod       uint64         `json:"update_period"`
+}
+
+type AddAdmin struct {
+	Admin string `protobuf:"bytes,2,opt,name=admin,proto3" json:"admin,omitempty"`
+}
+
+type AddAdminResponse struct {
 }
 
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery

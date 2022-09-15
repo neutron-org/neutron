@@ -10,19 +10,22 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
+	adminkeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
+	admintypes "github.com/neutron-org/neutron/x/adminmodule/types"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, admKeeper *adminkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
 			Keeper:        *ictx,
 			Wrapped:       old,
 			Ictxmsgserver: ictxkeeper.NewMsgServerImpl(*ictx),
 			Icqmsgserver:  icqkeeper.NewMsgServerImpl(*icq),
+			Adminserver:   adminkeeper.NewMsgServerImpl(*admKeeper),
 		}
 	}
 }
@@ -32,6 +35,7 @@ type CustomMessenger struct {
 	Wrapped       wasmkeeper.Messenger
 	Ictxmsgserver ictxtypes.MsgServer
 	Icqmsgserver  icqtypes.MsgServer
+	Adminserver   admintypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -62,6 +66,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		}
 		if contractMsg.RemoveInterchainQuery != nil {
 			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
+		}
+		if contractMsg.AddAdmin != nil {
+			return m.addAmin(ctx, contractAddr, contractMsg.AddAdmin)
 		}
 	}
 
@@ -191,6 +198,55 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 		"interchain_account_id", submitTx.InterchainAccountId,
 	)
 	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) addAmin(ctx sdk.Context, contractAddr sdk.AccAddress, addAdmin *bindings.AddAdmin) ([]sdk.Event, [][]byte, error) {
+	response, err := m.PerformAddAmin(ctx, contractAddr, addAdmin)
+	if err != nil {
+		ctx.Logger().Debug("PerformSubmitTx: failed to addAdmin",
+			"from_address", contractAddr.String(),
+			"admin", addAdmin.Admin,
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit add admin message")
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal addAdmin response to JSON",
+			"from_address", contractAddr.String(),
+			"admin", addAdmin.Admin,
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("add admin message submitted",
+		"from_address", contractAddr.String(),
+		"admin", addAdmin.Admin,
+		"creator", contractAddr.String(),
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) PerformAddAmin(ctx sdk.Context, contractAddr sdk.AccAddress, addAdmin *bindings.AddAdmin) (*bindings.AddAdminResponse, error) {
+	tx := admintypes.MsgAddAdmin{
+		Creator: contractAddr.String(),
+		Admin:   addAdmin.Admin,
+	}
+
+	if err := tx.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitTx message")
+	}
+
+	response, err := m.Adminserver.AddAdmin(sdk.WrapSDKContext(ctx), &tx)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to submit interchain transaction")
+	}
+
+	return (*bindings.AddAdminResponse)(response), nil
 }
 
 func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {
