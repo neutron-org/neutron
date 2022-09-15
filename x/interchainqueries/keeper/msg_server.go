@@ -172,6 +172,11 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack consesus state: %v", err)
 		}
 
+		clientState, err := k.GetClientState(ctx, msg.ClientId)
+		if err != nil {
+			return nil, err
+		}
+
 		for index, result := range msg.Result.KvResults {
 			proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
 			if err != nil {
@@ -195,14 +200,14 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			switch proof.GetProofs()[0].GetProof().(type) {
 			// we can get non-existence proof if someone queried some key which is not exists in the storage on remote chain
 			case *ics23.CommitmentProof_Nonexist:
-				if err := proof.VerifyNonMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path); err != nil {
+				if err := proof.VerifyNonMembership(clientState.ProofSpecs, consensusState.GetRoot(), path); err != nil {
 					ctx.Logger().Debug("SubmitQueryResult: failed to VerifyNonMembership",
 						"error", err, "query", query, "message", msg, "path", path)
 					return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
 				}
 				result.Value = nil
 			case *ics23.CommitmentProof_Exist:
-				if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
+				if err := proof.VerifyMembership(clientState.ProofSpecs, consensusState.GetRoot(), path, result.Value); err != nil {
 					ctx.Logger().Debug("SubmitQueryResult: failed to VerifyMembership",
 						"error", err, "query", query, "message", msg, "path", path)
 					return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)

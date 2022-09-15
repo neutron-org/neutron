@@ -42,7 +42,7 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
-	if strings.TrimSpace(msg.ClientId) == "" && msg.Result.Block != nil {
+	if strings.TrimSpace(msg.ClientId) == "" {
 		return sdkerrors.Wrap(ErrInvalidClientID, "client id cannot be empty")
 	}
 
