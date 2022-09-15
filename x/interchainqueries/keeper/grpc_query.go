@@ -44,16 +44,17 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 		queries []types.RegisteredQuery
 	)
 
+	var owners = newOwnersStore(req.GetOwners())
 	pageRes, err := querytypes.Paginate(store, req.Pagination, func(key, value []byte) error {
 		query := types.RegisteredQuery{}
 		k.cdc.MustUnmarshal(value, &query)
 
 		var (
-			passedOwnerFilter        = len(req.GetOwners()) == 0 || containsString(req.GetOwners(), query.GetOwner())
-			passesConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
+			passedOwnerFilter        = owners.Has(query.GetOwner())
+			passedConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
 		)
 
-		if passedOwnerFilter && passesConnectionIDFilter {
+		if passedOwnerFilter && passedConnectionIDFilter {
 			queries = append(queries, query)
 		}
 
@@ -97,12 +98,22 @@ func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLast
 	return &types.QueryLastRemoteHeightResponse{Height: m.LatestHeight.RevisionHeight}, nil
 }
 
-func containsString(x []string, y string) bool {
-	for _, v := range x {
-		if v == y {
-			return true
-		}
+type ownersStore map[string]bool
+
+func newOwnersStore(ownerAddrs []string) ownersStore {
+	out := map[string]bool{}
+	for _, owner := range ownerAddrs {
+		out[owner] = true
 	}
 
-	return false
+	return out
+}
+
+// Has returns true either if the store is empty or if the sore contains a given address.
+func (o ownersStore) Has(addr string) bool {
+	if len(o) == 0 {
+		return true
+	}
+
+	return o[addr]
 }
