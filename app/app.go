@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -836,8 +837,10 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
-	// register app's OpenAPI routes.
-	apiSvr.Router.Handle("/static/openapi.yml", http.FileServer(http.FS(docs.Docs)))
+	// Register app's swagger ui
+	if apiConfig.Swagger {
+		app.RegisterSwaggerUi(apiSvr)
+	}
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -886,4 +889,15 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 // SimulationManager implements the SimulationApp interface
 func (app *App) SimulationManager() *module.SimulationManager {
 	return app.sm
+}
+
+func (app *App) RegisterSwaggerUi(apiSvr *api.Server) {
+	staticSubDir, err := fs.Sub(docs.Docs, "static")
+	if err != nil {
+		app.Logger().Error(fmt.Sprintf("failed to register swagger-ui route: %s", err))
+		return
+	}
+
+	staticServer := http.FileServer(http.FS(staticSubDir))
+	apiSvr.Router.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
