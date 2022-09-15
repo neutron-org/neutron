@@ -4,7 +4,7 @@ BINARY=neutrond
 CHAIN_DIR=./data
 CHAINID_1=test-1
 CHAINID_2=test-2
-ADDRESS=neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u
+ADMIN_ADDRESS=neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u
 DAO_CONTRACT=./contracts/neutron_dao.wasm
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
@@ -75,7 +75,7 @@ echo "Initializing dao contract in genesis..."
 # Upload the dao contract
 $BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home $CHAIN_DIR/$CHAINID_1
 # Instantiate the contract
-INIT_CONTRACT="$(printf '{"owner":"%s"}' "${ADDRESS}")"
+INIT_CONTRACT="$(printf '{"owner":"%s"}' "${ADMIN_ADDRESS}")"
 #echo "Instantiate"
 $BINARY add-wasm-message  instantiate-contract 1 "$INIT_CONTRACT" --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --no-admin  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
 
