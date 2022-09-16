@@ -10,7 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/internal/sudo"
@@ -259,4 +261,18 @@ func (k Keeper) checkRegisteredQueryExists(ctx sdk.Context, id uint64) bool {
 	store := ctx.KVStore(k.storeKey)
 
 	return store.Has(types.GetRegisteredQueryByIDKey(id))
+}
+
+func (k Keeper) GetClientState(ctx sdk.Context, clientID string) (*tendermintLightClientTypes.ClientState, error) {
+	clientStateResponse, ok := k.ibcKeeper.ClientKeeper.GetClientState(ctx, clientID)
+	if !ok {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidClientID, "could not find a ClientState with client id: %s", clientID)
+	}
+
+	clientState, ok := clientStateResponse.(*tendermintLightClientTypes.ClientState)
+	if !ok {
+		return nil, sdkerrors.Wrapf(ibcclienttypes.ErrInvalidClientType, "cannot cast ClientState interface into ClientState type")
+	}
+
+	return clientState, nil
 }
