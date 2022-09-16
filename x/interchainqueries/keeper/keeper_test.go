@@ -103,12 +103,9 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		tt.malleate(contractAddress.String())
 
 		if tt.topupBalance {
+			// Top up contract address with native coins for deposit
 			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-
-			coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(10_000_000))))
-			bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
-
-			bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
+			suite.TopUpWallet(ctx, senderAddress, contractAddress)
 		}
 
 		msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -277,9 +274,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 
 			// Top up contract address with native coins for deposit
 			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-			coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(10_000_000))))
-			bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
-			bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
+			suite.TopUpWallet(ctx, senderAddress, contractAddress)
 
 			tt.malleate(contractAddress.String())
 
@@ -385,10 +380,9 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 			suite.Require().NoError(err)
 
 			// Top up contract address with native coins for deposit
-			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-			coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000))))
 			bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
-			bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
+			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+			suite.TopUpWallet(ctx, senderAddress, contractAddress)
 
 			tt.malleate(contractAddress.String())
 			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
@@ -890,9 +884,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 			// Top up contract address with native coins for deposit
 			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-			coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(10_000_000))))
-			bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
-			bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
+			suite.TopUpWallet(ctx, senderAddress, contractAddress)
 
 			tt.malleate(contractAddress.String(), ctx)
 
@@ -909,6 +901,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			}
 		})
 	}
+}
+
+func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000))))
+	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
+	bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 }
 
 func TestKeeperTestSuite(t *testing.T) {
