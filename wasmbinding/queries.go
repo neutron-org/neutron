@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -47,8 +48,18 @@ func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *binding
 	return &bindings.QueryInterchainAccountAddressResponse{InterchainAccountAddress: grpcResp.GetInterchainAccountAddress()}, nil
 }
 
-func (qp *QueryPlugin) GetRegisteredInterchainQueries(ctx sdk.Context) (*bindings.QueryRegisteredQueriesResponse, error) {
-	grpcResp, err := qp.icqKeeper.GetRegisteredQueries(ctx, &types.QueryRegisteredQueriesRequest{})
+func (qp *QueryPlugin) GetRegisteredInterchainQueries(ctx sdk.Context, query *bindings.QueryRegisteredQueriesRequest) (*bindings.QueryRegisteredQueriesResponse, error) {
+	grpcResp, err := qp.icqKeeper.GetRegisteredQueries(ctx, &types.QueryRegisteredQueriesRequest{
+		Owners:       query.Owners,
+		ConnectionId: query.ConnectionId,
+		Pagination: &sdkquery.PageRequest{
+			Key:        query.Pagination.Key,
+			Offset:     query.Pagination.Offset,
+			Limit:      query.Pagination.Limit,
+			CountTotal: query.Pagination.CountTotal,
+			Reverse:    query.Pagination.Reverse,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +94,6 @@ func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindi
 		QueryType:                       grpcQuery.GetQueryType(),
 		ConnectionId:                    grpcQuery.GetConnectionId(),
 		UpdatePeriod:                    grpcQuery.GetUpdatePeriod(),
-		LastEmittedHeight:               grpcQuery.GetLastEmittedHeight(),
 		LastSubmittedResultLocalHeight:  grpcQuery.GetLastSubmittedResultLocalHeight(),
 		LastSubmittedResultRemoteHeight: grpcQuery.GetLastSubmittedResultRemoteHeight(),
 	}

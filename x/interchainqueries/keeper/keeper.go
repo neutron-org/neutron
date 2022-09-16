@@ -88,6 +88,7 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {
 
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
 	k.Logger(ctx).Debug("SaveQuery successful", "query", query)
+
 	return nil
 }
 

@@ -6,9 +6,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	querytypes "github.com/cosmos/cosmos-sdk/types/query"
 	contypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
 	tndtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -31,19 +34,37 @@ func (k Keeper) RegisteredQueries(goCtx context.Context, req *types.QueryRegiste
 	return k.GetRegisteredQueries(ctx, req)
 }
 
-func (k Keeper) GetRegisteredQueries(ctx sdk.Context, _ *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
-	iterator := sdk.KVStorePrefixIterator(store, nil)
-	defer iterator.Close()
-
-	queries := make([]types.RegisteredQuery, 0)
-	for ; iterator.Valid(); iterator.Next() {
-		query := types.RegisteredQuery{}
-		k.cdc.MustUnmarshal(iterator.Value(), &query)
-		queries = append(queries, query)
+func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegisteredQueriesRequest) (*types.QueryRegisteredQueriesResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	return &types.QueryRegisteredQueriesResponse{RegisteredQueries: queries}, nil
+	var (
+		store   = prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
+		queries []types.RegisteredQuery
+	)
+
+	var owners = newOwnersStore(req.GetOwners())
+	pageRes, err := querytypes.Paginate(store, req.Pagination, func(key, value []byte) error {
+		query := types.RegisteredQuery{}
+		k.cdc.MustUnmarshal(value, &query)
+
+		var (
+			passedOwnerFilter        = owners.Has(query.GetOwner())
+			passedConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
+		)
+
+		if passedOwnerFilter && passedConnectionIDFilter {
+			queries = append(queries, query)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "paginate: %v", err)
+	}
+
+	return &types.QueryRegisteredQueriesResponse{RegisteredQueries: queries, Pagination: pageRes}, nil
 }
 
 func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegisteredQueryResultRequest) (*types.QueryRegisteredQueryResultResponse, error) {
@@ -75,4 +96,24 @@ func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLast
 	}
 
 	return &types.QueryLastRemoteHeightResponse{Height: m.LatestHeight.RevisionHeight}, nil
+}
+
+type ownersStore map[string]bool
+
+func newOwnersStore(ownerAddrs []string) ownersStore {
+	out := map[string]bool{}
+	for _, owner := range ownerAddrs {
+		out[owner] = true
+	}
+
+	return out
+}
+
+// Has returns true either if the store is empty or if the sore contains a given address.
+func (o ownersStore) Has(addr string) bool {
+	if len(o) == 0 {
+		return true
+	}
+
+	return o[addr]
 }

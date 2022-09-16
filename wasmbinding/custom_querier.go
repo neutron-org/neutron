@@ -47,7 +47,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 		case contractQuery.RegisteredInterchainQueries != nil:
-			registeredQueries, err := qp.GetRegisteredInterchainQueries(ctx)
+			registeredQueries, err := qp.GetRegisteredInterchainQueries(ctx, contractQuery.RegisteredInterchainQueries)
 			if err != nil {
 				return nil, sdkerrors.Wrapf(err, "failed to get registered queries: %v", err)
 			}

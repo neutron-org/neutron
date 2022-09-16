@@ -12,6 +12,11 @@ import (
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
+const (
+	flagOwners       = "owners"
+	flagConnectionID = "connection_id"
+)
+
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd(queryRoute string) *cobra.Command {
 	// Group interchainqueries queries under a subcommand
@@ -39,7 +44,6 @@ func CmdQueryRegisteredQuery() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-
 			queryClient := types.NewQueryClient(clientCtx)
 
 			queryID, err := strconv.ParseUint(args[0], 10, 64)
@@ -71,7 +75,19 @@ func CmdQueryRegisteredQueries() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			res, err := queryClient.RegisteredQueries(context.Background(), &types.QueryRegisteredQueriesRequest{})
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			owners, _ := cmd.Flags().GetStringArray(flagOwners)
+			connectionID, _ := cmd.Flags().GetString(flagConnectionID)
+
+			res, err := queryClient.RegisteredQueries(context.Background(), &types.QueryRegisteredQueriesRequest{
+				Pagination:   pageReq,
+				Owners:       owners,
+				ConnectionId: connectionID,
+			})
 			if err != nil {
 				return err
 			}
@@ -80,6 +96,9 @@ func CmdQueryRegisteredQueries() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringArray(flagOwners, []string{}, "(optional) filter by query owners")
+	cmd.Flags().String(flagConnectionID, "", "(optional) filter by connection id")
+	flags.AddPaginationFlagsToCmd(cmd, "registered queries")
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
