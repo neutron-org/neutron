@@ -209,11 +209,14 @@ func (ac appCreator) newApp(
 		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
 	}
 
+	enabledWasmProposals := app.GetEnabledProposals()
+	logger.Info("Enabled wasm proposals", "proposals", enabledWasmProposals)
+
 	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		ac.encCfg,
-		app.GetEnabledProposals(),
+		enabledWasmProposals,
 		appOpts,
 		wasmOpts,
 		baseapp.SetPruning(pruningOpts),
