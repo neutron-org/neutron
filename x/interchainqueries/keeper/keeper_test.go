@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -118,6 +119,11 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			suite.Require().ErrorIs(err, tt.expectedErr)
 			suite.Require().Nil(res)
 		} else {
+			query, _ := keeper.Keeper.RegisteredQuery(
+				suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx),
+				&iqtypes.QueryRegisteredQueryRequest{QueryId: 1})
+
+			suite.Require().Equal("1000000stake", query.RegisteredQuery.Deposit.String())
 			suite.Require().NoError(err)
 			suite.Require().NotNil(res)
 		}
