@@ -39,7 +39,7 @@ message RegisteredQuery {
   repeated cosmos.base.v1beta1.Coin deposit = 10 
     [(gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", (gogoproto.nullable) = false];
   
-    // The remote chain last block height when the query result was updated.
+  // Timeout before query becomes available for everybody to remove.
   uint64 submit_timeout = 12;
 }
 
