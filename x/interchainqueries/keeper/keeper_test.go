@@ -123,7 +123,8 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 				suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx),
 				&iqtypes.QueryRegisteredQueryRequest{QueryId: 1})
 
-			suite.Require().Equal("1000000stake", query.RegisteredQuery.Deposit.String())
+			suite.Require().Equal(iqtypes.DefaultQueryDeposit, query.RegisteredQuery.Deposit)
+			suite.Require().Equal(iqtypes.DefaultQuerySubmitTimeout, query.RegisteredQuery.SubmitTimeout)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(res)
 		}
