@@ -69,6 +69,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.AddAdmin != nil {
 			return m.addAmin(ctx, contractAddr, contractMsg.AddAdmin)
 		}
+		if contractMsg.SubmitProposal != nil {
+			return m.submitProposal(ctx, contractAddr, contractMsg.SubmitProposal)
+		}
 	}
 
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
@@ -197,6 +200,57 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 		"interchain_account_id", submitTx.InterchainAccountId,
 	)
 	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) ([]sdk.Event, [][]byte, error) {
+	response, err := m.PerformSubmitProposal(ctx, contractAddr, submitProposal)
+	if err != nil {
+		ctx.Logger().Debug("PerformSubmitTx: failed to submitProposal",
+			"from_address", contractAddr.String(),
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit add admin message")
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal submitProposal response to JSON",
+			"from_address", contractAddr.String(),
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("submit proposal message submitted",
+		"from_address", contractAddr.String(),
+		"creator", contractAddr.String(),
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+	content := &types.Any{
+		TypeUrl: submitProposal.Content.TypeURL,
+		Value:   submitProposal.Content.Value,
+	}
+
+	tx := admintypes.MsgSubmitProposal{
+		Proposer: contractAddr.String(),
+		Content:  content,
+	}
+
+	if err := tx.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitTx message")
+	}
+
+	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &tx)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to submit interchain transaction")
+	}
+
+	return response, nil
 }
 
 func (m *CustomMessenger) addAmin(ctx sdk.Context, contractAddr sdk.AccAddress, addAdmin *bindings.AddAdmin) ([]sdk.Event, [][]byte, error) {
