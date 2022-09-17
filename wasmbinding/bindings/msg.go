@@ -1,6 +1,8 @@
 package bindings
 
-import "github.com/neutron-org/neutron/x/interchainqueries/types"
+import (
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
+)
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
 type ProtobufAny struct {
@@ -18,6 +20,7 @@ type NeutronMsg struct {
 	UpdateInterchainQuery     *UpdateInterchainQuery     `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery     `json:"remove_interchain_query,omitempty"`
 	AddAdmin                  *AddAdmin                  `json:"add_admin,omitempty"`
+	SubmitProposal            *SubmitProposal            `json:"submit_proposal,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -60,6 +63,18 @@ type AddAdmin struct {
 }
 
 type AddAdminResponse struct {
+}
+
+type SubmitProposal struct {
+	textProp { text
+				title}
+
+
+	paramProposal
+	Content *ProtobufAny
+}
+
+type SubmitProposalResponse struct {
 }
 
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery
