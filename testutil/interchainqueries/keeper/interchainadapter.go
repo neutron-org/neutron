@@ -42,7 +42,8 @@ func InterchainQueriesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,
+		nil, // TODO: do a real ibc keeper
+		nil, // TODO: do a real wasm keeper
 		nil,
 	)
 

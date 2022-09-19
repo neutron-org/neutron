@@ -31,6 +31,7 @@ type (
 		paramstore  paramtypes.Subspace
 		ibcKeeper   *ibckeeper.Keeper
 		wasmKeeper  *wasm.Keeper
+		bank        types.BankKeeper
 		sudoHandler sudo.Handler
 	}
 )
@@ -42,6 +43,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
 	wasmKeeper *wasm.Keeper,
+	bank types.BankKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -55,6 +57,7 @@ func NewKeeper(
 		paramstore:  ps,
 		ibcKeeper:   ibcKeeper,
 		wasmKeeper:  wasmKeeper,
+		bank:        bank,
 		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
 	}
 }
@@ -276,4 +279,25 @@ func (k Keeper) GetClientState(ctx sdk.Context, clientID string) (*tendermintLig
 	}
 
 	return clientState, nil
+}
+
+func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo types.RegisteredQuery) error {
+	owner, err := queryInfo.GetOwnerAddress()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = k.bank.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, queryInfo.Deposit)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk.AccAddress) {
+	err := k.bank.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, deposit)
+	if err != nil {
+		panic(err.Error())
+	}
 }

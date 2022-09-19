@@ -52,6 +52,8 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	lastID := k.GetLastRegisteredQueryKey(ctx)
 	lastID += 1
 
+	params := k.GetParams(ctx)
+
 	registeredQuery := types.RegisteredQuery{
 		Id:                 lastID,
 		Owner:              msg.Sender,
@@ -60,9 +62,17 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		QueryType:          msg.QueryType,
 		UpdatePeriod:       msg.UpdatePeriod,
 		ConnectionId:       msg.ConnectionId,
+		Deposit:            params.QueryDeposit,
+		SubmitTimeout:      params.QuerySubmitTimeout,
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
+
+	if err := k.CollectDeposit(ctx, registeredQuery); err != nil {
+		ctx.Logger().Debug("RegisterInterchainQuery: failed to collect deposit", "message", &msg, "error", err)
+		return nil, sdkerrors.Wrapf(err, "failed to collect deposit")
+	}
+
 	if err := k.SaveQuery(ctx, registeredQuery); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to save query", "message", &msg, "error", err)
 		return nil, sdkerrors.Wrapf(err, "failed to save query: %v", err)
@@ -84,13 +94,15 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 
-	if query.GetOwner() != msg.GetSender() {
+	timeoutBlock := query.LastSubmittedResultLocalHeight + query.SubmitTimeout
+	if uint64(ctx.BlockHeight()) <= timeoutBlock && query.GetOwner() != msg.GetSender() {
 		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
 
 	k.RemoveQueryByID(ctx, query.Id)
+	k.MustPayOutDeposit(ctx, query.Deposit, msg.GetSigners()[0])
 	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		k.removeQueryResultByID(ctx, query.Id)
 	}
@@ -292,6 +304,10 @@ func getEventsQueryRemoved(query *types.RegisteredQuery) sdk.Events {
 			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
 			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
 			sdk.NewAttribute(types.AttributeKeyConnectionID, query.ConnectionId),
+			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
+			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
+			sdk.NewAttribute(types.AttributeTransactionsFilterQuery, query.TransactionsFilter),
+			sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(query.Keys).String()),
 		),
 	}
 }
