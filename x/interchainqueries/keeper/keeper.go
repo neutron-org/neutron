@@ -281,7 +281,7 @@ func (k Keeper) GetClientState(ctx sdk.Context, clientID string) (*tendermintLig
 	return clientState, nil
 }
 
-func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo *types.RegisteredQuery) error {
+func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo types.RegisteredQuery) error {
 	owner, err := queryInfo.GetOwnerAddress()
 	if err != nil {
 		panic(err.Error())
