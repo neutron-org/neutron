@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"strconv"
 	"time"
 
 	ics23 "github.com/confio/ics23/go"
@@ -59,7 +60,6 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		QueryType:          msg.QueryType,
 		UpdatePeriod:       msg.UpdatePeriod,
 		ConnectionId:       msg.ConnectionId,
-		LastEmittedHeight:  uint64(ctx.BlockHeight()),
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
@@ -67,6 +67,8 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to save query", "message", &msg, "error", err)
 		return nil, sdkerrors.Wrapf(err, "failed to save query: %v", err)
 	}
+
+	ctx.EventManager().EmitEvents(getEventsQueryUpdated(&registeredQuery))
 
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
 }
@@ -87,11 +89,16 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
+
 	k.RemoveQueryByID(ctx, query.Id)
 	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		k.removeQueryResultByID(ctx, query.Id)
 	}
-	// NOTE: there is no easy way to remove the list of processed transactions without knowing transaction hashes
+
+	ctx.EventManager().EmitEvents(getEventsQueryRemoved(query))
+
+	// NOTE: there is no easy way to remove the list of processed transactions
+	// without knowing transaction hashes.
 
 	return &types.MsgRemoveInterchainQueryResponse{}, nil
 }
@@ -106,22 +113,28 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 			"error", err, "query_id", msg.QueryId)
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
+
 	if query.GetOwner() != msg.GetSender() {
 		ctx.Logger().Debug("UpdateInterchainQuery: authorization failed",
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
+
 	if msg.GetNewUpdatePeriod() > 0 {
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
 	if len(msg.GetNewKeys()) > 0 {
 		query.Keys = msg.GetNewKeys()
 	}
+
 	err = k.SaveQuery(ctx, *query)
 	if err != nil {
 		ctx.Logger().Debug("UpdateInterchainQuery: failed to save query", "message", &msg, "error", err)
 		return nil, sdkerrors.Wrapf(err, "failed to save query by query id: %v", err)
 	}
+
+	ctx.EventManager().EmitEvents(getEventsQueryUpdated(query))
+
 	return &types.MsgUpdateInterchainQueryResponse{}, nil
 }
 
@@ -172,6 +185,11 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack consesus state: %v", err)
 		}
 
+		clientState, err := k.GetClientState(ctx, msg.ClientId)
+		if err != nil {
+			return nil, err
+		}
+
 		for index, result := range msg.Result.KvResults {
 			proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
 			if err != nil {
@@ -195,14 +213,14 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			switch proof.GetProofs()[0].GetProof().(type) {
 			// we can get non-existence proof if someone queried some key which is not exists in the storage on remote chain
 			case *ics23.CommitmentProof_Nonexist:
-				if err := proof.VerifyNonMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path); err != nil {
+				if err := proof.VerifyNonMembership(clientState.ProofSpecs, consensusState.GetRoot(), path); err != nil {
 					ctx.Logger().Debug("SubmitQueryResult: failed to VerifyNonMembership",
 						"error", err, "query", query, "message", msg, "path", path)
 					return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
 				}
 				result.Value = nil
 			case *ics23.CommitmentProof_Exist:
-				if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), consensusState.GetRoot(), path, result.Value); err != nil {
+				if err := proof.VerifyMembership(clientState.ProofSpecs, consensusState.GetRoot(), path, result.Value); err != nil {
 					ctx.Logger().Debug("SubmitQueryResult: failed to VerifyMembership",
 						"error", err, "query", query, "message", msg, "path", path)
 					return nil, sdkerrors.Wrapf(types.ErrInvalidProof, "failed to verify proof: %v", err)
@@ -234,14 +252,48 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		if !types.InterchainQueryType(query.QueryType).IsTX() {
 			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
 		}
+
 		if err := k.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, msg.Result.Block); err != nil {
 			ctx.Logger().Debug("SubmitQueryResult: failed to ProcessBlock",
 				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(err, "failed to ProcessBlock: %v", err)
 		}
+
+		if err = k.UpdateLastLocalHeight(ctx, query.Id, uint64(ctx.BlockHeight())); err != nil {
+			return nil, sdkerrors.Wrapf(err,
+				"failed to update last local height for a result with id %d: %v", query.Id, err)
+		}
 	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil
+}
+
+func getEventsQueryUpdated(query *types.RegisteredQuery) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryUpdated),
+			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
+			sdk.NewAttribute(types.AttributeKeyConnectionID, query.ConnectionId),
+			sdk.NewAttribute(types.AttributeKeyOwner, query.Owner),
+			sdk.NewAttribute(types.AttributeKeyQueryType, query.QueryType),
+			sdk.NewAttribute(types.AttributeTransactionsFilterQuery, query.TransactionsFilter),
+			sdk.NewAttribute(types.AttributeKeyKVQuery, types.KVKeys(query.Keys).String()),
+		),
+	}
+}
+
+func getEventsQueryRemoved(query *types.RegisteredQuery) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeValueQueryRemoved),
+			sdk.NewAttribute(types.AttributeKeyQueryID, strconv.FormatUint(query.Id, 10)),
+			sdk.NewAttribute(types.AttributeKeyConnectionID, query.ConnectionId),
+		),
+	}
 }
 
 var _ types.MsgServer = msgServer{}

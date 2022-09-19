@@ -18,7 +18,6 @@ service Msg {
       returns (MsgRemoveInterchainQueryResponse);
   rpc UpdateInterchainQuery(MsgUpdateInterchainQueryRequest)
       returns (MsgUpdateInterchainQueryResponse);
-  // this line is used by starport scaffolding # proto/tx/rpc
 }
 
 message MsgRegisterInterchainQuery {

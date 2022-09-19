@@ -73,7 +73,7 @@ Make sure you delete node image if you use the whole thing in dev purposes
 
 ## Documentation
 
-You can check the documentation here: https://github.com/neutron-org/neutron-docs
+You can check the documentation here: https://neutron-org.github.io/neutron-docs/
 
 > Note: we are going to open & deploy the docs soon.
 
