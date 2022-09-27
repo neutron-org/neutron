@@ -1,0 +1,30 @@
+BIN=neutrond
+
+CONTRACT=neutron_dao.wasm
+
+CHAIN_ID_1=test-1
+CHAIN_ID_2=test-2
+
+NEUTRON_DIR=${NEUTRON_DIR:-../neutron}
+HOME_1=${NEUTRON_DIR}/data/test-1/
+HOME_2=${NEUTRON_DIR}/data/test-2/
+
+ADDRESS_1=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
+ADDRESS_2=neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf
+ADMIN=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
+
+VAL2=neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx
+
+# Upload the queries contract
+RES=$(${BIN} add-wasm-message store ${CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home ${HOME_1} )
+CONTRACT_CODE_ID=$(echo $RES | jq -r '.logs[0].events[1].attributes[0].value')
+echo $RES
+echo $CONTRACT_CODE_ID
+
+# Instantiate the contract
+INIT_CONTRACT='{}'
+echo "Instantiate"
+RES=$(${BIN} add-wasm-message  instantiate-contract 1 "$INIT_CONTRACT" --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --admin ${ADMIN}  --output json  --label "init"    --home ${HOME_1})
+CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
+echo $CONTRACT_ADDRESS
+

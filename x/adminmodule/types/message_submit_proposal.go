@@ -29,7 +29,7 @@ func NewMsgSubmitProposal(content govtypes.Content, proposer sdk.AccAddress) (*M
 	return m, nil
 }
 
-//func (m *MsgSubmitProposal) GetContent() govtypes.Content { // TODO m.Content.GetCachedValue() returns nil!
+//func (m *MsgSubmitProposal) GetProposal() govtypes.Content { // TODO m.Content.GetCachedValue() returns nil!
 //	content, ok := m.Content.GetCachedValue().(govtypes.Content)
 //	if !ok {
 //		return nil
@@ -37,7 +37,7 @@ func NewMsgSubmitProposal(content govtypes.Content, proposer sdk.AccAddress) (*M
 //	return content
 //}
 
-func (m *MsgSubmitProposal) GetContent() govtypes.Content {
+func (m *MsgSubmitProposal) GetProposal() govtypes.Content {
 	var err error
 	switch m.Content.TypeUrl {
 	case "/cosmos.gov.v1beta1.TextProposal":
@@ -139,7 +139,7 @@ func (m *MsgSubmitProposal) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Proposer)
 	}
 
-	content := m.GetContent()
+	content := m.GetProposal()
 	if content == nil {
 		return sdkerrors.Wrap(govtypes.ErrInvalidProposalContent, "missing content")
 	}
