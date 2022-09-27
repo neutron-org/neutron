@@ -2,7 +2,8 @@
 package bindings
 
 import (
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	types "github.com/neutron-org/neutron/x/adminmodule/types"
+	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -52,11 +53,11 @@ type RegisterInterchainAccountResponse struct{}
 
 // RegisterInterchainQuery creates a query for remote chain.
 type RegisterInterchainQuery struct {
-	QueryType          string         `json:"query_type"`
-	Keys               []*types.KVKey `json:"keys"`
-	TransactionsFilter string         `json:"transactions_filter"`
-	ConnectionId       string         `json:"connection_id"`
-	UpdatePeriod       uint64         `json:"update_period"`
+	QueryType          string            `json:"query_type"`
+	Keys               []*icqtypes.KVKey `json:"keys"`
+	TransactionsFilter string            `json:"transactions_filter"`
+	ConnectionId       string            `json:"connection_id"`
+	UpdatePeriod       uint64            `json:"update_period"`
 }
 
 type AddAdmin struct {
@@ -67,12 +68,8 @@ type AddAdminResponse struct {
 }
 
 type SubmitProposal struct {
-	textProp { text
-				title}
-
-
-	paramProposal
-	Content *ProtobufAny
+	TextProposal        types.TextProposal
+	ParamChangeProposal types.ParamChangeProposal
 }
 
 type SubmitProposalResponse struct {
@@ -90,9 +87,9 @@ type RemoveInterchainQuery struct {
 type RemoveInterchainQueryResponse struct{}
 
 type UpdateInterchainQuery struct {
-	QueryId         uint64         `json:"query_id,omitempty"`
-	NewKeys         []*types.KVKey `json:"new_keys,omitempty"`
-	NewUpdatePeriod uint64         `json:"new_update_period,omitempty"`
+	QueryId         uint64            `json:"query_id,omitempty"`
+	NewKeys         []*icqtypes.KVKey `json:"new_keys,omitempty"`
+	NewUpdatePeriod uint64            `json:"new_update_period,omitempty"`
 }
 
 type UpdateInterchainQueryResponse struct{}

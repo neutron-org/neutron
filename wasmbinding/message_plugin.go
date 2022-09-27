@@ -231,23 +231,21 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 }
 
 func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
-	content := &types.Any{
-		TypeUrl: submitProposal.Content.TypeURL,
-		Value:   submitProposal.Content.Value,
-	}
 
-	tx := admintypes.MsgSubmitProposal{
+	prop := admintypes.MsgSubmitProposal{
 		Proposer: contractAddr.String(),
-		Content:  content,
+		Proposals: admintypes.Proposals{
+			TextProposal:        &submitProposal.TextProposal,
+			ParamChangeProposal: &submitProposal.ParamChangeProposal},
 	}
 
-	if err := tx.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitTx message")
+	if err := prop.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &tx)
+	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &prop)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to submit interchain transaction")
+		return nil, sdkerrors.Wrap(err, "failed to submit proposal")
 	}
 
 	return response, nil

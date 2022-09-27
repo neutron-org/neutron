@@ -207,44 +207,7 @@ func (m *MsgAddAdminResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgAddAdminResponse proto.InternalMessageInfo
 
-// MsgSubmitProposal defines an sdk.Msg type that supports submitting arbitrary
-// proposal Content.
-type MsgSubmitProposal struct {
-	Content  *types.Any `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
-	Proposer string     `protobuf:"bytes,2,opt,name=proposer,proto3" json:"proposer,omitempty"`
-}
 
-func (m *MsgSubmitProposal) Reset()      { *m = MsgSubmitProposal{} }
-func (*MsgSubmitProposal) ProtoMessage() {}
-func (*MsgSubmitProposal) Descriptor() ([]byte, []int) {
-	return fileDescriptor_a8950b2ae09299bf, []int{4}
-}
-func (m *MsgSubmitProposal) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgSubmitProposal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgSubmitProposal.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgSubmitProposal) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSubmitProposal.Merge(m, src)
-}
-func (m *MsgSubmitProposal) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgSubmitProposal) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSubmitProposal.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgSubmitProposal proto.InternalMessageInfo
 
 // MsgSubmitProposalResponse defines the Msg/SubmitProposal response type.
 type MsgSubmitProposalResponse struct {
