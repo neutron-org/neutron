@@ -259,7 +259,6 @@ func init() {
 	proto.RegisterType((*MsgDeleteAdminResponse)(nil), "cosmos.adminmodule.adminmodule.MsgDeleteAdminResponse")
 	proto.RegisterType((*MsgAddAdmin)(nil), "cosmos.adminmodule.adminmodule.MsgAddAdmin")
 	proto.RegisterType((*MsgAddAdminResponse)(nil), "cosmos.adminmodule.adminmodule.MsgAddAdminResponse")
-	proto.RegisterType((*MsgSubmitProposal)(nil), "cosmos.adminmodule.adminmodule.MsgSubmitProposal")
 	proto.RegisterType((*MsgSubmitProposalResponse)(nil), "cosmos.adminmodule.adminmodule.MsgSubmitProposalResponse")
 }
 
