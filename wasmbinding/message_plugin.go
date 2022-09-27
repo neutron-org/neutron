@@ -8,6 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/gogo/protobuf/proto"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	adminkeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
@@ -232,19 +234,30 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 }
 
 func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 
-	prop := admintypes.MsgSubmitProposal{
-		Proposer: contractAddr.String(),
-		Proposals: admintypes.Proposals{
-			TextProposal:        &submitProposal.TextProposal,
-			ParamChangeProposal: &submitProposal.ParamChangeProposal},
+	if submitProposal.Proposals.TextProposal != nil {
+
+		prop := govtypes.TextProposal{
+			Title:       submitProposal.Proposals.TextProposal.Title,
+			Description: submitProposal.Proposals.TextProposal.Description,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.TextProposal",
+			Value:   cont,
+		}
+
 	}
 
-	if err := prop.ValidateBasic(); err != nil {
+	if err := msg.ValidateBasic(); err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &prop)
+	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to submit proposal")
 	}

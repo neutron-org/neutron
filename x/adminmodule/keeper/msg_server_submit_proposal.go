@@ -20,7 +20,7 @@ func (k msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPro
 		return nil, fmt.Errorf("proposer %s must be admin to submit proposals to admin-module", msg.Proposer)
 	}
 
-	proposal, err := k.Keeper.SubmitProposal(ctx, msg.GetProposal())
+	proposal, err := k.Keeper.SubmitProposal(ctx, msg.GetContent())
 	if err != nil {
 		return nil, err
 	}
