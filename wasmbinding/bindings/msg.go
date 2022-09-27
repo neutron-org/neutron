@@ -2,7 +2,6 @@
 package bindings
 
 import (
-	types "github.com/neutron-org/neutron/x/adminmodule/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -68,11 +67,41 @@ type AddAdminResponse struct {
 }
 
 type SubmitProposal struct {
-	TextProposal        types.TextProposal
-	ParamChangeProposal types.ParamChangeProposal
+	Proposals Proposals
+	Proposer  string
 }
 
-type SubmitProposalResponse struct {
+type Proposals struct {
+	TextProposal               *TextProposal
+	ParamChangeProposal        *ParamChangeProposal
+	CommunityPoolSpendProposal *CommunityPoolSpendProposal
+}
+
+type TextProposal struct {
+	Title       string
+	Description string
+}
+
+type ParamChangeProposal struct {
+	Title       string
+	Description string
+	Changes     []ParamChange
+}
+
+type CommunityPoolSpendProposal struct {
+}
+
+type SoftwareUpgradeProposal struct {
+}
+type CancelSoftwareUpgradeProposal struct {
+}
+
+type ClientUpdateProposal struct {
+}
+type ParamChange struct {
+	Subspace string
+	Key      string
+	Value    string
 }
 
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery
