@@ -11,6 +11,10 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/gogo/protobuf/proto"
 
+	distrTypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	upgradeTypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	clientUpdate "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	adminkeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
 	admintypes "github.com/neutron-org/neutron/x/adminmodule/types"
@@ -251,6 +255,85 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 			Value:   cont,
 		}
 
+	} else if submitProposal.Proposals.ParamChangeProposal != nil {
+		proposal := submitProposal.Proposals.ParamChangeProposal
+		prop := paramChange.ParameterChangeProposal{
+			Title:       submitProposal.Proposals.TextProposal.Title,
+			Description: submitProposal.Proposals.TextProposal.Description,
+		}
+		var parameterChanges []paramChange.ParamChange
+		for _, parameterChange := range proposal.Changes {
+			parameterChanges = append(parameterChanges, paramChange.ParamChange{
+				Subspace: parameterChange.Subspace,
+				Key:      parameterChange.Key,
+				Value:    parameterChange.Value,
+			})
+		}
+		prop.Changes = parameterChanges
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.ParameterChangesProposal",
+			Value:   cont,
+		}
+	} else if submitProposal.Proposals.CommunityPoolSpendProposal != nil {
+		prop := distrTypes.CommunityPoolSpendProposal{
+			Title:       submitProposal.Proposals.CommunityPoolSpendProposal.Title,
+			Description: submitProposal.Proposals.CommunityPoolSpendProposal.Description,
+			Recipient:   submitProposal.Proposals.CommunityPoolSpendProposal.Recipient,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.CommunityPoolSpendProposal",
+			Value:   cont,
+		}
+	} else if submitProposal.Proposals.ClientUpdateProposal != nil {
+		prop := clientUpdate.ClientUpdateProposal{
+			Title:              submitProposal.Proposals.ClientUpdateProposal.Title,
+			Description:        submitProposal.Proposals.ClientUpdateProposal.Description,
+			SubjectClientId:    submitProposal.Proposals.ClientUpdateProposal.SubjectClientId,
+			SubstituteClientId: submitProposal.Proposals.ClientUpdateProposal.SubstituteClientId,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.ClientUpdateProposal",
+			Value:   cont,
+		}
+	} else if submitProposal.Proposals.SoftwareUpgradeProposal != nil {
+		prop := upgradeTypes.SoftwareUpgradeProposal{
+			Title:       submitProposal.Proposals.ClientUpdateProposal.Title,
+			Description: submitProposal.Proposals.ClientUpdateProposal.Description,
+			Plan:        upgradeTypes.Plan{},
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.SoftwareUpgradeProposal",
+			Value:   cont,
+		}
+	} else if submitProposal.Proposals.CancelSoftwareUpgradeProposal != nil {
+		prop := upgradeTypes.CancelSoftwareUpgradeProposal{
+			Title:       submitProposal.Proposals.ClientUpdateProposal.Title,
+			Description: submitProposal.Proposals.ClientUpdateProposal.Description,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.CancelSoftwareUpgradeProposal",
+			Value:   cont,
+		}
 	}
 
 	if err := msg.ValidateBasic(); err != nil {

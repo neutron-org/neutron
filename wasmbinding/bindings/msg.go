@@ -66,14 +66,16 @@ type AddAdminResponse struct {
 }
 
 type SubmitProposal struct {
-	Proposals Proposals
-	Proposer  string
+	Proposals Proposals `json:"proposals"`
 }
 
 type Proposals struct {
-	TextProposal               *TextProposal
-	ParamChangeProposal        *ParamChangeProposal
-	CommunityPoolSpendProposal *CommunityPoolSpendProposal
+	TextProposal                  *TextProposal                  `json:"text_proposal,omitempty"`
+	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
+	CommunityPoolSpendProposal    *CommunityPoolSpendProposal    `json:"community_pool_spend_proposal,omitempty"`
+	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal,omitempty"`
+	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
+	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
 }
 
 type TextProposal struct {
@@ -88,19 +90,31 @@ type ParamChangeProposal struct {
 }
 
 type CommunityPoolSpendProposal struct {
-}
-
-type SoftwareUpgradeProposal struct {
-}
-type CancelSoftwareUpgradeProposal struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Recipient   string `json:"recipient"`
 }
 
 type ClientUpdateProposal struct {
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	SubjectClientId    string `json:"subject_client_id"`
+	SubstituteClientId string `json:"substitute_client_id"`
 }
+type SoftwareUpgradeProposal struct {
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+type CancelSoftwareUpgradeProposal struct {
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
 type ParamChange struct {
-	Subspace string
-	Key      string
-	Value    string
+	Subspace string `json:"subspace"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
 }
 
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery
