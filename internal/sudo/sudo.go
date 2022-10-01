@@ -222,8 +222,8 @@ func (s *Handler) SudoOnChanOpenAck(
 
 // SudoTxQueryResult is used to pass a tx query result to the contract that registered the query
 // to:
-// 		1. check whether the transaction actually satisfies the initial query arguments;
-// 		2. execute business logic related to the tx query result / save the result to state.
+//  1. check whether the transaction actually satisfies the initial query arguments;
+//  2. execute business logic related to the tx query result / save the result to state.
 func (s *Handler) SudoTxQueryResult(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,

@@ -33,7 +33,6 @@ func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64)
 }
 
 func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *bindings.QueryInterchainAccountAddressRequest) (*bindings.QueryInterchainAccountAddressResponse, error) {
-
 	grpcReq := icatypes.QueryInterchainAccountAddressRequest{
 		OwnerAddress:        req.OwnerAddress,
 		InterchainAccountId: req.InterchainAccountId,

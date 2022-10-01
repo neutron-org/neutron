@@ -9,9 +9,7 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 )
 
-var (
-	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
-)
+var _ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
 
 func (msg MsgSubmitQueryResult) Route() string {
 	return RouterKey
@@ -51,7 +49,6 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 
 func (msg MsgSubmitQueryResult) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgSubmitQueryResult) GetSigners() []sdk.AccAddress {
@@ -101,7 +98,6 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 
 func (msg MsgRegisterInterchainQuery) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
@@ -144,7 +140,6 @@ func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
 
 func (msg MsgRemoveInterchainQueryRequest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {
@@ -176,7 +171,6 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 
 func (msg MsgUpdateInterchainQueryRequest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
