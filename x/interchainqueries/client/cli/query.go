@@ -140,9 +140,9 @@ func CmdQueryLastRemoteHeight() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			connectionId := args[0]
+			connectionID := args[0]
 			queryClient := types.NewQueryClient(clientCtx)
-			res, err := queryClient.LastRemoteHeight(context.Background(), &types.QueryLastRemoteHeight{ConnectionId: connectionId})
+			res, err := queryClient.LastRemoteHeight(context.Background(), &types.QueryLastRemoteHeight{ConnectionId: connectionID})
 			if err != nil {
 				return err
 			}

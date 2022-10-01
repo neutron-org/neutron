@@ -23,26 +23,26 @@ type NeutronQuery struct {
 /* Requests */
 
 type QueryRegisteredQueryResultRequest struct {
-	QueryId uint64 `json:"query_id,omitempty"`
+	QueryID uint64 `json:"query_id,omitempty"`
 }
 
 type QueryInterchainAccountAddressRequest struct {
 	// owner_address is the owner of the interchain account on the controller chain
 	OwnerAddress string `json:"owner_address,omitempty"`
 	// interchain_account_id is an identifier of your interchain account from which you want to execute msgs
-	InterchainAccountId string `json:"interchain_account_id,omitempty"`
+	InterchainAccountID string `json:"interchain_account_id,omitempty"`
 	// connection_id is an IBC connection identifier between Neutron and remote chain
-	ConnectionId string `json:"connection_id,omitempty"`
+	ConnectionID string `json:"connection_id,omitempty"`
 }
 
 type QueryRegisteredQueriesRequest struct {
 	Owners       []string           `json:"owners,omitempty"`
-	ConnectionId string             `json:"connection_id,omitempty"`
+	ConnectionID string             `json:"connection_id,omitempty"`
 	Pagination   *query.PageRequest `json:"pagination,omitempty"`
 }
 
 type QueryRegisteredQueryRequest struct {
-	QueryId uint64 `json:"query_id,omitempty"`
+	QueryID uint64 `json:"query_id,omitempty"`
 }
 
 /* Responses */
@@ -57,7 +57,7 @@ type QueryRegisteredQueriesResponse struct {
 
 type RegisteredQuery struct {
 	// The unique id of the registered query.
-	Id uint64 `json:"id"`
+	ID uint64 `json:"id"`
 	// The address that registered the query.
 	Owner string `json:"owner"`
 	// The KV-storage keys for which we want to get values from remote chain
@@ -67,7 +67,7 @@ type RegisteredQuery struct {
 	// The query type identifier (i.e. 'kv' or 'tx' for now).
 	QueryType string `json:"query_type"`
 	// The IBC connection ID for getting ConsensusState to verify proofs.
-	ConnectionId string `json:"connection_id"`
+	ConnectionID string `json:"connection_id"`
 	// Parameter that defines how often the query must be updated.
 	UpdatePeriod uint64 `json:"update_period"`
 	// The local chain last block height when the query result was updated.
