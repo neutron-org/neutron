@@ -173,7 +173,6 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().ErrorContains(err, expectedErrorMsg)
-
 }
 
 type ChainRequest struct {
