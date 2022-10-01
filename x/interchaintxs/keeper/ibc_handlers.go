@@ -89,7 +89,7 @@ func (k *Keeper) HandleChanOpenAck(
 	_, err = k.sudoHandler.SudoOnChanOpenAck(ctx, icaOwner.GetContract(), sudo.OpenAckDetails{
 		PortID:                portID,
 		ChannelID:             channelID,
-		CounterpartyChannelId: counterpartyChannelId,
+		CounterpartyChannelID: counterpartyChannelId,
 		CounterpartyVersion:   counterpartyVersion,
 	})
 	if err != nil {

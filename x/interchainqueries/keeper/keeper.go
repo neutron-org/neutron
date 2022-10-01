@@ -68,7 +68,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) GetLastRegisteredQueryKey(ctx sdk.Context) uint64 {
 	store := ctx.KVStore(k.storeKey)
-	bytes := store.Get(types.LastRegisteredQueryIdKey)
+	bytes := store.Get(types.LastRegisteredQueryIDKey)
 	if bytes == nil {
 		k.Logger(ctx).Debug("Last registered query key don't exists, GetLastRegisteredQueryKey returns 0")
 		return 0
@@ -78,7 +78,7 @@ func (k Keeper) GetLastRegisteredQueryKey(ctx sdk.Context) uint64 {
 
 func (k Keeper) SetLastRegisteredQueryKey(ctx sdk.Context, id uint64) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.LastRegisteredQueryIdKey, sdk.Uint64ToBigEndian(id))
+	store.Set(types.LastRegisteredQueryIDKey, sdk.Uint64ToBigEndian(id))
 }
 
 func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {

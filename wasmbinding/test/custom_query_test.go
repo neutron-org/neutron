@@ -135,7 +135,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 	query := bindings.NeutronQuery{
 		InterchainAccountAddress: &bindings.QueryInterchainAccountAddressRequest{
 			OwnerAddress:        contractAddress.String(),
-			InterchainAccountId: testutil.TestInterchainId,
+			InterchainAccountId: testutil.TestInterchainID,
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 		},
 	}
