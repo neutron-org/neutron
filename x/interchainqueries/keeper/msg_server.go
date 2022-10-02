@@ -50,7 +50,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	}
 
 	lastID := k.GetLastRegisteredQueryKey(ctx)
-	lastID += 1
+	lastID++
 
 	params := k.GetParams(ctx)
 

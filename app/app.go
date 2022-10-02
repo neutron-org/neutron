@@ -316,7 +316,6 @@ func New(
 	wasmOpts []wasm.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
-
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -531,7 +530,7 @@ func New(
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
 	// we prefer to be more strict in what arguments the modules expect.
-	var skipGenesisInvariants = cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
+	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
@@ -846,7 +845,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 
 	// Register app's swagger ui
 	if apiConfig.Swagger {
-		app.RegisterSwaggerUi(apiSvr)
+		app.RegisterSwaggerUI(apiSvr)
 	}
 }
 
@@ -898,7 +897,7 @@ func (app *App) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
-func (app *App) RegisterSwaggerUi(apiSvr *api.Server) {
+func (app *App) RegisterSwaggerUI(apiSvr *api.Server) {
 	staticSubDir, err := fs.Sub(docs.Docs, "static")
 	if err != nil {
 		app.Logger().Error(fmt.Sprintf("failed to register swagger-ui route: %s", err))

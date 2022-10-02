@@ -1,3 +1,4 @@
+//nolint:revive,stylecheck  // if we change the names of var-naming things here, we harm some kind of mapping.
 package bindings
 
 import "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -63,8 +64,7 @@ type RemoveInterchainQuery struct {
 	QueryId uint64 `json:"query_id"`
 }
 
-type RemoveInterchainQueryResponse struct {
-}
+type RemoveInterchainQueryResponse struct{}
 
 type UpdateInterchainQuery struct {
 	QueryId         uint64         `json:"query_id,omitempty"`
@@ -72,5 +72,4 @@ type UpdateInterchainQuery struct {
 	NewUpdatePeriod uint64         `json:"new_update_period,omitempty"`
 }
 
-type UpdateInterchainQueryResponse struct {
-}
+type UpdateInterchainQueryResponse struct{}

@@ -11,7 +11,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 
-	"github.com/neutron-org/neutron/x/interchaintxs/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -19,19 +18,19 @@ type msgServer struct {
 	Keeper
 }
 
-var _ types.MsgServer = msgServer{}
+var _ ictxtypes.MsgServer = msgServer{}
 
 // NewMsgServerImpl returns an implementation of the MsgServer interface
 // for the provided Keeper.
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
+func NewMsgServerImpl(keeper Keeper) ictxtypes.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
 func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
-	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainAccount)
+	defer telemetry.ModuleMeasureSince(ictxtypes.ModuleName, time.Now(), LabelRegisterInterchainAccount)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.Logger(ctx).Debug("RegisterInterchainAccount", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_accountt_id", msg.InterchainAccountId)
+	k.Logger(ctx).Debug("RegisterInterchainAccount", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
 
 	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
@@ -41,10 +40,10 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "from_address", msg.FromAddress)
-		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
-	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
+	icaOwner, err := ictxtypes.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount", "error", err)
 		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
@@ -59,7 +58,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 }
 
 func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
-	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelSubmitTx)
+	defer telemetry.ModuleMeasureSince(ictxtypes.ModuleName, time.Now(), LabelSubmitTx)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("SubmitTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
@@ -72,10 +71,10 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("SubmitTx: contract not found", "from_address", msg.FromAddress)
-		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
-	icaOwner, err := types.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
+	icaOwner, err := ictxtypes.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
 	}
@@ -132,7 +131,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrap(err, "failed to SendTx")
 	}
 
-	return &types.MsgSubmitTxResponse{
+	return &ictxtypes.MsgSubmitTxResponse{
 		SequenceId: sequence,
 		Channel:    channelID,
 	}, nil
