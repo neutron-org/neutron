@@ -5,7 +5,7 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v5/modules/core/24-host"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/proto/tendermint/crypto"
 

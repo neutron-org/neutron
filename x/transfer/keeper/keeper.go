@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v5/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v5/modules/core/04-channel/types"
 	wrappedtypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
@@ -43,7 +44,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *types.MsgTra
 
 // NewKeeper creates a new IBC transfer Keeper(KeeperTransferWrapper) instance
 func NewKeeper(
-	cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Subspace,
+	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
 	ics4Wrapper types.ICS4Wrapper, channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
 ) KeeperTransferWrapper {

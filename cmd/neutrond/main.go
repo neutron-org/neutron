@@ -13,7 +13,7 @@ func main() {
 	config.Seal()
 
 	rootCmd, _ := NewRootCmd()
-	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
+	if err := svrcmd.Execute(rootCmd, "NEUTRON", app.DefaultNodeHome); err != nil {
 		os.Exit(1)
 	}
 }

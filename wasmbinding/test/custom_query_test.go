@@ -8,7 +8,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v5/modules/core/24-host"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 

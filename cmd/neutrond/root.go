@@ -8,6 +8,9 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
+	tmcfg "github.com/tendermint/tendermint/config"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -18,6 +21,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -29,7 +33,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	tmcfg "github.com/tendermint/tendermint/config"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -76,13 +79,85 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			return server.InterceptConfigsPreRunHandler(cmd, "", tmcfg.DefaultConfig())
+			customAppTemplate, customAppConfig := initAppConfig()
+			customTMConfig := initTendermintConfig()
+
+			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig)
 		},
 	}
 
 	initRootCmd(rootCmd, encodingConfig)
 
 	return rootCmd, encodingConfig
+}
+
+// initTendermintConfig helps to override default Tendermint Config values.
+// return tmcfg.DefaultConfig if no custom configuration is required for the application.
+func initTendermintConfig() *tmcfg.Config {
+	cfg := tmcfg.DefaultConfig()
+
+	// these values put a higher strain on node memory
+	// cfg.P2P.MaxNumInboundPeers = 100
+	// cfg.P2P.MaxNumOutboundPeers = 40
+
+	return cfg
+}
+
+// initAppConfig helps to override default appConfig template and configs.
+// return "", nil if no custom configuration is required for the application.
+func initAppConfig() (string, interface{}) {
+	// The following code snippet is just for reference.
+
+	// WASMConfig defines configuration for the wasm module.
+	type WASMConfig struct {
+		// This is the maximum sdk gas (wasm and storage) that we allow for any x/wasm "smart" queries
+		QueryGasLimit uint64 `mapstructure:"query_gas_limit"`
+
+		// Address defines the gRPC-web server to listen on
+		LruSize uint64 `mapstructure:"lru_size"`
+	}
+
+	type CustomAppConfig struct {
+		serverconfig.Config
+
+		WASM WASMConfig `mapstructure:"wasm"`
+	}
+
+	// Optionally allow the chain developer to overwrite the SDK's default
+	// server config.
+	srvCfg := serverconfig.DefaultConfig()
+	// The SDK's default minimum gas price is set to "" (empty value) inside
+	// app.toml. If left empty by validators, the node will halt on startup.
+	// However, the chain developer can set a default app.toml value for their
+	// validators here.
+	//
+	// In summary:
+	// - if you leave srvCfg.MinGasPrices = "", all validators MUST tweak their
+	//   own app.toml config,
+	// - if you set srvCfg.MinGasPrices non-empty, validators CAN tweak their
+	//   own app.toml to override, or use this default value.
+	//
+	// In simapp, we set the min gas prices to 0.
+	srvCfg.MinGasPrices = "0stake"
+	// srvCfg.BaseConfig.IAVLDisableFastNode = true // disable fastnode by default
+
+	customAppConfig := CustomAppConfig{
+		Config: *srvCfg,
+		WASM: WASMConfig{
+			LruSize:       1,
+			QueryGasLimit: 300000,
+		},
+	}
+
+	customAppTemplate := serverconfig.DefaultConfigTemplate + `
+[wasm]
+# This is the maximum sdk gas (wasm and storage) that we allow for any x/wasm "smart" queries
+query_gas_limit = 300000
+# This is the number of wasm vm instances we keep cached in memory for speed-up
+# Warning: this is currently unstable and may lead to crashes, best to keep for 0 unless testing locally
+lru_size = 0`
+
+	return customAppTemplate, customAppConfig
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
@@ -202,6 +277,12 @@ func (ac appCreator) newApp(
 	if err != nil {
 		panic(err)
 	}
+
+	snapshotOptions := snapshottypes.NewSnapshotOptions(
+		cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval)),
+		cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent)),
+	)
+
 	var wasmOpts []wasm.Option
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
 		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
@@ -225,9 +306,7 @@ func (ac appCreator) newApp(
 		baseapp.SetInterBlockCache(cache),
 		baseapp.SetTrace(cast.ToBool(appOpts.Get(server.FlagTrace))),
 		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
-		baseapp.SetSnapshotStore(snapshotStore),
-		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval))),
-		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))),
+		baseapp.SetSnapshot(snapshotStore, snapshotOptions),
 	)
 }
 
