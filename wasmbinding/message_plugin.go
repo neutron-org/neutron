@@ -283,7 +283,9 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 			Title:       submitProposal.Proposals.CommunityPoolSpendProposal.Title,
 			Description: submitProposal.Proposals.CommunityPoolSpendProposal.Description,
 			Recipient:   submitProposal.Proposals.CommunityPoolSpendProposal.Recipient,
+			Amount:      sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewIntFromUint64(submitProposal.Proposals.CommunityPoolSpendProposal.Amount))),
 		}
+
 		cont, err := proto.Marshal(&prop)
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")

@@ -93,6 +93,7 @@ type CommunityPoolSpendProposal struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Recipient   string `json:"recipient"`
+	Amount      uint64 `json:"amount"`
 }
 
 type ClientUpdateProposal struct {
