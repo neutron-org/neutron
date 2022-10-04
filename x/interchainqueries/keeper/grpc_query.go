@@ -45,20 +45,21 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 	)
 
 	var owners = newOwnersStore(req.GetOwners())
-	pageRes, err := querytypes.Paginate(store, req.Pagination, func(key, value []byte) error {
-		query := types.RegisteredQuery{}
-		k.cdc.MustUnmarshal(value, &query)
+	pageRes, err := querytypes.FilteredPaginate(store, req.Pagination, func(key, value []byte, accumulate bool) (bool, error) {
+		if accumulate {
+			query := types.RegisteredQuery{}
+			k.cdc.MustUnmarshal(value, &query)
 
-		var (
-			passedOwnerFilter        = owners.Has(query.GetOwner())
-			passedConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
-		)
+			var (
+				passedOwnerFilter        = owners.Has(query.GetOwner())
+				passedConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
+			)
 
-		if passedOwnerFilter && passedConnectionIDFilter {
-			queries = append(queries, query)
+			if passedOwnerFilter && passedConnectionIDFilter {
+				queries = append(queries, query)
+			}
 		}
-
-		return nil
+		return true, nil
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "paginate: %v", err)
