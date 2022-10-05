@@ -109,4 +109,4 @@ sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' $
 
 # Update host chain genesis to allow x/bank/MsgSend ICA tx execution
 sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/cosmos.staking.v1beta1.MsgUndelegate\"]/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
-sed -i -e 's/\"admins\":.*/\"admins\": [\"\neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u\"]/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
+sed -i -e 's/\"admins\":.*/\"admins\": [\"\neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq\"]/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
