@@ -327,12 +327,12 @@ func (m *CustomMessenger) PerformAddAmin(ctx sdk.Context, contractAddr sdk.AccAd
 	}
 
 	if err := tx.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitTx message")
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming AddAdmin message")
 	}
 
 	response, err := m.Adminserver.AddAdmin(sdk.WrapSDKContext(ctx), &tx)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to submit interchain transaction")
+		return nil, sdkerrors.Wrap(err, "failed to add admin")
 	}
 
 	return (*bindings.AddAdminResponse)(response), nil
