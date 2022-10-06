@@ -25,7 +25,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
-		k.Logger(ctx).Error("HandleAcknowledgement: failed to get ica owner from source port", "error", err)
+		k.Logger(ctx).Error("HandleAcknowledgement: cannot unmarshal ICS-27 packet acknowledgement", "error", err)
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 packet acknowledgement: %v", err)
 	}
 
@@ -39,7 +39,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	if err != nil {
-		k.Logger(ctx).Error("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
+		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet acknowledgement")
 	}
 
@@ -93,7 +93,7 @@ func (k *Keeper) HandleChanOpenAck(
 		CounterpartyVersion:   counterpartyVersion,
 	})
 	if err != nil {
-		k.Logger(ctx).Error("HandleChanOpenAck: failed to Sudo contract on packet timeout", "error", err)
+		k.Logger(ctx).Debug("HandleChanOpenAck: failed to Sudo contract on packet timeout", "error", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract OnChanOpenAck")
 	}
 
