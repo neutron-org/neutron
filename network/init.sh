@@ -4,6 +4,9 @@ BINARY=neutrond
 CHAIN_DIR=./data
 CHAINID_1=test-1
 CHAINID_2=test-2
+# address of dao contract
+ADMIN_ADDRESS=neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq
+DAO_CONTRACT=./contracts/neutron_dao.wasm
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
 DEMO_MNEMONIC_1="banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
@@ -69,6 +72,14 @@ $BINARY gentx val2 7000000000stake --home $CHAIN_DIR/$CHAINID_2 --chain-id $CHAI
 $BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_1
 $BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_2
 
+echo "Initializing dao contract in genesis..."
+# Upload the dao contract
+$BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home $CHAIN_DIR/$CHAINID_1
+# Instantiate the contract
+INIT_CONTRACT="$(printf '{"owner":"%s"}' "${ADMIN_ADDRESS}")"
+#echo "Instantiate"
+$BINARY add-wasm-message  instantiate-contract 1 "$INIT_CONTRACT" --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
+
 echo "Changing defaults and ports in app.toml and config.toml files..."
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://0.0.0.0:'"$P2PPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/config.toml
 sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:'"$RPCPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/config.toml
@@ -99,3 +110,4 @@ sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' $
 
 # Update host chain genesis to allow x/bank/MsgSend ICA tx execution
 sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/cosmos.staking.v1beta1.MsgUndelegate\"]/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
+sed -i -e 's/\"voting_period\":.*/\"voting_period\": "20s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
