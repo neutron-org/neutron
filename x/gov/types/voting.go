@@ -21,8 +21,7 @@ type VotingPowerQuery struct {
 }
 
 // VotingPowersQuery corresponding to the Rust enum variant `neutron-voting::msg::QueryMsg::VotingPowers`
-type VotingPowersQuery struct {
-}
+type VotingPowersQuery struct{}
 
 // VotingPowerResponse corresponding to the `voting_powers` query's respons type's repeating element
 type VotingPowerResponse struct {
