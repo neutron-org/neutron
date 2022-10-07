@@ -100,10 +100,12 @@ func (s *Handler) SudoResponse(
 	s.Logger(ctx).Debug("SudoResponse", "senderAddress", senderAddress, "request", request, "msg", msg)
 
 	if !s.wasmKeeper.HasContractInfo(ctx, senderAddress) {
-		s.Logger(ctx).Debug("SudoResponse: contract not found", "senderAddress", senderAddress)
 		if request.SourcePort == TransferPort {
+			// we want to allow non contract account to send the assets via IBC Transfer module
+			// we can determine the originating module by the source port of the request packet
 			return nil, nil
 		}
+		s.Logger(ctx).Debug("SudoResponse: contract not found", "senderAddress", senderAddress)
 		return nil, fmt.Errorf("%s is not a contract address and not the Transfer module", senderAddress)
 	}
 
@@ -135,10 +137,12 @@ func (s *Handler) SudoTimeout(
 	s.Logger(ctx).Info("SudoTimeout", "senderAddress", senderAddress, "request", request)
 
 	if !s.wasmKeeper.HasContractInfo(ctx, senderAddress) {
-		s.Logger(ctx).Debug("SudoTimeout: contract not found", "senderAddress", senderAddress)
 		if request.SourcePort == TransferPort {
+			// we want to allow non contract account to send the assets via IBC Transfer module
+			// we can determine the originating module by the source port of the request packet
 			return nil, nil
 		}
+		s.Logger(ctx).Debug("SudoTimeout: contract not found", "senderAddress", senderAddress)
 		return nil, fmt.Errorf("%s is not a contract address and not the Transfer module", senderAddress)
 	}
 
@@ -172,10 +176,12 @@ func (s *Handler) SudoError(
 	s.Logger(ctx).Debug("SudoError", "senderAddress", senderAddress, "request", request)
 
 	if !s.wasmKeeper.HasContractInfo(ctx, senderAddress) {
-		s.Logger(ctx).Debug("SudoError: contract not found", "senderAddress", senderAddress)
 		if request.SourcePort == TransferPort {
+			// we want to allow non contract account to send the assets via IBC Transfer module
+			// we can determine the originating module by the source port of the request packet
 			return nil, nil
 		}
+		s.Logger(ctx).Debug("SudoError: contract not found", "senderAddress", senderAddress)
 		return nil, fmt.Errorf("%s is not a contract address and not the Transfer module", senderAddress)
 	}
 
