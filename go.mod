@@ -1,6 +1,6 @@
 module github.com/neutron-org/neutron
 
-go 1.18
+go 1.19
 
 require (
 	github.com/CosmWasm/wasmd v0.28.0
