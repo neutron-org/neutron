@@ -20,9 +20,7 @@ import (
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
-var (
-	reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
-)
+var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
 
 type KeeperTestSuite struct {
 	testutil.IBCConnectionTestSuite
@@ -325,7 +323,6 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		{
 			"valid remove",
 			func(sender string) {
-
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  sender,
@@ -527,7 +524,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
-				//suite.NoError(suite.Path.EndpointB.UpdateClient())
+				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
@@ -678,7 +675,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
-				//suite.NoError(suite.Path.EndpointB.UpdateClient())
+				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
@@ -811,7 +808,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"query result height is too old",
 			func(sender string, ctx sdktypes.Context) {
-
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{

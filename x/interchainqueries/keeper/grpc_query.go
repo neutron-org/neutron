@@ -44,7 +44,7 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 		queries []types.RegisteredQuery
 	)
 
-	var owners = newOwnersStore(req.GetOwners())
+	owners := newOwnersStore(req.GetOwners())
 	pageRes, err := querytypes.Paginate(store, req.Pagination, func(key, value []byte) error {
 		query := types.RegisteredQuery{}
 		k.cdc.MustUnmarshal(value, &query)
