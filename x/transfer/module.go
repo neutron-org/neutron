@@ -48,7 +48,6 @@ func (im IBCModule) OnAcknowledgementPacket(
 		return sdkerrors.Wrap(err, "failed to process original OnAcknowledgementPacket")
 	}
 	return im.HandleAcknowledgement(ctx, packet, acknowledgement)
-
 }
 
 // OnTimeoutPacket implements the IBCModule interface.

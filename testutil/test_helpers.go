@@ -3,7 +3,7 @@ package testutil
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -24,7 +24,7 @@ var (
 	// TestOwnerAddress defines a reusable bech32 address for testing purposes
 	TestOwnerAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
 
-	TestInterchainId = "owner_id"
+	TestInterchainID = "owner_id"
 
 	// TestVersion defines a reusable interchainaccounts version string for testing purposes
 	TestVersion = string(icatypes.ModuleCdc.MustMarshalJSON(&icatypes.Metadata{
@@ -74,7 +74,7 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 
 func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
 	// wasm file built with https://github.com/neutron-org/neutron-contracts/tree/main/contracts/reflect
-	wasmCode, err := ioutil.ReadFile(path)
+	wasmCode, err := os.ReadFile(path)
 	suite.Require().NoError(err)
 
 	codeID, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
@@ -127,7 +127,7 @@ func SetupICAPath(path *ibctesting.Path, owner string) error {
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
 func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) error {
-	icaOwner, _ := ictxstypes.NewICAOwner(owner, TestInterchainId)
+	icaOwner, _ := ictxstypes.NewICAOwner(owner, TestInterchainID)
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
 		return err

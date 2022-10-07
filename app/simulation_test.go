@@ -88,7 +88,7 @@ func BenchmarkSimulation(b *testing.B) {
 	)
 
 	simApp := app
-	//require.True(b, ok, "can't use simapp")
+	// require.True(b, ok, "can't use simapp")
 
 	// Run randomized simulations
 	_, simParams, simErr := simulation.SimulateFromSeed(

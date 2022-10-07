@@ -74,12 +74,12 @@ func (k *Keeper) HandleChanOpenAck(
 	ctx sdk.Context,
 	portID,
 	channelID,
-	counterpartyChannelId,
+	counterpartyChannelID,
 	counterpartyVersion string,
 ) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelLabelHandleChanOpenAck)
 
-	k.Logger(ctx).Debug("HandleChanOpenAck", "port_id", portID, "channel_id", channelID, "counterparty_channel_id", counterpartyChannelId, "counterparty_version", counterpartyVersion)
+	k.Logger(ctx).Debug("HandleChanOpenAck", "port_id", portID, "channel_id", channelID, "counterparty_channel_id", counterpartyChannelID, "counterparty_version", counterpartyVersion)
 	icaOwner, err := types.ICAOwnerFromPort(portID)
 	if err != nil {
 		k.Logger(ctx).Error("HandleChanOpenAck: failed to get ica owner from source port", "error", err)
@@ -89,7 +89,7 @@ func (k *Keeper) HandleChanOpenAck(
 	_, err = k.sudoHandler.SudoOnChanOpenAck(ctx, icaOwner.GetContract(), sudo.OpenAckDetails{
 		PortID:                portID,
 		ChannelID:             channelID,
-		CounterpartyChannelId: counterpartyChannelId,
+		CounterpartyChannelID: counterpartyChannelID,
 		CounterpartyVersion:   counterpartyVersion,
 	})
 	if err != nil {

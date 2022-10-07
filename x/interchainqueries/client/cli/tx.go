@@ -3,7 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -49,7 +49,7 @@ func SubmitQueryResultCmd() *cobra.Command {
 
 			resultFile := args[1]
 
-			result, err := ioutil.ReadFile(resultFile)
+			result, err := os.ReadFile(resultFile)
 			if err != nil {
 				return fmt.Errorf("failed to read query result file: %w", err)
 			}

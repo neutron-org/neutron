@@ -58,7 +58,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 }
 		`,
 		suite.Path.EndpointA.ConnectionID,
-		testutil.TestInterchainId,
+		testutil.TestInterchainID,
 	))
 	var msg json.RawMessage
 	err := json.Unmarshal(msgStr, &msg)
@@ -252,7 +252,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 }
 		`,
 		suite.Path.EndpointA.ConnectionID,
-		testutil.TestInterchainId,
+		testutil.TestInterchainID,
 		msgs,
 		memo,
 		timeout,
