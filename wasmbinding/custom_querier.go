@@ -20,7 +20,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 		switch {
 		case contractQuery.InterchainQueryResult != nil:
-			queryID := contractQuery.InterchainQueryResult.QueryId
+			queryID := contractQuery.InterchainQueryResult.QueryID
 
 			response, err := qp.GetInterchainQueryResult(ctx, queryID)
 			if err != nil {

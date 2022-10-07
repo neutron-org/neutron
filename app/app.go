@@ -847,7 +847,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 
 	// Register app's swagger ui
 	if apiConfig.Swagger {
-		app.RegisterSwaggerUi(apiSvr)
+		app.RegisterSwaggerUI(apiSvr)
 	}
 }
 
@@ -899,7 +899,7 @@ func (app *App) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
-func (app *App) RegisterSwaggerUi(apiSvr *api.Server) {
+func (app *App) RegisterSwaggerUI(apiSvr *api.Server) {
 	staticSubDir, err := fs.Sub(docs.Docs, "static")
 	if err != nil {
 		app.Logger().Error(fmt.Sprintf("failed to register swagger-ui route: %s", err))

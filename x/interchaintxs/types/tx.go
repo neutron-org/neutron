@@ -12,81 +12,81 @@ import (
 
 var _ codectypes.UnpackInterfacesMessage = MsgSubmitTx{}
 
-func (m *MsgRegisterInterchainAccount) ValidateBasic() error {
-	if len(m.ConnectionId) == 0 {
+func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
+	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID
 	}
 
-	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", m.FromAddress)
+	if _, err := sdk.AccAddressFromBech32(msg.FromAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", msg.FromAddress)
 	}
 
-	if len(m.InterchainAccountId) == 0 {
+	if len(msg.InterchainAccountId) == 0 {
 		return ErrEmptyInterchainAccountID
 	}
 
 	return nil
 }
 
-func (m *MsgRegisterInterchainAccount) GetSigners() []sdk.AccAddress {
-	fromAddress, _ := sdk.AccAddressFromBech32(m.FromAddress)
+func (msg *MsgRegisterInterchainAccount) GetSigners() []sdk.AccAddress {
+	fromAddress, _ := sdk.AccAddressFromBech32(msg.FromAddress)
 	return []sdk.AccAddress{fromAddress}
 }
 
-func (m *MsgRegisterInterchainAccount) Route() string {
+func (msg *MsgRegisterInterchainAccount) Route() string {
 	return RouterKey
 }
 
-func (m *MsgRegisterInterchainAccount) Type() string {
+func (msg *MsgRegisterInterchainAccount) Type() string {
 	return "register-interchain-account"
 }
 
-func (m MsgRegisterInterchainAccount) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+func (msg MsgRegisterInterchainAccount) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
 //----------------------------------------------------------------
 
-func (m *MsgSubmitTx) ValidateBasic() error {
-	if len(m.ConnectionId) == 0 {
+func (msg *MsgSubmitTx) ValidateBasic() error {
+	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID
 	}
 
-	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", m.FromAddress)
+	if _, err := sdk.AccAddressFromBech32(msg.FromAddress); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", msg.FromAddress)
 	}
 
-	if len(m.InterchainAccountId) == 0 {
+	if len(msg.InterchainAccountId) == 0 {
 		return ErrEmptyInterchainAccountID
 	}
 
-	if len(m.Msgs) == 0 {
+	if len(msg.Msgs) == 0 {
 		return ErrNoMessages
 	}
 
-	if m.Timeout <= 0 {
+	if msg.Timeout <= 0 {
 		return sdkerrors.Wrapf(ErrInvalidTimeout, "timeout must be greater than zero")
 	}
 
 	return nil
 }
 
-func (m *MsgSubmitTx) GetSigners() []sdk.AccAddress {
-	fromAddress, _ := sdk.AccAddressFromBech32(m.FromAddress)
+func (msg *MsgSubmitTx) GetSigners() []sdk.AccAddress {
+	fromAddress, _ := sdk.AccAddressFromBech32(msg.FromAddress)
 	return []sdk.AccAddress{fromAddress}
 }
 
-func (m *MsgSubmitTx) Route() string {
+func (msg *MsgSubmitTx) Route() string {
 	return RouterKey
 }
 
-func (m *MsgSubmitTx) Type() string {
+func (msg *MsgSubmitTx) Type() string {
 	return "submit-tx"
 }
 
 // GetTxMsgs casts the attached *types.Any messages to SDK messages.
-func (m *MsgSubmitTx) GetTxMsgs() (sdkMsgs []sdk.Msg, err error) {
-	for idx, msg := range m.Msgs {
+func (msg *MsgSubmitTx) GetTxMsgs() (sdkMsgs []sdk.Msg, err error) {
+	for idx, msg := range msg.Msgs {
 		sdkMsg, ok := msg.GetCachedValue().(sdk.Msg)
 		if !ok {
 			return nil, fmt.Errorf("failed to cast message #%d to sdk.Msg", idx)
@@ -98,8 +98,8 @@ func (m *MsgSubmitTx) GetTxMsgs() (sdkMsgs []sdk.Msg, err error) {
 	return
 }
 
-func (m MsgSubmitTx) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+func (msg MsgSubmitTx) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
 // PackTxMsgAny marshals the sdk.Msg payload to a protobuf Any type

@@ -1,3 +1,4 @@
+//nolint:revive,stylecheck  // if we change the names of var-naming things here, we harm some kind of mapping.
 package bindings
 
 import "github.com/neutron-org/neutron/x/interchainqueries/types"

@@ -69,7 +69,7 @@ type MessageOnChanOpenAck struct {
 type OpenAckDetails struct {
 	PortID                string `json:"port_id"`
 	ChannelID             string `json:"channel_id"`
-	CounterpartyChannelId string `json:"counterparty_channel_id"`
+	CounterpartyChannelID string `json:"counterparty_channel_id"`
 	CounterpartyVersion   string `json:"counterparty_version"`
 }
 
