@@ -26,7 +26,7 @@ import (
 
 // CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow
 // caller flexibility to use params that differ from the chain.
-func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeight int64, trustedHeight ibcclienttypes.Height, timestamp time.Time, tmValSet, tmTrustedVals *tmtypes.ValidatorSet, signers []tmtypes.PrivValidator, previousHeader *tmtypes.Header) *ibctmtypes.Header {
+func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeight int64, trustedHeight ibcclienttypes.Height, timestamp time.Time, tmValSet, tmTrustedVals *tmtypes.ValidatorSet, signers map[string]tmtypes.PrivValidator, previousHeader *tmtypes.Header) *ibctmtypes.Header {
 	var (
 		valSet      *tmproto.ValidatorSet
 		trustedVals *tmproto.ValidatorSet
@@ -56,7 +56,15 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 	blockID := ibctesting.MakeBlockID(hhash, 3, tmhash.Sum([]byte("part_set")))
 	voteSet := tmtypes.NewVoteSet(chainID, blockHeight, 1, tmproto.PrecommitType, tmValSet)
 
-	commit, err := tmtypes.MakeCommit(blockID, blockHeight, 1, voteSet, signers, timestamp)
+	// MakeCommit expects a signer array in the same order as the validator array.
+	// Thus we iterate over the ordered validator set and construct a signer array
+	// from the signer map in the same order.
+	var signerArr []tmtypes.PrivValidator
+	for _, v := range tmValSet.Validators {
+		signerArr = append(signerArr, signers[v.Address.String()])
+	}
+
+	commit, err := tmtypes.MakeCommit(blockID, blockHeight, 1, voteSet, signerArr, timestamp)
 	require.NoError(chain.T, err)
 
 	signedHeader := &tmproto.SignedHeader{

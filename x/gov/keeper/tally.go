@@ -32,7 +32,7 @@ func (k Keeper) Tally(ctx sdk.Context, proposal govtypes.Proposal) (passes bool,
 
 	// iterate through votes
 	k.IterateVotes(ctx, proposal.ProposalId, func(vote govtypes.Vote) bool {
-		voterAddr := sdk.MustAccAddressFromBech32(vote.Voter)
+		voterAddr, _ := sdk.AccAddressFromBech32(vote.Voter)
 
 		votingPower := sdk.ZeroDec()
 
