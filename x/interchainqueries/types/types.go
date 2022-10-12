@@ -45,6 +45,9 @@ const (
 
 	// AttributeValueQueryRemoved represents the value for the 'action' event attribute.
 	AttributeValueQueryRemoved = "query_removed"
+
+	// maxTransactionsFilters defines maximum allowed amount of tx filters in msgRegisterInterchainQuery
+	maxTransactionsFilters = 32
 )
 
 const (
@@ -142,6 +145,9 @@ func ValidateTransactionsFilter(s string) error {
 	filters := TransactionsFilter{}
 	if err := json.Unmarshal([]byte(s), &filters); err != nil {
 		return fmt.Errorf("failed to unmarshal transactions filter: %w", err)
+	}
+	if len(filters) > maxTransactionsFilters {
+		return fmt.Errorf("too many transactions filters, provided=%d, max=%d", len(filters), maxTransactionsFilters)
 	}
 
 	for idx, f := range filters {

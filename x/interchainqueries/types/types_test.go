@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,5 +40,20 @@ func TestTransactionFilterValidation(t *testing.T) {
 		assert.ErrorContains(t, ValidateTransactionsFilter(`[{"field":"transfer.<","op":"Eq","value":"neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u"}]`), specialSymbolsAreNotAllowed)
 		// decimal number
 		assert.ErrorContains(t, ValidateTransactionsFilter(`[{"field":"tx.height","op":"Gte","value":15.5}]`), "can't be a decimal number")
+		assert.ErrorContains(t, ValidateTransactionsFilter(lotsOfTxFilters(t, 40)), "too many transactions filters")
 	})
+}
+
+func lotsOfTxFilters(t *testing.T, amount int) string {
+	filters := make([]TransactionsFilterItem, 0, amount)
+	for i := 0; i < amount; i++ {
+		filters = append(filters, TransactionsFilterItem{
+			Field: "tx.height",
+			Op:    "Eq",
+			Value: 1000,
+		})
+	}
+	filtersStr, err := json.Marshal(filters)
+	assert.NoError(t, err)
+	return string(filtersStr)
 }
