@@ -138,15 +138,15 @@ type TransactionsFilterItem struct {
 
 // ValidateTransactionsFilter checks if the passed string is a valid TransactionsFilter value.
 func ValidateTransactionsFilter(s string) error {
+	const forbiddenCharacters = "\t\n\r\\()\"'=><"
 	filters := TransactionsFilter{}
 	if err := json.Unmarshal([]byte(s), &filters); err != nil {
 		return fmt.Errorf("failed to unmarshal transactions filter: %w", err)
 	}
+
 	for idx, f := range filters {
-		for _, r := range forbiddenRunes {
-			if strings.ContainsRune(f.Field, r) {
-				return fmt.Errorf("transactions filter condition idx=%d is invalid: special symbols %v are not allowed", idx, forbiddenRunesAsStr())
-			}
+		if strings.ContainsAny(f.Field, forbiddenCharacters) {
+			return fmt.Errorf("transactions filter condition idx=%d is invalid: special symbols %s are not allowed", idx, forbiddenCharacters)
 		}
 		if f.Field == "" {
 			return fmt.Errorf("transactions filter condition idx=%d is invalid: field couldn't be empty", idx)
@@ -168,14 +168,4 @@ func ValidateTransactionsFilter(s string) error {
 		}
 	}
 	return nil
-}
-
-var forbiddenRunes = []rune{'\t', '\n', '\r', '\\', '(', ')', '"', '\'', '=', '>', '<'}
-
-func forbiddenRunesAsStr() []string {
-	str := make([]string, 0, len(forbiddenRunes))
-	for _, r := range forbiddenRunes {
-		str = append(str, string(r))
-	}
-	return str
 }
