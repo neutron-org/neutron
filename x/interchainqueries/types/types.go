@@ -159,7 +159,7 @@ func ValidateTransactionsFilter(s string) error {
 				return fmt.Errorf("transactions filter condition idx=%d is invalid: value %v can't be a decimal number", idx, value)
 			}
 		default:
-			return fmt.Errorf("transactions filter condition idx=%d is invalid: value '%v' is expected to be on of: string, float, int", idx, f.Value)
+			return fmt.Errorf("transactions filter condition idx=%d is invalid: value '%v' is expected to be on of: string, number", idx, f.Value)
 		}
 		switch strings.ToLower(f.Op) {
 		case "eq", "gt", "gte", "lt", "lte":
