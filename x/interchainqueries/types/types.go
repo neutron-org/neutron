@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (
@@ -73,38 +71,7 @@ func (kv KVKey) ToString() string {
 	return kv.Path + kvPathKeyDelimiter + hex.EncodeToString(kv.Key)
 }
 
-func KVKeyFromString(s string) (KVKey, error) {
-	splitString := strings.Split(s, kvPathKeyDelimiter)
-	if len(splitString) < 2 {
-		return KVKey{}, sdkerrors.Wrap(ErrInvalidType, "invalid kv key type")
-	}
-
-	bzKey, err := hex.DecodeString(splitString[1])
-	if err != nil {
-		return KVKey{}, sdkerrors.Wrapf(err, "invalid key encoding")
-	}
-	return KVKey{
-		Path: splitString[0],
-		Key:  bzKey,
-	}, nil
-}
-
 type KVKeys []*KVKey
-
-func KVKeysFromString(str string) (KVKeys, error) {
-	splitString := strings.Split(str, kvKeysDelimiter)
-	kvKeys := make(KVKeys, 0, len(splitString))
-
-	for _, s := range splitString {
-		key, err := KVKeyFromString(s)
-		if err != nil {
-			return nil, err
-		}
-		kvKeys = append(kvKeys, &key)
-	}
-
-	return kvKeys, nil
-}
 
 func (keys KVKeys) String() string {
 	if len(keys) == 0 {
