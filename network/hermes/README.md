@@ -16,8 +16,8 @@ This serves as a basis for demonstration of interchain accounts e2e functionalit
 
 - Before attempting to create clients, connections and channels, the private keys for existing chains must be restored. Please note - currently the relayer does NOT support a keyring store to securely store the private key file. The key file will be stored on the local file system in the user `$HOME` folder under `$HOME/.hermes`
 ```
-hermes -c config.toml keys restore $CHAIN_ID -m $MNEMONIC
-hermes -c config.toml keys restore $CHAIN_ID -m $MNEMONIC
+$HERMES_BINARY --config config.toml keys add --key-name testkey_1 --chain $CHAIN_ID_1 --mnemonic-file <(echo "$MNEMONIC_1")
+$HERMES_BINARY --config config.toml keys add --key-name testkey_2 --chain $CHAIN_ID_2 --mnemonic-file <(echo "$MNEMONIC_2")
 ```
 
 - Execute the script
