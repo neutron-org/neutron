@@ -105,12 +105,54 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 			iqtypes.ErrInvalidConnectionID,
 		},
 		{
-			"valid",
+			"empty keys",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
 					Keys:               nil,
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			iqtypes.ErrEmptyKeys,
+		},
+		{
+			"empty key path",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: ""}},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			iqtypes.ErrEmptyKeyPath,
+		},
+		{
+			"empty key id",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte(""), Path: "path"}},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			iqtypes.ErrEmptyKeyId,
+		},
+		{
+			"valid",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod:       1,
 					Sender:             TestAddress,
