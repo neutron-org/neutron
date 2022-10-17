@@ -91,6 +91,22 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInvalidQueryType, "invalid query type")
 	}
 
+	if InterchainQueryType(msg.QueryType).IsKV() {
+		if len(msg.Keys) == 0 {
+			return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
+		}
+
+		//// check msg.Keys has path
+		for _, key := range msg.Keys {
+			if len(key.Path) == 0 {
+				return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
+			}
+			if len(key.Key) == 0 {
+				return sdkerrors.Wrap(ErrEmptyKeyId, "keys id cannot be empty")
+			}
+		}
+	}
+
 	if InterchainQueryType(msg.QueryType).IsTX() {
 		if err := ValidateTransactionsFilter(msg.TransactionsFilter); err != nil {
 			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())

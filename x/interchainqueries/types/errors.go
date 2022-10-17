@@ -23,4 +23,7 @@ var (
 	ErrInvalidHeight             = sdkerrors.Register(ModuleName, 1114, "height is invalid")
 	ErrNoQueryResult             = sdkerrors.Register(ModuleName, 1115, "no query result")
 	ErrNotContract               = sdkerrors.Register(ModuleName, 1116, "not a contract")
+	ErrEmptyKeys                 = sdkerrors.Register(ModuleName, 1117, "keys are empty")
+	ErrEmptyKeyPath              = sdkerrors.Register(ModuleName, 1118, "key path is empty")
+	ErrEmptyKeyId                = sdkerrors.Register(ModuleName, 1119, "key id is empty")
 )
