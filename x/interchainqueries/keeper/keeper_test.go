@@ -128,7 +128,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 
 func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	var msg iqtypes.MsgUpdateInterchainQueryRequest
-	originalQuery := iqtypes.MsgRegisterInterchainQuery{
+	originalKVQuery := iqtypes.MsgRegisterInterchainQuery{
 		QueryType: string(iqtypes.InterchainQueryTypeKV),
 		Keys: []*iqtypes.KVKey{
 			{
@@ -142,12 +142,22 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		Sender:             "",
 	}
 
+	originalTXQuery := iqtypes.MsgRegisterInterchainQuery{
+		QueryType:          string(iqtypes.InterchainQueryTypeTX),
+		Keys:               nil,
+		TransactionsFilter: "",
+		ConnectionId:       suite.Path.EndpointA.ConnectionID,
+		UpdatePeriod:       1,
+		Sender:             "",
+	}
+
 	tests := []struct {
 		name              string
 		malleate          func(sender string)
 		expectedErr       error
 		expectedPeriod    uint64
 		expectedQueryKeys []*iqtypes.KVKey
+		query             iqtypes.MsgRegisterInterchainQuery
 	}{
 		{
 			"valid update period",
@@ -161,7 +171,8 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			},
 			nil,
 			2,
-			originalQuery.Keys,
+			originalKVQuery.Keys,
+			originalKVQuery,
 		},
 		{
 			"valid query data",
@@ -179,13 +190,14 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				}
 			},
 			nil,
-			originalQuery.UpdatePeriod,
+			originalKVQuery.UpdatePeriod,
 			[]*iqtypes.KVKey{
 				{
 					Path: "newpath",
 					Key:  []byte("newdata"),
 				},
 			},
+			originalKVQuery,
 		},
 		{
 			"valid query both query keys and update period",
@@ -210,9 +222,30 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 					Key:  []byte("newdata"),
 				},
 			},
+			originalKVQuery,
 		},
 		{
-			"invavid query id",
+			"must not update keys for a tx query",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{
+						{
+							Path: "newpath",
+							Key:  []byte("newdata"),
+						},
+					},
+					NewUpdatePeriod: 2,
+					Sender:          sender,
+				}
+			},
+			nil,
+			2,
+			nil,
+			originalTXQuery,
+		},
+		{
+			"invalid query id",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 2,
@@ -227,8 +260,9 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				}
 			},
 			iqtypes.ErrInvalidQueryID,
-			originalQuery.UpdatePeriod,
-			originalQuery.Keys,
+			originalKVQuery.UpdatePeriod,
+			originalKVQuery.Keys,
+			originalKVQuery,
 		},
 		{
 			"failed due to auth error",
@@ -248,8 +282,9 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				}
 			},
 			sdkerrors.ErrUnauthorized,
-			originalQuery.UpdatePeriod,
-			originalQuery.Keys,
+			originalKVQuery.UpdatePeriod,
+			originalKVQuery.Keys,
+			originalKVQuery,
 		},
 	}
 
@@ -280,8 +315,8 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 
 			msgSrv := keeper.NewMsgServerImpl(iqkeeper)
 
-			originalQuery.Sender = contractAddress.String()
-			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &originalQuery)
+			tt.query.Sender = contractAddress.String()
+			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &tt.query)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(resRegister)
 
