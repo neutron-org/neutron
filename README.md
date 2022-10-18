@@ -1,4 +1,6 @@
+![Neutron](https://github.com/neutron-org/neutron-docs/blob/8c38f8cbc740ae9f1e3fad1b369fe9afebd2e406/static/img/neutron_wide_logo.png)
 # Neutron
+
 
 **NOTE: current version is a WIP.**
 
