@@ -24,7 +24,8 @@ message MsgRegisterInterchainQuery {
   // defines a query type: `kv` or `tx` now
   string query_type = 1;
 
-  // is used to define KV-storage keys for which we want to get values from remote chain
+  // is used to define KV-storage keys for which we want to get values from
+  // remote chain
   repeated KVKey keys = 2;
 
   // is used to define a filter for transaction search ICQ
@@ -46,7 +47,8 @@ message MsgSubmitQueryResult {
   uint64 query_id = 1;
   string sender = 2;
 
-  // is the IBC client ID for an IBC connection between Neutron chain and target chain (where the result was obtained from)
+  // is the IBC client ID for an IBC connection between Neutron chain and target
+  // chain (where the result was obtained from)
   string client_id = 3;
   QueryResult result = 4;
 }
@@ -69,13 +71,15 @@ message StorageValue {
   // is the value in IAVL store
   bytes value = 3;
 
-  // is the Merkle Proof which proves existence of key-value pair in IAVL storage
+  // is the Merkle Proof which proves existence of key-value pair in IAVL
+  // storage
   tendermint.crypto.ProofOps Proof = 4;
 }
 
 message Block {
   // We need to know block X+1 to verify response of transaction for block X
-  // since LastResultsHash is root hash of all results from the txs from the previous block
+  // since LastResultsHash is root hash of all results from the txs from the
+  // previous block
   google.protobuf.Any next_block_header = 1;
 
   // We need to know block X to verify inclusion of transaction for block X
@@ -87,26 +91,25 @@ message Block {
 message TxValue {
   tendermint.abci.ResponseDeliverTx response = 1;
 
-  // is the Merkle Proof which proves existence of response in block with height next_block_header.Height
+  // is the Merkle Proof which proves existence of response in block with height
+  // next_block_header.Height
   tendermint.crypto.Proof delivery_proof = 2;
 
-  // is the Merkle Proof which proves existence of data in block with height header.Height
+  // is the Merkle Proof which proves existence of data in block with height
+  // header.Height
   tendermint.crypto.Proof inclusion_proof = 3;
 
   // is body of the transaction
   bytes data = 4;
 }
 
-message MsgSubmitQueryResultResponse {
-
-}
+message MsgSubmitQueryResultResponse {}
 
 message MsgRemoveInterchainQueryRequest {
   uint64 query_id = 1;
   string sender = 2; // is the signer of the message
 }
-message MsgRemoveInterchainQueryResponse {
-}
+message MsgRemoveInterchainQueryResponse {}
 
 message MsgUpdateInterchainQueryRequest {
   uint64 query_id = 1;
@@ -114,5 +117,4 @@ message MsgUpdateInterchainQueryRequest {
   uint64 new_update_period = 3;
   string sender = 4; // is the signer of the message
 }
-message MsgUpdateInterchainQueryResponse {
-}
+message MsgUpdateInterchainQueryResponse {}
