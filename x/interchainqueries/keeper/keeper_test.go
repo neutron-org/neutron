@@ -145,19 +145,20 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	originalTXQuery := iqtypes.MsgRegisterInterchainQuery{
 		QueryType:          string(iqtypes.InterchainQueryTypeTX),
 		Keys:               nil,
-		TransactionsFilter: "",
+		TransactionsFilter: "someFilter",
 		ConnectionId:       suite.Path.EndpointA.ConnectionID,
 		UpdatePeriod:       1,
 		Sender:             "",
 	}
 
 	tests := []struct {
-		name              string
-		malleate          func(sender string)
-		expectedErr       error
-		expectedPeriod    uint64
-		expectedQueryKeys []*iqtypes.KVKey
-		query             iqtypes.MsgRegisterInterchainQuery
+		name                  string
+		malleate              func(sender string)
+		expectedErr           error
+		expectedPeriod        uint64
+		expectedQueryKeys     []*iqtypes.KVKey
+		expectedQueryTXFilter string
+		query                 iqtypes.MsgRegisterInterchainQuery
 	}{
 		{
 			"valid update period",
@@ -172,6 +173,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			nil,
 			2,
 			originalKVQuery.Keys,
+			"",
 			originalKVQuery,
 		},
 		{
@@ -197,10 +199,11 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 					Key:  []byte("newdata"),
 				},
 			},
+			"",
 			originalKVQuery,
 		},
 		{
-			"valid query both query keys and update period",
+			"valid query both query keys and update period and ignore tx filter",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -210,8 +213,9 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 							Key:  []byte("newdata"),
 						},
 					},
-					NewUpdatePeriod: 2,
-					Sender:          sender,
+					NewTransactionsFilter: "newFilter",
+					NewUpdatePeriod:       2,
+					Sender:                sender,
 				}
 			},
 			nil,
@@ -222,10 +226,11 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 					Key:  []byte("newdata"),
 				},
 			},
+			"",
 			originalKVQuery,
 		},
 		{
-			"must not update keys for a tx query",
+			"must not update keys for a tx query but update filter",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -235,13 +240,15 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 							Key:  []byte("newdata"),
 						},
 					},
-					NewUpdatePeriod: 2,
-					Sender:          sender,
+					NewUpdatePeriod:       2,
+					NewTransactionsFilter: "newFilter",
+					Sender:                sender,
 				}
 			},
 			nil,
 			2,
 			nil,
+			"newFilter",
 			originalTXQuery,
 		},
 		{
@@ -262,6 +269,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			iqtypes.ErrInvalidQueryID,
 			originalKVQuery.UpdatePeriod,
 			originalKVQuery.Keys,
+			"",
 			originalKVQuery,
 		},
 		{
@@ -284,6 +292,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			sdkerrors.ErrUnauthorized,
 			originalKVQuery.UpdatePeriod,
 			originalKVQuery.Keys,
+			"",
 			originalKVQuery,
 		},
 	}
