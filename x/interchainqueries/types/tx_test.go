@@ -160,7 +160,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 					Sender:             TestAddress,
 				}
 			},
-			iqtypes.ErrEmptyKeyId,
+			iqtypes.ErrEmptyKeyID,
 		},
 		{
 			"valid",

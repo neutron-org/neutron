@@ -104,7 +104,7 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 				return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
 			}
 			if len(key.Key) == 0 {
-				return sdkerrors.Wrap(ErrEmptyKeyId, "keys id cannot be empty")
+				return sdkerrors.Wrap(ErrEmptyKeyID, "keys id cannot be empty")
 			}
 		}
 	}
