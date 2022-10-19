@@ -17,6 +17,10 @@ import (
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
+const (
+	MaxKVQueryKeysCount = 32
+)
+
 type msgServer struct {
 	Keeper
 }
@@ -47,6 +51,11 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	if _, err := k.ibcKeeper.ConnectionKeeper.Connection(goCtx, &ibcconnectiontypes.QueryConnectionRequest{ConnectionId: msg.ConnectionId}); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to get connection with ID", "message", msg)
 		return nil, sdkerrors.Wrapf(types.ErrInvalidConnectionID, "failed to get connection with ID '%s': %v", msg.ConnectionId, err)
+	}
+
+	if types.InterchainQueryType(msg.QueryType).IsKV() && uint64(len(msg.Keys)) > MaxKVQueryKeysCount {
+		ctx.Logger().Debug("RegisterInterchainQuery: too many keys in KV query", "message", msg)
+		return nil, sdkerrors.Wrapf(types.ErrTooManyKVQueryKeys, "too many keys in KV query: %d", len(msg.Keys))
 	}
 
 	lastID := k.GetLastRegisteredQueryKey(ctx)
@@ -130,6 +139,11 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 		ctx.Logger().Debug("UpdateInterchainQuery: authorization failed",
 			"msg", msg)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
+	}
+
+	if types.InterchainQueryType(query.QueryType).IsKV() && uint64(len(msg.NewKeys)) > MaxKVQueryKeysCount {
+		ctx.Logger().Debug("RegisterInterchainQuery: too many keys in KV query", "message", msg)
+		return nil, sdkerrors.Wrapf(types.ErrTooManyKVQueryKeys, "too many keys in KV query: %d", len(msg.NewKeys))
 	}
 
 	if msg.GetNewUpdatePeriod() > 0 {
