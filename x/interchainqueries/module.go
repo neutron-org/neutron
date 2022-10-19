@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/neutron-org/neutron/x/interchainqueries/client/cli"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -103,8 +102,6 @@ type AppModule struct {
 	keeper        keeper.Keeper
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
-
-	sudoHandler sudo.Handler
 }
 
 func NewAppModule(

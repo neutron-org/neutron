@@ -112,10 +112,10 @@ var xxx_messageInfo_MsgRegisterInterchainAccountResponse proto.InternalMessageIn
 // MsgSubmitTx defines the payload for Msg/SubmitTx
 type MsgSubmitTx struct {
 	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	// interchain_account_id is supposed to be the unique identifier, e.g., lido/kava.
-	// This allows contracts to have more than one interchain accounts on remote zone
-	// This identifier will be a part of the portID that we'll claim our
-	// capability for.
+	// interchain_account_id is supposed to be the unique identifier, e.g.,
+	// lido/kava. This allows contracts to have more than one interchain accounts
+	// on remote zone This identifier will be a part of the portID that we'll
+	// claim our capability for.
 	InterchainAccountId string       `protobuf:"bytes,2,opt,name=interchain_account_id,json=interchainAccountId,proto3" json:"interchain_account_id,omitempty"`
 	ConnectionId        string       `protobuf:"bytes,3,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
 	Msgs                []*types.Any `protobuf:"bytes,4,rep,name=msgs,proto3" json:"msgs,omitempty"`

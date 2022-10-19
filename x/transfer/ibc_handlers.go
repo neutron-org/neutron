@@ -30,12 +30,12 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	} else {
 		// Actually we have only one kind of error returned from acknowledgement
 		// maybe later we'll retrieve actual errors from events
-		im.keeper.Logger(ctx).Error(ack.GetError(), "CheckTx", ctx.IsCheckTx())
+		im.keeper.Logger(ctx).Debug(ack.GetError(), "CheckTx", ctx.IsCheckTx())
 		_, err = im.sudoHandler.SudoError(ctx, senderAddress, packet, ack.GetError())
 	}
 
 	if err != nil {
-		im.keeper.Logger(ctx).Error("failed to Sudo contract on packet acknowledgement", err)
+		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet acknowledgement")
 	}
 
@@ -60,7 +60,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) e
 
 	_, err = im.sudoHandler.SudoTimeout(ctx, senderAddress, packet)
 	if err != nil {
-		im.keeper.Logger(ctx).Error("failed to Sudo contract on packet timeout", err)
+		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet timeout")
 	}
 

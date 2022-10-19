@@ -59,7 +59,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	}
 
 	lastID := k.GetLastRegisteredQueryKey(ctx)
-	lastID += 1
+	lastID++
 
 	params := k.GetParams(ctx)
 
@@ -149,8 +149,11 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 	if msg.GetNewUpdatePeriod() > 0 {
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
-	if len(msg.GetNewKeys()) > 0 {
+	if len(msg.GetNewKeys()) > 0 && types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		query.Keys = msg.GetNewKeys()
+	}
+	if len(msg.NewTransactionsFilter) > 0 && types.InterchainQueryType(query.GetQueryType()).IsTX() {
+		query.TransactionsFilter = msg.NewTransactionsFilter
 	}
 
 	err = k.SaveQuery(ctx, *query)

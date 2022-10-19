@@ -13,8 +13,8 @@ EXPOSE 9090
 EXPOSE 9091
 EXPOSE 8081
 ADD . /opt/neutron
-RUN cd /opt/neutron && make install && PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
-    curl -L "https://github.com/informalsystems/ibc-rs/releases/download/v0.14.1/hermes-v0.14.1-${PLATFORM}-unknown-linux-gnu.tar.gz" > hermes.tar.gz && \
+RUN cd /opt/neutron && make install && PLATFORM=`uname -m` && \
+    curl -L "https://github.com/informalsystems/ibc-rs/releases/download/v1.0.0/hermes-v1.0.0-${PLATFORM}-unknown-linux-gnu.tar.gz" > hermes.tar.gz && \
     mkdir -p $HOME/.hermes/bin && \
     tar -C $HOME/.hermes/bin/ -vxzf hermes.tar.gz && \
     rm -f hermes.tar.gz 
@@ -26,5 +26,4 @@ CMD ./network/init.sh && \
 	./network/start.sh && \
 	./network/hermes/restore-keys.sh && \
 	./network/hermes/create-conn.sh && \
-    hermes -c ./network/hermes/config.toml create channel --port-a transfer --port-b transfer test-1 connection-0 && \
     ./network/hermes/start.sh
