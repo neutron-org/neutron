@@ -161,7 +161,8 @@ func (m *RegisteredQuery) GetSubmitTimeout() uint64 {
 }
 
 type KVKey struct {
-	// Path (storage prefix) to the storage where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+	// Path (storage prefix) to the storage where you want to read value by key
+	// (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
 	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
 	// Key you want to read from the storage
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
