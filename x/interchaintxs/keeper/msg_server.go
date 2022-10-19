@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -72,6 +73,20 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("SubmitTx: contract not found", "from_address", msg.FromAddress)
 		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+	}
+
+	params := k.GetParams(ctx)
+	if uint64(len(msg.Msgs)) > params.GetMsgSubmitTxMaxMessages() {
+		k.Logger(ctx).Debug("SubmitTx: provided MsgSubmitTx contains more messages than allowed",
+			"msg", msg,
+			"has", len(msg.Msgs),
+			"max", params.GetMsgSubmitTxMaxMessages(),
+		)
+		return nil, fmt.Errorf(
+			"MsgSubmitTx contains more messages than allowed, has=%d, max=%d",
+			len(msg.Msgs),
+			params.GetMsgSubmitTxMaxMessages(),
+		)
 	}
 
 	icaOwner, err := ictxtypes.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
