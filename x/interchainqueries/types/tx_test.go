@@ -1,6 +1,8 @@
 package types_test
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
@@ -47,6 +49,20 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 				}
 			},
 			iqtypes.ErrInvalidTransactionsFilter,
+		},
+		{
+			"too many keys",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "[]",
+					Keys:               craftKVKeys(200),
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			iqtypes.ErrTooManyKVQueryKeys,
 		},
 		{
 			"invalid update period",
@@ -388,6 +404,18 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 			sdkerrors.ErrInvalidRequest,
 		},
 		{
+			"too many keys",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:         1,
+					NewKeys:         craftKVKeys(200),
+					NewUpdatePeriod: 0,
+					Sender:          TestAddress,
+				}
+			},
+			iqtypes.ErrTooManyKVQueryKeys,
+		},
+		{
 			"invalid query id",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
@@ -614,4 +642,16 @@ func TestMsgRemoveQueryGetSigners(t *testing.T) {
 		addr, _ := sdktypes.AccAddressFromBech32(TestAddress)
 		require.Equal(t, msg.GetSigners(), []sdktypes.AccAddress{addr})
 	}
+}
+
+func craftKVKeys(n uint64) []*iqtypes.KVKey {
+	keys := make([]*iqtypes.KVKey, n)
+	for i := uint64(0); i < n; i++ {
+		keys[i] = &iqtypes.KVKey{
+			Path: "path-" + strconv.FormatUint(i, 10),
+			Key:  []byte(fmt.Sprintf("key-%d", i)),
+		}
+	}
+
+	return keys
 }

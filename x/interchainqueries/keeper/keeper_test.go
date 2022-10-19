@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -65,21 +64,6 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 				}
 			},
 			sdkerrors.ErrInsufficientFunds,
-		},
-		{
-			"too many keys",
-			false,
-			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId:       suite.Path.EndpointA.ConnectionID,
-					TransactionsFilter: "",
-					Keys:               craftKVKeys(200),
-					QueryType:          string(iqtypes.InterchainQueryTypeKV),
-					UpdatePeriod:       1,
-					Sender:             sender,
-				}
-			},
-			iqtypes.ErrTooManyKVQueryKeys,
 		},
 		{
 			"valid",
@@ -242,22 +226,6 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 					Key:  []byte("newdata"),
 				},
 			},
-			"",
-			originalKVQuery,
-		},
-		{
-			"too many query keys",
-			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQueryRequest{
-					QueryId:         1,
-					NewKeys:         craftKVKeys(200),
-					NewUpdatePeriod: 2,
-					Sender:          sender,
-				}
-			},
-			iqtypes.ErrTooManyKVQueryKeys,
-			2,
-			nil,
 			"",
 			originalKVQuery,
 		},
@@ -979,18 +947,6 @@ func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.
 	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
-}
-
-func craftKVKeys(n uint64) []*iqtypes.KVKey {
-	keys := make([]*iqtypes.KVKey, n)
-	for i := uint64(0); i < n; i++ {
-		keys[i] = &iqtypes.KVKey{
-			Path: "path-" + strconv.FormatUint(i, 10),
-			Key:  []byte(fmt.Sprintf("key-%d", i)),
-		}
-	}
-
-	return keys
 }
 
 func TestKeeperTestSuite(t *testing.T) {

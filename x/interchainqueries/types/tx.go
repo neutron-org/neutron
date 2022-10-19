@@ -9,6 +9,10 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 )
 
+const (
+	MaxKVQueryKeysCount = 32
+)
+
 var _ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
 
 func (msg MsgSubmitQueryResult) Route() string {
@@ -92,8 +96,9 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 		if len(msg.Keys) == 0 {
 			return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 		}
-
-		// check msg.Keys has path
+		if uint64(len(msg.Keys)) > MaxKVQueryKeysCount {
+			return sdkerrors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
+		}
 		for _, key := range msg.Keys {
 			if len(key.Path) == 0 {
 				return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
@@ -173,6 +178,10 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 
 	if len(msg.GetNewKeys()) == 0 && msg.GetNewUpdatePeriod() == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "one of new_keys or new_update_period should be set")
+	}
+
+	if uint64(len(msg.NewKeys)) > MaxKVQueryKeysCount {
+		return sdkerrors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
