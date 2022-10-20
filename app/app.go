@@ -100,8 +100,6 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/neutron-org/neutron/internal/contractmanager"
-	"github.com/neutron-org/neutron/x/gov"
-	govkeeper "github.com/neutron-org/neutron/x/gov/keeper"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
