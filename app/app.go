@@ -99,6 +99,9 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	"github.com/neutron-org/neutron/internal/contractmanager"
+	"github.com/neutron-org/neutron/x/gov"
+	govkeeper "github.com/neutron-org/neutron/x/gov/keeper"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -457,13 +460,15 @@ func New(
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate,neutron"
 
+	contractManager := contractmanager.NewContractManager()
+
 	app.InterchainQueriesKeeper = *interchainqueriesmodulekeeper.NewKeeper(
 		appCodec,
 		keys[interchainqueriesmoduletypes.StoreKey],
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
-		&app.WasmKeeper,
+		&contractManager,
 		app.BankKeeper,
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
@@ -472,7 +477,7 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.GetSubspace(interchaintxstypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
-		&app.WasmKeeper,
+		&contractManager,
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
 	)
@@ -498,6 +503,8 @@ func New(
 		supportedFeatures,
 		wasmOpts...,
 	)
+
+	contractManager.SetWasmKeeper(app.WasmKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
 

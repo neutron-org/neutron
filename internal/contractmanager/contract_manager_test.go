@@ -1,7 +1,6 @@
 package contractmanager_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -21,49 +20,67 @@ func (w *WasmKeeperMock) HasContractInfo(ctx sdk.Context, contractAddress sdk.Ac
 }
 
 func (w *WasmKeeperMock) Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error) {
-	fmt.Println("Sudo")
-	return msg, nil
+	args := w.Called(ctx, contractAddress)
+	buf, _ := args.Get(0).([]byte)
+	return buf, args.Error(1)
 }
 
 type ContractManagerSuite struct {
 	suite.Suite
 
-	ctx     sdk.Context
-	manager contractmanager.ContractManager
+	ctx             sdk.Context
+	manager         contractmanager.ContractManager
+	wasmKeeperMock  *WasmKeeperMock
+	contractAddress sdk.AccAddress
 }
 
 func (suite *ContractManagerSuite) SetupTest() {
 	key := sdk.NewKVStoreKey(suite.T().Name())
 	suite.ctx = testutil.DefaultContext(key, sdk.NewTransientStoreKey("transient_"+suite.T().Name()))
 	suite.manager = contractmanager.NewContractManager()
+	suite.contractAddress, _ = sdk.AccAddressFromBech32("neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx")
 
-	wasmKeeperMock := new(WasmKeeperMock)
-	suite.manager.SetWasmKeeper(wasmKeeperMock)
+	suite.wasmKeeperMock = new(WasmKeeperMock)
+	suite.manager.SetWasmKeeper(suite.wasmKeeperMock)
 }
 
-func (suite *ContractManagerSuite) TestAbsentWasmKeeper() {
+func (suite *ContractManagerSuite) TestHasContractInfoAbsentWasmKeeper() {
 	manager := contractmanager.NewContractManager()
-	contract, _ := sdk.AccAddressFromBech32("neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx")
 	defer func() {
 		if r := recover(); r != nil {
 			suite.Equal("wasmKeeper pointer is nil", r)
 		}
 	}()
-	manager.HasContractInfo(suite.ctx, contract)
+	manager.HasContractInfo(suite.ctx, suite.contractAddress)
 
 	suite.FailNow("The code did not panic")
 }
 
 func (suite *ContractManagerSuite) TestHasContractInfo() {
-	contract, _ := sdk.AccAddressFromBech32("neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx")
+	suite.wasmKeeperMock.On("HasContractInfo", suite.ctx, suite.contractAddress).Return(true)
+	result := suite.manager.HasContractInfo(suite.ctx, suite.contractAddress)
+
+	suite.Require().True(result)
+}
+
+func (suite *ContractManagerSuite) TestSudoAbsentWasmKeeper() {
+	manager := contractmanager.NewContractManager()
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Recovered in ", r)
+			suite.Equal("wasmKeeper pointer is nil", r)
 		}
 	}()
-	suite.manager.HasContractInfo(suite.ctx, contract)
+	manager.Sudo(suite.ctx, suite.contractAddress, []byte{})
 
 	suite.FailNow("The code did not panic")
+}
+
+func (suite *ContractManagerSuite) TestSudo() {
+	suite.wasmKeeperMock.On("Sudo", suite.ctx, suite.contractAddress).Return([]byte{}, nil)
+	result, err := suite.manager.Sudo(suite.ctx, suite.contractAddress, []byte{})
+
+	suite.Require().Equal([]byte{}, result)
+	suite.Require().Equal(nil, err)
 }
 
 func TestContractManagerSuite(t *testing.T) {

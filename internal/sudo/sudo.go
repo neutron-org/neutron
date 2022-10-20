@@ -10,9 +10,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	"github.com/neutron-org/neutron/internal/contractmanager"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -76,18 +76,18 @@ type OpenAckDetails struct {
 }
 
 type Handler struct {
-	moduleName string
-	wasmKeeper *wasm.Keeper
+	moduleName      string
+	contractManager contractmanager.ContractMethods
 }
 
 func (s *Handler) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", s.moduleName))
 }
 
-func NewSudoHandler(wasmKeeper *wasm.Keeper, moduleName string) Handler {
+func NewSudoHandler(contractManager contractmanager.ContractMethods, moduleName string) Handler {
 	return Handler{
-		moduleName: moduleName,
-		wasmKeeper: wasmKeeper,
+		moduleName:      moduleName,
+		contractManager: contractManager,
 	}
 }
 
@@ -99,7 +99,7 @@ func (s *Handler) SudoResponse(
 ) ([]byte, error) {
 	s.Logger(ctx).Debug("SudoResponse", "senderAddress", senderAddress, "request", request, "msg", msg)
 
-	if !s.wasmKeeper.HasContractInfo(ctx, senderAddress) {
+	if !s.contractManager.HasContractInfo(ctx, senderAddress) {
 		if request.SourcePort == TransferPort {
 			// we want to allow non contract account to send the assets via IBC Transfer module
 			// we can determine the originating module by the source port of the request packet
@@ -119,7 +119,7 @@ func (s *Handler) SudoResponse(
 		return nil, fmt.Errorf("failed to marshal MessageResponse: %v", err)
 	}
 
-	resp, err := s.wasmKeeper.Sudo(ctx, senderAddress, m)
+	resp, err := s.contractManager.Sudo(ctx, senderAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoResponse: failed to Sudo",
 			"error", err, "contract_address", senderAddress)
@@ -136,7 +136,7 @@ func (s *Handler) SudoTimeout(
 ) ([]byte, error) {
 	s.Logger(ctx).Info("SudoTimeout", "senderAddress", senderAddress, "request", request)
 
-	if !s.wasmKeeper.HasContractInfo(ctx, senderAddress) {
+	if !s.contractManager.HasContractInfo(ctx, senderAddress) {
 		if request.SourcePort == TransferPort {
 			// we want to allow non contract account to send the assets via IBC Transfer module
 			// we can determine the originating module by the source port of the request packet
@@ -157,7 +157,7 @@ func (s *Handler) SudoTimeout(
 
 	s.Logger(ctx).Info("SudoTimeout sending request", "data", string(m))
 
-	resp, err := s.wasmKeeper.Sudo(ctx, senderAddress, m)
+	resp, err := s.contractManager.Sudo(ctx, senderAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoTimeout: failed to Sudo",
 			"error", err, "contract_address", senderAddress)
@@ -175,7 +175,7 @@ func (s *Handler) SudoError(
 ) ([]byte, error) {
 	s.Logger(ctx).Debug("SudoError", "senderAddress", senderAddress, "request", request)
 
-	if !s.wasmKeeper.HasContractInfo(ctx, senderAddress) {
+	if !s.contractManager.HasContractInfo(ctx, senderAddress) {
 		if request.SourcePort == TransferPort {
 			// we want to allow non contract account to send the assets via IBC Transfer module
 			// we can determine the originating module by the source port of the request packet
@@ -195,7 +195,7 @@ func (s *Handler) SudoError(
 		return nil, fmt.Errorf("failed to marshal MessageError: %v", err)
 	}
 
-	resp, err := s.wasmKeeper.Sudo(ctx, senderAddress, m)
+	resp, err := s.contractManager.Sudo(ctx, senderAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoError: failed to Sudo",
 			"error", err, "contract_address", senderAddress)
@@ -212,7 +212,7 @@ func (s *Handler) SudoOnChanOpenAck(
 ) ([]byte, error) {
 	s.Logger(ctx).Debug("SudoOnChanOpenAck", "contractAddress", contractAddress)
 
-	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+	if !s.contractManager.HasContractInfo(ctx, contractAddress) {
 		s.Logger(ctx).Debug("SudoOnChanOpenAck: contract not found", "contractAddress", contractAddress)
 		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
 	}
@@ -227,7 +227,7 @@ func (s *Handler) SudoOnChanOpenAck(
 	}
 	s.Logger(ctx).Info("SudoOnChanOpenAck sending request", "data", string(m))
 
-	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	resp, err := s.contractManager.Sudo(ctx, contractAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoOnChanOpenAck: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
@@ -250,7 +250,7 @@ func (s *Handler) SudoTxQueryResult(
 ) ([]byte, error) {
 	s.Logger(ctx).Debug("SudoTxQueryResult", "contractAddress", contractAddress)
 
-	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+	if !s.contractManager.HasContractInfo(ctx, contractAddress) {
 		s.Logger(ctx).Debug("SudoTxQueryResult: contract not found", "contractAddress", contractAddress)
 		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
 	}
@@ -267,7 +267,7 @@ func (s *Handler) SudoTxQueryResult(
 		return nil, fmt.Errorf("failed to marshal MessageTxQueryResult: %v", err)
 	}
 
-	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	resp, err := s.contractManager.Sudo(ctx, contractAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoTxQueryResult: failed to Sudo",
 			"error", err, "contract_address", contractAddress)
@@ -286,7 +286,7 @@ func (s *Handler) SudoKVQueryResult(
 ) ([]byte, error) {
 	s.Logger(ctx).Info("SudoKVQueryResult", "contractAddress", contractAddress)
 
-	if !s.wasmKeeper.HasContractInfo(ctx, contractAddress) {
+	if !s.contractManager.HasContractInfo(ctx, contractAddress) {
 		s.Logger(ctx).Debug("SudoKVQueryResult: contract was not found", "contractAddress", contractAddress)
 		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
 	}
@@ -301,7 +301,7 @@ func (s *Handler) SudoKVQueryResult(
 		return nil, fmt.Errorf("failed to marshal MessageKVQueryResult: %v", err)
 	}
 
-	resp, err := s.wasmKeeper.Sudo(ctx, contractAddress, m)
+	resp, err := s.contractManager.Sudo(ctx, contractAddress, m)
 	if err != nil {
 		s.Logger(ctx).Debug("SudoKVQueryResult: failed to Sudo",
 			"error", err, "contract_address", contractAddress)

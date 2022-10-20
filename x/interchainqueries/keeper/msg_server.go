@@ -39,7 +39,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
-	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.contractManager.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainQuery: contract not found", "sender_address", msg.Sender)
 		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
 	}
