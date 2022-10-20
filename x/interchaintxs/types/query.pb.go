@@ -114,11 +114,14 @@ func (m *QueryParamsResponse) GetParams() Params {
 }
 
 type QueryInterchainAccountAddressRequest struct {
-	// owner_address is the owner of the interchain account on the controller chain
+	// owner_address is the owner of the interchain account on the controller
+	// chain
 	OwnerAddress string `protobuf:"bytes,1,opt,name=owner_address,json=ownerAddress,proto3" json:"owner_address,omitempty"`
-	// interchain_account_id is an identifier of your interchain account from which you want to execute msgs
+	// interchain_account_id is an identifier of your interchain account from
+	// which you want to execute msgs
 	InterchainAccountId string `protobuf:"bytes,2,opt,name=interchain_account_id,json=interchainAccountId,proto3" json:"interchain_account_id,omitempty"`
-	// connection_id is an IBC connection identifier between Neutron and remote chain
+	// connection_id is an IBC connection identifier between Neutron and remote
+	// chain
 	ConnectionId string `protobuf:"bytes,3,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
 }
 

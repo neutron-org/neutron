@@ -30,12 +30,16 @@ service Query {
         "/neutron/interchainqueries/interchainqueries/registered_query";
   }
 
-  rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
-    option (google.api.http).get = "/neutron/interchainqueries/interchainqueries/query_result";
+  rpc QueryResult(QueryRegisteredQueryResultRequest)
+      returns (QueryRegisteredQueryResultResponse) {
+    option (google.api.http).get =
+        "/neutron/interchainqueries/interchainqueries/query_result";
   }
 
-  rpc LastRemoteHeight(QueryLastRemoteHeight) returns (QueryLastRemoteHeightResponse) {
-    option (google.api.http).get = "/neutron/interchainqueries/interchainqueries/remote_height";
+  rpc LastRemoteHeight(QueryLastRemoteHeight)
+      returns (QueryLastRemoteHeightResponse) {
+    option (google.api.http).get =
+        "/neutron/interchainqueries/interchainqueries/remote_height";
   }
 }
 
@@ -56,27 +60,19 @@ message QueryRegisteredQueriesRequest {
 
 message QueryRegisteredQueriesResponse {
   repeated RegisteredQuery registered_queries = 1
-  [ (gogoproto.nullable) = false ];
+      [ (gogoproto.nullable) = false ];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-message QueryRegisteredQueryRequest {
-  uint64 query_id = 1;
-}
+message QueryRegisteredQueryRequest { uint64 query_id = 1; }
 
-message QueryRegisteredQueryResponse {
-  RegisteredQuery registered_query = 1;
-}
+message QueryRegisteredQueryResponse { RegisteredQuery registered_query = 1; }
 
-message QueryRegisteredQueryResultRequest {
-  uint64 query_id = 1;
-}
+message QueryRegisteredQueryResultRequest { uint64 query_id = 1; }
 
-message QueryRegisteredQueryResultResponse {
-  QueryResult result = 1;
-}
+message QueryRegisteredQueryResultResponse { QueryResult result = 1; }
 
 message Transaction {
   uint64 id = 1;
@@ -84,10 +80,6 @@ message Transaction {
   bytes data = 3;
 }
 
-message QueryLastRemoteHeight {
-  string connection_id = 1;
-}
+message QueryLastRemoteHeight { string connection_id = 1; }
 
-message QueryLastRemoteHeightResponse {
-  uint64 height = 1;
-}
+message QueryLastRemoteHeightResponse { uint64 height = 1; }

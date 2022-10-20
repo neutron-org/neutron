@@ -11,7 +11,8 @@ import "ibc/applications/transfer/v1/tx.proto";
 // Msg defines the ibc/transfer Msg service.
 service Msg {
   // Transfer defines a rpc handler method for MsgTransfer.
-  rpc Transfer(ibc.applications.transfer.v1.MsgTransfer) returns (MsgTransferResponse);
+  rpc Transfer(ibc.applications.transfer.v1.MsgTransfer)
+      returns (MsgTransferResponse);
 }
 
 // MsgTransferResponse is the modified response type for

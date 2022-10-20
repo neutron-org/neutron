@@ -2,7 +2,7 @@
 
 **NOTE: current version is a WIP.**
 
-## Requirments
+## Requirements
 * Go 1.18
 * Ignite Cli
 * Hermes IBC Relayer
@@ -16,7 +16,7 @@ curl https://get.ignite.com/cli! | bash
 ### How to install Hermes IBC Relayer
 
 ```shell
-cargo install --version 0.14.1 ibc-relayer-cli --bin hermes --locked
+cargo install --version 1.0.0 ibc-relayer-cli --bin hermes --locked
 ```
 
 ## Build and Install Neutron Zone
