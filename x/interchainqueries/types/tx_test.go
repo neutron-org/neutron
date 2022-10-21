@@ -404,6 +404,30 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 			sdkerrors.ErrInvalidRequest,
 		},
 		{
+			"empty key path",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:         1,
+					NewKeys:         []*iqtypes.KVKey{{Key: []byte("key1"), Path: ""}},
+					NewUpdatePeriod: 0,
+					Sender:          TestAddress,
+				}
+			},
+			iqtypes.ErrEmptyKeyPath,
+		},
+		{
+			"empty key id",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:         1,
+					NewKeys:         []*iqtypes.KVKey{{Key: []byte(""), Path: "path"}},
+					NewUpdatePeriod: 0,
+					Sender:          TestAddress,
+				}
+			},
+			iqtypes.ErrEmptyKeyID,
+		},
+		{
 			"too many keys",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
