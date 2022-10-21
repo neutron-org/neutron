@@ -96,16 +96,8 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 		if len(msg.Keys) == 0 {
 			return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 		}
-		if err := validateKeyLength(msg.GetKeys()); err != nil {
+		if err := validateKeys(msg.GetKeys()); err != nil {
 			return err
-		}
-		for _, key := range msg.Keys {
-			if len(key.Path) == 0 {
-				return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
-			}
-			if len(key.Key) == 0 {
-				return sdkerrors.Wrap(ErrEmptyKeyID, "keys id cannot be empty")
-			}
 		}
 	}
 
@@ -180,7 +172,7 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "one of new_keys or new_update_period should be set")
 	}
 
-	if err := validateKeyLength(msg.GetNewKeys()); err != nil {
+	if err := validateKeys(msg.GetNewKeys()); err != nil {
 		return err
 	}
 
@@ -206,9 +198,17 @@ func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{senderAddr}
 }
 
-func validateKeyLength(keys []*KVKey) error {
+func validateKeys(keys []*KVKey) error {
 	if uint64(len(keys)) > MaxKVQueryKeysCount {
 		return sdkerrors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
+	}
+	for _, key := range keys {
+		if len(key.Path) == 0 {
+			return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
+		}
+		if len(key.Key) == 0 {
+			return sdkerrors.Wrap(ErrEmptyKeyID, "keys id cannot be empty")
+		}
 	}
 	return nil
 }
