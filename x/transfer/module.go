@@ -1,7 +1,6 @@
 package transfer
 
 import (
-	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -27,11 +26,11 @@ type IBCModule struct {
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, wasmKeeper *wasm.Keeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, contractManager *sudo.ContractManager) IBCModule {
 	return IBCModule{
 		keeper:      k.Keeper,
 		IBCModule:   transfer.NewIBCModule(k.Keeper),
-		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		sudoHandler: contractManager.NewSudoHandler(types.ModuleName),
 	}
 }
 

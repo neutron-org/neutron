@@ -3,11 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-
-	"github.com/neutron-org/neutron/internal/contractmanager"
-	"github.com/neutron-org/neutron/internal/sudo"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,6 +10,8 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -38,7 +35,7 @@ type (
 		channelKeeper icatypes.ChannelKeeper
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
-		contractManager     contractmanager.ContractMethods
+		contractManager     *sudo.ContractManager
 		sudoHandler         sudo.Handler
 	}
 )
@@ -50,7 +47,7 @@ func NewKeeper(
 	paramstore paramtypes.Subspace,
 	channelKeeper icatypes.ChannelKeeper,
 
-	contractManager contractmanager.ContractMethods,
+	contractManager *sudo.ContractManager,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
 ) *Keeper {
@@ -69,7 +66,7 @@ func NewKeeper(
 		icaControllerKeeper: icaControllerKeeper,
 		scopedKeeper:        scopedKeeper,
 		contractManager:     contractManager,
-		sudoHandler:         sudo.NewSudoHandler(contractManager, types.ModuleName),
+		sudoHandler:         contractManager.NewSudoHandler(types.ModuleName),
 	}
 }
 

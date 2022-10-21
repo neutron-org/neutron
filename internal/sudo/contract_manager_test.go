@@ -1,11 +1,11 @@
-package contractmanager_test
+package sudo_test
 
 import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/internal/contractmanager"
+	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -29,7 +29,7 @@ type ContractManagerSuite struct {
 	suite.Suite
 
 	ctx             sdk.Context
-	manager         contractmanager.ContractManager
+	manager         sudo.ContractManager
 	wasmKeeperMock  *WasmKeeperMock
 	contractAddress sdk.AccAddress
 }
@@ -37,7 +37,7 @@ type ContractManagerSuite struct {
 func (suite *ContractManagerSuite) SetupTest() {
 	key := sdk.NewKVStoreKey(suite.T().Name())
 	suite.ctx = testutil.DefaultContext(key, sdk.NewTransientStoreKey("transient_"+suite.T().Name()))
-	suite.manager = contractmanager.NewContractManager()
+	suite.manager = sudo.NewContractManager()
 	suite.contractAddress, _ = sdk.AccAddressFromBech32("neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx")
 
 	suite.wasmKeeperMock = new(WasmKeeperMock)
@@ -45,7 +45,7 @@ func (suite *ContractManagerSuite) SetupTest() {
 }
 
 func (suite *ContractManagerSuite) TestHasContractInfoAbsentWasmKeeper() {
-	manager := contractmanager.NewContractManager()
+	manager := sudo.NewContractManager()
 	defer func() {
 		if r := recover(); r != nil {
 			suite.Equal("wasmKeeper pointer is nil", r)
@@ -64,7 +64,7 @@ func (suite *ContractManagerSuite) TestHasContractInfo() {
 }
 
 func (suite *ContractManagerSuite) TestSudoAbsentWasmKeeper() {
-	manager := contractmanager.NewContractManager()
+	manager := sudo.NewContractManager()
 	defer func() {
 		if r := recover(); r != nil {
 			suite.Equal("wasmKeeper pointer is nil", r)
@@ -81,6 +81,12 @@ func (suite *ContractManagerSuite) TestSudo() {
 
 	suite.Require().Equal([]byte{}, result)
 	suite.Require().Equal(nil, err)
+}
+
+func (suite *ContractManagerSuite) TestNewSudoHandler() {
+	sudoHandler := suite.manager.NewSudoHandler("test module")
+
+	suite.Require().IsType(sudo.Handler{}, sudoHandler)
 }
 
 func TestContractManagerSuite(t *testing.T) {

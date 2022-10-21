@@ -99,7 +99,6 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-	"github.com/neutron-org/neutron/internal/contractmanager"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -110,6 +109,7 @@ import (
 
 	appparams "github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/docs"
+	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/neutron-org/neutron/wasmbinding"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -454,11 +454,7 @@ func New(
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
 
-	// The last arguments can contain custom message handlers, and custom query handlers,
-	// if we want to allow any custom callbacks
-	supportedFeatures := "iterator,staking,stargate,neutron"
-
-	contractManager := contractmanager.NewContractManager()
+	contractManager := sudo.NewContractManager()
 
 	app.InterchainQueriesKeeper = *interchainqueriesmodulekeeper.NewKeeper(
 		appCodec,
@@ -479,6 +475,10 @@ func New(
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
 	)
+
+	// The last arguments can contain custom message handlers, and custom query handlers,
+	// if we want to allow any custom callbacks
+	supportedFeatures := "iterator,staking,stargate,neutron"
 
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper), wasmOpts...)
 
@@ -504,7 +504,7 @@ func New(
 
 	contractManager.SetWasmKeeper(app.WasmKeeper)
 
-	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
+	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &contractManager)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()

@@ -14,7 +14,6 @@ import (
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/neutron-org/neutron/internal/contractmanager"
 	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -30,8 +29,8 @@ type (
 		memKey          storetypes.StoreKey
 		paramstore      paramtypes.Subspace
 		ibcKeeper       *ibckeeper.Keeper
-		contractManager contractmanager.ContractMethods
 		bank            types.BankKeeper
+		contractManager *sudo.ContractManager
 		sudoHandler     sudo.Handler
 	}
 )
@@ -42,7 +41,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
-	contractManager contractmanager.ContractMethods,
+	contractManager *sudo.ContractManager,
 	bank types.BankKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -56,9 +55,9 @@ func NewKeeper(
 		memKey:          memKey,
 		paramstore:      ps,
 		ibcKeeper:       ibcKeeper,
-		contractManager: contractManager,
 		bank:            bank,
-		sudoHandler:     sudo.NewSudoHandler(contractManager, types.ModuleName),
+		contractManager: contractManager,
+		sudoHandler:     contractManager.NewSudoHandler(types.ModuleName),
 	}
 }
 
