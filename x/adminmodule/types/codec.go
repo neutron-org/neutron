@@ -14,7 +14,6 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgAddAdmin{}, "adminmodule/AddAdmin", nil)
 
 	cdc.RegisterConcrete(&MsgSubmitProposal{}, "adminmodule/SubmitProposal", nil)
-	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -31,7 +30,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
-	// this line is used by starport scaffolding # 3
 }
 
 var (

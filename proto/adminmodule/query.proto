@@ -3,14 +3,11 @@ package cosmos.adminmodule.adminmodule;
 
 import "google/api/annotations.proto";
 import "cosmos/gov/v1beta1/gov.proto";
-// this line is used by starport scaffolding # 1
 
 option go_package = "github.com/cosmos/admin-module/x/adminmodule/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // this line is used by starport scaffolding # 2
-
   // Queries a list of admins items.
   rpc Admins(QueryAdminsRequest) returns (QueryAdminsResponse) {
     option (google.api.http).get = "/cosmos/adminmodule/adminmodule/admins";
@@ -23,7 +20,6 @@ service Query {
 
 }
 
-// this line is used by starport scaffolding # 3
 message QueryAdminsRequest {
 }
 

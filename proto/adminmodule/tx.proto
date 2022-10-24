@@ -5,7 +5,6 @@ import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
 import "cosmos_proto/cosmos.proto";
 
-// this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/cosmos/admin-module/x/adminmodule/types";
 
@@ -14,10 +13,8 @@ service Msg {
   rpc DeleteAdmin(MsgDeleteAdmin) returns (MsgDeleteAdminResponse);
   rpc AddAdmin(MsgAddAdmin) returns (MsgAddAdminResponse);
   rpc SubmitProposal(MsgSubmitProposal) returns (MsgSubmitProposalResponse);
-  // this line is used by starport scaffolding # proto/tx/rpc
 }
 
-// this line is used by starport scaffolding # proto/tx/message
 message MsgDeleteAdmin {
   string creator = 1;
   string admin = 2;
