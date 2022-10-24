@@ -9,7 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/neutron-org/neutron/x/adminmodule/types"
-	// this line is used by starport scaffolding # ibc/keeper/import
 )
 
 type (
@@ -18,7 +17,6 @@ type (
 		storeKey sdk.StoreKey
 		memKey   sdk.StoreKey
 		rtr      govtypes.Router
-		// this line is used by starport scaffolding # ibc/keeper/attribute
 	}
 )
 
@@ -27,14 +25,12 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	rtr govtypes.Router,
-	// this line is used by starport scaffolding # ibc/keeper/parameter
 ) *Keeper {
 	return &Keeper{
 		cdc:      cdc,
 		storeKey: storeKey,
 		memKey:   memKey,
 		rtr:      rtr,
-		// this line is used by starport scaffolding # ibc/keeper/return
 	}
 }
 

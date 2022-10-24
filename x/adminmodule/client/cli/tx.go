@@ -31,7 +31,6 @@ func GetTxCmd(propCmds []*cobra.Command) *cobra.Command {
 	}
 
 	cmd.AddCommand(cmdSubmitProp)
-	// this line is used by starport scaffolding # 1
 
 	return cmd
 }

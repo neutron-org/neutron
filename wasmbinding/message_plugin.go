@@ -70,9 +70,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.RemoveInterchainQuery != nil {
 			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
 		}
-		if contractMsg.AddAdmin != nil {
-			return m.addAmin(ctx, contractAddr, contractMsg.AddAdmin)
-		}
 		if contractMsg.SubmitProposal != nil {
 			return m.submitProposal(ctx, contractAddr, contractMsg.SubmitProposal)
 		}
@@ -238,7 +235,6 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 
 	if submitProposal.Proposals.TextProposal != nil {
-
 		prop := govtypes.TextProposal{
 			Title:       submitProposal.Proposals.TextProposal.Title,
 			Description: submitProposal.Proposals.TextProposal.Description,
@@ -255,18 +251,10 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 	} else if submitProposal.Proposals.ParamChangeProposal != nil {
 		proposal := submitProposal.Proposals.ParamChangeProposal
 		prop := paramChange.ParameterChangeProposal{
-			Title:       submitProposal.Proposals.TextProposal.Title,
-			Description: submitProposal.Proposals.TextProposal.Description,
+			Title:       proposal.Title,
+			Description: proposal.Description,
+			Changes:     proposal.Changes,
 		}
-		var parameterChanges []paramChange.ParamChange
-		for _, parameterChange := range proposal.Changes {
-			parameterChanges = append(parameterChanges, paramChange.ParamChange{
-				Subspace: parameterChange.Subspace,
-				Key:      parameterChange.Key,
-				Value:    parameterChange.Value,
-			})
-		}
-		prop.Changes = parameterChanges
 		cont, err := proto.Marshal(&prop)
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
@@ -287,55 +275,6 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 	}
 
 	return response, nil
-}
-
-func (m *CustomMessenger) addAmin(ctx sdk.Context, contractAddr sdk.AccAddress, addAdmin *bindings.AddAdmin) ([]sdk.Event, [][]byte, error) {
-	response, err := m.PerformAddAmin(ctx, contractAddr, addAdmin)
-	if err != nil {
-		ctx.Logger().Debug("PerformSubmitTx: failed to addAdmin",
-			"from_address", contractAddr.String(),
-			"admin", addAdmin.Admin,
-			"creator", contractAddr.String(),
-			"error", err,
-		)
-		return nil, nil, sdkerrors.Wrap(err, "failed to submit add admin message")
-	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		ctx.Logger().Error("json.Marshal: failed to marshal addAdmin response to JSON",
-			"from_address", contractAddr.String(),
-			"admin", addAdmin.Admin,
-			"creator", contractAddr.String(),
-			"error", err,
-		)
-		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
-	}
-
-	ctx.Logger().Debug("add admin message submitted",
-		"from_address", contractAddr.String(),
-		"admin", addAdmin.Admin,
-		"creator", contractAddr.String(),
-	)
-	return nil, [][]byte{data}, nil
-}
-
-func (m *CustomMessenger) PerformAddAmin(ctx sdk.Context, contractAddr sdk.AccAddress, addAdmin *bindings.AddAdmin) (*bindings.AddAdminResponse, error) {
-	tx := admintypes.MsgAddAdmin{
-		Creator: contractAddr.String(),
-		Admin:   addAdmin.Admin,
-	}
-
-	if err := tx.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to validate incoming AddAdmin message")
-	}
-
-	response, err := m.Adminserver.AddAdmin(sdk.WrapSDKContext(ctx), &tx)
-	if err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to add admin")
-	}
-
-	return (*bindings.AddAdminResponse)(response), nil
 }
 
 func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {

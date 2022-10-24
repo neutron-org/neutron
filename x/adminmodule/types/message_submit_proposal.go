@@ -29,14 +29,6 @@ func NewMsgSubmitProposal(content govtypes.Content, proposer sdk.AccAddress) (*M
 	return m, nil
 }
 
-//func (m *MsgSubmitProposal) GetContent() govtypes.Content { // TODO m.Content.GetCachedValue() returns nil!
-//	content, ok := m.Content.GetCachedValue().(govtypes.Content)
-//	if !ok {
-//		return nil
-//	}
-//	return content
-//}
-
 func (m *MsgSubmitProposal) GetContent() govtypes.Content {
 	var err error
 	switch m.Content.TypeUrl {

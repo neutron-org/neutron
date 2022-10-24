@@ -3,13 +3,14 @@ package adminmodule
 import (
 	"encoding/json"
 	"fmt"
-	// this line is used by starport scaffolding # 1
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	"context"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -19,8 +20,6 @@ import (
 	"github.com/neutron-org/neutron/x/adminmodule/client/cli"
 	"github.com/neutron-org/neutron/x/adminmodule/keeper"
 	"github.com/neutron-org/neutron/x/adminmodule/types"
-	// this line is used by starport scaffolding # ibc/module/import
-	"context"
 
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govrestclient "github.com/cosmos/cosmos-sdk/x/gov/client/rest"
@@ -30,7 +29,6 @@ import (
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
-	// this line is used by starport scaffolding # ibc/module/interface
 )
 
 // ----------------------------------------------------------------------------
@@ -118,14 +116,18 @@ type AppModule struct {
 	cdc    codec.JSONCodec
 }
 
-func (am AppModule) DefaultGenesis(jsonCodec codec.JSONCodec) json.RawMessage {
-	//TODO implement me
-	panic("implement me")
+// DefaultGenesis returns the capability module's default genesis state.
+func (AppModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	return cdc.MustMarshalJSON(types.DefaultGenesis())
 }
 
-func (am AppModule) ValidateGenesis(jsonCodec codec.JSONCodec, config client.TxEncodingConfig, message json.RawMessage) error {
-	//TODO implement me
-	panic("implement me")
+// ValidateGenesis performs genesis state validation for the capability module.
+func (AppModule) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+	var genState types.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+	return genState.Validate()
 }
 
 // ConsensusVersion implements ConsensusVersion.

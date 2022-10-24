@@ -1,6 +1,7 @@
 package bindings
 
 import (
+	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -19,7 +20,6 @@ type NeutronMsg struct {
 	RegisterInterchainQuery   *RegisterInterchainQuery   `json:"register_interchain_query,omitempty"`
 	UpdateInterchainQuery     *UpdateInterchainQuery     `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery     `json:"remove_interchain_query,omitempty"`
-	AddAdmin                  *AddAdmin                  `json:"add_admin,omitempty"`
 	SubmitProposal            *SubmitProposal            `json:"submit_proposal,omitempty"`
 }
 
@@ -82,7 +82,7 @@ type TextProposal struct {
 type ParamChangeProposal struct {
 	Title       string
 	Description string
-	Changes     []ParamChange
+	Changes     []paramChange.ParamChange
 }
 
 type ParamChange struct {
