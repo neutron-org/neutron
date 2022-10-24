@@ -43,8 +43,6 @@ require (
 	github.com/cosmos/gogoproto v1.4.2 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/iavl v0.19.1 // indirect
-	github.com/cosmos/ibc-go/v3 v3.0.0 // indirect
-	github.com/cosmos/interchain-accounts v0.1.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.11.1 // indirect
 	github.com/cosmos/ledger-go v0.9.2 // indirect
 	github.com/creachadair/taskgroup v0.3.2 // indirect
@@ -58,6 +56,7 @@ require (
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/gin-gonic/gin v1.7.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
@@ -129,8 +128,8 @@ require (
 )
 
 replace (
-	//github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.0-keep-ibc-events
-	github.com/CosmWasm/wasmd v0.28.0 => ../wasmd
+	github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.1-0.20221024154837-05c413702fc7
+	//github.com/CosmWasm/wasmd v0.28.0 => ../wasmd
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )

@@ -90,7 +90,11 @@ func NextBlock(chain *ibctesting.TestChain) {
 	ph, err := tmtypes.HeaderFromProto(chain.LastHeader.Header)
 	require.NoError(chain.T, err)
 
-	chain.LastHeader = CreateTMClientHeader(chain, chain.ChainID, chain.CurrentHeader.Height, ibcclienttypes.Height{}, chain.CurrentHeader.Time, chain.Vals, nil, chain.Signers, &ph)
+	var signers []tmtypes.PrivValidator
+	for _, signer := range chain.Signers {
+		signers = append(signers, signer)
+	}
+	chain.LastHeader = CreateTMClientHeader(chain, chain.ChainID, chain.CurrentHeader.Height, ibcclienttypes.Height{}, chain.CurrentHeader.Time, chain.Vals, nil, signers, &ph)
 
 	// increment the current header
 	chain.CurrentHeader = tmproto.Header{
