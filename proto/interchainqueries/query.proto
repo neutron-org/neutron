@@ -48,11 +48,18 @@ message QueryParamsResponse {
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryRegisteredQueriesRequest {}
+message QueryRegisteredQueriesRequest {
+  repeated string owners = 1;
+  string connection_id = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
 
 message QueryRegisteredQueriesResponse {
   repeated RegisteredQuery registered_queries = 1
   [ (gogoproto.nullable) = false ];
+
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryRegisteredQueryRequest {

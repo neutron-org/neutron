@@ -133,14 +133,16 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 		return err
 	}
 
-	channelSequence := endpoint.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(endpoint.Chain.GetContext())
+	ctx := endpoint.Chain.GetContext()
+
+	channelSequence := endpoint.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(ctx)
 
 	a, ok := endpoint.Chain.App.(*app.App)
 	if !ok {
 		return fmt.Errorf("not NeutronZoneApp")
 	}
 
-	if err := a.ICAControllerKeeper.RegisterInterchainAccount(endpoint.Chain.GetContext(), endpoint.ConnectionID, icaOwner.String()); err != nil {
+	if err := a.ICAControllerKeeper.RegisterInterchainAccount(ctx, endpoint.ConnectionID, icaOwner.String()); err != nil {
 		return err
 	}
 

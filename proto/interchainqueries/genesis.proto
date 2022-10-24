@@ -3,6 +3,7 @@ package neutron.interchainadapter.interchainqueries;
 
 import "gogoproto/gogo.proto";
 import "interchainqueries/params.proto";
+import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 
@@ -28,14 +29,18 @@ message RegisteredQuery {
   // Parameter that defines how often the query must be updated.
   uint64 update_period = 7;
 
-  // The local height when the event to update the query result was emitted last time.
-  uint64 last_emitted_height = 8;
-
   // The local chain last block height when the query result was updated.
-  uint64 last_submitted_result_local_height = 9;
+  uint64 last_submitted_result_local_height = 8;
 
   // The remote chain last block height when the query result was updated.
-  uint64 last_submitted_result_remote_height = 10;
+  uint64 last_submitted_result_remote_height = 9;
+
+  // Amount of coins deposited for the query.
+  repeated cosmos.base.v1beta1.Coin deposit = 10 
+    [(gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", (gogoproto.nullable) = false];
+  
+  // Timeout before query becomes available for everybody to remove.
+  uint64 submit_timeout = 12;
 }
 
 message KVKey {

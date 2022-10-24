@@ -13,18 +13,8 @@ import "google/protobuf/any.proto";
 service Msg {
   rpc RegisterInterchainAccount(MsgRegisterInterchainAccount)
       returns (MsgRegisterInterchainAccountResponse) {
-    option (google.api.http) = {
-      post : "/neutron/interchainadapter/interchaintxs/tx/v1/register/"
-             "interchain/account"
-      body : "*"
-    };
   };
-  rpc SubmitTx(MsgSubmitTx) returns (MsgSubmitTxResponse) {
-    option (google.api.http) = {
-      post : "/neutron/interchainadapter/interchaintxs/tx/v1/submit/tx"
-      body : "*"
-    };
-  };
+  rpc SubmitTx(MsgSubmitTx) returns (MsgSubmitTxResponse) {};
 }
 
 // MsgRegisterInterchainAccount is used to register an account on a remote zone.
@@ -33,8 +23,8 @@ message MsgRegisterInterchainAccount {
   option (gogoproto.goproto_getters) = false;
 
   string from_address = 1;
-  string connection_id = 2 [ (gogoproto.moretags) = "yaml:\"connection_id\"" ];
-  string interchain_account_id = 3 [ (gogoproto.moretags) = "yaml:\"interchain_account_id\"" ];
+  string connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
+  string interchain_account_id = 3 [(gogoproto.moretags) = "yaml:\"interchain_account_id\""];
 }
 
 // MsgRegisterInterchainAccountResponse is the response type for

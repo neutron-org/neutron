@@ -10,7 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/internal/sudo"
@@ -29,6 +31,7 @@ type (
 		paramstore  paramtypes.Subspace
 		ibcKeeper   *ibckeeper.Keeper
 		wasmKeeper  *wasm.Keeper
+		bank        types.BankKeeper
 		sudoHandler sudo.Handler
 	}
 )
@@ -40,6 +43,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
 	wasmKeeper *wasm.Keeper,
+	bank types.BankKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -53,6 +57,7 @@ func NewKeeper(
 		paramstore:  ps,
 		ibcKeeper:   ibcKeeper,
 		wasmKeeper:  wasmKeeper,
+		bank:        bank,
 		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
 	}
 }
@@ -86,6 +91,7 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {
 
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
 	k.Logger(ctx).Debug("SaveQuery successful", "query", query)
+
 	return nil
 }
 
@@ -132,27 +138,6 @@ func (k Keeper) SaveKVQueryResult(ctx sdk.Context, id uint64, result *types.Quer
 	}
 	k.Logger(ctx).Debug("Successfully saved query result", "result", &result)
 	return nil
-}
-
-// We don't need to store proofs or transactions, so we just remove unnecessary fields
-func clearQueryResult(result *types.QueryResult) types.QueryResult {
-	storageValues := make([]*types.StorageValue, 0, len(result.KvResults))
-	for _, v := range result.KvResults {
-		storageValues = append(storageValues, &types.StorageValue{
-			StoragePrefix: v.StoragePrefix,
-			Key:           v.Key,
-			Value:         v.Value,
-			Proof:         nil,
-		})
-	}
-
-	cleanResult := types.QueryResult{
-		KvResults: storageValues,
-		Block:     nil,
-		Height:    result.Height,
-	}
-
-	return cleanResult
 }
 
 // SaveTransactionAsProcessed simply stores a key (SubmittedTxKey + bigEndianBytes(queryID) + tx_hash) with
@@ -255,8 +240,64 @@ func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, q
 	k.Logger(ctx).Debug("Iterated over registered queries", "quantity", i)
 }
 
+// We don't need to store proofs or transactions, so we just remove unnecessary fields
+func clearQueryResult(result *types.QueryResult) types.QueryResult {
+	storageValues := make([]*types.StorageValue, 0, len(result.KvResults))
+	for _, v := range result.KvResults {
+		storageValues = append(storageValues, &types.StorageValue{
+			StoragePrefix: v.StoragePrefix,
+			Key:           v.Key,
+			Value:         v.Value,
+			Proof:         nil,
+		})
+	}
+
+	cleanResult := types.QueryResult{
+		KvResults: storageValues,
+		Block:     nil,
+		Height:    result.Height,
+	}
+
+	return cleanResult
+}
+
 func (k Keeper) checkRegisteredQueryExists(ctx sdk.Context, id uint64) bool {
 	store := ctx.KVStore(k.storeKey)
 
 	return store.Has(types.GetRegisteredQueryByIDKey(id))
+}
+
+func (k Keeper) GetClientState(ctx sdk.Context, clientID string) (*tendermintLightClientTypes.ClientState, error) {
+	clientStateResponse, ok := k.ibcKeeper.ClientKeeper.GetClientState(ctx, clientID)
+	if !ok {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidClientID, "could not find a ClientState with client id: %s", clientID)
+	}
+
+	clientState, ok := clientStateResponse.(*tendermintLightClientTypes.ClientState)
+	if !ok {
+		return nil, sdkerrors.Wrapf(ibcclienttypes.ErrInvalidClientType, "cannot cast ClientState interface into ClientState type")
+	}
+
+	return clientState, nil
+}
+
+func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo types.RegisteredQuery) error {
+	owner, err := queryInfo.GetOwnerAddress()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = k.bank.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, queryInfo.Deposit)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk.AccAddress) {
+	err := k.bank.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, deposit)
+	if err != nil {
+		panic(err.Error())
+	}
 }

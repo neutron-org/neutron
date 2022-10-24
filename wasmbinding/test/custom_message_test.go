@@ -82,6 +82,12 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
+	// Top up contract balance
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(int64(10_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+
 	// Craft RegisterInterchainQuery message
 	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 	updatePeriod := uint64(20)

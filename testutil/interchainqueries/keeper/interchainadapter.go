@@ -44,6 +44,7 @@ func InterchainQueriesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		paramsSubspace,
 		nil, // TODO: do a real ibc keeper
 		nil, // TODO: do a real wasm keeper
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
