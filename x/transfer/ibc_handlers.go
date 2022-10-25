@@ -25,18 +25,23 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
 
+	im.keeper.Logger(ctx).Debug("MYLOGGER: test message for my logger", err)
+
+	cacheCtx, writeFn := ctx.CacheContext()
+
 	if ack.Success() {
-		_, err = im.sudoHandler.SudoResponse(ctx, senderAddress, packet, ack.GetResult())
+		_, err = im.sudoHandler.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
 	} else {
 		// Actually we have only one kind of error returned from acknowledgement
 		// maybe later we'll retrieve actual errors from events
-		im.keeper.Logger(ctx).Debug(ack.GetError(), "CheckTx", ctx.IsCheckTx())
-		_, err = im.sudoHandler.SudoError(ctx, senderAddress, packet, ack.GetError())
+		im.keeper.Logger(cacheCtx).Debug(ack.GetError(), "CheckTx", cacheCtx.IsCheckTx())
+		_, err = im.sudoHandler.SudoError(cacheCtx, senderAddress, packet, ack.GetError())
 	}
 
 	if err != nil {
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
-		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet acknowledgement")
+	} else {
+		writeFn()
 	}
 
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
