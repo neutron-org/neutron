@@ -3,9 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	testkeeper "github.com/neutron-org/neutron/testutil/keeper"
+	testkeeper "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetParams(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-    "github.com/neutron-org/neutron/x/contractmanager/types"
-    "github.com/neutron-org/neutron/x/contractmanager/keeper"
-    keepertest "github.com/neutron-org/neutron/testutil/keeper"
+	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {

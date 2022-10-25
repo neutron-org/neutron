@@ -3,8 +3,8 @@ package contractmanager_test
 import (
 	"testing"
 
-	keepertest "github.com/neutron-org/neutron/testutil/keeper"
-	"github.com/neutron-org/neutron/testutil/nullify"
+	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 	"github.com/stretchr/testify/require"
@@ -12,8 +12,16 @@ import (
 
 func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
-		Params:	types.DefaultParams(),
-		
+		Params: types.DefaultParams(),
+
+		FailureList: []types.Failure{
+			{
+				Index: "0",
+			},
+			{
+				Index: "1",
+			},
+		},
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
@@ -25,7 +33,6 @@ func TestGenesis(t *testing.T) {
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
 
-	
-
+	require.ElementsMatch(t, genesisState.FailureList, got.FailureList)
 	// this line is used by starport scaffolding # genesis/test/assert
 }
