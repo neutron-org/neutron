@@ -25,9 +25,9 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
 
-	im.keeper.Logger(ctx).Debug("MYLOGGER: test message for my logger", err)
-
 	cacheCtx, writeFn := ctx.CacheContext()
+
+	consumedGas := cacheCtx.GasMeter().GasConsumed()
 
 	if ack.Success() {
 		_, err = im.sudoHandler.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
@@ -39,6 +39,9 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	if err != nil {
+		gasToRefund := ctx.GasMeter().GasConsumed() - consumedGas
+		ctx.GasMeter().RefundGas(gasToRefund, "refunded due to sudo handler call failure")
+
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		writeFn()
