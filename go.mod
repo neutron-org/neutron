@@ -8,7 +8,7 @@ require (
 	github.com/confio/ics23/go v0.7.0
 	github.com/cosmos/cosmos-sdk v0.45.2-0.20220901181011-06d4a64bf808
 	github.com/cosmos/ibc-go/v3 v3.0.1
-	github.com/cosmos/interchain-security v0.1.4
+	github.com/cosmos/interchain-security v0.0.0-20221020174727-3f9100acd62a
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
