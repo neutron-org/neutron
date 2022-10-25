@@ -119,6 +119,10 @@ import (
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	transferSudo "github.com/neutron-org/neutron/x/transfer"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
+
+	ibcfee "github.com/cosmos/ibc-go/v4/modules/apps/29-fee"
+	ibcfeekeeper "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/keeper"
+	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
 )
 
 const (
@@ -197,6 +201,7 @@ var (
 		gov.NewAppModuleBasic(getGovProposalHandlers()...),
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
+		ibcfee.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -211,6 +216,7 @@ var (
 		icatypes.ModuleName:                     nil,
 		wasm.ModuleName:                         {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName: nil,
+		ibcfeetypes.ModuleName:                  nil,
 	}
 )
 
@@ -267,6 +273,7 @@ type App struct {
 	EvidenceKeeper      evidencekeeper.Keeper
 	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
+	IBCFeeKeeper        ibcfeekeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -332,7 +339,7 @@ func New(
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
-		interchainqueriesmoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey,
+		interchainqueriesmoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, ibcfeetypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -437,7 +444,7 @@ func New(
 	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
+		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.IBCFeeKeeper,
 	)
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
@@ -476,6 +483,7 @@ func New(
 		&app.WasmKeeper,
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
+		app.IBCFeeKeeper,
 	)
 
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper), wasmOpts...)
@@ -500,7 +508,11 @@ func New(
 		wasmOpts...,
 	)
 
-	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
+	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(app.appCodec, keys[ibcfeetypes.StoreKey], app.GetSubspace(ibcfeetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper, app.AccountKeeper, app.BankKeeper)
+
+	var transferIBCModule porttypes.IBCModule
+	transferIBCModule = transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
+	transferIBCModule = ibcfee.NewIBCMiddleware(transferIBCModule, app.IBCFeeKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -519,6 +531,7 @@ func New(
 	var icaControllerStack porttypes.IBCModule
 	icaControllerStack = interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
 	icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, app.ICAControllerKeeper)
+	icaControllerStack = ibcfee.NewIBCMiddleware(icaControllerStack, app.IBCFeeKeeper)
 
 	var icaHostStack porttypes.IBCModule
 	icaHostStack = icahost.NewIBCModule(app.ICAHostKeeper)
@@ -597,6 +610,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		wasm.ModuleName,
+		ibcfeetypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -622,6 +636,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		wasm.ModuleName,
+		ibcfeetypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -652,6 +667,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		wasm.ModuleName,
+		ibcfeetypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -895,6 +911,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
 	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
+	paramsKeeper.Subspace(ibcfeetypes.ModuleName)
 
 	return paramsKeeper
 }

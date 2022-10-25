@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	ibcfeekeeper "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/keeper"
 
 	"github.com/neutron-org/neutron/internal/sudo"
 
@@ -37,6 +37,7 @@ type (
 		paramstore    paramtypes.Subspace
 		scopedKeeper  capabilitykeeper.ScopedKeeper
 		channelKeeper icatypes.ChannelKeeper
+		ibcfeeKeeper  ibcfeekeeper.Keeper
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
 		wasmKeeper          *wasm.Keeper
@@ -50,10 +51,10 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	paramstore paramtypes.Subspace,
 	channelKeeper icatypes.ChannelKeeper,
-
 	wasmKeeper *wasm.Keeper,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
+	ibcfeeKeeper ibcfeekeeper.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !paramstore.HasKeyTable() {
@@ -71,6 +72,7 @@ func NewKeeper(
 		scopedKeeper:        scopedKeeper,
 		wasmKeeper:          wasmKeeper,
 		sudoHandler:         sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		ibcfeeKeeper:        ibcfeeKeeper,
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 
+	"github.com/neutron-org/neutron/internal"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -137,6 +138,10 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 			channeltypes.ErrSequenceSendNotFound,
 			"source port: %s, source channel: %s", portID, channelID,
 		)
+	}
+
+	if err := internal.PayPacketFee(ctx, k.ibcfeeKeeper, msg.FromAddress, channelID, portID); err != nil {
+		return nil, err
 	}
 
 	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(msg.Timeout) * time.Second).UnixNano()
