@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/x/gov"
+
 	wasmapp "github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
@@ -54,7 +56,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
-	cosmosgov "github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -100,9 +101,6 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/neutron-org/neutron/x/gov"
-	govkeeper "github.com/neutron-org/neutron/x/gov/keeper"
 
 	appparams "github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/docs"
