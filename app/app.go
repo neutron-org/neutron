@@ -120,6 +120,11 @@ import (
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	transferSudo "github.com/neutron-org/neutron/x/transfer"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
+
+	// add mint
+	ccvmint "github.com/cosmos/cosmos-sdk/x/mint"
+	ccvmintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
+	ccvminttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 const (
@@ -180,6 +185,7 @@ var (
 		authzmodule.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
+		ccvmint.AppModuleBasic{},
 		ccvstaking.AppModuleBasic{},
 		ccvdistr.AppModuleBasic{},
 		params.AppModuleBasic{},
@@ -204,6 +210,7 @@ var (
 		authtypes.FeeCollectorName:                    nil,
 		ccvstakingtypes.BondedPoolName:                {authtypes.Burner, authtypes.Staking},
 		ccvstakingtypes.NotBondedPoolName:             {authtypes.Burner, authtypes.Staking},
+		ccvminttypes.ModuleName:                       {authtypes.Minter},
 		ccvdistrtypes.ModuleName:                      nil,
 		govtypes.ModuleName:                           {authtypes.Burner},
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
@@ -245,9 +252,10 @@ type App struct {
 	invCheckPeriod uint
 
 	// keys to access the substores
-	keys    map[string]*sdk.KVStoreKey
-	tkeys   map[string]*sdk.TransientStoreKey
-	memKeys map[string]*sdk.MemoryStoreKey
+	keys       map[string]*sdk.KVStoreKey
+	tkeys      map[string]*sdk.TransientStoreKey
+	memKeys    map[string]*sdk.MemoryStoreKey
+	MintKeeper ccvmintkeeper.Keeper
 
 	// keepers
 	AccountKeeper       authkeeper.AccountKeeper
@@ -331,7 +339,7 @@ func New(
 
 	keys := sdk.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, ccvstakingtypes.StoreKey, ccvdistrtypes.StoreKey,
-		slashingtypes.StoreKey,
+		slashingtypes.StoreKey, ccvminttypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
@@ -404,6 +412,11 @@ func New(
 		&ccvstakingKeeper,
 		ibcconsumertypes.ConsumerRedistributeName,
 		app.ModuleAccountAddrs(),
+	)
+
+	app.MintKeeper = ccvmintkeeper.NewKeeper(
+		appCodec, keys[ccvminttypes.StoreKey], app.GetSubspace(ccvminttypes.ModuleName), &ccvstakingKeeper,
+		app.AccountKeeper, app.BankKeeper, authtypes.FeeCollectorName,
 	)
 
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
@@ -578,6 +591,7 @@ func New(
 		//	app.AccountKeeper, &app.ConsumerKeeper, app.BaseApp.DeliverTx,
 		//	encodingConfig.TxConfig,
 		//),
+		ccvmint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
@@ -608,6 +622,7 @@ func New(
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
+		ccvminttypes.ModuleName,
 		ccvdistrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
@@ -634,6 +649,7 @@ func New(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		ccvstakingtypes.ModuleName,
+		ccvminttypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		authz.ModuleName,
@@ -664,6 +680,7 @@ func New(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		authz.ModuleName,
+		ccvminttypes.ModuleName,
 		ccvdistrtypes.ModuleName,
 		ccvstakingtypes.ModuleName,
 		banktypes.ModuleName,
@@ -694,6 +711,7 @@ func New(
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
+		ccvmint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		ccvstaking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
