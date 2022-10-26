@@ -8,6 +8,5 @@ message Failure {
   string contractAddress = 2; 
   string ackId = 3; 
   string ackType = 4; 
-  string creator = 5;
 }
 
