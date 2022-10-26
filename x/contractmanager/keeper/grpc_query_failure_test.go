@@ -45,9 +45,16 @@ func TestFailureQuerySingle(t *testing.T) {
 		{
 			desc: "KeyIsAbsent",
 			request: &types.QueryGetFailureRequest{
-				Address: strconv.Itoa(100000),
+				Address: "cosmos132juzk0gdmwuxvx4phug7m3ymyatxlh9m9paea",
 			},
 			response: &types.QueryGetFailureResponse{Failures: []types.Failure{}},
+		},
+		{
+			desc: "InvalidAddress",
+			request: &types.QueryGetFailureRequest{
+				Address: "wrong_address",
+			},
+			err: status.Error(codes.InvalidArgument, "failed to parse address: wrong_address"),
 		},
 		{
 			desc: "InvalidRequest",

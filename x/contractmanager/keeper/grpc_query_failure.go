@@ -45,6 +45,10 @@ func (k Keeper) Failure(c context.Context, req *types.QueryGetFailureRequest) (*
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
+	if _, err := sdk.AccAddressFromBech32(req.Address); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "failed to parse address: %s", req.Address)
+	}
+
 	val := k.GetContractFailures(
 		ctx,
 		req.Address,

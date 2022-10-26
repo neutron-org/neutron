@@ -1,11 +1,13 @@
 package keeper_test
 
 import (
-	"fmt"
+	"crypto/rand"
 	"strconv"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager/keeper"
@@ -17,11 +19,17 @@ import (
 var _ = strconv.IntSize
 
 func createNFailure(keeper *keeper.Keeper, ctx sdk.Context, addresses int, failures int) [][]types.Failure {
+	pubBz := make([]byte, ed25519.PubKeySize)
+	pub := &ed25519.PubKey{Key: pubBz}
+
 	items := make([][]types.Failure, addresses)
 	for i := range items {
 		items[i] = make([]types.Failure, failures)
+		rand.Read(pub.Key)
+		acc := sdktypes.AccAddress(pub.Address())
+
 		for c := range items[i] {
-			items[i][c].Address = fmt.Sprintf("address%d", i)
+			items[i][c].Address = acc.String()
 			items[i][c].Id = uint64(c)
 
 			keeper.AddContractFailure(ctx, items[i][c])
