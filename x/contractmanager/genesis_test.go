@@ -16,10 +16,12 @@ func TestGenesis(t *testing.T) {
 
 		FailureList: []types.Failure{
 			{
-				Index: "0",
+				Address: "address1",
+				Offset:  1,
 			},
 			{
-				Index: "1",
+				Address: "address1",
+				Offset:  2,
 			},
 		},
 		// this line is used by starport scaffolding # genesis/test/state

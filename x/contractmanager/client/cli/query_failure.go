@@ -1,74 +1,73 @@
 package cli
 
 import (
-    "context"
-	
-    "github.com/spf13/cobra"
+	"context"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-    "github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/spf13/cobra"
 )
 
 func CmdListFailure() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list-failure",
-		Short: "list all failure",
+		Use:   "list-failures",
+		Short: "list all failures",
 		RunE: func(cmd *cobra.Command, args []string) error {
-            clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx := client.GetClientContextFromCmd(cmd)
 
-            pageReq, err := client.ReadPageRequest(cmd.Flags())
-            if err != nil {
-                return err
-            }
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
-            queryClient := types.NewQueryClient(clientCtx)
+			queryClient := types.NewQueryClient(clientCtx)
 
-            params := &types.QueryAllFailureRequest{
-                Pagination: pageReq,
-            }
+			params := &types.QueryAllFailureRequest{
+				Pagination: pageReq,
+			}
 
-            res, err := queryClient.FailureAll(context.Background(), params)
-            if err != nil {
-                return err
-            }
+			res, err := queryClient.AllFailures(context.Background(), params)
+			if err != nil {
+				return err
+			}
 
-            return clientCtx.PrintProto(res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
 	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
 	flags.AddQueryFlagsToCmd(cmd)
 
-    return cmd
+	return cmd
 }
 
 func CmdShowFailure() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-failure [index]",
-		Short: "shows a failure",
+		Use:   "show-failures [address]",
+		Short: "shows a failures for specific contract address",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-            clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx := client.GetClientContextFromCmd(cmd)
 
-            queryClient := types.NewQueryClient(clientCtx)
+			queryClient := types.NewQueryClient(clientCtx)
 
-             argIndex := args[0]
-            
-            params := &types.QueryGetFailureRequest{
-                Index: argIndex,
-                
-            }
+			argIndex := args[0]
 
-            res, err := queryClient.Failure(context.Background(), params)
-            if err != nil {
-                return err
-            }
+			params := &types.QueryGetFailureRequest{
+				Address: argIndex,
+			}
 
-            return clientCtx.PrintProto(res)
+			res, err := queryClient.Failure(context.Background(), params)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
 		},
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
 
-    return cmd
+	return cmd
 }

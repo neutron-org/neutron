@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "contractmanager/params.proto";
-import "contractmanager/failure.proto";
+import "contractmanager/genesis.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
@@ -16,13 +16,13 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron-org/neutron/contractmanager/params";
   }
-  // Queries a Failure by index.
+  // Queries a Failure by address.
 	rpc Failure(QueryGetFailureRequest) returns (QueryGetFailureResponse) {
-		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure/{index}";
+		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure/{address}";
 	}
 
 	// Queries a list of Failure items.
-	rpc FailureAll(QueryAllFailureRequest) returns (QueryAllFailureResponse) {
+	rpc AllFailures(QueryAllFailureRequest) returns (QueryAllFailureResponse) {
 		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure";
 	}
 
@@ -39,12 +39,11 @@ message QueryParamsResponse {
 }
 
 message QueryGetFailureRequest {
-	  string index = 1;
-
+	string address = 1;
 }
 
 message QueryGetFailureResponse {
-	Failure failure = 1 [(gogoproto.nullable) = false];
+	repeated Failure failures = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryAllFailureRequest {
@@ -54,6 +53,14 @@ message QueryAllFailureRequest {
 message QueryAllFailureResponse {
 	repeated Failure failure = 1 [(gogoproto.nullable) = false];
 	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetNextFailureIdRequest {
+	string address = 1;
+}
+
+message QueryGetNextGameResponse {
+	NextFailureId NextFailureId = 1;
 }
 
 // this line is used by starport scaffolding # 3

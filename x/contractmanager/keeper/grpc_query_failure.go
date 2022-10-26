@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) FailureAll(c context.Context, req *types.QueryAllFailureRequest) (*types.QueryAllFailureResponse, error) {
+func (k Keeper) AllFailures(c context.Context, req *types.QueryAllFailureRequest) (*types.QueryAllFailureResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -20,7 +20,7 @@ func (k Keeper) FailureAll(c context.Context, req *types.QueryAllFailureRequest)
 	ctx := sdk.UnwrapSDKContext(c)
 
 	store := ctx.KVStore(k.storeKey)
-	failureStore := prefix.NewStore(store, types.KeyPrefix(types.FailureKeyPrefix))
+	failureStore := prefix.NewStore(store, types.ContractFailuresKey)
 
 	pageRes, err := query.Paginate(failureStore, req.Pagination, func(key []byte, value []byte) error {
 		var failure types.Failure
@@ -45,13 +45,10 @@ func (k Keeper) Failure(c context.Context, req *types.QueryGetFailureRequest) (*
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	val, found := k.GetFailure(
-	    ctx,
-	    req.Index,
-        )
-	if !found {
-	    return nil, status.Error(codes.NotFound, "not found")
-	}
+	val := k.GetContractFailures(
+		ctx,
+		req.Address,
+	)
 
-	return &types.QueryGetFailureResponse{Failure: val}, nil
+	return &types.QueryGetFailureResponse{Failures: val}, nil
 }

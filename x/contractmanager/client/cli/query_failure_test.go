@@ -29,7 +29,7 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 
 	for i := 0; i < n; i++ {
 		failure := types.Failure{
-			Index: strconv.Itoa(i),
+			Address: strconv.Itoa(i),
 		}
 		nullify.Fill(&failure)
 		state.FailureList = append(state.FailureList, failure)
@@ -53,14 +53,14 @@ func TestShowFailure(t *testing.T) {
 
 		args []string
 		err  error
-		obj  types.Failure
+		obj  []types.Failure
 	}{
 		{
 			desc:    "found",
-			idIndex: objs[0].Index,
+			idIndex: objs[0].Address,
 
 			args: common,
-			obj:  objs[0],
+			obj:  []types.Failure{objs[0]},
 		},
 		{
 			desc:    "not found",
@@ -84,10 +84,10 @@ func TestShowFailure(t *testing.T) {
 				require.NoError(t, err)
 				var resp types.QueryGetFailureResponse
 				require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
-				require.NotNil(t, resp.Failure)
+				require.NotNil(t, resp.Failures)
 				require.Equal(t,
 					nullify.Fill(&tc.obj),
-					nullify.Fill(&resp.Failure),
+					nullify.Fill(&resp.Failures),
 				)
 			}
 		})

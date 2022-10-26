@@ -1,7 +1,7 @@
 package types
 
 import (
-"fmt"
+	"fmt"
 )
 
 // DefaultIndex is the default global index
@@ -10,26 +10,27 @@ const DefaultIndex uint64 = 1
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-	    FailureList: []Failure{},
-// this line is used by starport scaffolding # genesis/types/default
-	    Params:	DefaultParams(),
+		FailureList:   []Failure{},
+		NextFailureId: []NextFailureId{},
+		// this line is used by starport scaffolding # genesis/types/default
+		Params: DefaultParams(),
 	}
 }
 
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
-    // Check for duplicated index in failure
-failureIndexMap := make(map[string]struct{})
+	// Check for duplicated index in failure
+	failureIndexMap := make(map[string]struct{})
 
-for _, elem := range gs.FailureList {
-	index := string(FailureKey(elem.Index))
-	if _, ok := failureIndexMap[index]; ok {
-		return fmt.Errorf("duplicated index for failure")
+	for _, elem := range gs.FailureList {
+		index := string(GetFailureKey(elem.Address, elem.Offset))
+		if _, ok := failureIndexMap[index]; ok {
+			return fmt.Errorf("duplicated address for failure")
+		}
+		failureIndexMap[index] = struct{}{}
 	}
-	failureIndexMap[index] = struct{}{}
-}
-// this line is used by starport scaffolding # genesis/types/validate
+	// this line is used by starport scaffolding # genesis/types/validate
 
 	return gs.Params.Validate()
 }

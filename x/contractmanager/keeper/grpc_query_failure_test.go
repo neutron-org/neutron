@@ -31,23 +31,23 @@ func TestFailureQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetFailureRequest{
-				Index: msgs[0].Index,
+				Address: msgs[0].Address,
 			},
-			response: &types.QueryGetFailureResponse{Failure: msgs[0]},
+			response: &types.QueryGetFailureResponse{Failures: []types.Failure{msgs[0]}},
 		},
 		{
 			desc: "Second",
 			request: &types.QueryGetFailureRequest{
-				Index: msgs[1].Index,
+				Address: msgs[1].Address,
 			},
-			response: &types.QueryGetFailureResponse{Failure: msgs[1]},
+			response: &types.QueryGetFailureResponse{Failures: []types.Failure{msgs[1]}},
 		},
 		{
-			desc: "KeyNotFound",
+			desc: "KeyIsAbsent",
 			request: &types.QueryGetFailureRequest{
-				Index: strconv.Itoa(100000),
+				Address: strconv.Itoa(100000),
 			},
-			err: status.Error(codes.NotFound, "not found"),
+			response: &types.QueryGetFailureResponse{Failures: []types.Failure{}},
 		},
 		{
 			desc: "InvalidRequest",
@@ -87,7 +87,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.FailureAll(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := keeper.AllFailures(wctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failure), step)
 			require.Subset(t,
@@ -100,7 +100,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.FailureAll(wctx, request(next, 0, uint64(step), false))
+			resp, err := keeper.AllFailures(wctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failure), step)
 			require.Subset(t,
@@ -111,7 +111,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
-		resp, err := keeper.FailureAll(wctx, request(nil, 0, 0, true))
+		resp, err := keeper.AllFailures(wctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
 		require.Equal(t, len(msgs), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
@@ -120,7 +120,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		)
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := keeper.FailureAll(wctx, nil)
+		_, err := keeper.AllFailures(wctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
 	})
 }
