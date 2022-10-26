@@ -12,11 +12,11 @@ option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/neutron-org/neutron/contractmanager/params";
-  }
-  // Queries a Failure by address.
+	// Parameters queries the parameters of the module.
+	rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+		option (google.api.http).get = "/neutron-org/neutron/contractmanager/params";
+	}
+	// Queries a Failure by address.
 	rpc Failure(QueryGetFailureRequest) returns (QueryGetFailureResponse) {
 		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure/{address}";
 	}

@@ -10,19 +10,12 @@ option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 message Failure {
   // Address of the failed contract
   string address = 1; 
-  // Offset used to add more failures under one address
-  uint64 offset = 2;
+  // id of the failure under specific address
+  uint64 id = 2;
   // ACK id to restore
   string ackId = 3; 
   // Ackonowledgement type
   string ackType = 4; 
-}
-
-message NextFailureId {
-  // Address of the failed contract
-  string address = 1; 
-  // Next offset for the failed contracts mapping
-  uint64 nextOffset = 2;
 }
 
 
@@ -31,7 +24,5 @@ message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
   // List of the contract failures
   repeated Failure failureList = 2 [(gogoproto.nullable) = false];
-  // List of the contract failures
-  repeated NextFailureId nextFailureId = 3 [(gogoproto.nullable) = false];
   // this line is used by starport scaffolding # genesis/proto/state
 }

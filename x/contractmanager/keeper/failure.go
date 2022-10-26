@@ -12,22 +12,24 @@ func (k Keeper) AddContractFailure(ctx sdk.Context, failure types.Failure) {
 
 	store := ctx.KVStore(k.storeKey)
 
-	failure.Offset = nextFailureId
+	failure.Id = nextFailureId
 	b := k.cdc.MustMarshal(&failure)
 	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureId), b)
-
-	nextFailureId++
-	store.Set(types.GetNextFailureIdKey(failure.GetAddress()), sdk.Uint64ToBigEndian(nextFailureId))
 }
 
 func (k Keeper) GetNextFailureIdKey(ctx sdk.Context, address string) uint64 {
-	store := ctx.KVStore(k.storeKey)
-	bytes := store.Get(types.GetNextFailureIdKey(address))
-	if bytes == nil {
-		k.Logger(ctx).Debug("Unable to get last registered failure key for the address. Returns 0")
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetFailureKeyPrefix(address))
+	iterator := sdk.KVStoreReversePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	if iterator.Valid() {
+		var val types.Failure
+		k.cdc.MustUnmarshal(iterator.Value(), &val)
+
+		return val.Id + 1
+	} else {
 		return 0
 	}
-	return sdk.BigEndianToUint64(bytes)
 }
 
 // GetContractFailures returns failures of the specific contract

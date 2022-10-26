@@ -25,15 +25,15 @@ func TestGenesisState_Validate(t *testing.T) {
 				FailureList: []types.Failure{
 					{
 						Address: "address1",
-						Offset:  1,
+						Id:      1,
 					},
 					{
 						Address: "address1",
-						Offset:  2,
+						Id:      2,
 					},
 					{
 						Address: "address2",
-						Offset:  1,
+						Id:      1,
 					},
 				},
 				// this line is used by starport scaffolding # types/genesis/validField
@@ -46,15 +46,15 @@ func TestGenesisState_Validate(t *testing.T) {
 				FailureList: []types.Failure{
 					{
 						Address: "address1",
-						Offset:  1,
+						Id:      1,
 					},
 					{
 						Address: "address1",
-						Offset:  1,
+						Id:      1,
 					},
 					{
 						Address: "address2",
-						Offset:  1,
+						Id:      1,
 					},
 				},
 			},

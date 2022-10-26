@@ -21,7 +21,7 @@ var _ = strconv.IntSize
 func TestFailureQuerySingle(t *testing.T) {
 	keeper, ctx := keepertest.ContractmanagerKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
-	msgs := createNFailure(keeper, ctx, 2)
+	msgs := createNFailure(keeper, ctx, 2, 2)
 	for _, tc := range []struct {
 		desc     string
 		request  *types.QueryGetFailureRequest
@@ -31,16 +31,16 @@ func TestFailureQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetFailureRequest{
-				Address: msgs[0].Address,
+				Address: msgs[0][0].Address,
 			},
-			response: &types.QueryGetFailureResponse{Failures: []types.Failure{msgs[0]}},
+			response: &types.QueryGetFailureResponse{Failures: msgs[0]},
 		},
 		{
 			desc: "Second",
 			request: &types.QueryGetFailureRequest{
-				Address: msgs[1].Address,
+				Address: msgs[1][0].Address,
 			},
-			response: &types.QueryGetFailureResponse{Failures: []types.Failure{msgs[1]}},
+			response: &types.QueryGetFailureResponse{Failures: msgs[1]},
 		},
 		{
 			desc: "KeyIsAbsent",
@@ -72,7 +72,8 @@ func TestFailureQuerySingle(t *testing.T) {
 func TestFailureQueryPaginated(t *testing.T) {
 	keeper, ctx := keepertest.ContractmanagerKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
-	msgs := createNFailure(keeper, ctx, 5)
+	msgs := createNFailure(keeper, ctx, 5, 3)
+	flattenItems := flattenFailures(msgs)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllFailureRequest {
 		return &types.QueryAllFailureRequest{
@@ -86,12 +87,12 @@ func TestFailureQueryPaginated(t *testing.T) {
 	}
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
-		for i := 0; i < len(msgs); i += step {
+		for i := 0; i < len(flattenItems); i += step {
 			resp, err := keeper.AllFailures(wctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
-				nullify.Fill(msgs),
+				nullify.Fill(flattenItems),
 				nullify.Fill(resp.Failures),
 			)
 		}
@@ -99,12 +100,12 @@ func TestFailureQueryPaginated(t *testing.T) {
 	t.Run("ByKey", func(t *testing.T) {
 		step := 2
 		var next []byte
-		for i := 0; i < len(msgs); i += step {
+		for i := 0; i < len(flattenItems); i += step {
 			resp, err := keeper.AllFailures(wctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
-				nullify.Fill(msgs),
+				nullify.Fill(flattenItems),
 				nullify.Fill(resp.Failures),
 			)
 			next = resp.Pagination.NextKey
@@ -113,9 +114,9 @@ func TestFailureQueryPaginated(t *testing.T) {
 	t.Run("Total", func(t *testing.T) {
 		resp, err := keeper.AllFailures(wctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
-		require.Equal(t, len(msgs), int(resp.Pagination.Total))
+		require.Equal(t, len(flattenItems), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
-			nullify.Fill(msgs),
+			nullify.Fill(flattenItems),
 			nullify.Fill(resp.Failures),
 		)
 	})
