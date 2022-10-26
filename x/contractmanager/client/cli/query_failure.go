@@ -9,10 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CmdListFailure() *cobra.Command {
+func CmdAllFailures() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list-failures",
-		Short: "list all failures",
+		Use:   "all-failures",
+		Short: "show all failures",
+		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
@@ -33,6 +34,7 @@ func CmdListFailure() *cobra.Command {
 			}
 
 			return clientCtx.PrintProto(res)
+
 		},
 	}
 
@@ -42,9 +44,9 @@ func CmdListFailure() *cobra.Command {
 	return cmd
 }
 
-func CmdShowFailure() *cobra.Command {
+func CmdContractFailures() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-failures [address]",
+		Use:   "contract-failures [address]",
 		Short: "shows a failures for specific contract address",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {

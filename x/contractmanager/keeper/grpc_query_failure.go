@@ -36,7 +36,7 @@ func (k Keeper) AllFailures(c context.Context, req *types.QueryAllFailureRequest
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryAllFailureResponse{Failure: failures, Pagination: pageRes}, nil
+	return &types.QueryAllFailureResponse{Failures: failures, Pagination: pageRes}, nil
 }
 
 func (k Keeper) Failure(c context.Context, req *types.QueryGetFailureRequest) (*types.QueryGetFailureResponse, error) {

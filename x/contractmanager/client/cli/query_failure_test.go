@@ -75,7 +75,7 @@ func TestShowFailure(t *testing.T) {
 				tc.idIndex,
 			}
 			args = append(args, tc.args...)
-			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdShowFailure(), args)
+			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdContractFailures(), args)
 			if tc.err != nil {
 				stat, ok := status.FromError(tc.err)
 				require.True(t, ok)
@@ -117,14 +117,14 @@ func TestListFailure(t *testing.T) {
 		step := 2
 		for i := 0; i < len(objs); i += step {
 			args := request(nil, uint64(i), uint64(step), false)
-			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListFailure(), args)
+			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdAllFailures(), args)
 			require.NoError(t, err)
 			var resp types.QueryAllFailureResponse
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
-			require.LessOrEqual(t, len(resp.Failure), step)
+			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
 				nullify.Fill(objs),
-				nullify.Fill(resp.Failure),
+				nullify.Fill(resp.Failures),
 			)
 		}
 	})
@@ -133,21 +133,21 @@ func TestListFailure(t *testing.T) {
 		var next []byte
 		for i := 0; i < len(objs); i += step {
 			args := request(next, 0, uint64(step), false)
-			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListFailure(), args)
+			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdAllFailures(), args)
 			require.NoError(t, err)
 			var resp types.QueryAllFailureResponse
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
-			require.LessOrEqual(t, len(resp.Failure), step)
+			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
 				nullify.Fill(objs),
-				nullify.Fill(resp.Failure),
+				nullify.Fill(resp.Failures),
 			)
 			next = resp.Pagination.NextKey
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
 		args := request(nil, 0, uint64(len(objs)), true)
-		out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListFailure(), args)
+		out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdAllFailures(), args)
 		require.NoError(t, err)
 		var resp types.QueryAllFailureResponse
 		require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
@@ -155,7 +155,7 @@ func TestListFailure(t *testing.T) {
 		require.Equal(t, len(objs), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
 			nullify.Fill(objs),
-			nullify.Fill(resp.Failure),
+			nullify.Fill(resp.Failures),
 		)
 	})
 }

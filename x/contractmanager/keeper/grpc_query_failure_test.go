@@ -89,10 +89,10 @@ func TestFailureQueryPaginated(t *testing.T) {
 		for i := 0; i < len(msgs); i += step {
 			resp, err := keeper.AllFailures(wctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
-			require.LessOrEqual(t, len(resp.Failure), step)
+			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
 				nullify.Fill(msgs),
-				nullify.Fill(resp.Failure),
+				nullify.Fill(resp.Failures),
 			)
 		}
 	})
@@ -102,10 +102,10 @@ func TestFailureQueryPaginated(t *testing.T) {
 		for i := 0; i < len(msgs); i += step {
 			resp, err := keeper.AllFailures(wctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
-			require.LessOrEqual(t, len(resp.Failure), step)
+			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
 				nullify.Fill(msgs),
-				nullify.Fill(resp.Failure),
+				nullify.Fill(resp.Failures),
 			)
 			next = resp.Pagination.NextKey
 		}
@@ -116,7 +116,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		require.Equal(t, len(msgs), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
 			nullify.Fill(msgs),
-			nullify.Fill(resp.Failure),
+			nullify.Fill(resp.Failures),
 		)
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {

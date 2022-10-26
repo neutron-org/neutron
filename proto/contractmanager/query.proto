@@ -51,16 +51,8 @@ message QueryAllFailureRequest {
 }
 
 message QueryAllFailureResponse {
-	repeated Failure failure = 1 [(gogoproto.nullable) = false];
+	repeated Failure failures = 1 [(gogoproto.nullable) = false];
 	cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-message QueryGetNextFailureIdRequest {
-	string address = 1;
-}
-
-message QueryGetNextGameResponse {
-	NextFailureId NextFailureId = 1;
 }
 
 // this line is used by starport scaffolding # 3
