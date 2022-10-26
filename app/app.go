@@ -428,6 +428,13 @@ func New(
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 	)
 
+	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
+		appCodec,
+		keys[contractmanagermoduletypes.StoreKey],
+		keys[contractmanagermoduletypes.MemStoreKey],
+		app.GetSubspace(contractmanagermoduletypes.ModuleName),
+	)
+
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
 	govRouter.
@@ -441,7 +448,7 @@ func New(
 	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
+		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.ContractManagerKeeper,
 	)
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
@@ -461,13 +468,6 @@ func New(
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate,neutron"
-
-	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
-		appCodec,
-		keys[contractmanagermoduletypes.StoreKey],
-		keys[contractmanagermoduletypes.MemStoreKey],
-		app.GetSubspace(contractmanagermoduletypes.ModuleName),
-	)
 
 	app.InterchainQueriesKeeper = *interchainqueriesmodulekeeper.NewKeeper(
 		appCodec,
