@@ -440,6 +440,9 @@ func New(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
+	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(app.appCodec, keys[ibcfeetypes.StoreKey], app.GetSubspace(ibcfeetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper, app.AccountKeeper, app.BankKeeper)
+	ibcFeeModule := ibcfee.NewAppModule(app.IBCFeeKeeper)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
@@ -508,8 +511,6 @@ func New(
 		wasmOpts...,
 	)
 
-	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(app.appCodec, keys[ibcfeetypes.StoreKey], app.GetSubspace(ibcfeetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper, app.AccountKeeper, app.BankKeeper)
-
 	var transferIBCModule porttypes.IBCModule
 	transferIBCModule = transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
 	transferIBCModule = ibcfee.NewIBCMiddleware(transferIBCModule, app.IBCFeeKeeper)
@@ -530,8 +531,8 @@ func New(
 
 	var icaControllerStack porttypes.IBCModule
 	icaControllerStack = interchaintxs.NewIBCModule(app.InterchainTxsKeeper)
-	icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, app.ICAControllerKeeper)
 	icaControllerStack = ibcfee.NewIBCMiddleware(icaControllerStack, app.IBCFeeKeeper)
+	icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, app.ICAControllerKeeper)
 
 	var icaHostStack porttypes.IBCModule
 	icaHostStack = icahost.NewIBCModule(app.ICAHostKeeper)
@@ -581,6 +582,7 @@ func New(
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,
+		ibcFeeModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that

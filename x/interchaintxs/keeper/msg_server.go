@@ -52,7 +52,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 	}
 
 	// TODO(pr0n00gler): add version to MsgRegisterInterchainAccount.
-	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String(), ""); err != nil {
+	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String(), `{"fee_version":"ics29-1","app_version":"ics20-1"}`); err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "msg", &msg)
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
