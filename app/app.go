@@ -688,7 +688,6 @@ func New(
 		transferModule,
 		interchainQueriesModule,
 		interchainTxsModule,
-		contractManagerModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
