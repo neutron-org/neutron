@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -199,6 +200,7 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		Memo:                submitTx.Memo,
 		InterchainAccountId: submitTx.InterchainAccountId,
 		Timeout:             submitTx.Timeout,
+		PayerFee:            &submitTx.PayerFee,
 	}
 	for _, msg := range submitTx.Msgs {
 		tx.Msgs = append(tx.Msgs, &types.Any{

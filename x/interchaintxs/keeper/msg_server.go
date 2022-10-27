@@ -140,7 +140,11 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		)
 	}
 
-	if err := internal.PayPacketFee(ctx, k.ibcfeeKeeper, msg.FromAddress, channelID, portID); err != nil {
+	if msg.PayerFee == nil {
+		return nil, sdkerrors.Wrapf(ictxtypes.ErrInvalidPayerFee, "fee can't be nil")
+	}
+
+	if err := internal.PayPacketFee(ctx, k.ibcfeeKeeper, msg.FromAddress, channelID, portID, *msg.PayerFee); err != nil {
 		return nil, err
 	}
 

@@ -8,6 +8,7 @@ import "gogoproto/gogo.proto";
 import "google/api/http.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
+import "ibc/applications/fee/v1/fee.proto";
 
 // Msg defines the Msg service.
 service Msg {
@@ -47,6 +48,8 @@ message MsgSubmitTx {
   string memo = 5;
   // timeout in seconds after which the packet times out
   uint64 timeout = 6;
+
+  ibc.applications.fee.v1.Fee payer_fee = 7;
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx

@@ -6,15 +6,11 @@ import (
 	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
 )
 
-func PayPacketFee(ctx sdk.Context, ibcfeeKeeper ibcfeekeeper.Keeper, payer, channelID, portID string) error {
+func PayPacketFee(ctx sdk.Context, ibcfeeKeeper ibcfeekeeper.Keeper, payer, channelID, portID string, fee ibcfeetypes.Fee) error {
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	payFeeMsg := ibcfeetypes.MsgPayPacketFee{
-		Fee: ibcfeetypes.Fee{
-			RecvFee:    sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))),
-			AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))),
-			TimeoutFee: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))),
-		},
+		Fee:             fee,
 		SourcePortId:    portID,
 		SourceChannelId: channelID,
 		Signer:          payer,

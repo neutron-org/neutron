@@ -1,7 +1,11 @@
 //nolint:revive,stylecheck  // if we change the names of var-naming things here, we harm some kind of mapping.
 package bindings
 
-import "github.com/neutron-org/neutron/x/interchainqueries/types"
+import (
+	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
+
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
+)
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
 type ProtobufAny struct {
@@ -22,11 +26,12 @@ type NeutronMsg struct {
 
 // SubmitTx submits interchain transaction on a remote chain.
 type SubmitTx struct {
-	ConnectionId        string        `json:"connection_id"`
-	InterchainAccountId string        `json:"interchain_account_id"`
-	Msgs                []ProtobufAny `json:"msgs"`
-	Memo                string        `json:"memo"`
-	Timeout             uint64        `json:"timeout"`
+	ConnectionId        string          `json:"connection_id"`
+	InterchainAccountId string          `json:"interchain_account_id"`
+	Msgs                []ProtobufAny   `json:"msgs"`
+	Memo                string          `json:"memo"`
+	Timeout             uint64          `json:"timeout"`
+	PayerFee            ibcfeetypes.Fee `json:"payer_fee"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.

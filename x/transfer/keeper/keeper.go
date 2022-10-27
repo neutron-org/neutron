@@ -24,7 +24,7 @@ type KeeperTransferWrapper struct {
 	ibcfeeKeeper  ibcfeekeeper.Keeper
 }
 
-func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
+func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, msg.SourcePort, msg.SourceChannel)
 	if !found {
@@ -34,11 +34,15 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *types.MsgTra
 		)
 	}
 
-	if err := internal.PayPacketFee(ctx, k.ibcfeeKeeper, msg.Sender, msg.SourceChannel, msg.SourcePort); err != nil {
+	if msg.PayerFee == nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "fee can't be nil")
+	}
+
+	if err := internal.PayPacketFee(ctx, k.ibcfeeKeeper, msg.Sender, msg.SourceChannel, msg.SourcePort, *msg.PayerFee); err != nil {
 		return nil, err
 	}
 
-	_, err := k.Keeper.Transfer(goCtx, msg)
+	_, err := k.Keeper.Transfer(goCtx, types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp))
 	if err != nil {
 		return nil, err
 	}
