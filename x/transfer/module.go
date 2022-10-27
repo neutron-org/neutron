@@ -21,17 +21,20 @@ import (
 */
 
 type IBCModule struct {
-	keeper      keeper.Keeper
-	sudoHandler sudo.Handler
+	keeper                keeper.Keeper
+	sudoHandler           sudo.Handler
+	ContractmanagerKeeper neutrontypes.ContractManagerKeeper
+
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
 func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, wasmKeeper *wasm.Keeper) IBCModule {
 	return IBCModule{
-		keeper:      k.Keeper,
-		IBCModule:   transfer.NewIBCModule(k.Keeper),
-		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		keeper:                k.Keeper,
+		ContractmanagerKeeper: k.ContractmanagerKeeper,
+		IBCModule:             transfer.NewIBCModule(k.Keeper),
+		sudoHandler:           sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
 	}
 }
 

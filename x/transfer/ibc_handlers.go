@@ -1,6 +1,8 @@
 package transfer
 
 import (
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
@@ -10,7 +12,8 @@ import (
 )
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
-func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) error {
+func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) (err error) {
+
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
@@ -25,9 +28,26 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
 
-	cacheCtx, writeFn := ctx.CacheContext()
+	// We need to reserver this amount of gas (15000) on the context gas meter in order to add contract failure to keeper
+	newGasMeter := sdk.NewGasMeter(ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed() - 15000)
+	defer func() {
+		if r := recover(); r != nil {
+			_, ok := r.(sdk.ErrorOutOfGas)
+			if !ok || !newGasMeter.IsOutOfGas() {
+				panic(r)
+			}
 
-	consumedGas := cacheCtx.GasMeter().GasConsumed()
+			im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", newGasMeter.String(), "Packet data", data)
+			im.ContractmanagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
+
+			err = nil
+		}
+	}()
+
+	cacheCtx, writeFn := ctx.CacheContext()
+	if strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter") {
+		cacheCtx = ctx.WithGasMeter(newGasMeter)
+	}
 
 	if ack.Success() {
 		_, err = im.sudoHandler.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
@@ -39,12 +59,11 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	if err != nil {
-		gasToRefund := ctx.GasMeter().GasConsumed() - consumedGas
-		ctx.GasMeter().RefundGas(gasToRefund, "refunded due to sudo handler call failure")
-
+		im.ContractmanagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		writeFn()
+		ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
 	}
 
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())

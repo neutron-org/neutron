@@ -18,7 +18,7 @@ import (
 type KeeperTransferWrapper struct {
 	keeper.Keeper
 	channelKeeper         types.ChannelKeeper
-	contractmanagerKeeper wrappedtypes.ContractManagerKeeper
+	ContractmanagerKeeper wrappedtypes.ContractManagerKeeper
 }
 
 func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
@@ -53,6 +53,6 @@ func NewKeeper(
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
 			authKeeper, bankKeeper, scopedKeeper),
 		channelKeeper:         channelKeeper,
-		contractmanagerKeeper: contractmanagerKeeper,
+		ContractmanagerKeeper: contractmanagerKeeper,
 	}
 }
