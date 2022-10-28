@@ -489,7 +489,7 @@ func New(
 		app.IBCFeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,

@@ -5,6 +5,7 @@ import (
 	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -17,11 +18,12 @@ type ProtobufAny struct {
 // Follow https://github.com/neutron-org/neutron-contracts/tree/main/packages/bindings/src/msg.rs
 // for more information.
 type NeutronMsg struct {
-	SubmitTx                  *SubmitTx                  `json:"submit_tx,omitempty"`
-	RegisterInterchainAccount *RegisterInterchainAccount `json:"register_interchain_account,omitempty"`
-	RegisterInterchainQuery   *RegisterInterchainQuery   `json:"register_interchain_query,omitempty"`
-	UpdateInterchainQuery     *UpdateInterchainQuery     `json:"update_interchain_query,omitempty"`
-	RemoveInterchainQuery     *RemoveInterchainQuery     `json:"remove_interchain_query,omitempty"`
+	SubmitTx                  *SubmitTx                         `json:"submit_tx,omitempty"`
+	RegisterInterchainAccount *RegisterInterchainAccount        `json:"register_interchain_account,omitempty"`
+	RegisterInterchainQuery   *RegisterInterchainQuery          `json:"register_interchain_query,omitempty"`
+	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
+	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
+	IBCTransferMsg            *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
