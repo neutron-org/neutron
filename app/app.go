@@ -433,6 +433,7 @@ func New(
 		keys[contractmanagermoduletypes.StoreKey],
 		keys[contractmanagermoduletypes.MemStoreKey],
 		app.GetSubspace(contractmanagermoduletypes.ModuleName),
+		&app.WasmKeeper,
 	)
 
 	// register the proposal types
@@ -475,8 +476,8 @@ func New(
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
-		&app.WasmKeeper,
 		app.BankKeeper,
+		app.ContractManagerKeeper,
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
@@ -484,9 +485,9 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.GetSubspace(interchaintxstypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
-		&app.WasmKeeper,
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
+		app.ContractManagerKeeper,
 	)
 
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper), wasmOpts...)
@@ -531,7 +532,7 @@ func New(
 
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
-	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper, app.AccountKeeper, app.BankKeeper)
+	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).

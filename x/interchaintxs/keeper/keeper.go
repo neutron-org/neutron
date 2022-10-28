@@ -5,10 +5,6 @@ import (
 
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
-	"github.com/CosmWasm/wasmd/x/wasm"
-
-	"github.com/neutron-org/neutron/internal/sudo"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -38,9 +34,8 @@ type (
 		scopedKeeper  capabilitykeeper.ScopedKeeper
 		channelKeeper icatypes.ChannelKeeper
 
-		icaControllerKeeper icacontrollerkeeper.Keeper
-		wasmKeeper          *wasm.Keeper
-		sudoHandler         sudo.Handler
+		icaControllerKeeper   icacontrollerkeeper.Keeper
+		contractmanagerKeeper types.ContractManagerKeeper
 	}
 )
 
@@ -50,10 +45,9 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	paramstore paramtypes.Subspace,
 	channelKeeper icatypes.ChannelKeeper,
-
-	wasmKeeper *wasm.Keeper,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
+	contractmanagerKeeper types.ContractManagerKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !paramstore.HasKeyTable() {
@@ -67,10 +61,9 @@ func NewKeeper(
 		paramstore:    paramstore,
 		channelKeeper: channelKeeper,
 
-		icaControllerKeeper: icaControllerKeeper,
-		scopedKeeper:        scopedKeeper,
-		wasmKeeper:          wasmKeeper,
-		sudoHandler:         sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		icaControllerKeeper:   icaControllerKeeper,
+		scopedKeeper:          scopedKeeper,
+		contractmanagerKeeper: contractmanagerKeeper,
 	}
 }
 
