@@ -1,17 +1,20 @@
 package cli_test
 
 import (
+	"crypto/rand"
 	"fmt"
 	"strconv"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/stretchr/testify/require"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/testutil/contractmanager/network"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager/client/cli"
@@ -27,9 +30,14 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 	state := types.GenesisState{}
 	require.NoError(t, cfg.Codec.UnmarshalJSON(cfg.GenesisState[types.ModuleName], &state))
 
+	pubBz := make([]byte, ed25519.PubKeySize)
+	pub := &ed25519.PubKey{Key: pubBz}
+
 	for i := 0; i < n; i++ {
+		rand.Read(pub.Key)
+		acc := sdktypes.AccAddress(pub.Address())
 		failure := types.Failure{
-			Address: strconv.Itoa(i),
+			Address: acc.String(),
 		}
 		nullify.Fill(&failure)
 		state.FailureList = append(state.FailureList, failure)
