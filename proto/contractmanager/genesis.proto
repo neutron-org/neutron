@@ -13,7 +13,7 @@ message Failure {
   // id of the failure under specific address
   uint64 id = 2;
   // ACK id to restore
-  uint64 ackId = 3; 
+  uint64 ackID = 3; 
   // Ackonowledgement type
   string ackType = 4; 
 }

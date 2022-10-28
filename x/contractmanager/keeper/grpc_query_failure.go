@@ -31,7 +31,6 @@ func (k Keeper) AllFailures(c context.Context, req *types.QueryAllFailureRequest
 		failures = append(failures, failure)
 		return nil
 	})
-
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

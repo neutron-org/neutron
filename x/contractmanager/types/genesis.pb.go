@@ -29,7 +29,7 @@ type Failure struct {
 	// id of the failure under specific address
 	Id uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
 	// ACK id to restore
-	AckId uint64 `protobuf:"varint,3,opt,name=ackId,proto3" json:"ackId,omitempty"`
+	AckId uint64 `protobuf:"varint,3,opt,name=ackID,proto3" json:"ackID,omitempty"`
 	// Ackonowledgement type
 	AckType string `protobuf:"bytes,4,opt,name=ackType,proto3" json:"ackType,omitempty"`
 }

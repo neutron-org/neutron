@@ -34,7 +34,6 @@ func CmdAllFailures() *cobra.Command {
 			}
 
 			return clientCtx.PrintProto(res)
-
 		},
 	}
 

@@ -18,19 +18,16 @@ const (
 
 const (
 	prefixContractFailures = iota + 1
-	prefixNextFailureId
 )
 
-var (
-	ContractFailuresKey = []byte{prefixContractFailures}
-	NextFailureIdKey    = []byte{prefixNextFailureId}
-)
+var ContractFailuresKey = []byte{prefixContractFailures}
 
 // GetFailureKeyPrefix returns the store key for the failures of the specific address
 func GetFailureKeyPrefix(
 	address string,
 ) []byte {
-	key := append(ContractFailuresKey, []byte(address)...)
+	key := ContractFailuresKey
+	key = append(key, []byte(address)...)
 	return append(key, []byte("/")...)
 }
 
@@ -41,11 +38,4 @@ func GetFailureKey(
 ) []byte {
 	key := GetFailureKeyPrefix(address)
 	return append(key, sdk.Uint64ToBigEndian(offset)...)
-}
-
-// GetFailureKeyPrefix returns the store key for the failures of the specific address
-func GetNextFailureIdKey(
-	address string,
-) []byte {
-	return append(NextFailureIdKey, []byte(address)...)
 }
