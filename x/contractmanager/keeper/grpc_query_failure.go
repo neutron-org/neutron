@@ -38,7 +38,7 @@ func (k Keeper) AllFailures(c context.Context, req *types.QueryAllFailureRequest
 	return &types.QueryAllFailureResponse{Failures: failures, Pagination: pageRes}, nil
 }
 
-func (k Keeper) Failure(c context.Context, req *types.QueryGetFailureRequest) (*types.QueryGetFailureResponse, error) {
+func (k Keeper) Failure(c context.Context, req *types.QueryGetFailuresByAddressRequest) (*types.QueryGetFailuresByAddressResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -53,5 +53,5 @@ func (k Keeper) Failure(c context.Context, req *types.QueryGetFailureRequest) (*
 		req.Address,
 	)
 
-	return &types.QueryGetFailureResponse{Failures: val}, nil
+	return &types.QueryGetFailuresByAddressResponse{Failures: val}, nil
 }
