@@ -13,9 +13,9 @@ message Failure {
   // id of the failure under specific address
   uint64 id = 2;
   // ACK id to restore
-  uint64 ackID = 3; 
+  uint64 ack_id = 3; 
   // Ackonowledgement type
-  string ackType = 4; 
+  string ack_type = 4; 
 }
 
 
@@ -23,6 +23,6 @@ message Failure {
 message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
   // List of the contract failures
-  repeated Failure failureList = 2 [(gogoproto.nullable) = false];
+  repeated Failure failures_list = 2 [(gogoproto.nullable) = false];
   // this line is used by starport scaffolding # genesis/proto/state
 }

@@ -50,9 +50,9 @@ func NewKeeper(
 	contractmanagerKeeper wrappedtypes.ContractManagerKeeper,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
+		channelKeeper: channelKeeper,
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
 			authKeeper, bankKeeper, scopedKeeper),
-		channelKeeper:         channelKeeper,
 		ContractmanagerKeeper: contractmanagerKeeper,
 	}
 }

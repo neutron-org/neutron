@@ -10,7 +10,7 @@ const DefaultIndex uint64 = 1
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		FailureList: []Failure{},
+		FailuresList: []Failure{},
 		// this line is used by starport scaffolding # genesis/types/default
 		Params: DefaultParams(),
 	}
@@ -22,7 +22,7 @@ func (gs GenesisState) Validate() error {
 	// Check for duplicated index in failure
 	failureIndexMap := make(map[string]struct{})
 
-	for _, elem := range gs.FailureList {
+	for _, elem := range gs.FailuresList {
 		index := string(GetFailureKey(elem.Address, elem.Id))
 		if _, ok := failureIndexMap[index]; ok {
 			return fmt.Errorf("duplicated address for failure")

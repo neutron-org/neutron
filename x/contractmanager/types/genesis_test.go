@@ -21,7 +21,7 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "valid genesis state",
 			genState: &types.GenesisState{
-				FailureList: []types.Failure{
+				FailuresList: []types.Failure{
 					{
 						Address: "address1",
 						Id:      1,
@@ -42,7 +42,7 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "duplicated failure",
 			genState: &types.GenesisState{
-				FailureList: []types.Failure{
+				FailuresList: []types.Failure{
 					{
 						Address: "address1",
 						Id:      1,

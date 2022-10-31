@@ -37,12 +37,12 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 			Address: acc.String(),
 		}
 		nullify.Fill(&failure)
-		state.FailureList = append(state.FailureList, failure)
+		state.FailuresList = append(state.FailuresList, failure)
 	}
 	buf, err := cfg.Codec.MarshalJSON(&state)
 	require.NoError(t, err)
 	cfg.GenesisState[types.ModuleName] = buf
-	return network.New(t, cfg), state.FailureList
+	return network.New(t, cfg), state.FailuresList
 }
 
 func TestShowFailure(t *testing.T) {

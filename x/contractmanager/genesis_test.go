@@ -14,7 +14,7 @@ func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
 
-		FailureList: []types.Failure{
+		FailuresList: []types.Failure{
 			{
 				Address: "address1",
 				Id:      1,
@@ -35,6 +35,6 @@ func TestGenesis(t *testing.T) {
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
 
-	require.ElementsMatch(t, genesisState.FailureList, got.FailureList)
+	require.ElementsMatch(t, genesisState.FailuresList, got.FailuresList)
 	// this line is used by starport scaffolding # genesis/test/assert
 }
