@@ -21,9 +21,6 @@ import (
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
-// Prevent strconv unused error
-var _ = strconv.IntSize
-
 func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.Failure) {
 	t.Helper()
 	cfg := network.DefaultConfig()

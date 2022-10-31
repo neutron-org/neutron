@@ -13,7 +13,6 @@ func CmdAllFailures() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "all-failures",
 		Short: "shows all failures",
-		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
