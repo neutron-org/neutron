@@ -1,30 +1,43 @@
 package types
 
 import (
+	"fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
 	"gopkg.in/yaml.v2"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
+var (
+	KeyFees     = []byte("FEES")
+	DefaultFees = ibcfeetypes.Fee{
+		RecvFee:    sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
+	}
+)
+
 // ParamKeyTable the param key table for launch module
 func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
+	return paramtypes.NewKeyTable(paramtypes.NewParamSetPair(KeyFees, ibcfeetypes.Fee{}, validateFee))
 }
 
 // NewParams creates a new Params instance
-func NewParams() Params {
-	return Params{}
+func NewParams(minfee *ibcfeetypes.Fee) Params {
+	return Params{MinPayerFee: minfee}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams()
+	return NewParams(&DefaultFees)
 }
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{}
+	return paramtypes.ParamSetPairs{paramtypes.NewParamSetPair(KeyFees, p.MinPayerFee, validateFee)}
 }
 
 // Validate validates the set of params
@@ -36,4 +49,17 @@ func (p Params) Validate() error {
 func (p Params) String() string {
 	out, _ := yaml.Marshal(p)
 	return string(out)
+}
+
+func validateFee(i interface{}) error {
+	v, ok := i.(ibcfeetypes.Fee)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v.RecvFee.IsZero() || v.AckFee.IsZero() || v.TimeoutFee.IsZero() {
+		return fmt.Errorf("fee can't be zero: %s", v)
+	}
+
+	return nil
 }

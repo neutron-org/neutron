@@ -2,11 +2,13 @@ syntax = "proto3";
 package neutronorg.neutron.fee;
 
 import "gogoproto/gogo.proto";
+import "ibc/applications/fee/v1/fee.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/fee/types";
 
 // Params defines the parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
-  
+
+  ibc.applications.fee.v1.Fee min_payer_fee = 1;
 }

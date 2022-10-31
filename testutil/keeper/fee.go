@@ -9,12 +9,13 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/neutron-org/neutron/x/fee/keeper"
-	"github.com/neutron-org/neutron/x/fee/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
+
+	"github.com/neutron-org/neutron/x/fee/keeper"
+	"github.com/neutron-org/neutron/x/fee/types"
 )
 
 func FeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
@@ -41,6 +42,8 @@ func FeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
+		nil,
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
