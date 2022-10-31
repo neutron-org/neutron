@@ -52,21 +52,7 @@ func flattenFailures(items [][]types.Failure) []types.Failure {
 	return flattenItems
 }
 
-func TestFailureGet(t *testing.T) {
-	keeper, ctx := keepertest.ContractmanagerKeeper(t)
-	items := createNFailure(keeper, ctx, 10, 4)
-	for _, item := range items {
-		rst := keeper.GetContractFailures(ctx,
-			item[0].Address,
-		)
-		require.Equal(t,
-			nullify.Fill(item),
-			nullify.Fill(&rst),
-		)
-	}
-}
-
-func TestFailureGetAll(t *testing.T) {
+func TestGetAllFailures(t *testing.T) {
 	keeper, ctx := keepertest.ContractmanagerKeeper(t)
 	items := createNFailure(keeper, ctx, 10, 4)
 	flattenItems := flattenFailures(items)

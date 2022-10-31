@@ -49,13 +49,18 @@ func CmdContractFailures() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
 			queryClient := types.NewQueryClient(clientCtx)
 
 			argIndex := args[0]
 
-			params := &types.QueryGetFailureRequest{
-				Address: argIndex,
+			params := &types.QueryGetFailuresByAddressRequest{
+				Address:    argIndex,
+				Pagination: pageReq,
 			}
 
 			res, err := queryClient.Failure(context.Background(), params)

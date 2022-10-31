@@ -33,21 +33,21 @@ func TestFailureQuerySingle(t *testing.T) {
 			request: &types.QueryGetFailuresByAddressRequest{
 				Address: msgs[0][0].Address,
 			},
-			response: &types.QueryGetFailuresByAddressResponse{Failures: msgs[0]},
+			response: &types.QueryGetFailuresByAddressResponse{Failures: msgs[0], Pagination: &query.PageResponse{Total: 2}},
 		},
 		{
 			desc: "Second",
 			request: &types.QueryGetFailuresByAddressRequest{
 				Address: msgs[1][0].Address,
 			},
-			response: &types.QueryGetFailuresByAddressResponse{Failures: msgs[1]},
+			response: &types.QueryGetFailuresByAddressResponse{Failures: msgs[1], Pagination: &query.PageResponse{Total: 2}},
 		},
 		{
 			desc: "KeyIsAbsent",
 			request: &types.QueryGetFailuresByAddressRequest{
 				Address: "cosmos132juzk0gdmwuxvx4phug7m3ymyatxlh9m9paea",
 			},
-			response: &types.QueryGetFailuresByAddressResponse{Failures: []types.Failure{}},
+			response: &types.QueryGetFailuresByAddressResponse{Failures: []types.Failure{}, Pagination: &query.PageResponse{Total: 0}},
 		},
 		{
 			desc: "InvalidAddress",

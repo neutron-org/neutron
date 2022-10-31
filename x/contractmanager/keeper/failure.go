@@ -37,22 +37,6 @@ func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
 	return 0
 }
 
-// GetContractFailures returns failures of the specific contract
-func (k Keeper) GetContractFailures(ctx sdk.Context, address string) (list []types.Failure) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetFailureKeyPrefix(address))
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
-
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var val types.Failure
-		k.cdc.MustUnmarshal(iterator.Value(), &val)
-		list = append(list, val)
-	}
-
-	return
-}
-
 // GetAllFailure returns all failures
 func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ContractFailuresKey)

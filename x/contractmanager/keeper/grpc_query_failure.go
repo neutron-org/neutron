@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,12 +47,25 @@ func (k Keeper) Failure(c context.Context, req *types.QueryGetFailuresByAddressR
 		return nil, status.Errorf(codes.InvalidArgument, "failed to parse address: %s", req.Address)
 	}
 
+	var failures []types.Failure
 	ctx := sdk.UnwrapSDKContext(c)
 
-	val := k.GetContractFailures(
-		ctx,
-		req.Address,
-	)
+	store := ctx.KVStore(k.storeKey)
+	addressFailureStore := prefix.NewStore(store, types.GetFailureKeyPrefix(req.Address))
+	pageRes, err := query.Paginate(addressFailureStore, req.Pagination, func(key []byte, value []byte) error {
+		var failure types.Failure
+		if err := k.cdc.Unmarshal(value, &failure); err != nil {
+			return err
+		}
 
-	return &types.QueryGetFailuresByAddressResponse{Failures: val}, nil
+		failures = append(failures, failure)
+		return nil
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	fmt.Println(pageRes)
+
+	return &types.QueryGetFailuresByAddressResponse{Failures: failures, Pagination: pageRes}, nil
 }
