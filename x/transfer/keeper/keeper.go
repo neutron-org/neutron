@@ -8,12 +8,11 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ibcfeekeeper "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/keeper"
 	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
 	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/internal"
+	feekeeper "github.com/neutron-org/neutron/x/fee/keeper"
 	wrappedtypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
@@ -21,11 +20,18 @@ import (
 type KeeperTransferWrapper struct {
 	keeper.Keeper
 	channelKeeper types.ChannelKeeper
-	ibcfeeKeeper  ibcfeekeeper.Keeper
+	FeeKeeper     *feekeeper.Keeper
 }
 
 func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		k.Logger(ctx).Debug("Transfer: failed to parse sender address", "sender", msg.Sender)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+	}
+
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, msg.SourcePort, msg.SourceChannel)
 	if !found {
 		return nil, sdkerrors.Wrapf(
@@ -38,12 +44,11 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "fee can't be nil")
 	}
 
-	if err := internal.PayPacketFee(ctx, k.ibcfeeKeeper, msg.Sender, msg.SourceChannel, msg.SourcePort, *msg.PayerFee); err != nil {
-		return nil, err
+	if err := k.FeeKeeper.LockFees(ctx, senderAddr, channeltypes.NewPacketId(msg.SourcePort, msg.SourceChannel, sequence), msg.PayerFee); err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
 	}
 
-	_, err := k.Keeper.Transfer(goCtx, types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp))
-	if err != nil {
+	if _, err := k.Keeper.Transfer(goCtx, types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp)); err != nil {
 		return nil, err
 	}
 
@@ -58,12 +63,12 @@ func NewKeeper(
 	cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Subspace,
 	ics4Wrapper types.ICS4Wrapper, channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
-	ibcfeeKeeper ibcfeekeeper.Keeper,
+	feeKeeper *feekeeper.Keeper,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
 			authKeeper, bankKeeper, scopedKeeper),
 		channelKeeper: channelKeeper,
-		ibcfeeKeeper:  ibcfeeKeeper,
+		FeeKeeper:     feeKeeper,
 	}
 }

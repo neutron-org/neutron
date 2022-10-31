@@ -114,16 +114,16 @@ func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
-	_relayer sdk.AccAddress,
+	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleAcknowledgement(ctx, packet, acknowledgement)
+	return im.keeper.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
-	_relayer sdk.AccAddress,
+	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleTimeout(ctx, packet)
+	return im.keeper.HandleTimeout(ctx, packet, relayer)
 }

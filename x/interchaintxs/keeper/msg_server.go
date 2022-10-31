@@ -12,7 +12,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 
-	"github.com/neutron-org/neutron/internal"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -144,8 +143,8 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrapf(ictxtypes.ErrInvalidPayerFee, "fee can't be nil")
 	}
 
-	if err := internal.PayPacketFee(ctx, k.ibcfeeKeeper, msg.FromAddress, channelID, portID, *msg.PayerFee); err != nil {
-		return nil, err
+	if err := k.feeKeeper.LockFees(ctx, senderAddr, channeltypes.NewPacketId(portID, channelID, sequence), msg.PayerFee); err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %v", msg)
 	}
 
 	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(msg.Timeout) * time.Second).UnixNano()

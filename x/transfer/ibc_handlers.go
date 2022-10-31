@@ -10,7 +10,7 @@ import (
 )
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
-func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) error {
+func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
@@ -41,13 +41,15 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
+	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+
 	return nil
 }
 
 // HandleTimeout passes the timeout data to the appropriate contract via a Sudo call.
 // Since all ICA channels are ORDERED, a single timeout shuts down a channel.
 // The affected zone should be paused after a timeout.
-func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) error {
+func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	var data transfertypes.FungibleTokenPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
@@ -63,6 +65,8 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) e
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet timeout")
 	}
+
+	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	return nil
 }

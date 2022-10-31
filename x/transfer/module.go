@@ -21,17 +21,19 @@ import (
 */
 
 type IBCModule struct {
-	keeper      keeper.Keeper
-	sudoHandler sudo.Handler
+	wrappedKeeper wrapkeeper.KeeperTransferWrapper
+	keeper        keeper.Keeper
+	sudoHandler   sudo.Handler
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
 func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, wasmKeeper *wasm.Keeper) IBCModule {
 	return IBCModule{
-		keeper:      k.Keeper,
-		IBCModule:   transfer.NewIBCModule(k.Keeper),
-		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		wrappedKeeper: k,
+		keeper:        k.Keeper,
+		IBCModule:     transfer.NewIBCModule(k.Keeper),
+		sudoHandler:   sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
 	}
 }
 
@@ -47,7 +49,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 	if err != nil {
 		return sdkerrors.Wrap(err, "failed to process original OnAcknowledgementPacket")
 	}
-	return im.HandleAcknowledgement(ctx, packet, acknowledgement)
+	return im.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
@@ -60,7 +62,7 @@ func (im IBCModule) OnTimeoutPacket(
 	if err != nil {
 		return sdkerrors.Wrap(err, "failed to process original OnTimeoutPacket")
 	}
-	return im.HandleTimeout(ctx, packet)
+	return im.HandleTimeout(ctx, packet, relayer)
 }
 
 type AppModule struct {

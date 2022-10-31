@@ -5,9 +5,9 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	ibcfeekeeper "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/keeper"
 
 	"github.com/neutron-org/neutron/internal/sudo"
+	feekeeper "github.com/neutron-org/neutron/x/fee/keeper"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -37,7 +37,7 @@ type (
 		paramstore    paramtypes.Subspace
 		scopedKeeper  capabilitykeeper.ScopedKeeper
 		channelKeeper icatypes.ChannelKeeper
-		ibcfeeKeeper  ibcfeekeeper.Keeper
+		feeKeeper     *feekeeper.Keeper
 
 		icaControllerKeeper icacontrollerkeeper.Keeper
 		wasmKeeper          *wasm.Keeper
@@ -54,7 +54,7 @@ func NewKeeper(
 	wasmKeeper *wasm.Keeper,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
-	ibcfeeKeeper ibcfeekeeper.Keeper,
+	feeKeeper *feekeeper.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !paramstore.HasKeyTable() {
@@ -72,7 +72,7 @@ func NewKeeper(
 		scopedKeeper:        scopedKeeper,
 		wasmKeeper:          wasmKeeper,
 		sudoHandler:         sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
-		ibcfeeKeeper:        ibcfeeKeeper,
+		feeKeeper:           feeKeeper,
 	}
 }
 

@@ -13,7 +13,7 @@ import (
 )
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
-func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte) error {
+func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleAcknowledgment)
 
 	k.Logger(ctx).Debug("Handling acknowledgement")
@@ -38,6 +38,8 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		_, err = k.sudoHandler.SudoResponse(ctx, icaOwner.GetContract(), packet, ack.GetResult())
 	}
 
+	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+
 	if err != nil {
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet acknowledgement")
@@ -49,7 +51,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 // HandleTimeout passes the timeout data to the appropriate contract via a Sudo call.
 // Since all ICA channels are ORDERED, a single timeout shuts down a channel.
 // The affected zone should be paused after a timeout.
-func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) error {
+func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleTimeout)
 
 	icaOwner, err := types.ICAOwnerFromPort(packet.SourcePort)
@@ -64,6 +66,8 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) erro
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet timeout")
 	}
+
+	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	return nil
 }
