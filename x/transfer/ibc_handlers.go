@@ -30,17 +30,19 @@ func (im IBCModule) outOfGasRecovery(
 		}
 
 		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
-		im.ContractmanagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
+		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
 
 	}
 }
 
 func (im IBCModule) createCachedContext(ctx sdk.Context) (cacheCtx sdk.Context, writeFn func(), newGasMeter sdk.GasMeter) {
 	gasLeft := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
-	newLimit := gasLeft - GasReserve
 
-	if newLimit > gasLeft {
+	var newLimit uint64
+	if gasLeft < GasReserve {
 		newLimit = 0
+	} else {
+		newLimit = gasLeft - GasReserve
 	}
 
 	newGasMeter = sdk.NewGasMeter(newLimit)
@@ -73,16 +75,16 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data)
 
 	if ack.Success() {
-		_, err = im.ContractmanagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
+		_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
 	} else {
 		// Actually we have only one kind of error returned from acknowledgement
 		// maybe later we'll retrieve actual errors from events
 		im.keeper.Logger(cacheCtx).Debug(ack.GetError(), "CheckTx", cacheCtx.IsCheckTx())
-		_, err = im.ContractmanagerKeeper.SudoError(cacheCtx, senderAddress, packet, ack.GetError())
+		_, err = im.ContractManagerKeeper.SudoError(cacheCtx, senderAddress, packet, ack.GetError())
 	}
 
 	if err != nil {
-		im.ContractmanagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
+		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		writeFn()
@@ -111,9 +113,9 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) e
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
 	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data)
 
-	_, err = im.ContractmanagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
+	_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	if err != nil {
-		im.ContractmanagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "timeout")
+		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "timeout")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
 		writeFn()

@@ -35,7 +35,7 @@ type (
 		channelKeeper icatypes.ChannelKeeper
 
 		icaControllerKeeper   icacontrollerkeeper.Keeper
-		contractmanagerKeeper types.ContractManagerKeeper
+		contractManagerKeeper types.ContractManagerKeeper
 	}
 )
 
@@ -47,7 +47,7 @@ func NewKeeper(
 	channelKeeper icatypes.ChannelKeeper,
 	icaControllerKeeper icacontrollerkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
-	contractmanagerKeeper types.ContractManagerKeeper,
+	contractManagerKeeper types.ContractManagerKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !paramstore.HasKeyTable() {
@@ -63,7 +63,7 @@ func NewKeeper(
 
 		icaControllerKeeper:   icaControllerKeeper,
 		scopedKeeper:          scopedKeeper,
-		contractmanagerKeeper: contractmanagerKeeper,
+		contractManagerKeeper: contractManagerKeeper,
 	}
 }
 

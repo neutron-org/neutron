@@ -17,7 +17,7 @@ import (
 	tmdb "github.com/tendermint/tm-db"
 )
 
-func ContractmanagerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func ContractManagerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -34,7 +34,7 @@ func ContractmanagerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		types.Amino,
 		storeKey,
 		memStoreKey,
-		"ContractmanagerParams",
+		"ContractManagerParams",
 	)
 	k := keeper.NewKeeper(
 		cdc,

@@ -20,7 +20,7 @@ import (
 
 type IBCModule struct {
 	keeper                keeper.Keeper
-	ContractmanagerKeeper neutrontypes.ContractManagerKeeper
+	ContractManagerKeeper neutrontypes.ContractManagerKeeper
 
 	transfer.IBCModule
 }
@@ -29,7 +29,7 @@ type IBCModule struct {
 func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, wasmKeeper *wasm.Keeper) IBCModule {
 	return IBCModule{
 		keeper:                k.Keeper,
-		ContractmanagerKeeper: k.ContractmanagerKeeper,
+		ContractManagerKeeper: k.ContractManagerKeeper,
 		IBCModule:             transfer.NewIBCModule(k.Keeper),
 	}
 }

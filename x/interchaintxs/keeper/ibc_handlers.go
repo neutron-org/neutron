@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	// We need to reserve this amount of gas on the context gas meter in order to add contract failure to keeper
+	// GasReserve is the amount of gas on the context gas meter we need to reserve in order to add contract failure to keeper
 	GasReserve = 15000
 )
 
@@ -31,17 +31,19 @@ func (k *Keeper) outOfGasRecovery(
 		}
 
 		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
-		k.contractmanagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
+		k.contractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
 
 	}
 }
 
 func (k *Keeper) createCachedContext(ctx sdk.Context) (cacheCtx sdk.Context, writeFn func(), newGasMeter sdk.GasMeter) {
 	gasLeft := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
-	newLimit := gasLeft - GasReserve
 
-	if newLimit > gasLeft {
+	var newLimit uint64
+	if gasLeft < GasReserve {
 		newLimit = 0
+	} else {
+		newLimit = gasLeft - GasReserve
 	}
 
 	newGasMeter = sdk.NewGasMeter(newLimit)
@@ -78,13 +80,13 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	// maybe later we'll retrieve actual errors from events
 	errorText := ack.GetError()
 	if errorText != "" {
-		_, err = k.contractmanagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
+		_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
 	} else {
-		_, err = k.contractmanagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
+		_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
 	}
 
 	if err != nil {
-		k.contractmanagerKeeper.AddContractFailure(ctx, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
+		k.contractManagerKeeper.AddContractFailure(ctx, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
 		writeFn()
@@ -111,9 +113,9 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet) erro
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
 	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet)
 
-	_, err = k.contractmanagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
+	_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
 	if err != nil {
-		k.contractmanagerKeeper.AddContractFailure(ctx, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
+		k.contractManagerKeeper.AddContractFailure(ctx, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 	} else {
 		writeFn()
@@ -142,7 +144,7 @@ func (k *Keeper) HandleChanOpenAck(
 		return sdkerrors.Wrap(err, "failed to get ica owner from port")
 	}
 
-	_, err = k.contractmanagerKeeper.SudoOnChanOpenAck(ctx, icaOwner.GetContract(), contractmanagertypes.OpenAckDetails{
+	_, err = k.contractManagerKeeper.SudoOnChanOpenAck(ctx, icaOwner.GetContract(), contractmanagertypes.OpenAckDetails{
 		PortID:                portID,
 		ChannelID:             channelID,
 		CounterpartyChannelID: counterpartyChannelID,

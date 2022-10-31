@@ -53,7 +53,7 @@ func flattenFailures(items [][]types.Failure) []types.Failure {
 }
 
 func TestGetAllFailures(t *testing.T) {
-	keeper, ctx := keepertest.ContractmanagerKeeper(t)
+	keeper, ctx := keepertest.ContractManagerKeeper(t)
 	items := createNFailure(keeper, ctx, 10, 4)
 	flattenItems := flattenFailures(items)
 

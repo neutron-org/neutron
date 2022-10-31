@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetParams(t *testing.T) {
-	k, ctx := testkeeper.ContractmanagerKeeper(t)
+	k, ctx := testkeeper.ContractManagerKeeper(t)
 	params := types.DefaultParams()
 
 	k.SetParams(ctx, params)

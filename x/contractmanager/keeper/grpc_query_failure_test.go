@@ -19,7 +19,7 @@ import (
 var _ = strconv.IntSize
 
 func TestFailureQuerySingle(t *testing.T) {
-	keeper, ctx := keepertest.ContractmanagerKeeper(t)
+	keeper, ctx := keepertest.ContractManagerKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNFailure(keeper, ctx, 2, 2)
 	for _, tc := range []struct {
@@ -77,7 +77,7 @@ func TestFailureQuerySingle(t *testing.T) {
 }
 
 func TestFailureQueryPaginated(t *testing.T) {
-	keeper, ctx := keepertest.ContractmanagerKeeper(t)
+	keeper, ctx := keepertest.ContractManagerKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNFailure(keeper, ctx, 5, 3)
 	flattenItems := flattenFailures(msgs)

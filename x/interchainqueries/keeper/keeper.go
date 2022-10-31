@@ -29,7 +29,7 @@ type (
 		paramstore            paramtypes.Subspace
 		ibcKeeper             *ibckeeper.Keeper
 		bank                  types.BankKeeper
-		contractmanagerKeeper types.ContractManagerKeeper
+		contractManagerKeeper types.ContractManagerKeeper
 	}
 )
 
@@ -40,7 +40,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
 	bank types.BankKeeper,
-	contractmanagerKeeper types.ContractManagerKeeper,
+	contractManagerKeeper types.ContractManagerKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -54,7 +54,7 @@ func NewKeeper(
 		paramstore:            ps,
 		ibcKeeper:             ibcKeeper,
 		bank:                  bank,
-		contractmanagerKeeper: contractmanagerKeeper,
+		contractManagerKeeper: contractManagerKeeper,
 	}
 }
 

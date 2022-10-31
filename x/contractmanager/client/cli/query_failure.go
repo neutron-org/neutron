@@ -45,7 +45,7 @@ func CmdAllFailures() *cobra.Command {
 func CmdContractFailures() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "contract-failures [address]",
-		Short: "shows a failures for specific contract address",
+		Short: "shows failures for specific contract address",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -72,6 +72,7 @@ func CmdContractFailures() *cobra.Command {
 		},
 	}
 
+	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd

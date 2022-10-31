@@ -13,7 +13,7 @@ const (
 	RouterKey = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_contractmanager"
+	MemStoreKey = "mem_" + ModuleName
 )
 
 const (
