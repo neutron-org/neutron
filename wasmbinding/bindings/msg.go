@@ -28,12 +28,12 @@ type NeutronMsg struct {
 
 // SubmitTx submits interchain transaction on a remote chain.
 type SubmitTx struct {
-	ConnectionId        string          `json:"connection_id"`
-	InterchainAccountId string          `json:"interchain_account_id"`
-	Msgs                []ProtobufAny   `json:"msgs"`
-	Memo                string          `json:"memo"`
-	Timeout             uint64          `json:"timeout"`
-	PayerFee            ibcfeetypes.Fee `json:"payer_fee"`
+	ConnectionId        string           `json:"connection_id"`
+	InterchainAccountId string           `json:"interchain_account_id"`
+	Msgs                []ProtobufAny    `json:"msgs"`
+	Memo                string           `json:"memo"`
+	Timeout             uint64           `json:"timeout"`
+	PayerFee            *ibcfeetypes.Fee `json:"payer_fee"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.

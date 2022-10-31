@@ -4,7 +4,7 @@ import sdk "github.com/cosmos/cosmos-sdk/types"
 
 const (
 	// ModuleName defines the module name
-	ModuleName = "fee"
+	ModuleName = "feerefunder"
 
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
@@ -13,7 +13,7 @@ const (
 	RouterKey = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_fee"
+	MemStoreKey = "mem_feerefunder"
 )
 
 const (

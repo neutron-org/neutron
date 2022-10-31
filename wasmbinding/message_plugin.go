@@ -236,7 +236,7 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		Memo:                submitTx.Memo,
 		InterchainAccountId: submitTx.InterchainAccountId,
 		Timeout:             submitTx.Timeout,
-		PayerFee:            &submitTx.PayerFee,
+		PayerFee:            submitTx.PayerFee,
 	}
 	for _, msg := range submitTx.Msgs {
 		tx.Msgs = append(tx.Msgs, &types.Any{
