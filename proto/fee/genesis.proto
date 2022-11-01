@@ -16,5 +16,5 @@ message GenesisState {
 
 message FeeInfo {
   string payer = 1;
-  ibc.applications.fee.v1.Fee payer_fee = 2;
+  ibc.applications.fee.v1.Fee payer_fee = 2 [(gogoproto.nullable) = false];
 }

@@ -56,7 +56,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID channeltypes.PacketId, fee *ibcfeetypes.Fee) error {
+func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID channeltypes.PacketId, fee ibcfeetypes.Fee) error {
 	store := ctx.KVStore(k.storeKey)
 
 	if _, ok := k.ibcKeeper.ChannelKeeper.GetChannel(ctx, packetID.PortId, packetID.ChannelId); !ok {

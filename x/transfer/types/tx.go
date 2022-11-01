@@ -1,17 +1,12 @@
 package types
 
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (msg *MsgTransfer) ValidateBasic() error {
-	if msg.PayerFee == nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "fee can't be nil")
-	}
-
 	sdkMsg := types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp)
 	return sdkMsg.ValidateBasic()
 }
