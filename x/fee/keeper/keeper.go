@@ -63,6 +63,10 @@ func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID channel
 		return sdkerrors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
 	}
 
+	if err := k.checkFees(ctx, fee); err != nil {
+		return sdkerrors.Wrapf(err, "failed to lock fees")
+	}
+
 	feeInfo := types.FeeInfo{
 		Payer:    payer.String(),
 		PayerFee: fee,
@@ -85,6 +89,7 @@ func (k Keeper) distributeFee(ctx sdk.Context, receiver, refundAccAddress sdk.Ac
 		// then attempt to refund the fee to the original sender
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, refundAccAddress, fee)
 		if err != nil {
+			k.Logger(ctx).Error("error refunding fee to the original payer", "payer", refundAccAddress, "fee", fee)
 			return sdkerrors.Wrapf(err, "error refunding fee to the original payer: %s", refundAccAddress.String())
 		}
 	}
@@ -180,4 +185,22 @@ func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID channeltypes.PacketId) {
 	store := ctx.KVStore(k.storeKey)
 
 	store.Delete(types.GetFeePacketKey(packetID.ChannelId, packetID.PortId, packetID.Sequence))
+}
+
+func (k Keeper) checkFees(ctx sdk.Context, fees ibcfeetypes.Fee) error {
+	params := k.GetParams(ctx)
+
+	if fees.TimeoutFee.IsAllLT(params.MinPayerFee.TimeoutFee) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min governance set timeout fee: %v < %v", fees.TimeoutFee, params.MinPayerFee.TimeoutFee)
+	}
+
+	if fees.RecvFee.IsAllLT(params.MinPayerFee.RecvFee) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided recv fee is less than min governance set recv fee: %v < %v", fees.RecvFee, params.MinPayerFee.RecvFee)
+	}
+
+	if fees.AckFee.IsAllLT(params.MinPayerFee.AckFee) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", fees.AckFee, params.MinPayerFee.AckFee)
+	}
+
+	return nil
 }
