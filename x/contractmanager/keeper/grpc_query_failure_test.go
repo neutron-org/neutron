@@ -24,34 +24,34 @@ func TestFailureQuerySingle(t *testing.T) {
 	msgs := createNFailure(keeper, ctx, 2, 2)
 	for _, tc := range []struct {
 		desc     string
-		request  *types.QueryGetFailuresByAddressRequest
-		response *types.QueryGetFailuresByAddressResponse
+		request  *types.QueryFailuresRequest
+		response *types.QueryFailuresResponse
 		err      error
 	}{
 		{
 			desc: "First",
-			request: &types.QueryGetFailuresByAddressRequest{
+			request: &types.QueryFailuresRequest{
 				Address: msgs[0][0].Address,
 			},
-			response: &types.QueryGetFailuresByAddressResponse{Failures: msgs[0], Pagination: &query.PageResponse{Total: 2}},
+			response: &types.QueryFailuresResponse{Failures: msgs[0], Pagination: &query.PageResponse{Total: 2}},
 		},
 		{
 			desc: "Second",
-			request: &types.QueryGetFailuresByAddressRequest{
+			request: &types.QueryFailuresRequest{
 				Address: msgs[1][0].Address,
 			},
-			response: &types.QueryGetFailuresByAddressResponse{Failures: msgs[1], Pagination: &query.PageResponse{Total: 2}},
+			response: &types.QueryFailuresResponse{Failures: msgs[1], Pagination: &query.PageResponse{Total: 2}},
 		},
 		{
 			desc: "KeyIsAbsent",
-			request: &types.QueryGetFailuresByAddressRequest{
+			request: &types.QueryFailuresRequest{
 				Address: "cosmos132juzk0gdmwuxvx4phug7m3ymyatxlh9m9paea",
 			},
-			response: &types.QueryGetFailuresByAddressResponse{Failures: []types.Failure{}, Pagination: &query.PageResponse{Total: 0}},
+			response: &types.QueryFailuresResponse{Failures: []types.Failure{}, Pagination: &query.PageResponse{Total: 0}},
 		},
 		{
 			desc: "InvalidAddress",
-			request: &types.QueryGetFailuresByAddressRequest{
+			request: &types.QueryFailuresRequest{
 				Address: "wrong_address",
 			},
 			err: status.Error(codes.InvalidArgument, "failed to parse address: wrong_address"),
@@ -62,7 +62,7 @@ func TestFailureQuerySingle(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			response, err := keeper.Failure(wctx, tc.request)
+			response, err := keeper.Failures(wctx, tc.request)
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 			} else {
@@ -82,8 +82,8 @@ func TestFailureQueryPaginated(t *testing.T) {
 	msgs := createNFailure(keeper, ctx, 5, 3)
 	flattenItems := flattenFailures(msgs)
 
-	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllFailureRequest {
-		return &types.QueryAllFailureRequest{
+	request := func(next []byte, offset, limit uint64, total bool) *types.QueryFailuresRequest {
+		return &types.QueryFailuresRequest{
 			Pagination: &query.PageRequest{
 				Key:        next,
 				Offset:     offset,

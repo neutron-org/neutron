@@ -11,8 +11,9 @@ import (
 
 func CmdAllFailures() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "all-failures",
-		Short: "shows all failures",
+		Use:   "failures [address]",
+		Short: "shows all failures or failures from specific contract address",
+		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
@@ -23,47 +24,17 @@ func CmdAllFailures() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryAllFailureRequest{
+			address := ""
+			if len(args) > 0 {
+				address = args[0]
+			}
+
+			params := &types.QueryFailuresRequest{
+				Address:    address,
 				Pagination: pageReq,
 			}
 
 			res, err := queryClient.AllFailures(context.Background(), params)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
-	flags.AddQueryFlagsToCmd(cmd)
-
-	return cmd
-}
-
-func CmdContractFailures() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "contract-failures [address]",
-		Short: "shows failures for specific contract address",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			clientCtx := client.GetClientContextFromCmd(cmd)
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
-			if err != nil {
-				return err
-			}
-
-			queryClient := types.NewQueryClient(clientCtx)
-
-			argIndex := args[0]
-
-			params := &types.QueryGetFailuresByAddressRequest{
-				Address:    argIndex,
-				Pagination: pageReq,
-			}
-
-			res, err := queryClient.Failure(context.Background(), params)
 			if err != nil {
 				return err
 			}

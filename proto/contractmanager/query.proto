@@ -17,12 +17,12 @@ service Query {
 		option (google.api.http).get = "/neutron-org/neutron/contractmanager/params";
 	}
 	// Queries a Failure by address.
-	rpc Failure(QueryGetFailuresByAddressRequest) returns (QueryGetFailuresByAddressResponse) {
+	rpc Failures(QueryFailuresRequest) returns (QueryFailuresResponse) {
 		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure/{address}";
 	}
 
 	// Queries a list of Failure items.
-	rpc AllFailures(QueryAllFailureRequest) returns (QueryAllFailureResponse) {
+	rpc AllFailures(QueryFailuresRequest) returns (QueryFailuresResponse) {
 		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure";
 	}
 
@@ -38,21 +38,12 @@ message QueryParamsResponse {
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
-message QueryGetFailuresByAddressRequest {
+message QueryFailuresRequest {
 	string address = 1;
 	cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
-message QueryGetFailuresByAddressResponse {
-	repeated Failure failures = 1 [(gogoproto.nullable) = false];
-	cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-message QueryAllFailureRequest {
-	cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-
-message QueryAllFailureResponse {
+message QueryFailuresResponse {
 	repeated Failure failures = 1 [(gogoproto.nullable) = false];
 	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

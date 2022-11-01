@@ -23,6 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Failure message contains information about ACK failures and can be used to replay ACK in case of requirement.
 type Failure struct {
 	// Address of the failed contract
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`

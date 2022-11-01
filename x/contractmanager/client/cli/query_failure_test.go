@@ -45,7 +45,7 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 	return network.New(t, cfg), state.FailuresList
 }
 
-func TestShowFailure(t *testing.T) {
+func TestAddressFailures(t *testing.T) {
 	net, objs := networkWithFailureObjects(t, 2)
 
 	ctx := net.Validators[0].ClientCtx
@@ -80,14 +80,14 @@ func TestShowFailure(t *testing.T) {
 				tc.idIndex,
 			}
 			args = append(args, tc.args...)
-			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdContractFailures(), args)
+			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdAllFailures(), args)
 			if tc.err != nil {
 				stat, ok := status.FromError(tc.err)
 				require.True(t, ok)
 				require.ErrorIs(t, stat.Err(), tc.err)
 			} else {
 				require.NoError(t, err)
-				var resp types.QueryGetFailuresByAddressResponse
+				var resp types.QueryFailuresResponse
 				require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 				require.NotNil(t, resp.Failures)
 				require.Equal(t,
@@ -124,7 +124,7 @@ func TestListFailure(t *testing.T) {
 			args := request(nil, uint64(i), uint64(step), false)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdAllFailures(), args)
 			require.NoError(t, err)
-			var resp types.QueryAllFailureResponse
+			var resp types.QueryFailuresResponse
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -140,7 +140,7 @@ func TestListFailure(t *testing.T) {
 			args := request(next, 0, uint64(step), false)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdAllFailures(), args)
 			require.NoError(t, err)
-			var resp types.QueryAllFailureResponse
+			var resp types.QueryFailuresResponse
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -154,7 +154,7 @@ func TestListFailure(t *testing.T) {
 		args := request(nil, 0, uint64(len(objs)), true)
 		out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdAllFailures(), args)
 		require.NoError(t, err)
-		var resp types.QueryAllFailureResponse
+		var resp types.QueryFailuresResponse
 		require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 		require.NoError(t, err)
 		require.Equal(t, len(objs), int(resp.Pagination.Total))
