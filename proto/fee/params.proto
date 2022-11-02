@@ -10,5 +10,5 @@ option go_package = "github.com/neutron-org/neutron/x/fee/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
 
-  ibc.applications.fee.v1.Fee min_payer_fee = 1 [(gogoproto.nullable) = false];
+  ibc.applications.fee.v1.Fee min_fee = 1 [(gogoproto.nullable) = false];
 }

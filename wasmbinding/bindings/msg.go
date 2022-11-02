@@ -33,7 +33,7 @@ type SubmitTx struct {
 	Msgs                []ProtobufAny   `json:"msgs"`
 	Memo                string          `json:"memo"`
 	Timeout             uint64          `json:"timeout"`
-	PayerFee            ibcfeetypes.Fee `json:"payer_fee"`
+	Fee                 ibcfeetypes.Fee `json:"fee"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.

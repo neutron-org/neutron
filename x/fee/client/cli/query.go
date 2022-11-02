@@ -1,9 +1,13 @@
 package cli
 
 import (
+	"context"
 	"fmt"
+	"strconv"
+
 	// "strings"
 
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -25,7 +29,39 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdQueryParams())
-	// this line is used by starport scaffolding # 1
+	cmd.AddCommand(CmdFeeInfo())
+
+	return cmd
+}
+
+func CmdFeeInfo() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "fee-info [port_id] [channel_id] [sequence]",
+		Short: "queries fee info by port id, channel id and sequnce",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			queryClient := types.NewQueryClient(clientCtx)
+
+			sequence, err := strconv.ParseUint(args[2], 10, 64)
+			if err != nil {
+				return fmt.Errorf("failed to parse sequence: %w", err)
+			}
+
+			res, err := queryClient.FeeInfo(context.Background(), &types.FeeInfoRequest{
+				ChannelId: args[1],
+				PortId:    args[0],
+				Sequence:  sequence,
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
 }

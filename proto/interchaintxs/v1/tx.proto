@@ -49,7 +49,7 @@ message MsgSubmitTx {
   // timeout in seconds after which the packet times out
   uint64 timeout = 6;
 
-  ibc.applications.fee.v1.Fee payer_fee = 7 [(gogoproto.nullable) = false];
+  ibc.applications.fee.v1.Fee fee = 7 [(gogoproto.nullable) = false];
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx

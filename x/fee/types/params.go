@@ -27,7 +27,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 
 // NewParams creates a new Params instance
 func NewParams(minfee ibcfeetypes.Fee) Params {
-	return Params{MinPayerFee: minfee}
+	return Params{MinFee: minfee}
 }
 
 // DefaultParams returns a default set of parameters
@@ -37,7 +37,7 @@ func DefaultParams() Params {
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{paramtypes.NewParamSetPair(KeyFees, &p.MinPayerFee, validateFee)}
+	return paramtypes.ParamSetPairs{paramtypes.NewParamSetPair(KeyFees, &p.MinFee, validateFee)}
 }
 
 // Validate validates the set of params
