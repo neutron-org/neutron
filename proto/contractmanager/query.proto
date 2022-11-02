@@ -14,16 +14,16 @@ option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 service Query {
 	// Parameters queries the parameters of the module.
 	rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-		option (google.api.http).get = "/neutron-org/neutron/contractmanager/params";
+		option (google.api.http).get = "/neutron/contractmanager/params";
 	}
 	// Queries a Failure by address.
 	rpc Failures(QueryFailuresRequest) returns (QueryFailuresResponse) {
-		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure/{address}";
+		option (google.api.http).get = "/neutron/contractmanager/failures/{address}";
 	}
 
 	// Queries a list of Failure items.
 	rpc AllFailures(QueryFailuresRequest) returns (QueryFailuresResponse) {
-		option (google.api.http).get = "/neutron-org/neutron/contractmanager/failure";
+		option (google.api.http).get = "/neutron/contractmanager/failures";
 	}
 
 // this line is used by starport scaffolding # 2

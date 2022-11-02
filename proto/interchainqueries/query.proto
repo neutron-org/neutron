@@ -15,31 +15,31 @@ service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get =
-        "/neutron/interchainqueries/interchainqueries/params";
+        "/neutron/interchainqueries/params";
   }
 
   rpc RegisteredQueries(QueryRegisteredQueriesRequest)
       returns (QueryRegisteredQueriesResponse) {
     option (google.api.http).get =
-        "/neutron/interchainqueries/interchainqueries/registered_queries";
+        "/neutron/interchainqueries/registered_queries";
   }
 
   rpc RegisteredQuery(QueryRegisteredQueryRequest)
       returns (QueryRegisteredQueryResponse) {
     option (google.api.http).get =
-        "/neutron/interchainqueries/interchainqueries/registered_query";
+        "/neutron/interchainqueries/registered_query";
   }
 
   rpc QueryResult(QueryRegisteredQueryResultRequest)
       returns (QueryRegisteredQueryResultResponse) {
     option (google.api.http).get =
-        "/neutron/interchainqueries/interchainqueries/query_result";
+        "/neutron/interchainqueries/query_result";
   }
 
   rpc LastRemoteHeight(QueryLastRemoteHeight)
       returns (QueryLastRemoteHeightResponse) {
     option (google.api.http).get =
-        "/neutron/interchainqueries/interchainqueries/remote_height";
+        "/neutron/interchainqueries/remote_height";
   }
 }
 
