@@ -11,7 +11,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) AllFailures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
+func (k Keeper) Failures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
+	return k.AddressFailures(c, req)
+}
+
+func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -45,8 +49,4 @@ func (k Keeper) AllFailures(c context.Context, req *types.QueryFailuresRequest) 
 	}
 
 	return &types.QueryFailuresResponse{Failures: failures, Pagination: pageRes}, nil
-}
-
-func (k Keeper) Failures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
-	return k.AllFailures(c, req)
 }

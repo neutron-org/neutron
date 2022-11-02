@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CmdAllFailures() *cobra.Command {
+func CmdFailures() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "failures [address]",
 		Short: "shows all failures or failures from specific contract address",
@@ -34,7 +34,7 @@ func CmdAllFailures() *cobra.Command {
 				Pagination: pageReq,
 			}
 
-			res, err := queryClient.AllFailures(context.Background(), params)
+			res, err := queryClient.Failures(context.Background(), params)
 			if err != nil {
 				return err
 			}
