@@ -67,6 +67,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.RemoveInterchainQuery != nil {
 			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
 		}
+		if contractMsg.IBCTransferMsg != nil {
+			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransferMsg)
+		}
 	}
 
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
