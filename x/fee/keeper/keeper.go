@@ -96,10 +96,6 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 		k.Logger(ctx).Error("error returning unused timeout fee", "receiver", feeInfo.Payer, "packet", packetID)
 		panic(sdkerrors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%s", receiver, packetID))
 	}
-	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.RecvFee); err != nil {
-		k.Logger(ctx).Error("error returning unused recv fee", "receiver", feeInfo.Payer, "packet", packetID)
-		panic(sdkerrors.Wrapf(err, "error distributing unused recv fee: receiver = %s, packetID=%s", receiver, packetID))
-	}
 
 	ctx.EventManager().EmitEvents(ctx.EventManager().Events())
 
@@ -124,10 +120,6 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.AckFee); err != nil {
 		k.Logger(ctx).Error("error returning unused ack fee", "receiver", feeInfo.Payer, "packet", packetID)
 		panic(sdkerrors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%s", receiver, packetID))
-	}
-	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.RecvFee); err != nil {
-		k.Logger(ctx).Error("error returning unused recv fee", "receiver", feeInfo.Payer, "packet", packetID)
-		panic(sdkerrors.Wrapf(err, "error distributing unused recv fee: receiver = %s, packetID=%s", receiver, packetID))
 	}
 
 	k.removeFeeInfo(ctx, packetID)
@@ -159,12 +151,13 @@ func (k Keeper) checkFees(ctx sdk.Context, fees ibcfeetypes.Fee) error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min governance set timeout fee: %v < %v", fees.TimeoutFee, params.MinFee.TimeoutFee)
 	}
 
-	if fees.RecvFee.IsAllLT(params.MinFee.RecvFee) {
-		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided recv fee is less than min governance set recv fee: %v < %v", fees.RecvFee, params.MinFee.RecvFee)
-	}
-
 	if fees.AckFee.IsAllLT(params.MinFee.AckFee) {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", fees.AckFee, params.MinFee.AckFee)
+	}
+
+	// we don't allow users to set recv fees, because we can't refund relayers for such messages
+	if !fees.RecvFee.IsZero() {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
 	}
 
 	return nil
