@@ -23,7 +23,7 @@ type NeutronMsg struct {
 	RegisterInterchainQuery   *RegisterInterchainQuery          `json:"register_interchain_query,omitempty"`
 	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
-	IBCTransferMsg            *transferwrappertypes.MsgTransfer `json:"msg_transfer,omitempty"`
+	IBCTransferMsg            *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
