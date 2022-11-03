@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -15,7 +14,6 @@ import (
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -25,14 +23,13 @@ const (
 
 type (
 	Keeper struct {
-		cdc         codec.BinaryCodec
-		storeKey    storetypes.StoreKey
-		memKey      storetypes.StoreKey
-		paramstore  paramtypes.Subspace
-		ibcKeeper   *ibckeeper.Keeper
-		wasmKeeper  *wasm.Keeper
-		bank        types.BankKeeper
-		sudoHandler sudo.Handler
+		cdc                   codec.BinaryCodec
+		storeKey              storetypes.StoreKey
+		memKey                storetypes.StoreKey
+		paramstore            paramtypes.Subspace
+		ibcKeeper             *ibckeeper.Keeper
+		bank                  types.BankKeeper
+		contractManagerKeeper types.ContractManagerKeeper
 	}
 )
 
@@ -42,8 +39,8 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
-	wasmKeeper *wasm.Keeper,
 	bank types.BankKeeper,
+	contractManagerKeeper types.ContractManagerKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -51,14 +48,13 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:         cdc,
-		storeKey:    storeKey,
-		memKey:      memKey,
-		paramstore:  ps,
-		ibcKeeper:   ibcKeeper,
-		wasmKeeper:  wasmKeeper,
-		bank:        bank,
-		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		cdc:                   cdc,
+		storeKey:              storeKey,
+		memKey:                memKey,
+		paramstore:            ps,
+		ibcKeeper:             ibcKeeper,
+		bank:                  bank,
+		contractManagerKeeper: contractManagerKeeper,
 	}
 }
 

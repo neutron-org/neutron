@@ -39,7 +39,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
-	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.contractManagerKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainQuery: contract not found", "sender_address", msg.Sender)
 		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
 	}
@@ -253,7 +253,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 		if msg.Result.GetAllowKvCallbacks() {
 			// Let the query owner contract process the query result.
-			if _, err := k.sudoHandler.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
+			if _, err := k.contractManagerKeeper.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
 				ctx.Logger().Debug("SubmitQueryResult: failed to SudoKVQueryResult",
 					"error", err, "query_id", query.GetId())
 				return nil, sdkerrors.Wrapf(err, "contract %s rejected KV query result (query_id: %d)",
