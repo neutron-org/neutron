@@ -76,6 +76,8 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, error) {
+	ibcTransferMsg.Sender = contractAddr.String()
+
 	if err := ibcTransferMsg.ValidateBasic(); err != nil {
 		return nil, nil, sdkerrors.Wrap(err, "failed to validate ibcTransferMsg")
 	}
