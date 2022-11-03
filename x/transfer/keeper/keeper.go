@@ -8,11 +8,12 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
 	feekeeper "github.com/neutron-org/neutron/x/fee/keeper"
+	feetypes "github.com/neutron-org/neutron/x/fee/types"
 	wrappedtypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
@@ -40,7 +41,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 		)
 	}
 
-	if err := k.FeeKeeper.LockFees(ctx, senderAddr, channeltypes.NewPacketId(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
+	if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
 		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
 	}
 

@@ -2,7 +2,7 @@ syntax = "proto3";
 package neutronorg.neutron.fee;
 
 import "gogoproto/gogo.proto";
-import "ibc/applications/fee/v1/fee.proto";
+import "fee/fee.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/fee/types";
 
@@ -10,5 +10,5 @@ option go_package = "github.com/neutron-org/neutron/x/fee/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
 
-  ibc.applications.fee.v1.Fee min_fee = 1 [(gogoproto.nullable) = false];
+  Fee min_fee = 1 [(gogoproto.nullable) = false];
 }

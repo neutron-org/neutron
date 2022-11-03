@@ -8,10 +8,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 
+	feetypes "github.com/neutron-org/neutron/x/fee/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -50,8 +51,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
 	}
 
-	// TODO(pr0n00gler): add version to MsgRegisterInterchainAccount.
-	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String(), ``); err != nil {
+	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String()); err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "msg", &msg)
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
@@ -139,7 +139,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		)
 	}
 
-	if err := k.feeKeeper.LockFees(ctx, senderAddr, channeltypes.NewPacketId(portID, channelID, sequence), msg.Fee); err != nil {
+	if err := k.feeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
 		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %v", msg)
 	}
 

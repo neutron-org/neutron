@@ -5,7 +5,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
 	"gopkg.in/yaml.v2"
 )
 
@@ -13,7 +12,7 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
 	KeyFees     = []byte("FEES")
-	DefaultFees = ibcfeetypes.Fee{
+	DefaultFees = Fee{
 		RecvFee:    sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
 		AckFee:     sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
 		TimeoutFee: sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
@@ -26,7 +25,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(minfee ibcfeetypes.Fee) Params {
+func NewParams(minfee Fee) Params {
 	return Params{MinFee: minfee}
 }
 
@@ -52,7 +51,7 @@ func (p Params) String() string {
 }
 
 func validateFee(i interface{}) error {
-	v, ok := i.(ibcfeetypes.Fee)
+	v, ok := i.(Fee)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

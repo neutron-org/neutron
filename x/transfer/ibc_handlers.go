@@ -3,9 +3,10 @@ package transfer
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
+	feetypes "github.com/neutron-org/neutron/x/fee/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -41,7 +42,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
-	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	return nil
 }
@@ -66,7 +67,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet timeout")
 	}
 
-	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	return nil
 }

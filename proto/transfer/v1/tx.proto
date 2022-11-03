@@ -8,7 +8,7 @@ import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "ibc/applications/transfer/v1/tx.proto";
 import "ibc/core/client/v1/client.proto";
-import "ibc/applications/fee/v1/fee.proto";
+import "fee/fee.proto";
 
 // Msg defines the ibc/transfer Msg service.
 service Msg {
@@ -39,7 +39,7 @@ message MsgTransfer {
   // The timeout is disabled when set to 0.
   uint64 timeout_timestamp = 7 [(gogoproto.moretags) = "yaml:\"timeout_timestamp\""];
 
-  ibc.applications.fee.v1.Fee fee = 8 [(gogoproto.nullable) = false];
+  neutronorg.neutron.fee.Fee fee = 8 [(gogoproto.nullable) = false];
 }
 
 

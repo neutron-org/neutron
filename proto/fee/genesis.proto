@@ -3,7 +3,7 @@ package neutronorg.neutron.fee;
 
 import "gogoproto/gogo.proto";
 import "fee/params.proto";
-import "ibc/applications/fee/v1/fee.proto";
+import "fee/fee.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/fee/types";
@@ -16,5 +16,5 @@ message GenesisState {
 
 message FeeInfo {
   string payer = 1;
-  ibc.applications.fee.v1.Fee fee = 2 [(gogoproto.nullable) = false];
+  Fee fee = 2 [(gogoproto.nullable) = false];
 }

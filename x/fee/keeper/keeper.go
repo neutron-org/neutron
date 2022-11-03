@@ -8,9 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
+	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/x/fee/types"
@@ -55,12 +54,12 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID channeltypes.PacketId, fee ibcfeetypes.Fee) error {
+func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
 	k.Logger(ctx).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
 	store := ctx.KVStore(k.storeKey)
 
-	if _, ok := k.ibcKeeper.ChannelKeeper.GetChannel(ctx, packetID.PortId, packetID.ChannelId); !ok {
-		return sdkerrors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
+	if _, ok := k.ibcKeeper.ChannelKeeper.GetChannel(ctx, packetID.PortID, packetID.ChannelID); !ok {
+		return sdkerrors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelID, packetID.PortID)
 	}
 
 	if err := k.checkFees(ctx, fee); err != nil {
@@ -72,12 +71,12 @@ func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID channel
 		Fee:   fee,
 	}
 	bzFeeInfo := k.cdc.MustMarshal(&feeInfo)
-	store.Set(types.GetFeePacketKey(packetID.ChannelId, packetID.PortId, packetID.Sequence), bzFeeInfo)
+	store.Set(types.GetFeePacketKey(packetID.ChannelID, packetID.PortID, packetID.Sequence), bzFeeInfo)
 
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, fee.Total())
 }
 
-func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAddress, packetID channeltypes.PacketId) {
+func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAddress, packetID types.PacketID) {
 	k.Logger(ctx).Debug("Trying to distribute ack fee", "packetID", packetID)
 	feeInfo, err := k.GetFeeInfo(ctx, packetID)
 	if err != nil {
@@ -102,7 +101,7 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 	k.removeFeeInfo(ctx, packetID)
 }
 
-func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, packetID channeltypes.PacketId) {
+func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, packetID types.PacketID) {
 	k.Logger(ctx).Debug("Trying to distribute timeout fee", "packetID", packetID)
 	feeInfo, err := k.GetFeeInfo(ctx, packetID)
 	if err != nil {
@@ -125,26 +124,26 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 	k.removeFeeInfo(ctx, packetID)
 }
 
-func (k Keeper) GetFeeInfo(ctx sdk.Context, packetID channeltypes.PacketId) (*types.FeeInfo, error) {
+func (k Keeper) GetFeeInfo(ctx sdk.Context, packetID types.PacketID) (*types.FeeInfo, error) {
 	store := ctx.KVStore(k.storeKey)
 
 	var feeInfo types.FeeInfo
-	bzFeeInfo := store.Get(types.GetFeePacketKey(packetID.ChannelId, packetID.PortId, packetID.Sequence))
+	bzFeeInfo := store.Get(types.GetFeePacketKey(packetID.ChannelID, packetID.PortID, packetID.Sequence))
 	if bzFeeInfo == nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", packetID.ChannelId, packetID.PortId, packetID.Sequence)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", packetID.ChannelID, packetID.PortID, packetID.Sequence)
 	}
 	k.cdc.MustUnmarshal(bzFeeInfo, &feeInfo)
 
 	return &feeInfo, nil
 }
 
-func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID channeltypes.PacketId) {
+func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 	store := ctx.KVStore(k.storeKey)
 
-	store.Delete(types.GetFeePacketKey(packetID.ChannelId, packetID.PortId, packetID.Sequence))
+	store.Delete(types.GetFeePacketKey(packetID.ChannelID, packetID.PortID, packetID.Sequence))
 }
 
-func (k Keeper) checkFees(ctx sdk.Context, fees ibcfeetypes.Fee) error {
+func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 	params := k.GetParams(ctx)
 
 	if fees.TimeoutFee.IsAllLT(params.MinFee.TimeoutFee) {

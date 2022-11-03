@@ -2,8 +2,7 @@
 package bindings
 
 import (
-	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
-
+	feetypes "github.com/neutron-org/neutron/x/fee/types"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
@@ -28,12 +27,12 @@ type NeutronMsg struct {
 
 // SubmitTx submits interchain transaction on a remote chain.
 type SubmitTx struct {
-	ConnectionId        string          `json:"connection_id"`
-	InterchainAccountId string          `json:"interchain_account_id"`
-	Msgs                []ProtobufAny   `json:"msgs"`
-	Memo                string          `json:"memo"`
-	Timeout             uint64          `json:"timeout"`
-	Fee                 ibcfeetypes.Fee `json:"fee"`
+	ConnectionId        string        `json:"connection_id"`
+	InterchainAccountId string        `json:"interchain_account_id"`
+	Msgs                []ProtobufAny `json:"msgs"`
+	Memo                string        `json:"memo"`
+	Timeout             uint64        `json:"timeout"`
+	Fee                 feetypes.Fee  `json:"fee"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.

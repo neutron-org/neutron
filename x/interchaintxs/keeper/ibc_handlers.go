@@ -6,9 +6,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
 	"github.com/neutron-org/neutron/internal/sudo"
+	feetypes "github.com/neutron-org/neutron/x/fee/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -38,7 +39,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		_, err = k.sudoHandler.SudoResponse(ctx, icaOwner.GetContract(), packet, ack.GetResult())
 	}
 
-	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	if err != nil {
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
@@ -67,7 +68,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 		return sdkerrors.Wrap(err, "failed to Sudo the contract on packet timeout")
 	}
 
-	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, channeltypes.NewPacketId(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	return nil
 }
