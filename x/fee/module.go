@@ -38,7 +38,6 @@ type AppModuleBasic struct {
 }
 
 func (a AppModuleBasic) RegisterRESTRoutes(c client.Context, router *mux.Router) {
-	return
 }
 
 func NewAppModuleBasic(cdc codec.BinaryCodec) AppModuleBasic {

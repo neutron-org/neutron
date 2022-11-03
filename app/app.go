@@ -95,7 +95,6 @@ import (
 	ibcclientclient "github.com/cosmos/ibc-go/v3/modules/core/02-client/client"
 	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	ibcporttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
-	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
@@ -510,8 +509,7 @@ func New(
 		wasmOpts...,
 	)
 
-	var transferIBCModule porttypes.IBCModule
-	transferIBCModule = transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
+	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper, &app.WasmKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
