@@ -22,9 +22,7 @@ const (
 	Separator = ";"
 )
 
-var (
-	FeeKey = []byte{prefixFeeKey}
-)
+var FeeKey = []byte{prefixFeeKey}
 
 func GetFeePacketKey(channelID, portID string, sequenceID uint64) []byte {
 	return append(append(FeeKey, []byte(channelID+Separator+portID+Separator)...), sdk.Uint64ToBigEndian(sequenceID)...)
