@@ -2,7 +2,7 @@
 package bindings
 
 import (
-	feetypes "github.com/neutron-org/neutron/x/fee/types"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
@@ -32,7 +32,7 @@ type SubmitTx struct {
 	Msgs                []ProtobufAny `json:"msgs"`
 	Memo                string        `json:"memo"`
 	Timeout             uint64        `json:"timeout"`
-	Fee                 feetypes.Fee  `json:"fee"`
+	Fee                 feetypes.Fee  `json:"feerefunder"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.

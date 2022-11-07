@@ -10,7 +10,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
-	feetypes "github.com/neutron-org/neutron/x/fee/types"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 

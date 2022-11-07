@@ -5,7 +5,7 @@ import (
 
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
-	feekeeper "github.com/neutron-org/neutron/x/fee/keeper"
+	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"

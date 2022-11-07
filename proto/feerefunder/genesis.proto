@@ -1,0 +1,20 @@
+syntax = "proto3";
+package neutronorg.neutron.feerefunder;
+
+import "gogoproto/gogo.proto";
+import "feerefunder/params.proto";
+import "feerefunder/fee.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/neutron-org/neutron/x/feerefunder/types";
+
+// GenesisState defines the fee module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  // this line is used by starport scaffolding # genesis/proto/state
+}
+
+message FeeInfo {
+  string payer = 1;
+  Fee fee = 2 [(gogoproto.nullable) = false];
+}

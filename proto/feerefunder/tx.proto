@@ -1,0 +1,16 @@
+syntax = "proto3";
+package neutronorg.neutron.feerefunder;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/neutron-org/neutron/x/feerefunder/types";
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+
+// Msg defines the Msg service.
+service Msg {
+    // this line is used by starport scaffolding # proto/tx/rpc
+}
+
+// this line is used by starport scaffolding # proto/tx/message

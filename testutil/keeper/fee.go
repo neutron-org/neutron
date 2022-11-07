@@ -14,8 +14,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/neutron-org/neutron/x/fee/keeper"
-	"github.com/neutron-org/neutron/x/fee/types"
+	"github.com/neutron-org/neutron/x/feerefunder/keeper"
+	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
 func FeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

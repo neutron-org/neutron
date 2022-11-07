@@ -112,8 +112,8 @@ import (
 	"github.com/neutron-org/neutron/x/contractmanager"
 	contractmanagermodulekeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	contractmanagermoduletypes "github.com/neutron-org/neutron/x/contractmanager/types"
-	"github.com/neutron-org/neutron/x/fee"
-	feekeeper "github.com/neutron-org/neutron/x/fee/keeper"
+	"github.com/neutron-org/neutron/x/feerefunder"
+	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchainqueriesmoduletypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -123,7 +123,7 @@ import (
 	transferSudo "github.com/neutron-org/neutron/x/transfer"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 
-	feetypes "github.com/neutron-org/neutron/x/fee/types"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
 const (
@@ -202,7 +202,7 @@ var (
 		gov.NewAppModuleBasic(getGovProposalHandlers()...),
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
-		fee.AppModuleBasic{},
+		feerefunder.AppModuleBasic{},
 		contractmanager.AppModuleBasic{},
 	)
 
@@ -423,7 +423,7 @@ func New(
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 fee
+		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 	)
@@ -452,7 +452,7 @@ func New(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.GetSubspace(feetypes.ModuleName), app.IBCKeeper, app.BankKeeper)
-	feeModule := fee.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
+	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
@@ -592,7 +592,7 @@ func New(
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
-	// there is nothing left over in the validator fee pool to keep the
+	// there is nothing left over in the validator feerefunder pool to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(

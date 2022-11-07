@@ -16,7 +16,7 @@ import (
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
-	feetypes "github.com/neutron-org/neutron/x/fee/types"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"

@@ -7770,7 +7770,7 @@ paths:
         - Query
   /cosmos/feegrant/v1beta1/allowance/{granter}/{grantee}:
     get:
-      summary: Allowance returns fee granted to the grantee by the granter.
+      summary: Allowance returns feerefunder granted to the grantee by the granter.
       operationId: CosmosFeegrantV1Beta1Allowance
       responses:
         '200':
@@ -7793,7 +7793,7 @@ paths:
                       grantee is the address of the user being granted an
                       allowance of another user's funds.
                   allowance:
-                    description: allowance can be any of basic and filtered fee allowance.
+                    description: allowance can be any of basic and filtered feerefunder allowance.
                     type: object
                     properties:
                       '@type':
@@ -42352,7 +42352,7 @@ definitions:
           grantee is the address of the user being granted an allowance of
           another user's funds.
       allowance:
-        description: allowance can be any of basic and filtered fee allowance.
+        description: allowance can be any of basic and filtered feerefunder allowance.
         type: object
         properties:
           '@type':
@@ -42437,7 +42437,7 @@ definitions:
               grantee is the address of the user being granted an allowance of
               another user's funds.
           allowance:
-            description: allowance can be any of basic and filtered fee allowance.
+            description: allowance can be any of basic and filtered feerefunder allowance.
             type: object
             properties:
               '@type':
@@ -42519,7 +42519,7 @@ definitions:
                 grantee is the address of the user being granted an allowance of
                 another user's funds.
             allowance:
-              description: allowance can be any of basic and filtered fee allowance.
+              description: allowance can be any of basic and filtered feerefunder allowance.
               type: object
               properties:
                 '@type':
@@ -42622,7 +42622,7 @@ definitions:
                 grantee is the address of the user being granted an allowance of
                 another user's funds.
             allowance:
-              description: allowance can be any of basic and filtered fee allowance.
+              description: allowance can be any of basic and filtered feerefunder allowance.
               type: object
               properties:
                 '@type':
@@ -48165,7 +48165,7 @@ definitions:
                 method
 
                 signatures required by gogoproto.
-            title: amount is the amount of coins to be paid as a fee
+            title: amount is the amount of coins to be paid as a feerefunder
           gas_limit:
             type: string
             format: uint64
@@ -48577,7 +48577,7 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-        title: amount is the amount of coins to be paid as a fee
+        title: amount is the amount of coins to be paid as a feerefunder
       gas_limit:
         type: string
         format: uint64

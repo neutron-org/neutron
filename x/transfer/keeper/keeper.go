@@ -12,8 +12,8 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
-	feekeeper "github.com/neutron-org/neutron/x/fee/keeper"
-	feetypes "github.com/neutron-org/neutron/x/fee/types"
+	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	wrappedtypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
