@@ -1,27 +1,16 @@
 package types
 
 import (
-	"fmt"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-type PacketID struct {
-	ChannelID string
-	PortID    string
-	Sequence  uint64
-}
-
-func (p PacketID) String() string {
-	return fmt.Sprintf("PacketID: channel=%s, portID=%s, sequence=%d", p.ChannelID, p.PortID, p.Sequence)
-}
-
 func NewPacketID(portID, channelID string, sequence uint64) PacketID {
 	return PacketID{
-		ChannelID: channelID,
-		PortID:    portID,
+		ChannelId: channelID,
+		PortId:    portID,
 		Sequence:  sequence,
 	}
 }

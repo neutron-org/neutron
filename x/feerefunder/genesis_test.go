@@ -3,6 +3,7 @@ package feerefunder_test
 import (
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/testutil/interchainqueries/nullify"
@@ -14,6 +15,15 @@ import (
 func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
+		FeeInfos: []types.FeeInfo{types.FeeInfo{
+			Payer:    "address",
+			PacketId: types.NewPacketID("port", "channel", 64),
+			Fee: types.Fee{
+				RecvFee:    sdk.NewCoins(sdk.NewCoin("denom", sdk.NewInt(100))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom", sdk.NewInt(100))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom", sdk.NewInt(100))),
+			},
+		}},
 	}
 
 	require.EqualValues(t, genesisState.Params, types.DefaultParams())

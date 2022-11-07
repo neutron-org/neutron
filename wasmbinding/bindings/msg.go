@@ -22,7 +22,7 @@ type NeutronMsg struct {
 	RegisterInterchainQuery   *RegisterInterchainQuery          `json:"register_interchain_query,omitempty"`
 	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
-	IBCTransferMsg            *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
+	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -32,7 +32,7 @@ type SubmitTx struct {
 	Msgs                []ProtobufAny `json:"msgs"`
 	Memo                string        `json:"memo"`
 	Timeout             uint64        `json:"timeout"`
-	Fee                 feetypes.Fee  `json:"feerefunder"`
+	Fee                 feetypes.Fee  `json:"fee"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.

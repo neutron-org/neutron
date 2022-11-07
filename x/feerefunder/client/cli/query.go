@@ -5,14 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	// "strings"
-
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	// "github.com/cosmos/cosmos-sdk/client/flags"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
@@ -36,8 +32,8 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 
 func CmdFeeInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "feerefunder-info [port_id] [channel_id] [sequence]",
-		Short: "queries feerefunder info by port id, channel id and sequnce",
+		Use:   "fee-info [port_id] [channel_id] [sequence]",
+		Short: "queries fee info by port id, channel id and sequence",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)

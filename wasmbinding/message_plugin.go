@@ -67,8 +67,8 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.RemoveInterchainQuery != nil {
 			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
 		}
-		if contractMsg.IBCTransferMsg != nil {
-			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransferMsg)
+		if contractMsg.IBCTransfer != nil {
+			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 		}
 	}
 
@@ -89,7 +89,7 @@ func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddre
 			"msg", ibcTransferMsg,
 			"error", err,
 		)
-		return nil, nil, sdkerrors.Wrap(err, "failed to execute IBCTransferMsg")
+		return nil, nil, sdkerrors.Wrap(err, "failed to execute IBCTransfer")
 	}
 
 	data, err := json.Marshal(response)

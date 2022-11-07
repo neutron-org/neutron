@@ -16,7 +16,7 @@ func (k Keeper) FeeInfo(goCtx context.Context, request *types.FeeInfoRequest) (*
 
 	feeInfo, err := k.GetFeeInfo(ctx, types.NewPacketID(request.PortId, request.ChannelId, request.Sequence))
 	if err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "no feerefunder info found for port_id = %s, channel_id=%s, sequence=%d", request.PortId, request.ChannelId, request.Sequence)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "no fee info found for port_id = %s, channel_id=%s, sequence=%d", request.PortId, request.ChannelId, request.Sequence)
 	}
 
 	return &types.FeeInfoResponse{FeeInfo: feeInfo}, nil

@@ -24,10 +24,6 @@ const (
 
 var FeeKey = []byte{prefixFeeKey}
 
-func GetFeePacketKey(channelID, portID string, sequenceID uint64) []byte {
-	return append(append(FeeKey, []byte(channelID+Separator+portID+Separator)...), sdk.Uint64ToBigEndian(sequenceID)...)
-}
-
-func KeyPrefix(p string) []byte {
-	return []byte(p)
+func GetFeePacketKey(packet PacketID) []byte {
+	return append(append(FeeKey, []byte(packet.ChannelId+Separator+packet.PortId+Separator)...), sdk.Uint64ToBigEndian(packet.Sequence)...)
 }

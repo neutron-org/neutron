@@ -29,3 +29,9 @@ message Fee {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
 }
+
+message PacketID {
+  string channel_id = 1;
+  string port_id = 2;
+  uint64 sequence = 3;
+}
