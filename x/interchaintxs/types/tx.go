@@ -48,6 +48,10 @@ func (msg MsgRegisterInterchainAccount) GetSignBytes() []byte {
 //----------------------------------------------------------------
 
 func (msg *MsgSubmitTx) ValidateBasic() error {
+	if err := msg.Fee.Validate(); err != nil {
+		return err
+	}
+
 	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID
 	}
