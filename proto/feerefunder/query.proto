@@ -1,0 +1,44 @@
+syntax = "proto3";
+package neutronorg.neutron.feerefunder;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "feerefunder/params.proto";
+import "feerefunder/genesis.proto";
+// this line is used by starport scaffolding # 1
+
+option go_package = "github.com/neutron-org/neutron/x/feerefunder/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/neutron-org/neutron/feerefunder/params";
+  }
+  rpc FeeInfo(FeeInfoRequest) returns (FeeInfoResponse) {
+    option (google.api.http).get = "/neutron-org/neutron/feerefunder/info";
+  }
+  // this line is used by starport scaffolding # 2
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message FeeInfoRequest {
+  string channel_id = 1;
+  string port_id = 2;
+  uint64 sequence = 3;
+}
+
+message FeeInfoResponse {
+  FeeInfo fee_info = 1;
+}
+
+// this line is used by starport scaffolding # 3

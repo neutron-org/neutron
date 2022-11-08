@@ -16,6 +16,7 @@ import (
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
@@ -232,6 +233,11 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
 	suite.Require().NotEmpty(suite.contractAddress)
 
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(int64(10_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
@@ -299,6 +305,11 @@ func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numM
 			Msgs:                msgs,
 			Memo:                "Jimmy",
 			Timeout:             2000,
+			Fee: feetypes.Fee{
+				RecvFee:    sdk.NewCoins(),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+			},
 		},
 	})
 	suite.NoError(err)

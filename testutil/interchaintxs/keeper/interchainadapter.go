@@ -48,6 +48,7 @@ func InterchainTxsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		icacontrollerkeeper.Keeper{},
 		capabilitykeeper.ScopedKeeper{},
 		nil,
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

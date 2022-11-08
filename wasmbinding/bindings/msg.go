@@ -1,7 +1,11 @@
 //nolint:revive,stylecheck  // if we change the names of var-naming things here, we harm some kind of mapping.
 package bindings
 
-import "github.com/neutron-org/neutron/x/interchainqueries/types"
+import (
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
+)
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
 type ProtobufAny struct {
@@ -13,11 +17,12 @@ type ProtobufAny struct {
 // Follow https://github.com/neutron-org/neutron-contracts/tree/main/packages/bindings/src/msg.rs
 // for more information.
 type NeutronMsg struct {
-	SubmitTx                  *SubmitTx                  `json:"submit_tx,omitempty"`
-	RegisterInterchainAccount *RegisterInterchainAccount `json:"register_interchain_account,omitempty"`
-	RegisterInterchainQuery   *RegisterInterchainQuery   `json:"register_interchain_query,omitempty"`
-	UpdateInterchainQuery     *UpdateInterchainQuery     `json:"update_interchain_query,omitempty"`
-	RemoveInterchainQuery     *RemoveInterchainQuery     `json:"remove_interchain_query,omitempty"`
+	SubmitTx                  *SubmitTx                         `json:"submit_tx,omitempty"`
+	RegisterInterchainAccount *RegisterInterchainAccount        `json:"register_interchain_account,omitempty"`
+	RegisterInterchainQuery   *RegisterInterchainQuery          `json:"register_interchain_query,omitempty"`
+	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
+	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
+	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -27,6 +32,7 @@ type SubmitTx struct {
 	Msgs                []ProtobufAny `json:"msgs"`
 	Memo                string        `json:"memo"`
 	Timeout             uint64        `json:"timeout"`
+	Fee                 feetypes.Fee  `json:"fee"`
 }
 
 // SubmitTxResponse holds response from SubmitTx.

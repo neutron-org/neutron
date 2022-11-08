@@ -5,6 +5,8 @@ import (
 
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 
+	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -33,6 +35,7 @@ type (
 		paramstore    paramtypes.Subspace
 		scopedKeeper  capabilitykeeper.ScopedKeeper
 		channelKeeper icatypes.ChannelKeeper
+		feeKeeper     *feekeeper.Keeper
 
 		icaControllerKeeper   icacontrollerkeeper.Keeper
 		contractManagerKeeper types.ContractManagerKeeper
@@ -48,6 +51,7 @@ func NewKeeper(
 	icaControllerKeeper icacontrollerkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
 	contractManagerKeeper types.ContractManagerKeeper,
+	feeKeeper *feekeeper.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !paramstore.HasKeyTable() {
@@ -55,15 +59,15 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		Codec:         cdc,
-		storeKey:      storeKey,
-		memKey:        memKey,
-		paramstore:    paramstore,
-		channelKeeper: channelKeeper,
-
+		Codec:                 cdc,
+		storeKey:              storeKey,
+		memKey:                memKey,
+		paramstore:            paramstore,
+		channelKeeper:         channelKeeper,
 		icaControllerKeeper:   icaControllerKeeper,
 		scopedKeeper:          scopedKeeper,
 		contractManagerKeeper: contractManagerKeeper,
+		feeKeeper:             feeKeeper,
 	}
 }
 

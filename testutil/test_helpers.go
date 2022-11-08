@@ -142,6 +142,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 		return fmt.Errorf("not NeutronZoneApp")
 	}
 
+	// TODO(pr0n00gler): are we sure it's okay?
 	if err := a.ICAControllerKeeper.RegisterInterchainAccount(ctx, endpoint.ConnectionID, icaOwner.String()); err != nil {
 		return err
 	}

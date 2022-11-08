@@ -8,29 +8,34 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
-func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
-			Keeper:        *ictx,
-			Wrapped:       old,
-			Ictxmsgserver: ictxkeeper.NewMsgServerImpl(*ictx),
-			Icqmsgserver:  icqkeeper.NewMsgServerImpl(*icq),
+			Keeper:         *ictx,
+			Wrapped:        old,
+			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
+			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
+			transferKeeper: transferKeeper,
 		}
 	}
 }
 
 type CustomMessenger struct {
-	Keeper        ictxkeeper.Keeper
-	Wrapped       wasmkeeper.Messenger
-	Ictxmsgserver ictxtypes.MsgServer
-	Icqmsgserver  icqtypes.MsgServer
+	Keeper         ictxkeeper.Keeper
+	Wrapped        wasmkeeper.Messenger
+	Ictxmsgserver  ictxtypes.MsgServer
+	Icqmsgserver   icqtypes.MsgServer
+	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -62,9 +67,46 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.RemoveInterchainQuery != nil {
 			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
 		}
+		if contractMsg.IBCTransfer != nil {
+			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
+		}
 	}
 
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+}
+
+func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, error) {
+	ibcTransferMsg.Sender = contractAddr.String()
+
+	if err := ibcTransferMsg.ValidateBasic(); err != nil {
+		return nil, nil, sdkerrors.Wrap(err, "failed to validate ibcTransferMsg")
+	}
+
+	response, err := m.transferKeeper.Transfer(sdk.WrapSDKContext(ctx), &ibcTransferMsg)
+	if err != nil {
+		ctx.Logger().Debug("transferServer.Transfer: failed to transfer",
+			"from_address", contractAddr.String(),
+			"msg", ibcTransferMsg,
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to execute IBCTransfer")
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal MsgTransferResponse response to JSON",
+			"from_address", contractAddr.String(),
+			"msg", response,
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("ibcTransferMsg completed",
+		"from_address", contractAddr.String(),
+		"msg", ibcTransferMsg,
+	)
+	return nil, [][]byte{data}, nil
 }
 
 func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) ([]sdk.Event, [][]byte, error) {
@@ -199,6 +241,7 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		Memo:                submitTx.Memo,
 		InterchainAccountId: submitTx.InterchainAccountId,
 		Timeout:             submitTx.Timeout,
+		Fee:                 submitTx.Fee,
 	}
 	for _, msg := range submitTx.Msgs {
 		tx.Msgs = append(tx.Msgs, &types.Any{

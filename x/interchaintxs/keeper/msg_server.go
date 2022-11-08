@@ -12,6 +12,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -136,6 +137,10 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 			channeltypes.ErrSequenceSendNotFound,
 			"source port: %s, source channel: %s", portID, channelID,
 		)
+	}
+
+	if err := k.feeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
 	}
 
 	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(msg.Timeout) * time.Second).UnixNano()

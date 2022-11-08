@@ -1,7 +1,8 @@
 package transfer
 
 import (
-	"github.com/CosmWasm/wasmd/x/wasm"
+	"github.com/cosmos/cosmos-sdk/codec"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -19,15 +20,16 @@ import (
 */
 
 type IBCModule struct {
+	wrappedKeeper         wrapkeeper.KeeperTransferWrapper
 	keeper                keeper.Keeper
 	ContractManagerKeeper neutrontypes.ContractManagerKeeper
-
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, wasmKeeper *wasm.Keeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper) IBCModule {
 	return IBCModule{
+		wrappedKeeper:         k,
 		keeper:                k.Keeper,
 		ContractManagerKeeper: k.ContractManagerKeeper,
 		IBCModule:             transfer.NewIBCModule(k.Keeper),
@@ -46,7 +48,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 	if err != nil {
 		return sdkerrors.Wrap(err, "failed to process original OnAcknowledgementPacket")
 	}
-	return im.HandleAcknowledgement(ctx, packet, acknowledgement)
+	return im.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
@@ -59,7 +61,7 @@ func (im IBCModule) OnTimeoutPacket(
 	if err != nil {
 		return sdkerrors.Wrap(err, "failed to process original OnTimeoutPacket")
 	}
-	return im.HandleTimeout(ctx, packet)
+	return im.HandleTimeout(ctx, packet, relayer)
 }
 
 type AppModule struct {
@@ -79,4 +81,27 @@ func NewAppModule(k wrapkeeper.KeeperTransferWrapper) AppModule {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	neutrontypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+}
+
+type AppModuleBasic struct {
+	transfer.AppModuleBasic
+}
+
+func NewAppModuleBasic() AppModuleBasic {
+	return AppModuleBasic{AppModuleBasic: transfer.AppModuleBasic{}}
+}
+
+func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
+	neutrontypes.RegisterLegacyAminoCodec(cdc)
+}
+
+func (am AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	neutrontypes.RegisterLegacyAminoCodec(cdc)
+	am.AppModuleBasic.RegisterLegacyAminoCodec(cdc)
+}
+
+// RegisterInterfaces registers the module's interface types
+func (am AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
+	neutrontypes.RegisterInterfaces(reg)
+	am.AppModuleBasic.RegisterInterfaces(reg)
 }

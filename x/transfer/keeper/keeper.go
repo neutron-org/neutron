@@ -11,6 +11,9 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+
+	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	wrappedtypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
@@ -18,11 +21,19 @@ import (
 type KeeperTransferWrapper struct {
 	keeper.Keeper
 	channelKeeper         types.ChannelKeeper
+	FeeKeeper             *feekeeper.Keeper
 	ContractManagerKeeper wrappedtypes.ContractManagerKeeper
 }
 
-func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
+func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		k.Logger(ctx).Debug("Transfer: failed to parse sender address", "sender", msg.Sender)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+	}
+
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, msg.SourcePort, msg.SourceChannel)
 	if !found {
 		return nil, sdkerrors.Wrapf(
@@ -31,8 +42,11 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *types.MsgTra
 		)
 	}
 
-	_, err := k.Keeper.Transfer(goCtx, msg)
-	if err != nil {
+	if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
+	}
+
+	if _, err := k.Keeper.Transfer(goCtx, types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp)); err != nil {
 		return nil, err
 	}
 
@@ -47,12 +61,14 @@ func NewKeeper(
 	cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Subspace,
 	ics4Wrapper types.ICS4Wrapper, channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
+	feeKeeper *feekeeper.Keeper,
 	contractManagerKeeper wrappedtypes.ContractManagerKeeper,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		channelKeeper: channelKeeper,
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
 			authKeeper, bankKeeper, scopedKeeper),
+		FeeKeeper:             feeKeeper,
 		ContractManagerKeeper: contractManagerKeeper,
 	}
 }
