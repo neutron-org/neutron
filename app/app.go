@@ -110,6 +110,9 @@ import (
 	appparams "github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/docs"
 	"github.com/neutron-org/neutron/wasmbinding"
+	"github.com/neutron-org/neutron/x/contractmanager"
+	contractmanagermodulekeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
+	contractmanagermoduletypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchainqueriesmoduletypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -196,6 +199,7 @@ var (
 		gov.NewAppModuleBasic(getGovProposalHandlers()...),
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
+		contractmanager.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -275,6 +279,7 @@ type App struct {
 
 	InterchainQueriesKeeper interchainqueriesmodulekeeper.Keeper
 	InterchainTxsKeeper     interchaintxskeeper.Keeper
+	ContractManagerKeeper   contractmanagermodulekeeper.Keeper
 
 	WasmKeeper wasm.Keeper
 
@@ -331,7 +336,7 @@ func New(
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
-		interchainqueriesmoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey,
+		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -423,6 +428,14 @@ func New(
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 	)
 
+	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
+		appCodec,
+		keys[contractmanagermoduletypes.StoreKey],
+		keys[contractmanagermoduletypes.MemStoreKey],
+		app.GetSubspace(contractmanagermoduletypes.ModuleName),
+		&app.WasmKeeper,
+	)
+
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
 	govRouter.
@@ -436,7 +449,7 @@ func New(
 	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
+		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.ContractManagerKeeper,
 	)
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
@@ -463,8 +476,8 @@ func New(
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
-		&app.WasmKeeper,
 		app.BankKeeper,
+		app.ContractManagerKeeper,
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
@@ -472,9 +485,9 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.GetSubspace(interchaintxstypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
-		&app.WasmKeeper,
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
+		app.ContractManagerKeeper,
 	)
 
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper), wasmOpts...)
@@ -519,6 +532,7 @@ func New(
 
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
+	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
@@ -562,6 +576,7 @@ func New(
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,
+		contractManagerModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -590,6 +605,7 @@ func New(
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
+		contractmanagermoduletypes.ModuleName,
 		wasm.ModuleName,
 	)
 
@@ -615,6 +631,7 @@ func New(
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
+		contractmanagermoduletypes.ModuleName,
 		wasm.ModuleName,
 	)
 
@@ -645,6 +662,7 @@ func New(
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
+		contractmanagermoduletypes.ModuleName,
 		wasm.ModuleName,
 	)
 

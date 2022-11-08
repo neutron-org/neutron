@@ -7,10 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/internal/sudo"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 	neutrontypes "github.com/neutron-org/neutron/x/transfer/types"
 )
@@ -21,17 +19,18 @@ import (
 */
 
 type IBCModule struct {
-	keeper      keeper.Keeper
-	sudoHandler sudo.Handler
+	keeper                keeper.Keeper
+	ContractManagerKeeper neutrontypes.ContractManagerKeeper
+
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
 func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, wasmKeeper *wasm.Keeper) IBCModule {
 	return IBCModule{
-		keeper:      k.Keeper,
-		IBCModule:   transfer.NewIBCModule(k.Keeper),
-		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		keeper:                k.Keeper,
+		ContractManagerKeeper: k.ContractManagerKeeper,
+		IBCModule:             transfer.NewIBCModule(k.Keeper),
 	}
 }
 

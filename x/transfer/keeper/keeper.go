@@ -17,7 +17,8 @@ import (
 // KeeperTransferWrapper is a wrapper for original ibc keeper to override response for "Transfer" method
 type KeeperTransferWrapper struct {
 	keeper.Keeper
-	channelKeeper types.ChannelKeeper
+	channelKeeper         types.ChannelKeeper
+	ContractManagerKeeper wrappedtypes.ContractManagerKeeper
 }
 
 func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
@@ -46,10 +47,12 @@ func NewKeeper(
 	cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Subspace,
 	ics4Wrapper types.ICS4Wrapper, channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
+	contractManagerKeeper wrappedtypes.ContractManagerKeeper,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
+		channelKeeper: channelKeeper,
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
 			authKeeper, bankKeeper, scopedKeeper),
-		channelKeeper: channelKeeper,
+		ContractManagerKeeper: contractManagerKeeper,
 	}
 }
