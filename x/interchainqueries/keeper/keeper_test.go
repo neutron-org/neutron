@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"encoding/hex"
 	"fmt"
 	"testing"
 
@@ -902,6 +903,60 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				}
 			},
 			iqtypes.ErrInvalidHeight,
+		},
+		// in this test we check that storageValue.Key with special bytes (characters) can be properly verified
+		{
+			"non existence KV proof with special bytes in key",
+			func(sender string, ctx sdktypes.Context) {
+				keyWithSpecialBytes, err := hex.DecodeString("0220c746274d3fe20c2c9d06c017e15f8e03f92598fca39d7540aab02244073efe26756a756e6f78")
+				suite.Require().NoError(err)
+
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId: suite.Path.EndpointA.ConnectionID,
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: keyWithSpecialBytes},
+					},
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod: 1,
+					Sender:       sender,
+				}
+
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
+
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+				suite.Require().NoError(err)
+
+				// suite.NoError(suite.Path.EndpointB.UpdateClient())
+				suite.NoError(suite.Path.EndpointA.UpdateClient())
+
+				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
+				resp := suite.ChainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Data:   keyWithSpecialBytes,
+					Prove:  true,
+				})
+
+				msg = iqtypes.MsgSubmitQueryResult{
+					QueryId:  res.Id,
+					Sender:   sender, // A bit weird that query owner submits the results, but it doesn't really matter
+					ClientId: suite.Path.EndpointA.ClientID,
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: host.StoreKey,
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
+						// and we don't have access to it here
+						Block:    nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
+				}
+			},
+			nil,
 		},
 	}
 
