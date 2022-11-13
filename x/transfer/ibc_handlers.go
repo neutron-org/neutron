@@ -94,7 +94,10 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
-	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	// distribute fees only if the sender is a contract
+	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+		im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	}
 
 	return nil
 }
@@ -124,7 +127,11 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 		writeFn()
 	}
 
-	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	// distribute fee only if the sender is a contract
+	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+		im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	}
+
 	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
 
 	return nil

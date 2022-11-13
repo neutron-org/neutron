@@ -42,8 +42,12 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 		)
 	}
 
-	if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
-		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
+	// if the sender is a contract, lock fees.
+	// Because contracts are required to pay fees for the acknoledgements
+	if k.ContractManagerKeeper.HasContractInfo(ctx, senderAddr) {
+		if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
+			return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
+		}
 	}
 
 	if _, err := k.Keeper.Transfer(goCtx, types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp)); err != nil {
