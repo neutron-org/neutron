@@ -3,8 +3,9 @@ package bindings
 
 import (
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
+	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -23,6 +24,7 @@ type NeutronMsg struct {
 	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
 	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
+	SubmitProposal            *SubmitProposal            `json:"submit_proposal,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -54,11 +56,44 @@ type RegisterInterchainAccountResponse struct{}
 
 // RegisterInterchainQuery creates a query for remote chain.
 type RegisterInterchainQuery struct {
-	QueryType          string         `json:"query_type"`
-	Keys               []*types.KVKey `json:"keys"`
-	TransactionsFilter string         `json:"transactions_filter"`
-	ConnectionId       string         `json:"connection_id"`
-	UpdatePeriod       uint64         `json:"update_period"`
+	QueryType          string            `json:"query_type"`
+	Keys               []*icqtypes.KVKey `json:"keys"`
+	TransactionsFilter string            `json:"transactions_filter"`
+	ConnectionId       string            `json:"connection_id"`
+	UpdatePeriod       uint64            `json:"update_period"`
+}
+
+type AddAdmin struct {
+	Admin string `protobuf:"bytes,2,opt,name=admin,proto3" json:"admin,omitempty"`
+}
+
+type AddAdminResponse struct {
+}
+
+type SubmitProposal struct {
+	Proposals Proposals `json:"proposals"`
+}
+
+type Proposals struct {
+	TextProposal        *TextProposal        `json:"text_proposal,omitempty"`
+	ParamChangeProposal *ParamChangeProposal `json:"param_change_proposal,omitempty"`
+}
+
+type TextProposal struct {
+	Title       string
+	Description string
+}
+
+type ParamChangeProposal struct {
+	Title       string
+	Description string
+	Changes     []paramChange.ParamChange
+}
+
+type ParamChange struct {
+	Subspace string `json:"subspace"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
 }
 
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery
@@ -73,9 +108,9 @@ type RemoveInterchainQuery struct {
 type RemoveInterchainQueryResponse struct{}
 
 type UpdateInterchainQuery struct {
-	QueryId         uint64         `json:"query_id,omitempty"`
-	NewKeys         []*types.KVKey `json:"new_keys,omitempty"`
-	NewUpdatePeriod uint64         `json:"new_update_period,omitempty"`
+	QueryId         uint64            `json:"query_id,omitempty"`
+	NewKeys         []*icqtypes.KVKey `json:"new_keys,omitempty"`
+	NewUpdatePeriod uint64            `json:"new_update_period,omitempty"`
 }
 
 type UpdateInterchainQueryResponse struct{}

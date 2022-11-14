@@ -8,8 +8,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/gogo/protobuf/proto"
 
+	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
+	adminkeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
+	admintypes "github.com/neutron-org/neutron/x/adminmodule/types"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
@@ -18,7 +23,7 @@ import (
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
-func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper, admKeeper *adminkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
 			Keeper:         *ictx,
@@ -26,6 +31,7 @@ func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, tran
 			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
+			Adminserver:   adminkeeper.NewMsgServerImpl(*admKeeper),
 		}
 	}
 }
@@ -36,6 +42,7 @@ type CustomMessenger struct {
 	Ictxmsgserver  ictxtypes.MsgServer
 	Icqmsgserver   icqtypes.MsgServer
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
+	Adminserver   admintypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -69,6 +76,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		}
 		if contractMsg.IBCTransfer != nil {
 			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
+		}
+		if contractMsg.SubmitProposal != nil {
+			return m.submitProposal(ctx, contractAddr, contractMsg.SubmitProposal)
 		}
 	}
 
@@ -232,6 +242,80 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 		"interchain_account_id", submitTx.InterchainAccountId,
 	)
 	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) ([]sdk.Event, [][]byte, error) {
+	response, err := m.PerformSubmitProposal(ctx, contractAddr, submitProposal)
+	if err != nil {
+		ctx.Logger().Debug("PerformSubmitTx: failed to submitProposal",
+			"from_address", contractAddr.String(),
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit add admin message")
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal submitProposal response to JSON",
+			"from_address", contractAddr.String(),
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("submit proposal message submitted",
+		"from_address", contractAddr.String(),
+		"creator", contractAddr.String(),
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
+
+	if submitProposal.Proposals.TextProposal != nil {
+		prop := govtypes.TextProposal{
+			Title:       submitProposal.Proposals.TextProposal.Title,
+			Description: submitProposal.Proposals.TextProposal.Description,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.TextProposal",
+			Value:   cont,
+		}
+
+	} else if submitProposal.Proposals.ParamChangeProposal != nil {
+		proposal := submitProposal.Proposals.ParamChangeProposal
+		prop := paramChange.ParameterChangeProposal{
+			Title:       proposal.Title,
+			Description: proposal.Description,
+			Changes:     proposal.Changes,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.ParameterChangesProposal",
+			Value:   cont,
+		}
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
+	}
+
+	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to submit proposal")
+	}
+
+	return response, nil
 }
 
 func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {
