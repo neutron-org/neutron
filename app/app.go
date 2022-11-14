@@ -98,9 +98,6 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-	adminmodulemodule "github.com/neutron-org/neutron/x/adminmodule"
-	adminmodulemodulekeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
-	adminmodulemoduletypes "github.com/neutron-org/neutron/x/adminmodule/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -108,6 +105,10 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+
+	adminmodulemodule "github.com/neutron-org/neutron/x/adminmodule"
+	adminmodulemodulekeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
+	adminmodulemoduletypes "github.com/neutron-org/neutron/x/adminmodule/types"
 
 	appparams "github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/docs"
@@ -522,7 +523,7 @@ func New(
 		app.FeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, app.TransferKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,

@@ -2,10 +2,11 @@
 package bindings
 
 import (
-	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -24,7 +25,7 @@ type NeutronMsg struct {
 	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
 	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
-	SubmitProposal            *SubmitProposal            `json:"submit_proposal,omitempty"`
+	SubmitProposal            *SubmitProposal                   `json:"submit_proposal,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.

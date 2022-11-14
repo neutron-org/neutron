@@ -12,6 +12,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	adminkeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
 	admintypes "github.com/neutron-org/neutron/x/adminmodule/types"
@@ -31,7 +32,7 @@ func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, tran
 			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
-			Adminserver:   adminkeeper.NewMsgServerImpl(*admKeeper),
+			Adminserver:    adminkeeper.NewMsgServerImpl(*admKeeper),
 		}
 	}
 }
@@ -42,7 +43,7 @@ type CustomMessenger struct {
 	Ictxmsgserver  ictxtypes.MsgServer
 	Icqmsgserver   icqtypes.MsgServer
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
-	Adminserver   admintypes.MsgServer
+	Adminserver    admintypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
