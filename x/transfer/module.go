@@ -84,7 +84,7 @@ func NewAppModule(k wrapkeeper.KeeperTransferWrapper) AppModule {
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
-	neutrontypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 type AppModuleBasic struct {
