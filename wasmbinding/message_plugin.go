@@ -139,10 +139,11 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 
 func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) (*bindings.UpdateInterchainQueryResponse, error) {
 	msg := icqtypes.MsgUpdateInterchainQueryRequest{
-		QueryId:         updateQuery.QueryId,
-		NewKeys:         updateQuery.NewKeys,
-		NewUpdatePeriod: updateQuery.NewUpdatePeriod,
-		Sender:          contractAddr.String(),
+		QueryId:               updateQuery.QueryId,
+		NewKeys:               updateQuery.NewKeys,
+		NewUpdatePeriod:       updateQuery.NewUpdatePeriod,
+		NewTransactionsFilter: updateQuery.NewTransactionsFilter,
+		Sender:                contractAddr.String(),
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
