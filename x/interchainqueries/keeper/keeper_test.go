@@ -19,6 +19,7 @@ import (
 
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -507,6 +508,53 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				suite.Require().Error(qrerr, iqtypes.ErrNoQueryResult)
 				suite.Require().Nil(qr)
 			}
+		})
+	}
+}
+
+// Test get all registered queries
+func (suite *KeeperTestSuite) TestGetAllReigsteredQueries() {
+	suite.SetupTest()
+
+	tests := []struct {
+		name    string
+		queries []*types.RegisteredQuery
+	}{
+		{
+			"all registered queries",
+			[]*types.RegisteredQuery{
+				&(types.RegisteredQuery{
+					Id:        1,
+					QueryType: string(iqtypes.InterchainQueryTypeKV),
+				}),
+				&(types.RegisteredQuery{
+					Id:        2,
+					QueryType: string(iqtypes.InterchainQueryTypeKV),
+				}),
+			},
+		},
+		{
+			"no registered queries",
+			nil,
+		},
+	}
+
+	for i, tt := range tests {
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+			suite.SetupTest()
+
+			var (
+				ctx = suite.ChainA.GetContext()
+			)
+
+			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+			for _, query := range tt.queries {
+				iqkeeper.SaveQuery(ctx, *query)
+			}
+
+			allQueries := iqkeeper.GetAllReigsteredQueries(ctx)
+
+			suite.Require().Equal(tt.queries, allQueries)
 		})
 	}
 }
