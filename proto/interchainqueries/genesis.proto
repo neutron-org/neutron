@@ -54,4 +54,7 @@ message KVKey {
 }
 
 // GenesisState defines the interchainadapter module's genesis state.
-message GenesisState { Params params = 1 [ (gogoproto.nullable) = false ]; }
+message GenesisState { 
+  Params params = 1 [ (gogoproto.nullable) = false ]; 
+  repeated RegisteredQuery registered_queries = 2;
+}

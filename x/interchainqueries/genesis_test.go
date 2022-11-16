@@ -14,6 +14,15 @@ import (
 func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
+
+		RegisteredQueries: []*types.RegisteredQuery{
+			{
+				Id: 1,
+			},
+			{
+				Id: 2,
+			},
+		},
 	}
 
 	require.EqualValues(t, genesisState.Params, types.DefaultParams())
@@ -21,10 +30,26 @@ func TestGenesis(t *testing.T) {
 	k, ctx := keepertest.InterchainQueriesKeeper(t)
 	interchainqueries.InitGenesis(ctx, *k, genesisState)
 	got := interchainqueries.ExportGenesis(ctx, *k)
+	lastQueryId := k.GetLastRegisteredQueryKey(ctx)
 
 	require.EqualValues(t, got.Params, types.DefaultParams())
 	require.NotNil(t, got)
+	require.EqualValues(t, lastQueryId, 2)
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
+
+	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
+}
+
+func TestGenesisNullQueries(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+	}
+
+	k, ctx := keepertest.InterchainQueriesKeeper(t)
+	interchainqueries.InitGenesis(ctx, *k, genesisState)
+	got := interchainqueries.ExportGenesis(ctx, *k)
+
+	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
 }

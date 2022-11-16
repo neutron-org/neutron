@@ -74,6 +74,25 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 	return &types.QueryRegisteredQueriesResponse{RegisteredQueries: queries, Pagination: pageRes}, nil
 }
 
+// GetAllReigsteredQueries returns all registered queries
+func (k Keeper) GetAllReigsteredQueries(ctx sdk.Context) []*types.RegisteredQuery {
+	var (
+		store   = prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
+		queries []*types.RegisteredQuery
+	)
+
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		query := types.RegisteredQuery{}
+		k.cdc.MustUnmarshal(iterator.Value(), &query)
+		queries = append(queries, &query)
+	}
+
+	return queries
+}
+
 func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegisteredQueryResultRequest) (*types.QueryRegisteredQueryResultResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
