@@ -180,6 +180,12 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 
+	if len(msg.NewTransactionsFilter) != 0 {
+		if err := ValidateTransactionsFilter(msg.NewTransactionsFilter); err != nil {
+			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
+		}
+	}
+
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
