@@ -133,12 +133,6 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
 
-	if types.InterchainQueryType(query.GetQueryType()).IsKV() && len(msg.NewTransactionsFilter) > 0 {
-		ctx.Logger().Debug("UpdateInterchainQuery: wrong query type",
-			"msg", msg)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "wrong query type")
-	}
-
 	if msg.GetNewUpdatePeriod() > 0 {
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
