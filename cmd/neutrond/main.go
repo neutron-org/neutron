@@ -13,6 +13,9 @@ func main() {
 	config.Seal()
 
 	rootCmd, _ := NewRootCmd()
+
+	rootCmd.AddCommand(AddConsumerSectionCmd(app.DefaultNodeHome))
+
 	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
 		os.Exit(1)
 	}

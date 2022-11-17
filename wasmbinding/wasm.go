@@ -4,7 +4,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
-	adminmodulemodulekeeper "github.com/neutron-org/neutron/x/adminmodule/keeper"
+	adminmodulemodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
