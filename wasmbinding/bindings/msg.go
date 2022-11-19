@@ -73,9 +73,10 @@ type RemoveInterchainQuery struct {
 type RemoveInterchainQueryResponse struct{}
 
 type UpdateInterchainQuery struct {
-	QueryId         uint64         `json:"query_id,omitempty"`
-	NewKeys         []*types.KVKey `json:"new_keys,omitempty"`
-	NewUpdatePeriod uint64         `json:"new_update_period,omitempty"`
+	QueryId               uint64         `json:"query_id,omitempty"`
+	NewKeys               []*types.KVKey `json:"new_keys,omitempty"`
+	NewUpdatePeriod       uint64         `json:"new_update_period,omitempty"`
+	NewTransactionsFilter string         `json:"new_transactions_filter,omitempty"`
 }
 
 type UpdateInterchainQueryResponse struct{}
