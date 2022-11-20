@@ -107,8 +107,8 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 	return &query, nil
 }
 
-// GetAllReigsteredQueries returns all registered queries
-func (k Keeper) GetAllReigsteredQueries(ctx sdk.Context) []*types.RegisteredQuery {
+// GetAllRegisteredQueries returns all registered queries
+func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuery {
 	var (
 		store   = prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
 		queries []*types.RegisteredQuery

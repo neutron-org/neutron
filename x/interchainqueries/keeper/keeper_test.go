@@ -513,7 +513,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 }
 
 // Test get all registered queries
-func (suite *KeeperTestSuite) TestGetAllReigsteredQueries() {
+func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
 	suite.SetupTest()
 
 	tests := []struct {
@@ -552,7 +552,7 @@ func (suite *KeeperTestSuite) TestGetAllReigsteredQueries() {
 				iqkeeper.SaveQuery(ctx, *query)
 			}
 
-			allQueries := iqkeeper.GetAllReigsteredQueries(ctx)
+			allQueries := iqkeeper.GetAllRegisteredQueries(ctx)
 
 			suite.Require().Equal(tt.queries, allQueries)
 		})
