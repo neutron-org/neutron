@@ -91,8 +91,8 @@ func NextBlock(chain *ibctesting.TestChain) {
 	require.NoError(chain.T, err)
 
 	var signers []tmtypes.PrivValidator
-	for _, signer := range chain.Signers {
-		signers = append(signers, signer)
+	for _, val := range chain.Vals.Validators {
+		signers = append(signers, chain.Signers[val.PubKey.Address().String()])
 	}
 	chain.LastHeader = CreateTMClientHeader(chain, chain.ChainID, chain.CurrentHeader.Height, ibcclienttypes.Height{}, chain.CurrentHeader.Time, chain.Vals, nil, signers, &ph)
 
@@ -264,7 +264,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
 					RevisionNumber: 0,
-					RevisionHeight: 13,
+					RevisionHeight: 29,
 				})
 				suite.Require().NoError(err)
 
