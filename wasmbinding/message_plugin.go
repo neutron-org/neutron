@@ -251,10 +251,6 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		})
 	}
 
-	if err := tx.UnpackInterfaces(m.Keeper.Codec); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to unpack interfaces to send interchain transaction")
-	}
-
 	if err := tx.ValidateBasic(); err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitTx message")
 	}
