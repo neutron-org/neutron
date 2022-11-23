@@ -12,16 +12,18 @@ import (
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
+const TestContractAddressNeutron = "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq"
+
 func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
-		FeeInfos: []types.FeeInfo{types.FeeInfo{
-			Payer:    "address",
-			PacketId: types.NewPacketID("port", "channel", 64),
+		FeeInfos: []types.FeeInfo{{
+			Payer:    TestContractAddressNeutron,
+			PacketId: types.NewPacketID("port", "channel-1", 64),
 			Fee: types.Fee{
-				RecvFee:    sdk.NewCoins(sdk.NewCoin("denom", sdk.NewInt(100))),
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom", sdk.NewInt(100))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom", sdk.NewInt(100))),
+				RecvFee:    sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(0))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(sdk.DefaultBondDenom).Int64()+1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(sdk.DefaultBondDenom).Int64()+1))),
 			},
 		}},
 	}
