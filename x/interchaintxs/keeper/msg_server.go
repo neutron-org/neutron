@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -113,13 +116,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "failed to GetCapability")
 	}
 
-	sdkMsgs, err := msg.GetTxMsgs()
-	if err != nil {
-		k.Logger(ctx).Debug("SubmitTx: failed to GetTxMsgs", "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
-		return nil, sdkerrors.Wrap(err, "failed to GetTxMsgs")
-	}
-
-	data, err := icatypes.SerializeCosmosTx(k.Codec, sdkMsgs)
+	data, err := SerializeCosmosTx(k.Codec, msg.Msgs)
 	if err != nil {
 		k.Logger(ctx).Debug("SubmitTx: failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SerializeCosmosTx")
@@ -155,4 +152,26 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		SequenceId: sequence,
 		Channel:    channelID,
 	}, nil
+}
+
+// SerializeCosmosTx serializes a slice of *types.Any messages using the CosmosTx type. The proto marshaled CosmosTx
+// bytes are returned. This differs from icatypes.SerializeCosmosTx in that it does not serialize sdk.Msgs, but
+// simply uses the already serialized values.
+func SerializeCosmosTx(cdc codec.BinaryCodec, msgs []*codectypes.Any) (bz []byte, err error) {
+	// only ProtoCodec is supported
+	if _, ok := cdc.(*codec.ProtoCodec); !ok {
+		return nil, sdkerrors.Wrap(icatypes.ErrInvalidCodec,
+			"only ProtoCodec is supported for receiving messages on the host chain")
+	}
+
+	cosmosTx := &icatypes.CosmosTx{
+		Messages: msgs,
+	}
+
+	bz, err = cdc.Marshal(cosmosTx)
+	if err != nil {
+		return nil, err
+	}
+
+	return bz, nil
 }

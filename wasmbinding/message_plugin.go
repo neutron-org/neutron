@@ -150,10 +150,11 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 
 func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) (*bindings.UpdateInterchainQueryResponse, error) {
 	msg := icqtypes.MsgUpdateInterchainQueryRequest{
-		QueryId:         updateQuery.QueryId,
-		NewKeys:         updateQuery.NewKeys,
-		NewUpdatePeriod: updateQuery.NewUpdatePeriod,
-		Sender:          contractAddr.String(),
+		QueryId:               updateQuery.QueryId,
+		NewKeys:               updateQuery.NewKeys,
+		NewUpdatePeriod:       updateQuery.NewUpdatePeriod,
+		NewTransactionsFilter: updateQuery.NewTransactionsFilter,
+		Sender:                contractAddr.String(),
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
@@ -333,9 +334,6 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 			TypeUrl: msg.TypeURL,
 			Value:   msg.Value,
 		})
-	}
-	if err := tx.UnpackInterfaces(m.Keeper.Codec); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to unpack interfaces to send interchain transaction")
 	}
 
 	if err := tx.ValidateBasic(); err != nil {

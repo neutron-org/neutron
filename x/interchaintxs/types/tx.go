@@ -88,20 +88,6 @@ func (msg *MsgSubmitTx) Type() string {
 	return "submit-tx"
 }
 
-// GetTxMsgs casts the attached *types.Any messages to SDK messages.
-func (msg *MsgSubmitTx) GetTxMsgs() (sdkMsgs []sdk.Msg, err error) {
-	for idx, msg := range msg.Msgs {
-		sdkMsg, ok := msg.GetCachedValue().(sdk.Msg)
-		if !ok {
-			return nil, fmt.Errorf("failed to cast message #%d to sdk.Msg", idx)
-		}
-
-		sdkMsgs = append(sdkMsgs, sdkMsg)
-	}
-
-	return
-}
-
 func (msg MsgSubmitTx) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
