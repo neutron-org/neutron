@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var LimitCap uint64 = 100
+
 func (k Keeper) Failures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
 	return k.AddressFailures(c, req)
 }
@@ -18,6 +20,11 @@ func (k Keeper) Failures(c context.Context, req *types.QueryFailuresRequest) (*t
 func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	pagination := req.GetPagination()
+	if pagination != nil && pagination.Limit > LimitCap {
+		return nil, status.Errorf(codes.InvalidArgument, "limit %v is too high, should be less or equal %v", pagination.Limit, LimitCap)
 	}
 
 	var failures []types.Failure
