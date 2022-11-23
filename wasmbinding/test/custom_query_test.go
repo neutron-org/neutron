@@ -143,7 +143,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
-	expected := "neutron122eap6p6394jnspx4wzdr0ypteakrls929dpargf0jevz64c6yxsw59usj"
+	expected := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
 	suite.Require().Equal(expected, resp.InterchainAccountAddress)
 }
 

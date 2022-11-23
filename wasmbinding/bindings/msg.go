@@ -112,7 +112,7 @@ type UpdateInterchainQuery struct {
 	QueryId               uint64            `json:"query_id,omitempty"`
 	NewKeys               []*icqtypes.KVKey `json:"new_keys,omitempty"`
 	NewUpdatePeriod       uint64            `json:"new_update_period,omitempty"`
-	NewTransactionsFilter string         `json:"new_transactions_filter,omitempty"`
+	NewTransactionsFilter string            `json:"new_transactions_filter,omitempty"`
 }
 
 type UpdateInterchainQueryResponse struct{}

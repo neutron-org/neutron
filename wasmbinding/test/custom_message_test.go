@@ -260,7 +260,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.NoError(err)
 	suite.Nil(events)
 	suite.Equal(uint64(1), response.SequenceId)
-	suite.Equal("channel-0", response.Channel)
+	suite.Equal("channel-2", response.Channel)
 }
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
