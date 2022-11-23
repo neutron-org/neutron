@@ -12,7 +12,7 @@ import (
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
-const TestAddressNeutron = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
+const TestAddressNeutron = "neutron13xvjxhkkxxhztcugr6weyt76eedj5ucpt4xluv"
 const TestContractAddressJuno = "juno10h0hc64jv006rr8qy0zhlu4jsxct8qwa0vtaleayh0ujz0zynf2s2r7v8q"
 const TestContractAddressNeutron = "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq"
 
