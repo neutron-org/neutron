@@ -26,22 +26,22 @@ func (gs GenesisState) Validate() error {
 			return err
 		}
 		if len(addr) != wasmtypes.ContractAddrLen {
-			return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "Address is not a contract")
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "fee payer address %v is not a contract", addr)
 		}
 		if err := host.PortIdentifierValidator(info.PacketId.PortId); err != nil {
-			return sdkerrors.Wrap(err, "invalid port ID")
+			return err
 		}
 		if err := host.ChannelIdentifierValidator(info.PacketId.ChannelId); err != nil {
-			return sdkerrors.Wrap(err, "invalid channel ID")
+			return err
 		}
 		if err := info.Fee.Validate(); err != nil {
-			return sdkerrors.Wrap(err, "")
+			return err
 		}
 		if info.Fee.TimeoutFee.IsAllLT(gs.Params.MinFee.TimeoutFee) {
-			return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min governance set timeout fee: %v < %v", info.Fee.TimeoutFee, gs.Params.MinFee.TimeoutFee)
+			return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided timeout fee is less than min timeout fee: %v < %v", info.Fee.TimeoutFee, gs.Params.MinFee.TimeoutFee)
 		}
 		if info.Fee.AckFee.IsAllLT(gs.Params.MinFee.AckFee) {
-			return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", info.Fee.AckFee, gs.Params.MinFee.AckFee)
+			return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min ack fee: %v < %v", info.Fee.AckFee, gs.Params.MinFee.AckFee)
 		}
 	}
 	return gs.Params.Validate()
