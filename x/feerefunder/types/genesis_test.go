@@ -41,7 +41,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			valid:    true,
 		},
 		{
-			desc: "valid structure",
+			desc: "valid genesis state",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
 				FeeInfos: []types.FeeInfo{{

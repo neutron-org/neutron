@@ -41,7 +41,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	return validateFee(p.MinFee)
+	return p.MinFee.Validate()
 }
 
 // String implements the Stringer interface.
