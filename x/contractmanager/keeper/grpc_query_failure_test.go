@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"math"
 	"strconv"
 	"testing"
 
@@ -126,6 +127,10 @@ func TestFailureQueryPaginated(t *testing.T) {
 			nullify.Fill(flattenItems),
 			nullify.Fill(resp.Failures),
 		)
+	})
+	t.Run("More than limit", func(t *testing.T) {
+		_, err := keeper.Failures(wctx, request(nil, 0, math.MaxUint64, true))
+		require.Error(t, err)
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
 		_, err := keeper.Failures(wctx, nil)
