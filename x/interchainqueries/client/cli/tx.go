@@ -29,6 +29,7 @@ func GetTxCmd() *cobra.Command {
 
 	return cmd
 }
+
 func RemoveInterchainQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "remove-interchain-query [query-id]",
