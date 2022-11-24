@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutronorg.neutron.feerefunder;
+package neutron.interchainadapter.feerefunder;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
