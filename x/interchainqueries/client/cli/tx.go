@@ -42,14 +42,12 @@ func RemoveInterchainQueryCmd() *cobra.Command {
 			}
 
 			sender := clientCtx.GetFromAddress().String()
-			fmt.Println(sender)
 			queryID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return fmt.Errorf("failed to parse query id: %w", err)
 			}
 
 			msg := types.NewMsgRemoveInterchainQuery(sender, queryID)
-
 			if err = msg.ValidateBasic(); err != nil {
 				return err
 			}
