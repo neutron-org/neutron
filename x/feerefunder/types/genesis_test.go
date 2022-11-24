@@ -25,20 +25,20 @@ func TestGenesisState_Validate(t *testing.T) {
 	validTimeoutFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(sdk.DefaultBondDenom).Int64()+1)))
 
 	invalidRecvFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1)))
-	invalidAckFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(sdk.DefaultBondDenom).Int64()-1)))
-	invalidTimeoutFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(sdk.DefaultBondDenom).Int64()-1)))
 
 	validPacketId := types.NewPacketID("port", "channel-1", 64)
 
 	for _, tc := range []struct {
-		desc     string
-		genState *types.GenesisState
-		valid    bool
+		desc             string
+		genState         *types.GenesisState
+		valid            bool
+		expectedErrorMsg string
 	}{
 		{
-			desc:     "default is valid",
-			genState: types.DefaultGenesis(),
-			valid:    true,
+			desc:             "default is valid",
+			genState:         types.DefaultGenesis(),
+			valid:            true,
+			expectedErrorMsg: "",
 		},
 		{
 			desc: "valid genesis state",
@@ -54,7 +54,8 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				}},
 			},
-			valid: true,
+			valid:            true,
+			expectedErrorMsg: "",
 		},
 		{
 			desc: "invalid payer address",
@@ -70,7 +71,8 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				}},
 			},
-			valid: false,
+			valid:            false,
+			expectedErrorMsg: "failed to parse the payer address",
 		},
 		{
 			desc: "payer is not a contract",
@@ -86,7 +88,8 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				}},
 			},
-			valid: false,
+			valid:            false,
+			expectedErrorMsg: "is not a contract",
 		},
 		{
 			desc: "payer is from a wrong chain",
@@ -102,7 +105,8 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				}},
 			},
-			valid: false,
+			valid:            false,
+			expectedErrorMsg: "failed to parse the payer address",
 		},
 		{
 			desc: "invalid port",
@@ -118,7 +122,8 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				}},
 			},
-			valid: false,
+			valid:            false,
+			expectedErrorMsg: "port id",
 		},
 		{
 			desc: "invalid channel",
@@ -134,39 +139,8 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				}},
 			},
-			valid: false,
-		},
-		{
-			desc: "AckFee more than min",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				FeeInfos: []types.FeeInfo{{
-					Payer:    TestContractAddressNeutron,
-					PacketId: validPacketId,
-					Fee: types.Fee{
-						RecvFee:    validRecvFee,
-						AckFee:     invalidAckFee,
-						TimeoutFee: validTimeoutFee,
-					},
-				}},
-			},
-			valid: false,
-		},
-		{
-			desc: "TimeoutFee more than min",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				FeeInfos: []types.FeeInfo{{
-					Payer:    TestContractAddressNeutron,
-					PacketId: validPacketId,
-					Fee: types.Fee{
-						RecvFee:    validRecvFee,
-						AckFee:     validAckFee,
-						TimeoutFee: invalidTimeoutFee,
-					},
-				}},
-			},
-			valid: false,
+			valid:            false,
+			expectedErrorMsg: "channel id",
 		},
 		{
 			desc: "Recv fee non-zero",
@@ -182,7 +156,8 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				}},
 			},
-			valid: false,
+			valid:            false,
+			expectedErrorMsg: "invalid fees",
 		},
 		{
 			desc: "Recv fee nil",
@@ -208,6 +183,7 @@ func TestGenesisState_Validate(t *testing.T) {
 				require.NoError(t, err)
 			} else {
 				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.expectedErrorMsg)
 			}
 		})
 	}
