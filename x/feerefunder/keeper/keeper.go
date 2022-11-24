@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -72,7 +73,25 @@ func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.P
 	}
 	k.StoreFeeInfo(ctx, feeInfo)
 
-	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, fee.Total())
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, fee.Total()); err != nil {
+		return err
+	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeLockFees,
+			sdk.NewAttribute(types.AttributeKeyPayer, payer.String()),
+			sdk.NewAttribute(types.AttributeKeyPortId, packetID.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelId, packetID.ChannelId),
+			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packetID.Sequence, 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+		),
+	})
+
+	return nil
 }
 
 func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAddress, packetID types.PacketID) {
@@ -95,7 +114,19 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 		panic(sdkerrors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%v", receiver, packetID))
 	}
 
-	ctx.EventManager().EmitEvents(ctx.EventManager().Events())
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeDistributeAcknowledgementFee,
+			sdk.NewAttribute(types.AttributeKeyReceiver, receiver.String()),
+			sdk.NewAttribute(types.AttributeKeyPortId, packetID.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelId, packetID.ChannelId),
+			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packetID.Sequence, 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+		),
+	})
 
 	k.removeFeeInfo(ctx, packetID)
 }
@@ -119,6 +150,20 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 		k.Logger(ctx).Error("error returning unused ack fee", "receiver", feeInfo.Payer, "packet", packetID)
 		panic(sdkerrors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%v", receiver, packetID))
 	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeDistributeTimeoutFee,
+			sdk.NewAttribute(types.AttributeKeyReceiver, receiver.String()),
+			sdk.NewAttribute(types.AttributeKeyPortId, packetID.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelId, packetID.ChannelId),
+			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packetID.Sequence, 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+		),
+	})
 
 	k.removeFeeInfo(ctx, packetID)
 }
