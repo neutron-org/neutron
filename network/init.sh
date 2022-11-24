@@ -5,7 +5,10 @@ BINARY=neutrond
 CHAIN_DIR=./data
 CHAINID_1=test-1
 CHAINID_2=test-2
-DAO_CONTRACT=./contracts/neutron_dao.wasm
+DAO_CONTRACT=./contracts/cwd_core.wasm
+PROPOSAL_CONTRACT=./contracts/cwd_proposal_single.wasm
+VOTING_CONTRACT=./contracts/cwd_voting_vault.wasm
+STAKING_CONTRACT=./contracts/cwd_voting_native_staked.wasm
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
 DEMO_MNEMONIC_1="banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
@@ -73,11 +76,39 @@ $BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_2
 
 echo "Initializing dao contract in genesis..."
 # Upload the dao contract
+$BINARY add-wasm-message store ${STAKING_CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home $CHAIN_DIR/$CHAINID_1
 $BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${VOTING_CONTRACT} --output json  --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --home $CHAIN_DIR/$CHAINID_1
 # Instantiate the contract
-INIT_CONTRACT="$(printf '{"owner":"%s"}' "${ADMIN_ADDRESS}")"
+#INIT_CONTRACT="$(printf '{"owner":"%s"}' "${ADMIN_ADDRESS}")"
+INIT="$(printf '{"denom":"stake"}')"
+
 #echo "Instantiate"
-$BINARY add-wasm-message  instantiate-contract 1 "$INIT_CONTRACT" --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message  instantiate-contract 1 ${INIT} --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --admin ${ADMIN_ADDRESS}  --label "staking"  --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message  instantiate-contract 2 '{
+                                                                                       "admin": null,
+                                                                                       "automatically_add_cw20s": false,
+                                                                                       "automatically_add_cw721s": false,
+                                                                                       "description": "basic neutron dao",
+                                                                                       "image_url": null,
+                                                                                       "name": "Neutron",
+                                                                                       "initial_items": null,
+                                                                                       "proposal_modules_instantiate_info": [
+                                                                                         {
+                                                                                           "admin": null,
+                                                                                           "code_id": 3,
+                                                                                           "label": "DAO_Neutron_cw-proposal-single",
+                                                                                           "msg": "ewogICAgICAgICJhbGxvd19yZXZvdGluZyI6IGZhbHNlLAogICAgICAgICJwcmVfcHJvcG9zZV9pbmZvIjogewogICAgICAgICAgIkFueW9uZU1heVByb3Bvc2UiOiB7fQogICAgICAgIH0sCiAgICAgICAgImRlcG9zaXRfaW5mbyI6IG51bGwsCiAgICAgICAgImNsb3NlX3Byb3Bvc2FsX29uX2V4ZWN1dGlvbl9mYWlsdXJlIjogZmFsc2UsCiAgICAgICAgIm1heF92b3RpbmdfcGVyaW9kIjogewogICAgICAgICAgInRpbWUiOiA2MDQ4MDAKICAgICAgICB9LAogICAgICAgICJvbmx5X21lbWJlcnNfZXhlY3V0ZSI6IGZhbHNlLAogICAgICAgICJ0aHJlc2hvbGQiOiB7CiAgICAgICAgICAidGhyZXNob2xkX3F1b3J1bSI6IHsKICAgICAgICAgICAgInF1b3J1bSI6IHsKICAgICAgICAgICAgICAicGVyY2VudCI6ICIwLjIwIgogICAgICAgICAgICB9LAogICAgICAgICAgICAidGhyZXNob2xkIjogewogICAgICAgICAgICAgICJtYWpvcml0eSI6IHt9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIH0="
+                                                                                         }
+                                                                                       ],
+                                                                                       "voting_module_instantiate_info": {
+                                                                                         "admin": null,
+                                                                                         "code_id": 4,
+                                                                                         "label": "DAO_Neutron_cwd-voting-vault",
+                                                                                         "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJzdGFraW5nIjogIm5ldXRyb24xNGhqMnRhdnE4ZnBlc2R3eHhjdTQ0cnR5M2hoOTB2aHVqcnZjbXN0bDR6cjN0eG1mdnc5czVjMmVwcSIKICAgIH0="
+                                                                                       }
+                                                                                     }' --run-as neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
 
 echo "Changing defaults and ports in app.toml and config.toml files..."
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://0.0.0.0:'"$P2PPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/config.toml
