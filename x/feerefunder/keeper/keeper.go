@@ -74,15 +74,15 @@ func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.P
 	k.StoreFeeInfo(ctx, feeInfo)
 
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, fee.Total()); err != nil {
-		return err
+		return sdkerrors.Wrapf(err, "failed to send coins during fees locking")
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeLockFees,
 			sdk.NewAttribute(types.AttributeKeyPayer, payer.String()),
-			sdk.NewAttribute(types.AttributeKeyPortId, packetID.PortId),
-			sdk.NewAttribute(types.AttributeKeyChannelId, packetID.ChannelId),
+			sdk.NewAttribute(types.AttributeKeyPortID, packetID.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelID, packetID.ChannelId),
 			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packetID.Sequence, 10)),
 		),
 		sdk.NewEvent(
@@ -118,8 +118,8 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 		sdk.NewEvent(
 			types.EventTypeDistributeAcknowledgementFee,
 			sdk.NewAttribute(types.AttributeKeyReceiver, receiver.String()),
-			sdk.NewAttribute(types.AttributeKeyPortId, packetID.PortId),
-			sdk.NewAttribute(types.AttributeKeyChannelId, packetID.ChannelId),
+			sdk.NewAttribute(types.AttributeKeyPortID, packetID.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelID, packetID.ChannelId),
 			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packetID.Sequence, 10)),
 		),
 		sdk.NewEvent(
@@ -155,8 +155,8 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 		sdk.NewEvent(
 			types.EventTypeDistributeTimeoutFee,
 			sdk.NewAttribute(types.AttributeKeyReceiver, receiver.String()),
-			sdk.NewAttribute(types.AttributeKeyPortId, packetID.PortId),
-			sdk.NewAttribute(types.AttributeKeyChannelId, packetID.ChannelId),
+			sdk.NewAttribute(types.AttributeKeyPortID, packetID.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelID, packetID.ChannelId),
 			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packetID.Sequence, 10)),
 		),
 		sdk.NewEvent(

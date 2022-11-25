@@ -7,8 +7,8 @@ const (
 	EventTypeLockFees                     = "distribute_lock_fees"
 
 	AttributeKeyReceiver  = "receiver"
-	AttributeKeyChannelId = "channel_id"
-	AttributeKeyPortId    = "port_id"
+	AttributeKeyChannelID = "channel_id"
+	AttributeKeyPortID    = "port_id"
 	AttributeKeySequence  = "sequence"
 	AttributeKeyPayer     = "payer"
 )
