@@ -107,6 +107,25 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 	return &query, nil
 }
 
+// GetAllRegisteredQueries returns all registered queries
+func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuery {
+	var (
+		store   = prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
+		queries []*types.RegisteredQuery
+	)
+
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		query := types.RegisteredQuery{}
+		k.cdc.MustUnmarshal(iterator.Value(), &query)
+		queries = append(queries, &query)
+	}
+
+	return queries
+}
+
 func (k Keeper) RemoveQueryByID(ctx sdk.Context, id uint64) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.GetRegisteredQueryByIDKey(id))

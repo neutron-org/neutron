@@ -10,6 +10,15 @@ import (
 // InitGenesis initializes the capability module's state from a provided genesis
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
+	// Set all registered queries
+	for _, elem := range genState.RegisteredQueries {
+		k.SetLastRegisteredQueryKey(ctx, elem.Id)
+		if err := k.SaveQuery(ctx, *elem); err != nil {
+			panic(err)
+		}
+
+	}
+
 	k.SetParams(ctx, genState.Params)
 }
 
@@ -17,6 +26,8 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
+
+	genesis.RegisteredQueries = k.GetAllRegisteredQueries(ctx)
 
 	return genesis
 }
