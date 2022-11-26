@@ -47,7 +47,7 @@ type RegisteredQuery struct {
 	// Amount of coins deposited for the query.
 	Deposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,10,rep,name=deposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"deposit"`
 	// Timeout before query becomes available for everybody to remove.
-	SubmitTimeout uint64 `protobuf:"varint,12,opt,name=submit_timeout,json=submitTimeout,proto3" json:"submit_timeout,omitempty"`
+	SubmitTimeout uint64 `protobuf:"varint,11,opt,name=submit_timeout,json=submitTimeout,proto3" json:"submit_timeout,omitempty"`
 }
 
 func (m *RegisteredQuery) Reset()         { *m = RegisteredQuery{} }
@@ -340,7 +340,7 @@ func (m *RegisteredQuery) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.SubmitTimeout != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.SubmitTimeout))
 		i--
-		dAtA[i] = 0x60
+		dAtA[i] = 0x58
 	}
 	if len(m.Deposit) > 0 {
 		for iNdEx := len(m.Deposit) - 1; iNdEx >= 0; iNdEx-- {
@@ -909,7 +909,7 @@ func (m *RegisteredQuery) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 12:
+		case 11:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SubmitTimeout", wireType)
 			}

@@ -42,7 +42,7 @@ message RegisteredQuery {
   ];
 
   // Timeout before query becomes available for everybody to remove.
-  uint64 submit_timeout = 12;
+  uint64 submit_timeout = 11;
 }
 
 message KVKey {

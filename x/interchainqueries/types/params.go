@@ -12,7 +12,7 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
 	KeyQuerySubmitTimeout               = []byte("QuerySubmitTimeout")
-	DefaultQuerySubmitTimeout           = uint64(518400) // One month, with block_time = 5s
+	DefaultQuerySubmitTimeout           = uint64(1036800) // One month, with block_time = 2.5s
 	KeyQueryDeposit                     = []byte("QueryDeposit")
 	DefaultQueryDeposit       sdk.Coins = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(int64(1_000_000))))
 )
