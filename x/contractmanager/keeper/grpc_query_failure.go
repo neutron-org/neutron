@@ -24,7 +24,7 @@ func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresReque
 
 	pagination := req.GetPagination()
 	if pagination != nil && pagination.Limit > FailuresQueryMaxLimit {
-		return nil, status.Errorf(codes.InvalidArgument, "limit %d is too high, should be less or equal %d", pagination.Limit, FailuresQueryMaxLimit)
+		return nil, status.Errorf(codes.InvalidArgument, "limit is more than maximum allowed (%d > %d)", pagination.Limit, FailuresQueryMaxLimit)
 	}
 
 	var failures []types.Failure

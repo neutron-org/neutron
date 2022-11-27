@@ -130,7 +130,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 	})
 	t.Run("More than limit", func(t *testing.T) {
 		_, err := keeper.Failures(wctx, request(nil, 0, math.MaxUint64, true))
-		require.ErrorContains(t, err, "is too high, should be less or equal")
+		require.ErrorContains(t, err, "limit is more than maximum allowed")
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
 		_, err := keeper.Failures(wctx, nil)
