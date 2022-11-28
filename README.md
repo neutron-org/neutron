@@ -70,7 +70,7 @@ make stop-cosmopark
 
 Make sure you delete node image if you use the whole thing in dev purposes
 ```shell
-@docker rmi neutron_node
+@docker rmi neutron-node
 ```
 
 ## Documentation
