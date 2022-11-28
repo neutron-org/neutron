@@ -89,7 +89,7 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 		panic(sdkerrors.Wrapf(err, "error distributing ack fee: receiver = %s, packetID=%v", receiver, packetID))
 	}
 
-	// try to return unused timeout and recv packet fee
+	// try to return unused timeout fee
 	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.TimeoutFee); err != nil {
 		k.Logger(ctx).Error("error returning unused timeout fee", "receiver", feeInfo.Payer, "packet", packetID)
 		panic(sdkerrors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%v", receiver, packetID))
@@ -114,7 +114,7 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 		panic(sdkerrors.Wrapf(err, "error distributing timeout fee: receiver = %s, packetID=%v", receiver, packetID))
 	}
 
-	// try to return unused ack and recv packet fee
+	// try to return unused ack fee
 	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.AckFee); err != nil {
 		k.Logger(ctx).Error("error returning unused ack fee", "receiver", feeInfo.Payer, "packet", packetID)
 		panic(sdkerrors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%v", receiver, packetID))
