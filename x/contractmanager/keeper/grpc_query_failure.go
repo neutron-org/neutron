@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var FailuresQueryMaxLimit uint64 = query.DefaultLimit
+const FailuresQueryMaxLimit uint64 = query.DefaultLimit
 
 func (k Keeper) Failures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
 	return k.AddressFailures(c, req)
