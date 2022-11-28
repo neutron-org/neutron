@@ -28,7 +28,7 @@ func TestKeeperCheckFees(t *testing.T) {
 		valid bool
 	}{
 		{
-			desc: "single proper denom but insufficient",
+			desc: "SingleProperDenomInsufficient",
 			fees: &types.Fee{
 				RecvFee:    nil,
 				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(1))),
@@ -37,7 +37,7 @@ func TestKeeperCheckFees(t *testing.T) {
 			valid: false,
 		},
 		{
-			desc: "single denom sufficient amount",
+			desc: "SingleDenomSufficient",
 			fees: &types.Fee{
 				RecvFee:    nil,
 				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
@@ -46,7 +46,7 @@ func TestKeeperCheckFees(t *testing.T) {
 			valid: true,
 		},
 		{
-			desc: "multiple denoms, both are proper, only one enough",
+			desc: "MultipleDenomsOneIsEnough",
 			fees: &types.Fee{
 				RecvFee:    nil,
 				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)), sdk.NewCoin("denom2", sdk.NewInt(1))),
@@ -55,7 +55,7 @@ func TestKeeperCheckFees(t *testing.T) {
 			valid: true,
 		},
 		{
-			desc: "no proper denom",
+			desc: "NoProperDenom",
 			fees: &types.Fee{
 				RecvFee:    nil,
 				AckFee:     sdk.NewCoins(sdk.NewCoin("denom3", sdk.NewInt(1))),
@@ -64,7 +64,7 @@ func TestKeeperCheckFees(t *testing.T) {
 			valid: false,
 		},
 		{
-			desc: "proper denom plus random one",
+			desc: "ProperDenomPlusRandomOne",
 			fees: &types.Fee{
 				RecvFee:    nil,
 				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)), sdk.NewCoin("denom3", sdk.NewInt(1))),
