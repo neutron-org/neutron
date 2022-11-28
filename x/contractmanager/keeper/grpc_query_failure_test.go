@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	keeper_package "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"strconv"
 	"testing"
 
@@ -13,6 +12,7 @@ import (
 
 	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
@@ -20,9 +20,9 @@ import (
 var _ = strconv.IntSize
 
 func TestFailureQuerySingle(t *testing.T) {
-	keeper, ctx := keepertest.ContractManagerKeeper(t)
+	k, ctx := keepertest.ContractManagerKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
-	msgs := createNFailure(keeper, ctx, 2, 2)
+	msgs := createNFailure(k, ctx, 2, 2)
 	for _, tc := range []struct {
 		desc     string
 		request  *types.QueryFailuresRequest
@@ -63,7 +63,7 @@ func TestFailureQuerySingle(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			response, err := keeper.AddressFailures(wctx, tc.request)
+			response, err := k.AddressFailures(wctx, tc.request)
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 			} else {
@@ -78,9 +78,9 @@ func TestFailureQuerySingle(t *testing.T) {
 }
 
 func TestFailureQueryPaginated(t *testing.T) {
-	keeper, ctx := keepertest.ContractManagerKeeper(t)
+	k, ctx := keepertest.ContractManagerKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
-	msgs := createNFailure(keeper, ctx, 5, 3)
+	msgs := createNFailure(k, ctx, 5, 3)
 	flattenItems := flattenFailures(msgs)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryFailuresRequest {
@@ -96,7 +96,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(flattenItems); i += step {
-			resp, err := keeper.Failures(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := k.Failures(wctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -109,7 +109,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(flattenItems); i += step {
-			resp, err := keeper.Failures(wctx, request(next, 0, uint64(step), false))
+			resp, err := k.Failures(wctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -120,7 +120,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
-		resp, err := keeper.Failures(wctx, request(nil, 0, 0, true))
+		resp, err := k.Failures(wctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
 		require.Equal(t, len(flattenItems), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
@@ -129,11 +129,11 @@ func TestFailureQueryPaginated(t *testing.T) {
 		)
 	})
 	t.Run("MoreThanLimit", func(t *testing.T) {
-		_, err := keeper.Failures(wctx, request(nil, 0, keeper_package.FailuresQueryMaxLimit+1, true))
+		_, err := k.Failures(wctx, request(nil, 0, keeper.FailuresQueryMaxLimit+1, true))
 		require.ErrorContains(t, err, "limit is more than maximum allowed")
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := keeper.Failures(wctx, nil)
+		_, err := k.Failures(wctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
 	})
 }
