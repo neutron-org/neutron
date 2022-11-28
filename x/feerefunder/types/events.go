@@ -4,7 +4,7 @@ package types
 const (
 	EventTypeDistributeAcknowledgementFee = "distribute_ack_fee"
 	EventTypeDistributeTimeoutFee         = "distribute_timeout_fee"
-	EventTypeLockFees                     = "distribute_lock_fees"
+	EventTypeLockFees                     = "lock_fees"
 
 	AttributeKeyReceiver  = "receiver"
 	AttributeKeyChannelID = "channel_id"
