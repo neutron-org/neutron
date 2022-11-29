@@ -68,8 +68,7 @@ type AddAdmin struct {
 	Admin string `protobuf:"bytes,2,opt,name=admin,proto3" json:"admin,omitempty"`
 }
 
-type AddAdminResponse struct {
-}
+type AddAdminResponse struct{}
 
 type SubmitProposal struct {
 	Proposals Proposals `json:"proposals"`

@@ -19,7 +19,6 @@ import (
 
 // Executes the standard group of ccv tests against a consumer and provider app.go implementation.
 func TestCCVTestSuite(t *testing.T) {
-
 	ccvSuite := e2e.NewCCVTestSuite(
 		func(t *testing.T) (
 			*ibctesting.Coordinator,

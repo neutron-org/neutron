@@ -543,9 +543,7 @@ func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
 		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
 			suite.SetupTest()
 
-			var (
-				ctx = suite.ChainA.GetContext()
-			)
+			ctx := suite.ChainA.GetContext()
 
 			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
 			for _, query := range tt.queries {

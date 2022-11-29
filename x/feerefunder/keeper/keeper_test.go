@@ -1,10 +1,11 @@
 package keeper_test
 
 import (
+	"testing"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	testutil_keeper "github.com/neutron-org/neutron/testutil/keeper"
 	"github.com/pkg/errors"
-	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/x/feerefunder/types"
