@@ -56,22 +56,22 @@ type paramChangeKey struct {
 }
 
 var WhitelistedParams = map[paramChangeKey]struct{}{
-	//bank
+	// bank
 	{Subspace: banktypes.ModuleName, Key: string(banktypes.KeySendEnabled)}: {},
-	//ibc transfer
+	// ibc transfer
 	{Subspace: ibctransfertypes.ModuleName, Key: string(ibctransfertypes.KeySendEnabled)}:    {},
 	{Subspace: ibctransfertypes.ModuleName, Key: string(ibctransfertypes.KeyReceiveEnabled)}: {},
-	//ica
+	// ica
 	{Subspace: icahosttypes.SubModuleName, Key: string(icahosttypes.KeyHostEnabled)}:   {},
 	{Subspace: icahosttypes.SubModuleName, Key: string(icahosttypes.KeyAllowMessages)}: {},
-	//cosmwasm
+	// cosmwasm
 	{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyUploadAccess)}:      {},
 	{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyInstantiateAccess)}: {},
-	//feerefunder
+	// feerefunder
 	{Subspace: feerefundertypes.ModuleName, Key: string(feerefundertypes.KeyFees)}: {},
-	//interchaintxs
+	// interchaintxs
 	{Subspace: interchaintxstypes.ModuleName, Key: string(interchaintxstypes.KeyMsgSubmitTxMaxMessages)}: {},
-	//interchainqueries
+	// interchainqueries
 	{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyQuerySubmitTimeout)}: {},
 	{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyQueryDeposit)}:       {},
 }
