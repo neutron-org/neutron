@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -15,7 +14,6 @@ import (
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/neutron-org/neutron/internal/sudo"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -25,14 +23,13 @@ const (
 
 type (
 	Keeper struct {
-		cdc         codec.BinaryCodec
-		storeKey    storetypes.StoreKey
-		memKey      storetypes.StoreKey
-		paramstore  paramtypes.Subspace
-		ibcKeeper   *ibckeeper.Keeper
-		wasmKeeper  *wasm.Keeper
-		bank        types.BankKeeper
-		sudoHandler sudo.Handler
+		cdc                   codec.BinaryCodec
+		storeKey              storetypes.StoreKey
+		memKey                storetypes.StoreKey
+		paramstore            paramtypes.Subspace
+		ibcKeeper             *ibckeeper.Keeper
+		bank                  types.BankKeeper
+		contractManagerKeeper types.ContractManagerKeeper
 	}
 )
 
@@ -42,8 +39,8 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
-	wasmKeeper *wasm.Keeper,
 	bank types.BankKeeper,
+	contractManagerKeeper types.ContractManagerKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -51,14 +48,13 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:         cdc,
-		storeKey:    storeKey,
-		memKey:      memKey,
-		paramstore:  ps,
-		ibcKeeper:   ibcKeeper,
-		wasmKeeper:  wasmKeeper,
-		bank:        bank,
-		sudoHandler: sudo.NewSudoHandler(wasmKeeper, types.ModuleName),
+		cdc:                   cdc,
+		storeKey:              storeKey,
+		memKey:                memKey,
+		paramstore:            ps,
+		ibcKeeper:             ibcKeeper,
+		bank:                  bank,
+		contractManagerKeeper: contractManagerKeeper,
 	}
 }
 
@@ -68,7 +64,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) GetLastRegisteredQueryKey(ctx sdk.Context) uint64 {
 	store := ctx.KVStore(k.storeKey)
-	bytes := store.Get(types.LastRegisteredQueryIdKey)
+	bytes := store.Get(types.LastRegisteredQueryIDKey)
 	if bytes == nil {
 		k.Logger(ctx).Debug("Last registered query key don't exists, GetLastRegisteredQueryKey returns 0")
 		return 0
@@ -78,7 +74,7 @@ func (k Keeper) GetLastRegisteredQueryKey(ctx sdk.Context) uint64 {
 
 func (k Keeper) SetLastRegisteredQueryKey(ctx sdk.Context, id uint64) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.LastRegisteredQueryIdKey, sdk.Uint64ToBigEndian(id))
+	store.Set(types.LastRegisteredQueryIDKey, sdk.Uint64ToBigEndian(id))
 }
 
 func (k Keeper) SaveQuery(ctx sdk.Context, query types.RegisteredQuery) error {
@@ -109,6 +105,25 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 	}
 
 	return &query, nil
+}
+
+// GetAllRegisteredQueries returns all registered queries
+func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuery {
+	var (
+		store   = prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
+		queries []*types.RegisteredQuery
+	)
+
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		query := types.RegisteredQuery{}
+		k.cdc.MustUnmarshal(iterator.Value(), &query)
+		queries = append(queries, &query)
+	}
+
+	return queries
 }
 
 func (k Keeper) RemoveQueryByID(ctx sdk.Context, id uint64) {

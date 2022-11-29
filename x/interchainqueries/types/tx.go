@@ -9,9 +9,11 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 )
 
-var (
-	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
+const (
+	MaxKVQueryKeysCount = 32
 )
+
+var _ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
 
 func (msg MsgSubmitQueryResult) Route() string {
 	return RouterKey
@@ -51,7 +53,6 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 
 func (msg MsgSubmitQueryResult) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgSubmitQueryResult) GetSigners() []sdk.AccAddress {
@@ -91,6 +92,15 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInvalidQueryType, "invalid query type")
 	}
 
+	if InterchainQueryType(msg.QueryType).IsKV() {
+		if len(msg.Keys) == 0 {
+			return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
+		}
+		if err := validateKeys(msg.GetKeys()); err != nil {
+			return err
+		}
+	}
+
 	if InterchainQueryType(msg.QueryType).IsTX() {
 		if err := ValidateTransactionsFilter(msg.TransactionsFilter); err != nil {
 			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
@@ -101,7 +111,6 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 
 func (msg MsgRegisterInterchainQuery) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
@@ -144,7 +153,6 @@ func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
 
 func (msg MsgRemoveInterchainQueryRequest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {
@@ -164,8 +172,18 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "one of new_keys or new_update_period should be set")
 	}
 
+	if err := validateKeys(msg.GetNewKeys()); err != nil {
+		return err
+	}
+
 	if strings.TrimSpace(msg.Sender) == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+	}
+
+	if len(msg.NewTransactionsFilter) != 0 {
+		if err := ValidateTransactionsFilter(msg.NewTransactionsFilter); err != nil {
+			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
+		}
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
@@ -176,7 +194,6 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 
 func (msg MsgUpdateInterchainQueryRequest) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-
 }
 
 func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
@@ -185,4 +202,19 @@ func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 		panic(err.Error())
 	}
 	return []sdk.AccAddress{senderAddr}
+}
+
+func validateKeys(keys []*KVKey) error {
+	if uint64(len(keys)) > MaxKVQueryKeysCount {
+		return sdkerrors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
+	}
+	for _, key := range keys {
+		if len(key.Path) == 0 {
+			return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
+		}
+		if len(key.Key) == 0 {
+			return sdkerrors.Wrap(ErrEmptyKeyID, "keys id cannot be empty")
+		}
+	}
+	return nil
 }

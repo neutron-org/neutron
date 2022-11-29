@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"encoding/hex"
 	"fmt"
 	"testing"
 
@@ -15,14 +16,14 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/x/interchainqueries/types"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
-var (
-	reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
-)
+var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
 
 type KeeperTestSuite struct {
 	testutil.IBCConnectionTestSuite
@@ -130,7 +131,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 
 func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	var msg iqtypes.MsgUpdateInterchainQueryRequest
-	originalQuery := iqtypes.MsgRegisterInterchainQuery{
+	originalKVQuery := iqtypes.MsgRegisterInterchainQuery{
 		QueryType: string(iqtypes.InterchainQueryTypeKV),
 		Keys: []*iqtypes.KVKey{
 			{
@@ -144,12 +145,23 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		Sender:             "",
 	}
 
+	originalTXQuery := iqtypes.MsgRegisterInterchainQuery{
+		QueryType:          string(iqtypes.InterchainQueryTypeTX),
+		Keys:               nil,
+		TransactionsFilter: "someFilter",
+		ConnectionId:       suite.Path.EndpointA.ConnectionID,
+		UpdatePeriod:       1,
+		Sender:             "",
+	}
+
 	tests := []struct {
-		name              string
-		malleate          func(sender string)
-		expectedErr       error
-		expectedPeriod    uint64
-		expectedQueryKeys []*iqtypes.KVKey
+		name                  string
+		malleate              func(sender string)
+		expectedErr           error
+		expectedPeriod        uint64
+		expectedQueryKeys     []*iqtypes.KVKey
+		expectedQueryTXFilter string
+		query                 iqtypes.MsgRegisterInterchainQuery
 	}{
 		{
 			"valid update period",
@@ -163,7 +175,9 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			},
 			nil,
 			2,
-			originalQuery.Keys,
+			originalKVQuery.Keys,
+			"",
+			originalKVQuery,
 		},
 		{
 			"valid query data",
@@ -181,16 +195,18 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				}
 			},
 			nil,
-			originalQuery.UpdatePeriod,
+			originalKVQuery.UpdatePeriod,
 			[]*iqtypes.KVKey{
 				{
 					Path: "newpath",
 					Key:  []byte("newdata"),
 				},
 			},
+			"",
+			originalKVQuery,
 		},
 		{
-			"valid query both query keys and update period",
+			"valid query both query keys and update period and ignore tx filter",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -200,8 +216,9 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 							Key:  []byte("newdata"),
 						},
 					},
-					NewUpdatePeriod: 2,
-					Sender:          sender,
+					NewTransactionsFilter: "newFilter",
+					NewUpdatePeriod:       2,
+					Sender:                sender,
 				}
 			},
 			nil,
@@ -212,9 +229,33 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 					Key:  []byte("newdata"),
 				},
 			},
+			"",
+			originalKVQuery,
 		},
 		{
-			"invavid query id",
+			"must not update keys for a tx query but update filter",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{
+						{
+							Path: "newpath",
+							Key:  []byte("newdata"),
+						},
+					},
+					NewUpdatePeriod:       2,
+					NewTransactionsFilter: "newFilter",
+					Sender:                sender,
+				}
+			},
+			nil,
+			2,
+			nil,
+			"newFilter",
+			originalTXQuery,
+		},
+		{
+			"invalid query id",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 2,
@@ -229,8 +270,10 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				}
 			},
 			iqtypes.ErrInvalidQueryID,
-			originalQuery.UpdatePeriod,
-			originalQuery.Keys,
+			originalKVQuery.UpdatePeriod,
+			originalKVQuery.Keys,
+			"",
+			originalKVQuery,
 		},
 		{
 			"failed due to auth error",
@@ -250,8 +293,10 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				}
 			},
 			sdkerrors.ErrUnauthorized,
-			originalQuery.UpdatePeriod,
-			originalQuery.Keys,
+			originalKVQuery.UpdatePeriod,
+			originalKVQuery.Keys,
+			"",
+			originalKVQuery,
 		},
 	}
 
@@ -282,8 +327,8 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 
 			msgSrv := keeper.NewMsgServerImpl(iqkeeper)
 
-			originalQuery.Sender = contractAddress.String()
-			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &originalQuery)
+			tt.query.Sender = contractAddress.String()
+			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &tt.query)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(resRegister)
 
@@ -325,7 +370,6 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		{
 			"valid remove",
 			func(sender string) {
-
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  sender,
@@ -468,6 +512,51 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	}
 }
 
+// Test get all registered queries
+func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
+	suite.SetupTest()
+
+	tests := []struct {
+		name    string
+		queries []*types.RegisteredQuery
+	}{
+		{
+			"all registered queries",
+			[]*types.RegisteredQuery{
+				&(types.RegisteredQuery{
+					Id:        1,
+					QueryType: string(iqtypes.InterchainQueryTypeKV),
+				}),
+				&(types.RegisteredQuery{
+					Id:        2,
+					QueryType: string(iqtypes.InterchainQueryTypeKV),
+				}),
+			},
+		},
+		{
+			"no registered queries",
+			nil,
+		},
+	}
+
+	for i, tt := range tests {
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+			suite.SetupTest()
+
+			ctx := suite.ChainA.GetContext()
+
+			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+			for _, query := range tt.queries {
+				iqkeeper.SaveQuery(ctx, *query)
+			}
+
+			allQueries := iqkeeper.GetAllRegisteredQueries(ctx)
+
+			suite.Require().Equal(tt.queries, allQueries)
+		})
+	}
+}
+
 func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	var msg iqtypes.MsgSubmitQueryResult
 
@@ -527,7 +616,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
-				//suite.NoError(suite.Path.EndpointB.UpdateClient())
+				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
@@ -678,7 +767,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
-				//suite.NoError(suite.Path.EndpointB.UpdateClient())
+				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
@@ -811,7 +900,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		{
 			"query result height is too old",
 			func(sender string, ctx sdktypes.Context) {
-
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
@@ -861,6 +949,60 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				}
 			},
 			iqtypes.ErrInvalidHeight,
+		},
+		// in this test we check that storageValue.Key with special bytes (characters) can be properly verified
+		{
+			"non existence KV proof with special bytes in key",
+			func(sender string, ctx sdktypes.Context) {
+				keyWithSpecialBytes, err := hex.DecodeString("0220c746274d3fe20c2c9d06c017e15f8e03f92598fca39d7540aab02244073efe26756a756e6f78")
+				suite.Require().NoError(err)
+
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId: suite.Path.EndpointA.ConnectionID,
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: keyWithSpecialBytes},
+					},
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod: 1,
+					Sender:       sender,
+				}
+
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
+
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+				suite.Require().NoError(err)
+
+				// suite.NoError(suite.Path.EndpointB.UpdateClient())
+				suite.NoError(suite.Path.EndpointA.UpdateClient())
+
+				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
+				resp := suite.ChainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Data:   keyWithSpecialBytes,
+					Prove:  true,
+				})
+
+				msg = iqtypes.MsgSubmitQueryResult{
+					QueryId:  res.Id,
+					Sender:   sender, // A bit weird that query owner submits the results, but it doesn't really matter
+					ClientId: suite.Path.EndpointA.ClientID,
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: host.StoreKey,
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
+						// and we don't have access to it here
+						Block:    nil,
+						Height:   uint64(resp.Height),
+						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
+				}
+			},
+			nil,
 		},
 	}
 

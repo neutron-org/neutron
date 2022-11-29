@@ -59,10 +59,10 @@ func (im IBCModule) OnChanOpenAck(
 	ctx sdk.Context,
 	portID,
 	channelID string,
-	counterPartyChannelId string,
+	counterPartyChannelID string,
 	counterpartyVersion string,
 ) error {
-	return im.keeper.HandleChanOpenAck(ctx, portID, channelID, counterPartyChannelId, counterpartyVersion)
+	return im.keeper.HandleChanOpenAck(ctx, portID, channelID, counterPartyChannelID, counterpartyVersion)
 }
 
 // OnChanOpenConfirm implements the IBCModule interface. We don't need to implement this handler.
@@ -109,16 +109,16 @@ func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
-	_relayer sdk.AccAddress,
+	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleAcknowledgement(ctx, packet, acknowledgement)
+	return im.keeper.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
-	_relayer sdk.AccAddress,
+	relayer sdk.AccAddress,
 ) error {
-	return im.keeper.HandleTimeout(ctx, packet)
+	return im.keeper.HandleTimeout(ctx, packet, relayer)
 }

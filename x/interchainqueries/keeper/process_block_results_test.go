@@ -90,7 +90,11 @@ func NextBlock(chain *ibctesting.TestChain) {
 	ph, err := tmtypes.HeaderFromProto(chain.LastHeader.Header)
 	require.NoError(chain.T, err)
 
-	chain.LastHeader = CreateTMClientHeader(chain, chain.ChainID, chain.CurrentHeader.Height, ibcclienttypes.Height{}, chain.CurrentHeader.Time, chain.Vals, nil, chain.Signers, &ph)
+	var signers []tmtypes.PrivValidator
+	for _, val := range chain.Vals.Validators {
+		signers = append(signers, chain.Signers[val.PubKey.Address().String()])
+	}
+	chain.LastHeader = CreateTMClientHeader(chain, chain.ChainID, chain.CurrentHeader.Height, ibcclienttypes.Height{}, chain.CurrentHeader.Time, chain.Vals, nil, signers, &ph)
 
 	// increment the current header
 	chain.CurrentHeader = tmproto.Header{
@@ -260,7 +264,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
 					RevisionNumber: 0,
-					RevisionHeight: 13,
+					RevisionHeight: 29,
 				})
 				suite.Require().NoError(err)
 

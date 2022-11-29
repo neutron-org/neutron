@@ -8,30 +8,42 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/gogo/protobuf/proto"
 
+	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
+	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
-func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper, admKeeper *adminkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
-			Keeper:        *ictx,
-			Wrapped:       old,
-			Ictxmsgserver: ictxkeeper.NewMsgServerImpl(*ictx),
-			Icqmsgserver:  icqkeeper.NewMsgServerImpl(*icq),
+			Keeper:         *ictx,
+			Wrapped:        old,
+			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
+			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
+			transferKeeper: transferKeeper,
+			Adminserver:    adminkeeper.NewMsgServerImpl(*admKeeper),
 		}
 	}
 }
 
 type CustomMessenger struct {
-	Keeper        ictxkeeper.Keeper
-	Wrapped       wasmkeeper.Messenger
-	Ictxmsgserver ictxtypes.MsgServer
-	Icqmsgserver  icqtypes.MsgServer
+	Keeper         ictxkeeper.Keeper
+	Wrapped        wasmkeeper.Messenger
+	Ictxmsgserver  ictxtypes.MsgServer
+	Icqmsgserver   icqtypes.MsgServer
+	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
+	Adminserver    admintypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -63,9 +75,49 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.RemoveInterchainQuery != nil {
 			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
 		}
+		if contractMsg.IBCTransfer != nil {
+			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
+		}
+		if contractMsg.SubmitProposal != nil {
+			return m.submitProposal(ctx, contractAddr, contractMsg.SubmitProposal)
+		}
 	}
 
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+}
+
+func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, error) {
+	ibcTransferMsg.Sender = contractAddr.String()
+
+	if err := ibcTransferMsg.ValidateBasic(); err != nil {
+		return nil, nil, sdkerrors.Wrap(err, "failed to validate ibcTransferMsg")
+	}
+
+	response, err := m.transferKeeper.Transfer(sdk.WrapSDKContext(ctx), &ibcTransferMsg)
+	if err != nil {
+		ctx.Logger().Debug("transferServer.Transfer: failed to transfer",
+			"from_address", contractAddr.String(),
+			"msg", ibcTransferMsg,
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to execute IBCTransfer")
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal MsgTransferResponse response to JSON",
+			"from_address", contractAddr.String(),
+			"msg", response,
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("ibcTransferMsg completed",
+		"from_address", contractAddr.String(),
+		"msg", ibcTransferMsg,
+	)
+	return nil, [][]byte{data}, nil
 }
 
 func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) ([]sdk.Event, [][]byte, error) {
@@ -98,10 +150,11 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 
 func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) (*bindings.UpdateInterchainQueryResponse, error) {
 	msg := icqtypes.MsgUpdateInterchainQueryRequest{
-		QueryId:         updateQuery.QueryId,
-		NewKeys:         updateQuery.NewKeys,
-		NewUpdatePeriod: updateQuery.NewUpdatePeriod,
-		Sender:          contractAddr.String(),
+		QueryId:               updateQuery.QueryId,
+		NewKeys:               updateQuery.NewKeys,
+		NewUpdatePeriod:       updateQuery.NewUpdatePeriod,
+		NewTransactionsFilter: updateQuery.NewTransactionsFilter,
+		Sender:                contractAddr.String(),
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
@@ -193,6 +246,80 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 	return nil, [][]byte{data}, nil
 }
 
+func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) ([]sdk.Event, [][]byte, error) {
+	response, err := m.PerformSubmitProposal(ctx, contractAddr, submitProposal)
+	if err != nil {
+		ctx.Logger().Debug("PerformSubmitTx: failed to submitProposal",
+			"from_address", contractAddr.String(),
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit add admin message")
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal submitProposal response to JSON",
+			"from_address", contractAddr.String(),
+			"creator", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("submit proposal message submitted",
+		"from_address", contractAddr.String(),
+		"creator", contractAddr.String(),
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
+
+	if submitProposal.Proposals.TextProposal != nil {
+		prop := govtypes.TextProposal{
+			Title:       submitProposal.Proposals.TextProposal.Title,
+			Description: submitProposal.Proposals.TextProposal.Description,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.TextProposal",
+			Value:   cont,
+		}
+
+	} else if submitProposal.Proposals.ParamChangeProposal != nil {
+		proposal := submitProposal.Proposals.ParamChangeProposal
+		prop := paramChange.ParameterChangeProposal{
+			Title:       proposal.Title,
+			Description: proposal.Description,
+			Changes:     proposal.Changes,
+		}
+		cont, err := proto.Marshal(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+		}
+		msg.Content = &types.Any{
+			TypeUrl: "/cosmos.gov.v1beta1.ParameterChangesProposal",
+			Value:   cont,
+		}
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
+	}
+
+	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to submit proposal")
+	}
+
+	return response, nil
+}
+
 func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {
 	tx := ictxtypes.MsgSubmitTx{
 		FromAddress:         contractAddr.String(),
@@ -200,15 +327,13 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		Memo:                submitTx.Memo,
 		InterchainAccountId: submitTx.InterchainAccountId,
 		Timeout:             submitTx.Timeout,
+		Fee:                 submitTx.Fee,
 	}
 	for _, msg := range submitTx.Msgs {
 		tx.Msgs = append(tx.Msgs, &types.Any{
 			TypeUrl: msg.TypeURL,
 			Value:   msg.Value,
 		})
-	}
-	if err := tx.UnpackInterfaces(m.Keeper.Codec); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to unpack interfaces to send interchain transaction")
 	}
 
 	if err := tx.ValidateBasic(); err != nil {

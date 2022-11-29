@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -39,7 +40,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
-	if !k.wasmKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.contractManagerKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainQuery: contract not found", "sender_address", msg.Sender)
 		return nil, sdkerrors.Wrapf(types.ErrNotContract, "%s is not a contract address", msg.Sender)
 	}
@@ -50,7 +51,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	}
 
 	lastID := k.GetLastRegisteredQueryKey(ctx)
-	lastID += 1
+	lastID++
 
 	params := k.GetParams(ctx)
 
@@ -135,8 +136,11 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 	if msg.GetNewUpdatePeriod() > 0 {
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
-	if len(msg.GetNewKeys()) > 0 {
+	if len(msg.GetNewKeys()) > 0 && types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		query.Keys = msg.GetNewKeys()
+	}
+	if len(msg.NewTransactionsFilter) > 0 && types.InterchainQueryType(query.GetQueryType()).IsTX() {
+		query.TransactionsFilter = msg.NewTransactionsFilter
 	}
 
 	err = k.SaveQuery(ctx, *query)
@@ -218,7 +222,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 				return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV path from result is not equal to registered query storage prefix: %v != %v", result.StoragePrefix, query.Keys[index].Path)
 			}
 
-			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
+			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, url.PathEscape(string(result.Key)))
 
 			// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
 			// and call corresponding method to verify it
@@ -250,7 +254,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 
 		if msg.Result.GetAllowKvCallbacks() {
 			// Let the query owner contract process the query result.
-			if _, err := k.sudoHandler.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
+			if _, err := k.contractManagerKeeper.SudoKVQueryResult(ctx, queryOwner, query.Id); err != nil {
 				ctx.Logger().Debug("SubmitQueryResult: failed to SudoKVQueryResult",
 					"error", err, "query_id", query.GetId())
 				return nil, sdkerrors.Wrapf(err, "contract %s rejected KV query result (query_id: %d)",

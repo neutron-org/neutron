@@ -20,9 +20,22 @@ func TestGenesisState_Validate(t *testing.T) {
 			valid:    true,
 		},
 		{
-			desc:     "valid genesis state",
-			genState: &types.GenesisState{},
-			valid:    true,
+			desc: "MsgSubmitTxMaxMessages must be greater than zero",
+			genState: &types.GenesisState{
+				Params: types.Params{
+					MsgSubmitTxMaxMessages: 0,
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "valid genesis state",
+			genState: &types.GenesisState{
+				Params: types.Params{
+					MsgSubmitTxMaxMessages: 10,
+				},
+			},
+			valid: true,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {

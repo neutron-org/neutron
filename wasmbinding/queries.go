@@ -33,11 +33,10 @@ func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64)
 }
 
 func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *bindings.QueryInterchainAccountAddressRequest) (*bindings.QueryInterchainAccountAddressResponse, error) {
-
 	grpcReq := icatypes.QueryInterchainAccountAddressRequest{
 		OwnerAddress:        req.OwnerAddress,
-		InterchainAccountId: req.InterchainAccountId,
-		ConnectionId:        req.ConnectionId,
+		InterchainAccountId: req.InterchainAccountID,
+		ConnectionId:        req.ConnectionID,
 	}
 
 	grpcResp, err := qp.icaControllerKeeper.InterchainAccountAddress(sdk.WrapSDKContext(ctx), &grpcReq)
@@ -51,7 +50,7 @@ func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *binding
 func (qp *QueryPlugin) GetRegisteredInterchainQueries(ctx sdk.Context, query *bindings.QueryRegisteredQueriesRequest) (*bindings.QueryRegisteredQueriesResponse, error) {
 	grpcResp, err := qp.icqKeeper.GetRegisteredQueries(ctx, &types.QueryRegisteredQueriesRequest{
 		Owners:       query.Owners,
-		ConnectionId: query.ConnectionId,
+		ConnectionId: query.ConnectionID,
 		Pagination: &sdkquery.PageRequest{
 			Key:        query.Pagination.Key,
 			Offset:     query.Pagination.Offset,
@@ -73,12 +72,12 @@ func (qp *QueryPlugin) GetRegisteredInterchainQueries(ctx sdk.Context, query *bi
 }
 
 func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindings.QueryRegisteredQueryRequest) (*bindings.QueryRegisteredQueryResponse, error) {
-	grpcResp, err := qp.icqKeeper.GetQueryByID(ctx, req.QueryId)
+	grpcResp, err := qp.icqKeeper.GetQueryByID(ctx, req.QueryID)
 	if err != nil {
 		return nil, err
 	}
 	if grpcResp == nil {
-		return nil, sdkerrors.Wrapf(types.ErrEmptyResult, "interchain query response empty for query id %d", req.QueryId)
+		return nil, sdkerrors.Wrapf(types.ErrEmptyResult, "interchain query response empty for query id %d", req.QueryID)
 	}
 	query := mapGRPCRegisteredQueryToWasmBindings(*grpcResp)
 
@@ -87,12 +86,12 @@ func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindin
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {
 	return bindings.RegisteredQuery{
-		Id:                              grpcQuery.GetId(),
+		ID:                              grpcQuery.GetId(),
 		Owner:                           grpcQuery.GetOwner(),
 		Keys:                            grpcQuery.GetKeys(),
 		TransactionsFilter:              grpcQuery.GetTransactionsFilter(),
 		QueryType:                       grpcQuery.GetQueryType(),
-		ConnectionId:                    grpcQuery.GetConnectionId(),
+		ConnectionID:                    grpcQuery.GetConnectionId(),
 		UpdatePeriod:                    grpcQuery.GetUpdatePeriod(),
 		LastSubmittedResultLocalHeight:  grpcQuery.GetLastSubmittedResultLocalHeight(),
 		LastSubmittedResultRemoteHeight: grpcQuery.GetLastSubmittedResultRemoteHeight(),

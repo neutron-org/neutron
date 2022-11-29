@@ -16,6 +16,7 @@ import (
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
@@ -58,7 +59,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 }
 		`,
 		suite.Path.EndpointA.ConnectionID,
-		testutil.TestInterchainId,
+		testutil.TestInterchainID,
 	))
 	var msg json.RawMessage
 	err := json.Unmarshal(msgStr, &msg)
@@ -232,49 +233,87 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
 	suite.Require().NotEmpty(suite.contractAddress)
 
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(int64(10_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
-	// Craft SubmitTx message
-	memo := "Jimmy"
-	timeout := 2000
-	msgs := `[{"type_url":"/cosmos.staking.v1beta1.MsgDelegate","value":[26,10,10,5,115,116,97,107,101,18,1,48]}]`
-	msgStr := []byte(fmt.Sprintf(
-		`
-{
-	"submit_tx": {
-		"connection_id": "%s",
-		"interchain_account_id": "%s",
-		"msgs": %s,
-		"memo": "%s",
-		"timeout": %d
-	}
-}
-		`,
-		suite.Path.EndpointA.ConnectionID,
-		testutil.TestInterchainId,
-		msgs,
-		memo,
-		timeout,
-	))
 	var msg json.RawMessage
-	err = json.Unmarshal(msgStr, &msg)
+	err = json.Unmarshal(suite.craftMarshaledMsgSubmitTxWithNumMsgs(1), &msg)
 	suite.NoError(err)
 
-	// Dispatch SubmitTx message
-	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
-		Custom: msg,
-	})
+	events, data, err := suite.messenger.DispatchMsg(
+		suite.ctx,
+		suite.contractAddress,
+		suite.Path.EndpointA.ChannelConfig.PortID,
+		types.CosmosMsg{
+			Custom: msg,
+		},
+	)
 	suite.NoError(err)
 
 	var response bindings.SubmitTxResponse
 	err = json.Unmarshal(data[0], &response)
 	suite.NoError(err)
-
-	suite.NoError(err)
 	suite.Nil(events)
 	suite.Equal(uint64(1), response.SequenceId)
-	suite.Equal("channel-0", response.Channel)
+	suite.Equal("channel-2", response.Channel)
+}
+
+func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
+	suite.Require().NoError(err)
+
+	var msg json.RawMessage
+	err = json.Unmarshal(suite.craftMarshaledMsgSubmitTxWithNumMsgs(20), &msg)
+	suite.NoError(err)
+
+	_, _, err = suite.messenger.DispatchMsg(
+		suite.ctx,
+		suite.contractAddress,
+		suite.Path.EndpointA.ChannelConfig.PortID,
+		types.CosmosMsg{
+			Custom: msg,
+		},
+	)
+	suite.ErrorContains(err, "MsgSubmitTx contains more messages than allowed")
+}
+
+func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {
+	msg := bindings.ProtobufAny{
+		TypeURL: "/cosmos.staking.v1beta1.MsgDelegate",
+		Value:   []byte{26, 10, 10, 5, 115, 116, 97, 107, 101, 18, 1, 48},
+	}
+	msgs := make([]bindings.ProtobufAny, 0, numMsgs)
+	for i := 0; i < numMsgs; i++ {
+		msgs = append(msgs, msg)
+	}
+	result, err := json.Marshal(struct {
+		SubmitTx bindings.SubmitTx `json:"submit_tx"`
+	}{
+		SubmitTx: bindings.SubmitTx{
+			ConnectionId:        suite.Path.EndpointA.ConnectionID,
+			InterchainAccountId: testutil.TestInterchainID,
+			Msgs:                msgs,
+			Memo:                "Jimmy",
+			Timeout:             2000,
+			Fee: feetypes.Fee{
+				RecvFee:    sdk.NewCoins(),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+			},
+		},
+	})
+	suite.NoError(err)
+	return
 }
 
 func TestMessengerTestSuite(t *testing.T) {

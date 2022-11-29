@@ -44,8 +44,8 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 		queries []types.RegisteredQuery
 	)
 
-	var owners = newOwnersStore(req.GetOwners())
-	pageRes, err := querytypes.Paginate(store, req.Pagination, func(key, value []byte) error {
+	owners := newOwnersStore(req.GetOwners())
+	pageRes, err := querytypes.FilteredPaginate(store, req.Pagination, func(key, value []byte, accumulate bool) (bool, error) {
 		query := types.RegisteredQuery{}
 		k.cdc.MustUnmarshal(value, &query)
 
@@ -54,11 +54,18 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 			passedConnectionIDFilter = req.GetConnectionId() == "" || query.ConnectionId == req.GetConnectionId()
 		)
 
-		if passedOwnerFilter && passedConnectionIDFilter {
+		// if result does not satisfy the filter, return (false, nil) to tell FilteredPaginate method to skip this value
+		if !(passedOwnerFilter && passedConnectionIDFilter) {
+			return false, nil
+		}
+
+		// when accumulate equals true, it means we are in the right offset/limit position
+		// so we check value satisfies the filter and add it to the final result slice
+		if accumulate && passedOwnerFilter && passedConnectionIDFilter {
 			queries = append(queries, query)
 		}
 
-		return nil
+		return true, nil
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "paginate: %v", err)

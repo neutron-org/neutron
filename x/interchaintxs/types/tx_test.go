@@ -8,6 +8,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
+	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -129,6 +130,11 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						Value:   []byte{100}, // just check that values are not nil
 					}},
 					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
 				}
 			},
 			nil,
@@ -145,6 +151,11 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						Value:   []byte{100}, // just check that values are not nil
 					}},
 					Timeout: 0,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
 				}
 			},
 			types.ErrInvalidTimeout,
@@ -161,6 +172,11 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						Value:   []byte{100}, // just check that values are not nil
 					}},
 					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
 				}
 			},
 			types.ErrEmptyConnectionID,
@@ -177,6 +193,11 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						Value:   []byte{100}, // just check that values are not nil
 					}},
 					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
 				}
 			},
 			types.ErrEmptyInterchainAccountID,
@@ -190,6 +211,11 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					InterchainAccountId: "1",
 					Msgs:                nil,
 					Timeout:             1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
 				}
 			},
 			types.ErrNoMessages,
@@ -206,6 +232,11 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						Value:   []byte{100}, // just check that values are not nil
 					}},
 					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
 				}
 			},
 			sdkerrors.ErrInvalidAddress,
@@ -222,9 +253,77 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 						Value:   []byte{100}, // just check that values are not nil
 					}},
 					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
 				}
 			},
 			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"non zero recv fee",
+			func() sdktypes.Msg {
+				return &types.MsgSubmitTx{
+					FromAddress:         TestAddress,
+					ConnectionId:        "connection-id",
+					InterchainAccountId: "1",
+					Msgs: []*cosmosTypes.Any{{
+						TypeUrl: "msg",
+						Value:   []byte{100}, // just check that values are not nil
+					}},
+					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
+				}
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"zero ack fee",
+			func() sdktypes.Msg {
+				return &types.MsgSubmitTx{
+					FromAddress:         TestAddress,
+					ConnectionId:        "connection-id",
+					InterchainAccountId: "1",
+					Msgs: []*cosmosTypes.Any{{
+						TypeUrl: "msg",
+						Value:   []byte{100}, // just check that values are not nil
+					}},
+					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+					},
+				}
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"zero timeout fee",
+			func() sdktypes.Msg {
+				return &types.MsgSubmitTx{
+					FromAddress:         TestAddress,
+					ConnectionId:        "connection-id",
+					InterchainAccountId: "1",
+					Msgs: []*cosmosTypes.Any{{
+						TypeUrl: "msg",
+						Value:   []byte{100}, // just check that values are not nil
+					}},
+					Timeout: 1,
+					Fee: feetypes.Fee{
+						RecvFee:    sdktypes.NewCoins(),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(),
+					},
+				}
+			},
+			sdkerrors.ErrInvalidCoins,
 		},
 	}
 
