@@ -9,8 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/gogo/protobuf/proto"
-
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -281,17 +279,13 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 
 	if submitProposal.Proposals.TextProposal != nil {
-		prop := govtypes.TextProposal{
-			Title:       submitProposal.Proposals.TextProposal.Title,
-			Description: submitProposal.Proposals.TextProposal.Description,
-		}
-		cont, err := proto.Marshal(&prop)
+		prop := govtypes.NewTextProposal(
+			submitProposal.Proposals.TextProposal.Title,
+			submitProposal.Proposals.TextProposal.Description,
+		)
+		err := msg.SetContent(prop)
 		if err != nil {
-			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
-		}
-		msg.Content = &types.Any{
-			TypeUrl: "/cosmos.gov.v1beta1.TextProposal",
-			Value:   cont,
+			return nil, sdkerrors.Wrap(err, "failed to set content on given text proposal")
 		}
 
 	} else if submitProposal.Proposals.ParamChangeProposal != nil {
@@ -301,21 +295,15 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 			Description: proposal.Description,
 			Changes:     proposal.Changes,
 		}
-		cont, err := proto.Marshal(&prop)
+		err := msg.SetContent(&prop)
 		if err != nil {
-			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
-		}
-		msg.Content = &types.Any{
-			TypeUrl: "/cosmos.gov.v1beta1.ParameterChangesProposal",
-			Value:   cont,
+			return nil, sdkerrors.Wrap(err, "failed to set content on given proposal")
 		}
 	}
-	//ctx.Logger().Debug("OMAEWA",
-	//	"proposal type", msg.GetContent().ProposalType(),
-	//)
-	//if err := msg.ValidateBasic(); err != nil {
-	//	return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
-	//}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
+	}
 
 	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
 	if err != nil {
