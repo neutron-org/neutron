@@ -9,6 +9,8 @@ GRPCPORT_2=9090
 GRPCWEB_1=8091
 GRPCWEB_2=9091
 
+echo "launching neutron in standalone mode..."
+$BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID_1
 
 echo "Starting $CHAINID_1 in $CHAIN_DIR..."
 echo "Creating log file at $CHAIN_DIR/$CHAINID_1.log"
