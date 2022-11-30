@@ -77,9 +77,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 		}
 		if contractMsg.SubmitProposal != nil {
-			ctx.Logger().Debug("PRAPASAL",
-				"message", string(msg.Custom),
-			)
 			return m.submitProposal(ctx, contractAddr, contractMsg.SubmitProposal)
 		}
 	}
