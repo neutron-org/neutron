@@ -310,10 +310,12 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 			Value:   cont,
 		}
 	}
-
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
-	}
+	//ctx.Logger().Debug("OMAEWA",
+	//	"proposal type", msg.GetContent().ProposalType(),
+	//)
+	//if err := msg.ValidateBasic(); err != nil {
+	//	return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
+	//}
 
 	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
 	if err != nil {
