@@ -79,6 +79,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 		}
 		if contractMsg.SubmitProposal != nil {
+			ctx.Logger().Debug("PRAPASAL",
+				"message", string(msg.Custom),
+			)
 			return m.submitProposal(ctx, contractAddr, contractMsg.SubmitProposal)
 		}
 	}
@@ -254,7 +257,7 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 			"creator", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, sdkerrors.Wrap(err, "failed to submit add admin message")
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit proposal")
 	}
 
 	data, err := json.Marshal(response)
