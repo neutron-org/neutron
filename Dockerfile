@@ -24,6 +24,11 @@ EXPOSE 9091
 EXPOSE 8081
 ADD . /opt/neutron
 RUN cd /opt/neutron && make install
+RUN cd /opt
+RUN git clone https://github.com/cosmos/gaia.git && \
+    cd gaia && \
+    git checkout v7.0.3 && \
+    make install
 RUN mkdir -p $HOME/.hermes/bin
 COPY --from=hermes-builder /app/hermes/target/release/hermes $HOME/.hermes/bin/
 

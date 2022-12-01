@@ -2,6 +2,7 @@
 
 ADMIN_ADDRESS=neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq
 BINARY=neutrond
+GAIAD_BINARY=gaiad
 CHAIN_DIR=./data
 CHAINID_1=test-1
 CHAINID_2=test-2
@@ -28,6 +29,12 @@ if pgrep -x "$BINARY" >/dev/null; then
     killall $BINARY
 fi
 
+# Stop if it is already running
+if pgrep -x "$GAIAD_BINARY" >/dev/null; then
+    echo "Terminating $GAIAD_BINARY..."
+    killall $GAIAD_BINARY
+fi
+
 echo "Removing previous data..."
 rm -rf $CHAIN_DIR/$CHAINID_1 &> /dev/null
 rm -rf $CHAIN_DIR/$CHAINID_2 &> /dev/null
@@ -46,28 +53,31 @@ fi
 echo "Initializing $CHAINID_1..."
 echo "Initializing $CHAINID_2..."
 $BINARY init test --home $CHAIN_DIR/$CHAINID_1 --chain-id=$CHAINID_1
-$BINARY init test --home $CHAIN_DIR/$CHAINID_2 --chain-id=$CHAINID_2
+$GAIAD_BINARY init test --home $CHAIN_DIR/$CHAINID_2 --chain-id=$CHAINID_2
 
 echo "Adding genesis accounts..."
 echo $VAL_MNEMONIC_1 | $BINARY keys add val1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
-echo $VAL_MNEMONIC_2 | $BINARY keys add val2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $VAL_MNEMONIC_2 | $GAIAD_BINARY keys add val2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 echo $DEMO_MNEMONIC_1 | $BINARY keys add demowallet1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
-echo $DEMO_MNEMONIC_2 | $BINARY keys add demowallet2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $DEMO_MNEMONIC_2 | $GAIAD_BINARY keys add demowallet2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 echo $DEMO_MNEMONIC_3 | $BINARY keys add demowallet3 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $RLY_MNEMONIC_1 | $BINARY keys add rly1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
-echo $RLY_MNEMONIC_2 | $BINARY keys add rly2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $RLY_MNEMONIC_2 | $GAIAD_BINARY keys add rly2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show val1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show val2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
+$GAIAD_BINARY add-genesis-account $($GAIAD_BINARY --home $CHAIN_DIR/$CHAINID_2 keys show val2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show demowallet1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show demowallet2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
+$GAIAD_BINARY add-genesis-account $($GAIAD_BINARY --home $CHAIN_DIR/$CHAINID_2 keys show demowallet2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show demowallet3 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show rly1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show rly2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
+$GAIAD_BINARY add-genesis-account $($GAIAD_BINARY --home $CHAIN_DIR/$CHAINID_2 keys show rly2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID_2
+
+echo "Creating and collecting gaiad network gentx..."
+$GAIAD_BINARY gentx val2 7000000000stake --home $CHAIN_DIR/$CHAINID_2 --chain-id $CHAINID_2 --keyring-backend test
+$GAIAD_BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_2
 
 echo "Changing defaults and ports in app.toml and config.toml files..."
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://0.0.0.0:'"$P2PPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/config.toml
@@ -86,8 +96,6 @@ sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' $
 
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://0.0.0.0:'"$P2PPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/config.toml
 sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:'"$RPCPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/config.toml
-sed -i -e 's/timeout_commit = "5s"/timeout_commit = "1s"/g' $CHAIN_DIR/$CHAINID_2/config/config.toml
-sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $CHAIN_DIR/$CHAINID_2/config/config.toml
 sed -i -e 's/index_all_keys = false/index_all_keys = true/g' $CHAIN_DIR/$CHAINID_2/config/config.toml
 sed -i -e 's/enable = false/enable = true/g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_DIR/$CHAINID_2/config/app.toml
