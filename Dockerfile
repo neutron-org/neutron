@@ -2,8 +2,7 @@
 
 FROM rust:1.63-bullseye as hermes-builder
 WORKDIR /app
-RUN PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
-    git clone https://github.com/informalsystems/hermes.git && \
+RUN git clone https://github.com/informalsystems/hermes.git && \
     cd hermes && \
     git checkout 7defaf067dbe6f60588518ea1619f228d38ac48d && \
     cargo build --release --bin hermes
