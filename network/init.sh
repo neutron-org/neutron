@@ -7,8 +7,8 @@ CHAINID_1=test-1
 CHAINID_2=test-2
 DAO_CONTRACT=./contracts/cwd_core.wasm
 PROPOSAL_CONTRACT=./contracts/cwd_proposal_single.wasm
-VOTING_CONTRACT=./contracts/cwd_voting_vault.wasm
-STAKING_CONTRACT=./contracts/cwd_voting_native_staked.wasm
+VOTING_REGISTRY_CONTRACT=./contracts/neutron_voting_registry.wasm
+VAULT_CONTRACT=./contracts/neutron_vault.wasm
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
 DEMO_MNEMONIC_1="banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
@@ -70,17 +70,17 @@ $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show rly
 
 echo "Initializing dao contract in genesis..."
 # Upload the dao contract
-$BINARY add-wasm-message store ${STAKING_CONTRACT} --output json --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${VAULT_CONTRACT} --output json --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
 $BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --home $CHAIN_DIR/$CHAINID_1
 $BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-wasm-message store ${VOTING_CONTRACT} --output json  --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json  --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --home $CHAIN_DIR/$CHAINID_1
 # Instantiate the contract
 #INIT_CONTRACT="$(printf '{"owner":"%s"}' "${ADMIN_ADDRESS}")"
 INIT="$(printf '{"denom":"stake"}')"
 #TODO: fix quotes issue
 DAO_INIT="'""'"
 #echo "Instantiate"
-$BINARY add-wasm-message  instantiate-contract 1 ${INIT} --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --admin ${ADMIN_ADDRESS}  --label "staking"  --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message  instantiate-contract 1 ${INIT} --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
 $BINARY add-wasm-message  instantiate-contract 2 '{
                                                                "admin": null,
                                                                "automatically_add_cw20s": false,
@@ -100,7 +100,7 @@ $BINARY add-wasm-message  instantiate-contract 2 '{
                                                                "voting_module_instantiate_info": {
                                                                  "admin": null,
                                                                  "code_id": 4,
-                                                                 "label": "DAO_Neutron_cwd-voting-vault",
+                                                                 "label": "DAO_Neutron_voting_registry",
                                                                  "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJzdGFraW5nIjogIm5ldXRyb24xNGhqMnRhdnE4ZnBlc2R3eHhjdTQ0cnR5M2hoOTB2aHVqcnZjbXN0bDR6cjN0eG1mdnc5czVjMmVwcSIKICAgIH0="
                                                                }
                                                        }' --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
