@@ -80,14 +80,14 @@ type Proposals struct {
 }
 
 type TextProposal struct {
-	Title       string
-	Description string
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type ParamChangeProposal struct {
-	Title       string
-	Description string
-	Changes     []paramChange.ParamChange
+	Title        string                    `json:"title"`
+	Description  string                    `json:"description"`
+	ParamChanges []paramChange.ParamChange `json:"param_changes"`
 }
 
 type ParamChange struct {

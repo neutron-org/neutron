@@ -284,13 +284,12 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to set content on given text proposal")
 		}
-
 	} else if submitProposal.Proposals.ParamChangeProposal != nil {
 		proposal := submitProposal.Proposals.ParamChangeProposal
 		prop := paramChange.ParameterChangeProposal{
 			Title:       proposal.Title,
 			Description: proposal.Description,
-			Changes:     proposal.Changes,
+			Changes:     proposal.ParamChanges,
 		}
 		err := msg.SetContent(&prop)
 		if err != nil {
