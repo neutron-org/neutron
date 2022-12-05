@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ADMIN_ADDRESS=neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq
-BINARY=neutrond
+NEUTRON_BINARY=neutrond
 GAIAD_BINARY=gaiad
 CHAIN_DIR=./data
 CHAINID_1=test-1
@@ -24,9 +24,9 @@ ROSETTA_1=8080
 ROSETTA_2=8081
 
 # Stop if it is already running
-if pgrep -x "$BINARY" >/dev/null; then
-    echo "Terminating $BINARY..."
-    killall $BINARY
+if pgrep -x "$NEUTRON_BINARY" >/dev/null; then
+    echo "Terminating $NEUTRON_BINARY..."
+    killall $NEUTRON_BINARY
 fi
 
 # Stop if it is already running
@@ -52,28 +52,28 @@ fi
 
 echo "Initializing $CHAINID_1..."
 echo "Initializing $CHAINID_2..."
-$BINARY init test --home $CHAIN_DIR/$CHAINID_1 --chain-id=$CHAINID_1
+$NEUTRON_BINARY init test --home $CHAIN_DIR/$CHAINID_1 --chain-id=$CHAINID_1
 $GAIAD_BINARY init test --home $CHAIN_DIR/$CHAINID_2 --chain-id=$CHAINID_2
 
 echo "Adding genesis accounts..."
-echo $VAL_MNEMONIC_1 | $BINARY keys add val1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $VAL_MNEMONIC_1 | $NEUTRON_BINARY keys add val1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $VAL_MNEMONIC_2 | $GAIAD_BINARY keys add val2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
-echo $DEMO_MNEMONIC_1 | $BINARY keys add demowallet1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $DEMO_MNEMONIC_1 | $NEUTRON_BINARY keys add demowallet1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $DEMO_MNEMONIC_2 | $GAIAD_BINARY keys add demowallet2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
-echo $DEMO_MNEMONIC_3 | $BINARY keys add demowallet3 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
-echo $RLY_MNEMONIC_1 | $BINARY keys add rly1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $DEMO_MNEMONIC_3 | $NEUTRON_BINARY keys add demowallet3 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $RLY_MNEMONIC_1 | $NEUTRON_BINARY keys add rly1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $RLY_MNEMONIC_2 | $GAIAD_BINARY keys add rly2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show val1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
+$NEUTRON_BINARY add-genesis-account $($NEUTRON_BINARY --home $CHAIN_DIR/$CHAINID_1 keys show val1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
 $GAIAD_BINARY add-genesis-account $($GAIAD_BINARY --home $CHAIN_DIR/$CHAINID_2 keys show val2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show demowallet1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
+$NEUTRON_BINARY add-genesis-account $($NEUTRON_BINARY --home $CHAIN_DIR/$CHAINID_1 keys show demowallet1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
 $GAIAD_BINARY add-genesis-account $($GAIAD_BINARY --home $CHAIN_DIR/$CHAINID_2 keys show demowallet2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show demowallet3 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show rly1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
+$NEUTRON_BINARY add-genesis-account $($NEUTRON_BINARY --home $CHAIN_DIR/$CHAINID_1 keys show demowallet3 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
+$NEUTRON_BINARY add-genesis-account $($NEUTRON_BINARY --home $CHAIN_DIR/$CHAINID_1 keys show rly1 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_1
 $GAIAD_BINARY add-genesis-account $($GAIAD_BINARY --home $CHAIN_DIR/$CHAINID_2 keys show rly2 --keyring-backend test -a) 100000000000stake  --home $CHAIN_DIR/$CHAINID_2
 
 echo "Add consumer section..."
-$BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID_1
+$NEUTRON_BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID_1
 
 echo "Creating and collecting gaiad network gentx..."
 $GAIAD_BINARY gentx val2 7000000000stake --home $CHAIN_DIR/$CHAINID_2 --chain-id $CHAINID_2 --keyring-backend test
