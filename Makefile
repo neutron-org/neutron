@@ -165,6 +165,8 @@ proto-format:
 	test-sim-import-export \
 
 init: kill-dev install
+	@echo "Building gaiad binary..."
+	@cd ./../gaia/ && make install
 	@echo "Initializing both blockchains..."
 	./network/init.sh
 	./network/start.sh
@@ -190,6 +192,7 @@ kill-dev:
 	@echo "Killing neutrond and removing previous data"
 	-@rm -rf ./data
 	-@killall neutrond 2>/dev/null
+	-@killall gaiad 2>/dev/null
 
 build-docker-image:
 	@docker build . -t neutron-org/neutron

@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1
+
+FROM golang:1.18-alpine AS builder
+WORKDIR /src/app/
+COPY --from=app go.mod go.sum* ./
+RUN go mod download
+COPY --from=app . .
+ENV PACKAGES curl make git libc-dev bash gcc linux-headers eudev-dev python3
+RUN apk add --no-cache $PACKAGES
+RUN CGO_ENABLED=0 make install
+
+FROM alpine:latest
+WORKDIR /opt/node/
+COPY --from=setup . setup/
+ARG BINARY
+COPY --from=builder /go/bin/${BINARY:-gaiad} /usr/local/bin/
+
+EXPOSE 26656 26657 1317 9090
+USER 0
+
+CMD sh /opt/node/setup/init-gaia.sh && \
+  sh /opt/node/setup/start.sh gaiad test-2 9090 9091
