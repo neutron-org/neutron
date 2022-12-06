@@ -75,13 +75,7 @@ type SubmitProposal struct {
 }
 
 type Proposals struct {
-	TextProposal        *TextProposal        `json:"text_proposal,omitempty"`
 	ParamChangeProposal *ParamChangeProposal `json:"param_change_proposal,omitempty"`
-}
-
-type TextProposal struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
 }
 
 type ParamChangeProposal struct {

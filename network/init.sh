@@ -93,11 +93,11 @@ DAO_INIT='{
                 "msg": "ewogICAgICAgICJhbGxvd19yZXZvdGluZyI6IGZhbHNlLAogICAgICAgICJwcmVfcHJvcG9zZV9pbmZvIjogewogICAgICAgICAgIkFueW9uZU1heVByb3Bvc2UiOiB7fQogICAgICAgIH0sCiAgICAgICAgImRlcG9zaXRfaW5mbyI6IG51bGwsCiAgICAgICAgImNsb3NlX3Byb3Bvc2FsX29uX2V4ZWN1dGlvbl9mYWlsdXJlIjogZmFsc2UsCiAgICAgICAgIm1heF92b3RpbmdfcGVyaW9kIjogewogICAgICAgICAgInRpbWUiOiA2MDQ4MDAKICAgICAgICB9LAogICAgICAgICJvbmx5X21lbWJlcnNfZXhlY3V0ZSI6IGZhbHNlLAogICAgICAgICJ0aHJlc2hvbGQiOiB7CiAgICAgICAgICAidGhyZXNob2xkX3F1b3J1bSI6IHsKICAgICAgICAgICAgInF1b3J1bSI6IHsKICAgICAgICAgICAgICAicGVyY2VudCI6ICIwLjIwIgogICAgICAgICAgICB9LAogICAgICAgICAgICAidGhyZXNob2xkIjogewogICAgICAgICAgICAgICJtYWpvcml0eSI6IHt9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIH0="
               }
             ],
-            "voting_module_instantiate_info": {
+            "voting_registry_module_instantiate_info": {
               "admin": null,
               "code_id": 4,
               "label": "DAO_Neutron_voting_registry",
-              "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJzdGFraW5nIjogIm5ldXRyb24xNGhqMnRhdnE4ZnBlc2R3eHhjdTQ0cnR5M2hoOTB2aHVqcnZjbXN0bDR6cjN0eG1mdnc5czVjMmVwcSIKICAgIH0="
+              "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
             }
     }'
 

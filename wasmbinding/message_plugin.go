@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -275,16 +274,7 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 
-	if submitProposal.Proposals.TextProposal != nil {
-		prop := govtypes.NewTextProposal(
-			submitProposal.Proposals.TextProposal.Title,
-			submitProposal.Proposals.TextProposal.Description,
-		)
-		err := msg.SetContent(prop)
-		if err != nil {
-			return nil, sdkerrors.Wrap(err, "failed to set content on given text proposal")
-		}
-	} else if submitProposal.Proposals.ParamChangeProposal != nil {
+	if submitProposal.Proposals.ParamChangeProposal != nil {
 		proposal := submitProposal.Proposals.ParamChangeProposal
 		prop := paramChange.ParameterChangeProposal{
 			Title:       proposal.Title,
@@ -295,6 +285,8 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to set content on given proposal")
 		}
+	} else {
+		return nil, sdkerrors.Wrap(nil, "ParamChangeProposal field is missing")
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
