@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ADMIN_ADDRESS=neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq
+ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
 BINARY=neutrond
 CHAIN_DIR=./data
 CHAINID_1=test-1
@@ -70,40 +70,40 @@ $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show rly
 
 echo "Initializing dao contract in genesis..."
 # Upload the dao contract
-$BINARY add-wasm-message store ${VAULT_CONTRACT} --output json --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json  --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${VAULT_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 # Instantiate the contract
 #INIT_CONTRACT="$(printf '{"owner":"%s"}' "${ADMIN_ADDRESS}")"
-INIT="$(printf '{"denom":"stake"}')"
-#TODO: fix quotes issue
-DAO_INIT="'""'"
-#echo "Instantiate"
-$BINARY add-wasm-message  instantiate-contract 1 ${INIT} --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-wasm-message  instantiate-contract 2 '{
-                                                               "admin": null,
-                                                               "automatically_add_cw20s": false,
-                                                               "automatically_add_cw721s": false,
-                                                               "description": "basic neutron dao",
-                                                               "image_url": null,
-                                                               "name": "Neutron",
-                                                               "initial_items": null,
-                                                               "proposal_modules_instantiate_info": [
-                                                                 {
-                                                                   "admin": null,
-                                                                   "code_id": 3,
-                                                                   "label": "DAO_Neutron_cw-proposal-single",
-                                                                   "msg": "ewogICAgICAgICJhbGxvd19yZXZvdGluZyI6IGZhbHNlLAogICAgICAgICJwcmVfcHJvcG9zZV9pbmZvIjogewogICAgICAgICAgIkFueW9uZU1heVByb3Bvc2UiOiB7fQogICAgICAgIH0sCiAgICAgICAgImRlcG9zaXRfaW5mbyI6IG51bGwsCiAgICAgICAgImNsb3NlX3Byb3Bvc2FsX29uX2V4ZWN1dGlvbl9mYWlsdXJlIjogZmFsc2UsCiAgICAgICAgIm1heF92b3RpbmdfcGVyaW9kIjogewogICAgICAgICAgInRpbWUiOiA2MDQ4MDAKICAgICAgICB9LAogICAgICAgICJvbmx5X21lbWJlcnNfZXhlY3V0ZSI6IGZhbHNlLAogICAgICAgICJ0aHJlc2hvbGQiOiB7CiAgICAgICAgICAidGhyZXNob2xkX3F1b3J1bSI6IHsKICAgICAgICAgICAgInF1b3J1bSI6IHsKICAgICAgICAgICAgICAicGVyY2VudCI6ICIwLjIwIgogICAgICAgICAgICB9LAogICAgICAgICAgICAidGhyZXNob2xkIjogewogICAgICAgICAgICAgICJtYWpvcml0eSI6IHt9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIH0="
-                                                                 }
-                                                               ],
-                                                               "voting_module_instantiate_info": {
-                                                                 "admin": null,
-                                                                 "code_id": 4,
-                                                                 "label": "DAO_Neutron_voting_registry",
-                                                                 "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJzdGFraW5nIjogIm5ldXRyb24xNGhqMnRhdnE4ZnBlc2R3eHhjdTQ0cnR5M2hoOTB2aHVqcnZjbXN0bDR6cjN0eG1mdnc5czVjMmVwcSIKICAgIH0="
-                                                               }
-                                                       }' --run-as neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
+INIT='{"denom":"stake"}'
+DAO_INIT='{
+            "admin": null,
+            "automatically_add_cw20s": false,
+            "automatically_add_cw721s": false,
+            "description": "basic neutron dao",
+            "image_url": null,
+            "name": "Neutron",
+            "initial_items": null,
+            "proposal_modules_instantiate_info": [
+              {
+                "admin": null,
+                "code_id": 3,
+                "label": "DAO_Neutron_cw-proposal-single",
+                "msg": "ewogICAgICAgICJhbGxvd19yZXZvdGluZyI6IGZhbHNlLAogICAgICAgICJwcmVfcHJvcG9zZV9pbmZvIjogewogICAgICAgICAgIkFueW9uZU1heVByb3Bvc2UiOiB7fQogICAgICAgIH0sCiAgICAgICAgImRlcG9zaXRfaW5mbyI6IG51bGwsCiAgICAgICAgImNsb3NlX3Byb3Bvc2FsX29uX2V4ZWN1dGlvbl9mYWlsdXJlIjogZmFsc2UsCiAgICAgICAgIm1heF92b3RpbmdfcGVyaW9kIjogewogICAgICAgICAgInRpbWUiOiA2MDQ4MDAKICAgICAgICB9LAogICAgICAgICJvbmx5X21lbWJlcnNfZXhlY3V0ZSI6IGZhbHNlLAogICAgICAgICJ0aHJlc2hvbGQiOiB7CiAgICAgICAgICAidGhyZXNob2xkX3F1b3J1bSI6IHsKICAgICAgICAgICAgInF1b3J1bSI6IHsKICAgICAgICAgICAgICAicGVyY2VudCI6ICIwLjIwIgogICAgICAgICAgICB9LAogICAgICAgICAgICAidGhyZXNob2xkIjogewogICAgICAgICAgICAgICJtYWpvcml0eSI6IHt9CiAgICAgICAgICAgIH0KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIH0="
+              }
+            ],
+            "voting_module_instantiate_info": {
+              "admin": null,
+              "code_id": 4,
+              "label": "DAO_Neutron_voting_registry",
+              "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJzdGFraW5nIjogIm5ldXRyb24xNGhqMnRhdnE4ZnBlc2R3eHhjdTQ0cnR5M2hoOTB2aHVqcnZjbXN0bDR6cjN0eG1mdnc5czVjMmVwcSIKICAgIH0="
+            }
+    }'
+
+echo "Instantiate contracts"
+$BINARY add-wasm-message  instantiate-contract 1 ${INIT} --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message  instantiate-contract 2 "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
 
 
 echo "Add consumer section..."
