@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutronorg.neutron.feerefunder;
+package neutron.interchainadapter.feerefunder;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -28,7 +28,7 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
 message FeeInfoRequest {
@@ -37,8 +37,6 @@ message FeeInfoRequest {
   uint64 sequence = 3;
 }
 
-message FeeInfoResponse {
-  FeeInfo fee_info = 1;
-}
+message FeeInfoResponse { FeeInfo fee_info = 1; }
 
 // this line is used by starport scaffolding # 3

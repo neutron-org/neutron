@@ -4,7 +4,6 @@ package neutron.interchainadapter.transfer;
 
 option go_package = "github.com/neutron-org/neutron/x/transfer/types";
 
-import "gogoproto/gogo.proto";
 import "ibc/applications/transfer/v1/query.proto";
 import "google/api/annotations.proto";
 

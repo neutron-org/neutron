@@ -75,7 +75,7 @@ type RegisteredQuery struct {
 	// The remote chain last block height when the query result was updated.
 	LastSubmittedResultRemoteHeight uint64 `json:"last_submitted_result_remote_height"`
 	// Amount of coins deposited for the query.
-	QueryDeposit sdktypes.Coins `json:"query_deposit"`
+	Deposit sdktypes.Coins `json:"deposit"`
 	// Timeout before query becomes available for everybody to remove.
 	SubmitTimeout uint64 `json:"submit_timeout"`
 }

@@ -1,12 +1,9 @@
 syntax = "proto3";
-package neutronorg.neutron.contractmanager;
+package neutron.interchainadapter.contractmanager;
 
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 
 // Params defines the parameters for the module.
-message Params {
-  option (gogoproto.goproto_stringer) = false;
-  
-}
+message Params { option (gogoproto.goproto_stringer) = false; }

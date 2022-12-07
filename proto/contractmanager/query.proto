@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutronorg.neutron.contractmanager;
+package neutron.interchainadapter.contractmanager;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -12,21 +12,22 @@ option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 
 // Query defines the gRPC querier service.
 service Query {
-	// Parameters queries the parameters of the module.
-	rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-		option (google.api.http).get = "/neutron/contractmanager/params";
-	}
-	// Queries a Failure by address.
-	rpc AddressFailures(QueryFailuresRequest) returns (QueryFailuresResponse) {
-		option (google.api.http).get = "/neutron/contractmanager/failures/{address}";
-	}
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/neutron/contractmanager/params";
+  }
+  // Queries a Failure by address.
+  rpc AddressFailures(QueryFailuresRequest) returns (QueryFailuresResponse) {
+    option (google.api.http).get =
+        "/neutron/contractmanager/failures/{address}";
+  }
 
-	// Queries a list of Failure items.
-	rpc Failures(QueryFailuresRequest) returns (QueryFailuresResponse) {
-		option (google.api.http).get = "/neutron/contractmanager/failures";
-	}
+  // Queries a list of Failure items.
+  rpc Failures(QueryFailuresRequest) returns (QueryFailuresResponse) {
+    option (google.api.http).get = "/neutron/contractmanager/failures";
+  }
 
-// this line is used by starport scaffolding # 2
+  // this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -35,17 +36,17 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
 message QueryFailuresRequest {
-	string address = 1;
-	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  string address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 message QueryFailuresResponse {
-	repeated Failure failures = 1 [(gogoproto.nullable) = false];
-	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  repeated Failure failures = 1 [ (gogoproto.nullable) = false ];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // this line is used by starport scaffolding # 3
