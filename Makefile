@@ -202,11 +202,3 @@ start-docker-container:
 
 stop-docker-container:
 	@docker stop neutron
-
-start-cosmopark:
-	@echo "\033[1;33mMake sure you have added your key with ssh-add"
-	@cd ./../neutron-query-relayer/ && make build-docker
-	@docker-compose up -d
-
-stop-cosmopark:
-	@docker-compose down --remove-orphans -v
