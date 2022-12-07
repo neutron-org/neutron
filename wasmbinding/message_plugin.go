@@ -8,9 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/gogo/protobuf/proto"
-
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -254,7 +251,7 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 			"creator", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, sdkerrors.Wrap(err, "failed to submit add admin message")
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit proposal")
 	}
 
 	data, err := json.Marshal(response)
@@ -277,35 +274,19 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 
-	if submitProposal.Proposals.TextProposal != nil {
-		prop := govtypes.TextProposal{
-			Title:       submitProposal.Proposals.TextProposal.Title,
-			Description: submitProposal.Proposals.TextProposal.Description,
-		}
-		cont, err := proto.Marshal(&prop)
-		if err != nil {
-			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
-		}
-		msg.Content = &types.Any{
-			TypeUrl: "/cosmos.gov.v1beta1.TextProposal",
-			Value:   cont,
-		}
-
-	} else if submitProposal.Proposals.ParamChangeProposal != nil {
+	if submitProposal.Proposals.ParamChangeProposal != nil {
 		proposal := submitProposal.Proposals.ParamChangeProposal
 		prop := paramChange.ParameterChangeProposal{
 			Title:       proposal.Title,
 			Description: proposal.Description,
-			Changes:     proposal.Changes,
+			Changes:     proposal.ParamChanges,
 		}
-		cont, err := proto.Marshal(&prop)
+		err := msg.SetContent(&prop)
 		if err != nil {
-			return nil, sdkerrors.Wrap(err, "failed to marshall incoming SubmitProposal message")
+			return nil, sdkerrors.Wrap(err, "failed to set content on given proposal")
 		}
-		msg.Content = &types.Any{
-			TypeUrl: "/cosmos.gov.v1beta1.ParameterChangesProposal",
-			Value:   cont,
-		}
+	} else {
+		return nil, sdkerrors.Wrap(nil, "ParamChangeProposal field is missing")
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
