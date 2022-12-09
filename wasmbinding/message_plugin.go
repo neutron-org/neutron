@@ -213,9 +213,9 @@ func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contract
 }
 
 func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) ([]sdk.Event, [][]byte, error) {
-	response, err := m.PerformSubmitTx(ctx, contractAddr, submitTx)
+	response, err := m.performSubmitTx(ctx, contractAddr, submitTx)
 	if err != nil {
-		ctx.Logger().Debug("PerformSubmitTx: failed to submit interchain transaction",
+		ctx.Logger().Debug("performSubmitTx: failed to submit interchain transaction",
 			"from_address", contractAddr.String(),
 			"connection_id", submitTx.ConnectionId,
 			"interchain_account_id", submitTx.InterchainAccountId,
@@ -244,14 +244,14 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 }
 
 func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) ([]sdk.Event, [][]byte, error) {
-	response, err := m.PerformSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
+	response, err := m.performSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
 	if err != nil {
-		ctx.Logger().Debug("PerformSubmitTx: failed to submitAdminProposal",
+		ctx.Logger().Debug("performSubmitTx: failed to submitAdminProposal",
 			"from_address", contractAddr.String(),
 			"creator", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, sdkerrors.Wrap(err, "failed to submit proposal")
+		return nil, nil, sdkerrors.Wrap(err, "failed to submit admin proposal")
 	}
 
 	data, err := json.Marshal(response)
@@ -271,7 +271,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) PerformSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 
 	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil {
@@ -301,7 +301,7 @@ func (m *CustomMessenger) PerformSubmitAdminProposal(ctx sdk.Context, contractAd
 	return response, nil
 }
 
-func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {
+func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {
 	tx := ictxtypes.MsgSubmitTx{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        submitTx.ConnectionId,
@@ -330,9 +330,9 @@ func (m *CustomMessenger) PerformSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 }
 
 func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) ([]sdk.Event, [][]byte, error) {
-	response, err := m.PerformRegisterInterchainAccount(ctx, contractAddr, reg)
+	response, err := m.performRegisterInterchainAccount(ctx, contractAddr, reg)
 	if err != nil {
-		ctx.Logger().Debug("PerformRegisterInterchainAccount: failed to register interchain account",
+		ctx.Logger().Debug("performRegisterInterchainAccount: failed to register interchain account",
 			"from_address", contractAddr.String(),
 			"connection_id", reg.ConnectionId,
 			"interchain_account_id", reg.InterchainAccountId,
@@ -360,7 +360,7 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) PerformRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*bindings.RegisterInterchainAccountResponse, error) {
+func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*bindings.RegisterInterchainAccountResponse, error) {
 	msg := ictxtypes.MsgRegisterInterchainAccount{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
@@ -379,9 +379,9 @@ func (m *CustomMessenger) PerformRegisterInterchainAccount(ctx sdk.Context, cont
 }
 
 func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) ([]sdk.Event, [][]byte, error) {
-	response, err := m.PerformRegisterInterchainQuery(ctx, contractAddr, reg)
+	response, err := m.performRegisterInterchainQuery(ctx, contractAddr, reg)
 	if err != nil {
-		ctx.Logger().Debug("PerformRegisterInterchainQuery: failed to register interchain query",
+		ctx.Logger().Debug("performRegisterInterchainQuery: failed to register interchain query",
 			"from_address", contractAddr.String(),
 			"query_type", reg.QueryType,
 			"kv_keys", icqtypes.KVKeys(reg.Keys).String(),
@@ -418,7 +418,7 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) PerformRegisterInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) (*bindings.RegisterInterchainQueryResponse, error) {
+func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) (*bindings.RegisterInterchainQueryResponse, error) {
 	msg := icqtypes.MsgRegisterInterchainQuery{
 		Keys:               reg.Keys,
 		TransactionsFilter: reg.TransactionsFilter,

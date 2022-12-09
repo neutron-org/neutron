@@ -84,12 +84,6 @@ type ParamChangeProposal struct {
 	ParamChanges []paramChange.ParamChange `json:"param_changes"`
 }
 
-type ParamChange struct {
-	Subspace string `json:"subspace"`
-	Key      string `json:"key"`
-	Value    string `json:"value"`
-}
-
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery
 type RegisterInterchainQueryResponse struct {
 	Id uint64 `json:"id"`
