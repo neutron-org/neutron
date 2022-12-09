@@ -246,7 +246,7 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) ([]sdk.Event, [][]byte, error) {
 	response, err := m.performSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
 	if err != nil {
-		ctx.Logger().Debug("performSubmitTx: failed to submitAdminProposal",
+		ctx.Logger().Debug("performSubmitAdminProposal: failed to submitAdminProposal",
 			"from_address", contractAddr.String(),
 			"creator", contractAddr.String(),
 			"error", err,
