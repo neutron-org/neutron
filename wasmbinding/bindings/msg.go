@@ -25,7 +25,7 @@ type NeutronMsg struct {
 	UpdateInterchainQuery     *UpdateInterchainQuery            `json:"update_interchain_query,omitempty"`
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
 	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
-	SubmitProposal            *SubmitProposal                   `json:"submit_proposal,omitempty"`
+	SubmitAdminProposal       *SubmitAdminProposal              `json:"submit_admin_proposal,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -70,11 +70,11 @@ type AddAdmin struct {
 
 type AddAdminResponse struct{}
 
-type SubmitProposal struct {
-	Proposals Proposals `json:"proposals"`
+type SubmitAdminProposal struct {
+	AdminProposal AdminProposal `json:"admin_proposal"`
 }
 
-type Proposals struct {
+type AdminProposal struct {
 	ParamChangeProposal *ParamChangeProposal `json:"param_change_proposal,omitempty"`
 }
 

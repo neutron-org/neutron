@@ -75,8 +75,8 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.IBCTransfer != nil {
 			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 		}
-		if contractMsg.SubmitProposal != nil {
-			return m.submitProposal(ctx, contractAddr, contractMsg.SubmitProposal)
+		if contractMsg.SubmitAdminProposal != nil {
+			return m.submitAdminProposal(ctx, contractAddr, contractMsg.SubmitAdminProposal)
 		}
 	}
 
@@ -243,10 +243,10 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) ([]sdk.Event, [][]byte, error) {
-	response, err := m.PerformSubmitProposal(ctx, contractAddr, submitProposal)
+func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) ([]sdk.Event, [][]byte, error) {
+	response, err := m.PerformSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
 	if err != nil {
-		ctx.Logger().Debug("PerformSubmitTx: failed to submitProposal",
+		ctx.Logger().Debug("PerformSubmitTx: failed to submitAdminProposal",
 			"from_address", contractAddr.String(),
 			"creator", contractAddr.String(),
 			"error", err,
@@ -256,7 +256,7 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		ctx.Logger().Error("json.Marshal: failed to marshal submitProposal response to JSON",
+		ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposal response to JSON",
 			"from_address", contractAddr.String(),
 			"creator", contractAddr.String(),
 			"error", err,
@@ -271,11 +271,11 @@ func (m *CustomMessenger) submitProposal(ctx sdk.Context, contractAddr sdk.AccAd
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitProposal *bindings.SubmitProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+func (m *CustomMessenger) PerformSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 
-	if submitProposal.Proposals.ParamChangeProposal != nil {
-		proposal := submitProposal.Proposals.ParamChangeProposal
+	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil {
+		proposal := submitAdminProposal.AdminProposal.ParamChangeProposal
 		prop := paramChange.ParameterChangeProposal{
 			Title:       proposal.Title,
 			Description: proposal.Description,
@@ -290,7 +290,7 @@ func (m *CustomMessenger) PerformSubmitProposal(ctx sdk.Context, contractAddr sd
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitProposal message")
+		return nil, sdkerrors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
 	}
 
 	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
