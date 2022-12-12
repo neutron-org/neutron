@@ -992,8 +992,8 @@ github.com/nats-io/nkeys v0.3.0/go.mod h1:gvUNGjVcM2IPr5rCsRsC6Wb3Hr2CQAm08dsxtV
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354/go.mod h1:KSVJerMDfblTH7p5MZaTt+8zaT2iEk3AkVb9PQdZuE8=
 github.com/neilotoole/errgroup v0.1.5/go.mod h1:Q2nLGf+594h0CLBs/Mbg6qOr7GtqDK7C2S41udRnToE=
-github.com/neutron-org/wasmd v0.28.1-0.20221130133614-9661821bf976 h1:s4dmsVyhJZp19zTvgqtbBuylHejvinP9S1LypBHw5wI=
-github.com/neutron-org/wasmd v0.28.1-0.20221130133614-9661821bf976/go.mod h1:+YFMYloXHkrMKYoIGKMzmbEtH0is99ZWl2xgh/U2Dic=
+github.com/neutron-org/wasmd v0.28.0-ics-support h1:pz4ffgAP3RnTVnG1/mYqKLteXT2GVcyved/H0QxpnKA=
+github.com/neutron-org/wasmd v0.28.0-ics-support/go.mod h1:+YFMYloXHkrMKYoIGKMzmbEtH0is99ZWl2xgh/U2Dic=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nishanths/exhaustive v0.2.3/go.mod h1:bhIX678Nx8inLM9PbpvK1yv6oGtoP8BfaIeMzgBNKvc=
