@@ -130,7 +130,7 @@ require (
 )
 
 replace (
-	github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.1-0.20221130133614-9661821bf976
+	github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.0-ics-support
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
 	github.com/cosmos/ibc-go/v3 => github.com/informalsystems/ibc-go/v3 v3.0.0-beta1.0.20220816140824-aba9c2f2b943
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
