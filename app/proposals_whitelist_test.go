@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	simapp "github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/simapp"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	icssimapp "github.com/cosmos/interchain-security/testutil/simapp"
 	"github.com/stretchr/testify/require"
@@ -15,6 +15,8 @@ import (
 )
 
 func TestConsumerWhitelistingKeys(t *testing.T) {
+	_ = app.GetDefaultConfig()
+
 	chain := ibctesting.NewTestChain(t, icssimapp.NewBasicCoordinator(t), SetupTestingAppConsumer, "test")
 	paramKeeper := chain.App.(*app.App).ParamsKeeper
 	for paramKey := range app.WhitelistedParams {
