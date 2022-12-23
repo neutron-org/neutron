@@ -75,13 +75,26 @@ type SubmitAdminProposal struct {
 }
 
 type AdminProposal struct {
-	ParamChangeProposal *ParamChangeProposal `json:"param_change_proposal,omitempty"`
+	ParamChangeProposal     *ParamChangeProposal     `json:"param_change_proposal,omitempty"`
+	SoftwareUpgradeProposal *SoftwareUpgradeProposal `json:"software_upgrade_proposal,omitempty"`
 }
 
 type ParamChangeProposal struct {
 	Title        string                    `json:"title"`
 	Description  string                    `json:"description"`
 	ParamChanges []paramChange.ParamChange `json:"param_changes"`
+}
+
+type SoftwareUpgradeProposal struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Plan        Plan   `json:"plan"`
+}
+
+type Plan struct {
+	Name   string `json:"name"`
+	Height int64  `json:"height"`
+	Info   string `json:"info"`
 }
 
 // RegisterInterchainQueryResponse holds response for RegisterInterchainQuery

@@ -3,6 +3,8 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"testing"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -39,6 +41,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(suite.neutron.InterchainTxsKeeper)
 	suite.messenger.Keeper = suite.neutron.InterchainTxsKeeper
 	suite.messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(suite.neutron.InterchainQueriesKeeper)
+	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 }
 
@@ -285,6 +288,46 @@ func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 		},
 	)
 	suite.ErrorContains(err, "MsgSubmitTx contains more messages than allowed")
+}
+
+func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
+	// Set admin so that we can execute this proposal without permission error
+	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
+
+	// Craft SubmitAdminProposal message
+	submitProposalMsg := bindings.SubmitAdminProposal{
+		AdminProposal: bindings.AdminProposal{
+			SoftwareUpgradeProposal: &bindings.SoftwareUpgradeProposal{
+				Title:       "Test",
+				Description: "Test",
+				Plan: bindings.Plan{
+					Name:   "TestPlan",
+					Height: 150,
+					Info:   "TestInfo",
+				},
+			},
+		},
+	}
+
+	fullMsg := bindings.NeutronMsg{
+		SubmitAdminProposal: &submitProposalMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch SubmitAdminProposal message
+	suite.NoError(err)
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
+		ProposalId: 1,
+	})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {

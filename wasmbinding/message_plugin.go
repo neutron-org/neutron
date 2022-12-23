@@ -2,6 +2,7 @@ package wasmbinding
 
 import (
 	"encoding/json"
+	"fmt"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
@@ -9,9 +10,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	softwareUpgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -283,10 +286,30 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		}
 		err := msg.SetContent(&prop)
 		if err != nil {
-			return nil, sdkerrors.Wrap(err, "failed to set content on given proposal")
+			return nil, sdkerrors.Wrap(err, "failed to set content on ParameterChangeProposal")
 		}
-	} else {
-		return nil, sdkerrors.Wrap(nil, "ParamChangeProposal field is missing")
+	}
+
+	if submitAdminProposal.AdminProposal.SoftwareUpgradeProposal != nil {
+		proposal := submitAdminProposal.AdminProposal.SoftwareUpgradeProposal
+		prop := softwareUpgrade.SoftwareUpgradeProposal{
+			Title:       proposal.Title,
+			Description: proposal.Description,
+			Plan: softwareUpgrade.Plan{
+				Name:   proposal.Plan.Name,
+				Height: proposal.Plan.Height,
+				Info:   proposal.Plan.Info,
+			},
+		}
+		err := msg.SetContent(&prop)
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on SoftwareUpgradeProposal")
+		}
+	}
+
+	if submitAdminProposal.AdminProposal.ParamChangeProposal == nil &&
+		submitAdminProposal.AdminProposal.SoftwareUpgradeProposal == nil {
+		return nil, fmt.Errorf("admin proposal types are missing")
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
