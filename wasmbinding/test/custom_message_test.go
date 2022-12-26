@@ -3,9 +3,10 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
-	"testing"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
@@ -317,7 +318,6 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	suite.NoError(err)
 
 	// Dispatch SubmitAdminProposal message
-	suite.NoError(err)
 	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
@@ -328,6 +328,14 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	})
 	suite.NoError(err)
 	suite.Equal([][]uint8{expected}, data)
+
+	// Test with other proposer that is not admin should return failure
+	otherAddress, err := sdk.AccAddressFromBech32("neutron13jrwrtsyjjuynlug65r76r2zvfw5xjcq6532h2")
+	suite.NoError(err)
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, otherAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.Error(err)
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {
