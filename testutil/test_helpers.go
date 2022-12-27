@@ -15,7 +15,7 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
-	icssimapp "github.com/cosmos/interchain-security/testutil/simapp"
+	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -25,9 +25,14 @@ import (
 	e2e "github.com/cosmos/interchain-security/testutil/e2e"
 	ccv "github.com/cosmos/interchain-security/x/ccv/types"
 	"github.com/cosmos/interchain-security/x/ccv/utils"
+	tmtypes "github.com/tendermint/tendermint/types"
+
 	"github.com/neutron-org/neutron/app"
 	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	tmtypes "github.com/tendermint/tendermint/types"
+
+	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+	providertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
+	"github.com/cosmos/interchain-security/x/ccv/types"
 )
 
 var (
@@ -73,6 +78,26 @@ type IBCConnectionTestSuite struct {
 	Path     *ibctesting.Path
 }
 
+func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal {
+	prop := providertypes.NewConsumerAdditionProposal(
+		chain.ChainID,
+		"description",
+		chain.ChainID,
+		chain.LastHeader.GetHeight().(clienttypes.Height),
+		[]byte("gen_hash"),
+		[]byte("bin_hash"),
+		time.Now(),
+		consumertypes.DefaultConsumerRedistributeFrac,
+		consumertypes.DefaultBlocksPerDistributionTransmission,
+		consumertypes.DefaultHistoricalEntries,
+		types.DefaultCCVTimeoutPeriod,
+		consumertypes.DefaultTransferTimeoutPeriod,
+		consumertypes.DefaultConsumerUnbondingPeriod,
+	).(*providertypes.ConsumerAdditionProposal)
+
+	return prop
+}
+
 func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Coordinator = NewProviderConsumerCoordinator(suite.T())
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
@@ -107,19 +132,17 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainB.NextBlock()
 
 	// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper.
+	prop1 := GetTestConsumerAdditionProp(suite.ChainA)
 	err := providerKeeper.CreateConsumerClient(
 		suite.ChainProvider.GetContext(),
-		suite.ChainA.ChainID,
-		suite.ChainA.LastHeader.GetHeight().(clienttypes.Height),
-		false,
+		prop1,
 	)
 	suite.Require().NoError(err)
 
+	prop2 := GetTestConsumerAdditionProp(suite.ChainB)
 	err = providerKeeper.CreateConsumerClient(
 		suite.ChainProvider.GetContext(),
-		suite.ChainB.ChainID,
-		suite.ChainB.LastHeader.GetHeight().(clienttypes.Height),
-		false,
+		prop2,
 	)
 	suite.Require().NoError(err)
 
@@ -178,12 +201,13 @@ func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
 
 	// - client config
 	trustingPeriodFraction := suite.ProviderApp.GetProviderKeeper().GetTrustingPeriodFraction(suite.ChainProvider.GetContext())
+
 	providerUnbondingPeriod := suite.ProviderApp.GetStakingKeeper().UnbondingTime(suite.ChainProvider.GetContext())
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = providerUnbondingPeriod
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = providerUnbondingPeriod / time.Duration(trustingPeriodFraction)
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(providerUnbondingPeriod, trustingPeriodFraction)
 	consumerUnbondingPeriod := consumerKeeper.GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriod
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = consumerUnbondingPeriod / time.Duration(trustingPeriodFraction)
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(consumerUnbondingPeriod, trustingPeriodFraction)
 	// - channel config
 	path.EndpointA.ChannelConfig.PortID = ccv.ConsumerPortID
 	path.EndpointB.ChannelConfig.PortID = ccv.ProviderPortID
@@ -223,9 +247,9 @@ func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
 
 // NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
-	coordinator := icssimapp.NewBasicCoordinator(t)
+	coordinator := ibctesting.NewCoordinator(t, 3)
 	chainID := ibctesting.GetChainID(1)
-	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, icssimapp.SetupTestingappProvider, chainID)
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, icssimapp.ProviderAppIniter, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
 	chainID = ibctesting.GetChainID(2)
@@ -278,13 +302,14 @@ func NewICAPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting
 	path.EndpointB.ChannelConfig.Version = TestVersion
 
 	trustingPeriodFraction := chainProvider.App.(*appProvider.App).GetProviderKeeper().GetTrustingPeriodFraction(chainProvider.GetContext())
+
 	consumerUnbondingPeriodA := path.EndpointA.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodA
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = consumerUnbondingPeriodA / time.Duration(trustingPeriodFraction)
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(consumerUnbondingPeriodA, trustingPeriodFraction)
 
 	consumerUnbondingPeriodB := path.EndpointB.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointB.Chain.GetContext())
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodB
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = consumerUnbondingPeriodB / time.Duration(trustingPeriodFraction)
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(consumerUnbondingPeriodB, trustingPeriodFraction)
 
 	return path
 }

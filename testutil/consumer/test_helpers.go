@@ -13,10 +13,12 @@ import (
 	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
 	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
 	ccvprovidertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
+	"github.com/cosmos/interchain-security/x/ccv/types"
 	types1 "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil/network"
+
 	"github.com/neutron-org/neutron/app"
 )
 
@@ -30,7 +32,8 @@ func CreateMinimalConsumerTestGenesis() *ccvconsumertypes.GenesisState {
 	genesisState.ProviderClientState = ccvprovidertypes.DefaultParams().TemplateClient
 	genesisState.ProviderClientState.ChainId = app.Name
 	genesisState.ProviderClientState.LatestHeight = ibcclienttypes.Height{RevisionNumber: 0, RevisionHeight: 1}
-	genesisState.ProviderClientState.TrustingPeriod = genesisState.Params.UnbondingPeriod / ccvprovidertypes.DefaultTrustingPeriodFraction
+	genesisState.ProviderClientState.TrustingPeriod, _ = types.CalculateTrustPeriod(genesisState.Params.UnbondingPeriod, ccvprovidertypes.DefaultTrustingPeriodFraction)
+
 	genesisState.ProviderClientState.UnbondingPeriod = genesisState.Params.UnbondingPeriod
 	genesisState.ProviderClientState.MaxClockDrift = ccvprovidertypes.DefaultMaxClockDrift
 	genesisState.ProviderConsensusState = &ibctmtypes.ConsensusState{
