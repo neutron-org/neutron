@@ -2,7 +2,12 @@ package keeper_test
 
 import (
 	"fmt"
+	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	"github.com/golang/mock/gomock"
+	icqtestkeeper "github.com/neutron-org/neutron/testutil/interchainqueries/keeper"
+	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchainqueries/types"
 	"math"
+	"testing"
 	"time"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -20,7 +25,10 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/version"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	clientkeeper "github.com/cosmos/ibc-go/v3/modules/core/02-client/keeper"
 	"github.com/neutron-org/neutron/testutil"
+	iqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -201,7 +209,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, header, nextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
 			},
 			nil,
 		},
@@ -222,7 +230,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, header, nextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
 			},
 			iqtypes.ErrInvalidHeader,
 		},
@@ -243,7 +251,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				nextHeader, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeader(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID)
 				suite.Require().NoError(err)
 
-				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, header, nextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, header, nextHeader)
 			},
 			iqtypes.ErrInvalidHeader,
 		},
@@ -274,7 +282,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				oldNextHeader.TrustedHeight = headerWithTrustedHeight.TrustedHeight
 				oldNextHeader.TrustedValidators = headerWithTrustedHeight.TrustedValidators
 
-				return suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.VerifyHeaders(suite.ChainA.GetContext(), clientID, &oldHeader, &oldNextHeader)
+				return iqkeeper.Verifier{}.VerifyHeaders(suite.ChainA.GetContext(), suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ClientKeeper, clientID, &oldHeader, &oldNextHeader)
 			},
 			nil,
 		},
@@ -306,4 +314,102 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 			}
 		})
 	}
+}
+
+func TestSudoHasAddress(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	hv := mock_types.NewMockHeaderVerifier(ctrl)
+	tv := mock_types.NewMockTransactionVerifier(ctrl)
+	cm := mock_types.NewMockContractManagerKeeper(ctrl)
+	ibck := ibckeeper.Keeper{ClientKeeper: clientkeeper.Keeper{}}
+
+	k, ctx := icqtestkeeper.InterchainQueriesKeeper(t, &ibck, cm, hv, tv)
+	address := types.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	header := ibctmtypes.Header{
+		SignedHeader: &tmproto.SignedHeader{
+			Header: &tmproto.Header{Height: 1001},
+		},
+		TrustedHeight: ibcclienttypes.Height{
+			RevisionNumber: 1,
+			RevisionHeight: 1001,
+		},
+	}
+	nextHeader := ibctmtypes.Header{
+		TrustedHeight: ibcclienttypes.Height{
+			RevisionNumber: 1,
+			RevisionHeight: 1002,
+		},
+	}
+	packedHeader, err := codectypes.NewAnyWithValue(&header)
+	require.NoError(t, err)
+	packedNextHeader, err := codectypes.NewAnyWithValue(&nextHeader)
+	require.NoError(t, err)
+	tx := iqtypes.TxValue{
+		Response:       nil,
+		DeliveryProof:  nil,
+		InclusionProof: nil,
+		Data:           []byte("txbody"),
+	}
+	block := iqtypes.Block{
+		NextBlockHeader: packedNextHeader,
+		Header:          packedHeader,
+		Tx:              &tx,
+	}
+
+	hv.EXPECT().UnpackHeader(packedHeader).Return(nil, fmt.Errorf("failed to unpack packedHeader"))
+	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
+	require.ErrorContains(t, err, "failed to unpack block header")
+
+	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
+	hv.EXPECT().UnpackHeader(packedNextHeader).Return(nil, fmt.Errorf("failed to unpack packedHeader"))
+	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
+	require.ErrorContains(t, err, "failed to unpack next block header")
+
+	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
+	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.Header(&nextHeader), nil)
+	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.Header(&header), exported.Header(&nextHeader)).Return(fmt.Errorf("failed to verify headers"))
+	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
+	require.ErrorContains(t, err, "failed to verify headers")
+
+	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
+	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.Header(&nextHeader), nil)
+	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.Header(&header), exported.Header(&nextHeader)).Return(nil)
+	tv.EXPECT().VerifyTransaction(&header, &nextHeader, &tx).Return(fmt.Errorf("failed to verify transaction"))
+	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
+	require.ErrorContains(t, err, "failed to verifyTransaction")
+
+	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
+	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.Header(&nextHeader), nil)
+	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.Header(&header), exported.Header(&nextHeader)).Return(nil)
+	tv.EXPECT().VerifyTransaction(&header, &nextHeader, &tx).Return(nil)
+	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(1), header.Header.Height, tx.GetData()).Return(nil, fmt.Errorf("contract error"))
+	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
+	require.ErrorContains(t, err, "rejected transaction query result")
+
+	// all error flows passed, time to success
+	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
+	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.Header(&nextHeader), nil)
+	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.Header(&header), exported.Header(&nextHeader)).Return(nil)
+	tv.EXPECT().VerifyTransaction(&header, &nextHeader, &tx).Return(nil)
+	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(1), header.Header.Height, tx.GetData()).Return(nil, nil)
+	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
+	require.NoError(t, err)
+
+	// no functions calls after VerifyHeaders means we try to process tx second time
+	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
+	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.Header(&nextHeader), nil)
+	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.Header(&header), exported.Header(&nextHeader)).Return(nil)
+	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
+	require.NoError(t, err)
+
+	//same tx + another queryID
+	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
+	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.Header(&nextHeader), nil)
+	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.Header(&header), exported.Header(&nextHeader)).Return(nil)
+	tv.EXPECT().VerifyTransaction(&header, &nextHeader, &tx).Return(nil)
+	cm.EXPECT().SudoTxQueryResult(ctx, address, uint64(2), header.Header.Height, tx.GetData()).Return(nil, nil)
+	err = k.ProcessBlock(ctx, address, 2, "tendermint-07", &block)
+	require.NoError(t, err)
 }

@@ -10,11 +10,12 @@ import (
 	"github.com/cosmos/interchain-security/tests/e2e"
 	e2etestutil "github.com/cosmos/interchain-security/testutil/e2e"
 	"github.com/cosmos/interchain-security/testutil/simapp"
-	"github.com/neutron-org/neutron/app"
-	appConsumer "github.com/neutron-org/neutron/app"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/neutron-org/neutron/app"
+	appConsumer "github.com/neutron-org/neutron/app"
 )
 
 // Executes the standard group of ccv tests against a consumer and provider app.go implementation.

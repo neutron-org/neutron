@@ -2,6 +2,7 @@ package contractmanager
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )

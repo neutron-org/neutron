@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 
-	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	wrappedtypes "github.com/neutron-org/neutron/x/transfer/types"
 )
@@ -20,8 +19,8 @@ import (
 // KeeperTransferWrapper is a wrapper for original ibc keeper to override response for "Transfer" method
 type KeeperTransferWrapper struct {
 	keeper.Keeper
-	channelKeeper         types.ChannelKeeper
-	FeeKeeper             *feekeeper.Keeper
+	channelKeeper         wrappedtypes.ChannelKeeper
+	FeeKeeper             wrappedtypes.FeeRefunderKeeper
 	ContractManagerKeeper wrappedtypes.ContractManagerKeeper
 }
 
@@ -63,9 +62,9 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 // NewKeeper creates a new IBC transfer Keeper(KeeperTransferWrapper) instance
 func NewKeeper(
 	cdc codec.BinaryCodec, key sdk.StoreKey, paramSpace paramtypes.Subspace,
-	ics4Wrapper types.ICS4Wrapper, channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
+	ics4Wrapper types.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
-	feeKeeper *feekeeper.Keeper,
+	feeKeeper wrappedtypes.FeeRefunderKeeper,
 	contractManagerKeeper wrappedtypes.ContractManagerKeeper,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{

@@ -395,7 +395,7 @@ func New(
 		&app.WasmKeeper,
 	)
 
-	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.GetSubspace(feetypes.ModuleName), app.IBCKeeper, app.BankKeeper)
+	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.GetSubspace(feetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.BankKeeper)
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// Create Transfer Keepers
@@ -470,6 +470,8 @@ func New(
 		app.IBCKeeper,
 		app.BankKeeper,
 		app.ContractManagerKeeper,
+		interchainqueriesmodulekeeper.Verifier{},
+		interchainqueriesmodulekeeper.TransactionVerifier{},
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,

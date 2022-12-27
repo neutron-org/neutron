@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/testutil/contractmanager/network"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager/client/cli"

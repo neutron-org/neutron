@@ -3,6 +3,8 @@ package keeper
 import (
 	"testing"
 
+	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -18,7 +20,13 @@ import (
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
-func InterchainQueriesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func InterchainQueriesKeeper(
+	t testing.TB,
+	ibcKeeper *ibckeeper.Keeper,
+	contractManager types.ContractManagerKeeper,
+	headerVerifier types.HeaderVerifier,
+	txVerifier types.TransactionVerifier,
+) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -42,9 +50,11 @@ func InterchainQueriesKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil, // TODO: do a real ibc keeper
-		nil, // TODO: do a real wasm keeper
-		nil,
+		ibcKeeper, // TODO: do a real ibc keeper
+		nil,       // TODO: do a real wasm keeper
+		contractManager,
+		headerVerifier,
+		txVerifier,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
