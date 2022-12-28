@@ -10,6 +10,7 @@ DAO_CONTRACT=./contracts/cwd_core.wasm
 PRE_PROPOSAL_CONTRACT=./contracts/cwd_pre_propose_single.wasm
 PROPOSAL_CONTRACT=./contracts/cwd_proposal_single.wasm
 VOTING_REGISTRY_CONTRACT=./contracts/neutron_voting_registry.wasm
+PRE_PROPOSAL_OVERRULE_CONTRACT=./contracts/cwd_pre_propose_overrule.wasm
 VAULT_CONTRACT=./contracts/neutron_vault.wasm
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
@@ -83,6 +84,88 @@ $NEUTROND_BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as 
 $NEUTROND_BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message store ${PRE_PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message store ${PRE_PROPOSAL_OVERRULE_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
+
+PRE_PROPOSAL_SINGLE_INIT_MSG='{
+  "deposit_info":{
+     "denom":{
+        "token":{
+           "denom":{
+              "native":"stake"
+           }
+        }
+     },
+    "amount": "1000",
+    "refund_policy":"always"
+  },
+  "open_proposal_submission":false
+}'
+
+PRE_PROPOSAL_SINGLE_INIT_MSG_BASE64=$(echo ${PRE_PROPOSAL_SINGLE_INIT_MSG} | base64)
+
+PROPOSAL_INIT_MSG='{
+    "allow_revoting":false,
+    "pre_propose_info":{
+       "ModuleMayPropose":{
+          "info":{
+             "code_id":5,
+             "msg": "'"${PRE_PROPOSAL_SINGLE_INIT_MSG_BASE64}"'",
+             "label":"neutron"
+          }
+       }
+    },
+    "only_members_execute":false,
+    "max_voting_period":{
+       "time":604800
+    },
+    "close_proposal_on_execution_failure":false,
+    "threshold":{
+       "threshold_quorum":{
+          "quorum":{
+             "percent":"0.20"
+          },
+          "threshold":{
+             "majority":{
+
+             }
+          }
+       }
+    }
+ }'
+
+PROPOSAL_INIT_MSG_BASE64=$(echo ${PROPOSAL_INIT_MSG} | base64)
+
+PROPOSAL_OVERRULE_INIT='{
+    "allow_revoting":false,
+    "pre_propose_info":{
+       "ModuleMayPropose":{
+          "info":{
+             "code_id": 6,
+             "msg": "e30=",
+             "label":"neutron-overrule"
+          }
+       }
+    },
+    "only_members_execute":false,
+    "max_voting_period":{
+       "time":604800
+    },
+    "close_proposal_on_execution_failure":false,
+    "threshold":{
+       "threshold_quorum":{
+          "quorum":{
+             "percent":"0.01"
+          },
+          "threshold":{
+             "majority":{
+
+             }
+          }
+       }
+    }
+ }'
+
+PROPOSAL_OVERRULE_INIT_BASE64=$(echo ${PROPOSAL_OVERRULE_INIT} | base64)
 
 # Instantiate the contract
 INIT='{
@@ -90,22 +173,47 @@ INIT='{
   "description": "based neutron vault"
 }'
 DAO_INIT='{
-            "description": "basic neutron dao",
-            "name": "Neutron",
-            "initial_items": null,
-            "proposal_modules_instantiate_info": [
-              {
-                "code_id": 3,
-                "label": "DAO_Neutron_cw-proposal-single",
-                "msg": "CnsKICAgImFsbG93X3Jldm90aW5nIjpmYWxzZSwKICAgInByZV9wcm9wb3NlX2luZm8iOnsKICAgICAgIk1vZHVsZU1heVByb3Bvc2UiOnsKICAgICAgICAgImluZm8iOnsKICAgICAgICAgICAgImNvZGVfaWQiOjUsCiAgICAgICAgICAgICJtc2ciOiAiZXdvZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FpWkdWd2IzTnBkRjlwYm1adklqcDdDaUFnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0prWlc1dmJTSTZld29nSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBaWRHOXJaVzRpT25zS0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSW1SbGJtOXRJanA3Q2lBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNKdVlYUnBkbVVpT2lKemRHRnJaU0lLSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdmUW9nSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNCOUNpQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lIMHNDaUFnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJbUZ0YjNWdWRDSTZJQ0l4TURBd0lpd0tJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWljbVZtZFc1a1gzQnZiR2xqZVNJNkltRnNkMkY1Y3lJS0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnZlN3S0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSW05d1pXNWZjSEp2Y0c5ellXeGZjM1ZpYldsemMybHZiaUk2Wm1Gc2MyVUtJQ0FnSUNBZ0lDQWdJQ0FnZlFvSyIsCiAgICAgICAgICAgICJsYWJlbCI6Im5ldXRyb24iCiAgICAgICAgIH0KICAgICAgfQogICB9LAogICAib25seV9tZW1iZXJzX2V4ZWN1dGUiOmZhbHNlLAogICAibWF4X3ZvdGluZ19wZXJpb2QiOnsKICAgICAgInRpbWUiOjYwNDgwMAogICB9LAogICAiY2xvc2VfcHJvcG9zYWxfb25fZXhlY3V0aW9uX2ZhaWx1cmUiOmZhbHNlLAogICAidGhyZXNob2xkIjp7CiAgICAgICJ0aHJlc2hvbGRfcXVvcnVtIjp7CiAgICAgICAgICJxdW9ydW0iOnsKICAgICAgICAgICAgInBlcmNlbnQiOiIwLjIwIgogICAgICAgICB9LAogICAgICAgICAidGhyZXNob2xkIjp7CiAgICAgICAgICAgICJtYWpvcml0eSI6ewogICAgICAgICAgICAgICAKICAgICAgICAgICAgfQogICAgICAgICB9CiAgICAgIH0KICAgfQp9"
-              }
-            ],
-            "voting_registry_module_instantiate_info": {
-              "code_id": 4,
-              "label": "DAO_Neutron_voting_registry",
-              "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
-            }
-    }'
+  "description": "basic neutron dao",
+  "name": "Neutron",
+  "initial_items": null,
+  "proposal_modules_instantiate_info": [
+    {
+      "code_id": 3,
+      "label": "DAO_Neutron_cw-proposal-single",
+      "msg": "'"${PROPOSAL_INIT_MSG_BASE64}"'"
+    },
+    {
+      "code_id": 3,
+      "label": "DAO_Neutron_cw-proposal-overrule",
+      "msg": "'"${PROPOSAL_OVERRULE_INIT_BASE64}"'"
+    }
+  ],
+  "voting_registry_module_instantiate_info": {
+    "code_id": 4,
+    "label": "DAO_Neutron_voting_registry",
+    "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
+  }
+}'
+
+#DAO_INIT='{
+#  "description": "basic neutron dao",
+#  "name": "Neutron",
+#  "initial_items": null,
+#  "proposal_modules_instantiate_info": [
+#    {
+#      "code_id": 3,
+#      "label": "DAO_Neutron_cw-proposal-single",
+#      "msg": "'"${PROPOSAL_INIT_MSG_BASE64}"'"
+#    }
+#  ],
+#  "voting_registry_module_instantiate_info": {
+#    "code_id": 4,
+#    "label": "DAO_Neutron_voting_registry",
+#    "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
+#  }
+#}'
+
+echo $DAO_INIT
 
 echo "Instantiate contracts"
 $NEUTROND_BINARY add-wasm-message  instantiate-contract 1 "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
