@@ -759,6 +759,7 @@ github.com/cosmos/iavl v0.19.4 h1:t82sN+Y0WeqxDLJRSpNd8YFX5URIrT+p8n6oJbJ2Dok=
 github.com/cosmos/iavl v0.19.4/go.mod h1:X9PKD3J0iFxdmgNLa7b2LYWdsGd90ToV5cAONApkEPw=
 github.com/cosmos/ibc-go v1.2.2/go.mod h1:XmYjsRFOs6Q9Cz+CSsX21icNoH27vQKb3squgnCOCbs=
 github.com/cosmos/interchain-accounts v0.1.0 h1:QmuwNsf1Hxl3P5GSGt7Z+JeuHPiZw4Z34R/038P5T6s=
+github.com/cosmos/interchain-accounts v0.1.0/go.mod h1:Fv6LXDs+0ng4mIDVWwEJMXbAIMxY4kiq+A7Bw1Fb9AY=
 github.com/cosmos/interchain-security v0.2.2-0.20230110164848-2cbbd1041477 h1:V1Y9K+TsqChTF70MY3dlP5YseMBLGiV50AgM/UlNi9c=
 github.com/cosmos/interchain-security v0.2.2-0.20230110164848-2cbbd1041477/go.mod h1:po4BbBdxDFEI1Z79OMzprpffI1IgNsyeDquvIA1Klik=
 github.com/cosmos/ledger-cosmos-go v0.11.1 h1:9JIYsGnXP613pb2vPjFeMMjBI5lEDsEaF6oYorTy6J4=

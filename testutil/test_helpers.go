@@ -217,9 +217,7 @@ func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
 	path.EndpointB.ChannelConfig.Order = channeltypes.ORDERED
 
 	// set chains sender account number
-	err := path.EndpointB.Chain.SenderAccount.SetAccountNumber(6)
-	suite.Require().NoError(err)
-	err = path.EndpointA.Chain.SenderAccount.SetAccountNumber(1)
+	err := path.EndpointA.Chain.SenderAccount.SetAccountNumber(1)
 	suite.Require().NoError(err)
 }
 
