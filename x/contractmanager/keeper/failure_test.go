@@ -8,11 +8,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
-	"github.com/stretchr/testify/require"
 )
 
 // Prevent strconv unused error
@@ -53,7 +54,7 @@ func flattenFailures(items [][]types.Failure) []types.Failure {
 }
 
 func TestGetAllFailures(t *testing.T) {
-	keeper, ctx := keepertest.ContractManagerKeeper(t)
+	keeper, ctx := keepertest.ContractManagerKeeper(t, nil)
 	items := createNFailure(keeper, ctx, 10, 4)
 	flattenItems := flattenFailures(items)
 

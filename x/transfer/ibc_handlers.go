@@ -23,6 +23,7 @@ func (im IBCModule) outOfGasRecovery(
 	senderAddress sdk.AccAddress,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
+	failureType string,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
@@ -31,8 +32,8 @@ func (im IBCModule) outOfGasRecovery(
 		}
 
 		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
-		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
-
+		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), failureType)
+		// FIXME: add distribution call
 	}
 }
 
@@ -73,7 +74,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data)
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "ack")
 
 	if ack.Success() {
 		_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
@@ -117,7 +118,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data)
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "timeout")
 
 	_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	if err != nil {

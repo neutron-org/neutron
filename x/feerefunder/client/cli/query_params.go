@@ -5,8 +5,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
 func CmdQueryParams() *cobra.Command {

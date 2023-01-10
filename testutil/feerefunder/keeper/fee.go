@@ -18,7 +18,7 @@ import (
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
-func FeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func FeeKeeper(t testing.TB, channelKeeper types.ChannelKeeper, bankKeeper types.BankKeeper) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -42,8 +42,8 @@ func FeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,
-		nil,
+		channelKeeper,
+		bankKeeper,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

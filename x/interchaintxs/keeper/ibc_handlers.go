@@ -24,6 +24,7 @@ func (k *Keeper) outOfGasRecovery(
 	gasMeter sdk.GasMeter,
 	senderAddress sdk.AccAddress,
 	packet channeltypes.Packet,
+	filureAckType string,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
@@ -32,8 +33,8 @@ func (k *Keeper) outOfGasRecovery(
 		}
 
 		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
-		k.contractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
-
+		k.contractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), filureAckType)
+		// FIXME: add distribution call
 	}
 }
 
@@ -75,7 +76,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet)
+	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack")
 
 	// Actually we have only one kind of error returned from acknowledgement
 	// maybe later we'll retrieve actual errors from events
@@ -114,7 +115,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet)
+	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "timeout")
 
 	_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
 	if err != nil {
