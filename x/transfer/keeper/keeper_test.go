@@ -3,7 +3,7 @@ package transfer_test
 import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	types2 "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	"github.com/neutron-org/neutron/testutil"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -74,7 +74,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 		Sender:        testutil.TestOwnerAddress,
 		Token:         sdktypes.NewCoin("stake", sdktypes.NewInt(1000)),
 		Receiver:      TestAddress,
-		TimeoutHeight: types2.Height{
+		TimeoutHeight: clienttypes.Height{
 			RevisionNumber: 10,
 			RevisionHeight: 10000,
 		},
@@ -99,7 +99,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 		Sender:        contractAddress.String(),
 		Token:         sdktypes.NewCoin("stake", sdktypes.NewInt(1000)),
 		Receiver:      TestAddress,
-		TimeoutHeight: types2.Height{
+		TimeoutHeight: clienttypes.Height{
 			RevisionNumber: 10,
 			RevisionHeight: 10000,
 		},
@@ -115,7 +115,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 		Sender:        contractAddress.String(),
 		Token:         sdktypes.NewCoin("stake", sdktypes.NewInt(1000)),
 		Receiver:      TestAddress,
-		TimeoutHeight: types2.Height{
+		TimeoutHeight: clienttypes.Height{
 			RevisionNumber: 10,
 			RevisionHeight: 10000,
 		},

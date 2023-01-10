@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"testing"
 
-	types2 "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -145,7 +144,7 @@ func TestKeeperLockFees(t *testing.T) {
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, false)
 	err := k.LockFees(ctx, payer, packet, types.Fee{})
-	require.True(t, types2.ErrChannelNotFound.Is(err))
+	require.True(t, channeltypes.ErrChannelNotFound.Is(err))
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
 	err = k.LockFees(ctx, payer, packet, types.Fee{})
