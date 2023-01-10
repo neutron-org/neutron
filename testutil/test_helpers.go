@@ -14,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
 	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
@@ -119,9 +119,9 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Require().True(len(providerValUpdates) == len(consumerBValUpdates), "initial valset not matching")
 
 	for i := 0; i < len(providerValUpdates); i++ {
-		addr1 := utils.GetChangePubKeyAddress(providerValUpdates[i])
-		addr2 := utils.GetChangePubKeyAddress(consumerAValUpdates[i])
-		addr3 := utils.GetChangePubKeyAddress(consumerBValUpdates[i])
+		addr1, _ := utils.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
+		addr2, _ := utils.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
+		addr3, _ := utils.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
 		suite.Require().True(bytes.Equal(addr1, addr2), "validator mismatch")
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
 	}

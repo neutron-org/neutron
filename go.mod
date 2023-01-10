@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-alpha8
 	github.com/cosmos/cosmos-sdk v0.45.12-0.20221116140330-9c145c827001
 	github.com/cosmos/ibc-go/v3 v3.4.0
-	github.com/cosmos/interchain-security v0.2.2-0.20221222165445-57b47af1edc7
+	github.com/cosmos/interchain-security v0.2.2-0.20230110164848-2cbbd1041477
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
@@ -42,7 +42,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coinbase/rosetta-sdk-go v0.7.9 // indirect
 	github.com/cosmos/btcutil v1.0.4 // indirect
-	github.com/cosmos/gaia/v8 v8.0.0-20221209131454-f73f97517b5b // indirect
+	github.com/cosmos/gaia/v8 v8.0.0-20230108202408-c3c3586e5ab8 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/iavl v0.19.4 // indirect
@@ -72,7 +72,7 @@ require (
 	github.com/google/orderedcode v0.0.1 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/gravity-devs/liquidity v1.5.1 // indirect
+	github.com/gravity-devs/liquidity v1.5.3 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.14.0 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
