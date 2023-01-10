@@ -75,8 +75,9 @@ type SubmitAdminProposal struct {
 }
 
 type AdminProposal struct {
-	ParamChangeProposal     *ParamChangeProposal     `json:"param_change_proposal,omitempty"`
-	SoftwareUpgradeProposal *SoftwareUpgradeProposal `json:"software_upgrade_proposal,omitempty"`
+	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
+	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
+	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
 }
 
 type ParamChangeProposal struct {
@@ -89,6 +90,11 @@ type SoftwareUpgradeProposal struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Plan        Plan   `json:"plan"`
+}
+
+type CancelSoftwareUpgradeProposal struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type Plan struct {

@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
+	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	softwareUpgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -276,40 +277,49 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 
 func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
+	proposal := submitAdminProposal.AdminProposal
 
-	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil {
-		proposal := submitAdminProposal.AdminProposal.ParamChangeProposal
-		prop := paramChange.ParameterChangeProposal{
-			Title:       proposal.Title,
-			Description: proposal.Description,
-			Changes:     proposal.ParamChanges,
-		}
-		err := msg.SetContent(&prop)
+	if proposal.ParamChangeProposal != nil {
+		p := proposal.ParamChangeProposal
+		err := msg.SetContent(&paramChange.ParameterChangeProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			Changes:     p.ParamChanges,
+		})
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to set content on ParameterChangeProposal")
 		}
 	}
 
-	if submitAdminProposal.AdminProposal.SoftwareUpgradeProposal != nil {
-		proposal := submitAdminProposal.AdminProposal.SoftwareUpgradeProposal
-		prop := softwareUpgrade.SoftwareUpgradeProposal{
-			Title:       proposal.Title,
-			Description: proposal.Description,
+	if proposal.SoftwareUpgradeProposal != nil {
+		p := proposal.SoftwareUpgradeProposal
+		err := msg.SetContent(&softwareUpgrade.SoftwareUpgradeProposal{
+			Title:       p.Title,
+			Description: p.Description,
 			Plan: softwareUpgrade.Plan{
-				Name:   proposal.Plan.Name,
-				Height: proposal.Plan.Height,
-				Info:   proposal.Plan.Info,
+				Name:   p.Plan.Name,
+				Height: p.Plan.Height,
+				Info:   p.Plan.Info,
 			},
-		}
-		err := msg.SetContent(&prop)
+		})
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to set content on SoftwareUpgradeProposal")
 		}
 	}
 
-	if submitAdminProposal.AdminProposal.ParamChangeProposal == nil &&
-		submitAdminProposal.AdminProposal.SoftwareUpgradeProposal == nil {
-		return nil, fmt.Errorf("admin proposal types are missing")
+	if proposal.CancelSoftwareUpgradeProposal != nil {
+		p := proposal.CancelSoftwareUpgradeProposal
+		err := msg.SetContent(&softwareUpgrade.CancelSoftwareUpgradeProposal{
+			Title:       p.Title,
+			Description: p.Description,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on CancelSoftwareUpgradeProposal")
+		}
+	}
+
+	if proposal.ParamChangeProposal == nil && proposal.SoftwareUpgradeProposal == nil && proposal.CancelSoftwareUpgradeProposal == nil {
+		return nil, fmt.Errorf("no admin proposal type is present")
 	}
 
 	if err := msg.ValidateBasic(); err != nil {

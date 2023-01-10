@@ -336,6 +336,8 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 		Custom: msg,
 	})
 	suite.Error(err)
+
+	// TODO: dispatch CancelSoftwareProposal to test
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {
