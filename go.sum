@@ -762,6 +762,8 @@ github.com/cosmos/interchain-accounts v0.1.0 h1:QmuwNsf1Hxl3P5GSGt7Z+JeuHPiZw4Z3
 github.com/cosmos/interchain-accounts v0.1.0/go.mod h1:Fv6LXDs+0ng4mIDVWwEJMXbAIMxY4kiq+A7Bw1Fb9AY=
 github.com/cosmos/interchain-security v0.2.2-0.20230110164848-2cbbd1041477 h1:V1Y9K+TsqChTF70MY3dlP5YseMBLGiV50AgM/UlNi9c=
 github.com/cosmos/interchain-security v0.2.2-0.20230110164848-2cbbd1041477/go.mod h1:po4BbBdxDFEI1Z79OMzprpffI1IgNsyeDquvIA1Klik=
+github.com/cosmos/interchain-security v0.2.2-0.20230111001359-15a015b80faa h1:ZmkUyfclBaqIMZ7yG7d/Qk+FbPG29xQzaET8MPGZdQs=
+github.com/cosmos/interchain-security v0.2.2-0.20230111001359-15a015b80faa/go.mod h1:po4BbBdxDFEI1Z79OMzprpffI1IgNsyeDquvIA1Klik=
 github.com/cosmos/ledger-cosmos-go v0.11.1 h1:9JIYsGnXP613pb2vPjFeMMjBI5lEDsEaF6oYorTy6J4=
 github.com/cosmos/ledger-cosmos-go v0.11.1/go.mod h1:J8//BsAGTo3OC/vDLjMRFLW6q0WAaXvHnVc7ZmE8iUY=
 github.com/cosmos/ledger-go v0.9.2/go.mod h1:oZJ2hHAZROdlHiwTg4t7kP+GKIIkBT+o6c9QWFanOyI=
