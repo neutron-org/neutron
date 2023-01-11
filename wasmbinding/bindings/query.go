@@ -86,7 +86,7 @@ type RegisteredQuery struct {
 type QueryTotalBurnedNeutronsAmountRequest struct{}
 
 type QueryTotalBurnedNeutronsAmountResponse struct {
-	Coins sdktypes.Coins `json:"coins"`
+	Coin sdktypes.Coin `json:"coin"`
 }
 
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {

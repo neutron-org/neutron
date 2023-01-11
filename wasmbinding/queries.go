@@ -86,7 +86,7 @@ func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindin
 
 func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {
 	grpcResp := qp.feeBurnerKeeper.GetTotalBurnedNeutronsAmount(ctx)
-	return &bindings.QueryTotalBurnedNeutronsAmountResponse{Coins: grpcResp.Coins}, nil
+	return &bindings.QueryTotalBurnedNeutronsAmountResponse{Coin: grpcResp.Coin}, nil
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {

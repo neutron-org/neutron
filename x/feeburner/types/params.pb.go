@@ -25,7 +25,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
 type Params struct {
-	// Defines Neutron denom
+	// Defines Neutron denom, which will be burned during fee processing, any other denom will be sent to Treasury
 	NeutronDenom string `protobuf:"bytes,1,opt,name=neutron_denom,json=neutronDenom,proto3" json:"neutron_denom,omitempty"`
 	// Defines Treasury address
 	TreasuryAddress string `protobuf:"bytes,2,opt,name=treasury_address,json=treasuryAddress,proto3" json:"treasury_address,omitempty"`

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -50,7 +49,8 @@ func (k Keeper) RecordBurnedFees(ctx sdk.Context, amount sdk.Coin) {
 	store := ctx.KVStore(k.storeKey)
 
 	totalBurnedNeutronsAmount := k.GetTotalBurnedNeutronsAmount(ctx)
-	totalBurnedNeutronsAmount.Coins = totalBurnedNeutronsAmount.Coins.Add(amount)
+	totalBurnedNeutronsAmount.Coin = totalBurnedNeutronsAmount.Coin.Add(amount)
+
 	store.Set(KeyBurnedFees, k.cdc.MustMarshal(&totalBurnedNeutronsAmount))
 }
 
@@ -61,6 +61,10 @@ func (k Keeper) GetTotalBurnedNeutronsAmount(ctx sdk.Context) types.TotalBurnedN
 	bzTotalBurnedNeutronsAmount := store.Get(KeyBurnedFees)
 	if bzTotalBurnedNeutronsAmount != nil {
 		k.cdc.MustUnmarshal(bzTotalBurnedNeutronsAmount, &totalBurnedNeutronsAmount)
+	}
+
+	if totalBurnedNeutronsAmount.Coin.Denom == "" {
+		totalBurnedNeutronsAmount.Coin = sdk.NewCoin(k.GetParams(ctx).NeutronDenom, sdk.NewInt(0))
 	}
 
 	return totalBurnedNeutronsAmount
