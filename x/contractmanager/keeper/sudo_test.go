@@ -76,7 +76,6 @@ func TestSudoResponse(t *testing.T) {
 	resp, err = k.SudoResponse(ctx, address, sudoResponseTransport.Response.Request, sudoResponseTransport.Response.Data)
 	require.Nil(t, err)
 	require.NoError(t, err)
-
 }
 
 func TestSudoError(t *testing.T) {
