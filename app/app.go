@@ -619,8 +619,8 @@ func New(
 	// can do so safely.
 	app.mm.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
-		ibctransfertypes.ModuleName,
 		authtypes.ModuleName,
+		ibctransfertypes.ModuleName,
 		authz.ModuleName,
 		banktypes.ModuleName,
 		vestingtypes.ModuleName,
