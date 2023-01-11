@@ -10,7 +10,6 @@ option go_package = "github.com/neutron-org/neutron/x/feeburner/types";
 message TotalBurnedNeutronsAmount {
   cosmos.base.v1beta1.Coin coin = 1 [
     (gogoproto.moretags) = "yaml:\"coin\"",
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
+    (gogoproto.nullable) = false
   ];
 }
