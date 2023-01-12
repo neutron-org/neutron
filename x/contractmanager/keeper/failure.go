@@ -38,7 +38,7 @@ func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
 	return 0
 }
 
-// GetAllFailure returns all failures
+// GetAllFailures returns all failures.
 func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ContractFailuresKey)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
