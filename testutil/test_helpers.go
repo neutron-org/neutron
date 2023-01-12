@@ -23,7 +23,6 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
 	e2e "github.com/cosmos/interchain-security/testutil/e2e"
-	ccv "github.com/cosmos/interchain-security/x/ccv/types"
 	"github.com/cosmos/interchain-security/x/ccv/utils"
 	tmtypes "github.com/tendermint/tendermint/types"
 
@@ -175,10 +174,6 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
 
-	err = suite.Path.EndpointA.Chain.SenderAccount.SetAccountNumber(1)
-	suite.Require().NoError(err)
-	err = suite.Path.EndpointB.Chain.SenderAccount.SetAccountNumber(1)
-	suite.Require().NoError(err)
 	suite.Coordinator.SetupConnections(suite.Path)
 }
 
@@ -209,16 +204,12 @@ func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriod
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(consumerUnbondingPeriod, trustingPeriodFraction)
 	// - channel config
-	path.EndpointA.ChannelConfig.PortID = ccv.ConsumerPortID
-	path.EndpointB.ChannelConfig.PortID = ccv.ProviderPortID
-	path.EndpointA.ChannelConfig.Version = ccv.Version
-	path.EndpointB.ChannelConfig.Version = ccv.Version
+	path.EndpointA.ChannelConfig.PortID = types.ConsumerPortID
+	path.EndpointB.ChannelConfig.PortID = types.ProviderPortID
+	path.EndpointA.ChannelConfig.Version = types.Version
+	path.EndpointB.ChannelConfig.Version = types.Version
 	path.EndpointA.ChannelConfig.Order = channeltypes.ORDERED
 	path.EndpointB.ChannelConfig.Order = channeltypes.ORDERED
-
-	// set chains sender account number
-	err := path.EndpointA.Chain.SenderAccount.SetAccountNumber(1)
-	suite.Require().NoError(err)
 }
 
 func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
