@@ -8,11 +8,11 @@ import (
 )
 
 // AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, address string, ackID uint64, ackType string) {
+func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sequenceID uint64, responseType string) {
 	failure := types.Failure{
-		Address: address,
-		AckId:   ackID,
-		AckType: ackType,
+		Address:      address,
+		SequenceId:   sequenceID,
+		ResponseType: responseType,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 

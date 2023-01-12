@@ -7,17 +7,17 @@ import "contractmanager/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 
-// Failure message contains information about ACK failures and can be used to
-// replay ACK in case of requirement.
+// Failure message contains information about packet failures and can be used to
+// re-submit packets if required.
 message Failure {
   // Address of the failed contract
   string address = 1;
   // id of the failure under specific address
   uint64 id = 2;
-  // ACK id to restore
-  uint64 ack_id = 3;
-  // Ackonowledgement type
-  string ack_type = 4;
+  // Packet sequence id
+  uint64 sequence_id = 3;
+  // Response type
+  string response_type = 4;
 }
 
 // GenesisState defines the contractmanager module's genesis state.
