@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -143,9 +144,11 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
-	// TODO: check ICA address
-	// expected := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
-	// suite.Require().Equal(expected, resp.InterchainAccountAddress)
+	hostNeutronApp, ok := suite.ChainB.App.(*app.App)
+	suite.Require().True(ok)
+
+	expected := hostNeutronApp.ICAHostKeeper.GetAllInterchainAccounts(suite.ChainB.GetContext())[0].AccountAddress // we expect only one registered ICA
+	suite.Require().Equal(expected, resp.InterchainAccountAddress)
 }
 
 func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
