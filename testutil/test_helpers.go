@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -31,7 +33,7 @@ import (
 
 	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
 	providertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
-	"github.com/cosmos/interchain-security/x/ccv/types"
+	ccv "github.com/cosmos/interchain-security/x/ccv/types"
 )
 
 var (
@@ -55,8 +57,7 @@ var (
 
 func init() {
 	ibctesting.DefaultTestingAppInit = SetupTestingApp
-	config := app.GetDefaultConfig()
-	config.Seal()
+	app.GetDefaultConfig()
 }
 
 type IBCConnectionTestSuite struct {
@@ -72,9 +73,10 @@ type IBCConnectionTestSuite struct {
 	ChainAApp   e2e.ConsumerApp
 	ChainBApp   e2e.ConsumerApp
 
-	CCVPathA *ibctesting.Path
-	CCVPathB *ibctesting.Path
-	Path     *ibctesting.Path
+	CCVPathA     *ibctesting.Path
+	CCVPathB     *ibctesting.Path
+	Path         *ibctesting.Path
+	TransferPath *ibctesting.Path
 }
 
 func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal {
@@ -89,7 +91,7 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		consumertypes.DefaultConsumerRedistributeFrac,
 		consumertypes.DefaultBlocksPerDistributionTransmission,
 		consumertypes.DefaultHistoricalEntries,
-		types.DefaultCCVTimeoutPeriod,
+		ccv.DefaultCCVTimeoutPeriod,
 		consumertypes.DefaultTransferTimeoutPeriod,
 		consumertypes.DefaultConsumerUnbondingPeriod,
 	).(*providertypes.ConsumerAdditionProposal)
@@ -177,8 +179,15 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Coordinator.SetupConnections(suite.Path)
 }
 
+func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
+	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
+	suite.Coordinator.SetupConnections(suite.TransferPath)
+	err := SetupTransferPath(suite.TransferPath)
+	suite.Require().NoError(err)
+}
+
+// update CCV path with correct info
 func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
-	// update CCV path with correct info
 	// - set provider endpoint's clientID
 	consumerClient, found := suite.ProviderApp.GetProviderKeeper().GetConsumerClientId(
 		suite.ChainProvider.GetContext(),
@@ -199,15 +208,15 @@ func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
 
 	providerUnbondingPeriod := suite.ProviderApp.GetStakingKeeper().UnbondingTime(suite.ChainProvider.GetContext())
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = providerUnbondingPeriod
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(providerUnbondingPeriod, trustingPeriodFraction)
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(providerUnbondingPeriod, trustingPeriodFraction)
 	consumerUnbondingPeriod := consumerKeeper.GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriod
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(consumerUnbondingPeriod, trustingPeriodFraction)
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriod, trustingPeriodFraction)
 	// - channel config
-	path.EndpointA.ChannelConfig.PortID = types.ConsumerPortID
-	path.EndpointB.ChannelConfig.PortID = types.ProviderPortID
-	path.EndpointA.ChannelConfig.Version = types.Version
-	path.EndpointB.ChannelConfig.Version = types.Version
+	path.EndpointA.ChannelConfig.PortID = ccv.ConsumerPortID
+	path.EndpointB.ChannelConfig.PortID = ccv.ProviderPortID
+	path.EndpointA.ChannelConfig.Version = ccv.Version
+	path.EndpointB.ChannelConfig.Version = ccv.Version
 	path.EndpointA.ChannelConfig.Order = channeltypes.ORDERED
 	path.EndpointB.ChannelConfig.Order = channeltypes.ORDERED
 }
@@ -294,11 +303,11 @@ func NewICAPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting
 
 	consumerUnbondingPeriodA := path.EndpointA.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
 	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodA
-	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(consumerUnbondingPeriodA, trustingPeriodFraction)
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriodA, trustingPeriodFraction)
 
 	consumerUnbondingPeriodB := path.EndpointB.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointB.Chain.GetContext())
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodB
-	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = types.CalculateTrustPeriod(consumerUnbondingPeriodB, trustingPeriodFraction)
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriodB, trustingPeriodFraction)
 
 	return path
 }
@@ -374,4 +383,54 @@ func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		nil,
 	)
 	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
+}
+
+func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting.Path {
+	path := ibctesting.NewPath(chainA, chainB)
+	path.EndpointA.ChannelConfig.PortID = types.PortID
+	path.EndpointB.ChannelConfig.PortID = types.PortID
+	path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
+	path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
+	path.EndpointA.ChannelConfig.Version = types.Version
+	path.EndpointB.ChannelConfig.Version = types.Version
+
+	trustingPeriodFraction := chainProvider.App.(*appProvider.App).GetProviderKeeper().GetTrustingPeriodFraction(chainProvider.GetContext())
+	consumerUnbondingPeriodA := path.EndpointA.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodA
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriodA, trustingPeriodFraction)
+
+	consumerUnbondingPeriodB := path.EndpointB.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointB.Chain.GetContext())
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodB
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriodB, trustingPeriodFraction)
+
+	return path
+}
+
+// SetupTransferPath
+func SetupTransferPath(path *ibctesting.Path) error {
+	ctx := path.EndpointA.Chain.GetContext()
+
+	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(ctx)
+
+	// update port/channel ids
+	path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
+	path.EndpointA.ChannelConfig.PortID = types.PortID
+
+	if err := path.EndpointA.ChanOpenInit(); err != nil {
+		return err
+	}
+
+	if err := path.EndpointB.ChanOpenTry(); err != nil {
+		return err
+	}
+
+	if err := path.EndpointA.ChanOpenAck(); err != nil {
+		return err
+	}
+
+	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
+		return err
+	}
+
+	return nil
 }

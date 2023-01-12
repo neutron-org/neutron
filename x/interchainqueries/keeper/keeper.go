@@ -30,6 +30,8 @@ type (
 		ibcKeeper             *ibckeeper.Keeper
 		bank                  types.BankKeeper
 		contractManagerKeeper types.ContractManagerKeeper
+		headerVerifier        types.HeaderVerifier
+		transactionVerifier   types.TransactionVerifier
 	}
 )
 
@@ -41,6 +43,8 @@ func NewKeeper(
 	ibcKeeper *ibckeeper.Keeper,
 	bank types.BankKeeper,
 	contractManagerKeeper types.ContractManagerKeeper,
+	headerVerifier types.HeaderVerifier,
+	transactionVerifier types.TransactionVerifier,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -55,6 +59,8 @@ func NewKeeper(
 		ibcKeeper:             ibcKeeper,
 		bank:                  bank,
 		contractManagerKeeper: contractManagerKeeper,
+		headerVerifier:        headerVerifier,
+		transactionVerifier:   transactionVerifier,
 	}
 }
 
@@ -232,27 +238,6 @@ func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemot
 	query.LastSubmittedResultRemoteHeight = newRemoteHeight
 	k.Logger(ctx).Debug("Updated last remote height on given query", "queryID", queryID, "new remote height", newRemoteHeight)
 	return k.SaveQuery(ctx, query)
-}
-
-func (k Keeper) IterateRegisteredQueries(ctx sdk.Context, fn func(index int64, queryInfo types.RegisteredQuery) (stop bool)) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RegisteredQueryKey)
-	iterator := sdk.KVStorePrefixIterator(store, nil)
-	defer iterator.Close()
-
-	i := int64(0)
-	for ; iterator.Valid(); iterator.Next() {
-		query := types.RegisteredQuery{}
-		if err := k.cdc.Unmarshal(iterator.Value(), &query); err != nil {
-			continue
-		}
-		stop := fn(i, query)
-
-		if stop {
-			break
-		}
-		i++
-	}
-	k.Logger(ctx).Debug("Iterated over registered queries", "quantity", i)
 }
 
 // We don't need to store proofs or transactions, so we just remove unnecessary fields

@@ -12,11 +12,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
-	"github.com/neutron-org/neutron/testutil/consumer"
 	"github.com/spf13/cobra"
 	types1 "github.com/tendermint/tendermint/abci/types"
 	pvm "github.com/tendermint/tendermint/privval"
 	tmtypes "github.com/tendermint/tendermint/types"
+
+	"github.com/neutron-org/neutron/testutil/consumer"
 )
 
 func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {

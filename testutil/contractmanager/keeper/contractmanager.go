@@ -9,15 +9,16 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
+
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
-func ContractManagerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func ContractManagerKeeper(t testing.TB, wasmKeeper types.WasmKeeper) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -41,7 +42,7 @@ func ContractManagerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,
+		wasmKeeper,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

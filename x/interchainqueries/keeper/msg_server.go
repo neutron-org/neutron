@@ -167,10 +167,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		return nil, sdkerrors.Wrapf(err, "failed to get query by id: %v", err)
 	}
 
-	if len(msg.Result.KvResults) != len(query.Keys) {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), query.Keys)
-	}
-
 	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
 	if err != nil {
 		ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
@@ -181,6 +177,10 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	if msg.Result.KvResults != nil {
 		if !types.InterchainQueryType(query.QueryType).IsKV() {
 			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
+		}
+
+		if len(msg.Result.KvResults) != len(query.Keys) {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), query.Keys)
 		}
 
 		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{

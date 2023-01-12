@@ -20,7 +20,7 @@ import (
 var _ = strconv.IntSize
 
 func TestFailureQuerySingle(t *testing.T) {
-	k, ctx := keepertest.ContractManagerKeeper(t)
+	k, ctx := keepertest.ContractManagerKeeper(t, nil)
 	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNFailure(k, ctx, 2, 2)
 	for _, tc := range []struct {
@@ -46,7 +46,7 @@ func TestFailureQuerySingle(t *testing.T) {
 		{
 			desc: "KeyIsAbsent",
 			request: &types.QueryFailuresRequest{
-				Address: "cosmos132juzk0gdmwuxvx4phug7m3ymyatxlh9m9paea",
+				Address: "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 			},
 			response: &types.QueryFailuresResponse{Failures: []types.Failure{}, Pagination: &query.PageResponse{Total: 0}},
 		},
@@ -78,7 +78,7 @@ func TestFailureQuerySingle(t *testing.T) {
 }
 
 func TestFailureQueryPaginated(t *testing.T) {
-	k, ctx := keepertest.ContractManagerKeeper(t)
+	k, ctx := keepertest.ContractManagerKeeper(t, nil)
 	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNFailure(k, ctx, 5, 3)
 	flattenItems := flattenFailures(msgs)

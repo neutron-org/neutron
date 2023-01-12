@@ -3,17 +3,11 @@ package keeper
 import (
 	"fmt"
 
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-
-	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -29,15 +23,14 @@ const (
 
 type (
 	Keeper struct {
-		Codec         codec.BinaryCodec
-		storeKey      storetypes.StoreKey
-		memKey        storetypes.StoreKey
-		paramstore    paramtypes.Subspace
-		scopedKeeper  capabilitykeeper.ScopedKeeper
-		channelKeeper icatypes.ChannelKeeper
-		feeKeeper     *feekeeper.Keeper
-
-		icaControllerKeeper   icacontrollerkeeper.Keeper
+		Codec                 codec.BinaryCodec
+		storeKey              storetypes.StoreKey
+		memKey                storetypes.StoreKey
+		paramstore            paramtypes.Subspace
+		scopedKeeper          types.ScopedKeeper
+		channelKeeper         types.ChannelKeeper
+		feeKeeper             types.FeeRefunderKeeper
+		icaControllerKeeper   types.ICAControllerKeeper
 		contractManagerKeeper types.ContractManagerKeeper
 	}
 )
@@ -47,11 +40,11 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	paramstore paramtypes.Subspace,
-	channelKeeper icatypes.ChannelKeeper,
-	icaControllerKeeper icacontrollerkeeper.Keeper,
-	scopedKeeper capabilitykeeper.ScopedKeeper,
+	channelKeeper types.ChannelKeeper,
+	icaControllerKeeper types.ICAControllerKeeper,
+	scopedKeeper types.ScopedKeeper,
 	contractManagerKeeper types.ContractManagerKeeper,
-	feeKeeper *feekeeper.Keeper,
+	feeKeeper types.FeeRefunderKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !paramstore.HasKeyTable() {
