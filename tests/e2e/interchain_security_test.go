@@ -18,7 +18,9 @@ func TestCCVTestSuite(t *testing.T) {
 	// Pass in concrete app types that implement the interfaces defined in /testutil/e2e/interfaces.go
 	ccvSuite := e2e.NewCCVTestSuite[*appProvider.App, *appConsumer.App](
 		// Pass in ibctesting.AppIniters for provider and consumer.
-		icssimapp.ProviderAppIniter, testutil.SetupTestingApp, []string{"TestSendRewardsRetries", "TestRewardsDistribution", "TestEndBlockRD"})
+		icssimapp.ProviderAppIniter, testutil.SetupTestingApp,
+		// TODO: These three tests just don't work in IS, so skip them for now
+		[]string{"TestSendRewardsRetries", "TestRewardsDistribution", "TestEndBlockRD"})
 
 	// Run tests
 	suite.Run(t, ccvSuite)
