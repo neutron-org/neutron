@@ -32,7 +32,7 @@ func (im IBCModule) outOfGasRecovery(
 		}
 
 		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
-		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), failureType)
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureType)
 		// FIXME: add distribution call
 	}
 }
@@ -86,7 +86,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "ack")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		writeFn()
@@ -122,7 +122,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 
 	_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "timeout")
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "timeout")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
 		writeFn()
