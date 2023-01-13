@@ -337,7 +337,35 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	})
 	suite.Error(err)
 
-	// TODO: dispatch CancelSoftwareProposal to test
+	// Check CancelSubmitAdminProposal
+
+	// Craft CancelSubmitAdminProposal message
+	submitCancelProposalMsg := bindings.SubmitAdminProposal{
+		AdminProposal: bindings.AdminProposal{
+			CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
+				Title:       "Test",
+				Description: "Test",
+			},
+		},
+	}
+
+	fullMsg = bindings.NeutronMsg{
+		SubmitAdminProposal: &submitCancelProposalMsg,
+	}
+	msg, err = json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch SubmitAdminProposal message
+	events, data, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
+		ProposalId: 2,
+	})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {
