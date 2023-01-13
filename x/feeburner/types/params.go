@@ -14,7 +14,7 @@ var (
 	KeyNeutronDenom        = []byte("NeutronDenom")
 	DefaultNeutronDenom    = "stake"
 	KeyTreasuryAddress     = []byte("TreasuryAddress")
-	DefaultTreasuryAddress = "neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40"
+	DefaultTreasuryAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
 )
 
 // ParamKeyTable the param key table for launch module
