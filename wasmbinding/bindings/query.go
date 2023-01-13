@@ -11,14 +11,16 @@ import (
 
 // NeutronQuery contains neutron custom queries.
 type NeutronQuery struct {
-	/// Registered Interchain Query Result for specified QueryID
+	// Registered Interchain Query Result for specified QueryID
 	InterchainQueryResult *QueryRegisteredQueryResultRequest `json:"interchain_query_result,omitempty"`
-	/// Interchain account address for specified ConnectionID and OwnerAddress
+	// Interchain account address for specified ConnectionID and OwnerAddress
 	InterchainAccountAddress *QueryInterchainAccountAddressRequest `json:"interchain_account_address,omitempty"`
-	/// RegisteredInterchainQueries
+	// RegisteredInterchainQueries
 	RegisteredInterchainQueries *QueryRegisteredQueriesRequest `json:"registered_interchain_queries,omitempty"`
-	/// RegisteredInterchainQuery
+	// RegisteredInterchainQuery
 	RegisteredInterchainQuery *QueryRegisteredQueryRequest `json:"registered_interchain_query,omitempty"`
+	// TotalBurnedNeutronsAmount
+	TotalBurnedNeutronsAmount *QueryTotalBurnedNeutronsAmountRequest `json:"total_burned_neutrons_amount,omitempty"`
 }
 
 /* Requests */
@@ -79,6 +81,12 @@ type RegisteredQuery struct {
 	Deposit sdktypes.Coins `json:"deposit"`
 	// Timeout before query becomes available for everybody to remove.
 	SubmitTimeout uint64 `json:"submit_timeout"`
+}
+
+type QueryTotalBurnedNeutronsAmountRequest struct{}
+
+type QueryTotalBurnedNeutronsAmountResponse struct {
+	Coin sdktypes.Coin `json:"coin"`
 }
 
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {

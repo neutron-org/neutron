@@ -11,6 +11,7 @@ PRE_PROPOSAL_CONTRACT=./contracts/cwd_pre_propose_single.wasm
 PROPOSAL_CONTRACT=./contracts/cwd_proposal_single.wasm
 VOTING_REGISTRY_CONTRACT=./contracts/neutron_voting_registry.wasm
 VAULT_CONTRACT=./contracts/neutron_vault.wasm
+TREASURY_CONTRACT=./contracts/neutron_treasury.wasm
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
 DEMO_MNEMONIC_1="banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
@@ -83,6 +84,7 @@ $NEUTROND_BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as 
 $NEUTROND_BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message store ${PRE_PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message store ${TREASURY_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 
 # Instantiate the contract
 INIT='{
@@ -106,10 +108,20 @@ DAO_INIT='{
               "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
             }
     }'
+# TODO: properly initialize treasury
+TREASURY_INIT="$(printf '{
+                           "owner": "%s",
+                           "denom": "stake",
+                           "distribution_rate": "0.1",
+                           "min_period": 10,
+                           "distribution_contract": "%s",
+                           "reserve_contract": "%s"
+}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
 echo "Instantiate contracts"
-$NEUTROND_BINARY add-wasm-message  instantiate-contract 1 "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
-$NEUTROND_BINARY add-wasm-message  instantiate-contract 2 "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message instantiate-contract 1 "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message instantiate-contract 2 "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message instantiate-contract 6 "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID_1
 
 
 echo "Add consumer section..."
@@ -129,7 +141,7 @@ sed -i -e 's/enable = false/enable = true/g' $CHAIN_DIR/$CHAINID_1/config/app.to
 sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's#"tcp://0.0.0.0:1317"#"tcp://0.0.0.0:'"$RESTPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's#":8080"#":'"$ROSETTA_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/app.toml
-sed -i -e 's/minimum-gas-prices = ""/minimum-gas-prices = "0.0025stake"/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
+sed -i -e 's/minimum-gas-prices = ""/minimum-gas-prices = "0.0025stake,0.0025ibc\/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878"/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's/enabled = false/enabled = true/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 

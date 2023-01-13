@@ -1,0 +1,16 @@
+syntax = "proto3";
+package neutron.feeburner;
+
+import "gogoproto/gogo.proto";
+import "feeburner/params.proto";
+import "feeburner/total_burned_neutrons_amount.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/neutron-org/neutron/x/feeburner/types";
+
+// GenesisState defines the feeburner module's genesis state.
+message GenesisState {
+  Params params = 1 [ (gogoproto.nullable) = false ];
+  TotalBurnedNeutronsAmount total_burned_neutrons_amount = 2 [ (gogoproto.nullable) = false ];
+  // this line is used by starport scaffolding # genesis/proto/state
+}
