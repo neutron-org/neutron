@@ -3,11 +3,12 @@ package feerefunder_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/testutil/feerefunder/keeper"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/testutil/interchainqueries/nullify"
-	"github.com/neutron-org/neutron/testutil/keeper"
 	"github.com/neutron-org/neutron/x/feerefunder"
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
@@ -30,7 +31,7 @@ func TestGenesis(t *testing.T) {
 
 	require.EqualValues(t, genesisState.Params, types.DefaultParams())
 
-	k, ctx := keeper.FeeKeeper(t)
+	k, ctx := keeper.FeeKeeper(t, nil, nil)
 	feerefunder.InitGenesis(ctx, *k, genesisState)
 	got := feerefunder.ExportGenesis(ctx, *k)
 

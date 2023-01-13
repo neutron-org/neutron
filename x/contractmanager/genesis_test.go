@@ -3,11 +3,12 @@ package contractmanager_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {
@@ -27,7 +28,7 @@ func TestGenesis(t *testing.T) {
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
-	k, ctx := keepertest.ContractManagerKeeper(t)
+	k, ctx := keepertest.ContractManagerKeeper(t, nil)
 	contractmanager.InitGenesis(ctx, *k, genesisState)
 	got := contractmanager.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)

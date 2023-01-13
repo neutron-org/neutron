@@ -11,7 +11,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/x/feerefunder/types"
@@ -19,12 +18,12 @@ import (
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		bankKeeper types.BankKeeper
-		storeKey   storetypes.StoreKey
-		memKey     storetypes.StoreKey
-		paramstore paramtypes.Subspace
-		ibcKeeper  *ibckeeper.Keeper
+		cdc           codec.BinaryCodec
+		bankKeeper    types.BankKeeper
+		storeKey      storetypes.StoreKey
+		memKey        storetypes.StoreKey
+		paramstore    paramtypes.Subspace
+		channelKeeper types.ChannelKeeper
 	}
 )
 
@@ -33,7 +32,7 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
-	ibcKeeper *ibckeeper.Keeper,
+	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -42,12 +41,12 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
-		ibcKeeper:  ibcKeeper,
-		bankKeeper: bankKeeper,
+		cdc:           cdc,
+		storeKey:      storeKey,
+		memKey:        memKey,
+		paramstore:    ps,
+		channelKeeper: channelKeeper,
+		bankKeeper:    bankKeeper,
 	}
 }
 
@@ -58,7 +57,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
 	k.Logger(ctx).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
 
-	if _, ok := k.ibcKeeper.ChannelKeeper.GetChannel(ctx, packetID.PortId, packetID.ChannelId); !ok {
+	if _, ok := k.channelKeeper.GetChannel(ctx, packetID.PortId, packetID.ChannelId); !ok {
 		return sdkerrors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
 	}
 
