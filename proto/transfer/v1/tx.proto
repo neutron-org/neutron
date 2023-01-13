@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package neutron.interchainadapter.transfer;
+package neutron.transfer;
 
 option go_package = "github.com/neutron-org/neutron/x/transfer/types";
 
