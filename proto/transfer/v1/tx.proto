@@ -41,7 +41,7 @@ message MsgTransfer {
   uint64 timeout_timestamp = 7
       [ (gogoproto.moretags) = "yaml:\"timeout_timestamp\"" ];
 
-  neutron.interchainadapter.feerefunder.Fee fee = 8
+  neutron.feerefunder.Fee fee = 8
       [ (gogoproto.nullable) = false ];
 }
 
