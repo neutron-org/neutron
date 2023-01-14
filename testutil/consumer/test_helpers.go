@@ -17,6 +17,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil/network"
+
 	"github.com/neutron-org/neutron/app"
 )
 

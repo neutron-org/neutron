@@ -3,8 +3,9 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/x/contractmanager/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -18,4 +19,9 @@ type BankKeeper interface {
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	// Methods imported from bank should be defined here
+}
+
+// ChannelKeeper defines the expected IBC channel keeper
+type ChannelKeeper interface {
+	GetChannel(ctx sdk.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
 }

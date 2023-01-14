@@ -3,7 +3,12 @@ package keeper_test
 import (
 	"fmt"
 
+	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -418,4 +423,89 @@ func (suite *KeeperTestSuite) TestRegisteredQueries() {
 			suite.Equal(tt.expectedQueryResponse, resp.RegisteredQueries)
 		})
 	}
+}
+
+func (suite *KeeperTestSuite) TestQueryResult() {
+	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
+	ctx := suite.ChainA.GetContext()
+	contractOwner := wasmKeeper.RandomAccountAddress(suite.T())
+	codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
+	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	registerMsg := iqtypes.MsgRegisterInterchainQuery{
+		ConnectionId: suite.Path.EndpointA.ConnectionID,
+		Keys: []*iqtypes.KVKey{
+			{Path: host.StoreKey, Key: clientKey},
+		},
+		QueryType:    string(iqtypes.InterchainQueryTypeKV),
+		UpdatePeriod: 1,
+		Sender:       contractAddress.String(),
+	}
+	// Top up contract address with native coins for deposit
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	suite.TopUpWallet(ctx, senderAddress, contractAddress)
+
+	msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
+	regQuery1, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+	suite.Require().NoError(err)
+
+	// Top up contract address with native coins for deposit
+	suite.TopUpWallet(ctx, senderAddress, contractAddress)
+	regQuery2, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+	suite.Require().NoError(err)
+
+	resp := suite.ChainB.App.Query(abci.RequestQuery{
+		Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+		Height: suite.ChainB.LastHeader.Header.Height - 1,
+		Data:   clientKey,
+		Prove:  true,
+	})
+
+	msg := iqtypes.MsgSubmitQueryResult{
+		QueryId:  regQuery1.Id,
+		Sender:   contractAddress.String(),
+		ClientId: suite.Path.EndpointA.ClientID,
+		Result: &iqtypes.QueryResult{
+			KvResults: []*iqtypes.StorageValue{{
+				Key:           resp.Key,
+				Proof:         resp.ProofOps,
+				Value:         resp.Value,
+				StoragePrefix: host.StoreKey,
+			}},
+			// we don't have tests to test transactions proofs verification since it's a tendermint layer,
+			// and we don't have access to it here
+			Block:    nil,
+			Height:   uint64(resp.Height),
+			Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+		},
+	}
+
+	_, err = msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(ctx), &msg)
+	suite.NoError(err)
+
+	queryResultResponse, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdktypes.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+		QueryId: regQuery1.Id,
+	})
+	suite.NoError(err)
+	// suite.Equal(msg.Result, queryResultResponse)
+	// KvResults - is a list of pointers, we check it explicitly. Result should be equal, but we do not store the proofs
+	expectKvResults := msg.Result.KvResults
+	queryKvResult := queryResultResponse.GetResult().KvResults
+	msg.Result = nil
+	queryResultResponse = nil
+	suite.EqualValues(msg.Result, queryResultResponse.GetResult())
+	for i, kv := range expectKvResults {
+		kv.Proof = nil
+		suite.Equal(*kv, *queryKvResult[i])
+	}
+	suite.Equal(len(expectKvResults), len(queryKvResult))
+
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdktypes.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+		QueryId: regQuery2.Id,
+	})
+	suite.ErrorContains(err, "no query result")
+
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdktypes.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+		QueryId: regQuery2.Id + 1,
+	})
+	suite.ErrorContains(err, "invalid query id")
 }

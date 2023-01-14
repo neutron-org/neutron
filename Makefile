@@ -202,3 +202,7 @@ start-docker-container:
 
 stop-docker-container:
 	@docker stop neutron
+
+mocks:
+	@echo "Regenerate mocks..."
+	@go generate ./...
