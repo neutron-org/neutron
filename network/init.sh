@@ -119,13 +119,15 @@ DAO_INIT='{
     }'
 # TODO: properly initialize treasury
 TREASURY_INIT="$(printf '{
-                           "owner": "%s",
+                           "main_dao_address": "%s",
+                           "security_dao_address": "%s",
                            "denom": "stake",
                            "distribution_rate": "0.1",
                            "min_period": 10,
                            "distribution_contract": "%s",
-                           "reserve_contract": "%s"
-}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
+                           "reserve_contract": "%s",
+                           "vesting_denominator": "1"
+}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
 echo "Instantiate contracts"
 $NEUTROND_BINARY add-wasm-message instantiate-contract 1 "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
