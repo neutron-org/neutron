@@ -10,7 +10,7 @@ import (
 // AddContractFailure adds a specific failure to the store using address as the key
 func (k Keeper) AddContractFailure(ctx sdk.Context, channelID string, address string, sequenceID uint64, responseType string) {
 	failure := types.Failure{
-		ChannelId: channelID,
+		ChannelId:    channelID,
 		Address:      address,
 		SequenceId:   sequenceID,
 		ResponseType: responseType,
