@@ -10,14 +10,16 @@ option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 // Failure message contains information about packet failures and can be used to
 // re-submit packets if required.
 message Failure {
+  // ChannelId
+  string channel_id = 1;
   // Address of the failed contract
-  string address = 1;
+  string address = 2;
   // id of the failure under specific address
-  uint64 id = 2;
+  uint64 id = 3;
   // Packet sequence id
-  uint64 sequence_id = 3;
+  uint64 sequence_id = 4;
   // Response type
-  string response_type = 4;
+  string response_type = 5;
 }
 
 // GenesisState defines the contractmanager module's genesis state.

@@ -33,7 +33,7 @@ func createNFailure(keeper *keeper.Keeper, ctx sdk.Context, addresses int, failu
 			items[i][c].Address = acc.String()
 			items[i][c].Id = uint64(c)
 
-			keeper.AddContractFailure(ctx, items[i][c].Address, 0, "")
+			keeper.AddContractFailure(ctx, items[i][c].ChannelId, items[i][c].Address, 0, "")
 		}
 	}
 	return items
