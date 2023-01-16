@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -25,9 +27,10 @@ import (
 	e2e "github.com/cosmos/interchain-security/testutil/e2e"
 	ccv "github.com/cosmos/interchain-security/x/ccv/types"
 	"github.com/cosmos/interchain-security/x/ccv/utils"
+	tmtypes "github.com/tendermint/tendermint/types"
+
 	"github.com/neutron-org/neutron/app"
 	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 var (
@@ -51,8 +54,7 @@ var (
 
 func init() {
 	ibctesting.DefaultTestingAppInit = SetupTestingApp
-	config := app.GetDefaultConfig()
-	config.Seal()
+	app.GetDefaultConfig()
 }
 
 type IBCConnectionTestSuite struct {
@@ -68,9 +70,10 @@ type IBCConnectionTestSuite struct {
 	ChainAApp   e2e.ConsumerApp
 	ChainBApp   e2e.ConsumerApp
 
-	CCVPathA *ibctesting.Path
-	CCVPathB *ibctesting.Path
-	Path     *ibctesting.Path
+	CCVPathA     *ibctesting.Path
+	CCVPathB     *ibctesting.Path
+	Path         *ibctesting.Path
+	TransferPath *ibctesting.Path
 }
 
 func (suite *IBCConnectionTestSuite) SetupTest() {
@@ -159,8 +162,19 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Coordinator.SetupConnections(suite.Path)
 }
 
+func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
+	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
+	err := suite.TransferPath.EndpointA.Chain.SenderAccount.SetAccountNumber(1)
+	suite.Require().NoError(err)
+	err = suite.TransferPath.EndpointB.Chain.SenderAccount.SetAccountNumber(1)
+	suite.Require().NoError(err)
+	suite.Coordinator.SetupConnections(suite.TransferPath)
+	err = SetupTransferPath(suite.TransferPath)
+	suite.Require().NoError(err)
+}
+
+// update CCV path with correct info
 func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
-	// update CCV path with correct info
 	// - set provider endpoint's clientID
 	consumerClient, found := suite.ProviderApp.GetProviderKeeper().GetConsumerClientId(
 		suite.ChainProvider.GetContext(),
@@ -360,4 +374,54 @@ func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		nil,
 	)
 	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
+}
+
+func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting.Path {
+	path := ibctesting.NewPath(chainA, chainB)
+	path.EndpointA.ChannelConfig.PortID = types.PortID
+	path.EndpointB.ChannelConfig.PortID = types.PortID
+	path.EndpointA.ChannelConfig.Order = channeltypes.UNORDERED
+	path.EndpointB.ChannelConfig.Order = channeltypes.UNORDERED
+	path.EndpointA.ChannelConfig.Version = types.Version
+	path.EndpointB.ChannelConfig.Version = types.Version
+
+	trustingPeriodFraction := chainProvider.App.(*appProvider.App).GetProviderKeeper().GetTrustingPeriodFraction(chainProvider.GetContext())
+	consumerUnbondingPeriodA := path.EndpointA.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodA
+	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = consumerUnbondingPeriodA / time.Duration(trustingPeriodFraction)
+
+	consumerUnbondingPeriodB := path.EndpointB.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointB.Chain.GetContext())
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodB
+	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod = consumerUnbondingPeriodB / time.Duration(trustingPeriodFraction)
+
+	return path
+}
+
+// SetupTransferPath
+func SetupTransferPath(path *ibctesting.Path) error {
+	ctx := path.EndpointA.Chain.GetContext()
+
+	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(ctx)
+
+	// update port/channel ids
+	path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
+	path.EndpointA.ChannelConfig.PortID = types.PortID
+
+	if err := path.EndpointA.ChanOpenInit(); err != nil {
+		return err
+	}
+
+	if err := path.EndpointB.ChanOpenTry(); err != nil {
+		return err
+	}
+
+	if err := path.EndpointA.ChanOpenAck(); err != nil {
+		return err
+	}
+
+	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
+		return err
+	}
+
+	return nil
 }

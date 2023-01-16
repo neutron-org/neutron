@@ -3,13 +3,15 @@ package keeper_test
 import (
 	"testing"
 
-	testkeeper "github.com/neutron-org/neutron/testutil/keeper"
-	"github.com/neutron-org/neutron/x/feerefunder/types"
+	testkeeper "github.com/neutron-org/neutron/testutil/feerefunder/keeper"
+
 	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
 func TestGetParams(t *testing.T) {
-	k, ctx := testkeeper.FeeKeeper(t)
+	k, ctx := testkeeper.FeeKeeper(t, nil, nil)
 	params := types.DefaultParams()
 
 	k.SetParams(ctx, params)

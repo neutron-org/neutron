@@ -12,6 +12,6 @@ import (
 )
 
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
-	k, ctx := keepertest.InterchainQueriesKeeper(t)
+	k, ctx := keepertest.InterchainQueriesKeeper(t, nil, nil, nil, nil)
 	return keeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)
 }
