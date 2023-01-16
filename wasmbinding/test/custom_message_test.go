@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
@@ -39,6 +42,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Ictxmsgserver = ictxkeeper.NewMsgServerImpl(suite.neutron.InterchainTxsKeeper)
 	suite.messenger.Keeper = suite.neutron.InterchainTxsKeeper
 	suite.messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(suite.neutron.InterchainQueriesKeeper)
+	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 }
 
@@ -285,6 +289,83 @@ func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 		},
 	)
 	suite.ErrorContains(err, "MsgSubmitTx contains more messages than allowed")
+}
+
+func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
+	// Set admin so that we can execute this proposal without permission error
+	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
+
+	// Craft SubmitAdminProposal message
+	submitProposalMsg := bindings.SubmitAdminProposal{
+		AdminProposal: bindings.AdminProposal{
+			SoftwareUpgradeProposal: &bindings.SoftwareUpgradeProposal{
+				Title:       "Test",
+				Description: "Test",
+				Plan: bindings.Plan{
+					Name:   "TestPlan",
+					Height: 150,
+					Info:   "TestInfo",
+				},
+			},
+		},
+	}
+
+	fullMsg := bindings.NeutronMsg{
+		SubmitAdminProposal: &submitProposalMsg,
+	}
+
+	msg, err := json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch SubmitAdminProposal message
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
+		ProposalId: 1,
+	})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+
+	// Test with other proposer that is not admin should return failure
+	otherAddress, err := sdk.AccAddressFromBech32("neutron13jrwrtsyjjuynlug65r76r2zvfw5xjcq6532h2")
+	suite.NoError(err)
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, otherAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.Error(err)
+
+	// Check CancelSubmitAdminProposal
+
+	// Craft CancelSubmitAdminProposal message
+	submitCancelProposalMsg := bindings.SubmitAdminProposal{
+		AdminProposal: bindings.AdminProposal{
+			CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
+				Title:       "Test",
+				Description: "Test",
+			},
+		},
+	}
+
+	fullMsg = bindings.NeutronMsg{
+		SubmitAdminProposal: &submitCancelProposalMsg,
+	}
+	msg, err = json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	// Dispatch SubmitAdminProposal message
+	events, data, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
+		ProposalId: 2,
+	})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {

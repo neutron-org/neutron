@@ -100,6 +100,9 @@ import (
 	"github.com/neutron-org/neutron/x/contractmanager"
 	contractmanagermodulekeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	contractmanagermoduletypes "github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/neutron-org/neutron/x/feeburner"
+	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"github.com/neutron-org/neutron/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries"
@@ -177,6 +180,7 @@ var (
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
 		feerefunder.AppModuleBasic{},
+		feeburner.AppModuleBasic{},
 		contractmanager.AppModuleBasic{},
 		adminmodulemodule.NewAppModuleBasic(
 			govclient.NewProposalHandler(
@@ -202,7 +206,8 @@ var (
 		wasm.ModuleName:                               {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
-		ccvconsumertypes.ConsumerRedistributeName:     nil,
+		feeburnertypes.ModuleName:                     nil,
+		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
 	}
 )
@@ -258,6 +263,7 @@ type App struct {
 	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
+	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 
 	// make scoped keepers public for test purposes
@@ -310,7 +316,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
-		adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -397,6 +403,15 @@ func New(
 
 	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.GetSubspace(feetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.BankKeeper)
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
+
+	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
+		appCodec,
+		keys[feeburnertypes.StoreKey],
+		keys[feeburnertypes.MemStoreKey],
+		app.GetSubspace(feeburnertypes.ModuleName),
+		app.BankKeeper,
+	)
+	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
@@ -485,7 +500,7 @@ func New(
 		app.FeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -558,6 +573,7 @@ func New(
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeModule,
+		feeBurnerModule,
 		contractManagerModule,
 		adminModule,
 	)
@@ -587,6 +603,7 @@ func New(
 		contractmanagermoduletypes.ModuleName,
 		wasm.ModuleName,
 		feetypes.ModuleName,
+		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
 	)
 
@@ -611,6 +628,7 @@ func New(
 		contractmanagermoduletypes.ModuleName,
 		wasm.ModuleName,
 		feetypes.ModuleName,
+		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
 	)
 
@@ -640,6 +658,7 @@ func New(
 		contractmanagermoduletypes.ModuleName,
 		wasm.ModuleName,
 		feetypes.ModuleName,
+		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
 	)
 
@@ -880,6 +899,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
+	paramsKeeper.Subspace(feeburnertypes.ModuleName)
 
 	return paramsKeeper
 }

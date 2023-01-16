@@ -486,7 +486,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 		QueryId: regQuery1.Id,
 	})
 	suite.NoError(err)
-	//suite.Equal(msg.Result, queryResultResponse)
+	// suite.Equal(msg.Result, queryResultResponse)
 	// KvResults - is a list of pointers, we check it explicitly. Result should be equal, but we do not store the proofs
 	expectKvResults := msg.Result.KvResults
 	queryKvResult := queryResultResponse.GetResult().KvResults
