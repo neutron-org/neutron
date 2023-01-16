@@ -53,7 +53,7 @@ message KVKey {
   bytes key = 2;
 }
 
-// GenesisState defines the interchainadapter module's genesis state.
+// GenesisState defines the neutron module's genesis state.
 message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
   repeated RegisteredQuery registered_queries = 2;
