@@ -8,9 +8,9 @@ require (
 	github.com/confio/ics23/go v0.7.0
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
 	github.com/cosmos/cosmos-proto v1.0.0-alpha8
-	github.com/cosmos/cosmos-sdk v0.45.12-0.20221116140330-9c145c827001
+	github.com/cosmos/cosmos-sdk v0.45.11
 	github.com/cosmos/ibc-go/v3 v3.4.0
-	github.com/cosmos/interchain-security v0.2.2-0.20230111001359-15a015b80faa
+	github.com/cosmos/interchain-security v1.0.0-rc1
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
@@ -139,7 +139,7 @@ replace (
 	github.com/CosmWasm/wasmd v0.28.0 => github.com/neutron-org/wasmd v0.28.0-ics-support
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
-	github.com/cosmos/ibc-go/v3 => github.com/informalsystems/ibc-go/v3 v3.4.1-0.20221202165607-3dc5ba251371
+	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.11-ics
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
