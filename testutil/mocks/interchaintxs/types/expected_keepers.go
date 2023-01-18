@@ -14,7 +14,6 @@ import (
 	types3 "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	exported "github.com/cosmos/ibc-go/v3/modules/core/exported"
 	gomock "github.com/golang/mock/gomock"
-
 	types4 "github.com/neutron-org/neutron/x/contractmanager/types"
 	types5 "github.com/neutron-org/neutron/x/feerefunder/types"
 )
@@ -117,15 +116,15 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 }
 
 // AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, address string, ackID uint64, ackType string) {
+func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, channelId, address string, ackID uint64, ackType string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddContractFailure", ctx, address, ackID, ackType)
+	m.ctrl.Call(m, "AddContractFailure", ctx, channelId, address, ackID, ackType)
 }
 
 // AddContractFailure indicates an expected call of AddContractFailure.
-func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, address, ackID, ackType interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channelId, address, ackID, ackType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, address, ackID, ackType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelId, address, ackID, ackType)
 }
 
 // HasContractInfo mocks base method.

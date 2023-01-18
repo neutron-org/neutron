@@ -70,6 +70,18 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			}
 
 			return bz, nil
+		case contractQuery.TotalBurnedNeutronsAmount != nil:
+			totalBurnedNeutrons, err := qp.GetTotalBurnedNeutronsAmount(ctx, contractQuery.TotalBurnedNeutronsAmount)
+			if err != nil {
+				return nil, sdkerrors.Wrapf(err, "failed to get total burned neutrons amount: %v", err)
+			}
+
+			bz, err := json.Marshal(totalBurnedNeutrons)
+			if err != nil {
+				return nil, sdkerrors.Wrapf(err, "failed to marshal total burned neutrons amount response: %v", err)
+			}
+
+			return bz, nil
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}

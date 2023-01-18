@@ -2,13 +2,14 @@ package keeper_test
 
 import (
 	"fmt"
+	"math"
+	"testing"
+	"time"
+
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/golang/mock/gomock"
 	icqtestkeeper "github.com/neutron-org/neutron/testutil/interchainqueries/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchainqueries/types"
-	"math"
-	"testing"
-	"time"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/types"
@@ -404,7 +405,7 @@ func TestSudoHasAddress(t *testing.T) {
 	err = k.ProcessBlock(ctx, address, 1, "tendermint-07", &block)
 	require.NoError(t, err)
 
-	//same tx + another queryID
+	// same tx + another queryID
 	hv.EXPECT().UnpackHeader(packedHeader).Return(exported.Header(&header), nil)
 	hv.EXPECT().UnpackHeader(packedNextHeader).Return(exported.Header(&nextHeader), nil)
 	hv.EXPECT().VerifyHeaders(ctx, clientkeeper.Keeper{}, "tendermint-07", exported.Header(&header), exported.Header(&nextHeader)).Return(nil)

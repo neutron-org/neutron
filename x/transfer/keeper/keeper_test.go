@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/testutil"
@@ -25,7 +26,6 @@ type KeeperTestSuite struct {
 }
 
 func (suite KeeperTestSuite) TestTransfer() {
-
 	suite.ConfigureTransferChannel()
 
 	msgSrv := suite.GetNeutronZoneApp(suite.ChainA).TransferKeeper

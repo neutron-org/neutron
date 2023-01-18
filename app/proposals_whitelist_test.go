@@ -14,6 +14,7 @@ import (
 )
 
 func TestConsumerWhitelistingKeys(t *testing.T) {
+	_ = app.GetDefaultConfig()
 	chain := ibctesting.NewTestChain(t, ibctesting.NewCoordinator(t, 0), SetupTestingAppConsumer, "test")
 	paramKeeper := chain.App.(*app.App).ParamsKeeper
 	for paramKey := range app.WhitelistedParams {
