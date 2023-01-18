@@ -121,6 +121,7 @@ DAO_INIT='{
     }'
 
 # TODO: properly initialize treasury
+DISTRIBUTION_CONTRACT_ADDRESS="neutron1vhndln95yd7rngslzvf6sax6axcshkxqpmpr886ntelh28p9ghuq56mwja"
 TREASURY_INIT="$(printf '{
                            "main_dao_address": "%s",
                            "security_dao_address": "%s",
@@ -130,7 +131,7 @@ TREASURY_INIT="$(printf '{
                            "distribution_contract": "%s",
                            "reserve_contract": "%s",
                            "vesting_denominator": "1"
-}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "neutron1vhndln95yd7rngslzvf6sax6axcshkxqpmpr886ntelh28p9ghuq56mwja" "$ADMIN_ADDRESS")"
+}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$DISTRIBUTION_CONTRACT_ADDRESS" "$ADMIN_ADDRESS")"
 
 DISTRIBUTION_INIT="$(printf '{
                            "main_dao_address": "%s",
