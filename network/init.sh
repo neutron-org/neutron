@@ -83,33 +83,19 @@ echo "Initializing dao contract in genesis..."
 
 function store_binary() {
   $NEUTROND_BINARY add-wasm-message store $1 --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
-  return $(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" $CHAIN_DIR/$CHAINID_1/config/genesis.json)
+  echo $(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" $CHAIN_DIR/$CHAINID_1/config/genesis.json)
 }
 
 # Upload the dao contracts
-store_binary ${VAULT_CONTRACT}
-VAULT_CONTRACT_BINARY_ID=$?
 
-store_binary ${DAO_CONTRACT}
-DAO_CONTRACT_BINARY_ID=$?
-
-store_binary ${PROPOSAL_CONTRACT}
-PROPOSAL_CONTRACT_BINARY_ID=$?
-
-store_binary ${VOTING_REGISTRY_CONTRACT}
-VOTING_REGISTRY_CONTRACT_BINARY_ID=$?
-
-store_binary ${PRE_PROPOSAL_CONTRACT}
-PRE_PROPOSAL_CONTRACT_BINARY_ID=$?
-
-store_binary ${PROPOSAL_MULTIPLE_CONTRACT}
-PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$?
-
-store_binary ${PRE_PROPOSAL_MULTIPLE_CONTRACT}
-PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$?
-
-store_binary ${TREASURY_CONTRACT}
-TREASURY_CONTRACT_CONTRACT_BINARY_ID=$?
+VAULT_CONTRACT_BINARY_ID=$(store_binary ${VAULT_CONTRACT})
+DAO_CONTRACT_BINARY_ID=$(store_binary ${DAO_CONTRACT})
+PROPOSAL_CONTRACT_BINARY_ID=$(store_binary ${PROPOSAL_CONTRACT})
+VOTING_REGISTRY_CONTRACT_BINARY_ID=$(store_binary ${VOTING_REGISTRY_CONTRACT})
+PRE_PROPOSAL_CONTRACT_BINARY_ID=$(store_binary ${PRE_PROPOSAL_CONTRACT})
+PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary ${PROPOSAL_MULTIPLE_CONTRACT})
+PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary ${PRE_PROPOSAL_MULTIPLE_CONTRACT})
+TREASURY_CONTRACT_CONTRACT_BINARY_ID=$(store_binary ${TREASURY_CONTRACT})
 
 # PRE_PROPOSE_INIT_MSG will be put into the PROPOSAL_SINGLE_INIT_MSG and PROPOSAL_MULTIPLE_INIT_MSG
 PRE_PROPOSE_INIT_MSG='{
