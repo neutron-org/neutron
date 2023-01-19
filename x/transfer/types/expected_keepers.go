@@ -18,7 +18,7 @@ type ContractManagerKeeper interface {
 }
 
 type FeeRefunderKeeper interface {
-	LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID feerefundertypes.PacketID, fee feerefundertypes.Fee) error
+	LockFees(ctx sdk.Context, payer feerefundertypes.PayerInfo, packetID feerefundertypes.PacketID, fee feerefundertypes.Fee) error
 	DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAddress, packetID feerefundertypes.PacketID)
 	DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, packetID feerefundertypes.PacketID)
 }

@@ -18,12 +18,13 @@ import (
 
 type (
 	Keeper struct {
-		cdc           codec.BinaryCodec
-		bankKeeper    types.BankKeeper
-		storeKey      storetypes.StoreKey
-		memKey        storetypes.StoreKey
-		paramstore    paramtypes.Subspace
-		channelKeeper types.ChannelKeeper
+		cdc            codec.BinaryCodec
+		bankKeeper     types.BankKeeper
+		storeKey       storetypes.StoreKey
+		memKey         storetypes.StoreKey
+		paramstore     paramtypes.Subspace
+		channelKeeper  types.ChannelKeeper
+		feegrantKeeper types.FeeGrantKeeper
 	}
 )
 
@@ -34,6 +35,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
+	feegrantKeeper types.FeeGrantKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -41,12 +43,13 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:           cdc,
-		storeKey:      storeKey,
-		memKey:        memKey,
-		paramstore:    ps,
-		channelKeeper: channelKeeper,
-		bankKeeper:    bankKeeper,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		memKey:         memKey,
+		paramstore:     ps,
+		channelKeeper:  channelKeeper,
+		bankKeeper:     bankKeeper,
+		feegrantKeeper: feegrantKeeper,
 	}
 }
 
@@ -54,15 +57,34 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
+func (k Keeper) LockFees(ctx sdk.Context, payerInfo types.PayerInfo, packetID types.PacketID, fee types.Fee) error {
 	k.Logger(ctx).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
 
 	if _, ok := k.channelKeeper.GetChannel(ctx, packetID.PortId, packetID.ChannelId); !ok {
 		return sdkerrors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
 	}
+	payer := payerInfo.Sender
 
 	if err := k.checkFees(ctx, fee); err != nil {
 		return sdkerrors.Wrapf(err, "failed to lock fees")
+	}
+
+	if payerInfo.FeePayer != nil && !payerInfo.FeePayer.Empty() {
+		allowance, err := k.feegrantKeeper.GetAllowance(ctx, payerInfo.FeePayer, payerInfo.Sender)
+		if err != nil {
+			return err
+		}
+		if allowance != nil { // otherwise there is no allowance
+			coins := sdk.NewCoins()
+			coins = append(coins, fee.TimeoutFee...)
+			coins = append(coins, fee.AckFee...)
+			coins = append(coins, fee.RecvFee...)
+			_, err = allowance.Accept(ctx, coins, []sdk.Msg{})
+			if err != nil {
+				return err
+			}
+			payer = payerInfo.FeePayer
+		}
 	}
 
 	feeInfo := types.FeeInfo{

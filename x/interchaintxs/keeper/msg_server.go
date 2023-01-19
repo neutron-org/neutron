@@ -83,6 +83,12 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
+	feePayerAddr, err := sdk.AccAddressFromBech32(msg.FeePayer)
+	if msg.FeePayer != "" && err != nil {
+		k.Logger(ctx).Debug("SubmitTx: failed to parse fee payer address", "fee_payer", msg.FeePayer)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FeePayer)
+	}
+
 	params := k.GetParams(ctx)
 	if uint64(len(msg.Msgs)) > params.GetMsgSubmitTxMaxMessages() {
 		k.Logger(ctx).Debug("SubmitTx: provided MsgSubmitTx contains more messages than allowed",
@@ -137,7 +143,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		)
 	}
 
-	if err := k.feeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
+	if err := k.feeKeeper.LockFees(ctx, feetypes.PayerInfo{Sender: senderAddr, FeePayer: feePayerAddr}, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
 		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
 	}
 

@@ -38,15 +38,15 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 }
 
 // AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, channelId, address string, ackID uint64, ackType string) {
+func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, channelID, address string, ackID uint64, ackType string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddContractFailure", ctx, channelId, address, ackID, ackType)
+	m.ctrl.Call(m, "AddContractFailure", ctx, channelID, address, ackID, ackType)
 }
 
 // AddContractFailure indicates an expected call of AddContractFailure.
-func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channelId, address, ackID, ackType interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channelID, address, ackID, ackType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelId, address, ackID, ackType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelID, address, ackID, ackType)
 }
 
 // HasContractInfo mocks base method.
@@ -156,7 +156,7 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeTimeoutFee(ctx, receiver,
 }
 
 // LockFees mocks base method.
-func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types.AccAddress, packetID types2.PacketID, fee types2.Fee) error {
+func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types2.PayerInfo, packetID types2.PacketID, fee types2.Fee) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LockFees", ctx, payer, packetID, fee)
 	ret0, _ := ret[0].(error)

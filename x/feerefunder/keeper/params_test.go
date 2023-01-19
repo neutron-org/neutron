@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetParams(t *testing.T) {
-	k, ctx := testkeeper.FeeKeeper(t, nil, nil)
+	k, ctx := testkeeper.FeeKeeper(t, nil, nil, nil)
 	params := types.DefaultParams()
 
 	k.SetParams(ctx, params)

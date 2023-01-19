@@ -155,7 +155,8 @@ func TestSubmitTx(t *testing.T) {
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
-	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(fmt.Errorf("failed to lock fees"))
+	payer := feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}
+	refundKeeper.EXPECT().LockFees(ctx, payer, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(fmt.Errorf("failed to lock fees"))
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "failed to lock fees to pay for SubmitTx msg")
@@ -173,7 +174,8 @@ func TestSubmitTx(t *testing.T) {
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
-	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
+	payerInfo := feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}
+	refundKeeper.EXPECT().LockFees(ctx, payerInfo, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
 	icaKeeper.EXPECT().SendTx(ctx, &capability, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), fmt.Errorf("faile to send tx"))
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
@@ -183,7 +185,7 @@ func TestSubmitTx(t *testing.T) {
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
-	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
+	refundKeeper.EXPECT().LockFees(ctx, payerInfo, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
 	icaKeeper.EXPECT().SendTx(ctx, &capability, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), nil)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Equal(t, types.MsgSubmitTxResponse{

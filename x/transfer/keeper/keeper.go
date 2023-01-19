@@ -32,6 +32,11 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 		k.Logger(ctx).Debug("Transfer: failed to parse sender address", "sender", msg.Sender)
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
+	feePayerAddr, err := sdk.AccAddressFromBech32(msg.FeePayer)
+	if msg.FeePayer != "" && err != nil {
+		k.Logger(ctx).Debug("Transfer: failed to parse fee payer address", "fee payer", msg.FeePayer)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FeePayer)
+	}
 
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, msg.SourcePort, msg.SourceChannel)
 	if !found {
@@ -44,7 +49,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 	// if the sender is a contract, lock fees.
 	// Because contracts are required to pay fees for the acknowledgements
 	if k.ContractManagerKeeper.HasContractInfo(ctx, senderAddr) {
-		if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
+		if err := k.FeeKeeper.LockFees(ctx, feetypes.PayerInfo{Sender: senderAddr, FeePayer: feePayerAddr}, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
 			return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
 		}
 	}

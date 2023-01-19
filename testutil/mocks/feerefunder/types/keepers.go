@@ -9,6 +9,7 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
+	feegrant "github.com/cosmos/cosmos-sdk/x/feegrant"
 	types1 "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -165,4 +166,42 @@ func (m *MockChannelKeeper) GetChannel(ctx types.Context, srcPort, srcChan strin
 func (mr *MockChannelKeeperMockRecorder) GetChannel(ctx, srcPort, srcChan interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChannel", reflect.TypeOf((*MockChannelKeeper)(nil).GetChannel), ctx, srcPort, srcChan)
+}
+
+// MockFeeGrantKeeper is a mock of FeeGrantKeeper interface.
+type MockFeeGrantKeeper struct {
+	ctrl     *gomock.Controller
+	recorder *MockFeeGrantKeeperMockRecorder
+}
+
+// MockFeeGrantKeeperMockRecorder is the mock recorder for MockFeeGrantKeeper.
+type MockFeeGrantKeeperMockRecorder struct {
+	mock *MockFeeGrantKeeper
+}
+
+// NewMockFeeGrantKeeper creates a new mock instance.
+func NewMockFeeGrantKeeper(ctrl *gomock.Controller) *MockFeeGrantKeeper {
+	mock := &MockFeeGrantKeeper{ctrl: ctrl}
+	mock.recorder = &MockFeeGrantKeeperMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFeeGrantKeeper) EXPECT() *MockFeeGrantKeeperMockRecorder {
+	return m.recorder
+}
+
+// GetAllowance mocks base method.
+func (m *MockFeeGrantKeeper) GetAllowance(ctx types.Context, granter, grantee types.AccAddress) (feegrant.FeeAllowanceI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllowance", ctx, granter, grantee)
+	ret0, _ := ret[0].(feegrant.FeeAllowanceI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllowance indicates an expected call of GetAllowance.
+func (mr *MockFeeGrantKeeperMockRecorder) GetAllowance(ctx, granter, grantee interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllowance", reflect.TypeOf((*MockFeeGrantKeeper)(nil).GetAllowance), ctx, granter, grantee)
 }

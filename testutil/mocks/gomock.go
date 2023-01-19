@@ -6,3 +6,4 @@ package mocks
 //go:generate mockgen -source=./../../x/interchainqueries/types/expected_keepers.go -destination ./interchainqueries/types/expected_keepers.go
 //go:generate mockgen -source=./../../x/interchaintxs/types/expected_keepers.go -destination ./interchaintxs/types/expected_keepers.go
 //go:generate mockgen -source=./../../x/transfer/types/expected_keepers.go -destination ./transfer/types/expected_keepers.go
+//go:generate mockgen -destination ./feegrant/types.go github.com/cosmos/cosmos-sdk/x/feegrant FeeAllowanceI

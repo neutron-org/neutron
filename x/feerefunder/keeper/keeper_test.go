@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	mock_feegrant "github.com/neutron-org/neutron/testutil/mocks/feegrant"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -28,7 +30,7 @@ const (
 )
 
 func TestKeeperCheckFees(t *testing.T) {
-	k, ctx := testutil_keeper.FeeKeeper(t, nil, nil)
+	k, ctx := testutil_keeper.FeeKeeper(t, nil, nil, nil)
 
 	k.SetParams(ctx, types.Params{
 		MinFee: types.Fee{
@@ -124,9 +126,13 @@ func TestKeeperLockFees(t *testing.T) {
 	defer ctrl.Finish()
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
-	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper)
+	feegrantKeeper := mock_types.NewMockFeeGrantKeeper(ctrl)
+	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper, feegrantKeeper)
 
-	payer := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	payerInfo := types.PayerInfo{
+		Sender:   sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress),
+		FeePayer: sdk.AccAddress{},
+	}
 
 	k.SetParams(ctx, types.Params{
 		MinFee: types.Fee{
@@ -143,11 +149,11 @@ func TestKeeperLockFees(t *testing.T) {
 	}
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, false)
-	err := k.LockFees(ctx, payer, packet, types.Fee{})
+	err := k.LockFees(ctx, payerInfo, packet, types.Fee{})
 	require.True(t, channeltypes.ErrChannelNotFound.Is(err))
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
-	err = k.LockFees(ctx, payer, packet, types.Fee{})
+	err = k.LockFees(ctx, payerInfo, packet, types.Fee{})
 	require.True(t, sdkerrors.ErrInsufficientFee.Is(err))
 
 	validFee := types.Fee{
@@ -156,18 +162,80 @@ func TestKeeperLockFees(t *testing.T) {
 		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
 	}
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
-	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, validFee.Total()).Return(fmt.Errorf("bank error"))
-	err = k.LockFees(ctx, payer, packet, validFee)
+	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payerInfo.Sender, types.ModuleName, validFee.Total()).Return(fmt.Errorf("bank error"))
+	err = k.LockFees(ctx, payerInfo, packet, validFee)
 	require.ErrorContains(t, err, "bank error")
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
-	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, validFee.Total()).Return(nil)
-	err = k.LockFees(ctx, payer, packet, validFee)
+	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payerInfo.Sender, types.ModuleName, validFee.Total()).Return(nil)
+	err = k.LockFees(ctx, payerInfo, packet, validFee)
 	require.NoError(t, err)
 	require.Equal(t, sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeLockFees,
-			sdk.NewAttribute(types.AttributeKeyPayer, payer.String()),
+			sdk.NewAttribute(types.AttributeKeyPayer, payerInfo.Sender.String()),
+			sdk.NewAttribute(types.AttributeKeyPortID, packet.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelID, packet.ChannelId),
+			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packet.Sequence, 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+		),
+	}, ctx.EventManager().Events())
+}
+
+func TestKeeperLockFeesAtFeePayeer(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
+	feegrantKeeper := mock_types.NewMockFeeGrantKeeper(ctrl)
+	feeAllowance := mock_feegrant.NewMockFeeAllowanceI(ctrl)
+	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper, feegrantKeeper)
+
+	payerInfo := types.PayerInfo{
+		Sender:   sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress),
+		FeePayer: sdk.MustAccAddressFromBech32(TestAddress),
+	}
+
+	k.SetParams(ctx, types.Params{
+		MinFee: types.Fee{
+			RecvFee:    nil,
+			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
+			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
+		},
+	})
+
+	packet := types.PacketID{
+		ChannelId: "channel-0",
+		PortId:    "transfer",
+		Sequence:  111,
+	}
+	ackFee := sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)))
+	timeoutFee := sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)))
+	validFee := types.Fee{
+		RecvFee:    nil,
+		AckFee:     ackFee,
+		TimeoutFee: timeoutFee,
+	}
+
+	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
+	feegrantKeeper.EXPECT().GetAllowance(ctx, payerInfo.FeePayer, payerInfo.Sender).Return(nil, fmt.Errorf("feegrant error"))
+	err := k.LockFees(ctx, payerInfo, packet, validFee)
+	require.ErrorContains(t, err, "feegrant error")
+
+	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
+	fees := append(ackFee, timeoutFee...)
+	feeAllowance.EXPECT().Accept(ctx, fees, []sdk.Msg{}).Return(false, nil)
+	feegrantKeeper.EXPECT().GetAllowance(ctx, payerInfo.FeePayer, payerInfo.Sender).Return(feeAllowance, nil)
+	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payerInfo.FeePayer, types.ModuleName, validFee.Total()).Return(nil)
+	err = k.LockFees(ctx, payerInfo, packet, validFee)
+	require.NoError(t, err)
+	require.Equal(t, sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeLockFees,
+			sdk.NewAttribute(types.AttributeKeyPayer, payerInfo.Sender.String()),
 			sdk.NewAttribute(types.AttributeKeyPortID, packet.PortId),
 			sdk.NewAttribute(types.AttributeKeyChannelID, packet.ChannelId),
 			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packet.Sequence, 10)),
@@ -184,7 +252,8 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 	defer ctrl.Finish()
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
-	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper)
+	feegrantKeeper := mock_types.NewMockFeeGrantKeeper(ctrl)
+	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper, feegrantKeeper)
 
 	validFee := types.Fee{
 		RecvFee:    nil,
@@ -250,7 +319,8 @@ func TestDistributeTimeoutFee(t *testing.T) {
 	defer ctrl.Finish()
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
-	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper)
+	feegrantKeeper := mock_types.NewMockFeeGrantKeeper(ctrl)
+	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper, feegrantKeeper)
 
 	validFee := types.Fee{
 		RecvFee:    nil,
@@ -312,7 +382,7 @@ func TestDistributeTimeoutFee(t *testing.T) {
 }
 
 func TestFeeInfo(t *testing.T) {
-	k, ctx := testutil_keeper.FeeKeeper(t, nil, nil)
+	k, ctx := testutil_keeper.FeeKeeper(t, nil, nil, nil)
 	validFee := types.Fee{
 		RecvFee:    nil,
 		AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1001))),

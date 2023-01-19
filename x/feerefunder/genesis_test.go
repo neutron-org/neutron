@@ -31,7 +31,7 @@ func TestGenesis(t *testing.T) {
 
 	require.EqualValues(t, genesisState.Params, types.DefaultParams())
 
-	k, ctx := keeper.FeeKeeper(t, nil, nil)
+	k, ctx := keeper.FeeKeeper(t, nil, nil, nil)
 	feerefunder.InitGenesis(ctx, *k, genesisState)
 	got := feerefunder.ExportGenesis(ctx, *k)
 

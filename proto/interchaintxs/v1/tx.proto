@@ -51,6 +51,8 @@ message MsgSubmitTx {
 
   neutron.feerefunder.Fee fee = 7
       [ (gogoproto.nullable) = false ];
+
+  string fee_payer = 8;
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx
