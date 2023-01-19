@@ -193,7 +193,7 @@ DAO_INIT='{
   "initial_items": null,
   "proposal_modules_instantiate_info": [
     {
-      "code_id": '${PROPOSAL_CONTRACT_BINARY_ID}',
+      "code_id": '"${PROPOSAL_CONTRACT_BINARY_ID}"',
       "label": "DAO_Neutron_cw-proposal-single",
       "msg": "'"${PROPOSAL_SINGLE_INIT_MSG_BASE64}"'"
     },
