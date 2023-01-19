@@ -12,6 +12,7 @@ PROPOSAL_CONTRACT=./contracts/cwd_proposal_single.wasm
 VOTING_REGISTRY_CONTRACT=./contracts/neutron_voting_registry.wasm
 VAULT_CONTRACT=./contracts/neutron_vault.wasm
 TREASURY_CONTRACT=./contracts/neutron_treasury.wasm
+DISTRIBUTION_CONTRACT=./contracts/neutron_distribution.wasm
 PROPOSAL_MULTIPLE_CONTRACT=./contracts/cwd_proposal_multiple.wasm
 PRE_PROPOSAL_MULTIPLE_CONTRACT=./contracts/cwd_pre_propose_multiple.wasm
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
@@ -89,6 +90,7 @@ $NEUTROND_BINARY add-wasm-message store ${PRE_PROPOSAL_CONTRACT} --output json  
 $NEUTROND_BINARY add-wasm-message store ${PROPOSAL_MULTIPLE_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message store ${PRE_PROPOSAL_MULTIPLE_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message store ${TREASURY_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message store ${DISTRIBUTION_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID_1
 
 # Instantiate the contract
 INIT='{
@@ -117,22 +119,31 @@ DAO_INIT='{
               "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
             }
     }'
+
 # TODO: properly initialize treasury
+DISTRIBUTION_CONTRACT_ADDRESS="neutron1vhndln95yd7rngslzvf6sax6axcshkxqpmpr886ntelh28p9ghuq56mwja"
 TREASURY_INIT="$(printf '{
                            "main_dao_address": "%s",
                            "security_dao_address": "%s",
                            "denom": "stake",
-                           "distribution_rate": "0.1",
+                           "distribution_rate": "0",
                            "min_period": 10,
                            "distribution_contract": "%s",
                            "reserve_contract": "%s",
                            "vesting_denominator": "1"
-}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
+}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$DISTRIBUTION_CONTRACT_ADDRESS" "$ADMIN_ADDRESS")"
+
+DISTRIBUTION_INIT="$(printf '{
+                           "main_dao_address": "%s",
+                           "security_dao_address": "%s",
+                           "denom": "stake"
+}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
 echo "Instantiate contracts"
 $NEUTROND_BINARY add-wasm-message instantiate-contract 1 "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message instantiate-contract 2 "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message instantiate-contract 8 "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message instantiate-contract 9 "$DISTRIBUTION_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Distribution" --home $CHAIN_DIR/$CHAINID_1
 
 
 echo "Add consumer section..."
