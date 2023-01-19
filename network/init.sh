@@ -82,7 +82,8 @@ $GAIAD_BINARY add-genesis-account $($GAIAD_BINARY --home $CHAIN_DIR/$CHAINID_2 k
 echo "Initializing dao contract in genesis..."
 
 function store_binary() {
-  $NEUTROND_BINARY add-wasm-message store $1 --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
+  CONTRACT_BINARY_PATH=$1
+  $NEUTROND_BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
   echo $(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" $CHAIN_DIR/$CHAINID_1/config/genesis.json)
 }
 
