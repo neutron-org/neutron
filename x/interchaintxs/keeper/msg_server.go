@@ -83,10 +83,10 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
-	feePayerAddr, err := sdk.AccAddressFromBech32(msg.FeePayer)
-	if msg.FeePayer != "" && err != nil {
-		k.Logger(ctx).Debug("SubmitTx: failed to parse fee payer address", "fee_payer", msg.FeePayer)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FeePayer)
+	feePayerAddr, err := sdk.AccAddressFromBech32(msg.Fee.Payer)
+	if msg.Fee.Payer != "" && err != nil {
+		k.Logger(ctx).Debug("SubmitTx: failed to parse fee payer address", "fee payer", msg.Fee.Payer)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Fee.Payer)
 	}
 
 	params := k.GetParams(ctx)

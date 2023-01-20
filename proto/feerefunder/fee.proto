@@ -28,6 +28,7 @@ message Fee {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
+  string payer = 4;
 }
 
 message PacketID {

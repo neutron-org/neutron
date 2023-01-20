@@ -43,7 +43,6 @@ message MsgTransfer {
 
   neutron.feerefunder.Fee fee = 8
       [ (gogoproto.nullable) = false ];
-  string fee_payer = 9;
 }
 
 // MsgTransferResponse is the modified response type for

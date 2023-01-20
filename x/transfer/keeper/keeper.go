@@ -32,10 +32,10 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 		k.Logger(ctx).Debug("Transfer: failed to parse sender address", "sender", msg.Sender)
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
-	feePayerAddr, err := sdk.AccAddressFromBech32(msg.FeePayer)
-	if msg.FeePayer != "" && err != nil {
-		k.Logger(ctx).Debug("Transfer: failed to parse fee payer address", "fee payer", msg.FeePayer)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FeePayer)
+	feePayerAddr, err := sdk.AccAddressFromBech32(msg.Fee.Payer)
+	if msg.Fee.Payer != "" && err != nil {
+		k.Logger(ctx).Debug("Transfer: failed to parse fee payer address", "fee payer", msg.Fee.Payer)
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Fee.Payer)
 	}
 
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, msg.SourcePort, msg.SourceChannel)
