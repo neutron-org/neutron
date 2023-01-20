@@ -215,7 +215,7 @@ func (m *KVKey) GetKey() []byte {
 	return nil
 }
 
-// GenesisState defines the neutron module's genesis state.
+// GenesisState defines the interchainqueries module's genesis state.
 type GenesisState struct {
 	Params            Params             `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 	RegisteredQueries []*RegisteredQuery `protobuf:"bytes,2,rep,name=registered_queries,json=registeredQueries,proto3" json:"registered_queries,omitempty"`

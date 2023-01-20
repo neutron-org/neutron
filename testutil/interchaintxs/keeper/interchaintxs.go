@@ -3,8 +3,6 @@ package keeper
 import (
 	"testing"
 
-	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -16,17 +14,11 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-func InterchainQueriesKeeper(
-	t testing.TB,
-	ibcKeeper *ibckeeper.Keeper,
-	contractManager types.ContractManagerKeeper,
-	headerVerifier types.HeaderVerifier,
-	txVerifier types.TransactionVerifier,
-) (*keeper.Keeper, sdk.Context) {
+func InterchainTxsKeeper(t testing.TB, managerKeeper types.ContractManagerKeeper, refunderKeeper types.FeeRefunderKeeper, icaControllerKeeper types.ICAControllerKeeper, channelKeeper types.ChannelKeeper, capabilityKeeper types.ScopedKeeper) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -43,18 +35,18 @@ func InterchainQueriesKeeper(
 		types.Amino,
 		storeKey,
 		memStoreKey,
-		"InterchainadapterParams",
+		"InterchainTxsParams",
 	)
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		ibcKeeper, // TODO: do a real ibc keeper
-		nil,       // TODO: do a real wasm keeper
-		contractManager,
-		headerVerifier,
-		txVerifier,
+		channelKeeper,
+		icaControllerKeeper,
+		capabilityKeeper,
+		managerKeeper,
+		refunderKeeper,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

@@ -32861,7 +32861,7 @@ paths:
   /neutron/interchainqueries/params:
     get:
       summary: Parameters queries the parameters of the module.
-      operationId: NeutronInterchainqueriesParams
+      operationId: NeutronInterchainQueriesParams
       responses:
         '200':
           description: A successful response.
@@ -33090,7 +33090,7 @@ paths:
         - Query
   /neutron/interchainqueries/query_result:
     get:
-      operationId: NeutronInterchainqueriesQueryResult
+      operationId: NeutronInterchainQueriesQueryResult
       responses:
         '200':
           description: A successful response.
@@ -33819,7 +33819,7 @@ paths:
         - Query
   /neutron/interchainqueries/registered_queries:
     get:
-      operationId: NeutronInterchainqueriesRegisteredQueries
+      operationId: NeutronInterchainQueriesRegisteredQueries
       responses:
         '200':
           description: A successful response.
@@ -34187,7 +34187,7 @@ paths:
         - Query
   /neutron/interchainqueries/registered_query:
     get:
-      operationId: NeutronInterchainqueriesRegisteredQuery
+      operationId: NeutronInterchainQueriesRegisteredQuery
       responses:
         '200':
           description: A successful response.
@@ -34472,7 +34472,7 @@ paths:
         - Query
   /neutron/interchainqueries/remote_height:
     get:
-      operationId: NeutronInterchainqueriesLastRemoteHeight
+      operationId: NeutronInterchainQueriesLastRemoteHeight
       responses:
         '200':
           description: A successful response.
