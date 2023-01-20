@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -115,7 +116,6 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) error {
 			fundsForTreasury,
 		)
 		if err != nil {
-			//TODO: check that works
 			return fmt.Errorf("error sending funds to treasury for address=%s, tokens=%+v: %v", params.TreasuryAddress, fundsForTreasury, err)
 		}
 	}

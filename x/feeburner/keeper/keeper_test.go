@@ -1,6 +1,9 @@
 package keeper_test
 
 import (
+	"fmt"
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
 	"github.com/golang/mock/gomock"
@@ -8,8 +11,6 @@ import (
 
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/feeburner/types"
 	"github.com/neutron-org/neutron/x/feeburner/keeper"
-
-	"testing"
 
 	feekeeperutil "github.com/neutron-org/neutron/testutil/feeburner/keeper"
 	feetypes "github.com/neutron-org/neutron/x/feeburner/types"
@@ -144,6 +145,20 @@ func TestKeeper_BurnAndDistribute_NonNtrn(t *testing.T) {
 
 	err := feeKeeper.BurnAndDistribute(ctx)
 	require.NoError(t, err)
+
+	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
+	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(0))
+}
+
+func TestKeeper_BurnAndDistribute_SendCoinsFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	feeKeeper, ctx, mockBankKeeper, redistrAddr := setupBurnAndDistribute(t, ctrl, sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
+
+	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))}).Return(fmt.Errorf("testerror"))
+
+	err := feeKeeper.BurnAndDistribute(ctx)
+	require.ErrorContains(t, err, "error sending funds to treasury for address")
 
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(0))
