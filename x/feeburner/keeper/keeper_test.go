@@ -86,3 +86,8 @@ func TestKeeper_GetTotalBurnedNeutronsAmount(t *testing.T) {
 		})
 	}
 }
+
+// Test BurnAndDistributeFunds
+// 1. Nothing to burn and distribute
+// 2. Has NTRN tokens to burn
+// 3. Has non-NTRN tokens to distribute
