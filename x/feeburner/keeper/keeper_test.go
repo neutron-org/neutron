@@ -2,7 +2,12 @@ package keeper_test
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+
+	mock_types "github.com/neutron-org/neutron/testutil/mocks/feeburner/types"
+	"github.com/neutron-org/neutron/x/feeburner/keeper"
 
 	"testing"
 
@@ -91,3 +96,70 @@ func TestKeeper_GetTotalBurnedNeutronsAmount(t *testing.T) {
 // 1. Nothing to burn and distribute
 // 2. Has NTRN tokens to burn
 // 3. Has non-NTRN tokens to distribute
+
+func setupBurnAndDistribute(t *testing.T, ctrl *gomock.Controller, coins sdk.Coins) (*keeper.Keeper, sdk.Context, *mock_types.MockBankKeeper, sdk.AccAddress) {
+	redistrAddr := sdk.AccAddress("neutronabcdasdf")
+	mockAccountKeeper := mock_types.NewMockAccountKeeper(ctrl)
+	mockBankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeKeeper, ctx := feekeeperutil.FeeburnerKeeperWithDeps(t, mockAccountKeeper, mockBankKeeper)
+
+	mockAccountKeeper.EXPECT().GetModuleAddress(consumertypes.ConsumerRedistributeName).Return(redistrAddr)
+	mockBankKeeper.EXPECT().GetAllBalances(ctx, redistrAddr).Return(coins)
+
+	return feeKeeper, ctx, mockBankKeeper, redistrAddr
+}
+
+func TestKeeper_BurnAndDistribute_Clean(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	feeKeeper, ctx, _, _ := setupBurnAndDistribute(t, ctrl, sdk.Coins{})
+
+	err := feeKeeper.BurnAndDistribute(ctx)
+	require.NoError(t, err)
+
+	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
+	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(0))
+}
+
+func TestKeeper_BurnAndDistribute_Ntrn(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	feeKeeper, ctx, mockBankKeeper, _ := setupBurnAndDistribute(t, ctrl, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, sdk.NewInt(100))})
+
+	mockBankKeeper.EXPECT().BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, sdk.NewInt(100))})
+
+	err := feeKeeper.BurnAndDistribute(ctx)
+	require.NoError(t, err)
+
+	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
+	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(100))
+}
+
+func TestKeeper_BurnAndDistribute_NonNtrn(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	feeKeeper, ctx, mockBankKeeper, redistrAddr := setupBurnAndDistribute(t, ctrl, sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
+
+	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
+
+	err := feeKeeper.BurnAndDistribute(ctx)
+	require.NoError(t, err)
+
+	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
+	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(0))
+}
+
+func TestKeeper_BurnAndDistribute_NtrnAndNonNtrn(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	coins := sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, sdk.NewInt(70)), sdk.NewCoin("nonntrn", sdk.NewInt(20))}
+	feeKeeper, ctx, mockBankKeeper, redistrAddr := setupBurnAndDistribute(t, ctrl, coins)
+
+	mockBankKeeper.EXPECT().BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, sdk.NewInt(70))})
+	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(20))})
+
+	err := feeKeeper.BurnAndDistribute(ctx)
+	require.NoError(t, err)
+	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
+	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(70))
+}
