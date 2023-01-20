@@ -93,23 +93,6 @@ func TestKeeper_GetTotalBurnedNeutronsAmount(t *testing.T) {
 	}
 }
 
-// Test BurnAndDistributeFunds
-// 1. Nothing to burn and distribute
-// 2. Has NTRN tokens to burn
-// 3. Has non-NTRN tokens to distribute
-
-func setupBurnAndDistribute(t *testing.T, ctrl *gomock.Controller, coins sdk.Coins) (*keeper.Keeper, sdk.Context, *mock_types.MockBankKeeper, sdk.AccAddress) {
-	redistrAddr := sdk.AccAddress("neutronabcdasdf")
-	mockAccountKeeper := mock_types.NewMockAccountKeeper(ctrl)
-	mockBankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	feeKeeper, ctx := feekeeperutil.FeeburnerKeeperWithDeps(t, mockAccountKeeper, mockBankKeeper)
-
-	mockAccountKeeper.EXPECT().GetModuleAddress(consumertypes.ConsumerRedistributeName).Return(redistrAddr)
-	mockBankKeeper.EXPECT().GetAllBalances(ctx, redistrAddr).Return(coins)
-
-	return feeKeeper, ctx, mockBankKeeper, redistrAddr
-}
-
 func TestKeeper_BurnAndDistribute_Clean(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -177,4 +160,16 @@ func TestKeeper_BurnAndDistribute_NtrnAndNonNtrn(t *testing.T) {
 	require.NoError(t, err)
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(70))
+}
+
+func setupBurnAndDistribute(t *testing.T, ctrl *gomock.Controller, coins sdk.Coins) (*keeper.Keeper, sdk.Context, *mock_types.MockBankKeeper, sdk.AccAddress) {
+	redistrAddr := sdk.AccAddress("neutronabcdasdf")
+	mockAccountKeeper := mock_types.NewMockAccountKeeper(ctrl)
+	mockBankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeKeeper, ctx := feekeeperutil.FeeburnerKeeperWithDeps(t, mockAccountKeeper, mockBankKeeper)
+
+	mockAccountKeeper.EXPECT().GetModuleAddress(consumertypes.ConsumerRedistributeName).Return(redistrAddr)
+	mockBankKeeper.EXPECT().GetAllBalances(ctx, redistrAddr).Return(coins)
+
+	return feeKeeper, ctx, mockBankKeeper, redistrAddr
 }
