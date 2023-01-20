@@ -1,19 +1,23 @@
 #!/bin/bash
 
+set -x
+
 BINARY=${BINARY:-neutrond}
 CHAIN_DIR=./data
 CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-stake}
+CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 
 ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
-DAO_CONTRACT=/opt/neutron/contracts/dao/cwd_core.wasm
-PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_single.wasm
-PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_single.wasm
-VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/dao/neutron_voting_registry.wasm
-VAULT_CONTRACT=/opt/neutron/contracts/dao/neutron_vault.wasm
-PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_multiple.wasm
-PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_multiple.wasm
-TREASURY_CONTRACT=/opt/neutron/contracts/dao/neutron_treasury.wasm
+DAO_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_core.wasm
+PRE_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_single.wasm
+PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_single.wasm
+VOTING_REGISTRY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_voting_registry.wasm
+VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_vault.wasm
+PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_multiple.wasm
+PRE_PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_multiple.wasm
+TREASURY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_treasury.wasm
+DISTRIBUTION_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_distribution.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
@@ -22,8 +26,8 @@ echo "Initializing dao contract in genesis..."
 
 function store_binary() {
   CONTRACT_BINARY_PATH=$1
-  $NEUTROND_BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID_1
-  echo $(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" $CHAIN_DIR/$CHAINID_1/config/genesis.json)
+  $BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID
+  echo $(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" $CHAIN_DIR/$CHAINID/config/genesis.json)
 }
 
 # Upload the dao contracts
@@ -171,9 +175,9 @@ DISTRIBUTION_INIT="$(printf '{
 }' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
 echo "Instantiate contracts"
-$NEUTROND_BINARY add-wasm-message instantiate-contract "$VAULT_CONTRACT_BINARY_ID" "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
-$NEUTROND_BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID" "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
-$NEUTROND_BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID" "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID_1
-$NEUTROND_BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID" "$DISTRIBUTION_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Distribution" --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-wasm-message instantiate-contract "$VAULT_CONTRACT_BINARY_ID" "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID" "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID" "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID" "$DISTRIBUTION_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Distribution" --home $CHAIN_DIR/$CHAINID
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx\"]/g' $CHAIN_DIR/$CHAINID/config/genesis.json
