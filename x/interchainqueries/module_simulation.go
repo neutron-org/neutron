@@ -11,14 +11,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
 	"github.com/neutron-org/neutron/testutil/interchainqueries/sample"
-	interchainadaptersimulation "github.com/neutron-org/neutron/x/interchainqueries/simulation"
+	interchainqueriessimulation "github.com/neutron-org/neutron/x/interchainqueries/simulation"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // avoid unused import issue
 var (
 	_ = sample.AccAddress
-	_ = interchainadaptersimulation.FindAccount
+	_ = interchainqueriessimulation.FindAccount
 	_ = simappparams.StakePerAccount
 	_ = simulation.MsgEntryKind
 	_ = baseapp.Paramspace
@@ -30,10 +30,10 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	for i, acc := range simState.Accounts {
 		accs[i] = acc.Address.String()
 	}
-	interchainadapterGenesis := types.GenesisState{
+	interchainqueriesGenesis := types.GenesisState{
 		Params: types.DefaultParams(),
 	}
-	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&interchainadapterGenesis)
+	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&interchainqueriesGenesis)
 }
 
 // ProposalContents doesn't return any content functions for governance proposals
