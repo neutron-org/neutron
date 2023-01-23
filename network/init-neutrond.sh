@@ -64,7 +64,7 @@ PRE_PROPOSE_INIT_MSG_BASE64=$(echo ${PRE_PROPOSE_INIT_MSG} | base64 | tr -d "\n"
 PROPOSAL_SINGLE_INIT_MSG='{
    "allow_revoting":false,
    "pre_propose_info":{
-      "ModuleMayPropose":{
+      "module_may_propose":{
          "info":{
             "code_id": '"${PRE_PROPOSAL_CONTRACT_BINARY_ID}"',
             "msg": "'"${PRE_PROPOSE_INIT_MSG_BASE64}"'",
@@ -97,7 +97,7 @@ PROPOSAL_SINGLE_INIT_MSG_BASE64=$(echo ${PROPOSAL_SINGLE_INIT_MSG} | base64 | tr
 PROPOSAL_MULTIPLE_INIT_MSG='{
    "allow_revoting":false,
    "pre_propose_info":{
-      "ModuleMayPropose":{
+      "module_may_propose":{
          "info":{
             "code_id": '"${PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID}"',
             "msg": "'"${PRE_PROPOSE_INIT_MSG_BASE64}"'",
