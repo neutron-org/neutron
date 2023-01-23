@@ -23,9 +23,9 @@ func TestGenesis(t *testing.T) {
 			Payer:    TestContractAddressNeutron,
 			PacketId: types.NewPacketID("port", "channel-1", 64),
 			Fee: types.Fee{
-				RecvFee:    sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(0))),
-				AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(params.DefaultBondDenom).Int64()+1))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(params.DefaultBondDenom).Int64()+1))),
+				RecvFee:    sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(0))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(params.BondDenom).Int64()+1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(params.BondDenom).Int64()+1))),
 			},
 		}},
 	}

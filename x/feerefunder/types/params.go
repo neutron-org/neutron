@@ -15,8 +15,8 @@ var (
 	KeyFees     = []byte("FEES")
 	DefaultFees = Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(1000))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(1000))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(1000))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(1000))),
 	}
 )
 

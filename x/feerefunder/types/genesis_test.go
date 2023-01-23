@@ -23,11 +23,11 @@ func TestGenesisState_Validate(t *testing.T) {
 	cfg := app.GetDefaultConfig()
 	cfg.Seal()
 
-	validRecvFee := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(0)))
-	validAckFee := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(params.DefaultBondDenom).Int64()+1)))
-	validTimeoutFee := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(params.DefaultBondDenom).Int64()+1)))
+	validRecvFee := sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(0)))
+	validAckFee := sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(params.BondDenom).Int64()+1)))
+	validTimeoutFee := sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(params.BondDenom).Int64()+1)))
 
-	invalidRecvFee := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sdk.NewInt(1)))
+	invalidRecvFee := sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(1)))
 
 	validPacketId := types.NewPacketID("port", "channel-1", 64)
 

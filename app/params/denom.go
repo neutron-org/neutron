@@ -1,4 +1,4 @@
 package params
 
-// DefaultBondDenom defines neutron's denom
-const DefaultBondDenom = "untrn"
+// BondDenom defines neutron's denom
+const BondDenom = "untrn"

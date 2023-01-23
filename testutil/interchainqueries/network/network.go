@@ -84,8 +84,8 @@ func DefaultConfig() network.Config {
 		// Some changes are introduced to make the tests run as if neutron is a standalone chain.
 		// This will only work if NumValidators is set to 1.
 		NumValidators:   1,
-		BondDenom:       params.DefaultBondDenom,
-		MinGasPrices:    fmt.Sprintf("0.000006%s", params.DefaultBondDenom),
+		BondDenom:       params.BondDenom,
+		MinGasPrices:    fmt.Sprintf("0.000006%s", params.BondDenom),
 		AccountTokens:   sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction),
 		StakingTokens:   sdk.TokensFromConsensusPower(500, sdk.DefaultPowerReduction),
 		BondedTokens:    sdk.TokensFromConsensusPower(100, sdk.DefaultPowerReduction),
