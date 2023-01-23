@@ -15,7 +15,7 @@ var (
 	KeyQuerySubmitTimeout               = []byte("QuerySubmitTimeout")
 	DefaultQuerySubmitTimeout           = uint64(1036800) // One month, with block_time = 2.5s
 	KeyQueryDeposit                     = []byte("QueryDeposit")
-	DefaultQueryDeposit       sdk.Coins = sdk.NewCoins(sdk.NewCoin(params.BondDenom, sdk.NewInt(int64(1_000_000))))
+	DefaultQueryDeposit       sdk.Coins = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(1_000_000))))
 )
 
 // ParamKeyTable the param key table for launch module

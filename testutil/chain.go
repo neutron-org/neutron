@@ -30,7 +30,7 @@ func NewTestChainWithValSet(t *testing.T, coord *ibctesting.Coordinator, appInit
 
 		balance := banktypes.Balance{
 			Address: acc.GetAddress().String(),
-			Coins:   sdk.NewCoins(sdk.NewCoin(params.BondDenom, amount)),
+			Coins:   sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, amount)),
 		}
 
 		genAccs = append(genAccs, acc)

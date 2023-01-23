@@ -473,10 +473,10 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				sdktypes.WrapSDKContext(ctx),
 				&banktypes.QueryBalanceRequest{
 					Address: contractAddress.String(),
-					Denom:   params.BondDenom,
+					Denom:   params.DefaultDenom,
 				},
 			)
-			expectedCoin := sdktypes.NewCoin(params.BondDenom, sdktypes.NewInt(int64(0)))
+			expectedCoin := sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(0)))
 
 			suite.Require().NoError(balanceErr)
 			suite.Require().NotNil(balance)
@@ -520,10 +520,10 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					sdktypes.WrapSDKContext(ctx),
 					&banktypes.QueryBalanceRequest{
 						Address: contractAddress.String(),
-						Denom:   params.BondDenom,
+						Denom:   params.DefaultDenom,
 					},
 				)
-				expectedCoin := sdktypes.NewCoin(params.BondDenom, sdktypes.NewInt(int64(1_000_000)))
+				expectedCoin := sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000)))
 
 				suite.Require().NoError(balanceErr)
 				suite.Require().NotNil(balance)
@@ -1230,7 +1230,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 }
 
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
-	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.BondDenom, sdktypes.NewInt(int64(1_000_000))))
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 }
