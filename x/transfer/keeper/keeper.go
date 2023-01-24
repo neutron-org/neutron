@@ -27,15 +27,9 @@ type KeeperTransferWrapper struct {
 func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	payerInfo, err := k.FeeKeeper.GetPayerInfo(ctx, msg.Sender, msg.Fee.Payer)
 	if err != nil {
-		k.Logger(ctx).Debug("Transfer: failed to parse sender address", "sender", msg.Sender)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
-	}
-	feePayerAddr, err := sdk.AccAddressFromBech32(msg.Fee.Payer)
-	if msg.Fee.Payer != "" && err != nil {
-		k.Logger(ctx).Debug("Transfer: failed to parse fee payer address", "fee payer", msg.Fee.Payer)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Fee.Payer)
+		return nil, sdkerrors.Wrapf(err, "failed to get payer info for sender: %s, payer: %s", msg.Sender, msg.Fee.Payer)
 	}
 
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, msg.SourcePort, msg.SourceChannel)
@@ -48,8 +42,8 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 
 	// if the sender is a contract, lock fees.
 	// Because contracts are required to pay fees for the acknowledgements
-	if k.ContractManagerKeeper.HasContractInfo(ctx, senderAddr) {
-		if err := k.FeeKeeper.LockFees(ctx, feetypes.PayerInfo{Sender: senderAddr, FeePayer: feePayerAddr}, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
+	if k.ContractManagerKeeper.HasContractInfo(ctx, payerInfo.Sender) {
+		if err := k.FeeKeeper.LockFees(ctx, payerInfo, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
 			return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
 		}
 	}

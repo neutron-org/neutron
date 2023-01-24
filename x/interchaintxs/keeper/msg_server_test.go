@@ -2,20 +2,17 @@ package keeper_test
 
 import (
 	"fmt"
-	"testing"
-	"time"
-
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	types2 "github.com/cosmos/cosmos-sdk/x/capability/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
-
+	"github.com/golang/mock/gomock"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	"testing"
+	"time"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
@@ -98,10 +95,14 @@ func TestSubmitTx(t *testing.T) {
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "empty Msgs field is prohibited")
 
+	refundKeeper.EXPECT().GetPayerInfo(ctx, "", "").Return(feerefundertypes.PayerInfo{}, fmt.Errorf("failed to parse address"))
 	resp, err = icak.SubmitTx(goCtx, &types.MsgSubmitTx{Msgs: []*codectypes.Any{&cosmosMsg}})
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "failed to parse address")
 
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(
+		feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}, nil,
+	)
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
@@ -110,13 +111,19 @@ func TestSubmitTx(t *testing.T) {
 	params := icak.GetParams(ctx)
 	maxMsgs := params.GetMsgSubmitTxMaxMessages()
 	submitMsg.Msgs = make([]*codectypes.Any, maxMsgs+1)
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(
+		feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}, nil,
+	)
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "MsgSubmitTx contains more messages than allowed")
-	submitMsg.Msgs = []*codectypes.Any{&cosmosMsg}
 
+	submitMsg.Msgs = []*codectypes.Any{&cosmosMsg}
 	portID := "icacontroller-" + testutil.TestOwnerAddress + ".ica0"
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(
+		feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}, nil,
+	)
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return("", false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
@@ -125,6 +132,9 @@ func TestSubmitTx(t *testing.T) {
 
 	activeChannel := "channel-0"
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(
+		feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}, nil,
+	)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(nil, false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
@@ -135,6 +145,9 @@ func TestSubmitTx(t *testing.T) {
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(
+		feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}, nil,
+	)
 	currCodec := icak.Codec
 	icak.Codec = &codec.AminoCodec{}
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
@@ -145,6 +158,9 @@ func TestSubmitTx(t *testing.T) {
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(
+		feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}, nil,
+	)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(uint64(0), false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
@@ -154,8 +170,9 @@ func TestSubmitTx(t *testing.T) {
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
-	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	payer := feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(payer, nil)
+	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	refundKeeper.EXPECT().LockFees(ctx, payer, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(fmt.Errorf("failed to lock fees"))
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
@@ -175,6 +192,7 @@ func TestSubmitTx(t *testing.T) {
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	payerInfo := feerefundertypes.PayerInfo{Sender: contractAddress, FeePayer: sdk.AccAddress{}}
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(payerInfo, nil)
 	refundKeeper.EXPECT().LockFees(ctx, payerInfo, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
 	icaKeeper.EXPECT().SendTx(ctx, &capability, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), fmt.Errorf("faile to send tx"))
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
@@ -185,6 +203,7 @@ func TestSubmitTx(t *testing.T) {
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
+	refundKeeper.EXPECT().GetPayerInfo(ctx, submitMsg.FromAddress, submitMsg.Fee.Payer).Return(payerInfo, nil)
 	refundKeeper.EXPECT().LockFees(ctx, payerInfo, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
 	icaKeeper.EXPECT().SendTx(ctx, &capability, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), nil)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)

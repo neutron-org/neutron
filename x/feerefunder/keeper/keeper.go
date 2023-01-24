@@ -227,6 +227,23 @@ func (k Keeper) StoreFeeInfo(ctx sdk.Context, feeInfo types.FeeInfo) {
 	store.Set(types.GetFeePacketKey(feeInfo.PacketId), bzFeeInfo)
 }
 
+func (k Keeper) GetPayerInfo(ctx sdk.Context, sender string, payer string) (types.PayerInfo, error) {
+	senderAddr, err := sdk.AccAddressFromBech32(sender)
+	if err != nil {
+		k.Logger(ctx).Debug("Transfer: failed to parse sender address", "sender", sender)
+		return types.PayerInfo{}, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", sender)
+	}
+	feePayerAddr, err := sdk.AccAddressFromBech32(payer)
+	if payer != "" && err != nil {
+		k.Logger(ctx).Debug("Transfer: failed to parse fee payer address", "fee payer", payer)
+		return types.PayerInfo{}, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", payer)
+	}
+	return types.PayerInfo{
+		Sender:   senderAddr,
+		FeePayer: feePayerAddr,
+	}, nil
+}
+
 func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 	store := ctx.KVStore(k.storeKey)
 

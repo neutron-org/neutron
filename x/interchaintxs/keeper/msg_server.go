@@ -72,21 +72,14 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("SubmitTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
 
-	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	payerInfo, err := k.feeKeeper.GetPayerInfo(ctx, msg.FromAddress, msg.Fee.Payer)
 	if err != nil {
-		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "from_address", msg.FromAddress)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
+		return nil, sdkerrors.Wrapf(err, "failed to get payer info for sender: %s, payer: %s", msg.FromAddress, msg.Fee.Payer)
 	}
 
-	if !k.contractManagerKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.contractManagerKeeper.HasContractInfo(ctx, payerInfo.Sender) {
 		k.Logger(ctx).Debug("SubmitTx: contract not found", "from_address", msg.FromAddress)
 		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
-	}
-
-	feePayerAddr, err := sdk.AccAddressFromBech32(msg.Fee.Payer)
-	if msg.Fee.Payer != "" && err != nil {
-		k.Logger(ctx).Debug("SubmitTx: failed to parse fee payer address", "fee payer", msg.Fee.Payer)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Fee.Payer)
 	}
 
 	params := k.GetParams(ctx)
@@ -103,7 +96,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		)
 	}
 
-	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
+	icaOwner := ictxtypes.NewICAOwnerFromAddress(payerInfo.Sender, msg.InterchainAccountId)
 
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
@@ -143,7 +136,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		)
 	}
 
-	if err := k.feeKeeper.LockFees(ctx, feetypes.PayerInfo{Sender: senderAddr, FeePayer: feePayerAddr}, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
+	if err := k.feeKeeper.LockFees(ctx, payerInfo, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
 		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
 	}
 

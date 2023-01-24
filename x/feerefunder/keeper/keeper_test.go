@@ -185,6 +185,33 @@ func TestKeeperLockFees(t *testing.T) {
 	}, ctx.EventManager().Events())
 }
 
+func TestKeeperGetPayerInfo(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
+	feegrantKeeper := mock_types.NewMockFeeGrantKeeper(ctrl)
+	k, ctx := testutil_keeper.FeeKeeper(t, channelKeeper, bankKeeper, feegrantKeeper)
+
+	_, err := k.GetPayerInfo(ctx, "", "")
+	require.ErrorContains(t, err, "failed to parse address")
+
+	p, err := k.GetPayerInfo(ctx, TestAddress, "")
+	require.NoError(t, err)
+	require.Equal(t, p, types.PayerInfo{
+		Sender:   sdk.MustAccAddressFromBech32(TestAddress),
+		FeePayer: sdk.AccAddress{},
+	})
+
+	p, err = k.GetPayerInfo(ctx, TestAddress, TestAddress)
+	require.NoError(t, err)
+	require.Equal(t, p, types.PayerInfo{
+		Sender:   sdk.MustAccAddressFromBech32(TestAddress),
+		FeePayer: sdk.MustAccAddressFromBech32(TestAddress),
+	})
+}
+
 func TestKeeperLockFeesAtFeePayeer(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -227,6 +254,12 @@ func TestKeeperLockFeesAtFeePayeer(t *testing.T) {
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
 	fees := append(ackFee, timeoutFee...)
+	feeAllowance.EXPECT().Accept(ctx, fees, []sdk.Msg{}).Return(false, fmt.Errorf("fee allowance accept error"))
+	feegrantKeeper.EXPECT().GetAllowance(ctx, payerInfo.FeePayer, payerInfo.Sender).Return(feeAllowance, nil)
+	err = k.LockFees(ctx, payerInfo, packet, validFee)
+	require.ErrorContains(t, err, "fee allowance accept error")
+
+	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
 	feeAllowance.EXPECT().Accept(ctx, fees, []sdk.Msg{}).Return(false, nil)
 	feegrantKeeper.EXPECT().GetAllowance(ctx, payerInfo.FeePayer, payerInfo.Sender).Return(feeAllowance, nil)
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payerInfo.FeePayer, types.ModuleName, validFee.Total()).Return(nil)

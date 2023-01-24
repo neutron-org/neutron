@@ -330,6 +330,21 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeTimeoutFee(ctx, receiver,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DistributeTimeoutFee", reflect.TypeOf((*MockFeeRefunderKeeper)(nil).DistributeTimeoutFee), ctx, receiver, packetID)
 }
 
+// GetPayerInfo mocks base method.
+func (m *MockFeeRefunderKeeper) GetPayerInfo(ctx types.Context, sender, payer string) (types5.PayerInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPayerInfo", ctx, sender, payer)
+	ret0, _ := ret[0].(types5.PayerInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPayerInfo indicates an expected call of GetPayerInfo.
+func (mr *MockFeeRefunderKeeperMockRecorder) GetPayerInfo(ctx, sender, payer interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPayerInfo", reflect.TypeOf((*MockFeeRefunderKeeper)(nil).GetPayerInfo), ctx, sender, payer)
+}
+
 // LockFees mocks base method.
 func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types5.PayerInfo, packetID types5.PacketID, fee types5.Fee) error {
 	m.ctrl.T.Helper()

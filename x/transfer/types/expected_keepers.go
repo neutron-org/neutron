@@ -21,6 +21,7 @@ type FeeRefunderKeeper interface {
 	LockFees(ctx sdk.Context, payer feerefundertypes.PayerInfo, packetID feerefundertypes.PacketID, fee feerefundertypes.Fee) error
 	DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAddress, packetID feerefundertypes.PacketID)
 	DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, packetID feerefundertypes.PacketID)
+	GetPayerInfo(ctx sdk.Context, sender string, payer string) (feerefundertypes.PayerInfo, error)
 }
 
 // ChannelKeeper defines the expected IBC channel keeper
