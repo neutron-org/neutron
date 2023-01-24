@@ -78,6 +78,9 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/cosmos/interchain-security/legacy_ibc_testing/core"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+	"github.com/neutron-org/neutron/x/tokenfactory"
+	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -178,6 +181,7 @@ var (
 		vesting.AppModuleBasic{},
 		ccvconsumer.AppModuleBasic{},
 		wasm.AppModuleBasic{},
+		tokenfactory.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
 		feerefunder.AppModuleBasic{},
@@ -210,6 +214,7 @@ var (
 		feeburnertypes.ModuleName:                     nil,
 		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
+		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
 	}
 )
 
@@ -251,7 +256,7 @@ type App struct {
 	AccountKeeper       authkeeper.AccountKeeper
 	AdminmoduleKeeper   adminmodulemodulekeeper.Keeper
 	AuthzKeeper         authzkeeper.Keeper
-	BankKeeper          bankkeeper.Keeper
+	BankKeeper          bankkeeper.BaseKeeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
@@ -266,6 +271,7 @@ type App struct {
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
+	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -317,7 +323,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -449,6 +455,15 @@ func New(
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper)
 
+	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
+		appCodec,
+		app.keys[tokenfactorytypes.StoreKey],
+		app.GetSubspace(tokenfactorytypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+	)
+	app.TokenFactoryKeeper = &tokenFactoryKeeper
+
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
@@ -499,7 +514,7 @@ func New(
 		app.FeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -582,6 +597,7 @@ func New(
 		feeBurnerModule,
 		contractManagerModule,
 		adminModule,
+		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -603,6 +619,7 @@ func New(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		ccvconsumertypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -628,6 +645,7 @@ func New(
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
 		ccvconsumertypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -658,6 +676,7 @@ func New(
 		upgradetypes.ModuleName,
 		feegrant.ModuleName,
 		ccvconsumertypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -901,6 +920,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
+	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
+
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
 	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)

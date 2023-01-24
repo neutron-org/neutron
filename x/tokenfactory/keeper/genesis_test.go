@@ -1,0 +1,49 @@
+package keeper_test
+
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	"github.com/neutron-org/neutron/x/tokenfactory/types"
+)
+
+func (suite *KeeperTestSuite) TestGenesis() {
+	genesisState := types.GenesisState{
+		FactoryDenoms: []types.GenesisDenom{
+			{
+				Denom: "factory/neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2/bitcoin",
+				AuthorityMetadata: types.DenomAuthorityMetadata{
+					Admin: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
+				},
+			},
+			{
+				Denom: "factory/neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2/diff-admin",
+				AuthorityMetadata: types.DenomAuthorityMetadata{
+					Admin: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
+				},
+			},
+			{
+				Denom: "factory/neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2/litecoin",
+				AuthorityMetadata: types.DenomAuthorityMetadata{
+					Admin: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
+				},
+			},
+		},
+	}
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	context := app.BaseApp.NewContext(false, tmproto.Header{})
+	// Test both with bank denom metadata set, and not set.
+	for i, denom := range genesisState.FactoryDenoms {
+		// hacky, sets bank metadata to exist if i != 0, to cover both cases.
+		if i != 0 {
+			app.BankKeeper.SetDenomMetaData(context, banktypes.Metadata{Base: denom.GetDenom()})
+		}
+	}
+
+	app.TokenFactoryKeeper.SetParams(context, types.Params{DenomCreationFee: sdk.Coins{sdk.NewInt64Coin("untrn", 100)}})
+	app.TokenFactoryKeeper.InitGenesis(context, genesisState)
+	exportedGenesis := app.TokenFactoryKeeper.ExportGenesis(context)
+	suite.Require().NotNil(exportedGenesis)
+	suite.Require().Equal(genesisState, *exportedGenesis)
+}

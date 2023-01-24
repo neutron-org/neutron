@@ -2,6 +2,7 @@ package wasmbinding
 
 import (
 	"encoding/json"
+	"fmt"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -94,6 +95,40 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			}
 
 			return bz, nil
+
+		case contractQuery.FullDenom != nil:
+			creator := contractQuery.FullDenom.CreatorAddr
+			subdenom := contractQuery.FullDenom.Subdenom
+
+			fullDenom, err := GetFullDenom(creator, subdenom)
+			if err != nil {
+				return nil, sdkerrors.Wrap(err, "unable to get full denom")
+			}
+
+			res := bindings.FullDenomResponse{
+				Denom: fullDenom,
+			}
+
+			bz, err := json.Marshal(res)
+			if err != nil {
+				return nil, sdkerrors.Wrap(err, "failed to JSON marshal FullDenomResponse response.")
+			}
+
+			return bz, nil
+
+		case contractQuery.DenomAdmin != nil:
+			res, err := qp.GetDenomAdmin(ctx, contractQuery.DenomAdmin.Subdenom)
+			if err != nil {
+				return nil, err
+			}
+
+			bz, err := json.Marshal(res)
+			if err != nil {
+				return nil, fmt.Errorf("failed to JSON marshal DenomAdminResponse response: %w", err)
+			}
+
+			return bz, nil
+
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}
