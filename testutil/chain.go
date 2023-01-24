@@ -16,6 +16,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 )
 
+// NewTestChainWithValSet copypasted and modified to use neutron denom from here https://github.com/cosmos/ibc-go/blob/af9b461c63274b9ce5917beb89a2c92e865419df/testing/chain.go#L94
 func NewTestChainWithValSet(t *testing.T, coord *ibctesting.Coordinator, appIniter ibctesting.AppIniter, chainID string, valSet *tmtypes.ValidatorSet, signers map[string]tmtypes.PrivValidator) *ibctesting.TestChain {
 	genAccs := []authtypes.GenesisAccount{}
 	genBals := []banktypes.Balance{}
@@ -81,6 +82,7 @@ func NewTestChainWithValSet(t *testing.T, coord *ibctesting.Coordinator, appInit
 
 // NewTestChain initializes a new test chain with a default of 4 validators
 // Use this function if the tests do not need custom control over the validator set
+// Copypasted from https://github.com/cosmos/ibc-go/blob/af9b461c63274b9ce5917beb89a2c92e865419df/testing/chain.go#L159
 func NewTestChain(t *testing.T, coord *ibctesting.Coordinator, appIniter ibctesting.AppIniter, chainID string) *ibctesting.TestChain {
 	// generate validators private/public key
 	var (
