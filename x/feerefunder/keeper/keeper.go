@@ -72,8 +72,9 @@ func (k Keeper) LockFees(ctx sdk.Context, payerInfo types.PayerInfo, packetID ty
 	if payerInfo.FeePayer != nil && !payerInfo.FeePayer.Empty() {
 		allowance, err := k.feegrantKeeper.GetAllowance(ctx, payerInfo.FeePayer, payerInfo.Sender)
 		if err != nil {
-			return err
+			return sdkerrors.Wrapf(err, "failed to get allowance")
 		}
+
 		if allowance != nil { // otherwise there is no allowance
 			coins := sdk.NewCoins()
 			coins = append(coins, fee.TimeoutFee...)
@@ -81,7 +82,7 @@ func (k Keeper) LockFees(ctx sdk.Context, payerInfo types.PayerInfo, packetID ty
 			coins = append(coins, fee.RecvFee...)
 			_, err = allowance.Accept(ctx, coins, []sdk.Msg{})
 			if err != nil {
-				return err
+				return sdkerrors.Wrapf(err, "failed to accept allowance, it's expired or spent")
 			}
 			payer = payerInfo.FeePayer
 		}
