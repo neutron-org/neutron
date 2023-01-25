@@ -3,6 +3,7 @@ package feerefunder_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil/feerefunder/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,9 +23,9 @@ func TestGenesis(t *testing.T) {
 			Payer:    TestContractAddressNeutron,
 			PacketId: types.NewPacketID("port", "channel-1", 64),
 			Fee: types.Fee{
-				RecvFee:    sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(0))),
-				AckFee:     sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(sdk.DefaultBondDenom).Int64()+1))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(sdk.DefaultBondDenom).Int64()+1))),
+				RecvFee:    sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(0))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(params.DefaultDenom).Int64()+1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(params.DefaultDenom).Int64()+1))),
 			},
 		}},
 	}
