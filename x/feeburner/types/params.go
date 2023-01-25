@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/neutron-org/neutron/app/params"
 	"gopkg.in/yaml.v2"
 )
 
@@ -12,7 +13,7 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
 	KeyNeutronDenom        = []byte("NeutronDenom")
-	DefaultNeutronDenom    = "stake"
+	DefaultNeutronDenom    = params.DefaultDenom
 	KeyTreasuryAddress     = []byte("TreasuryAddress")
 	DefaultTreasuryAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
 )
