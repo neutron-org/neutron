@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -98,8 +99,7 @@ func TestKeeper_BurnAndDistribute_Clean(t *testing.T) {
 	defer ctrl.Finish()
 	feeKeeper, ctx, _, _ := setupBurnAndDistribute(t, ctrl, sdk.Coins{})
 
-	err := feeKeeper.BurnAndDistribute(ctx)
-	require.NoError(t, err)
+	feeKeeper.BurnAndDistribute(ctx)
 
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(0))
@@ -112,8 +112,7 @@ func TestKeeper_BurnAndDistribute_Ntrn(t *testing.T) {
 
 	mockBankKeeper.EXPECT().BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, sdk.NewInt(100))})
 
-	err := feeKeeper.BurnAndDistribute(ctx)
-	require.NoError(t, err)
+	feeKeeper.BurnAndDistribute(ctx)
 
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(100))
@@ -126,8 +125,7 @@ func TestKeeper_BurnAndDistribute_NonNtrn(t *testing.T) {
 
 	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
 
-	err := feeKeeper.BurnAndDistribute(ctx)
-	require.NoError(t, err)
+	feeKeeper.BurnAndDistribute(ctx)
 
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(0))
@@ -140,8 +138,9 @@ func TestKeeper_BurnAndDistribute_SendCoinsFail(t *testing.T) {
 
 	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))}).Return(fmt.Errorf("testerror"))
 
-	err := feeKeeper.BurnAndDistribute(ctx)
-	require.ErrorContains(t, err, "error sending funds to treasury for address")
+	assert.Panics(t, func() {
+		feeKeeper.BurnAndDistribute(ctx)
+	}, "did not panic")
 
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(0))
@@ -156,8 +155,7 @@ func TestKeeper_BurnAndDistribute_NtrnAndNonNtrn(t *testing.T) {
 	mockBankKeeper.EXPECT().BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, sdk.NewInt(70))})
 	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(20))})
 
-	err := feeKeeper.BurnAndDistribute(ctx)
-	require.NoError(t, err)
+	feeKeeper.BurnAndDistribute(ctx)
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	require.Equal(t, burnedAmount.Coin.Amount, sdk.NewInt(70))
 }

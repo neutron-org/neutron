@@ -84,7 +84,7 @@ func (k Keeper) GetTotalBurnedNeutronsAmount(ctx sdk.Context) types.TotalBurnedN
 // 2. Updates total amount of burned NTRN coins
 // 3. Sends non-NTRN fee tokens to treasury contract address
 // Panics if no `consumertypes.ConsumerRedistributeName` module found OR could not burn NTRN tokens
-func (k Keeper) BurnAndDistribute(ctx sdk.Context) error {
+func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 	moduleAddr := k.accountKeeper.GetModuleAddress(consumertypes.ConsumerRedistributeName)
 	if moduleAddr == nil {
 		panic("ConsumerRedistributeName must have module address")
@@ -116,11 +116,9 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) error {
 			fundsForTreasury,
 		)
 		if err != nil {
-			return fmt.Errorf("error sending funds to treasury for address=%s, tokens=%+v: %v", params.TreasuryAddress, fundsForTreasury, err)
+			panic(sdkerrors.Wrapf(err, "failed sending funds to treasury"))
 		}
 	}
-
-	return nil
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
