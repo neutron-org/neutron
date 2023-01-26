@@ -69,7 +69,7 @@ func (k Keeper) LockFees(ctx sdk.Context, payerInfo types.PayerInfo, packetID ty
 		return sdkerrors.Wrapf(err, "failed to lock fees")
 	}
 
-	if payerInfo.FeePayer != nil && !payerInfo.FeePayer.Empty() {
+	if payerInfo.FeePayer != nil {
 		allowance, err := k.feegrantKeeper.GetAllowance(ctx, payerInfo.FeePayer, payerInfo.Sender)
 		if err != nil {
 			return sdkerrors.Wrapf(err, "failed to get allowance")
@@ -233,8 +233,14 @@ func (k Keeper) GetPayerInfo(ctx sdk.Context, sender string, payer string) (type
 		k.Logger(ctx).Debug("Transfer: failed to parse sender address", "sender", sender)
 		return types.PayerInfo{}, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", sender)
 	}
+	if payer == "" {
+		return types.PayerInfo{
+			Sender:   senderAddr,
+			FeePayer: nil,
+		}, nil
+	}
 	feePayerAddr, err := sdk.AccAddressFromBech32(payer)
-	if payer != "" && err != nil {
+	if err != nil {
 		k.Logger(ctx).Debug("Transfer: failed to parse fee payer address", "fee payer", payer)
 		return types.PayerInfo{}, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", payer)
 	}

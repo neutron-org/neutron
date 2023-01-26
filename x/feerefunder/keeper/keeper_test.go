@@ -131,7 +131,7 @@ func TestKeeperLockFees(t *testing.T) {
 
 	payerInfo := types.PayerInfo{
 		Sender:   sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress),
-		FeePayer: sdk.AccAddress{},
+		FeePayer: nil,
 	}
 
 	k.SetParams(ctx, types.Params{
@@ -201,7 +201,7 @@ func TestKeeperGetPayerInfo(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, p, types.PayerInfo{
 		Sender:   sdk.MustAccAddressFromBech32(TestAddress),
-		FeePayer: sdk.AccAddress{},
+		FeePayer: nil,
 	})
 
 	p, err = k.GetPayerInfo(ctx, TestAddress, TestAddress)
