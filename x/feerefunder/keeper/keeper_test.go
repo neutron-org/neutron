@@ -205,11 +205,11 @@ func TestKeeperGetPayerInfo(t *testing.T) {
 		FeePayer: nil,
 	})
 
-	p, err = k.GetPayerInfo(ctx, TestAddress, TestAddress)
+	p, err = k.GetPayerInfo(ctx, TestAddress, TestFeePayerAddress)
 	require.NoError(t, err)
 	require.Equal(t, p, types.PayerInfo{
 		Sender:   sdk.MustAccAddressFromBech32(TestAddress),
-		FeePayer: sdk.MustAccAddressFromBech32(TestAddress),
+		FeePayer: sdk.MustAccAddressFromBech32(TestFeePayerAddress),
 	})
 }
 
