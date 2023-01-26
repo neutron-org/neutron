@@ -26,7 +26,8 @@ import (
 )
 
 const (
-	TestAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
+	TestAddress         = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
+	TestFeePayerAddress = "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
 )
 
 func TestKeeperCheckFees(t *testing.T) {
@@ -223,7 +224,7 @@ func TestKeeperLockFeesAtFeePayeer(t *testing.T) {
 
 	payerInfo := types.PayerInfo{
 		Sender:   sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress),
-		FeePayer: sdk.MustAccAddressFromBech32(TestAddress),
+		FeePayer: sdk.MustAccAddressFromBech32(TestFeePayerAddress),
 	}
 
 	k.SetParams(ctx, types.Params{
@@ -268,7 +269,7 @@ func TestKeeperLockFeesAtFeePayeer(t *testing.T) {
 	require.Equal(t, sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeLockFees,
-			sdk.NewAttribute(types.AttributeKeyPayer, payerInfo.Sender.String()),
+			sdk.NewAttribute(types.AttributeKeyPayer, payerInfo.FeePayer.String()),
 			sdk.NewAttribute(types.AttributeKeyPortID, packet.PortId),
 			sdk.NewAttribute(types.AttributeKeyChannelID, packet.ChannelId),
 			sdk.NewAttribute(types.AttributeKeySequence, strconv.FormatUint(packet.Sequence, 10)),
