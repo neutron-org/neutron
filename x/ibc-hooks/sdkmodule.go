@@ -3,6 +3,7 @@ package ibc_hooks
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -73,11 +74,11 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	authKeeper AccountKeeper
+	authKeeper types.AccountKeeper
 }
 
 // NewAppModule creates a new AppModule object.
-func NewAppModule(ak AccountKeeper) AppModule {
+func NewAppModule(ak types.AccountKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		authKeeper:     ak,

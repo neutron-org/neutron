@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"reflect"
 
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
@@ -59,7 +60,7 @@ func IsAckError(acknowledgement []byte) bool {
 // CreateModuleAccount creates a module account at the provided address.
 // It overrides an account if it exists at that address, with a non-zero sequence number & pubkey
 // Contract: addr is derived from `address.Module(ModuleName, key)`
-func CreateModuleAccount(ctx sdk.Context, ak AccountKeeper, addr sdk.AccAddress) error {
+func CreateModuleAccount(ctx sdk.Context, ak types.AccountKeeper, addr sdk.AccAddress) error {
 	err := CanCreateModuleAccountAtAddr(ctx, ak, addr)
 	if err != nil {
 		return err
@@ -74,14 +75,6 @@ func CreateModuleAccount(ctx sdk.Context, ak AccountKeeper, addr sdk.AccAddress)
 	)
 	ak.SetAccount(ctx, acc)
 	return nil
-}
-
-//TODO: move to module
-type AccountKeeper interface {
-	NewAccount(sdk.Context, authtypes.AccountI) authtypes.AccountI
-
-	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
-	SetAccount(ctx sdk.Context, acc authtypes.AccountI)
 }
 
 // CanCreateModuleAccountAtAddr tells us if we can safely make a module account at
@@ -99,7 +92,7 @@ type AccountKeeper interface {
 // code based off wasmd code: https://github.com/CosmWasm/wasmd/pull/996
 // Its _mandatory_ that the caller do the API safe construction to generate a module account addr,
 // namely, address.Module(ModuleName, {key})
-func CanCreateModuleAccountAtAddr(ctx sdk.Context, ak AccountKeeper, addr sdk.AccAddress) error {
+func CanCreateModuleAccountAtAddr(ctx sdk.Context, ak types.AccountKeeper, addr sdk.AccAddress) error {
 	existingAcct := ak.GetAccount(ctx, addr)
 	if existingAcct == nil {
 		return nil
@@ -115,6 +108,7 @@ func CanCreateModuleAccountAtAddr(ctx sdk.Context, ak AccountKeeper, addr sdk.Ac
 		reflect.TypeOf(&vestingtypes.BaseVestingAccount{}):       {},
 		reflect.TypeOf(&vestingtypes.PeriodicVestingAccount{}):   {},
 		reflect.TypeOf(&vestingtypes.PermanentLockedAccount{}):   {},
+		// TODO: why this type does not exist?
 		//reflect.TypeOf(&vestingtypes.ClawbackVestingAccount{}):   {},
 	}
 	if _, clear := overrideAccountTypes[reflect.TypeOf(existingAcct)]; clear {
