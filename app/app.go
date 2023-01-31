@@ -105,6 +105,7 @@ import (
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"github.com/neutron-org/neutron/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	ibc_hooks "github.com/neutron-org/neutron/x/ibc-hooks"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchainqueriesmoduletypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -413,12 +414,19 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper, app.AccountKeeper, app.BankKeeper)
 
+	wasmHooks := ibc_hooks.NewWasmHooks(nil) // The contract keeper needs to be set later
+	hooksICS4Wrapper := ibc_hooks.NewICS4Middleware(
+		app.IBCKeeper.ChannelKeeper,
+		&wasmHooks,
+	)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		hooksICS4Wrapper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.FeeKeeper, app.ContractManagerKeeper,
 	)
+
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
