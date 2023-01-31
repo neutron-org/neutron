@@ -530,7 +530,10 @@ func New(
 		wasmOpts...,
 	)
 
+	wasmHooks.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
+	hooksTransferIBCModule := ibc_hooks.NewIBCMiddleware(&transferIBCModule, &hooksICS4Wrapper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -546,7 +549,7 @@ func New(
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
+		AddRoute(ibctransfertypes.ModuleName, hooksTransferIBCModule).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerIBCModule).
 		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
