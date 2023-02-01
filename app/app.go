@@ -422,9 +422,17 @@ func New(
 
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
-		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		hooksICS4Wrapper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.FeeKeeper, app.ContractManagerKeeper,
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		hooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		scopedTransferKeeper,
+		app.FeeKeeper,
+		app.ContractManagerKeeper,
 	)
 
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
@@ -533,6 +541,7 @@ func New(
 	wasmHooks.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
+	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
 	hooksTransferIBCModule := ibc_hooks.NewIBCMiddleware(&transferIBCModule, &hooksICS4Wrapper)
 
 	// Create static IBC router, add transfer route, then set and seal it
