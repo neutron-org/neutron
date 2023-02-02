@@ -51,13 +51,13 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.Nil(t, resp)
 
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
-	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String()).Return(fmt.Errorf("failed to register ica"))
+	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(fmt.Errorf("failed to register ica"))
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.ErrorContains(t, err, "failed to RegisterInterchainAccount")
 	require.Nil(t, resp)
 
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
-	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String()).Return(nil)
+	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(nil)
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.NoError(t, err)
 	require.Equal(t, types.MsgRegisterInterchainAccountResponse{}, *resp)

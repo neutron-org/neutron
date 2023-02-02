@@ -275,7 +275,7 @@ func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.
 	wasmCode, err := os.ReadFile(path)
 	suite.Require().NoError(err)
 
-	codeID, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
+	codeID, _, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
 	suite.Require().NoError(err)
 
 	return codeID
@@ -351,7 +351,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 	}
 
 	// TODO(pr0n00gler): are we sure it's okay?
-	if err := a.ICAControllerKeeper.RegisterInterchainAccount(ctx, endpoint.ConnectionID, icaOwner.String()); err != nil {
+	if err := a.ICAControllerKeeper.RegisterInterchainAccount(ctx, endpoint.ConnectionID, icaOwner.String(), ""); err != nil {
 		return err
 	}
 
