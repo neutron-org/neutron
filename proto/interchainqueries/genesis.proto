@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron.interchainadapter.interchainqueries;
+package neutron.interchainqueries;
 
 import "gogoproto/gogo.proto";
 import "interchainqueries/params.proto";
@@ -53,8 +53,8 @@ message KVKey {
   bytes key = 2;
 }
 
-// GenesisState defines the interchainadapter module's genesis state.
-message GenesisState { 
-  Params params = 1 [ (gogoproto.nullable) = false ]; 
+// GenesisState defines the interchainqueries module's genesis state.
+message GenesisState {
+  Params params = 1 [ (gogoproto.nullable) = false ];
   repeated RegisteredQuery registered_queries = 2;
 }
