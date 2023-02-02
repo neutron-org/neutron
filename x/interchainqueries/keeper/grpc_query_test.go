@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
