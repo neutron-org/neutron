@@ -247,15 +247,15 @@ func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 3)
 	chainID := ibctesting.GetChainID(1)
-	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, icssimapp.ProviderAppIniter, chainID)
+	coordinator.Chains[chainID] = NewTestChain(t, coordinator, icssimapp.ProviderAppIniter, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
 	chainID = ibctesting.GetChainID(2)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
+	coordinator.Chains[chainID] = NewTestChainWithValSet(t, coordinator,
 		SetupTestingApp, chainID, providerChain.Vals, providerChain.Signers)
 
 	chainID = ibctesting.GetChainID(3)
-	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
+	coordinator.Chains[chainID] = NewTestChainWithValSet(t, coordinator,
 		SetupTestingApp, chainID, providerChain.Vals, providerChain.Signers)
 
 	return coordinator
