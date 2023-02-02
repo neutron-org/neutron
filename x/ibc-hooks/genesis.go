@@ -6,7 +6,7 @@ import (
 	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 )
 
-var WasmHookModuleAccountAddr sdk.AccAddress = address.Module(ModuleName, []byte("wasm-hook intermediary account"))
+var WasmHookModuleAccountAddr sdk.AccAddress = address.Module(ModuleName, []byte(types.WasmHookIntermediaryAccountName))
 
 func IbcHooksInitGenesis(ctx sdk.Context, ak types.AccountKeeper) {
 	err := CreateModuleAccount(ctx, ak, WasmHookModuleAccountAddr)

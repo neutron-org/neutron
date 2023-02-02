@@ -112,6 +112,7 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs"
 	interchaintxskeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+  ibchookstypes "github.com/neutron-org/neutron/x/ibc-hooks/types"
 	transferSudo "github.com/neutron-org/neutron/x/transfer"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 
@@ -210,6 +211,7 @@ var (
 		feeburnertypes.ModuleName:                     nil,
 		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
+		ibchookstypes.
 	}
 )
 
@@ -289,18 +291,18 @@ type App struct {
 
 // New returns a reference to an initialized blockchain app
 func New(
-	logger log.Logger,
-	db dbm.DB,
-	traceStore io.Writer,
-	loadLatest bool,
-	skipUpgradeHeights map[int64]bool,
-	homePath string,
-	invCheckPeriod uint,
-	encodingConfig appparams.EncodingConfig,
-	enabledProposals []wasm.ProposalType,
-	appOpts servertypes.AppOptions,
-	wasmOpts []wasm.Option,
-	baseAppOptions ...func(*baseapp.BaseApp),
+		logger log.Logger,
+		db dbm.DB,
+		traceStore io.Writer,
+		loadLatest bool,
+		skipUpgradeHeights map[int64]bool,
+		homePath string,
+		invCheckPeriod uint,
+		encodingConfig appparams.EncodingConfig,
+		enabledProposals []wasm.ProposalType,
+		appOpts servertypes.AppOptions,
+		wasmOpts []wasm.Option,
+		baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
@@ -555,6 +557,7 @@ func New(
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
+	ibcHooksModule := ibc_hooks.NewAppModule(app.AccountKeeper)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
@@ -592,6 +595,7 @@ func New(
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,
+		ibcHooksModule,
 		feeModule,
 		feeBurnerModule,
 		contractManagerModule,

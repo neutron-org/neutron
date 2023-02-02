@@ -54,7 +54,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 	// The funds sent on this packet need to be transferred to the wasm hooks module address/
 	// For this, we override the ICS20 packet's Receiver (essentially hijacking the funds for the module)
 	// and execute the underlying OnRecvPacket() call (which should eventually land on the transfer app's
-	// relay.go and send the sunds to the module.
+	// relay.go and send the funds to the module.
 	//
 	// If that succeeds, we make the contract call
 	data.Receiver = WasmHookModuleAccountAddr.String()
@@ -72,7 +72,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 
 	amount, ok := sdk.NewIntFromString(data.GetAmount())
 	if !ok {
-		// This should never happen, as it should've been caught in the underlaying call to OnRecvPacket,
+		// This should never happen, as it should've been caught in the underlying call to OnRecvPacket,
 		// but returning here for completeness
 		return channeltypes.NewErrorAcknowledgement("Invalid packet data: Amount is not an int")
 	}
