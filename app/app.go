@@ -106,13 +106,14 @@ import (
 	"github.com/neutron-org/neutron/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 	ibc_hooks "github.com/neutron-org/neutron/x/ibc-hooks"
+	ibchookskeeper "github.com/neutron-org/neutron/x/ibc-hooks/keeper"
+	ibchookstypes "github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchainqueriesmoduletypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	"github.com/neutron-org/neutron/x/interchaintxs"
 	interchaintxskeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-  ibchookstypes "github.com/neutron-org/neutron/x/ibc-hooks/types"
 	transferSudo "github.com/neutron-org/neutron/x/transfer"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 
@@ -198,6 +199,7 @@ var (
 				upgraderest.ProposalCancelRESTHandler,
 			),
 		),
+		ibc_hooks.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -211,7 +213,6 @@ var (
 		feeburnertypes.ModuleName:                     nil,
 		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
-		ibchookstypes.
 	}
 )
 
@@ -268,6 +269,7 @@ type App struct {
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
+	IBCHooksKeeper      *ibchookskeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -291,18 +293,18 @@ type App struct {
 
 // New returns a reference to an initialized blockchain app
 func New(
-		logger log.Logger,
-		db dbm.DB,
-		traceStore io.Writer,
-		loadLatest bool,
-		skipUpgradeHeights map[int64]bool,
-		homePath string,
-		invCheckPeriod uint,
-		encodingConfig appparams.EncodingConfig,
-		enabledProposals []wasm.ProposalType,
-		appOpts servertypes.AppOptions,
-		wasmOpts []wasm.Option,
-		baseAppOptions ...func(*baseapp.BaseApp),
+	logger log.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	loadLatest bool,
+	skipUpgradeHeights map[int64]bool,
+	homePath string,
+	invCheckPeriod uint,
+	encodingConfig appparams.EncodingConfig,
+	enabledProposals []wasm.ProposalType,
+	appOpts servertypes.AppOptions,
+	wasmOpts []wasm.Option,
+	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
@@ -416,7 +418,11 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper, app.AccountKeeper, app.BankKeeper)
 
-	wasmHooks := ibc_hooks.NewWasmHooks(nil) // The contract keeper needs to be set later
+	hooksKeeper := ibchookskeeper.NewKeeper(keys[ibchookstypes.StoreKey])
+	app.IBCHooksKeeper = &hooksKeeper
+
+	// TODO: check that sdk.GetConfig().GetBech32AccountAddrPrefix works
+	wasmHooks := ibc_hooks.NewWasmHooks(app.IBCHooksKeeper, nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	hooksICS4Wrapper := ibc_hooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
 		&wasmHooks,
@@ -688,6 +694,8 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		// ibc_hooks after auth keeper
+		ibchookstypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
