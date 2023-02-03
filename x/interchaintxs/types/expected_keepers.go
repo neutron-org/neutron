@@ -4,9 +4,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v3/modules/core/exported"
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v4/modules/core/exported"
 
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -36,7 +36,7 @@ type ContractManagerKeeper interface {
 type ICAControllerKeeper interface {
 	GetActiveChannelID(ctx sdk.Context, connectionID, portID string) (string, bool)
 	GetInterchainAccountAddress(ctx sdk.Context, connectionID, portID string) (string, bool)
-	RegisterInterchainAccount(ctx sdk.Context, connectionID, owner string) error
+	RegisterInterchainAccount(ctx sdk.Context, connectionID, owner string, version string) error
 	SendTx(ctx sdk.Context, chanCap *capabilitytypes.Capability, connectionID, portID string, icaPacketData icatypes.InterchainAccountPacketData, timeoutTimestamp uint64) (uint64, error)
 }
 

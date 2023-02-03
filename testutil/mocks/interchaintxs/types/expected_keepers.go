@@ -10,9 +10,9 @@ import (
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types1 "github.com/cosmos/cosmos-sdk/x/capability/types"
-	types2 "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	types3 "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	exported "github.com/cosmos/ibc-go/v3/modules/core/exported"
+	types2 "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	types3 "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	exported "github.com/cosmos/ibc-go/v4/modules/core/exported"
 	gomock "github.com/golang/mock/gomock"
 	types4 "github.com/neutron-org/neutron/x/contractmanager/types"
 	types5 "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -116,15 +116,15 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 }
 
 // AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, channelId, address string, ackID uint64, ackType string) {
+func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, channelID, address string, ackID uint64, ackType string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddContractFailure", ctx, channelId, address, ackID, ackType)
+	m.ctrl.Call(m, "AddContractFailure", ctx, channelID, address, ackID, ackType)
 }
 
 // AddContractFailure indicates an expected call of AddContractFailure.
-func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channelId, address, ackID, ackType interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channelID, address, ackID, ackType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelId, address, ackID, ackType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelID, address, ackID, ackType)
 }
 
 // HasContractInfo mocks base method.
@@ -255,17 +255,17 @@ func (mr *MockICAControllerKeeperMockRecorder) GetInterchainAccountAddress(ctx, 
 }
 
 // RegisterInterchainAccount mocks base method.
-func (m *MockICAControllerKeeper) RegisterInterchainAccount(ctx types.Context, connectionID, owner string) error {
+func (m *MockICAControllerKeeper) RegisterInterchainAccount(ctx types.Context, connectionID, owner, version string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterInterchainAccount", ctx, connectionID, owner)
+	ret := m.ctrl.Call(m, "RegisterInterchainAccount", ctx, connectionID, owner, version)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterInterchainAccount indicates an expected call of RegisterInterchainAccount.
-func (mr *MockICAControllerKeeperMockRecorder) RegisterInterchainAccount(ctx, connectionID, owner interface{}) *gomock.Call {
+func (mr *MockICAControllerKeeperMockRecorder) RegisterInterchainAccount(ctx, connectionID, owner, version interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterInterchainAccount", reflect.TypeOf((*MockICAControllerKeeper)(nil).RegisterInterchainAccount), ctx, connectionID, owner)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterInterchainAccount", reflect.TypeOf((*MockICAControllerKeeper)(nil).RegisterInterchainAccount), ctx, connectionID, owner, version)
 }
 
 // SendTx mocks base method.
