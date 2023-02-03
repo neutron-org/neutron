@@ -18,6 +18,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/neutron-org/neutron/app/params"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	tmdb "github.com/tendermint/tm-db"
 
@@ -83,8 +84,8 @@ func DefaultConfig() network.Config {
 		// Some changes are introduced to make the tests run as if neutron is a standalone chain.
 		// This will only work if NumValidators is set to 1.
 		NumValidators:   1,
-		BondDenom:       sdk.DefaultBondDenom,
-		MinGasPrices:    fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom),
+		BondDenom:       params.DefaultDenom,
+		MinGasPrices:    fmt.Sprintf("0.000006%s", params.DefaultDenom),
 		AccountTokens:   sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction),
 		StakingTokens:   sdk.TokensFromConsensusPower(500, sdk.DefaultPowerReduction),
 		BondedTokens:    sdk.TokensFromConsensusPower(100, sdk.DefaultPowerReduction),

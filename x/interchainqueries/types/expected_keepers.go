@@ -3,7 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)

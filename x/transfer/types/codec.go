@@ -13,7 +13,7 @@ var (
 )
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgTransfer{}, "/neutron.interchainadapter.transfer.v1.Transfer", nil)
+	cdc.RegisterConcrete(&MsgTransfer{}, "/neutron.transfer.v1.Transfer", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

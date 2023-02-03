@@ -9,9 +9,9 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
-	keeper "github.com/cosmos/ibc-go/v3/modules/core/02-client/keeper"
-	exported "github.com/cosmos/ibc-go/v3/modules/core/exported"
-	types1 "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	keeper "github.com/cosmos/ibc-go/v4/modules/core/02-client/keeper"
+	exported "github.com/cosmos/ibc-go/v4/modules/core/exported"
+	types1 "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
 	gomock "github.com/golang/mock/gomock"
 
 	types2 "github.com/neutron-org/neutron/x/interchainqueries/types"

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron.interchainadapter.interchaintxs.v1;
+package neutron.interchaintxs.v1;
 
 option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
@@ -49,7 +49,7 @@ message MsgSubmitTx {
   // timeout in seconds after which the packet times out
   uint64 timeout = 6;
 
-  neutron.interchainadapter.feerefunder.Fee fee = 7
+  neutron.feerefunder.Fee fee = 7
       [ (gogoproto.nullable) = false ];
 }
 
