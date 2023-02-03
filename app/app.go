@@ -605,11 +605,11 @@ func New(
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,
-		ibcHooksModule,
 		feeModule,
 		feeBurnerModule,
 		contractManagerModule,
 		adminModule,
+		ibcHooksModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -639,6 +639,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -664,6 +665,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
