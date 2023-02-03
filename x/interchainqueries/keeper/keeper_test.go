@@ -7,11 +7,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/neutron-org/neutron/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -472,10 +473,10 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				sdktypes.WrapSDKContext(ctx),
 				&banktypes.QueryBalanceRequest{
 					Address: contractAddress.String(),
-					Denom:   sdktypes.DefaultBondDenom,
+					Denom:   params.DefaultDenom,
 				},
 			)
-			expectedCoin := sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(0)))
+			expectedCoin := sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(0)))
 
 			suite.Require().NoError(balanceErr)
 			suite.Require().NotNil(balance)
@@ -519,10 +520,10 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					sdktypes.WrapSDKContext(ctx),
 					&banktypes.QueryBalanceRequest{
 						Address: contractAddress.String(),
-						Denom:   sdktypes.DefaultBondDenom,
+						Denom:   params.DefaultDenom,
 					},
 				)
-				expectedCoin := sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000)))
+				expectedCoin := sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000)))
 
 				suite.Require().NoError(balanceErr)
 				suite.Require().NotNil(balance)
@@ -1229,7 +1230,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 }
 
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
-	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000))))
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 }
