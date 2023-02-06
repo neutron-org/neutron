@@ -163,6 +163,34 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 			iqtypes.ErrEmptyKeyID,
 		},
 		{
+			"nil key",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}, nil},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidType,
+		},
+		{
+			"duplicated keys",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}, {Key: []byte("key1"), Path: "path1"}},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+		},
+		{
 			"valid",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgRegisterInterchainQuery{

@@ -180,13 +180,27 @@ func validateKeys(keys []*KVKey) error {
 	if uint64(len(keys)) > MaxKVQueryKeysCount {
 		return sdkerrors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
 	}
+
+	duplicates := make(map[string]struct{})
 	for _, key := range keys {
+		if key == nil {
+			return sdkerrors.Wrap(sdkerrors.ErrInvalidType, "key cannot be nil")
+		}
+
+		if _, ok := duplicates[key.ToString()]; ok {
+			return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "keys cannot be duplicated")
+		}
+
 		if len(key.Path) == 0 {
 			return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
 		}
+
 		if len(key.Key) == 0 {
 			return sdkerrors.Wrap(ErrEmptyKeyID, "keys id cannot be empty")
 		}
+
+		duplicates[key.ToString()] = struct{}{}
 	}
+
 	return nil
 }
