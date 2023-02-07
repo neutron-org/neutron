@@ -409,9 +409,10 @@ func New(
 		keys[feeburnertypes.StoreKey],
 		keys[feeburnertypes.MemStoreKey],
 		app.GetSubspace(feeburnertypes.ModuleName),
+		app.AccountKeeper,
 		app.BankKeeper,
 	)
-	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper, app.AccountKeeper, app.BankKeeper)
+	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(

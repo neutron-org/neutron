@@ -6,9 +6,10 @@ import (
 	"github.com/neutron-org/neutron/app"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	testkeeper "github.com/neutron-org/neutron/testutil/feeburner/keeper"
 	"github.com/neutron-org/neutron/x/feeburner/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestParamsQuery(t *testing.T) {

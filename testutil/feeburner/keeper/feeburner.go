@@ -18,6 +18,10 @@ import (
 )
 
 func FeeburnerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+	return FeeburnerKeeperWithDeps(t, nil, nil)
+}
+
+func FeeburnerKeeperWithDeps(t testing.TB, accountKeeper types.AccountKeeper, bankkeeper types.BankKeeper) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -41,7 +45,8 @@ func FeeburnerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,
+		accountKeeper,
+		bankkeeper,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
