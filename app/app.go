@@ -105,7 +105,7 @@ import (
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"github.com/neutron-org/neutron/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
-	ibc_hooks "github.com/neutron-org/neutron/x/ibc-hooks"
+	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
 	ibchookskeeper "github.com/neutron-org/neutron/x/ibc-hooks/keeper"
 	ibchookstypes "github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"github.com/neutron-org/neutron/x/interchainqueries"
@@ -199,7 +199,7 @@ var (
 				upgraderest.ProposalCancelRESTHandler,
 			),
 		),
-		ibc_hooks.AppModuleBasic{},
+		ibchooks.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -321,7 +321,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey, ibchookstypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -421,9 +421,8 @@ func New(
 	hooksKeeper := ibchookskeeper.NewKeeper(keys[ibchookstypes.StoreKey])
 	app.IBCHooksKeeper = &hooksKeeper
 
-	// TODO: check that sdk.GetConfig().GetBech32AccountAddrPrefix works
-	wasmHooks := ibc_hooks.NewWasmHooks(app.IBCHooksKeeper, nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
-	hooksICS4Wrapper := ibc_hooks.NewICS4Middleware(
+	wasmHooks := ibchooks.NewWasmHooks(app.IBCHooksKeeper, nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
 		&wasmHooks,
 	)
@@ -550,7 +549,7 @@ func New(
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
-	hooksTransferIBCModule := ibc_hooks.NewIBCMiddleware(&transferIBCModule, &hooksICS4Wrapper)
+	hooksTransferIBCModule := ibchooks.NewIBCMiddleware(&transferIBCModule, &hooksICS4Wrapper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -567,7 +566,7 @@ func New(
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
-	ibcHooksModule := ibc_hooks.NewAppModule(app.AccountKeeper)
+	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
@@ -696,8 +695,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
-		// ibc_hooks after auth keeper
-		ibchookstypes.ModuleName,
+		ibchookstypes.ModuleName, // after auth keeper
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

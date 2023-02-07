@@ -1,4 +1,4 @@
-package ibc_hooks
+package ibchooks
 
 import (
 	"encoding/json"
@@ -321,7 +321,7 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 	}
 
 	// Notify the sender that the ack has been received
-	ackAsJson, err := json.Marshal(acknowledgement)
+	ackAsJSON, err := json.Marshal(acknowledgement)
 	if err != nil {
 		// If the ack is not a json object, error
 		return err
@@ -329,7 +329,7 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 
 	sudoMsg := []byte(fmt.Sprintf(
 		`{"ibc_lifecycle_complete": {"ibc_ack": {"channel": "%s", "sequence": %d, "ack": %s, "success": %s}}}`,
-		packet.SourceChannel, packet.Sequence, ackAsJson, success))
+		packet.SourceChannel, packet.Sequence, ackAsJSON, success))
 	_, err = h.ContractKeeper.Sudo(ctx, contractAddr, sudoMsg)
 	if err != nil {
 		// error processing the callback

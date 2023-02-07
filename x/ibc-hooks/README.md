@@ -2,7 +2,7 @@
 
 Taken from [osmosis](https://github.com/osmosis-labs/osmosis) `v14.0.0-rc1` (commit `26e2fad8e7b3eb7c33965360b31a593b392d7d75`)
 
-Module https://github.com/osmosis-labs/osmosis/tree/v13.1.2/x/ibc-hooks
+Module https://github.com/osmosis-labs/osmosis/tree/v14.0.0-rc1/x/ibc-hooks
 
 ## Wasm Hooks
 
@@ -59,7 +59,7 @@ msg := MsgExecuteContract{
 
 ### ICS20 packet structure
 
-So given the details above, we propogate the implied ICS20 packet data structure.
+So given the details above, we propagate the implied ICS20 packet data structure.
 ICS20 is JSON native, so we use JSON for the memo format.
 
 ```json 
@@ -104,7 +104,7 @@ If an ICS20 packet is directed towards wasmhooks, and is formated incorrectly, t
 
 Pre wasm hooks:
 
-* Ensure the incoming IBC packet is cryptogaphically valid
+* Ensure the incoming IBC packet is cryptographically valid
 * Ensure the incoming IBC packet is not timed out.
 
 In Wasm hooks, pre packet execution:

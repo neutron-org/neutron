@@ -1,4 +1,4 @@
-package ibc_hooks_test
+package ibchooks_test
 
 //
 //import (

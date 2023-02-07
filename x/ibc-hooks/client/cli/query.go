@@ -13,12 +13,12 @@ import (
 
 // GetQueryCmd returns the cli query commands for this module.
 func GetQueryCmd() *cobra.Command {
-	//cmd := osmocli.QueryIndexCmd(types.ModuleName)
-	//cmd.AddCommand(
-	//	GetCmdWasmSender(),
-	//)
-	//return cmd
-	//TODO: implement simpler?
+	// cmd := neutroncli.QueryIndexCmd(types.ModuleName)
+	// cmd.AddCommand(
+	//  	GetCmdWasmSender(),
+	// )
+	// return cmd
+	// TODO: implement in a simple way?
 	return nil
 }
 
