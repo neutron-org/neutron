@@ -7,8 +7,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	types2 "github.com/cosmos/cosmos-sdk/x/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
@@ -51,13 +51,13 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.Nil(t, resp)
 
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
-	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String()).Return(fmt.Errorf("failed to register ica"))
+	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(fmt.Errorf("failed to register ica"))
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.ErrorContains(t, err, "failed to RegisterInterchainAccount")
 	require.Nil(t, resp)
 
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
-	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String()).Return(nil)
+	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(nil)
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.NoError(t, err)
 	require.Equal(t, types.MsgRegisterInterchainAccountResponse{}, *resp)

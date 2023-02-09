@@ -1,6 +1,8 @@
 package interchainqueries
 
 import (
+	"sort"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -10,6 +12,10 @@ import (
 // InitGenesis initializes the capability module's state from a provided genesis
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
+	sort.SliceStable(genState.RegisteredQueries, func(i, j int) bool {
+		return genState.RegisteredQueries[i].Id < genState.RegisteredQueries[j].Id
+	})
+
 	// Set all registered queries
 	for _, elem := range genState.RegisteredQueries {
 		k.SetLastRegisteredQueryKey(ctx, elem.Id)

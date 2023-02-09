@@ -7,7 +7,7 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/proto/tendermint/crypto"
 
@@ -161,6 +161,34 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 				}
 			},
 			iqtypes.ErrEmptyKeyID,
+		},
+		{
+			"nil key",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}, nil},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidType,
+		},
+		{
+			"duplicated keys",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}, {Key: []byte("key1"), Path: "path1"}},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
 		},
 		{
 			"valid",
