@@ -5,7 +5,7 @@ set -x
 BINARY=${BINARY:-neutrond}
 CHAIN_DIR=./data
 CHAINID=${CHAINID:-test-1}
-STAKEDENOM=${STAKEDENOM:-stake}
+STAKEDENOM=${STAKEDENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 
 ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
@@ -48,7 +48,7 @@ PRE_PROPOSE_INIT_MSG='{
       "denom":{
          "token":{
             "denom":{
-               "native":"stake"
+               "native":"'"${STAKEDENOM}"'"
             }
          }
       },
@@ -129,7 +129,7 @@ VOTING_REGISTRY_INIT_MSG='{
 VOTING_REGISTRY_INIT_MSG_BASE64=$(echo ${VOTING_REGISTRY_INIT_MSG} | base64 | tr -d "\n")
 
 INIT='{
-  "denom":"stake",
+  "denom":"'"${STAKEDENOM}"'",
   "description": "based neutron vault"
 }'
 DAO_INIT='{
@@ -160,7 +160,7 @@ DISTRIBUTION_CONTRACT_ADDRESS="neutron1vhndln95yd7rngslzvf6sax6axcshkxqpmpr886nt
 TREASURY_INIT="$(printf '{
   "main_dao_address": "%s",
   "security_dao_address": "%s",
-  "denom": "stake",
+  "denom": "'"${STAKEDENOM}"'",
   "distribution_rate": "0",
   "min_period": 10,
   "distribution_contract": "%s",
@@ -169,13 +169,18 @@ TREASURY_INIT="$(printf '{
 }' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$DISTRIBUTION_CONTRACT_ADDRESS" "$ADMIN_ADDRESS")"
 
 DISTRIBUTION_INIT="$(printf '{
-                           "main_dao_address": "%s",
-                           "security_dao_address": "%s",
-                           "denom": "stake"
+  "main_dao_address": "%s",
+  "security_dao_address": "%s",
+  "denom": "'"${STAKEDENOM}"'"
 }' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
+VAULT_INIT="$(printf '{
+  "denom": "%s",
+  "description": "based neutron vault"
+}' "$STAKEDENOM")"
+
 echo "Instantiate contracts"
-$BINARY add-wasm-message instantiate-contract "$VAULT_CONTRACT_BINARY_ID" "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract "$VAULT_CONTRACT_BINARY_ID" "$VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID
 $BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID" "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID
 $BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID" "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID
 $BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID" "$DISTRIBUTION_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Distribution" --home $CHAIN_DIR/$CHAINID
