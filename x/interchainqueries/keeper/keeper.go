@@ -132,9 +132,11 @@ func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuer
 	return queries
 }
 
-func (k Keeper) RemoveQueryByID(ctx sdk.Context, id uint64) {
+// RemoveQuery removes the given query and all relative result data from the store.
+func (k Keeper) RemoveQuery(ctx sdk.Context, query *types.RegisteredQuery) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetRegisteredQueryByIDKey(id))
+	store.Delete(types.GetRegisteredQueryByIDKey(query.Id))
+	k.removeQueryResult(ctx, query)
 }
 
 func (k Keeper) SaveKVQueryResult(ctx sdk.Context, id uint64, result *types.QueryResult) error {
@@ -195,9 +197,23 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 	return &query, nil
 }
 
-func (k Keeper) removeQueryResultByID(ctx sdk.Context, id uint64) {
+// removeQueryResult removes the query result data. For a KV query it deletes the *types.QueryResult
+// stored by the query ID, for a TX query it deletes all tx hashes relative to the query.
+func (k Keeper) removeQueryResult(ctx sdk.Context, query *types.RegisteredQuery) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetRegisteredQueryResultByIDKey(id))
+	queryType := types.InterchainQueryType(query.GetQueryType())
+	switch {
+	case queryType.IsKV():
+		store.Delete(types.GetRegisteredQueryResultByIDKey(query.Id))
+	case queryType.IsTX():
+		prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(query.Id))
+		iterator := prefixStore.Iterator(nil, nil)
+		defer iterator.Close()
+		for ; iterator.Valid(); iterator.Next() {
+			txHashKey := iterator.Key()
+			prefixStore.Delete(txHashKey)
+		}
+	}
 }
 
 func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalHeight uint64) error {

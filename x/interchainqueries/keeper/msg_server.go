@@ -102,17 +102,9 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
 
-	k.RemoveQueryByID(ctx, query.Id)
+	k.RemoveQuery(ctx, query)
 	k.MustPayOutDeposit(ctx, query.Deposit, msg.GetSigners()[0])
-	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
-		k.removeQueryResultByID(ctx, query.Id)
-	}
-
 	ctx.EventManager().EmitEvents(getEventsQueryRemoved(query))
-
-	// NOTE: there is no easy way to remove the list of processed transactions
-	// without knowing transaction hashes.
-
 	return &types.MsgRemoveInterchainQueryResponse{}, nil
 }
 

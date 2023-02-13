@@ -384,14 +384,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	suite.SetupTest()
 
 	var msg iqtypes.MsgRemoveInterchainQueryRequest
-	originalQuery := iqtypes.MsgRegisterInterchainQuery{
-		QueryType:          string(iqtypes.InterchainQueryTypeKV),
-		Keys:               nil,
-		TransactionsFilter: "",
-		ConnectionId:       suite.Path.EndpointA.ConnectionID,
-		UpdatePeriod:       1,
-		Sender:             "",
-	}
+	var query iqtypes.MsgRegisterInterchainQuery
 
 	tests := []struct {
 		name        string
@@ -399,11 +392,37 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		expectedErr error
 	}{
 		{
-			"valid remove",
+			"valid TX remove",
 			func(sender string) {
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
+				}
+			},
+			nil,
+		},
+		{
+			"valid KV remove",
+			func(sender string) {
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 1,
+					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
 				}
 			},
 			nil,
@@ -414,6 +433,14 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 2,
 					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
 				}
 			},
 			iqtypes.ErrInvalidQueryID,
@@ -431,6 +458,14 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  newContractAddress.String(),
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
 				}
 			},
 			sdkerrors.ErrUnauthorized,
@@ -463,9 +498,9 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
 
 			msgSrv := keeper.NewMsgServerImpl(iqkeeper)
-			originalQuery.Sender = contractAddress.String()
+			query.Sender = contractAddress.String()
 
-			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &originalQuery)
+			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &query)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(resRegister)
 
@@ -490,31 +525,45 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				Prove:  true,
 			})
 
-			err = iqkeeper.SaveKVQueryResult(ctx, 1, &iqtypes.QueryResult{
-				KvResults: []*iqtypes.StorageValue{{
-					Key:           resp.Key,
-					Proof:         resp.ProofOps,
-					Value:         resp.Value,
-					StoragePrefix: host.StoreKey,
-				}},
-				Block:    nil,
-				Height:   1,
-				Revision: 1,
-			})
-			suite.Require().NoError(err)
+			queryType := types.InterchainQueryType(query.GetQueryType())
+			switch {
+			case queryType.IsKV():
+				err = iqkeeper.SaveKVQueryResult(ctx, 1, &iqtypes.QueryResult{
+					KvResults: []*iqtypes.StorageValue{{
+						Key:           resp.Key,
+						Proof:         resp.ProofOps,
+						Value:         resp.Value,
+						StoragePrefix: host.StoreKey,
+					}},
+					Block:    nil,
+					Height:   1,
+					Revision: 1,
+				})
+				suite.Require().NoError(err)
+			case queryType.IsTX():
+				iqkeeper.SaveTransactionAsProcessed(ctx, 1, []byte("txhash_1"))
+				iqkeeper.SaveTransactionAsProcessed(ctx, 1, []byte("txhash_2"))
+				suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_1")))
+				suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_2")))
+			}
 
 			resUpdate, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &msg)
-
 			if tt.expectedErr != nil {
 				suite.Require().ErrorIs(err, tt.expectedErr)
 				suite.Require().Nil(resUpdate)
-				originalQuery, queryErr := iqkeeper.GetQueryByID(ctx, 1)
+				query, queryErr := iqkeeper.GetQueryByID(ctx, 1)
 				suite.Require().NoError(queryErr)
-				suite.Require().NotNil(originalQuery)
+				suite.Require().NotNil(query)
 
-				qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
-				suite.Require().NoError(qrerr)
-				suite.Require().NotNil(qr)
+				switch {
+				case queryType.IsKV():
+					qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
+					suite.Require().NoError(qrerr)
+					suite.Require().NotNil(qr)
+				case queryType.IsTX():
+					suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_1")))
+					suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_2")))
+				}
 			} else {
 				balance, balanceErr := bankKeeper.Balance(
 					sdktypes.WrapSDKContext(ctx),
@@ -531,13 +580,19 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 
 				suite.Require().NoError(err)
 				suite.Require().NotNil(resUpdate)
-				originalQuery, queryErr := iqkeeper.GetQueryByID(ctx, 1)
+				query, queryErr := iqkeeper.GetQueryByID(ctx, 1)
 				suite.Require().Error(queryErr, iqtypes.ErrInvalidQueryID)
-				suite.Require().Nil(originalQuery)
+				suite.Require().Nil(query)
 
-				qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
-				suite.Require().Error(qrerr, iqtypes.ErrNoQueryResult)
-				suite.Require().Nil(qr)
+				switch {
+				case queryType.IsKV():
+					qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
+					suite.Require().Error(qrerr, iqtypes.ErrNoQueryResult)
+					suite.Require().Nil(qr)
+				case queryType.IsTX():
+					suite.Require().False(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_1")))
+					suite.Require().False(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_2")))
+				}
 			}
 		})
 	}
