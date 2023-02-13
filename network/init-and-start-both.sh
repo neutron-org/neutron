@@ -9,7 +9,7 @@ export P2PPORT=16656
 export RPCPORT=16657
 export RESTPORT=1316
 export ROSETTA=8080
-export STAKEDENOM=stake
+export STAKEDENOM=untrn
 export GRPCPORT=8090
 export GRPCWEB=8091
 
