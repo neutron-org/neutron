@@ -429,7 +429,9 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					UpdatePeriod:       1,
 					Sender:             "",
 				}
-				for i := 1; i <= 10000; i++ {
+				hashesCount := 10000
+				txQueryHashes = make([][]byte, 0, hashesCount)
+				for i := 1; i <= hashesCount; i++ {
 					txQueryHashes = append(txQueryHashes, []byte(fmt.Sprintf("txhash_%d", i)))
 				}
 			},
