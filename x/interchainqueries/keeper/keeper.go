@@ -13,6 +13,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
 	"github.com/tendermint/tendermint/libs/log"
+	tendermintdb "github.com/tendermint/tm-db"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -134,8 +135,10 @@ func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuer
 
 // RemoveQuery removes the given query and all relative result data from the store.
 func (k Keeper) RemoveQuery(ctx sdk.Context, query *types.RegisteredQuery) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetRegisteredQueryByIDKey(query.Id))
+	k.doWithRefund(ctx, "query removal refund", func() {
+		store := ctx.KVStore(k.storeKey)
+		store.Delete(types.GetRegisteredQueryByIDKey(query.Id))
+	})
 	k.removeQueryResult(ctx, query)
 }
 
@@ -197,23 +200,43 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 	return &query, nil
 }
 
-// removeQueryResult removes the query result data. For a KV query it deletes the *types.QueryResult
-// stored by the query ID, for a TX query it deletes all tx hashes relative to the query.
+// removeQueryResult removes the query result data and refunds the gas spent on it. For a KV query
+// it deletes the *types.QueryResult stored by the query ID, for a TX query it deletes all tx hashes
+// relative to the query.
 func (k Keeper) removeQueryResult(ctx sdk.Context, query *types.RegisteredQuery) {
-	store := ctx.KVStore(k.storeKey)
 	queryType := types.InterchainQueryType(query.GetQueryType())
 	switch {
 	case queryType.IsKV():
-		store.Delete(types.GetRegisteredQueryResultByIDKey(query.Id))
+		k.doWithRefund(ctx, "query removal refund", func() {
+			store := ctx.KVStore(k.storeKey)
+			store.Delete(types.GetRegisteredQueryResultByIDKey(query.Id))
+		})
 	case queryType.IsTX():
-		prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(query.Id))
-		iterator := prefixStore.Iterator(nil, nil)
+		var prefixStore prefix.Store
+		var iterator tendermintdb.Iterator
+		k.doWithRefund(ctx, "query removal refund", func() {
+			prefixStore = prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(query.Id))
+			iterator = prefixStore.Iterator(nil, nil)
+		})
+
 		defer iterator.Close()
-		for ; iterator.Valid(); iterator.Next() {
-			txHashKey := iterator.Key()
-			prefixStore.Delete(txHashKey)
+		for iterator.Valid() {
+			// refund each iteration separately to prevent out of gas
+			k.doWithRefund(ctx, "query removal refund", func() {
+				txHashKey := iterator.Key()
+				prefixStore.Delete(txHashKey)
+				iterator.Next()
+			})
 		}
 	}
+}
+
+// doWithRefund performs the fn and refunds the gas spent on it.
+func (k Keeper) doWithRefund(ctx sdk.Context, descriptor string, fn func()) {
+	gasBefore := ctx.GasMeter().GasConsumed()
+	fn()
+	gasAfter := ctx.GasMeter().GasConsumed()
+	ctx.GasMeter().RefundGas(gasAfter-gasBefore, descriptor)
 }
 
 func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalHeight uint64) error {

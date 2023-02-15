@@ -385,6 +385,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 
 	var msg iqtypes.MsgRemoveInterchainQueryRequest
 	var query iqtypes.MsgRegisterInterchainQuery
+	var txQueryHashes [][]byte
 
 	tests := []struct {
 		name        string
@@ -405,6 +406,31 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					UpdatePeriod:       1,
 					Sender:             "",
+				}
+				txQueryHashes = [][]byte{
+					[]byte("txhash_1"),
+					[]byte("txhash_2"),
+				}
+			},
+			nil,
+		},
+		{
+			"valid large TX remove",
+			func(sender string) {
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 1,
+					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
+				}
+				for i := 1; i <= 10000; i++ {
+					txQueryHashes = append(txQueryHashes, []byte(fmt.Sprintf("txhash_%d", i)))
 				}
 			},
 			nil,
@@ -541,13 +567,21 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				})
 				suite.Require().NoError(err)
 			case queryType.IsTX():
-				iqkeeper.SaveTransactionAsProcessed(ctx, 1, []byte("txhash_1"))
-				iqkeeper.SaveTransactionAsProcessed(ctx, 1, []byte("txhash_2"))
-				suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_1")))
-				suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_2")))
+				for _, txQueryHash := range txQueryHashes {
+					iqkeeper.SaveTransactionAsProcessed(ctx, 1, txQueryHash)
+					suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, txQueryHash))
+				}
 			}
 
+			gasBeforeRm := ctx.GasMeter().GasConsumed()
 			resUpdate, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &msg)
+			rmGasCost := ctx.GasMeter().GasConsumed() - gasBeforeRm
+			// make sure the RemoveInterchainQuery cost remains relatively small to:
+			// 1. preserve RemoveInterchainQuery calls profitable in relation to deposits;
+			// 2. make sure TX queries with large number of stored tx hashes don't affect the price.
+			suite.Require().LessOrEqual(rmGasCost, uint64(30_000))
+			suite.Require().Greater(rmGasCost, uint64(0))
+
 			if tt.expectedErr != nil {
 				suite.Require().ErrorIs(err, tt.expectedErr)
 				suite.Require().Nil(resUpdate)
@@ -561,8 +595,9 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					suite.Require().NoError(qrerr)
 					suite.Require().NotNil(qr)
 				case queryType.IsTX():
-					suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_1")))
-					suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_2")))
+					for _, txQueryHash := range txQueryHashes {
+						suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, txQueryHash))
+					}
 				}
 			} else {
 				balance, balanceErr := bankKeeper.Balance(
@@ -590,8 +625,9 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					suite.Require().Error(qrerr, iqtypes.ErrNoQueryResult)
 					suite.Require().Nil(qr)
 				case queryType.IsTX():
-					suite.Require().False(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_1")))
-					suite.Require().False(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, []byte("txhash_2")))
+					for _, txQueryHash := range txQueryHashes {
+						suite.Require().False(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, txQueryHash))
+					}
 				}
 			}
 		})
