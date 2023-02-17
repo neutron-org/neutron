@@ -39,7 +39,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 	lastID := neutron.InterchainQueriesKeeper.GetLastRegisteredQueryKey(ctx) + 1
 	neutron.InterchainQueriesKeeper.SetLastRegisteredQueryKey(ctx, lastID)
-	registeredQuery := icqtypes.RegisteredQuery{
+	registeredQuery := &icqtypes.RegisteredQuery{
 		Id: lastID,
 		Keys: []*icqtypes.KVKey{
 			{Path: host.StoreKey, Key: clientKey},
