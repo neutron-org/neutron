@@ -24,7 +24,7 @@ import (
 
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
-	e2e "github.com/cosmos/interchain-security/testutil/e2e"
+	"github.com/cosmos/interchain-security/testutil/e2e"
 	"github.com/cosmos/interchain-security/x/ccv/utils"
 	tmtypes "github.com/tendermint/tendermint/types"
 

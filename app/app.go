@@ -271,6 +271,9 @@ type App struct {
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	IBCHooksKeeper      *ibchookskeeper.Keeper
 
+	HooksTransferIBCModule *ibchooks.IBCMiddleware
+	HooksICS4Wrapper       ibchooks.ICS4Middleware
+
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper    capabilitykeeper.ScopedKeeper
@@ -422,7 +425,7 @@ func New(
 	app.IBCHooksKeeper = &hooksKeeper
 
 	wasmHooks := ibchooks.NewWasmHooks(app.IBCHooksKeeper, nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
-	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
 		&wasmHooks,
 	)
@@ -432,7 +435,7 @@ func New(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		hooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
+		app.HooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -549,7 +552,8 @@ func New(
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
-	hooksTransferIBCModule := ibchooks.NewIBCMiddleware(&transferIBCModule, &hooksICS4Wrapper)
+	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &hooksICS4Wrapper)
+	app.HooksTransferIBCModule = &ibcHooksMiddleware
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -570,7 +574,7 @@ func New(
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, hooksTransferIBCModule).
+		AddRoute(ibctransfertypes.ModuleName, app.HooksTransferIBCModule).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
 		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
