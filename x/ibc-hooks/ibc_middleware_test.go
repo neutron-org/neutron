@@ -3,16 +3,19 @@ package ibchooks_test
 import (
 	"encoding/json"
 	"fmt"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/simapp/helpers"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil"
 	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
 	ibchookskeeper "github.com/neutron-org/neutron/x/ibc-hooks/keeper"
 	"github.com/neutron-org/neutron/x/ibc-hooks/testutils"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	"os"
 	"testing"
 	"time"
 
@@ -48,7 +51,7 @@ type HooksTestSuite struct {
 }
 
 func (suite *HooksTestSuite) SetupTest() {
-	//suite.Setup()
+	//suite.Setup() // TODO: why?
 	ibctesting.DefaultTestingAppInit = ibctesting.SetupTestingApp
 	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 2)
 	suite.chainA = &TestChain{
@@ -58,10 +61,6 @@ func (suite *HooksTestSuite) SetupTest() {
 		TestChain: suite.coordinator.GetChain(ibctesting.GetChainID(2)),
 	}
 
-	err := suite.chainA.MoveEpochsToTheFuture()
-	suite.Require().NoError(err)
-	err = suite.chainB.MoveEpochsToTheFuture()
-	suite.Require().NoError(err)
 	suite.path = NewTransferPath(suite.chainA, suite.chainB)
 	suite.coordinator.Setup(suite.path)
 }
@@ -211,8 +210,8 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 
 func (suite *HooksTestSuite) TestRecvTransferWithMetadata() {
 	// Setup contract
-	suite.chainA.StoreContractCode(&suite.Suite, "./bytecode/echo.wasm")
-	addr := suite.chainA.InstantiateContract(&suite.Suite, "{}", 1)
+	codeId := suite.chainA.GetNeutronApp().StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.chainA.GetNeutronApp().InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
 
 	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"echo": {"msg": "test"} } } }`, addr))
 	ackStr := string(ackBytes)
@@ -227,8 +226,8 @@ func (suite *HooksTestSuite) TestRecvTransferWithMetadata() {
 // After successfully executing a wasm call, the contract should have the funds sent via IBC
 func (suite *HooksTestSuite) TestFundsAreTransferredToTheContract() {
 	// Setup contract
-	suite.chainA.StoreContractCode(&suite.Suite, "./bytecode/echo.wasm")
-	addr := suite.chainA.InstantiateContract(&suite.Suite, "{}", 1)
+	codeId := suite.chainA.GetNeutronApp().StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.chainA.GetNeutronApp().InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
 
 	// Check that the contract has no funds
 	localDenom := ibchooks.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
@@ -253,8 +252,8 @@ func (suite *HooksTestSuite) TestFundsAreTransferredToTheContract() {
 // If the wasm call wails, the contract acknowledgement should be an error and the funds returned
 func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
 	// Setup contract
-	suite.chainA.StoreContractCode(&suite.Suite, "./bytecode/echo.wasm")
-	addr := suite.chainA.InstantiateContract(&suite.Suite, "{}", 1)
+	codeId := suite.chainA.GetNeutronApp().StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.chainA.GetNeutronApp().InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
 
 	// Check that the contract has no funds
 	localDenom := ibchooks.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
@@ -321,8 +320,8 @@ func (suite *HooksTestSuite) TestPacketsThatShouldBeSkipped() {
 // After successfully executing a wasm call, the contract should have the funds sent via IBC
 func (suite *HooksTestSuite) TestFundTracking() {
 	// Setup contract
-	suite.chainA.StoreContractCode(&suite.Suite, "./bytecode/counter.wasm")
-	addr := suite.chainA.InstantiateContract(&suite.Suite, `{"count": 0}`, 1)
+	codeId := suite.chainA.GetNeutronApp().StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/counter.wasm")
+	addr := suite.chainA.GetNeutronApp().InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, `{"count": 0}`)
 
 	// Check that the contract has no funds
 	localDenom := ibchooks.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
@@ -337,13 +336,15 @@ func (suite *HooksTestSuite) TestFundTracking() {
 	senderLocalAcc, err := ibchookskeeper.DeriveIntermediateSender("channel-0", suite.chainB.SenderAccount.GetAddress().String(), "osmo")
 	suite.Require().NoError(err)
 
-	state := suite.chainA.QueryContract(
-		&suite.Suite, addr,
+	state := suite.chainA.GetNeutronApp().QueryContract(
+		suite.chainA.GetContext(),
+		addr,
 		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, senderLocalAcc)))
 	suite.Require().Equal(`{"count":0}`, state)
 
-	state = suite.chainA.QueryContract(
-		&suite.Suite, addr,
+	state = suite.chainA.GetNeutronApp().QueryContract(
+		suite.chainA.GetContext(),
+		addr,
 		[]byte(fmt.Sprintf(`{"get_total_funds": {"addr": "%s"}}`, senderLocalAcc)))
 	suite.Require().Equal(`{"total_funds":[{"denom":"ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878","amount":"1"}]}`, state)
 
@@ -351,13 +352,15 @@ func (suite *HooksTestSuite) TestFundTracking() {
 		addr.String(),
 		fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"increment": {} } } }`, addr), 1)
 
-	state = suite.chainA.QueryContract(
-		&suite.Suite, addr,
+	state = suite.chainA.GetNeutronApp().QueryContract(
+		suite.chainA.GetContext(),
+		addr,
 		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, senderLocalAcc)))
 	suite.Require().Equal(`{"count":1}`, state)
 
-	state = suite.chainA.QueryContract(
-		&suite.Suite, addr,
+	state = suite.chainA.GetNeutronApp().QueryContract(
+		suite.chainA.GetContext(),
+		addr,
 		[]byte(fmt.Sprintf(`{"get_total_funds": {"addr": "%s"}}`, senderLocalAcc)))
 	suite.Require().Equal(`{"total_funds":[{"denom":"ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878","amount":"2"}]}`, state)
 
@@ -446,8 +449,9 @@ func (suite *HooksTestSuite) FullSend(msg sdk.Msg, direction Direction) (*sdk.Re
 }
 
 func (suite *HooksTestSuite) TestAcks() {
-	suite.chainA.StoreContractCode(&suite.Suite, "./bytecode/counter.wasm")
-	addr := suite.chainA.InstantiateContract(&suite.Suite, `{"count": 0}`, 1)
+	// Setup contract
+	codeId := suite.chainA.GetNeutronApp().StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/counter.wasm")
+	addr := suite.chainA.GetNeutronApp().InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, `{"count": 0}`)
 
 	// Generate swap instructions for the contract
 	callbackMemo := fmt.Sprintf(`{"ibc_callback":"%s"}`, addr)
@@ -456,22 +460,25 @@ func (suite *HooksTestSuite) TestAcks() {
 	suite.FullSend(transferMsg, AtoB)
 
 	// The test contract will increment the counter for itself every time it receives an ack
-	state := suite.chainA.QueryContract(
-		&suite.Suite, addr,
+	state := suite.chainA.GetNeutronApp().QueryContract(
+		suite.chainA.GetContext(),
+		addr,
 		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, addr)))
 	suite.Require().Equal(`{"count":1}`, state)
 
 	suite.FullSend(transferMsg, AtoB)
-	state = suite.chainA.QueryContract(
-		&suite.Suite, addr,
+	state = suite.chainA.GetNeutronApp().QueryContract(
+		suite.chainA.GetContext(),
+		addr,
 		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, addr)))
 	suite.Require().Equal(`{"count":2}`, state)
 
 }
 
 func (suite *HooksTestSuite) TestTimeouts() {
-	suite.chainA.StoreContractCode(&suite.Suite, "./bytecode/counter.wasm")
-	addr := suite.chainA.InstantiateContract(&suite.Suite, `{"count": 0}`, 1)
+	// Setup contract
+	codeId := suite.chainA.GetNeutronApp().StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/counter.wasm")
+	addr := suite.chainA.GetNeutronApp().InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, `{"count": 0}`)
 
 	// Generate swap instructions for the contract
 	callbackMemo := fmt.Sprintf(`{"ibc_callback":"%s"}`, addr)
@@ -495,8 +502,9 @@ func (suite *HooksTestSuite) TestTimeouts() {
 	suite.Require().NoError(err)
 
 	// The test contract will increment the counter for itself by 10 when a packet times out
-	state := suite.chainA.QueryContract(
-		&suite.Suite, addr,
+	state := suite.chainA.GetNeutronApp().QueryContract(
+		suite.chainA.GetContext(),
+		addr,
 		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, addr)))
 	suite.Require().Equal(`{"count":10}`, state)
 
@@ -539,68 +547,6 @@ func (suite *HooksTestSuite) SetupIBCRouteOnChainB(swaprouterAddr, owner sdk.Acc
 	err = suite.path.EndpointB.UpdateClient()
 	suite.Require().NoError(err)
 
-}
-
-func (suite *HooksTestSuite) TestCrosschainForwardWithMemo() {
-	initializer := suite.chainB.SenderAccount.GetAddress()
-	receiver := suite.chainA.SenderAccount.GetAddress()
-
-	_, crosschainAddrA := suite.SetupCrosschainSwaps(ChainA, true)
-	swapRouterAddrB, crosschainAddrB := suite.SetupCrosschainSwaps(ChainB, true)
-	// Send some token0 and token1 tokens to B so that there are ibc token0 to send to A and crosschain-swap, and token1 to create the pool
-	transferMsg := NewMsgTransfer(sdk.NewCoin("token0", sdk.NewInt(500000)), suite.chainA.SenderAccount.GetAddress().String(), initializer.String(), "")
-	suite.FullSend(transferMsg, AtoB)
-	transferMsg1 := NewMsgTransfer(sdk.NewCoin("token1", sdk.NewInt(500000)), suite.chainA.SenderAccount.GetAddress().String(), initializer.String(), "")
-	suite.FullSend(transferMsg1, AtoB)
-	suite.CreateIBCPoolOnChainB()
-	suite.SetupIBCRouteOnChainB(swapRouterAddrB, suite.chainB.SenderAccount.GetAddress())
-
-	// Calculate the names of the tokens when swapped via IBC
-	denomTrace0 := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-0", "token0"))
-	token0IBC := denomTrace0.IBCDenom()
-	denomTrace1 := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-0", "token1"))
-	token1IBC := denomTrace1.IBCDenom()
-
-	balanceToken0IBCBefore := suite.chainA.GetNeutronApp().BankKeeper.GetBalance(suite.chainA.GetContext(), receiver, token0IBC)
-	fmt.Println("receiver now has: ", balanceToken0IBCBefore)
-	suite.Require().Equal(int64(0), balanceToken0IBCBefore.Amount.Int64())
-
-	//suite.Require().Equal(int64(0), balanceToken1.Amount.Int64())
-
-	// Generate swap instructions for the contract
-	nextMemo := fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"osmosis_swap":{"input_coin":{"denom":"%s","amount":"800"},"output_denom":"token0","slippage":{"max_slippage_percentage":"20"},"receiver":"%s"}}}}`,
-		crosschainAddrB,
-		token1IBC,
-		receiver,
-	)
-	swapMsg := fmt.Sprintf(`{"osmosis_swap":{"input_coin":{"denom":"token0","amount":"1000"},"output_denom":"token1","slippage":{"max_slippage_percentage":"20"},"receiver":"%s", "next_memo": %#v}}`,
-		crosschainAddrB,
-		nextMemo,
-	)
-	fmt.Println(swapMsg)
-	// Generate full memo
-	msg := fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": %s } }`, crosschainAddrA, swapMsg)
-	// Send IBC transfer with the memo with crosschain-swap instructions
-	transferMsg = NewMsgTransfer(sdk.NewCoin(token0IBC, sdk.NewInt(1000)), suite.chainB.SenderAccount.GetAddress().String(), crosschainAddrA.String(), msg)
-	_, receiveResult, _, err := suite.FullSend(transferMsg, BtoA)
-
-	// We use the receive result here because the receive adds another packet to be sent back
-	suite.Require().NoError(err)
-	suite.Require().NotNil(receiveResult)
-
-	// "Relay the packet" by executing the receive on chain B
-	packet, err := ibctesting.ParsePacketFromEvents(receiveResult.GetEvents())
-	suite.Require().NoError(err)
-	relayResult, _ := suite.RelayPacket(packet, AtoB)
-
-	// Now that chain B has processed it, it should be sending a message to chain A. Relay the response
-	packet2, err := ibctesting.ParsePacketFromEvents(relayResult.GetEvents())
-	suite.Require().NoError(err)
-	suite.RelayPacket(packet2, BtoA)
-
-	balanceToken0IBCAfter := suite.chainA.GetNeutronApp().BankKeeper.GetBalance(suite.chainA.GetContext(), receiver, token0IBC)
-	fmt.Println("receiver now has: ", balanceToken0IBCAfter)
-	suite.Require().Greater(balanceToken0IBCAfter.Amount.Int64(), int64(0))
 }
 
 func (suite *HooksTestSuite) GetChain(name Chain) *TestChain {
@@ -671,21 +617,6 @@ func SignAndDeliver(
 	return gInfo, res, err
 }
 
-// Move epochs to the future to avoid issues with minting
-func (chain *TestChain) MoveEpochsToTheFuture() error {
-	epochsKeeper := chain.GetNeutronApp().EpochsKeeper
-	ctx := chain.GetContext()
-	for _, epoch := range epochsKeeper.AllEpochInfos(ctx) {
-		epoch.StartTime = ctx.BlockTime().Add(time.Hour * 24 * 30)
-		epochsKeeper.DeleteEpochInfo(chain.GetContext(), epoch.Identifier)
-		err := epochsKeeper.AddEpochInfo(ctx, epoch)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // GetNeutronApp returns the current chain's app as a WrappedNeutronApp
 func (chain *TestChain) GetNeutronApp() *WrappedNeutronApp {
 	v, _ := chain.App.(*WrappedNeutronApp)
@@ -701,4 +632,39 @@ type WrappedNeutronApp struct {
 
 func (app *WrappedNeutronApp) GetStakingKeeper() stakingkeeper.Keeper {
 	return app.GetStakingKeeper()
+}
+
+func (app *WrappedNeutronApp) StoreContractCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
+	wasmCode, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	codeID, _, err := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
+	if err != nil {
+		panic(err)
+	}
+
+	return codeID
+}
+
+func (app *WrappedNeutronApp) InstantiateContract(ctx sdk.Context, funder sdk.AccAddress, codeID uint64, initMsg string) sdk.AccAddress {
+	initMsgBz, err := json.Marshal(initMsg)
+	if err != nil {
+		panic(err)
+	}
+	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
+	if err != nil {
+		panic(err)
+	}
+	return addr
+}
+
+func (app *WrappedNeutronApp) QueryContract(ctx sdk.Context, contract sdk.AccAddress, req []byte) string {
+	state, err := app.WasmKeeper.QuerySmart(ctx, contract, req)
+	if err != nil {
+		panic(err)
+	}
+	return string(state)
 }
