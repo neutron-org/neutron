@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/url"
 	"strconv"
 	"time"
@@ -133,14 +134,19 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
 
+	if err := k.validateUpdateInterchainQueryParams(query, msg); err != nil {
+		ctx.Logger().Debug("UpdateInterchainQuery: invalid request",
+			"error", err, "query_id", msg.QueryId)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
 	if msg.GetNewUpdatePeriod() > 0 {
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
 	if len(msg.GetNewKeys()) > 0 && types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		query.Keys = msg.GetNewKeys()
 	}
-	if len(msg.NewTransactionsFilter) > 0 && types.InterchainQueryType(query.GetQueryType()).IsTX() {
-		query.TransactionsFilter = msg.NewTransactionsFilter
+	if msg.GetNewTransactionsFilter() != "" && types.InterchainQueryType(query.GetQueryType()).IsTX() {
+		query.TransactionsFilter = msg.GetNewTransactionsFilter()
 	}
 
 	err = k.SaveQuery(ctx, *query)
@@ -282,6 +288,25 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil
+}
+
+// validateUpdateInterchainQueryParams checks whether the parameters to be updated corresponds
+// with the query type.
+func (k msgServer) validateUpdateInterchainQueryParams(
+	query *types.RegisteredQuery,
+	msg *types.MsgUpdateInterchainQueryRequest,
+) error {
+	queryType := types.InterchainQueryType(query.GetQueryType())
+	newKvKeysSet := len(msg.GetNewKeys()) != 0
+	newTxFilterSet := msg.GetNewTransactionsFilter() != ""
+
+	if queryType.IsKV() && !newKvKeysSet && newTxFilterSet {
+		return fmt.Errorf("params to update don't correspond with query type: can't update TX filter for a KV query")
+	}
+	if queryType.IsTX() && !newTxFilterSet && newKvKeysSet {
+		return fmt.Errorf("params to update don't correspond with query type: can't update KV keys for a TX query")
+	}
+	return nil
 }
 
 func getEventsQueryUpdated(query *types.RegisteredQuery) sdk.Events {
