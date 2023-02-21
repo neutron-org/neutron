@@ -405,7 +405,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			"valid",
+			"valid kv",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -420,13 +420,42 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 			nil,
 		},
 		{
-			"empty keys and update_period",
+			"valid tx",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
-					QueryId:         1,
-					NewKeys:         nil,
-					NewUpdatePeriod: 0,
-					Sender:          TestAddress,
+					QueryId:               1,
+					NewUpdatePeriod:       10,
+					NewTransactionsFilter: `[{"field":"transfer.recipient","op":"eq","value":"cosmos1xxx"}]`,
+					Sender:                TestAddress,
+				}
+			},
+			nil,
+		},
+		{
+			"both keys and filter sent",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{{
+						Path: "staking",
+						Key:  []byte{1, 2, 3},
+					}},
+					NewUpdatePeriod:       0,
+					NewTransactionsFilter: `{"field":"transfer.recipient","op":"eq","value":"cosmos1xxx"}`,
+					Sender:                TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+		},
+		{
+			"empty keys, update_period and tx filter",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:               1,
+					NewKeys:               nil,
+					NewUpdatePeriod:       0,
+					NewTransactionsFilter: "",
+					Sender:                TestAddress,
 				}
 			},
 			sdkerrors.ErrInvalidRequest,
@@ -518,9 +547,9 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		msg := tt.malleate()
 
 		if tt.expectedErr != nil {
-			require.ErrorIs(t, msg.ValidateBasic(), tt.expectedErr)
+			require.ErrorIsf(t, msg.ValidateBasic(), tt.expectedErr, tt.name)
 		} else {
-			require.NoError(t, msg.ValidateBasic())
+			require.NoErrorf(t, msg.ValidateBasic(), tt.name)
 		}
 	}
 }
