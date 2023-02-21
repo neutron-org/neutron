@@ -552,7 +552,7 @@ func New(
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
-	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &hooksICS4Wrapper)
+	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
 	app.HooksTransferIBCModule = &ibcHooksMiddleware
 
 	// Create static IBC router, add transfer route, then set and seal it
