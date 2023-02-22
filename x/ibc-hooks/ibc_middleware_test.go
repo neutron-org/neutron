@@ -12,6 +12,7 @@ import (
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
 	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
+	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
 	"github.com/neutron-org/neutron/x/ibc-hooks/testutils"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"os"
@@ -187,59 +188,62 @@ func (suite *HooksTestSuite) TestRecvTransferWithMetadata() {
 	suite.Require().Equal(ack["result"], "eyJjb250cmFjdF9yZXN1bHQiOiJkR2hwY3lCemFHOTFiR1FnWldOb2J3PT0iLCJpYmNfYWNrIjoiZXlKeVpYTjFiSFFpT2lKQlVUMDlJbjA9In0=")
 }
 
-//
-//// After successfully executing a wasm call, the contract should have the funds sent via IBC
-//func (suite *HooksTestSuite) TestFundsAreTransferredToTheContract() {
-//	// Setup contract
-//	codeId := suite.chainA.StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
-//	addr := suite.chainA.InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
-//
-//	// Check that the contract has no funds
-//	localDenom := ibchooks.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
-//	balance := suite.chainA.GetNeutronApp().BankKeeper.GetBalance(suite.chainA.GetContext(), addr, localDenom)
-//	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
-//
-//	// Execute the contract via IBC
-//	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"echo": {"msg": "test"} } } }`, addr))
-//	ackStr := string(ackBytes)
-//	fmt.Println(ackStr)
-//	var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
-//	err := json.Unmarshal(ackBytes, &ack)
-//	suite.Require().NoError(err)
-//	suite.Require().NotContains(ack, "error")
-//	suite.Require().Equal(ack["result"], "eyJjb250cmFjdF9yZXN1bHQiOiJkR2hwY3lCemFHOTFiR1FnWldOb2J3PT0iLCJpYmNfYWNrIjoiZXlKeVpYTjFiSFFpT2lKQlVUMDlJbjA9In0=")
-//
-//	// Check that the token has now been transferred to the contract
-//	balance = suite.chainA.GetNeutronApp().BankKeeper.GetBalance(suite.chainA.GetContext(), addr, localDenom)
-//	suite.Require().Equal(sdk.NewInt(1), balance.Amount)
-//}
-//
-//// If the wasm call wails, the contract acknowledgement should be an error and the funds returned
-//func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
-//	// Setup contract
-//	codeId := suite.chainA.StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
-//	addr := suite.chainA.InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
-//
-//	// Check that the contract has no funds
-//	localDenom := ibchooks.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
-//	balance := suite.chainA.GetNeutronApp().BankKeeper.GetBalance(suite.chainA.GetContext(), addr, localDenom)
-//	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
-//
-//	// Execute the contract via IBC with a message that the contract will reject
-//	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"not_echo": {"msg": "test"} } } }`, addr))
-//	ackStr := string(ackBytes)
-//	fmt.Println(ackStr)
-//	var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
-//	err := json.Unmarshal(ackBytes, &ack)
-//	suite.Require().NoError(err)
-//	suite.Require().Contains(ack, "error")
-//
-//	// Check that the token has now been transferred to the contract
-//	balance = suite.chainA.GetNeutronApp().BankKeeper.GetBalance(suite.chainA.GetContext(), addr, localDenom)
-//	fmt.Println(balance)
-//	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
-//}
-//
+// After successfully executing a wasm call, the contract should have the funds sent via IBC
+func (suite *HooksTestSuite) TestFundsAreTransferredToTheContract() {
+	suite.ConfigureTransferChannel()
+
+	// Setup contract
+	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
+
+	// Check that the contract has no funds
+	localDenom := ibchooks.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
+	balance := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
+	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
+
+	// Execute the contract via IBC
+	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"echo": {"msg": "test"} } } }`, addr))
+	ackStr := string(ackBytes)
+	fmt.Println(ackStr)
+	var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
+	err := json.Unmarshal(ackBytes, &ack)
+	suite.Require().NoError(err)
+	suite.Require().NotContains(ack, "error")
+	suite.Require().Equal(ack["result"], "eyJjb250cmFjdF9yZXN1bHQiOiJkR2hwY3lCemFHOTFiR1FnWldOb2J3PT0iLCJpYmNfYWNrIjoiZXlKeVpYTjFiSFFpT2lKQlVUMDlJbjA9In0=")
+
+	// Check that the token has now been transferred to the contract
+	balance = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
+	suite.Require().Equal(sdk.NewInt(1), balance.Amount)
+}
+
+// If the wasm call wails, the contract acknowledgement should be an error and the funds returned
+func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
+	suite.ConfigureTransferChannel()
+
+	// Setup contract
+	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
+
+	// Check that the contract has no funds
+	localDenom := ibchooks.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
+	balance := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
+	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
+
+	// Execute the contract via IBC with a message that the contract will reject
+	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"not_echo": {"msg": "test"} } } }`, addr))
+	ackStr := string(ackBytes)
+	fmt.Println(ackStr)
+	var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
+	err := json.Unmarshal(ackBytes, &ack)
+	suite.Require().NoError(err)
+	suite.Require().Contains(ack, "error")
+
+	// Check that the token has now been transferred to the contract
+	balance = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
+	fmt.Println(balance)
+	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
+}
+
 //func (suite *HooksTestSuite) TestPacketsThatShouldBeSkipped() {
 //	var sequence uint64
 //	receiver := suite.chainB.SenderAccount.GetAddress().String()
