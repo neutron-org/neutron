@@ -408,13 +408,17 @@ func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibcte
 
 // SetupTransferPath
 func SetupTransferPath(path *ibctesting.Path) error {
-	ctx := path.EndpointA.Chain.GetContext()
-
-	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(ctx)
+	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointA.Chain.GetContext())
+	channelSequenceB := path.EndpointB.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointB.Chain.GetContext())
 
 	// update port/channel ids
 	path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
-	path.EndpointA.ChannelConfig.PortID = types.PortID
+	path.EndpointB.ChannelID = channeltypes.FormatChannelIdentifier(channelSequenceB)
+	fmt.Printf("endpointB channelID: %s\n\n", path.EndpointB.ChannelID)
+	//path.EndpointA.ChannelConfig.PortID = types.PortID
+	//path.EndpointB.ChannelConfig.PortID = types.PortID
+	path.EndpointA.ChannelConfig.Version = types.Version
+	path.EndpointB.ChannelConfig.Version = types.Version
 
 	if err := path.EndpointA.ChanOpenInit(); err != nil {
 		return err
