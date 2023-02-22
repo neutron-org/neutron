@@ -414,9 +414,8 @@ func SetupTransferPath(path *ibctesting.Path) error {
 	// update port/channel ids
 	path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
 	path.EndpointB.ChannelID = channeltypes.FormatChannelIdentifier(channelSequenceB)
-	fmt.Printf("endpointB channelID: %s\n\n", path.EndpointB.ChannelID)
-	//path.EndpointA.ChannelConfig.PortID = types.PortID
-	//path.EndpointB.ChannelConfig.PortID = types.PortID
+	path.EndpointA.ChannelConfig.PortID = types.PortID
+	path.EndpointB.ChannelConfig.PortID = types.PortID
 	path.EndpointA.ChannelConfig.Version = types.Version
 	path.EndpointB.ChannelConfig.Version = types.Version
 

@@ -141,15 +141,9 @@ func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
 }
 
 func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, prevSequence uint64) []byte {
-	//suite.ChainB.CreateChannelCapability(suite.ChainB.App.GetScopedIBCKeeper(), suite.TransferPath.EndpointB.ChannelConfig.PortID,
-	//	suite.TransferPath.EndpointB.ChannelID)
-	fmt.Println("before getChannelCap")
-	//fmt.Printf("2 endpointB channelID: %s\n\n\n\n", suite.TransferPath.EndpointB.ChannelID)
-
 	channelCap := suite.ChainB.GetChannelCapability(
 		suite.TransferPath.EndpointB.ChannelConfig.PortID,
 		suite.TransferPath.EndpointB.ChannelID)
-	fmt.Println("after getChannelCap")
 
 	packet := suite.makeMockPacket(receiver, memo, prevSequence)
 
@@ -177,7 +171,8 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 }
 
 func (suite *HooksTestSuite) TestRecvTransferWithMetadata() {
-	suite.SetupTest()
+	suite.ConfigureTransferChannel()
+
 	// Setup contract
 	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
 	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
