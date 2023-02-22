@@ -14,6 +14,7 @@ import (
 	"github.com/neutron-org/neutron/testutil"
 	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
 	"github.com/neutron-org/neutron/x/ibc-hooks/testutils"
+	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"os"
 	"strconv"
@@ -132,7 +133,7 @@ func (suite *HooksTestSuite) makeMockPacket(receiver, memo string, prevSequence 
 		suite.TransferPath.EndpointB.ChannelID,
 		suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		suite.TransferPath.EndpointA.ChannelID,
-		clienttypes.NewHeight(0, 100),
+		clienttypes.NewHeight(0, 150),
 		0,
 	)
 }
@@ -244,48 +245,50 @@ func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
 	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
 }
 
-//func (suite *HooksTestSuite) TestPacketsThatShouldBeSkipped() {
-//	var sequence uint64
-//	receiver := suite.chainB.SenderAccount.GetAddress().String()
-//
-//	testCases := []struct {
-//		memo           string
-//		expPassthrough bool
-//	}{
-//		{"", true},
-//		{"{01]", true}, // bad json
-//		{"{}", true},
-//		{`{"something": ""}`, true},
-//		{`{"wasm": "test"}`, false},
-//		{`{"wasm": []`, true}, // invalid top level JSON
-//		{`{"wasm": {}`, true}, // invalid top level JSON
-//		{`{"wasm": []}`, false},
-//		{`{"wasm": {}}`, false},
-//		{`{"wasm": {"contract": "something"}}`, false},
-//		{`{"wasm": {"contract": "osmo1clpqr4nrk4khgkxj78fcwwh6dl3uw4epasmvnj"}}`, false},
-//		{`{"wasm": {"msg": "something"}}`, false},
-//		// invalid receiver
-//		{`{"wasm": {"contract": "osmo1clpqr4nrk4khgkxj78fcwwh6dl3uw4epasmvnj", "msg": {}}}`, false},
-//		// msg not an object
-//		{fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": 1}}`, receiver), false},
-//	}
-//
-//	for _, tc := range testCases {
-//		ackBytes := suite.receivePacketWithSequence(receiver, tc.memo, sequence)
-//		ackStr := string(ackBytes)
-//		fmt.Println(ackStr)
-//		var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
-//		err := json.Unmarshal(ackBytes, &ack)
-//		suite.Require().NoError(err)
-//		if tc.expPassthrough {
-//			suite.Require().Equal("AQ==", ack["result"], tc.memo)
-//		} else {
-//			suite.Require().Contains(ackStr, "error", tc.memo)
-//		}
-//		sequence += 1
-//	}
-//}
-//
+func (suite *HooksTestSuite) TestPacketsThatShouldBeSkipped() {
+	suite.ConfigureTransferChannel()
+
+	var sequence uint64
+	receiver := suite.ChainB.SenderAccount.GetAddress().String()
+
+	testCases := []struct {
+		memo           string
+		expPassthrough bool
+	}{
+		{"", true},
+		{"{01]", true}, // bad json
+		{"{}", true},
+		{`{"something": ""}`, true},
+		{`{"wasm": "test"}`, false},
+		{`{"wasm": []`, true}, // invalid top level JSON
+		{`{"wasm": {}`, true}, // invalid top level JSON
+		{`{"wasm": []}`, false},
+		{`{"wasm": {}}`, false},
+		{`{"wasm": {"contract": "something"}}`, false},
+		{`{"wasm": {"contract": "cosmos1clpqr4nrk4khgkxj78fcwwh6dl3uw4epasmvnj"}}`, false},
+		{`{"wasm": {"msg": "something"}}`, false},
+		// invalid receiver
+		{`{"wasm": {"contract": "cosmos1clpqr4nrk4khgkxj78fcwwh6dl3uw4epasmvnj", "msg": {}}}`, false},
+		// msg not an object
+		{fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": 1}}`, receiver), false},
+	}
+
+	for _, tc := range testCases {
+		ackBytes := suite.receivePacketWithSequence(receiver, tc.memo, sequence)
+		ackStr := string(ackBytes)
+		//fmt.Println(ackStr)
+		var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
+		err := json.Unmarshal(ackBytes, &ack)
+		suite.Require().NoError(err)
+		if tc.expPassthrough {
+			suite.Require().Equal("AQ==", ack["result"], tc.memo)
+		} else {
+			suite.Require().Contains(ackStr, "error", tc.memo)
+		}
+		sequence += 1
+	}
+}
+
 //// After successfully executing a wasm call, the contract should have the funds sent via IBC
 //func (suite *HooksTestSuite) TestFundTracking() {
 //	// Setup contract
@@ -340,11 +343,11 @@ func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
 
 // custom MsgTransfer constructor that supports Memo
 func NewMsgTransfer(
-	token sdk.Coin, sender, receiver string, memo string,
+	sourcePort string, sourceChannel string, token sdk.Coin, sender, receiver string, memo string,
 ) *transfertypes.MsgTransfer {
 	return &transfertypes.MsgTransfer{
-		SourcePort:       "transfer",
-		SourceChannel:    "channel-0",
+		SourcePort:       sourcePort,
+		SourceChannel:    sourceChannel,
 		Token:            token,
 		Sender:           sender,
 		Receiver:         receiver,
@@ -398,53 +401,69 @@ func (suite *HooksTestSuite) RelayPacket(packet channeltypes.Packet, direction D
 	return receiveResult, ack
 }
 
-//func (suite *HooksTestSuite) FullSend(msg sdk.Msg, direction Direction) (*sdk.Result, *sdk.Result, string, error) {
-//	var sender *TestChain
-//	switch direction {
-//	case AtoB:
-//		sender = suite.ChainA
-//	case BtoA:
-//		sender = suite.ChainB
-//	}
-//	sendResult, err := sender.SendMsgsNoCheck(msg)
-//	suite.Require().NoError(err)
-//
-//	packet, err := ParsePacketFromEvents(sendResult.GetEvents())
-//	suite.Require().NoError(err)
-//
-//	receiveResult, ack := suite.RelayPacket(packet, direction)
-//
-//	return sendResult, receiveResult, string(ack), err
-//}
+func (suite *HooksTestSuite) FullSend(msg sdk.Msg, direction Direction) (*sdk.Result, *sdk.Result, string, error) {
+	var sender *ibctesting.TestChain
+	switch direction {
+	case AtoB:
+		sender = suite.ChainA
+	case BtoA:
+		sender = suite.ChainB
+	}
+	//
+	//suite.GetNeutronZoneApp(suite.ChainB).IBCKeeper.ChannelKeeper.SetNextSequenceSend(
+	//	suite.ChainB.GetContext(),
+	//	suite.TransferPath.EndpointB.ChannelConfig.PortID,
+	//	suite.TransferPath.EndpointB.ChannelID,
+	//	1)
+	//suite.GetNeutronZoneApp(suite.ChainB).IBCKeeper.ChannelKeeper.SetNextChannelSequence(suite.ChainB.GetContext(), 1)
 
-//func (suite *HooksTestSuite) TestAcks() {
-//	suite.ConfigureTransferChannel()
-//
-//	// Setup contract
-//	codeId := suite.chainA.StoreContractCode(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/counter.wasm")
-//	addr := suite.chainA.InstantiateContract(suite.chainA.GetContext(), sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, `{"count": 0}`)
-//
-//	// Generate swap instructions for the contract
-//	callbackMemo := fmt.Sprintf(`{"ibc_callback":"%s"}`, addr)
-//	// Send IBC transfer with the memo with crosschain-swap instructions
-//	transferMsg := NewMsgTransfer(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000)), suite.chainA.SenderAccount.GetAddress().String(), addr.String(), callbackMemo)
-//	suite.FullSend(transferMsg, AtoB)
-//
-//	// The test contract will increment the counter for itself every time it receives an ack
-//	state := suite.chainA.QueryContract(
-//		suite.chainA.GetContext(),
-//		addr,
-//		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, addr)))
-//	suite.Require().Equal(`{"count":1}`, state)
-//
-//	suite.FullSend(transferMsg, AtoB)
-//	state = suite.chainA.QueryContract(
-//		suite.chainA.GetContext(),
-//		addr,
-//		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, addr)))
-//	suite.Require().Equal(`{"count":2}`, state)
-//
-//}
+	sendResult, err := SendMsgsNoCheck(sender, msg)
+	suite.Require().NoError(err)
+
+	packet, err := ParsePacketFromEvents(sendResult.GetEvents())
+	suite.Require().NoError(err)
+
+	receiveResult, ack := suite.RelayPacket(packet, direction)
+
+	return sendResult, receiveResult, string(ack), err
+}
+
+func (suite *HooksTestSuite) TestAcks() {
+	suite.ConfigureTransferChannel()
+
+	// Setup contract
+	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/counter.wasm")
+	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, `{"count": 0}`)
+
+	// Generate swap instructions for the contract
+	callbackMemo := fmt.Sprintf(`{"ibc_callback":"%s"}`, addr)
+	// Send IBC transfer with the memo with crosschain-swap instructions
+	sourcePort := suite.TransferPath.EndpointA.ChannelConfig.PortID
+	sourceChannel := suite.TransferPath.EndpointA.ChannelID
+	transferMsg := NewMsgTransfer(sourcePort, sourceChannel, sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)), suite.ChainA.SenderAccount.GetAddress().String(), addr.String(), callbackMemo)
+
+	suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ChannelKeeper.SetNextSequenceSend(
+		suite.ChainA.GetContext(),
+		suite.TransferPath.EndpointA.ChannelConfig.PortID,
+		suite.TransferPath.EndpointA.ChannelID,
+		1)
+	_, _, _, err := suite.FullSend(transferMsg, AtoB)
+	require.NoError(suite.T(), err)
+
+	// The test contract will increment the counter for itself every time it receives an ack
+	state := suite.QueryContract(
+		suite.ChainA,
+		addr,
+		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, addr)))
+	suite.Require().Equal(`{"count":1}`, state)
+
+	_, _, _, err = suite.FullSend(transferMsg, AtoB)
+	require.NoError(suite.T(), err)
+	state = suite.QueryContract(suite.ChainA,
+		addr,
+		[]byte(fmt.Sprintf(`{"get_count": {"addr": "%s"}}`, addr)))
+	suite.Require().Equal(`{"count":2}`, state)
+}
 
 //func (suite *HooksTestSuite) TestTimeouts() {
 //	// Setup contract
@@ -574,7 +593,7 @@ func SignAndDeliver(
 	tx, _ := helpers.GenTx(
 		txCfg,
 		msgs,
-		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)},
+		sdk.Coins{sdk.NewInt64Coin(params.DefaultDenom, 0)},
 		helpers.DefaultGenTxGas,
 		chainID,
 		accNums,
