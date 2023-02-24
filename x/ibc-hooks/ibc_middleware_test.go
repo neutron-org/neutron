@@ -435,6 +435,8 @@ func (suite *HooksTestSuite) TestAcks() {
 	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/counter.wasm")
 	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, `{"count": 0}`)
 
+	// предположение, что баг = когда мы выполняем SendPacket, мы не юзаем хук, а делаем это напрямую,
+	// т.к. у нас customHandler?
 	// Generate swap instructions for the contract
 	callbackMemo := fmt.Sprintf(`{"ibc_callback":"%s"}`, addr)
 	// Send IBC transfer with the memo with crosschain-swap instructions
@@ -442,13 +444,10 @@ func (suite *HooksTestSuite) TestAcks() {
 	sourceChannel := suite.TransferPath.EndpointA.ChannelID
 	transferMsg := NewMsgTransfer(sourcePort, sourceChannel, sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)), suite.ChainA.SenderAccount.GetAddress().String(), addr.String(), callbackMemo)
 
-	suite.GetNeutronZoneApp(suite.ChainA).IBCKeeper.ChannelKeeper.SetNextSequenceSend(
-		suite.ChainA.GetContext(),
-		suite.TransferPath.EndpointA.ChannelConfig.PortID,
-		suite.TransferPath.EndpointA.ChannelID,
-		1)
 	_, _, _, err := suite.FullSend(transferMsg, AtoB)
 	require.NoError(suite.T(), err)
+
+	fmt.Printf("TestAcck Contract addr: %s\n", addr.String())
 
 	// The test contract will increment the counter for itself every time it receives an ack
 	state := suite.QueryContract(

@@ -225,20 +225,25 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 }
 
 func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap *capabilitytypes.Capability, packet ibcexported.PacketI) error {
+	fmt.Println("SendPacketOverride()")
 	concretePacket, ok := packet.(channeltypes.Packet)
 	if !ok {
 		return i.channel.SendPacket(ctx, chanCap, packet) // continue
 	}
-
+	fmt.Println("SendPacketOverride() concretePacket")
 	isIcs20, data := isIcs20Packet(concretePacket)
 	if !isIcs20 {
 		return i.channel.SendPacket(ctx, chanCap, packet) // continue
 	}
 
+	fmt.Printf("SendPacketOverride() isIcs20 true, memo: %s\n", data.GetMemo())
+	// TODO: memo is empty, so we cannot proceed, that's why we cannot get callback! FIXME
+	// FIXME FIXME
 	isCallbackRouted, metadata := jsonStringHasKey(data.GetMemo(), types.IBCCallbackKey)
 	if !isCallbackRouted {
 		return i.channel.SendPacket(ctx, chanCap, packet) // continue
 	}
+	fmt.Println("SendPacketOverride() callbackrouted")
 
 	// We remove the callback metadata from the memo as it has already been processed.
 
@@ -274,6 +279,7 @@ func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap
 		TimeoutHeight:      concretePacket.TimeoutHeight,
 	}
 
+	fmt.Println("SendPacket()")
 	err = i.channel.SendPacket(ctx, chanCap, packetWithoutCallbackMemo)
 	if err != nil {
 		return err
@@ -289,11 +295,13 @@ func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap
 		return nil
 	}
 
+	fmt.Printf("StorePacketCallback: %s %+v %s\n", packet.GetSourceChannel(), packet.GetSequence(), contract)
 	h.ibcHooksKeeper.StorePacketCallback(ctx, packet.GetSourceChannel(), packet.GetSequence(), contract)
 	return nil
 }
 
 func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
+	fmt.Println("KEKEKEKEKW: OnAcknowledgementPacketOverride")
 	err := im.App.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	if err != nil {
 		return err
@@ -303,22 +311,30 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 		// Not configured. Return from the underlying implementation
 		return nil
 	}
+	fmt.Println("KEKEKEKEKW: ProperlyConfigured")
 
 	contract := h.ibcHooksKeeper.GetPacketCallback(ctx, packet.GetSourceChannel(), packet.GetSequence())
+	//TODO: this fails?
 	if contract == "" {
 		// No callback configured
 		return nil
 	}
+
+	fmt.Println("KEKEKEKEKW: GetPacketCallback")
 
 	contractAddr, err := sdk.AccAddressFromBech32(contract)
 	if err != nil {
 		return sdkerrors.Wrap(err, "Ack callback error") // The callback configured is not a bech32. Error out
 	}
 
+	fmt.Println("KEKEKEKEKW: contractAddrGotten")
+
 	success := "false"
 	if !IsAckError(acknowledgement) {
 		success = "true"
 	}
+
+	fmt.Println("KEKEKEKEKW: AckError")
 
 	// Notify the sender that the ack has been received
 	ackAsJSON, err := json.Marshal(acknowledgement)
@@ -330,6 +346,7 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 	sudoMsg := []byte(fmt.Sprintf(
 		`{"ibc_lifecycle_complete": {"ibc_ack": {"channel": "%s", "sequence": %d, "ack": %s, "success": %s}}}`,
 		packet.SourceChannel, packet.Sequence, ackAsJSON, success))
+	fmt.Printf("OnAcknowledgementPacketOverride Contract addr: %s\n", contractAddr.String())
 	_, err = h.ContractKeeper.Sudo(ctx, contractAddr, sudoMsg)
 	if err != nil {
 		// error processing the callback
