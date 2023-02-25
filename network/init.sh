@@ -11,6 +11,7 @@ PRE_PROPOSAL_CONTRACT=./contracts/cwd_pre_propose_single.wasm
 PROPOSAL_CONTRACT=./contracts/cwd_proposal_single.wasm
 VOTING_REGISTRY_CONTRACT=./contracts/neutron_voting_registry.wasm
 VAULT_CONTRACT=./contracts/neutron_vault.wasm
+LOCKDROP_VAULT_CONTRACT=./contracts/lockdrop_vault.wasm
 TREASURY_CONTRACT=./contracts/neutron_treasury.wasm
 DISTRIBUTION_CONTRACT=./contracts/neutron_distribution.wasm
 PROPOSAL_MULTIPLE_CONTRACT=./contracts/cwd_proposal_multiple.wasm
@@ -99,6 +100,7 @@ PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary ${PROPOSAL_MULTIPLE_CONTRACT
 PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary ${PRE_PROPOSAL_MULTIPLE_CONTRACT})
 TREASURY_CONTRACT_BINARY_ID=$(store_binary ${TREASURY_CONTRACT})
 DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary ${DISTRIBUTION_CONTRACT})
+LOCKDROP_VAULT_CONTRACT_BINARY_ID=$(store_binary ${LOCKDROP_VAULT_CONTRACT})
 
 # PRE_PROPOSE_INIT_MSG will be put into the PROPOSAL_SINGLE_INIT_MSG and PROPOSAL_MULTIPLE_INIT_MSG
 PRE_PROPOSE_INIT_MSG='{
@@ -182,13 +184,23 @@ PROPOSAL_MULTIPLE_INIT_MSG_BASE64=$(echo ${PROPOSAL_MULTIPLE_INIT_MSG} | base64 
 VOTING_REGISTRY_INIT_MSG='{
   "manager": null,
   "owner": null,
-  "voting_vault": "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq"
+  "voting_vaults": [
+   "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq",
+   "neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a"
+  ]
 }'
 VOTING_REGISTRY_INIT_MSG_BASE64=$(echo ${VOTING_REGISTRY_INIT_MSG} | base64 | tr -d "\n")
 
-INIT='{
-  "denom":"untrn",
-  "description": "based neutron vault"
+VOTING_VAULT_INIT='{
+  "name": "voting vault",
+  "denom": "untrn",
+  "description": "a simple voting vault for testing purposes"
+}'
+# since the lockdrop_contract is still a mock, the address is a random valid one just to pass instantiation
+LOCKDROP_VAULT_INIT='{
+  "name": "lockdrop vault",
+  "description": "a lockdrop vault for testing purposes",
+  "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"
 }'
 DAO_INIT='{
   "description": "basic neutron dao",
@@ -233,10 +245,11 @@ DISTRIBUTION_INIT="$(printf '{
 }' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
 echo "Instantiate contracts"
-$NEUTROND_BINARY add-wasm-message instantiate-contract "$VAULT_CONTRACT_BINARY_ID" "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message instantiate-contract "$VAULT_CONTRACT_BINARY_ID" "$VOTING_VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID" "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID" "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID_1
 $NEUTROND_BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID" "$DISTRIBUTION_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Distribution" --home $CHAIN_DIR/$CHAINID_1
+$NEUTROND_BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_ID" "$LOCKDROP_VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_lockdrop_vault"  --home $CHAIN_DIR/$CHAINID_1
 
 
 echo "Add consumer section..."
