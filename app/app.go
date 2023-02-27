@@ -417,9 +417,10 @@ func New(
 		keys[feeburnertypes.StoreKey],
 		keys[feeburnertypes.MemStoreKey],
 		app.GetSubspace(feeburnertypes.ModuleName),
+		app.AccountKeeper,
 		app.BankKeeper,
 	)
-	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper, app.AccountKeeper, app.BankKeeper)
+	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	hooksKeeper := ibchookskeeper.NewKeeper(keys[ibchookstypes.StoreKey])
 	app.IBCHooksKeeper = &hooksKeeper
