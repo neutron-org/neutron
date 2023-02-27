@@ -2,15 +2,18 @@ package cli
 
 import (
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"strings"
+
+	"github.com/cosmos/cosmos-sdk/client"
+
+	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/neutron-org/neutron/x/ibc-hooks/keeper"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/ibc-hooks/keeper"
 )
 
 // GetQueryCmd returns the cli query commands for this module.
