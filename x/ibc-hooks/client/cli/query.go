@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -13,13 +15,18 @@ import (
 
 // GetQueryCmd returns the cli query commands for this module.
 func GetQueryCmd() *cobra.Command {
-	// cmd := neutroncli.QueryIndexCmd(types.ModuleName)
-	// cmd.AddCommand(
-	//  	GetCmdWasmSender(),
-	// )
-	// return cmd
-	// TODO: implement in a simple way?
-	return nil
+	// Group queries under a subcommand
+	cmd := &cobra.Command{
+		Use:                        types.ModuleName,
+		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+	cmd.AddCommand(
+		GetCmdWasmSender(),
+	)
+	return cmd
 }
 
 // GetCmdPoolParams return pool params.
@@ -39,7 +46,7 @@ $ %s query ibc-hooks wasm-hooks-sender channel-42 juno12smx2wdlyttvyzvzg54y2vnqw
 		RunE: func(cmd *cobra.Command, args []string) error {
 			channelID := args[0]
 			originalSender := args[1]
-			// ToDo: Make this flexible as an arg
+			// TODO: Make this flexible as an arg
 			prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
 			senderBech32, err := keeper.DeriveIntermediateSender(channelID, originalSender, prefix)
 			if err != nil {
