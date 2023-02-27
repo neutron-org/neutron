@@ -77,7 +77,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
 		}
 		if contractMsg.IBCTransfer != nil {
-			fmt.Println("MessagePlugin#IBCTransfer()")
 			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 		}
 		if contractMsg.SubmitAdminProposal != nil {
