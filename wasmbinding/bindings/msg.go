@@ -64,12 +64,6 @@ type RegisterInterchainQuery struct {
 	UpdatePeriod       uint64            `json:"update_period"`
 }
 
-type AddAdmin struct {
-	Admin string `protobuf:"bytes,2,opt,name=admin,proto3" json:"admin,omitempty"`
-}
-
-type AddAdminResponse struct{}
-
 type SubmitAdminProposal struct {
 	AdminProposal AdminProposal `json:"admin_proposal"`
 }
