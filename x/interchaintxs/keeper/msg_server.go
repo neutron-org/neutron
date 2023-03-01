@@ -66,6 +66,10 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "nil msg is prohibited")
 	}
 
+	if msg.Msgs == nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "empty Msgs field is prohibited")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("SubmitTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
 
