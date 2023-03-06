@@ -285,7 +285,8 @@ func (k Keeper) GetClientState(ctx sdk.Context, clientID string) (*tendermintLig
 func (k *Keeper) CollectDeposit(ctx sdk.Context, queryInfo types.RegisteredQuery) error {
 	owner, err := queryInfo.GetOwnerAddress()
 	if err != nil {
-		panic(err.Error())
+		ctx.Logger().Debug("failed to get owner address from given query", "query_info", queryInfo)
+		return err
 	}
 
 	err = k.bank.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, queryInfo.Deposit)
