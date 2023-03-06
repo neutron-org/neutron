@@ -7,6 +7,7 @@ import (
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,6 +17,7 @@ import (
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -318,7 +320,63 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		}
 	}
 
-	if proposal.ParamChangeProposal == nil && proposal.SoftwareUpgradeProposal == nil && proposal.CancelSoftwareUpgradeProposal == nil {
+	if proposal.UpgradeProposal != nil {
+		p := proposal.UpgradeProposal
+		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
+			Title:               p.Title,
+			Description:         p.Description,
+			Plan:                p.Plan,
+			UpgradedClientState: p.UpgradedClientState,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on UpgradeProposal")
+		}
+	}
+
+	if proposal.ClientUpdateProposal != nil {
+		p := proposal.ClientUpdateProposal
+		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{
+			Title:              p.Title,
+			Description:        p.Description,
+			SubjectClientId:    p.SubjectClientId,
+			SubstituteClientId: p.SubstituteClientId,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on ClientUpdateProposal")
+		}
+	}
+
+	if proposal.PinCodesProposal != nil {
+		p := proposal.PinCodesProposal
+		err := msg.SetContent(&wasmtypes.PinCodesProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			CodeIDs:     p.CodeIDs,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on PinCodesProposal")
+		}
+	}
+
+	if proposal.UnpinCodesProposal != nil {
+		p := proposal.UnpinCodesProposal
+		err := msg.SetContent(&wasmtypes.UnpinCodesProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			CodeIDs:     p.CodeIDs,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on UnpinCodesProposal")
+		}
+	}
+
+	if proposal.ParamChangeProposal == nil &&
+		proposal.SoftwareUpgradeProposal == nil &&
+		proposal.CancelSoftwareUpgradeProposal == nil &&
+		proposal.UpgradeProposal == nil &&
+		proposal.ClientUpdateProposal == nil &&
+		proposal.PinCodesProposal == nil &&
+		proposal.UnpinCodesProposal == nil {
 		return nil, fmt.Errorf("no admin proposal type is present")
 	}
 

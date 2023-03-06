@@ -2,8 +2,8 @@
 package bindings
 
 import (
+	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
@@ -78,6 +78,10 @@ type AdminProposal struct {
 	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
 	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
 	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
+	UpgradeProposal               *UpgradeProposal               `json:"ibc_upgrade_proposal,omitempty"`
+	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal"`
+	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal"`
+	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal"`
 }
 
 type ParamChangeProposal struct {
@@ -122,3 +126,29 @@ type UpdateInterchainQuery struct {
 }
 
 type UpdateInterchainQueryResponse struct{}
+
+type UpgradeProposal struct {
+	Title               string           `json:"title,omitempty"`
+	Description         string           `json:"description,omitempty"`
+	Plan                Plan             `json:"plan"`
+	UpgradedClientState *cosmostypes.Any `json:"upgraded_client_state,omitempty"`
+}
+
+type ClientUpdateProposal struct {
+	Title              string `json:"title,omitempty"`
+	Description        string `json:"description,omitempty"`
+	SubjectClientId    string `json:"subject_client_id,omitempty"`
+	SubstituteClientId string `json:"substitute_client_id,omitempty"`
+}
+
+type PinCodesProposal struct {
+	Title       string   `json:"title,omitempty"`
+	Description string   `json:"description,omitempty"`
+	CodeIDs     []uint64 ` json:"code_ids,omitempty"`
+}
+
+type UnpinCodesProposal struct {
+	Title       string   `json:"title,omitempty"`
+	Description string   `json:"description,omitempty"`
+	CodeIDs     []uint64 `json:"code_ids,omitempty"`
+}

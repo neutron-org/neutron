@@ -19,21 +19,12 @@ func IsConsumerProposalWhitelisted(content govtypes.Content) bool {
 	switch c := content.(type) {
 	case *proposal.ParameterChangeProposal:
 		return isConsumerParamChangeWhitelisted(c.Changes)
-	case *govtypes.TextProposal,
-		*upgradetypes.SoftwareUpgradeProposal,
+	case *upgradetypes.SoftwareUpgradeProposal,
 		*upgradetypes.CancelSoftwareUpgradeProposal,
 		*ibcclienttypes.ClientUpdateProposal,
 		*ibcclienttypes.UpgradeProposal,
-		*wasmtypes.StoreCodeProposal,
-		*wasmtypes.InstantiateContractProposal,
-		*wasmtypes.MigrateContractProposal,
-		*wasmtypes.SudoContractProposal,
-		*wasmtypes.ExecuteContractProposal,
-		*wasmtypes.UpdateAdminProposal,
-		*wasmtypes.ClearAdminProposal,
 		*wasmtypes.PinCodesProposal,
-		*wasmtypes.UnpinCodesProposal,
-		*wasmtypes.UpdateInstantiateConfigProposal:
+		*wasmtypes.UnpinCodesProposal:
 		return true
 
 	default:
