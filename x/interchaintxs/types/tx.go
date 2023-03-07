@@ -10,6 +10,8 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+var _ codectypes.UnpackInterfacesMessage = MsgSubmitTx{}
+
 func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
 	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID

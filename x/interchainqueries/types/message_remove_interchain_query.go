@@ -7,6 +7,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+var _ sdk.Msg = &MsgRemoveInterchainQueryRequest{}
+
 func NewMsgRemoveInterchainQuery(sender string, queryID uint64) MsgRemoveInterchainQueryRequest {
 	return MsgRemoveInterchainQueryRequest{
 		QueryId: queryID,
