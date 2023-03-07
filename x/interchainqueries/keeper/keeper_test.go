@@ -648,7 +648,7 @@ func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
 
 			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
 			for _, query := range tt.queries {
-				iqkeeper.SaveQuery(ctx, *query)
+				iqkeeper.SaveQuery(ctx, query)
 			}
 
 			allQueries := iqkeeper.GetAllRegisteredQueries(ctx)
