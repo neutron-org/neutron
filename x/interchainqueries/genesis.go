@@ -19,7 +19,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	// Set all registered queries
 	for _, elem := range genState.RegisteredQueries {
 		k.SetLastRegisteredQueryKey(ctx, elem.Id)
-		if err := k.SaveQuery(ctx, *elem); err != nil {
+		if err := k.SaveQuery(ctx, elem); err != nil {
 			panic(err)
 		}
 
