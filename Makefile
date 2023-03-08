@@ -168,8 +168,7 @@ init: kill-dev install
 	@echo "Building gaiad binary..."
 	@cd ./../gaia/ && make install
 	@echo "Initializing both blockchains..."
-	./network/init.sh
-	./network/start.sh
+	./network/init-and-start-both.sh
 	@echo "Initializing relayer..."
 	./network/hermes/restore-keys.sh
 	./network/hermes/create-conn.sh
