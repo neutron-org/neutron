@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron.interchainadapter.contractmanager;
+package neutron.contractmanager;
 
 import "gogoproto/gogo.proto";
 import "contractmanager/params.proto";

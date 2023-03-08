@@ -5,12 +5,15 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+
+	"github.com/stretchr/testify/suite"
+
+	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/transfer/types"
-	"github.com/stretchr/testify/suite"
 )
 
 const (
@@ -59,7 +62,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        testutil.TestOwnerAddress,
-		Token:         sdktypes.NewCoin("stake", sdktypes.NewInt(1000)),
+		Token:         sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(1000)),
 	})
 	suite.Nil(resp)
 	suite.ErrorIs(err, errors.ErrInsufficientFunds)
@@ -72,7 +75,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        testutil.TestOwnerAddress,
-		Token:         sdktypes.NewCoin("stake", sdktypes.NewInt(1000)),
+		Token:         sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(1000)),
 		Receiver:      TestAddress,
 		TimeoutHeight: clienttypes.Height{
 			RevisionNumber: 10,
@@ -97,7 +100,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        contractAddress.String(),
-		Token:         sdktypes.NewCoin("stake", sdktypes.NewInt(1000)),
+		Token:         sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(1000)),
 		Receiver:      TestAddress,
 		TimeoutHeight: clienttypes.Height{
 			RevisionNumber: 10,
@@ -113,7 +116,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        contractAddress.String(),
-		Token:         sdktypes.NewCoin("stake", sdktypes.NewInt(1000)),
+		Token:         sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(1000)),
 		Receiver:      TestAddress,
 		TimeoutHeight: clienttypes.Height{
 			RevisionNumber: 10,
@@ -121,8 +124,8 @@ func (suite KeeperTestSuite) TestTransfer() {
 		},
 		Fee: feetypes.Fee{
 			RecvFee:    nil,
-			AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("stake", sdktypes.NewInt(1000))),
-			TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("stake", sdktypes.NewInt(1000))),
+			AckFee:     sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(1000))),
+			TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(1000))),
 		},
 	})
 	suite.Equal(types.MsgTransferResponse{
@@ -133,7 +136,7 @@ func (suite KeeperTestSuite) TestTransfer() {
 }
 
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
-	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000))))
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 }

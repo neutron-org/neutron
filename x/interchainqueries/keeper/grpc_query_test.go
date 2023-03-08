@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -414,7 +414,7 @@ func (suite *KeeperTestSuite) TestRegisteredQueries() {
 			suite.SetupTest()
 
 			for _, q := range tt.registeredQueries {
-				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.SaveQuery(suite.ChainA.GetContext(), q))
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.SaveQuery(suite.ChainA.GetContext(), &q))
 			}
 
 			resp, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.RegisteredQueries(sdk.WrapSDKContext(suite.ChainA.GetContext()), tt.req)

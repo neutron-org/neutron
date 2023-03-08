@@ -8,9 +8,11 @@ import (
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
+	"github.com/neutron-org/neutron/app/params"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -89,7 +91,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 
 	// Top up contract balance
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 
@@ -238,7 +240,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 
@@ -388,8 +390,8 @@ func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numM
 			Timeout:             2000,
 			Fee: feetypes.Fee{
 				RecvFee:    sdk.NewCoins(),
-				AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
 			},
 		},
 	})

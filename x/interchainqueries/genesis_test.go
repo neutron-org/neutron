@@ -17,10 +17,16 @@ func TestGenesis(t *testing.T) {
 
 		RegisteredQueries: []*types.RegisteredQuery{
 			{
-				Id: 1,
+				Id: 4,
+			},
+			{
+				Id: 3,
 			},
 			{
 				Id: 2,
+			},
+			{
+				Id: 1,
 			},
 		},
 	}
@@ -34,7 +40,7 @@ func TestGenesis(t *testing.T) {
 
 	require.EqualValues(t, got.Params, types.DefaultParams())
 	require.NotNil(t, got)
-	require.EqualValues(t, lastQueryId, 2)
+	require.EqualValues(t, 4, lastQueryId)
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)

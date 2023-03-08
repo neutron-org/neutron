@@ -32861,7 +32861,7 @@ paths:
   /neutron/interchainqueries/params:
     get:
       summary: Parameters queries the parameters of the module.
-      operationId: NeutronInterchainadapterInterchainqueriesParams
+      operationId: NeutronInterchainQueriesParams
       responses:
         '200':
           description: A successful response.
@@ -33090,7 +33090,7 @@ paths:
         - Query
   /neutron/interchainqueries/query_result:
     get:
-      operationId: NeutronInterchainadapterInterchainqueriesQueryResult
+      operationId: NeutronInterchainQueriesQueryResult
       responses:
         '200':
           description: A successful response.
@@ -33819,7 +33819,7 @@ paths:
         - Query
   /neutron/interchainqueries/registered_queries:
     get:
-      operationId: NeutronInterchainadapterInterchainqueriesRegisteredQueries
+      operationId: NeutronInterchainQueriesRegisteredQueries
       responses:
         '200':
           description: A successful response.
@@ -34187,7 +34187,7 @@ paths:
         - Query
   /neutron/interchainqueries/registered_query:
     get:
-      operationId: NeutronInterchainadapterInterchainqueriesRegisteredQuery
+      operationId: NeutronInterchainQueriesRegisteredQuery
       responses:
         '200':
           description: A successful response.
@@ -34472,7 +34472,7 @@ paths:
         - Query
   /neutron/interchainqueries/remote_height:
     get:
-      operationId: NeutronInterchainadapterInterchainqueriesLastRemoteHeight
+      operationId: NeutronInterchainQueriesLastRemoteHeight
       responses:
         '200':
           description: A successful response.
@@ -57274,7 +57274,7 @@ definitions:
     description: |-
       Version defines the versioning scheme used to negotiate the IBC verison in
       the connection handshake.
-  neutron.interchainadapter.interchainqueries.Block:
+  neutron.interchainqueries.Block:
     type: object
     properties:
       next_block_header:
@@ -57706,7 +57706,7 @@ definitions:
             type: string
             format: byte
             title: is body of the transaction
-  neutron.interchainadapter.interchainqueries.KVKey:
+  neutron.interchainqueries.KVKey:
     type: object
     properties:
       path:
@@ -57720,19 +57720,19 @@ definitions:
         type: string
         format: byte
         title: Key you want to read from the storage
-  neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse:
+  neutron.interchainqueries.MsgRegisterInterchainQueryResponse:
     type: object
     properties:
       id:
         type: string
         format: uint64
-  neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse:
+  neutron.interchainqueries.MsgRemoveInterchainQueryResponse:
     type: object
-  neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse:
+  neutron.interchainqueries.MsgSubmitQueryResultResponse:
     type: object
-  neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse:
+  neutron.interchainqueries.MsgUpdateInterchainQueryResponse:
     type: object
-  neutron.interchainadapter.interchainqueries.Params:
+  neutron.interchainqueries.Params:
     type: object
     properties:
       query_submit_timeout:
@@ -57757,13 +57757,13 @@ definitions:
             signatures required by gogoproto.
         description: Amount of coins deposited for the query.
     description: Params defines the parameters for the module.
-  neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse:
+  neutron.interchainqueries.QueryLastRemoteHeightResponse:
     type: object
     properties:
       height:
         type: string
         format: uint64
-  neutron.interchainadapter.interchainqueries.QueryParamsResponse:
+  neutron.interchainqueries.QueryParamsResponse:
     type: object
     properties:
       params:
@@ -57797,7 +57797,7 @@ definitions:
                 signatures required by gogoproto.
             description: Amount of coins deposited for the query.
     description: QueryParamsResponse is response type for the Query/Params RPC method.
-  neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse:
+  neutron.interchainqueries.QueryRegisteredQueriesResponse:
     type: object
     properties:
       registered_queries:
@@ -57899,7 +57899,7 @@ definitions:
               PageRequest.count_total
 
               was set, its value is undefined otherwise
-  neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse:
+  neutron.interchainqueries.QueryRegisteredQueryResponse:
     type: object
     properties:
       registered_query:
@@ -57978,7 +57978,7 @@ definitions:
             type: string
             format: uint64
             description: Timeout before query becomes available for everybody to remove.
-  neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse:
+  neutron.interchainqueries.QueryRegisteredQueryResultResponse:
     type: object
     properties:
       result:
@@ -58496,7 +58496,7 @@ definitions:
             format: uint64
           allow_kv_callbacks:
             type: boolean
-  neutron.interchainadapter.interchainqueries.QueryResult:
+  neutron.interchainqueries.QueryResult:
     type: object
     properties:
       kv_results:
@@ -58998,7 +58998,7 @@ definitions:
         format: uint64
       allow_kv_callbacks:
         type: boolean
-  neutron.interchainadapter.interchainqueries.RegisteredQuery:
+  neutron.interchainqueries.RegisteredQuery:
     type: object
     properties:
       id:
@@ -59065,7 +59065,7 @@ definitions:
         type: string
         format: uint64
         description: Timeout before query becomes available for everybody to remove.
-  neutron.interchainadapter.interchainqueries.StorageValue:
+  neutron.interchainqueries.StorageValue:
     type: object
     properties:
       storage_prefix:
@@ -59102,7 +59102,7 @@ definitions:
                 ProofOp defines an operation used for calculating Merkle root
                 The data could be arbitrary format, providing nessecary data
                 for example neighbouring node hash
-  neutron.interchainadapter.interchainqueries.TxValue:
+  neutron.interchainqueries.TxValue:
     type: object
     properties:
       response:
@@ -59316,7 +59316,7 @@ definitions:
             The data could be arbitrary format, providing nessecary data
             for example neighbouring node hash
     title: ProofOps is Merkle proof defined by the list of ProofOps
-  neutron.interchainadapter.interchaintxs.Params:
+  neutron.interchaintxs.Params:
     type: object
     properties:
       msg_submit_tx_max_messages:
@@ -59324,14 +59324,14 @@ definitions:
         format: uint64
         title: Defines maximum amount of messages to be passed in MsgSubmitTx
     description: Params defines the parameters for the module.
-  neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse:
+  neutron.interchaintxs.QueryInterchainAccountAddressResponse:
     type: object
     properties:
       interchain_account_address:
         type: string
         title: The corresponding interchain account address on the host chain
     title: Query response for an interchain account address
-  neutron.interchainadapter.interchaintxs.QueryParamsResponse:
+  neutron.interchaintxs.QueryParamsResponse:
     type: object
     properties:
       params:
@@ -59343,12 +59343,12 @@ definitions:
             format: uint64
             title: Defines maximum amount of messages to be passed in MsgSubmitTx
     description: QueryParamsResponse is response type for the Query/Params RPC method.
-  neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse:
+  neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse:
     type: object
     description: |-
       MsgRegisterInterchainAccountResponse is the response type for
       MsgRegisterInterchainAccount.
-  neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse:
+  neutron.interchaintxs.v1.MsgSubmitTxResponse:
     type: object
     properties:
       sequence_id:
@@ -59359,7 +59359,7 @@ definitions:
         type: string
         title: channel src channel on neutron side trasaction was submitted from
     title: MsgSubmitTxResponse defines the response for Msg/SubmitTx
-  neutron.interchainadapter.transfer.MsgTransferResponse:
+  neutron.transfer.MsgTransferResponse:
     type: object
     properties:
       sequence_id:

@@ -20,7 +20,7 @@ import (
 
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 )
 
 const (
@@ -188,8 +188,8 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 
 	validFee := types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1001))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(2001))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(2001))),
 	}
 	packet := types.PacketID{
 		ChannelId: "channel-0",
@@ -254,8 +254,8 @@ func TestDistributeTimeoutFee(t *testing.T) {
 
 	validFee := types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1001))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(2001))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(2001))),
 	}
 	packet := types.PacketID{
 		ChannelId: "channel-0",
@@ -315,8 +315,8 @@ func TestFeeInfo(t *testing.T) {
 	k, ctx := testutil_keeper.FeeKeeper(t, nil, nil)
 	validFee := types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1001))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1001))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
 	}
 	for i := uint64(0); i < 1000; i++ {
 		packet := types.PacketID{

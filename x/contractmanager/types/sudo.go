@@ -1,7 +1,7 @@
 package types
 
 import (
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 )
 
 const TransferPort = "transfer"
