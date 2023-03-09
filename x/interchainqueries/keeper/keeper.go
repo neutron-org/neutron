@@ -132,9 +132,44 @@ func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuer
 	return queries
 }
 
-func (k Keeper) RemoveQueryByID(ctx sdk.Context, id uint64) {
+// RemoveQuery removes the given query and relative result data from the store. For a KV query it
+// deletes the *types.QueryResult stored by the query ID, for a TX query it stores the query ID to
+// the list of queries to be removed so the ICQ module can remove the query hashes later.
+func (k Keeper) RemoveQuery(ctx sdk.Context, query *types.RegisteredQuery) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetRegisteredQueryByIDKey(id))
+	store.Delete(types.GetRegisteredQueryByIDKey(query.Id))
+	queryType := types.InterchainQueryType(query.GetQueryType())
+	switch {
+	case queryType.IsKV():
+		store.Delete(types.GetRegisteredQueryResultByIDKey(query.Id))
+	case queryType.IsTX():
+		store.Set(types.GetTxQueryToRemoveByIDKey(query.Id), []byte{})
+	}
+}
+
+// TxQueriesCleanup cleans the module store from obsolete registered TX queries and relative
+// stored transaction hashes. Cleans up to params.TxQueryRemovalLimit hashes at a time or all
+// the hashes if params.TxQueryRemovalLimit is 0.
+func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
+	rmLimit := k.GetParams(ctx).TxQueryRemovalLimit
+	limited := rmLimit != 0
+
+	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.TxQueryToRemoveKey)
+	iterator := prefixStore.Iterator(nil, nil)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		removed, complete := k.removeTxQueryHashes(ctx, sdk.BigEndianToUint64(iterator.Key()), rmLimit)
+
+		if complete {
+			prefixStore.Delete(iterator.Key())
+		}
+		if limited {
+			rmLimit -= removed
+			if rmLimit <= 0 {
+				break
+			}
+		}
+	}
 }
 
 // SaveKVQueryResult saves the result of the query and updates the query's local and remote heights
@@ -183,12 +218,6 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 	return &query, nil
 }
 
-func (k Keeper) removeQueryResultByID(ctx sdk.Context, id uint64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetRegisteredQueryResultByIDKey(id))
-}
-
-// UpdateLastLocalHeight updates the relative query's local height of the last result submission.
 func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalHeight uint64) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
@@ -333,4 +362,37 @@ func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk
 	if err != nil {
 		panic(err.Error())
 	}
+}
+
+// GetTxQueriesToRemove retrieves the list of TX queries registered to be removed.
+func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context) []uint64 {
+	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.TxQueryToRemoveKey)
+	iterator := prefixStore.Iterator(nil, nil)
+	defer iterator.Close()
+	ids := make([]uint64, 0, 100)
+	for ; iterator.Valid(); iterator.Next() {
+		ids = append(ids, sdk.BigEndianToUint64(iterator.Key()))
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	return ids
+}
+
+// removeTxQueryHashes removes up to limit tx hashes related to the query with the given ID from the
+// Keeper's store and returns the number of removed tx hashes and if all the query's hashes have
+// been removed during the call. If limit is 0, it removes all the hashes for the given query.
+func (k Keeper) removeTxQueryHashes(ctx sdk.Context, queryID, limit uint64) (removed uint64, complete bool) {
+	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(queryID))
+	iterator := prefixStore.Iterator(nil, nil)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		txHashKey := iterator.Key()
+		prefixStore.Delete(txHashKey)
+		removed++
+		if limit != 0 && removed >= limit {
+			return removed, !iterator.Valid()
+		}
+	}
+	return removed, true
 }
