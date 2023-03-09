@@ -7,7 +7,7 @@ require (
 	github.com/CosmWasm/wasmvm v1.1.1
 	github.com/confio/ics23/go v0.7.0
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
-	github.com/cosmos/cosmos-proto v1.0.0-alpha8
+	github.com/cosmos/cosmos-proto v1.0.0-beta.3
 	github.com/cosmos/cosmos-sdk v0.45.7-0.20221104161803-456ca5663c5e
 	github.com/cosmos/ibc-go/v3 v3.0.0
 	github.com/cosmos/interchain-security v0.2.0
