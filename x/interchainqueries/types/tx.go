@@ -140,24 +140,38 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
 
-	if len(msg.GetNewKeys()) == 0 && msg.GetNewUpdatePeriod() == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "one of new_keys or new_update_period should be set")
+	newKeys := msg.GetNewKeys()
+	newTxFilter := msg.GetNewTransactionsFilter()
+
+	if len(newKeys) == 0 && newTxFilter == "" && msg.GetNewUpdatePeriod() == 0 {
+		return sdkerrors.Wrap(
+			sdkerrors.ErrInvalidRequest,
+			"one of new_keys, new_transactions_filter or new_update_period should be set",
+		)
 	}
 
-	if err := validateKeys(msg.GetNewKeys()); err != nil {
-		return err
+	if len(newKeys) != 0 && newTxFilter != "" {
+		return sdkerrors.Wrap(
+			sdkerrors.ErrInvalidRequest,
+			"either new_keys or new_transactions_filter should be set",
+		)
+	}
+
+	if len(newKeys) != 0 {
+		if err := validateKeys(newKeys); err != nil {
+			return err
+		}
+	}
+
+	if newTxFilter != "" {
+		if err := ValidateTransactionsFilter(newTxFilter); err != nil {
+			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
+		}
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
-
-	if len(msg.NewTransactionsFilter) != 0 {
-		if err := ValidateTransactionsFilter(msg.NewTransactionsFilter); err != nil {
-			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
-		}
-	}
-
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}

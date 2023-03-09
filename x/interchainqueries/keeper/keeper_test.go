@@ -195,7 +195,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		query                 iqtypes.MsgRegisterInterchainQuery
 	}{
 		{
-			"valid update period",
+			"valid update period for kv",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
@@ -211,7 +211,23 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalKVQuery,
 		},
 		{
-			"valid query data",
+			"valid update period for tx",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:         1,
+					NewKeys:         nil,
+					NewUpdatePeriod: 2,
+					Sender:          sender,
+				}
+			},
+			nil,
+			2,
+			nil,
+			originalTXQuery.TransactionsFilter,
+			originalTXQuery,
+		},
+		{
+			"valid kv query data",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -237,7 +253,23 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalKVQuery,
 		},
 		{
-			"valid query both query keys and update period and ignore tx filter",
+			"valid tx filter",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:               1,
+					NewUpdatePeriod:       0,
+					NewTransactionsFilter: "newFilter",
+					Sender:                sender,
+				}
+			},
+			nil,
+			originalTXQuery.UpdatePeriod,
+			nil,
+			"newFilter",
+			originalTXQuery,
+		},
+		{
+			"valid kv query both query keys and update period and ignore tx filter",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -264,7 +296,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalKVQuery,
 		},
 		{
-			"must not update keys for a tx query but update filter",
+			"valid tx query both tx filter and update period and ignore query keys",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -283,6 +315,43 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			2,
 			nil,
 			"newFilter",
+			originalTXQuery,
+		},
+		{
+			"must fail on update filter for a kv query",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:               1,
+					NewUpdatePeriod:       2,
+					NewTransactionsFilter: "newFilter",
+					Sender:                sender,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+			originalKVQuery.UpdatePeriod,
+			originalKVQuery.Keys,
+			originalKVQuery.TransactionsFilter,
+			originalKVQuery,
+		},
+		{
+			"must fail on update keys for a tx query",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{
+						{
+							Path: "newpath",
+							Key:  []byte("newdata"),
+						},
+					},
+					NewUpdatePeriod: 2,
+					Sender:          sender,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+			originalTXQuery.UpdatePeriod,
+			originalTXQuery.Keys,
+			originalTXQuery.TransactionsFilter,
 			originalTXQuery,
 		},
 		{
@@ -371,11 +440,12 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			} else {
 				suite.Require().NoError(err)
 				suite.Require().NotNil(resUpdate)
-				updatedQuery, err := iqkeeper.GetQueryByID(ctx, 1)
-				suite.Require().NoError(err)
-				suite.Require().Equal(tt.expectedQueryKeys, updatedQuery.GetKeys())
-				suite.Require().Equal(tt.expectedPeriod, updatedQuery.GetUpdatePeriod())
 			}
+			query, err := iqkeeper.GetQueryByID(ctx, 1)
+			suite.Require().NoError(err)
+			suite.Require().Equal(tt.expectedQueryKeys, query.GetKeys())
+			suite.Require().Equal(tt.expectedQueryTXFilter, query.GetTransactionsFilter())
+			suite.Require().Equal(tt.expectedPeriod, query.GetUpdatePeriod())
 		})
 	}
 }
@@ -578,7 +648,7 @@ func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
 
 			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
 			for _, query := range tt.queries {
-				iqkeeper.SaveQuery(ctx, *query)
+				iqkeeper.SaveQuery(ctx, query)
 			}
 
 			allQueries := iqkeeper.GetAllRegisteredQueries(ctx)
