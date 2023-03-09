@@ -2,8 +2,9 @@ package test
 
 import (
 	"encoding/json"
-	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"testing"
+
+	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
