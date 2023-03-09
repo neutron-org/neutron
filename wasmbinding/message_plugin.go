@@ -323,9 +323,13 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	if proposal.UpgradeProposal != nil {
 		p := proposal.UpgradeProposal
 		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
-			Title:               p.Title,
-			Description:         p.Description,
-			Plan:                p.Plan,
+			Title:       p.Title,
+			Description: p.Description,
+			Plan: softwareUpgrade.Plan{
+				Name:   p.Plan.Name,
+				Height: p.Plan.Height,
+				Info:   p.Plan.Info,
+			},
 			UpgradedClientState: p.UpgradedClientState,
 		})
 		if err != nil {
@@ -370,13 +374,27 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		}
 	}
 
+	if proposal.SudoContractProposal != nil {
+		p := proposal.SudoContractProposal
+		err := msg.SetContent(&wasmtypes.SudoContractProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			Contract:    p.Contract,
+			Msg:         p.Msg,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on UnpinCodesProposal")
+		}
+	}
+
 	if proposal.ParamChangeProposal == nil &&
 		proposal.SoftwareUpgradeProposal == nil &&
 		proposal.CancelSoftwareUpgradeProposal == nil &&
 		proposal.UpgradeProposal == nil &&
 		proposal.ClientUpdateProposal == nil &&
 		proposal.PinCodesProposal == nil &&
-		proposal.UnpinCodesProposal == nil {
+		proposal.UnpinCodesProposal == nil &&
+		proposal.SudoContractProposal == nil {
 		return nil, fmt.Errorf("no admin proposal type is present")
 	}
 

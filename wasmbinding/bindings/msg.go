@@ -82,6 +82,7 @@ type AdminProposal struct {
 	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal"`
 	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal"`
 	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal"`
+	SudoContractProposal          *SudoContractProposal          `json:"sudo_contract_proposal"`
 }
 
 type ParamChangeProposal struct {
@@ -151,4 +152,11 @@ type UnpinCodesProposal struct {
 	Title       string   `json:"title,omitempty"`
 	Description string   `json:"description,omitempty"`
 	CodeIDs     []uint64 `json:"code_ids,omitempty"`
+}
+
+type SudoContractProposal struct {
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Contract    string `json:"contract,omitempty"`
+	Msg         []byte `json:"msg,omitempty"`
 }
