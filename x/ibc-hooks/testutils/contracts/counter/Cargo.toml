@@ -1,8 +1,7 @@
 [package]
 name = "counter"
-description = "Cosmwasm counter dapp, with permissions for testing Osmosis wasmhooks"
+description = "Cosmwasm counter dapp, with permissions for testing wasmhooks. Taken from osmosis ibc-hooks module."
 version = "0.1.0"
-authors = ["osmosis contributors"]
 edition = "2021"
 
 exclude = [
