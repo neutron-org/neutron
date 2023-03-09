@@ -2,6 +2,7 @@ package test
 
 import (
 	"encoding/json"
+	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"testing"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -69,6 +70,30 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	suite.NoError(err)
 	suite.Nil(events)
 	suite.Equal([][]byte{[]byte(`{}`)}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Craft RegisterInterchainAccount message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
+			ConnectionId: suite.Path.EndpointA.ConnectionID,
+			// the limit is 47, this line is 50 characters long
+			InterchainAccountId: "01234567890123456789012345678901234567890123456789",
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch RegisterInterchainAccount message
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.Error(err)
+	suite.ErrorIs(err, ictxtypes.ErrLongInterchainAccountID)
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
