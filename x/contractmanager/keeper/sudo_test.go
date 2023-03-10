@@ -50,13 +50,13 @@ func TestSudoResponse(t *testing.T) {
 	p := channeltypes.Packet{}
 	sudoErrorMsg.Response.Data = []byte("data")
 	sudoErrorMsg.Response.Request = p
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoErrorMsg)).Return([]byte("success"), nil)
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return([]byte("success"), nil)
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoResponse(ctx, address, sudoErrorMsg.Response.Request, sudoErrorMsg.Response.Data)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoErrorMsg)).Return(nil, fmt.Errorf("internal contract error"))
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return(nil, fmt.Errorf("internal contract error"))
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoResponse(ctx, address, sudoErrorMsg.Response.Request, sudoErrorMsg.Response.Data)
 	require.Nil(t, resp)
@@ -90,13 +90,13 @@ func TestSudoError(t *testing.T) {
 	p := channeltypes.Packet{}
 	sudoErrorMsg.Error.Details = "details"
 	sudoErrorMsg.Error.Request = p
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoErrorMsg)).Return([]byte("success"), nil)
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return([]byte("success"), nil)
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoError(ctx, address, sudoErrorMsg.Error.Request, sudoErrorMsg.Error.Details)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoErrorMsg)).Return(nil, fmt.Errorf("internal contract error"))
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return(nil, fmt.Errorf("internal contract error"))
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoError(ctx, address, sudoErrorMsg.Error.Request, sudoErrorMsg.Error.Details)
 	require.Nil(t, resp)
@@ -129,13 +129,13 @@ func TestSudoTimeout(t *testing.T) {
 	sudoTimeoutMsg := types.MessageTimeout{}
 	p := channeltypes.Packet{}
 	sudoTimeoutMsg.Timeout.Request = p
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoTimeoutMsg)).Return([]byte("success"), nil)
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTimeoutMsg)).Return([]byte("success"), nil)
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoTimeout(ctx, address, sudoTimeoutMsg.Timeout.Request)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoTimeoutMsg)).Return(nil, fmt.Errorf("internal contract error"))
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTimeoutMsg)).Return(nil, fmt.Errorf("internal contract error"))
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoTimeout(ctx, address, sudoTimeoutMsg.Timeout.Request)
 	require.Nil(t, resp)
@@ -165,13 +165,13 @@ func TestSudoOnChanOpen(t *testing.T) {
 	address := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 
 	sudoOpenAckMsg := types.MessageOnChanOpenAck{}
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoOpenAckMsg)).Return([]byte("success"), nil)
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoOpenAckMsg)).Return([]byte("success"), nil)
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoOnChanOpenAck(ctx, address, sudoOpenAckMsg.OpenAck)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoOpenAckMsg)).Return(nil, fmt.Errorf("internal contract error"))
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoOpenAckMsg)).Return(nil, fmt.Errorf("internal contract error"))
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoOnChanOpenAck(ctx, address, sudoOpenAckMsg.OpenAck)
 	require.Nil(t, resp)
@@ -192,7 +192,7 @@ func TestSudoTxQueryResult(t *testing.T) {
 	address := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 
 	sudoTxQueryResultMsg := types.MessageTxQueryResult{}
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoTxQueryResultMsg)).Return([]byte("success"), nil)
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTxQueryResultMsg)).Return([]byte("success"), nil)
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoTxQueryResult(ctx,
 		address,
@@ -203,7 +203,7 @@ func TestSudoTxQueryResult(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoTxQueryResultMsg)).Return(nil, fmt.Errorf("internal contract error"))
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTxQueryResultMsg)).Return(nil, fmt.Errorf("internal contract error"))
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoTxQueryResult(ctx,
 		address,
@@ -234,7 +234,7 @@ func TestSudoKvQueryResult(t *testing.T) {
 	address := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 
 	sudoTxQueryResultMsg := types.MessageKVQueryResult{}
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoTxQueryResultMsg)).Return([]byte("success"), nil)
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTxQueryResultMsg)).Return([]byte("success"), nil)
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoKVQueryResult(ctx,
 		address,
@@ -243,7 +243,7 @@ func TestSudoKvQueryResult(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
-	wk.EXPECT().Sudo(gomock.Any(), address, mustJson(sudoTxQueryResultMsg)).Return(nil, fmt.Errorf("internal contract error"))
+	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTxQueryResultMsg)).Return(nil, fmt.Errorf("internal contract error"))
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoKVQueryResult(ctx,
 		address,
@@ -261,7 +261,7 @@ func TestSudoKvQueryResult(t *testing.T) {
 	require.ErrorContains(t, err, "is not a contract address")
 }
 
-func mustJson(v interface{}) []byte {
+func mustJSON(v interface{}) []byte {
 	data, err := json.Marshal(v)
 	if err != nil {
 		panic(err)

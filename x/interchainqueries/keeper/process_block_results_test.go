@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"fmt"
-	"math"
 	"testing"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v4/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
@@ -159,35 +157,6 @@ func UpdateClient(endpoint *ibctesting.Endpoint) (err error) {
 	_, err = endpoint.Chain.SendMsgs(msg)
 
 	return err
-}
-
-func (suite *KeeperTestSuite) findBestTrustedHeight(dstChain *ibctesting.TestChain, height uint64) ibcclienttypes.Height {
-	consensusStatesResponse, err := dstChain.App.GetIBCKeeper().ClientKeeper.ConsensusStates(types.WrapSDKContext(dstChain.GetContext()), &ibcclienttypes.QueryConsensusStatesRequest{
-		ClientId: suite.Path.EndpointA.ClientID,
-		Pagination: &query.PageRequest{
-			Limit:      math.MaxUint64,
-			Reverse:    true,
-			CountTotal: true,
-		},
-	})
-	suite.Require().NoError(err)
-
-	bestHeight := ibcclienttypes.Height{
-		RevisionNumber: 0,
-		RevisionHeight: 0,
-	}
-
-	for _, cs := range consensusStatesResponse.ConsensusStates {
-		if height >= cs.Height.RevisionHeight && cs.Height.RevisionHeight > bestHeight.RevisionHeight {
-			bestHeight = cs.Height
-			// we won't find anything better
-			if cs.Height.RevisionHeight == height {
-				break
-			}
-		}
-	}
-
-	return bestHeight
 }
 
 func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {

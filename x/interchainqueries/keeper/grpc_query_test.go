@@ -413,6 +413,7 @@ func (suite *KeeperTestSuite) TestRegisteredQueries() {
 			suite.SetupTest()
 
 			for _, q := range tt.registeredQueries {
+				q := q
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.SaveQuery(suite.ChainA.GetContext(), &q))
 			}
 

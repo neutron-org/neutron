@@ -245,7 +245,7 @@ func (k Keeper) updateLastLocalHeight(ctx sdk.Context, query *types.RegisteredQu
 
 // checkLastRemoteHeight checks whether the given height is greater than the query's remote height
 // of the last result submission.
-func (k Keeper) checkLastRemoteHeight(ctx sdk.Context, query types.RegisteredQuery, height uint64) error {
+func (k Keeper) checkLastRemoteHeight(ctx sdk.Context, query types.RegisteredQuery, height uint64) error { //nolint:unparam
 	if query.LastSubmittedResultRemoteHeight >= height {
 		return fmt.Errorf("result's remote height %d is less than or equal to last result's remote height %d", height, query.LastSubmittedResultRemoteHeight)
 	}

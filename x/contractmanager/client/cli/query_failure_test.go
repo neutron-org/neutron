@@ -34,7 +34,8 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 	pub := &ed25519.PubKey{Key: pubBz}
 
 	for i := 0; i < n; i++ {
-		rand.Read(pub.Key)
+		_, err := rand.Read(pub.Key)
+		require.NoError(t, err)
 		acc := sdktypes.AccAddress(pub.Address())
 		failure := types.Failure{
 			Address: acc.String(),
