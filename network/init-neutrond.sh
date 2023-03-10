@@ -48,6 +48,19 @@ DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary          "$DISTRIBUTION_CONTRACT"
 LOCKDROP_VAULT_CONTRACT_BINARY_ID=$(store_binary        "$LOCKDROP_VAULT_CONTRACT")
 PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID=$(store_binary "$PRE_PROPOSAL_OVERRULE_CONTRACT")
 
+NEUTRON_VAULT_CONTRACT_ADDRESS=$(         $BINARY debug generate-contract-address 1 "$NEUTRON_VAULT_CONTRACT_BINARY_ID")
+DAO_CONTRACT_ADDRESS=$(                   $BINARY debug generate-contract-address 2 "$DAO_CONTRACT_BINARY_ID")
+PROPOSAL_SINGLE_CONTRACT_ADDRESS=$(       $BINARY debug generate-contract-address 3 "$PROPOSAL_CONTRACT_BINARY_ID")
+PRE_PROPOSAL_CONTRACT_ADDRESS=$(          $BINARY debug generate-contract-address 4 "$PRE_PROPOSAL_CONTRACT_BINARY_ID")
+PROPOSAL_MULTIPLE_CONTRACT_ADDRESS=$(     $BINARY debug generate-contract-address 5 "$PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID")
+PRE_PROPOSAL_MULTIPLE_CONTRACT_ADDRESS=$( $BINARY debug generate-contract-address 6 "$PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID")
+PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$(     $BINARY debug generate-contract-address 7 "$PROPOSAL_CONTRACT_BINARY_ID")
+PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$( $BINARY debug generate-contract-address 8 "$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID")
+VOTING_REGISTRY_CONTRACT_ADDRESS=$(       $BINARY debug generate-contract-address 9 "$VOTING_REGISTRY_CONTRACT_BINARY_ID")
+TREASURY_CONTRACT_ADDRESS=$(              $BINARY debug generate-contract-address 10 "$TREASURY_CONTRACT_BINARY_ID")
+DISTRIBUTION_CONTRACT_ADDRESS=$(          $BINARY debug generate-contract-address 11 "$DISTRIBUTION_CONTRACT_BINARY_ID")
+LOCKDROP_VAULT_CONTRACT_ADDRESS=$(        $BINARY debug generate-contract-address 12 "$LOCKDROP_VAULT_CONTRACT_BINARY_ID")
+
 # PRE_PROPOSE_INIT_MSG will be put into the PROPOSAL_SINGLE_INIT_MSG and PROPOSAL_MULTIPLE_INIT_MSG
 PRE_PROPOSE_INIT_MSG='{
    "deposit_info":{
@@ -164,8 +177,8 @@ VOTING_REGISTRY_INIT_MSG='{
   "manager": null,
   "owner": null,
   "voting_vaults": [
-    "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq",
-    "neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a"
+    "'"$NEUTRON_VAULT_CONTRACT_ADDRESS"'",
+    "'"$LOCKDROP_VAULT_CONTRACT_ADDRESS"'"
   ]
 }'
 VOTING_REGISTRY_INIT_MSG_BASE64=$(echo "$VOTING_REGISTRY_INIT_MSG" | base64 | tr -d "\n")
@@ -199,7 +212,6 @@ DAO_INIT='{
 }'
 
 # TODO: properly initialize treasury
-DISTRIBUTION_CONTRACT_ADDRESS="neutron1vhndln95yd7rngslzvf6sax6axcshkxqpmpr886ntelh28p9ghuq56mwja"
 TREASURY_INIT='{
   "main_dao_address": "'"$ADMIN_ADDRESS"'",
   "security_dao_address": "'"$ADMIN_ADDRESS"'",
@@ -236,4 +248,4 @@ $BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID"    
 $BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"   --label "Distribution"               --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_ID"  "$LOCKDROP_VAULT_INIT" --label "DAO_Neutron_lockdrop_vault" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 
-sed -i -e 's/\"admins\":.*/\"admins\": [\"neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx\"]/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
