@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM rust:1.63-bullseye as hermes-builder
+FROM rust:bullseye as hermes-builder
 WORKDIR /app
 RUN git clone https://github.com/informalsystems/hermes.git && \
     cd hermes && \
