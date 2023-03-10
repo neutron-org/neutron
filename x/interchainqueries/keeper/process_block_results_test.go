@@ -71,7 +71,7 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 		Commit: commit.ToProto(),
 	}
 
-	if tmValSet != nil {
+	if tmValSet != nil { //nolint:staticcheck // this checks if a pointer is nil, suggesting that it can be nil but we have this test all over the place
 		valSet, err = tmValSet.ToProto()
 		require.NoError(chain.T, err)
 	}

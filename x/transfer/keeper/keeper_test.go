@@ -91,8 +91,8 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 
 	// Store code and instantiate reflect contract.
-	codeId := suite.StoreReflectCode(ctx, testOwner, reflectContractPath)
-	contractAddress := suite.InstantiateReflectContract(ctx, testOwner, codeId)
+	codeID := suite.StoreReflectCode(ctx, testOwner, reflectContractPath)
+	contractAddress := suite.InstantiateReflectContract(ctx, testOwner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	ctx = suite.ChainA.GetContext()
