@@ -28,9 +28,6 @@ linters:
     - unparam
     - unused
 
-# TODO: fix the sdkerrors.Wrap deprecation warning and re-enable staticcheck
-# TODO: fix the use of deprecated gov style
-
 issues:
   max-issues-per-linter: 10000
   max-same-issues: 10000
