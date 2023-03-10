@@ -154,20 +154,27 @@ func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
 	rmLimit := k.GetParams(ctx).TxQueryRemovalLimit
 	limited := rmLimit != 0
 
-	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.TxQueryToRemoveKey)
-	iterator := prefixStore.Iterator(nil, nil)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		removed, complete := k.removeTxQueryHashes(ctx, sdk.BigEndianToUint64(iterator.Key()), rmLimit)
+	queriesToRm := make([]*TxQueryToRemove, 0, rmLimit/10)
+	for _, queryID := range k.GetTxQueriesToRemove(ctx, rmLimit) {
+		queryToRm := &TxQueryToRemove{ID: queryID}
+		queryToRm.Hashes, queryToRm.CompleteRemoval = k.getTxQueryHashes(ctx, queryID, rmLimit)
+		queriesToRm = append(queriesToRm, queryToRm)
 
-		if complete {
-			prefixStore.Delete(iterator.Key())
-		}
 		if limited {
-			rmLimit -= removed
+			rmLimit -= uint64(len(queryToRm.Hashes))
 			if rmLimit <= 0 {
 				break
 			}
+		}
+	}
+
+	store := ctx.KVStore(k.storeKey)
+	for _, query := range queriesToRm {
+		for _, txHash := range query.Hashes {
+			store.Delete(types.GetSubmittedTransactionIDForQueryKey(query.ID, txHash))
+		}
+		if query.CompleteRemoval {
+			store.Delete(types.GetTxQueryToRemoveByIDKey(query.ID))
 		}
 	}
 }
@@ -364,14 +371,18 @@ func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk
 	}
 }
 
-// GetTxQueriesToRemove retrieves the list of TX queries registered to be removed.
-func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context) []uint64 {
+// GetTxQueriesToRemove retrieves the list of TX queries registered to be removed. Returns a slice
+// with no more than limit entities or all entities if limit is 0.
+func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context, limit uint64) []uint64 {
 	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.TxQueryToRemoveKey)
 	iterator := prefixStore.Iterator(nil, nil)
 	defer iterator.Close()
 	ids := make([]uint64, 0, 100)
 	for ; iterator.Valid(); iterator.Next() {
 		ids = append(ids, sdk.BigEndianToUint64(iterator.Key()))
+		if limit != 0 && uint64(len(ids)) >= limit {
+			return ids
+		}
 	}
 	if len(ids) == 0 {
 		return nil
@@ -379,20 +390,35 @@ func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context) []uint64 {
 	return ids
 }
 
-// removeTxQueryHashes removes up to limit tx hashes related to the query with the given ID from the
-// Keeper's store and returns the number of removed tx hashes and if all the query's hashes have
-// been removed during the call. If limit is 0, it removes all the hashes for the given query.
-func (k Keeper) removeTxQueryHashes(ctx sdk.Context, queryID, limit uint64) (removed uint64, complete bool) {
+// getTxQueryHashes retrieves up to limit tx hashes related to a query with the given ID from the
+// Keeper's store and a bool meaning if all the query's hashes have been retrieved. If limit is 0,
+// it retrieves all the hashes for the given query.
+func (k Keeper) getTxQueryHashes(ctx sdk.Context, queryID uint64, limit uint64) (txHashes [][]byte, complete bool) {
 	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(queryID))
 	iterator := prefixStore.Iterator(nil, nil)
+	hashes := make([][]byte, 0, limit)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		txHashKey := iterator.Key()
-		prefixStore.Delete(txHashKey)
-		removed++
-		if limit != 0 && removed >= limit {
-			return removed, !iterator.Valid()
+		hashes = append(hashes, iterator.Key())
+		if limit != 0 && uint64(len(hashes)) >= limit {
+			return hashes, !iterator.Valid()
 		}
 	}
-	return removed, true
+	if len(hashes) == 0 {
+		return nil, true
+	}
+	return hashes, true
+}
+
+// TxQueryToRemove contains data related to a single query listed for removal and needed in the
+// removal process.
+type TxQueryToRemove struct {
+	// ID is the query ID.
+	ID uint64
+	// Hashes is the list of tx hashes previously submitted for the query. It can be either
+	// the whole list of tx hashes of the query of only a part of them to fit removal limit.
+	Hashes [][]byte
+	// CompleteRemoval represents whether all tx hashes (true) of the query or only a part of
+	// them (false) are collected in the Hashes field.
+	CompleteRemoval bool
 }

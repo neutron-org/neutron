@@ -1416,7 +1416,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		for _, hash := range txHashes {
 			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash), "%s expected not to be in the store", hash)
 		}
-		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx), "expected not to have any TX queries to remove after cleanup")
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
 		_, err = iqkeeper.GetQueryByID(ctx, queryID)
 		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
 	})
@@ -1462,7 +1462,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		for _, hash := range txHashesQ2 {
 			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID2, hash), "%s expected not to be in the store", hash)
 		}
-		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx), "expected not to have any TX queries to remove after cleanup")
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
 		_, err = iqkeeper.GetQueryByID(ctx, queryID1)
 		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
 		_, err = iqkeeper.GetQueryByID(ctx, queryID2)
@@ -1501,7 +1501,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		removed, left := suite.txHashesRemovalProgress(ctx, iqkeeper, queryID, txHashes)
 		suite.Require().Equalf(limit, removed, "first cleanup removed hashes count should be as many as limit")
 		suite.Require().Equalf(limitOverflow, left, "first cleanup left hashes count should be as many as limitOverflow")
-		suite.Require().Equalf([]uint64{queryID}, iqkeeper.GetTxQueriesToRemove(ctx), "expected to have a TX query to remove after partial cleanup")
+		suite.Require().Equalf([]uint64{queryID}, iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected to have a TX query to remove after partial cleanup")
 		_, err = iqkeeper.GetQueryByID(ctx, queryID)
 		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
 
@@ -1510,7 +1510,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		for _, hash := range txHashes { // by this point all hashes should be removed
 			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash), "%s expected not to be in the store", hash)
 		}
-		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx), "expected not to have any TX queries to remove after cleanup")
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
 		_, err = iqkeeper.GetQueryByID(ctx, queryID)
 		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
 	})
@@ -1561,7 +1561,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		removedQ2, leftQ2 := suite.txHashesRemovalProgress(ctx, iqkeeper, queryID2, txHashesQ2)
 		suite.Require().Equalf(limit, removedQ1+removedQ2, "first cleanup removed hashes count should be as many as limit")
 		suite.Require().Equalf(limitOverflow, leftQ1+leftQ2, "first cleanup remaining hashes count should be as many as limitOverflow")
-		suite.Require().Equalf([]uint64{queryID2}, iqkeeper.GetTxQueriesToRemove(ctx), "expected to have one TX query to remove after partial cleanup")
+		suite.Require().Equalf([]uint64{queryID2}, iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected to have one TX query to remove after partial cleanup")
 
 		// call cleanup one more time and make sure it worked as expected
 		iqkeeper.TxQueriesCleanup(ctx)
@@ -1569,7 +1569,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		removedQ2, leftQ2 = suite.txHashesRemovalProgress(ctx, iqkeeper, queryID2, txHashesQ2)
 		suite.Require().Equalf(limit+limitOverflow, removedQ1+removedQ2, "all hashes should be removed after the second cleanup")
 		suite.Require().Equalf(0, leftQ1+leftQ2, "no hashes should left after the second cleanup")
-		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx), "expected not to have any TX queries to remove after cleanup")
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
 		_, err = iqkeeper.GetQueryByID(ctx, queryID1)
 		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
 		_, err = iqkeeper.GetQueryByID(ctx, queryID2)
@@ -1607,7 +1607,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		for _, hash := range txHashes {
 			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash), "%s expected not to be in the store", hash)
 		}
-		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx), "expected not to have any TX queries to remove after cleanup")
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
 		_, err = iqkeeper.GetQueryByID(ctx, queryID)
 		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
 	})
