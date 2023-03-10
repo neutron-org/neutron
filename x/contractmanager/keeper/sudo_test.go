@@ -73,7 +73,7 @@ func TestSudoResponse(t *testing.T) {
 	sudoResponseTransport.Response.Request = p
 
 	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	resp, err = k.SudoResponse(ctx, address, sudoResponseTransport.Response.Request, sudoResponseTransport.Response.Data)
+	_, err = k.SudoResponse(ctx, address, sudoResponseTransport.Response.Request, sudoResponseTransport.Response.Data)
 	require.Nil(t, err)
 	require.NoError(t, err)
 }

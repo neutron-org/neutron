@@ -242,9 +242,10 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
-	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+	suite.Require().NoError(err)
 
-	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
+	err = testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
 	var msg json.RawMessage
