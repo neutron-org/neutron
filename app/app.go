@@ -104,7 +104,7 @@ import (
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"github.com/neutron-org/neutron/x/feerefunder"
-	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchainqueriesmoduletypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -262,7 +262,7 @@ type App struct {
 	EvidenceKeeper      evidencekeeper.Keeper
 	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
-	FeeKeeper           *feekeeper.Keeper
+	FeeRefunderKeeper   *feerefunderkeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 
@@ -401,8 +401,8 @@ func New(
 		&app.WasmKeeper,
 	)
 
-	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.GetSubspace(feetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.BankKeeper)
-	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
+	app.FeeRefunderKeeper = feerefunderkeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.GetSubspace(feetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.BankKeeper)
+	feeRefunderModule := feerefunder.NewAppModule(appCodec, *app.FeeRefunderKeeper, app.AccountKeeper, app.BankKeeper)
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
 		appCodec,
@@ -418,7 +418,7 @@ func New(
 	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.FeeKeeper, app.ContractManagerKeeper,
+		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.FeeRefunderKeeper, app.ContractManagerKeeper,
 	)
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
@@ -498,10 +498,17 @@ func New(
 		app.ICAControllerKeeper,
 		scopedInterTxKeeper,
 		app.ContractManagerKeeper,
-		app.FeeKeeper,
+		app.FeeRefunderKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(
+		&app.InterchainTxsKeeper,
+		&app.InterchainQueriesKeeper,
+		app.TransferKeeper,
+		&app.AdminmoduleKeeper,
+		app.FeeBurnerKeeper,
+		app.FeeRefunderKeeper,
+	), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -577,7 +584,7 @@ func New(
 		icaModule,
 		interchainQueriesModule,
 		interchainTxsModule,
-		feeModule,
+		feeRefunderModule,
 		feeBurnerModule,
 		contractManagerModule,
 		adminModule,

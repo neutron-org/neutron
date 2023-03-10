@@ -82,6 +82,18 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			}
 
 			return bz, nil
+		case contractQuery.MinimumIbcFee != nil:
+			minimumIbcFee, err := qp.GetMinimumIbcFee(ctx, contractQuery.MinimumIbcFee)
+			if err != nil {
+				return nil, sdkerrors.Wrapf(err, "failed to get minimum ibc fee: %v", err)
+			}
+
+			bz, err := json.Marshal(minimumIbcFee)
+			if err != nil {
+				return nil, sdkerrors.Wrapf(err, "failed to marshal minimum ibc fee response: %v", err)
+			}
+
+			return bz, nil
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}

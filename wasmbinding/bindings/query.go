@@ -6,7 +6,8 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.
@@ -21,6 +22,8 @@ type NeutronQuery struct {
 	RegisteredInterchainQuery *QueryRegisteredQueryRequest `json:"registered_interchain_query,omitempty"`
 	// TotalBurnedNeutronsAmount
 	TotalBurnedNeutronsAmount *QueryTotalBurnedNeutronsAmountRequest `json:"total_burned_neutrons_amount,omitempty"`
+	// MinimumIbcFee
+	MinimumIbcFee *QueryMinimumIbcFeeRequest `json:"minimum_ibc_fee,omitempty"`
 }
 
 /* Requests */
@@ -48,6 +51,10 @@ type QueryRegisteredQueryRequest struct {
 	QueryID uint64 `json:"query_id,omitempty"`
 }
 
+type QueryTotalBurnedNeutronsAmountRequest struct{}
+
+type QueryMinimumIbcFeeRequest struct{}
+
 /* Responses */
 
 type QueryRegisteredQueryResponse struct {
@@ -64,7 +71,7 @@ type RegisteredQuery struct {
 	// The address that registered the query.
 	Owner string `json:"owner"`
 	// The KV-storage keys for which we want to get values from remote chain
-	Keys []*types.KVKey `json:"keys"`
+	Keys []*icqtypes.KVKey `json:"keys"`
 	// The filter for transaction search ICQ
 	TransactionsFilter string `json:"transactions_filter"`
 	// The query type identifier (i.e. 'kv' or 'tx' for now).
@@ -83,10 +90,12 @@ type RegisteredQuery struct {
 	SubmitTimeout uint64 `json:"submit_timeout"`
 }
 
-type QueryTotalBurnedNeutronsAmountRequest struct{}
-
 type QueryTotalBurnedNeutronsAmountResponse struct {
 	Coin sdktypes.Coin `json:"coin"`
+}
+
+type QueryMinimumIbcFeeResponse struct {
+	MinFee feerefundertypes.Fee
 }
 
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
@@ -101,7 +110,7 @@ func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
 	// We want keys be as empty array in Json ('[]'), not 'null'
 	// It's easier to work with on smart-contracts side
 	if a.Keys == nil {
-		a.Keys = make([]*types.KVKey, 0)
+		a.Keys = make([]*icqtypes.KVKey, 0)
 	}
 
 	return json.Marshal(a)
