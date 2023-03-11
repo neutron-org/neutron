@@ -110,7 +110,7 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 	}
 
 	if len(fundsForTreasury) > 0 {
-		_, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
+		addr, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
 		if err != nil {
 			err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, fundsForTreasury)
 			if err != nil {
@@ -119,7 +119,7 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 		} else {
 			err = k.bankKeeper.SendCoins(
 				ctx,
-				moduleAddr, sdk.MustAccAddressFromBech32(params.TreasuryAddress),
+				moduleAddr, addr,
 				fundsForTreasury,
 			)
 			if err != nil {
