@@ -34,6 +34,14 @@ function store_binary() {
   echo "$BINARY_ID"
 }
 
+INSTANCE_ID_COUNTER=1
+function get_next_address() {
+  BINARY_ID=$1
+  CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER" "$BINARY_ID")
+  (( INSTANCE_ID_COUNTER++ ))
+  echo "$CONTRACT_ADDRESS"
+}
+
 # Upload the dao contracts
 
 NEUTRON_VAULT_CONTRACT_BINARY_ID=$(store_binary         "$NEUTRON_VAULT_CONTRACT")
