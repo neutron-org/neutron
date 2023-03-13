@@ -156,8 +156,7 @@ func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
 
 	queriesToRm := make([]*TxQueryToRemove, 0, rmLimit/10)
 	for _, queryID := range k.GetTxQueriesToRemove(ctx, rmLimit) {
-		queryToRm := &TxQueryToRemove{ID: queryID}
-		queryToRm.Hashes, queryToRm.CompleteRemoval = k.getTxQueryHashes(ctx, queryID, rmLimit)
+		queryToRm := k.calculateTxQueryRemoval(ctx, queryID, rmLimit)
 		queriesToRm = append(queriesToRm, queryToRm)
 
 		if limited {
@@ -390,24 +389,24 @@ func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context, limit uint64) []uint64 {
 	return ids
 }
 
-// getTxQueryHashes retrieves up to limit tx hashes related to a query with the given ID from the
-// Keeper's store and a bool meaning if all the query's hashes have been retrieved. If limit is 0,
-// it retrieves all the hashes for the given query.
-func (k Keeper) getTxQueryHashes(ctx sdk.Context, queryID uint64, limit uint64) (txHashes [][]byte, complete bool) {
+// calculateTxQueryRemoval creates a TxQueryToRemove populated with the data relative to the query
+// with the given queryID. The result TxQueryToRemove contains up to the limit tx hashes. If the
+// limit is 0, it retrieves all the hashes for the given query.
+func (k Keeper) calculateTxQueryRemoval(ctx sdk.Context, queryID uint64, limit uint64) *TxQueryToRemove {
 	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(queryID))
 	iterator := prefixStore.Iterator(nil, nil)
-	hashes := make([][]byte, 0, limit)
 	defer iterator.Close()
+
+	result := &TxQueryToRemove{ID: queryID, Hashes: make([][]byte, 0, limit)}
 	for ; iterator.Valid(); iterator.Next() {
-		hashes = append(hashes, iterator.Key())
-		if limit != 0 && uint64(len(hashes)) >= limit {
-			return hashes, !iterator.Valid()
+		result.Hashes = append(result.Hashes, iterator.Key())
+		if limit != 0 && uint64(len(result.Hashes)) >= limit {
+			result.CompleteRemoval = !iterator.Valid()
+			return result
 		}
 	}
-	if len(hashes) == 0 {
-		return nil, true
-	}
-	return hashes, true
+	result.CompleteRemoval = true
+	return result
 }
 
 // TxQueryToRemove contains data related to a single query listed for removal and needed in the
