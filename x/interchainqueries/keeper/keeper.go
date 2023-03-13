@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -151,6 +152,7 @@ func (k Keeper) RemoveQuery(ctx sdk.Context, query *types.RegisteredQuery) {
 // stored transaction hashes. Cleans up to params.TxQueryRemovalLimit hashes at a time or all
 // the hashes if params.TxQueryRemovalLimit is 0.
 func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
+	st := time.Now()
 	rmLimit := k.GetParams(ctx).TxQueryRemovalLimit
 	limited := rmLimit != 0
 
@@ -167,8 +169,10 @@ func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
 		}
 	}
 
+	var totalHashesRemoved uint64
 	store := ctx.KVStore(k.storeKey)
 	for _, query := range queriesToRm {
+		totalHashesRemoved += uint64(len(query.Hashes))
 		for _, txHash := range query.Hashes {
 			store.Delete(types.GetSubmittedTransactionIDForQueryKey(query.ID, txHash))
 		}
@@ -176,6 +180,12 @@ func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
 			store.Delete(types.GetTxQueryToRemoveByIDKey(query.ID))
 		}
 	}
+
+	k.Logger(ctx).Debug("TxQueriesCleanup performed",
+		"duration_ms", time.Since(st).Milliseconds(),
+		"hashes_removed", totalHashesRemoved,
+		"queries_removed", len(queriesToRm),
+	)
 }
 
 // SaveKVQueryResult saves the result of the query and updates the query's local and remote heights
