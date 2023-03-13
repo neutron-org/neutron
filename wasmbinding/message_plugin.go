@@ -374,16 +374,28 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		}
 	}
 
-	if proposal.SudoContractProposal != nil {
-		p := proposal.SudoContractProposal
-		err := msg.SetContent(&wasmtypes.SudoContractProposal{
+	if proposal.UpdateAdminProposal != nil {
+		p := proposal.UpdateAdminProposal
+		err := msg.SetContent(&wasmtypes.UpdateAdminProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			NewAdmin:    p.NewAdmin,
+			Contract:    p.Contract,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on UpdateAdminProposal")
+		}
+	}
+
+	if proposal.ClearAdminProposal != nil {
+		p := proposal.ClearAdminProposal
+		err := msg.SetContent(&wasmtypes.ClearAdminProposal{
 			Title:       p.Title,
 			Description: p.Description,
 			Contract:    p.Contract,
-			Msg:         p.Msg,
 		})
 		if err != nil {
-			return nil, sdkerrors.Wrap(err, "failed to set content on UnpinCodesProposal")
+			return nil, sdkerrors.Wrap(err, "failed to set content on ClearAdminProposal")
 		}
 	}
 
@@ -394,7 +406,8 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		proposal.ClientUpdateProposal == nil &&
 		proposal.PinCodesProposal == nil &&
 		proposal.UnpinCodesProposal == nil &&
-		proposal.SudoContractProposal == nil {
+		proposal.UpdateAdminProposal == nil &&
+		proposal.ClearAdminProposal == nil {
 		return nil, fmt.Errorf("no admin proposal type is present")
 	}
 

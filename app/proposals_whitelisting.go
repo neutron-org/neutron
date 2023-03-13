@@ -23,9 +23,10 @@ func IsConsumerProposalWhitelisted(content govtypes.Content) bool {
 		*upgradetypes.CancelSoftwareUpgradeProposal,
 		*ibcclienttypes.ClientUpdateProposal,
 		*ibcclienttypes.UpgradeProposal,
-		*wasmtypes.SudoContractProposal,
 		*wasmtypes.PinCodesProposal,
-		*wasmtypes.UnpinCodesProposal:
+		*wasmtypes.UnpinCodesProposal,
+		*wasmtypes.UpdateAdminProposal,
+		*wasmtypes.ClearAdminProposal:
 		return true
 
 	default:

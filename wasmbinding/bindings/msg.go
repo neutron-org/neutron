@@ -78,11 +78,12 @@ type AdminProposal struct {
 	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
 	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
 	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
-	UpgradeProposal               *UpgradeProposal               `json:"ibc_upgrade_proposal,omitempty"`
+	UpgradeProposal               *UpgradeProposal               `json:"upgrade_proposal,omitempty"`
 	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal"`
 	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal"`
 	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal"`
-	SudoContractProposal          *SudoContractProposal          `json:"sudo_contract_proposal"`
+	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal"`
+	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal"`
 }
 
 type ParamChangeProposal struct {
@@ -145,7 +146,7 @@ type ClientUpdateProposal struct {
 type PinCodesProposal struct {
 	Title       string   `json:"title,omitempty"`
 	Description string   `json:"description,omitempty"`
-	CodeIDs     []uint64 ` json:"code_ids,omitempty"`
+	CodeIDs     []uint64 `json:"code_ids,omitempty"`
 }
 
 type UnpinCodesProposal struct {
@@ -154,9 +155,15 @@ type UnpinCodesProposal struct {
 	CodeIDs     []uint64 `json:"code_ids,omitempty"`
 }
 
-type SudoContractProposal struct {
+type UpdateAdminProposal struct {
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	NewAdmin    string `json:"new_admin"`
+	Contract    string `json:"contract,omitempty"`
+}
+
+type ClearAdminProposal struct {
 	Title       string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
 	Contract    string `json:"contract,omitempty"`
-	Msg         []byte `json:"msg,omitempty"`
 }
