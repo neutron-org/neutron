@@ -66,6 +66,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		ConnectionId:       msg.ConnectionId,
 		Deposit:            params.QueryDeposit,
 		SubmitTimeout:      params.QuerySubmitTimeout,
+		RegisteredAtHeight: uint64(ctx.BlockHeader().Height),
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
@@ -96,11 +97,10 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 
-	timeoutBlock := query.LastSubmittedResultLocalHeight + query.SubmitTimeout
-	if uint64(ctx.BlockHeight()) <= timeoutBlock && query.GetOwner() != msg.GetSender() {
+	if err := query.ValidateRemoval(ctx, msg.GetSender()); err != nil {
 		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
-			"msg", msg)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
+			"error", err, "msg", msg)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, err.Error())
 	}
 
 	k.RemoveQueryByID(ctx, query.Id)
