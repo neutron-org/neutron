@@ -106,7 +106,6 @@ import (
 	"github.com/neutron-org/neutron/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
-	ibchookskeeper "github.com/neutron-org/neutron/x/ibc-hooks/keeper"
 	ibchookstypes "github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -269,7 +268,6 @@ type App struct {
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
-	IBCHooksKeeper      *ibchookskeeper.Keeper
 
 	HooksTransferIBCModule *ibchooks.IBCMiddleware
 	HooksICS4Wrapper       ibchooks.ICS4Middleware
@@ -422,10 +420,7 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
-	hooksKeeper := ibchookskeeper.NewKeeper(keys[ibchookstypes.StoreKey])
-	app.IBCHooksKeeper = &hooksKeeper
-
-	wasmHooks := ibchooks.NewWasmHooks(app.IBCHooksKeeper, nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
 		&wasmHooks,

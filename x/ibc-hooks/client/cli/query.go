@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -12,8 +13,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/spf13/cobra"
-
-	"github.com/neutron-org/neutron/x/ibc-hooks/keeper"
 )
 
 // GetQueryCmd returns the cli query commands for this module.
@@ -51,7 +50,7 @@ $ %s query ibc-hooks wasm-hooks-sender channel-42 juno12smx2wdlyttvyzvzg54y2vnqw
 			originalSender := args[1]
 			// TODO: Make this flexible as an arg
 			prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
-			senderBech32, err := keeper.DeriveIntermediateSender(channelID, originalSender, prefix)
+			senderBech32, err := utils.DeriveIntermediateSender(channelID, originalSender, prefix)
 			if err != nil {
 				return err
 			}
