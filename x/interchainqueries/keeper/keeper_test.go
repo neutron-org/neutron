@@ -1175,7 +1175,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// pretend like we have a very new query result
-				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, 9999))
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),

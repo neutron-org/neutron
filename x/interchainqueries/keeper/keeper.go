@@ -202,7 +202,7 @@ func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalH
 // UpdateLastRemoteHeight updates the relative query's remote height of the last result submission.
 // The height must be greater than the current remote height of the last query result submission,
 // otherwise operation fails.
-func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemoteHeight uint64) error {
+func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemoteHeight ibcclienttypes.Height) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
 		return sdkerrors.Wrap(err, "failed to get registered query")
@@ -227,7 +227,7 @@ func (k Keeper) saveKVQueryResult(ctx sdk.Context, query *types.RegisteredQuery,
 	}
 	store.Set(types.GetRegisteredQueryResultByIDKey(query.Id), bz)
 
-	k.updateLastRemoteHeight(ctx, query, result.Height)
+	k.updateLastRemoteHeight(ctx, query, ibcclienttypes.NewHeight(result.Revision, result.Height))
 	k.updateLastLocalHeight(ctx, query, uint64(ctx.BlockHeight()))
 	if err := k.SaveQuery(ctx, query); err != nil {
 		return sdkerrors.Wrapf(err, "failed to save query %d: %v", query.Id, err)
@@ -244,17 +244,21 @@ func (k Keeper) updateLastLocalHeight(ctx sdk.Context, query *types.RegisteredQu
 }
 
 // checkLastRemoteHeight checks whether the given height is greater than the query's remote height
-// of the last result submission.
-func (k Keeper) checkLastRemoteHeight(ctx sdk.Context, query types.RegisteredQuery, height uint64) error {
-	if query.LastSubmittedResultRemoteHeight >= height {
+// of the last result submission. Also it checks if revision number has updated. If yes, we don't care about revision height
+// see
+func (k Keeper) checkLastRemoteHeight(ctx sdk.Context, query types.RegisteredQuery, height ibcclienttypes.Height) error {
+	if query.LastSubmittedResultRemoteHeight == nil || query.LastSubmittedResultRemoteHeight.RevisionNumber < height.GetRevisionNumber() {
+		return nil
+	} else if query.LastSubmittedResultRemoteHeight.RevisionHeight >= height.GetRevisionHeight() &&
+		query.LastSubmittedResultRemoteHeight.RevisionNumber == height.GetRevisionNumber() {
 		return fmt.Errorf("result's remote height %d is less than or equal to last result's remote height %d", height, query.LastSubmittedResultRemoteHeight)
 	}
 	return nil
 }
 
 // updateLastRemoteHeight updates query's remote height of the last result submission.
-func (k Keeper) updateLastRemoteHeight(ctx sdk.Context, query *types.RegisteredQuery, height uint64) {
-	query.LastSubmittedResultRemoteHeight = height
+func (k Keeper) updateLastRemoteHeight(ctx sdk.Context, query *types.RegisteredQuery, height ibcclienttypes.Height) {
+	query.LastSubmittedResultRemoteHeight = &height
 	k.Logger(ctx).Debug("Updated last remote height on given query", "queryID", query.Id, "new_remote_height", height)
 }
 
