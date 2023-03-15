@@ -89,6 +89,11 @@ func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings
 	return &bindings.QueryTotalBurnedNeutronsAmountResponse{Coin: grpcResp.Coin}, nil
 }
 
+func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeRequest) (*bindings.QueryMinIbcFeeResponse, error) {
+	fee := qp.feeFunderKeeper.GetMinFee(ctx)
+	return &bindings.QueryMinIbcFeeResponse{MinFee: fee}, nil
+}
+
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {
 	return bindings.RegisteredQuery{
 		ID:                              grpcQuery.GetId(),

@@ -3,6 +3,8 @@ package bindings
 import (
 	"encoding/json"
 
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
@@ -21,6 +23,8 @@ type NeutronQuery struct {
 	RegisteredInterchainQuery *QueryRegisteredQueryRequest `json:"registered_interchain_query,omitempty"`
 	// TotalBurnedNeutronsAmount
 	TotalBurnedNeutronsAmount *QueryTotalBurnedNeutronsAmountRequest `json:"total_burned_neutrons_amount,omitempty"`
+	// MinIbcFee
+	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
 }
 
 /* Requests */
@@ -87,6 +91,12 @@ type QueryTotalBurnedNeutronsAmountRequest struct{}
 
 type QueryTotalBurnedNeutronsAmountResponse struct {
 	Coin sdktypes.Coin `json:"coin"`
+}
+
+type QueryMinIbcFeeRequest struct{}
+
+type QueryMinIbcFeeResponse struct {
+	MinFee feerefundertypes.Fee `json:"min_fee"`
 }
 
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
