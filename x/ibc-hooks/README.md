@@ -2,7 +2,7 @@
 
 Taken from [osmosis](https://github.com/osmosis-labs/osmosis) `v14.0.0-rc1` (commit `26e2fad8e7b3eb7c33965360b31a593b392d7d75`)
 
-Removed `ibc_callback` functionality
+Removed `ibc_callback` functionality.
 
 Module https://github.com/osmosis-labs/osmosis/tree/v14.0.0-rc1/x/ibc-hooks
 
@@ -57,6 +57,7 @@ msg := MsgExecuteContract{
 	Msg: packet.data.memo["wasm"]["Msg"],
 	// Funds coins that are transferred to the contract on execution
 	Funds: sdk.NewCoin{Denom: ibc.ConvertSenderDenomToLocalDenom(packet.data.Denom), Amount: packet.data.Amount}
+}
 ```
 
 ### ICS20 packet structure
@@ -100,7 +101,7 @@ We consider an ICS20 packet as directed towards wasmhooks iff all of the followi
 * `memo` has at least one key, with name `"wasm"`
 
 If an ICS20 packet is not directed towards wasmhooks, wasmhooks doesn't do anything.
-If an ICS20 packet is directed towards wasmhooks, and is formated incorrectly, then wasmhooks returns an error.
+If an ICS20 packet is directed towards wasmhooks, and is formatted incorrectly, then wasmhooks returns an error.
 
 ### Execution flow
 
