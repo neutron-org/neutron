@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 

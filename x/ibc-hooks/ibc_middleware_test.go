@@ -3,6 +3,9 @@ package ibchooks_test
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"testing"
+
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
@@ -11,8 +14,6 @@ import (
 	"github.com/neutron-org/neutron/x/ibc-hooks/testutils"
 	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -268,7 +269,7 @@ func (suite *HooksTestSuite) TestPacketsThatShouldBeSkipped() {
 	for _, tc := range testCases {
 		ackBytes := suite.receivePacketWithSequence(receiver, tc.memo, sequence)
 		ackStr := string(ackBytes)
-		//fmt.Println(ackStr)
+		// fmt.Println(ackStr)
 		var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
 		err := json.Unmarshal(ackBytes, &ack)
 		suite.Require().NoError(err)

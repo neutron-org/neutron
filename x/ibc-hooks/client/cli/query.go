@@ -2,8 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
 	"strings"
+
+	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
 
 	"github.com/cosmos/cosmos-sdk/client"
 

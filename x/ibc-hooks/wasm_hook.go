@@ -3,6 +3,7 @@ package ibchooks
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
