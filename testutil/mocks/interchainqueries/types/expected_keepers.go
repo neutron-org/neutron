@@ -10,6 +10,7 @@ import (
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types1 "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -213,7 +214,7 @@ func (mr *MockContractManagerKeeperMockRecorder) SudoTimeout(ctx, senderAddress,
 }
 
 // SudoTxQueryResult mocks base method.
-func (m *MockContractManagerKeeper) SudoTxQueryResult(ctx types.Context, contractAddress types.AccAddress, queryID uint64, height int64, data []byte) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoTxQueryResult(ctx types.Context, contractAddress types.AccAddress, queryID uint64, height ibcclienttypes.Height, data []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SudoTxQueryResult", ctx, contractAddress, queryID, height, data)
 	ret0, _ := ret[0].([]byte)

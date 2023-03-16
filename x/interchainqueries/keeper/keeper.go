@@ -293,6 +293,7 @@ func clearQueryResult(result *types.QueryResult) types.QueryResult {
 		KvResults: storageValues,
 		Block:     nil,
 		Height:    result.Height,
+		Revision:  result.Revision,
 	}
 
 	return cleanResult
