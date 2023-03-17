@@ -65,7 +65,6 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			}
 
 			bz, err := json.Marshal(registeredQuery)
-
 			if err != nil {
 				return nil, sdkerrors.Wrapf(err, "failed to marshal interchain account query response: %v", err)
 			}
