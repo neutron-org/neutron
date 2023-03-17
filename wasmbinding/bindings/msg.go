@@ -78,12 +78,12 @@ type AdminProposal struct {
 	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
 	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
 	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
-	UpgradeProposal               *UpgradeProposal               `json:"upgrade_proposal,omitempty"`
-	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal"`
-	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal"`
-	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal"`
-	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal"`
-	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal"`
+	UpgradeProposal               *UpgradeProposal               `json:"upgrade_proposal,omitempty,omitempty"`
+	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal,omitempty"`
+	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal,omitempty"`
+	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal,omitempty"`
+	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal,omitempty"`
+	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal,omitempty"`
 }
 
 type ParamChangeProposal struct {
