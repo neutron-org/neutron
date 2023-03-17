@@ -103,6 +103,7 @@ func validateTreasuryAddress(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
+	// treasury might be explicitly empty in test environments
 	if len(v) == 0 {
 		return nil
 	}

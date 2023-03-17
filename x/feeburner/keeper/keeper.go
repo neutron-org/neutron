@@ -112,6 +112,9 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 	if len(fundsForTreasury) > 0 {
 		addr, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
 		if err != nil {
+			// there's no way we face this kind of situation in production, since it means the chain is misconfigured
+			// still, in test environments it might be the case when the chain is started without treasury
+			// in such case we just burn the tokens
 			err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, fundsForTreasury)
 			if err != nil {
 				panic(sdkerrors.Wrapf(err, "failed to burn tokens during fee processing"))
