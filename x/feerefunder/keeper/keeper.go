@@ -221,11 +221,11 @@ func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", fees.AckFee, params.MinFee.AckFee)
 	}
 
-	if someFeesAreNotPresentInParams(fees.TimeoutFee, params.MinFee.TimeoutFee) {
+	if allowedCoins(fees.TimeoutFee, params.MinFee.TimeoutFee) {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "timeout fee cannot have coins other than in params")
 	}
 
-	if someFeesAreNotPresentInParams(fees.AckFee, params.MinFee.AckFee) {
+	if allowedCoins(fees.AckFee, params.MinFee.AckFee) {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "ack fee cannot have coins other than in params")
 	}
 
@@ -246,9 +246,9 @@ func (k Keeper) distributeFee(ctx sdk.Context, receiver sdk.AccAddress, fee sdk.
 	return nil
 }
 
-// someFeesAreNotPresentInParams returns true if one or more coins from `fees` are not present in coins from `params`
+// allowedCoins returns true if one or more coins from `fees` are not present in coins from `params`
 // assumes that `params` is sorted
-func someFeesAreNotPresentInParams(fees sdk.Coins, params sdk.Coins) bool {
+func allowedCoins(fees sdk.Coins, params sdk.Coins) bool {
 	for _, fee := range fees {
 		if params.AmountOf(fee.Denom).IsZero() {
 			return true
