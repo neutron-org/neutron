@@ -1177,6 +1177,9 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// pretend like we have a very new query result
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
 
+				// pretend like we have a very new query result with updated revision height
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber()+1, 1)))
+
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
@@ -1202,7 +1205,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			iqtypes.ErrInvalidHeight,
+			nil,
 		},
 		// in this test we check that storageValue.Key with special bytes (characters) can be properly verified
 		{
