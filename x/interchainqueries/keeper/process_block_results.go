@@ -140,8 +140,7 @@ func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID
 		}
 
 		// Let the query owner contract process the query result.
-		// TODO: revision number
-		if _, err := k.contractManagerKeeper.SudoTxQueryResult(ctx, queryOwner, queryID, ibcclienttypes.NewHeight(1, uint64(tmHeader.Header.Height)), txData); err != nil {
+		if _, err := k.contractManagerKeeper.SudoTxQueryResult(ctx, queryOwner, queryID, ibcclienttypes.NewHeight(tmHeader.TrustedHeight.GetRevisionNumber(), uint64(tmHeader.Header.Height)), txData); err != nil {
 			ctx.Logger().Debug("ProcessBlock: failed to SudoTxQueryResult",
 				"error", err, "query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
 			return sdkerrors.Wrapf(err, "contract %s rejected transaction query result (tx_hash: %s)",

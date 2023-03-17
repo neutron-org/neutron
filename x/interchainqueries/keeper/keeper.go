@@ -86,6 +86,14 @@ func (k Keeper) SetLastRegisteredQueryKey(ctx sdk.Context, id uint64) {
 func (k Keeper) SaveQuery(ctx sdk.Context, query *types.RegisteredQuery) error {
 	store := ctx.KVStore(k.storeKey)
 
+	// We're doing this because LastSubmittedResultRemoteHeight is a struct pointer type generated from proto
+	// to avoid nil in neutron, null in json and rust marshalling errors, here we initialize it with "default" values
+	// which is not equal 0 because github.com/cosmos/cosmos-sdk/codec/types skips true default values
+	emptyHeight := ibcclienttypes.NewHeight(1, 1)
+	if query.LastSubmittedResultRemoteHeight == nil {
+		query.LastSubmittedResultRemoteHeight = &emptyHeight
+	}
+
 	bz, err := k.cdc.Marshal(query)
 	if err != nil {
 		return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal registered query: %v", err)
