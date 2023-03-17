@@ -1299,6 +1299,57 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	}
 }
 
+// TestRemoveFreshlyCreatedICQ mostly makes sure the query's RegisteredAtHeight field works.
+func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
+	suite.SetupTest()
+	var (
+		ctx           = suite.ChainA.GetContext()
+		contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
+	)
+
+	// Store code and instantiate reflect contract.
+	codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
+	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	// Top up contract address with native coins for deposit
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	suite.TopUpWallet(ctx, senderAddress, contractAddress)
+
+	iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+	params := iqkeeper.GetParams(ctx)
+	params.QuerySubmitTimeout = 5
+	iqkeeper.SetParams(ctx, params)
+	msgSrv := keeper.NewMsgServerImpl(iqkeeper)
+
+	resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &iqtypes.MsgRegisterInterchainQuery{
+		QueryType:          string(iqtypes.InterchainQueryTypeKV),
+		Keys:               nil,
+		TransactionsFilter: "",
+		ConnectionId:       suite.Path.EndpointA.ConnectionID,
+		UpdatePeriod:       1,
+		Sender:             contractAddress.String(),
+	})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(resRegister)
+
+	registeredQuery, err := iqkeeper.GetQueryByID(ctx, 1)
+	suite.Require().NoError(err)
+	suite.Require().Equal(uint64(ctx.BlockHeight()), registeredQuery.RegisteredAtHeight)
+	suite.Require().Equal(uint64(0), registeredQuery.LastSubmittedResultLocalHeight)
+	suite.Require().Equal(params.QuerySubmitTimeout, registeredQuery.SubmitTimeout)
+	suite.Require().Greater(uint64(ctx.BlockHeight()), registeredQuery.LastSubmittedResultLocalHeight+registeredQuery.SubmitTimeout)
+
+	newContractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	suite.Require().NotEmpty(newContractAddress)
+	resp, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &iqtypes.MsgRemoveInterchainQueryRequest{
+		QueryId: 1,
+		Sender:  newContractAddress.String(),
+	})
+	suite.Nil(resp)
+	suite.ErrorContains(err, "only owner can remove a query within its service period")
+}
+
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
 	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
