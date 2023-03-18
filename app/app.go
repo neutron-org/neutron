@@ -465,9 +465,6 @@ func New(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
-	if len(enabledProposals) != 0 {
-		adminRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
-	}
 
 	app.AdminmoduleKeeper = *adminmodulemodulekeeper.NewKeeper(
 		appCodec,
@@ -523,6 +520,9 @@ func New(
 		wasmOpts...,
 	)
 
+	if len(enabledProposals) != 0 {
+		app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
+	}
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
