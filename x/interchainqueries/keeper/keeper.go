@@ -300,10 +300,7 @@ func (k Keeper) updateLastLocalHeight(ctx sdk.Context, query *types.RegisteredQu
 // of the last result submission. Also it checks if revision number has updated. If yes, we don't care about revision height
 // see
 func (k Keeper) checkLastRemoteHeight(ctx sdk.Context, query types.RegisteredQuery, height ibcclienttypes.Height) error {
-	if query.LastSubmittedResultRemoteHeight.RevisionNumber < height.GetRevisionNumber() {
-		return nil
-	} else if query.LastSubmittedResultRemoteHeight.RevisionHeight >= height.GetRevisionHeight() &&
-		query.LastSubmittedResultRemoteHeight.RevisionNumber == height.GetRevisionNumber() {
+	if query.LastSubmittedResultRemoteHeight.GTE(height) {
 		return fmt.Errorf("result's remote height %d is less than or equal to last result's remote height %d", height, query.LastSubmittedResultRemoteHeight)
 	}
 	return nil
