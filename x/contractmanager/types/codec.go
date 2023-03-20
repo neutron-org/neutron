@@ -5,11 +5,11 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
-func RegisterCodec(cdc *codec.LegacyAmino) {
+func RegisterCodec(_ *codec.LegacyAmino) {
 	// this line is used by starport scaffolding # 2
 }
 
-func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+func RegisterInterfaces(_ cdctypes.InterfaceRegistry) {
 	// this line is used by starport scaffolding # 3
 }
 

@@ -109,12 +109,12 @@ func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
 		return nil, fmt.Errorf("can't proto marshal %T", sdkMsg)
 	}
 
-	any, err := codectypes.NewAnyWithValue(msg)
+	value, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
 		return nil, err
 	}
 
-	return any, nil
+	return value, nil
 }
 
 // implements UnpackInterfacesMessage.UnpackInterfaces (https://github.com/cosmos/cosmos-sdk/blob/d07d35f29e0a0824b489c552753e8798710ff5a8/codec/types/interface_registry.go#L60)
