@@ -1268,9 +1268,6 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// pretend like we have a very new query result
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
 
-				// pretend like we have a very new query result with updated revision height
-				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber()+1, 1)))
-
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
@@ -1296,7 +1293,64 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					},
 				}
 			},
-			nil,
+			iqtypes.ErrInvalidHeight,
+		},
+		{
+			"query result revision number check",
+			func(sender string, ctx sdktypes.Context) {
+				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
+
+				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId: suite.Path.EndpointA.ConnectionID,
+					Keys: []*iqtypes.KVKey{
+						{Path: host.StoreKey, Key: clientKey},
+					},
+					QueryType:    string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod: 1,
+					Sender:       sender,
+				}
+
+				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
+
+				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+				suite.Require().NoError(err)
+
+				suite.NoError(suite.Path.EndpointB.UpdateClient())
+				suite.NoError(suite.Path.EndpointA.UpdateClient())
+
+				// pretend like we have a very new query result
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
+
+				// pretend like we have a very new query result with updated revision height
+				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber()+1, 1)))
+
+				resp := suite.ChainB.App.Query(abci.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Height: suite.ChainB.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+
+				msg = iqtypes.MsgSubmitQueryResult{
+					QueryId:  res.Id,
+					Sender:   sender,
+					ClientId: suite.Path.EndpointA.ClientID,
+					Result: &iqtypes.QueryResult{
+						KvResults: []*iqtypes.StorageValue{{
+							Key:           resp.Key,
+							Proof:         resp.ProofOps,
+							Value:         resp.Value,
+							StoragePrefix: host.StoreKey,
+						}},
+						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
+						Block:  nil,
+						Height: uint64(resp.Height),
+						// we forecefully "updated" revision height
+						Revision: suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(),
+					},
+				}
+			},
+			iqtypes.ErrInvalidHeight,
 		},
 		// in this test we check that storageValue.Key with special bytes (characters) can be properly verified
 		{
