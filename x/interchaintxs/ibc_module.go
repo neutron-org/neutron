@@ -28,27 +28,27 @@ func NewIBCModule(k keeper.Keeper) IBCModule {
 // OnChanOpenInit implements the IBCModule interface. We don't need to implement this handler.
 func (im IBCModule) OnChanOpenInit(
 	ctx sdk.Context,
-	_order channeltypes.Order,
-	_connectionHops []string,
+	_ channeltypes.Order,
+	_ []string,
 	portID string,
 	channelID string,
 	chanCap *capabilitytypes.Capability,
-	_counterparty channeltypes.Counterparty,
-	_version string,
+	_ channeltypes.Counterparty,
+	_ string,
 ) error {
 	return im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID))
 }
 
 // OnChanOpenTry implements the IBCModule interface. We don't need to implement this handler.
 func (im IBCModule) OnChanOpenTry(
-	_ctx sdk.Context,
-	_order channeltypes.Order,
-	_connectionHops []string,
-	_portID,
-	_channelID string,
-	_chanCap *capabilitytypes.Capability,
-	_counterparty channeltypes.Counterparty,
-	_counterpartyVersion string,
+	_ sdk.Context,
+	_ channeltypes.Order,
+	_ []string,
+	_,
+	_ string,
+	_ *capabilitytypes.Capability,
+	_ channeltypes.Counterparty,
+	_ string,
 ) (string, error) {
 	return "", nil
 }
@@ -67,9 +67,9 @@ func (im IBCModule) OnChanOpenAck(
 
 // OnChanOpenConfirm implements the IBCModule interface. We don't need to implement this handler.
 func (im IBCModule) OnChanOpenConfirm(
-	ctx sdk.Context,
-	portID,
-	channelID string,
+	_ sdk.Context,
+	_,
+	_ string,
 ) error {
 	return nil
 }
@@ -77,18 +77,18 @@ func (im IBCModule) OnChanOpenConfirm(
 // OnChanCloseInit implements the IBCModule interface. We don't need to implement this handler.
 // Handler will be implemented in https://p2pvalidator.atlassian.net/browse/LSC-137
 func (im IBCModule) OnChanCloseInit(
-	ctx sdk.Context,
-	portID,
-	channelID string,
+	_ sdk.Context,
+	_,
+	_ string,
 ) error {
 	return nil
 }
 
 // OnChanCloseConfirm implements the IBCModule interface. We don't need to implement this handler.
 func (im IBCModule) OnChanCloseConfirm(
-	ctx sdk.Context,
-	portID,
-	channelID string,
+	_ sdk.Context,
+	_,
+	_ string,
 ) error {
 	return nil
 }
@@ -97,9 +97,9 @@ func (im IBCModule) OnChanCloseConfirm(
 // is returned if the packet data is successfully decoded and the receiving application
 // logic returns without error.
 func (im IBCModule) OnRecvPacket(
-	_ctx sdk.Context,
-	_packet channeltypes.Packet,
-	_relayer sdk.AccAddress,
+	_ sdk.Context,
+	_ channeltypes.Packet,
+	_ sdk.AccAddress,
 ) ibcexported.Acknowledgement {
 	return channeltypes.NewErrorAcknowledgement("cannot receive packet via interchain accounts authentication module")
 }
