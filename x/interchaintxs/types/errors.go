@@ -15,4 +15,5 @@ var (
 	ErrNoMessages                = sdkerrors.Register(ModuleName, 1106, "no messages provided")
 	ErrInvalidTimeout            = sdkerrors.Register(ModuleName, 1107, "invalid timeout")
 	ErrInvalidPayerFee           = sdkerrors.Register(ModuleName, 1108, "invalid payer feerefunder")
+	ErrLongInterchainAccountID   = sdkerrors.Register(ModuleName, 1109, "interchain account id is too long")
 )

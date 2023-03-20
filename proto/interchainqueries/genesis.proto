@@ -44,6 +44,9 @@ message RegisteredQuery {
 
   // Timeout before query becomes available for everybody to remove.
   uint64 submit_timeout = 11;
+
+  // The local chain height when the query was registered.
+  uint64 registered_at_height = 12;
 }
 
 message KVKey {

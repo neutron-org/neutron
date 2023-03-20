@@ -82,6 +82,8 @@ type RegisteredQuery struct {
 	Deposit sdktypes.Coins `json:"deposit"`
 	// Timeout before query becomes available for everybody to remove.
 	SubmitTimeout uint64 `json:"submit_timeout"`
+	// The local chain height when the query was registered.
+	RegisteredAtHeight uint64 `json:"registered_at_height"`
 }
 
 type QueryTotalBurnedNeutronsAmountRequest struct{}
