@@ -128,11 +128,7 @@ func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker
 		return err
 	}
 
-	if err := unpacker.UnpackAny(msg.Result.GetBlock().GetNextBlockHeader(), &header); err != nil {
-		return err
-	}
-
-	return nil
+	return unpacker.UnpackAny(msg.Result.GetBlock().GetNextBlockHeader(), &header)
 }
 
 func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {

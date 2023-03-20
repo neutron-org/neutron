@@ -317,11 +317,7 @@ func SetupICAPath(path *ibctesting.Path, owner string) error {
 		return err
 	}
 
-	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
-		return err
-	}
-
-	return nil
+	return path.EndpointB.ChanOpenConfirm()
 }
 
 // RegisterInterchainAccount is a helper function for starting the channel handshake
@@ -419,9 +415,5 @@ func SetupTransferPath(path *ibctesting.Path) error {
 		return err
 	}
 
-	if err := path.EndpointB.ChanOpenConfirm(); err != nil {
-		return err
-	}
-
-	return nil
+	return path.EndpointB.ChanOpenConfirm()
 }
