@@ -90,7 +90,7 @@ func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings
 }
 
 func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeRequest) (*bindings.QueryMinIbcFeeResponse, error) {
-	fee := qp.feeFunderKeeper.GetMinFee(ctx)
+	fee := qp.feeRefunderKeeper.GetMinFee(ctx)
 	return &bindings.QueryMinIbcFeeResponse{MinFee: fee}, nil
 }
 
