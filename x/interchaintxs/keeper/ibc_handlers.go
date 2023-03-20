@@ -24,7 +24,7 @@ func (k *Keeper) outOfGasRecovery(
 	gasMeter sdk.GasMeter,
 	senderAddress sdk.AccAddress,
 	packet channeltypes.Packet,
-	filureAckType string,
+	failureAckType string,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
@@ -33,7 +33,7 @@ func (k *Keeper) outOfGasRecovery(
 		}
 
 		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), filureAckType)
+		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureAckType)
 		// FIXME: add distribution call
 	}
 }
