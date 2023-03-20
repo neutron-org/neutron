@@ -89,7 +89,8 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query *types.RegisteredQuery) error {
 
 	// We're doing this because LastSubmittedResultRemoteHeight is a struct pointer type generated from proto
 	// to avoid nil in neutron, null in json and rust marshalling errors, here we initialize it with "default" values
-	// which is not equal 0 because github.com/cosmos/cosmos-sdk/codec/types skips true default values
+	// where at lesat one of params is not equal 0 because github.com/cosmos/cosmos-sdk/codec/types skips true default values
+	// e.g.  ibcclienttypes.NewHeight(0, 0) will be transformed into nil beacuse of codec
 	emptyHeight := ibcclienttypes.NewHeight(0, 1)
 	if query.LastSubmittedResultRemoteHeight == nil {
 		query.LastSubmittedResultRemoteHeight = &emptyHeight
