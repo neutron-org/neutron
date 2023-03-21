@@ -35,7 +35,7 @@ func (im IBCModule) OnChanOpenInit(
 	portID string,
 	channelID string,
 	chanCap *capabilitytypes.Capability,
-	_counterparty channeltypes.Counterparty,
+	_ channeltypes.Counterparty,
 	version string,
 ) (string, error) {
 	// FIXME: always returning plain version is probably a bad idea!
