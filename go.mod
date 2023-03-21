@@ -3,8 +3,8 @@ module github.com/neutron-org/neutron
 go 1.18
 
 require (
-	github.com/CosmWasm/wasmd v0.30.0
-	github.com/CosmWasm/wasmvm v1.1.1
+	github.com/CosmWasm/wasmd v0.31.0
+	github.com/CosmWasm/wasmvm v1.2.1
 	github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
@@ -24,7 +24,7 @@ require (
 	github.com/tendermint/tendermint v0.34.26
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20230125152338-dcaf20b6aeaa
-	google.golang.org/grpc v1.52.3
+	google.golang.org/grpc v1.53.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -55,7 +55,7 @@ require (
 	github.com/cosmos/btcutil v1.0.4 // indirect
 	github.com/cosmos/cosmos-db v0.0.0-20221226095112-f3c38ecb5e32 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
-	github.com/cosmos/gogoproto v1.4.3 // indirect
+	github.com/cosmos/gogoproto v1.4.6 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/iavl v0.19.5 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.12.2 // indirect
@@ -81,6 +81,7 @@ require (
 	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/orderedcode v0.0.1 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
@@ -151,7 +152,7 @@ require (
 )
 
 replace (
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.30.0-ics-support
+	github.com/CosmWasm/wasmd => github.com/notional-labs/wasmd v0.30.1-0.20230321120313-dbf7e26317a7
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.14-ics
