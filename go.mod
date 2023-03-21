@@ -152,6 +152,7 @@ require (
 )
 
 replace (
+	// this is actually the ics support branch with 31 merged
 	github.com/CosmWasm/wasmd => github.com/notional-labs/wasmd v0.30.1-0.20230321120313-dbf7e26317a7
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
