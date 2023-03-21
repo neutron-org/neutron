@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/x/feerefunder/types"
@@ -221,6 +221,14 @@ func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", fees.AckFee, params.MinFee.AckFee)
 	}
 
+	if allowedCoins(fees.TimeoutFee, params.MinFee.TimeoutFee) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "timeout fee cannot have coins other than in params")
+	}
+
+	if allowedCoins(fees.AckFee, params.MinFee.AckFee) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "ack fee cannot have coins other than in params")
+	}
+
 	// we don't allow users to set recv fees, because we can't refund relayers for such messages
 	if !fees.RecvFee.IsZero() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
@@ -236,4 +244,15 @@ func (k Keeper) distributeFee(ctx sdk.Context, receiver sdk.AccAddress, fee sdk.
 		return sdkerrors.Wrapf(err, "error distributing fee to a receiver: %s", receiver.String())
 	}
 	return nil
+}
+
+// allowedCoins returns true if one or more coins from `fees` are not present in coins from `params`
+// assumes that `params` is sorted
+func allowedCoins(fees sdk.Coins, params sdk.Coins) bool {
+	for _, fee := range fees {
+		if params.AmountOf(fee.Denom).IsZero() {
+			return true
+		}
+	}
+	return false
 }

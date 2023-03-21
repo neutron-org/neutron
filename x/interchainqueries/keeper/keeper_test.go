@@ -7,11 +7,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/neutron-org/neutron/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -194,7 +195,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		query                 iqtypes.MsgRegisterInterchainQuery
 	}{
 		{
-			"valid update period",
+			"valid update period for kv",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
@@ -210,7 +211,23 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalKVQuery,
 		},
 		{
-			"valid query data",
+			"valid update period for tx",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:         1,
+					NewKeys:         nil,
+					NewUpdatePeriod: 2,
+					Sender:          sender,
+				}
+			},
+			nil,
+			2,
+			nil,
+			originalTXQuery.TransactionsFilter,
+			originalTXQuery,
+		},
+		{
+			"valid kv query data",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -236,7 +253,23 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalKVQuery,
 		},
 		{
-			"valid query both query keys and update period and ignore tx filter",
+			"valid tx filter",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:               1,
+					NewUpdatePeriod:       0,
+					NewTransactionsFilter: "newFilter",
+					Sender:                sender,
+				}
+			},
+			nil,
+			originalTXQuery.UpdatePeriod,
+			nil,
+			"newFilter",
+			originalTXQuery,
+		},
+		{
+			"valid kv query both query keys and update period and ignore tx filter",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -263,7 +296,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			originalKVQuery,
 		},
 		{
-			"must not update keys for a tx query but update filter",
+			"valid tx query both tx filter and update period and ignore query keys",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -282,6 +315,43 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			2,
 			nil,
 			"newFilter",
+			originalTXQuery,
+		},
+		{
+			"must fail on update filter for a kv query",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:               1,
+					NewUpdatePeriod:       2,
+					NewTransactionsFilter: "newFilter",
+					Sender:                sender,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+			originalKVQuery.UpdatePeriod,
+			originalKVQuery.Keys,
+			originalKVQuery.TransactionsFilter,
+			originalKVQuery,
+		},
+		{
+			"must fail on update keys for a tx query",
+			func(sender string) {
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{
+						{
+							Path: "newpath",
+							Key:  []byte("newdata"),
+						},
+					},
+					NewUpdatePeriod: 2,
+					Sender:          sender,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+			originalTXQuery.UpdatePeriod,
+			originalTXQuery.Keys,
+			originalTXQuery.TransactionsFilter,
 			originalTXQuery,
 		},
 		{
@@ -370,11 +440,12 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			} else {
 				suite.Require().NoError(err)
 				suite.Require().NotNil(resUpdate)
-				updatedQuery, err := iqkeeper.GetQueryByID(ctx, 1)
-				suite.Require().NoError(err)
-				suite.Require().Equal(tt.expectedQueryKeys, updatedQuery.GetKeys())
-				suite.Require().Equal(tt.expectedPeriod, updatedQuery.GetUpdatePeriod())
 			}
+			query, err := iqkeeper.GetQueryByID(ctx, 1)
+			suite.Require().NoError(err)
+			suite.Require().Equal(tt.expectedQueryKeys, query.GetKeys())
+			suite.Require().Equal(tt.expectedQueryTXFilter, query.GetTransactionsFilter())
+			suite.Require().Equal(tt.expectedPeriod, query.GetUpdatePeriod())
 		})
 	}
 }
@@ -383,14 +454,8 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	suite.SetupTest()
 
 	var msg iqtypes.MsgRemoveInterchainQueryRequest
-	originalQuery := iqtypes.MsgRegisterInterchainQuery{
-		QueryType:          string(iqtypes.InterchainQueryTypeKV),
-		Keys:               nil,
-		TransactionsFilter: "",
-		ConnectionId:       suite.Path.EndpointA.ConnectionID,
-		UpdatePeriod:       1,
-		Sender:             "",
-	}
+	var query iqtypes.MsgRegisterInterchainQuery
+	var txQueryHashes [][]byte
 
 	tests := []struct {
 		name        string
@@ -398,11 +463,66 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		expectedErr error
 	}{
 		{
-			"valid remove",
+			"valid TX remove",
 			func(sender string) {
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
+				}
+				txQueryHashes = [][]byte{
+					[]byte("txhash_1"),
+					[]byte("txhash_2"),
+				}
+			},
+			nil,
+		},
+		{
+			"valid large TX remove",
+			func(sender string) {
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 1,
+					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
+				}
+				// types.DefaultTxQueryRemovalLimit is used here for it is both big and can be
+				// removed in a single tx hashes cleanup iteration
+				hashesCount := int(types.DefaultTxQueryRemovalLimit)
+				txQueryHashes = make([][]byte, 0, hashesCount)
+				for i := 1; i <= hashesCount; i++ {
+					txQueryHashes = append(txQueryHashes, []byte(fmt.Sprintf("txhash_%d", i)))
+				}
+			},
+			nil,
+		},
+		{
+			"valid KV remove",
+			func(sender string) {
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
+					QueryId: 1,
+					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
 				}
 			},
 			nil,
@@ -413,6 +533,14 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 2,
 					Sender:  sender,
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
 				}
 			},
 			iqtypes.ErrInvalidQueryID,
@@ -430,6 +558,14 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  newContractAddress.String(),
+				}
+				query = iqtypes.MsgRegisterInterchainQuery{
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					Keys:               nil,
+					TransactionsFilter: "",
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					UpdatePeriod:       1,
+					Sender:             "",
 				}
 			},
 			sdkerrors.ErrUnauthorized,
@@ -462,9 +598,9 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
 
 			msgSrv := keeper.NewMsgServerImpl(iqkeeper)
-			originalQuery.Sender = contractAddress.String()
+			query.Sender = contractAddress.String()
 
-			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &originalQuery)
+			resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &query)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(resRegister)
 
@@ -472,10 +608,10 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				sdktypes.WrapSDKContext(ctx),
 				&banktypes.QueryBalanceRequest{
 					Address: contractAddress.String(),
-					Denom:   sdktypes.DefaultBondDenom,
+					Denom:   params.DefaultDenom,
 				},
 			)
-			expectedCoin := sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(0)))
+			expectedCoin := sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(0)))
 
 			suite.Require().NoError(balanceErr)
 			suite.Require().NotNil(balance)
@@ -489,54 +625,80 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				Prove:  true,
 			})
 
-			err = iqkeeper.SaveKVQueryResult(ctx, 1, &iqtypes.QueryResult{
-				KvResults: []*iqtypes.StorageValue{{
-					Key:           resp.Key,
-					Proof:         resp.ProofOps,
-					Value:         resp.Value,
-					StoragePrefix: host.StoreKey,
-				}},
-				Block:    nil,
-				Height:   1,
-				Revision: 1,
-			})
-			suite.Require().NoError(err)
+			queryType := types.InterchainQueryType(query.GetQueryType())
+			switch {
+			case queryType.IsKV():
+				err = iqkeeper.SaveKVQueryResult(ctx, 1, &iqtypes.QueryResult{
+					KvResults: []*iqtypes.StorageValue{{
+						Key:           resp.Key,
+						Proof:         resp.ProofOps,
+						Value:         resp.Value,
+						StoragePrefix: host.StoreKey,
+					}},
+					Block:    nil,
+					Height:   1,
+					Revision: 1,
+				})
+				suite.Require().NoError(err)
+			case queryType.IsTX():
+				for _, txQueryHash := range txQueryHashes {
+					iqkeeper.SaveTransactionAsProcessed(ctx, 1, txQueryHash)
+					suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, txQueryHash))
+				}
+			}
 
-			resUpdate, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &msg)
-
+			respRm, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &msg)
+			// TxQueriesCleanup is supposed to be called in the app's EndBlock, but suite.ChainA.NextBlock()
+			// passes an incorrect context to the EndBlock and thus Keeper's store is empty. So we
+			// have to call it here manually and directly pass the right context into it.
+			iqkeeper.TxQueriesCleanup(ctx)
 			if tt.expectedErr != nil {
 				suite.Require().ErrorIs(err, tt.expectedErr)
-				suite.Require().Nil(resUpdate)
+				suite.Require().Nil(respRm)
 				originalQuery, queryErr := iqkeeper.GetQueryByID(ctx, 1)
 				suite.Require().NoError(queryErr)
 				suite.Require().NotNil(originalQuery)
 
-				qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
-				suite.Require().NoError(qrerr)
-				suite.Require().NotNil(qr)
+				switch {
+				case queryType.IsKV():
+					qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
+					suite.Require().NoError(qrerr)
+					suite.Require().NotNil(qr)
+				case queryType.IsTX():
+					for _, txQueryHash := range txQueryHashes {
+						suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, txQueryHash))
+					}
+				}
 			} else {
 				balance, balanceErr := bankKeeper.Balance(
 					sdktypes.WrapSDKContext(ctx),
 					&banktypes.QueryBalanceRequest{
 						Address: contractAddress.String(),
-						Denom:   sdktypes.DefaultBondDenom,
+						Denom:   params.DefaultDenom,
 					},
 				)
-				expectedCoin := sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000)))
+				expectedCoin := sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000)))
 
 				suite.Require().NoError(balanceErr)
 				suite.Require().NotNil(balance)
 				suite.Require().Equal(&expectedCoin, balance.Balance)
 
 				suite.Require().NoError(err)
-				suite.Require().NotNil(resUpdate)
-				originalQuery, queryErr := iqkeeper.GetQueryByID(ctx, 1)
+				suite.Require().NotNil(respRm)
+				query, queryErr := iqkeeper.GetQueryByID(ctx, 1)
 				suite.Require().Error(queryErr, iqtypes.ErrInvalidQueryID)
-				suite.Require().Nil(originalQuery)
+				suite.Require().Nil(query)
 
-				qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
-				suite.Require().Error(qrerr, iqtypes.ErrNoQueryResult)
-				suite.Require().Nil(qr)
+				switch {
+				case queryType.IsKV():
+					qr, qrerr := iqkeeper.GetQueryResultByID(ctx, 1)
+					suite.Require().Error(qrerr, iqtypes.ErrNoQueryResult)
+					suite.Require().Nil(qr)
+				case queryType.IsTX():
+					for _, txQueryHash := range txQueryHashes {
+						suite.Require().False(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, 1, txQueryHash))
+					}
+				}
 			}
 		})
 	}
@@ -577,7 +739,7 @@ func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
 
 			iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
 			for _, query := range tt.queries {
-				iqkeeper.SaveQuery(ctx, *query)
+				iqkeeper.SaveQuery(ctx, query)
 			}
 
 			allQueries := iqkeeper.GetAllRegisteredQueries(ctx)
@@ -1228,10 +1390,306 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	}
 }
 
+func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
+	suite.Run("SingleIterSingleQuery", func() {
+		suite.SetupTest()
+		iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+		ctx := suite.ChainA.GetContext()
+
+		// create a query and add results for it
+		var queryID uint64 = 1
+		query := iqtypes.RegisteredQuery{Id: queryID, QueryType: string(iqtypes.InterchainQueryTypeTX)}
+		iqkeeper.SaveQuery(ctx, &query)
+		_, err := iqkeeper.GetQueryByID(ctx, queryID)
+		suite.Require().Nil(err)
+		txHashes := suite.buildTxHashes(50)
+		for _, hash := range txHashes {
+			iqkeeper.SaveTransactionAsProcessed(ctx, queryID, hash)
+			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash))
+		}
+
+		// remove query and call cleanup
+		iqkeeper.RemoveQuery(ctx, &query)
+		iqkeeper.TxQueriesCleanup(ctx)
+
+		// make sure removal and cleanup worked as expected
+		for _, hash := range txHashes {
+			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash), "%s expected not to be in the store", hash)
+		}
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
+		_, err = iqkeeper.GetQueryByID(ctx, queryID)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+	})
+
+	suite.Run("SingleIterMultipeQueries", func() {
+		suite.SetupTest()
+		iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+		ctx := suite.ChainA.GetContext()
+
+		txHashes := suite.buildTxHashes(100)
+		// create a query and add results for it
+		var queryID1 uint64 = 1
+		query1 := iqtypes.RegisteredQuery{Id: queryID1, QueryType: string(iqtypes.InterchainQueryTypeTX)}
+		iqkeeper.SaveQuery(ctx, &query1)
+		_, err := iqkeeper.GetQueryByID(ctx, queryID1)
+		suite.Require().Nil(err)
+		txHashesQ1 := txHashes[:len(txHashes)/2] // first half of the build hashes come to the first query
+		for _, hash := range txHashesQ1 {
+			iqkeeper.SaveTransactionAsProcessed(ctx, queryID1, hash)
+			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID1, hash))
+		}
+		// create another query and add results for it
+		var queryID2 uint64 = 2
+		query2 := iqtypes.RegisteredQuery{Id: queryID2, QueryType: string(iqtypes.InterchainQueryTypeTX)}
+		iqkeeper.SaveQuery(ctx, &query2)
+		_, err = iqkeeper.GetQueryByID(ctx, queryID2)
+		suite.Require().Nil(err)
+		txHashesQ2 := txHashes[len(txHashes)/2:] // second half of the build hashes come to the second query
+		for _, hash := range txHashesQ2 {
+			iqkeeper.SaveTransactionAsProcessed(ctx, queryID2, hash)
+			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID2, hash))
+		}
+
+		// remove queries and call cleanup
+		iqkeeper.RemoveQuery(ctx, &query1)
+		iqkeeper.RemoveQuery(ctx, &query2)
+		iqkeeper.TxQueriesCleanup(ctx)
+
+		// make sure removal and cleanup worked as expected
+		for _, hash := range txHashesQ1 {
+			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID1, hash), "%s expected not to be in the store", hash)
+		}
+		for _, hash := range txHashesQ2 {
+			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID2, hash), "%s expected not to be in the store", hash)
+		}
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
+		_, err = iqkeeper.GetQueryByID(ctx, queryID1)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+		_, err = iqkeeper.GetQueryByID(ctx, queryID2)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+	})
+
+	suite.Run("MultipleIterSingleQuery", func() {
+		suite.SetupTest()
+		iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+		ctx := suite.ChainA.GetContext()
+
+		// set TxQueryRemovalLimit to a low value
+		limit := 50
+		params := iqkeeper.GetParams(ctx)
+		params.TxQueryRemovalLimit = uint64(limit)
+		iqkeeper.SetParams(ctx, params)
+
+		// create a query and add results for it
+		var queryID uint64 = 1
+		query := iqtypes.RegisteredQuery{Id: queryID, QueryType: string(iqtypes.InterchainQueryTypeTX)}
+		iqkeeper.SaveQuery(ctx, &query)
+		_, err := iqkeeper.GetQueryByID(ctx, queryID)
+		suite.Require().Nil(err)
+		limitOverflow := 10
+		txHashes := suite.buildTxHashes(limit + limitOverflow) // create a bit more hashes than the limit
+		for _, hash := range txHashes {
+			iqkeeper.SaveTransactionAsProcessed(ctx, queryID, hash)
+			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash))
+		}
+
+		// remove query and call cleanup
+		iqkeeper.RemoveQuery(ctx, &query)
+		iqkeeper.TxQueriesCleanup(ctx)
+
+		// make sure removal and cleanup worked as expected
+		removed, left := suite.txHashesRemovalProgress(ctx, iqkeeper, queryID, txHashes)
+		suite.Require().Equalf(limit, removed, "first cleanup removed hashes count should be as many as limit")
+		suite.Require().Equalf(limitOverflow, left, "first cleanup left hashes count should be as many as limitOverflow")
+		suite.Require().Equalf([]uint64{queryID}, iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected to have a TX query to remove after partial cleanup")
+		_, err = iqkeeper.GetQueryByID(ctx, queryID)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+
+		// call cleanup one more time and make sure it worked as expected
+		iqkeeper.TxQueriesCleanup(ctx)
+		for _, hash := range txHashes { // by this point all hashes should be removed
+			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash), "%s expected not to be in the store", hash)
+		}
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
+		_, err = iqkeeper.GetQueryByID(ctx, queryID)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+	})
+
+	suite.Run("MultipleIterMultipeQueries", func() {
+		suite.SetupTest()
+		iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+		ctx := suite.ChainA.GetContext()
+
+		// set TxQueryRemovalLimit to a low value
+		limit := 50
+		params := iqkeeper.GetParams(ctx)
+		params.TxQueryRemovalLimit = uint64(limit)
+		iqkeeper.SetParams(ctx, params)
+
+		limitOverflow := 10
+		txHashes := suite.buildTxHashes(limit + limitOverflow)
+		txHashesQ1 := txHashes[:len(txHashes)/2] // first half of the build hashes come to the first query
+		txHashesQ2 := txHashes[len(txHashes)/2:] // second half of the build hashes come to the second query
+		// create a query and add results for it
+		var queryID1 uint64 = 1
+		query1 := iqtypes.RegisteredQuery{Id: queryID1, QueryType: string(iqtypes.InterchainQueryTypeTX)}
+		iqkeeper.SaveQuery(ctx, &query1)
+		_, err := iqkeeper.GetQueryByID(ctx, queryID1)
+		suite.Require().Nil(err)
+		for _, hash := range txHashesQ1 {
+			iqkeeper.SaveTransactionAsProcessed(ctx, queryID1, hash)
+			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID1, hash))
+		}
+		// create another query and add results for it
+		var queryID2 uint64 = 2
+		query2 := iqtypes.RegisteredQuery{Id: queryID2, QueryType: string(iqtypes.InterchainQueryTypeTX)}
+		iqkeeper.SaveQuery(ctx, &query2)
+		_, err = iqkeeper.GetQueryByID(ctx, queryID2)
+		suite.Require().Nil(err)
+		for _, hash := range txHashesQ2 {
+			iqkeeper.SaveTransactionAsProcessed(ctx, queryID2, hash)
+			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID2, hash))
+		}
+
+		// remove queries and call cleanup
+		iqkeeper.RemoveQuery(ctx, &query1)
+		iqkeeper.RemoveQuery(ctx, &query2)
+		iqkeeper.TxQueriesCleanup(ctx)
+
+		// make sure removal and cleanup worked as expected
+		removedQ1, leftQ1 := suite.txHashesRemovalProgress(ctx, iqkeeper, queryID1, txHashesQ1)
+		removedQ2, leftQ2 := suite.txHashesRemovalProgress(ctx, iqkeeper, queryID2, txHashesQ2)
+		suite.Require().Equalf(limit, removedQ1+removedQ2, "first cleanup removed hashes count should be as many as limit")
+		suite.Require().Equalf(limitOverflow, leftQ1+leftQ2, "first cleanup remaining hashes count should be as many as limitOverflow")
+		suite.Require().Equalf([]uint64{queryID2}, iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected to have one TX query to remove after partial cleanup")
+
+		// call cleanup one more time and make sure it worked as expected
+		iqkeeper.TxQueriesCleanup(ctx)
+		removedQ1, leftQ1 = suite.txHashesRemovalProgress(ctx, iqkeeper, queryID1, txHashesQ1)
+		removedQ2, leftQ2 = suite.txHashesRemovalProgress(ctx, iqkeeper, queryID2, txHashesQ2)
+		suite.Require().Equalf(limit+limitOverflow, removedQ1+removedQ2, "all hashes should be removed after the second cleanup")
+		suite.Require().Equalf(0, leftQ1+leftQ2, "no hashes should left after the second cleanup")
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
+		_, err = iqkeeper.GetQueryByID(ctx, queryID1)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+		_, err = iqkeeper.GetQueryByID(ctx, queryID2)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+	})
+
+	suite.Run("Unlimited", func() {
+		suite.SetupTest()
+		iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+		ctx := suite.ChainA.GetContext()
+
+		// set TxQueryRemovalLimit to a low value
+		params := iqkeeper.GetParams(ctx)
+		params.TxQueryRemovalLimit = 0
+		iqkeeper.SetParams(ctx, params)
+		suite.Require().Equal(uint64(0), iqkeeper.GetParams(ctx).TxQueryRemovalLimit)
+
+		// create a query and add results for it
+		var queryID uint64 = 1
+		query := iqtypes.RegisteredQuery{Id: queryID, QueryType: string(iqtypes.InterchainQueryTypeTX)}
+		iqkeeper.SaveQuery(ctx, &query)
+		_, err := iqkeeper.GetQueryByID(ctx, queryID)
+		suite.Require().Nil(err)
+		txHashes := suite.buildTxHashes(int(types.DefaultTxQueryRemovalLimit) * 2)
+		for _, hash := range txHashes {
+			iqkeeper.SaveTransactionAsProcessed(ctx, queryID, hash)
+			suite.Require().True(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash))
+		}
+
+		// remove query and call cleanup
+		iqkeeper.RemoveQuery(ctx, &query)
+		iqkeeper.TxQueriesCleanup(ctx)
+
+		// make sure removal and cleanup worked as expected
+		for _, hash := range txHashes {
+			suite.Require().Falsef(iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash), "%s expected not to be in the store", hash)
+		}
+		suite.Require().Nilf(iqkeeper.GetTxQueriesToRemove(ctx, 0), "expected not to have any TX queries to remove after cleanup")
+		_, err = iqkeeper.GetQueryByID(ctx, queryID)
+		suite.Require().ErrorIs(err, iqtypes.ErrInvalidQueryID)
+	})
+}
+
+// TestRemoveFreshlyCreatedICQ mostly makes sure the query's RegisteredAtHeight field works.
+func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
+	suite.SetupTest()
+	var (
+		ctx           = suite.ChainA.GetContext()
+		contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
+	)
+
+	// Store code and instantiate reflect contract.
+	codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
+	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	// Top up contract address with native coins for deposit
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	suite.TopUpWallet(ctx, senderAddress, contractAddress)
+
+	iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
+	params := iqkeeper.GetParams(ctx)
+	params.QuerySubmitTimeout = 5
+	iqkeeper.SetParams(ctx, params)
+	msgSrv := keeper.NewMsgServerImpl(iqkeeper)
+
+	resRegister, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &iqtypes.MsgRegisterInterchainQuery{
+		QueryType:          string(iqtypes.InterchainQueryTypeKV),
+		Keys:               nil,
+		TransactionsFilter: "",
+		ConnectionId:       suite.Path.EndpointA.ConnectionID,
+		UpdatePeriod:       1,
+		Sender:             contractAddress.String(),
+	})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(resRegister)
+
+	registeredQuery, err := iqkeeper.GetQueryByID(ctx, 1)
+	suite.Require().NoError(err)
+	suite.Require().Equal(uint64(ctx.BlockHeight()), registeredQuery.RegisteredAtHeight)
+	suite.Require().Equal(uint64(0), registeredQuery.LastSubmittedResultLocalHeight)
+	suite.Require().Equal(params.QuerySubmitTimeout, registeredQuery.SubmitTimeout)
+	suite.Require().Greater(uint64(ctx.BlockHeight()), registeredQuery.LastSubmittedResultLocalHeight+registeredQuery.SubmitTimeout)
+
+	newContractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	suite.Require().NotEmpty(newContractAddress)
+	resp, err := msgSrv.RemoveInterchainQuery(sdktypes.WrapSDKContext(ctx), &iqtypes.MsgRemoveInterchainQueryRequest{
+		QueryId: 1,
+		Sender:  newContractAddress.String(),
+	})
+	suite.Nil(resp)
+	suite.ErrorContains(err, "only owner can remove a query within its service period")
+}
+
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
-	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(sdktypes.DefaultBondDenom, sdktypes.NewInt(int64(1_000_000))))
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
+}
+
+// buildTxHashes generates the given amount of fake tx hashes.
+func (*KeeperTestSuite) buildTxHashes(amount int) [][]byte {
+	txHashes := make([][]byte, 0, amount)
+	for i := 1; i <= amount; i++ {
+		txHashes = append(txHashes, []byte(fmt.Sprintf("tx_hash_%d", i)))
+	}
+	return txHashes
+}
+
+// txHashesRemovalProgress calculates how many hashes have been removed and how many are left in the
+// keeper's store for the given query.
+func (*KeeperTestSuite) txHashesRemovalProgress(ctx sdktypes.Context, iqkeeper keeper.Keeper, queryID uint64, initHashes [][]byte) (removed, left int) {
+	for _, hash := range initHashes {
+		if iqkeeper.CheckTransactionIsAlreadyProcessed(ctx, queryID, hash) {
+			left++
+		} else {
+			removed++
+		}
+	}
+	return removed, left
 }
 
 func TestKeeperTestSuite(t *testing.T) {

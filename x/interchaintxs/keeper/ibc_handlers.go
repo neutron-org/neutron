@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -24,7 +24,7 @@ func (k *Keeper) outOfGasRecovery(
 	gasMeter sdk.GasMeter,
 	senderAddress sdk.AccAddress,
 	packet channeltypes.Packet,
-	filureAckType string,
+	failureAckType string,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
@@ -33,7 +33,7 @@ func (k *Keeper) outOfGasRecovery(
 		}
 
 		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), filureAckType)
+		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureAckType)
 		// FIXME: add distribution call
 	}
 }

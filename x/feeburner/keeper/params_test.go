@@ -5,9 +5,10 @@ import (
 
 	"github.com/neutron-org/neutron/app"
 
+	"github.com/stretchr/testify/require"
+
 	testkeeper "github.com/neutron-org/neutron/testutil/feeburner/keeper"
 	"github.com/neutron-org/neutron/x/feeburner/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGetParams(t *testing.T) {

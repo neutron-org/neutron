@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
 	"github.com/gorilla/mux"
 	// this line is used by starport scaffolding # 1
 
@@ -99,22 +96,16 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper        keeper.Keeper
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	keeper keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
 	keeper keeper.Keeper,
-	accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
-		accountKeeper:  accountKeeper,
-		bankKeeper:     bankKeeper,
 	}
 }
 
@@ -162,44 +153,6 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	moduleAddr := am.accountKeeper.GetModuleAddress(consumertypes.ConsumerRedistributeName)
-	if moduleAddr == nil {
-		panic("ConsumerRedistributeName must have module address")
-	}
-
-	params := am.keeper.GetParams(ctx)
-	balances := am.bankKeeper.GetAllBalances(ctx, moduleAddr)
-	fundsForTreasury := make(sdk.Coins, 0, len(balances))
-
-	for _, balance := range balances {
-		if !balance.IsZero() {
-			if balance.Denom == params.NeutronDenom {
-				err := am.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{balance})
-				if err != nil {
-					panic(sdkerrors.Wrapf(err, "failed to burn NTRN tokens during fee processing"))
-				}
-
-				am.keeper.RecordBurnedFees(ctx, balance)
-			} else {
-				fundsForTreasury = append(fundsForTreasury, balance)
-			}
-		}
-	}
-
-	if len(fundsForTreasury) > 0 {
-		err := am.bankKeeper.SendCoins(
-			ctx,
-			moduleAddr, sdk.MustAccAddressFromBech32(params.TreasuryAddress),
-			fundsForTreasury,
-		)
-		if err != nil {
-			ctx.Logger().Error(
-				"feeburner: EndBlock: failed to send tokens to Treasury",
-				"tokens", fundsForTreasury,
-				"error", err,
-			)
-		}
-	}
-
+	am.keeper.BurnAndDistribute(ctx)
 	return []abci.ValidatorUpdate{}
 }

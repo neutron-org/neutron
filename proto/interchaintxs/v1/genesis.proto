@@ -1,10 +1,10 @@
 syntax = "proto3";
-package neutron.interchainadapter.interchaintxs;
+package neutron.interchaintxs;
 
 import "gogoproto/gogo.proto";
 import "interchaintxs/v1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
-// GenesisState defines the interchainadapter module's genesis state.
+// GenesisState defines the interchaintxs module's genesis state.
 message GenesisState { Params params = 1 [ (gogoproto.nullable) = false ]; }

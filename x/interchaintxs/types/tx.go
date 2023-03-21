@@ -10,6 +10,12 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+// const interchainAccountIDLimit = 47
+const interchainAccountIDLimit = 128 -
+	len("icacontroller-") -
+	len("neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02") - // just a random contract address
+	len(".")
+
 var _ codectypes.UnpackInterfacesMessage = MsgSubmitTx{}
 
 func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
@@ -23,6 +29,10 @@ func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
 
 	if len(msg.InterchainAccountId) == 0 {
 		return ErrEmptyInterchainAccountID
+	}
+
+	if len(msg.InterchainAccountId) > interchainAccountIDLimit {
+		return ErrLongInterchainAccountID
 	}
 
 	return nil
