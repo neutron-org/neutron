@@ -91,10 +91,10 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query *types.RegisteredQuery) error {
 	// to avoid nil in neutron, null in json and rust marshalling errors, here we initialize it with "default" values
 	// where at lesat one of params is not equal 0 because github.com/cosmos/cosmos-sdk/codec/types skips true default values
 	// e.g.  ibcclienttypes.NewHeight(0, 0) will be transformed into nil because of codec
-	emptyHeight := ibcclienttypes.NewHeight(0, 1)
-	if query.LastSubmittedResultRemoteHeight == nil {
-		query.LastSubmittedResultRemoteHeight = &emptyHeight
-	}
+	//emptyHeight := ibcclienttypes.NewHeight(0, 1)
+	//if query.LastSubmittedResultRemoteHeight == nil {
+	//	query.LastSubmittedResultRemoteHeight = &emptyHeight
+	//}
 
 	bz, err := k.cdc.Marshal(query)
 	if err != nil {
@@ -299,7 +299,7 @@ func (k Keeper) updateLastLocalHeight(ctx sdk.Context, query *types.RegisteredQu
 
 // checkLastRemoteHeight checks whether the given height is greater than the query's remote height
 func (k Keeper) checkLastRemoteHeight(_ sdk.Context, query types.RegisteredQuery, height ibcclienttypes.Height) error {
-	if query.LastSubmittedResultRemoteHeight.GTE(height) {
+	if query.LastSubmittedResultRemoteHeight != nil && query.LastSubmittedResultRemoteHeight.GTE(height) {
 		return fmt.Errorf("result's remote height %d is less than or equal to last result's remote height %d", height, query.LastSubmittedResultRemoteHeight)
 	}
 	return nil
