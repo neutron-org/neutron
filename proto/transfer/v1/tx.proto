@@ -41,8 +41,7 @@ message MsgTransfer {
   uint64 timeout_timestamp = 7
       [ (gogoproto.moretags) = "yaml:\"timeout_timestamp\"" ];
 
-  neutron.feerefunder.Fee fee = 8
-      [ (gogoproto.nullable) = false ];
+  neutron.feerefunder.Fee fee = 8 [ (gogoproto.nullable) = false ];
 }
 
 // MsgTransferResponse is the modified response type for
