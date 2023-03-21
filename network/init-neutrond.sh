@@ -9,7 +9,7 @@ CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 
 CHAIN_DIR="$BASE_DIR/$CHAINID"
 
-ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
+ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
 DAO_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_core.wasm
 PRE_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_single.wasm
 PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_single.wasm
@@ -20,6 +20,7 @@ PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_multiple.wasm
 PRE_PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_multiple.wasm
 TREASURY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_treasury.wasm
 DISTRIBUTION_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_distribution.wasm
+PRE_PROPOSAL_OVERRULE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_overrule.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
@@ -45,6 +46,28 @@ PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary "$PRE_PROPOSAL_MULTIPLE_
 TREASURY_CONTRACT_BINARY_ID=$(store_binary              "$TREASURY_CONTRACT")
 DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary          "$DISTRIBUTION_CONTRACT")
 LOCKDROP_VAULT_CONTRACT_BINARY_ID=$(store_binary        "$LOCKDROP_VAULT_CONTRACT")
+PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID=$(store_binary "$PRE_PROPOSAL_OVERRULE_CONTRACT")
+
+# WARNING!
+# The following code is needed to pre-generate the contract addresses
+# Those addresses depend on the ORDER OF CONTRACTS INITIALIZATION
+# Thus, this code section depends a lot on the order and content of the instantiate-contract commands at the end script
+# It also depends on the implicitly initialized contracts (e.g. DAO core instantiation also instantiate proposals and stuff)
+# If you're to do any changes, please do it consistently in both sections
+# If you're to do add any implicitly initialized contracts in init messages, please reflect changes here
+INSTANCE_ID_COUNTER=1
+NEUTRON_VAULT_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"          "$NEUTRON_VAULT_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+DAO_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                    "$DAO_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PROPOSAL_SINGLE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"        "$PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PRE_PROPOSAL_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"           "$PRE_PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PROPOSAL_MULTIPLE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"      "$PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PRE_PROPOSAL_MULTIPLE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"  "$PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"      "$PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"  "$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+VOTING_REGISTRY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"        "$VOTING_REGISTRY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+TREASURY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"               "$TREASURY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+DISTRIBUTION_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"           "$DISTRIBUTION_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+LOCKDROP_VAULT_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"         "$LOCKDROP_VAULT_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
 # PRE_PROPOSE_INIT_MSG will be put into the PROPOSAL_SINGLE_INIT_MSG and PROPOSAL_MULTIPLE_INIT_MSG
 PRE_PROPOSE_INIT_MSG='{
@@ -125,12 +148,49 @@ PROPOSAL_MULTIPLE_INIT_MSG='{
 }'
 PROPOSAL_MULTIPLE_INIT_MSG_BASE64=$(echo "$PROPOSAL_MULTIPLE_INIT_MSG" | base64 | tr -d "\n")
 
+# PRE_PROPOSE_OVERRULE_INIT_MSG will be put into the PROPOSAL_OVERRULE_INIT_MSG
+PRE_PROPOSE_OVERRULE_INIT_MSG='{}'
+PRE_PROPOSE_OVERRULE_INIT_MSG_BASE64=$(echo "$PRE_PROPOSE_OVERRULE_INIT_MSG" | base64 | tr -d "\n")
+
+
+# -------------------- PROPOSE-OVERRULE { PRE-PROPOSE-OVERRULE } --------------------
+
+PROPOSAL_OVERRULE_INIT_MSG='{
+   "allow_revoting":false,
+   "pre_propose_info":{
+      "module_may_propose":{
+         "info":{
+            "code_id": '"$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID"',
+            "msg": "'"$PRE_PROPOSE_OVERRULE_INIT_MSG_BASE64"'",
+            "label":"neutron"
+         }
+      }
+   },
+   "only_members_execute":false,
+   "max_voting_period":{
+      "time":604800
+   },
+   "close_proposal_on_execution_failure":false,
+   "threshold":{
+     "absolute_percentage":{
+        "percentage":{
+           "percent":"0.10"
+        }
+     }
+   }
+}'
+PROPOSAL_OVERRULE_INIT_MSG_BASE64=$(echo "$PROPOSAL_OVERRULE_INIT_MSG" | base64 | tr -d "\n")
+
 VOTING_REGISTRY_INIT_MSG='{
   "manager": null,
-  "owner": null,
+  "owner": {
+    "address": {
+      "addr": "'"$ADMIN_ADDRESS"'"
+    }
+  },
   "voting_vaults": [
-    "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq",
-    "neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a"
+    "'"$NEUTRON_VAULT_CONTRACT_ADDRESS"'",
+    "'"$LOCKDROP_VAULT_CONTRACT_ADDRESS"'"
   ]
 }'
 VOTING_REGISTRY_INIT_MSG_BASE64=$(echo "$VOTING_REGISTRY_INIT_MSG" | base64 | tr -d "\n")
@@ -149,6 +209,11 @@ DAO_INIT='{
       "code_id": '"$PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID"',
       "label": "DAO_Neutron_cw-proposal-multiple",
       "msg": "'"$PROPOSAL_MULTIPLE_INIT_MSG_BASE64"'"
+    },
+    {
+      "code_id": '"$PROPOSAL_CONTRACT_BINARY_ID"',
+      "label": "DAO_Neutron_cw-proposal-overrule",
+      "msg": "'"$PROPOSAL_OVERRULE_INIT_MSG_BASE64"'"
     }
   ],
   "voting_registry_module_instantiate_info": {
@@ -159,7 +224,6 @@ DAO_INIT='{
 }'
 
 # TODO: properly initialize treasury
-DISTRIBUTION_CONTRACT_ADDRESS="neutron1vhndln95yd7rngslzvf6sax6axcshkxqpmpr886ntelh28p9ghuq56mwja"
 TREASURY_INIT='{
   "main_dao_address": "'"$ADMIN_ADDRESS"'",
   "security_dao_address": "'"$ADMIN_ADDRESS"'",
@@ -178,22 +242,37 @@ DISTRIBUTION_INIT='{
 }'
 
 NEUTRON_VAULT_INIT='{
+  "owner": {
+    "address": {
+      "addr": "'"$ADMIN_ADDRESS"'"
+    }
+  },
   "name": "voting vault",
   "denom": "'"$STAKEDENOM"'",
   "description": "a simple voting vault for testing purposes"
 }'
 # since the lockdrop_contract is still a mock, the address is a random valid one just to pass instantiation
 LOCKDROP_VAULT_INIT='{
+  "owner": {
+    "address": {
+      "addr": "'"$ADMIN_ADDRESS"'"
+    }
+  },
   "name": "lockdrop vault",
   "description": "a lockdrop vault for testing purposes",
   "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"
 }'
 
 echo "Instantiate contracts"
-$BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID" "$NEUTRON_VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID" "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID" "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID" "$DISTRIBUTION_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Distribution" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_ID" "$LOCKDROP_VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_lockdrop_vault"  --home "$CHAIN_DIR"
+# WARNING!
+# The following code is to add contracts instantiations messages to genesys
+# It affects the section of predicting contracts addresses at the beginning of the script
+# If you're to do any changes, please do it consistently in both sections
+$BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"  --label "DAO_Neutron_voting_vault"   --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"            --label "DAO"                        --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID"        "$TREASURY_INIT"       --label "Treasury"                   --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"   --label "Distribution"               --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_ID"  "$LOCKDROP_VAULT_INIT" --label "DAO_Neutron_lockdrop_vault" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 
-sed -i -e 's/\"admins\":.*/\"admins\": [\"neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx\"]/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
