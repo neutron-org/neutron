@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 )
 
@@ -26,5 +27,5 @@ type ContractManagerKeeper interface {
 	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
 	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
 	SudoKVQueryResult(ctx sdk.Context, contractAddress sdk.AccAddress, queryID uint64) ([]byte, error)
-	SudoTxQueryResult(ctx sdk.Context, contractAddress sdk.AccAddress, queryID uint64, height int64, data []byte) ([]byte, error)
+	SudoTxQueryResult(ctx sdk.Context, contractAddress sdk.AccAddress, queryID uint64, height ibcclienttypes.Height, data []byte) ([]byte, error)
 }
