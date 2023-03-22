@@ -281,6 +281,10 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 	proposal := submitAdminProposal.AdminProposal
 
+	err := m.validateProposalQty(&proposal)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate proposal quantity")
+	}
 	if proposal.ParamChangeProposal != nil {
 		p := proposal.ParamChangeProposal
 		err := msg.SetContent(&paramChange.ParameterChangeProposal{
@@ -397,18 +401,6 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		if err != nil {
 			return nil, sdkerrors.Wrap(err, "failed to set content on ClearAdminProposal")
 		}
-	}
-
-	if proposal.ParamChangeProposal == nil &&
-		proposal.SoftwareUpgradeProposal == nil &&
-		proposal.CancelSoftwareUpgradeProposal == nil &&
-		proposal.UpgradeProposal == nil &&
-		proposal.ClientUpdateProposal == nil &&
-		proposal.PinCodesProposal == nil &&
-		proposal.UnpinCodesProposal == nil &&
-		proposal.UpdateAdminProposal == nil &&
-		proposal.ClearAdminProposal == nil {
-		return nil, fmt.Errorf("no admin proposal type is present")
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
@@ -559,4 +551,45 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 	}
 
 	return (*bindings.RegisterInterchainQueryResponse)(response), nil
+}
+
+func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) error {
+	qty := 0
+	if proposal.ParamChangeProposal != nil {
+		qty++
+	}
+	if proposal.SoftwareUpgradeProposal != nil {
+		qty++
+	}
+	if proposal.CancelSoftwareUpgradeProposal != nil {
+		qty++
+	}
+	if proposal.ClientUpdateProposal != nil {
+		qty++
+	}
+	if proposal.UpgradeProposal != nil {
+		qty++
+	}
+	if proposal.PinCodesProposal != nil {
+		qty++
+	}
+	if proposal.UnpinCodesProposal != nil {
+		qty++
+	}
+	if proposal.UpdateAdminProposal != nil {
+		qty++
+	}
+	if proposal.ClearAdminProposal != nil {
+		qty++
+	}
+
+	if qty == 0 {
+		return fmt.Errorf("no admin proposal type is present in message")
+	}
+
+	if qty == 1 {
+		return nil
+	}
+
+	return fmt.Errorf("more than one admin proposal type is present in message")
 }
