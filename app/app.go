@@ -114,8 +114,6 @@ import (
 	transferSudo "github.com/neutron-org/neutron/x/transfer"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
-
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
 	"github.com/cosmos/interchain-security/testutil/e2e"
@@ -568,9 +566,7 @@ func New(
 
 	app.RouterModule = router.NewAppModule(app.RouterKeeper)
 
-	var ibcStack ibcporttypes.IBCModule
-	ibcStack = transfer.NewIBCModule(app.TransferKeeper.Keeper)
-	ibcStack = router.NewIBCMiddleware(
+	ibcStack := router.NewIBCMiddleware(
 		transferIBCModule,
 		app.RouterKeeper,
 		0,
