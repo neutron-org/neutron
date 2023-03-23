@@ -1,0 +1,13 @@
+syntax = "proto3";
+package neutronorg.neutron.cron;
+
+option go_package = "github.com/neutron-org/neutron/x/cron/types";
+
+message Schedule {
+  string index = 1; 
+  string name = 2; 
+  string period = 3; 
+  string msgs = 4; 
+  string creator = 5;
+}
+

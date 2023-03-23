@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "neutron/cron/params.proto";
+import "neutron/cron/schedule.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/neutron-org/neutron/x/cron/types";
@@ -15,7 +16,17 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron-org/neutron/cron/params";
   }
-  // this line is used by starport scaffolding # 2
+  // Queries a Schedule by index.
+	rpc Schedule(QueryGetScheduleRequest) returns (QueryGetScheduleResponse) {
+		option (google.api.http).get = "/neutron-org/neutron/cron/schedule/{index}";
+	}
+
+	// Queries a list of Schedule items.
+	rpc ScheduleAll(QueryAllScheduleRequest) returns (QueryAllScheduleResponse) {
+		option (google.api.http).get = "/neutron-org/neutron/cron/schedule";
+	}
+
+// this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -25,6 +36,24 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetScheduleRequest {
+	  string index = 1;
+
+}
+
+message QueryGetScheduleResponse {
+	Schedule schedule = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllScheduleRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllScheduleResponse {
+	repeated Schedule schedule = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // this line is used by starport scaffolding # 3
