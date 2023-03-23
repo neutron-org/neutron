@@ -14,6 +14,12 @@ const (
 	MemStoreKey = "mem_cron"
 )
 
-func KeyPrefix(p string) []byte {
-	return []byte(p)
+const (
+	prefixFeeKey = iota + 1
+)
+
+var FeeKey = []byte{prefixFeeKey}
+
+func GetScheduleKey(name string) []byte {
+	return append(FeeKey, []byte(name)...)
 }
