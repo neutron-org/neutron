@@ -66,7 +66,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "nil msg is prohibited")
 	}
 
-	if len(msg.Msgs) == 0 {
+	if msg.Msgs == nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "empty Msgs field is prohibited")
 	}
 
