@@ -429,10 +429,6 @@ func New(
 	)
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
-	opsKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
-	app.CronKeeper = cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), opsKeeper)
-	cronModule := cron.NewAppModule(appCodec, *app.CronKeeper)
-
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec, keys[evidencetypes.StoreKey], &app.ConsumerKeeper, app.SlashingKeeper,
@@ -513,7 +509,7 @@ func New(
 	)
 
 	// TODO: register cronkeeper?
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.CronKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -534,6 +530,10 @@ func New(
 		supportedFeatures,
 		wasmOpts...,
 	)
+
+	opsKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	app.CronKeeper = cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), opsKeeper)
+	cronModule := cron.NewAppModule(appCodec, *app.CronKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 

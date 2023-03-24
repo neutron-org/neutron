@@ -22,19 +22,7 @@ var (
 )
 
 const (
-opWeightMsgCreateSchedule = "op_weight_msg_schedule"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgCreateSchedule int = 100
-
-	opWeightMsgUpdateSchedule = "op_weight_msg_schedule"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgUpdateSchedule int = 100
-
-	opWeightMsgDeleteSchedule = "op_weight_msg_schedule"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgDeleteSchedule int = 100
-
-	// this line is used by starport scaffolding # simapp/module/const
+// this line is used by starport scaffolding # simapp/module/const
 )
 
 // GenerateGenesisState creates a randomized GenState of the module
@@ -45,17 +33,6 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	}
 	cronGenesis := types.GenesisState{
 		Params: types.DefaultParams(),
-		ScheduleList: []types.Schedule{
-		{
-			Creator: sample.AccAddress(),
-Index: "0",
-},
-		{
-			Creator: sample.AccAddress(),
-Index: "1",
-},
-	},
-	// this line is used by starport scaffolding # simapp/module/genesisState
 	}
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&cronGenesis)
 }
@@ -76,41 +53,5 @@ func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
 // WeightedOperations returns the all the gov module operations with their respective weights.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
 	operations := make([]simtypes.WeightedOperation, 0)
-
-	var weightMsgCreateSchedule int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgCreateSchedule, &weightMsgCreateSchedule, nil,
-		func(_ *rand.Rand) {
-			weightMsgCreateSchedule = defaultWeightMsgCreateSchedule
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgCreateSchedule,
-		cronsimulation.SimulateMsgCreateSchedule(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	var weightMsgUpdateSchedule int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgUpdateSchedule, &weightMsgUpdateSchedule, nil,
-		func(_ *rand.Rand) {
-			weightMsgUpdateSchedule = defaultWeightMsgUpdateSchedule
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgUpdateSchedule,
-		cronsimulation.SimulateMsgUpdateSchedule(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	var weightMsgDeleteSchedule int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgDeleteSchedule, &weightMsgDeleteSchedule, nil,
-		func(_ *rand.Rand) {
-			weightMsgDeleteSchedule = defaultWeightMsgDeleteSchedule
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgDeleteSchedule,
-		cronsimulation.SimulateMsgDeleteSchedule(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	// this line is used by starport scaffolding # simapp/module/operation
-
 	return operations
 }

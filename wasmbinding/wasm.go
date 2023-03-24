@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 
 	adminmodulemodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -19,6 +20,7 @@ func RegisterCustomPlugins(
 	transfer transfer.KeeperTransferWrapper,
 	admKeeper *adminmodulemodulekeeper.Keeper,
 	feeBurnerKeeper *feeburnerkeeper.Keeper,
+	cronKeeper *cronkeeper.Keeper,
 ) []wasmkeeper.Option {
 	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper)
 
@@ -26,7 +28,7 @@ func RegisterCustomPlugins(
 		Custom: CustomQuerier(wasmQueryPlugin),
 	})
 	messagePluginOpt := wasmkeeper.WithMessageHandlerDecorator(
-		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, admKeeper),
+		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, admKeeper, cronKeeper),
 	)
 
 	return []wasm.Option{

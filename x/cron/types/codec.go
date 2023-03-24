@@ -8,18 +8,11 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgCreateSchedule{}, "cron/CreateSchedule", nil)
-	cdc.RegisterConcrete(&MsgUpdateSchedule{}, "cron/UpdateSchedule", nil)
-	cdc.RegisterConcrete(&MsgDeleteSchedule{}, "cron/DeleteSchedule", nil)
 	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgCreateSchedule{},
-		&MsgUpdateSchedule{},
-		&MsgDeleteSchedule{},
-	)
+	registry.RegisterImplementations((*sdk.Msg)(nil))
 	// this line is used by starport scaffolding # 3
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
