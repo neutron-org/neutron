@@ -12,8 +12,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/testutil/network"
-	"github.com/neutron-org/neutron/testutil/nullify"
+	"github.com/neutron-org/neutron/testutil/cron/network"
+	"github.com/neutron-org/neutron/testutil/cron/nullify"
 	"github.com/neutron-org/neutron/x/cron/client/cli"
 	"github.com/neutron-org/neutron/x/cron/types"
 )
@@ -29,7 +29,7 @@ func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.
 
 	for i := 0; i < n; i++ {
 		schedule := types.Schedule{
-			Index: strconv.Itoa(i),
+			Name: strconv.Itoa(i),
 		}
 		nullify.Fill(&schedule)
 		state.ScheduleList = append(state.ScheduleList, schedule)
