@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"testing"
+
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

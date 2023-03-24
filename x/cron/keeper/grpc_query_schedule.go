@@ -31,7 +31,6 @@ func (k Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleReques
 		schedules = append(schedules, schedule)
 		return nil
 	})
-
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

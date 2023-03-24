@@ -15,7 +15,7 @@ import (
 	"github.com/neutron-org/neutron/testutil/network"
 	"github.com/neutron-org/neutron/testutil/nullify"
 	"github.com/neutron-org/neutron/x/cron/client/cli"
-    "github.com/neutron-org/neutron/x/cron/types"
+	"github.com/neutron-org/neutron/x/cron/types"
 )
 
 // Prevent strconv unused error
@@ -25,12 +25,11 @@ func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}
-    require.NoError(t, cfg.Codec.UnmarshalJSON(cfg.GenesisState[types.ModuleName], &state))
+	require.NoError(t, cfg.Codec.UnmarshalJSON(cfg.GenesisState[types.ModuleName], &state))
 
 	for i := 0; i < n; i++ {
 		schedule := types.Schedule{
 			Index: strconv.Itoa(i),
-			
 		}
 		nullify.Fill(&schedule)
 		state.ScheduleList = append(state.ScheduleList, schedule)
@@ -49,32 +48,31 @@ func TestShowSchedule(t *testing.T) {
 		fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 	}
 	for _, tc := range []struct {
-		desc string
+		desc    string
 		idIndex string
-        
+
 		args []string
 		err  error
 		obj  types.Schedule
 	}{
 		{
-			desc: "found",
+			desc:    "found",
 			idIndex: objs[0].Index,
-            
+
 			args: common,
 			obj:  objs[0],
 		},
 		{
-			desc: "not found",
+			desc:    "not found",
 			idIndex: strconv.Itoa(100000),
-            
+
 			args: common,
 			err:  status.Error(codes.NotFound, "not found"),
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
-			    tc.idIndex,
-                
+				tc.idIndex,
 			}
 			args = append(args, tc.args...)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdShowSchedule(), args)
@@ -125,9 +123,9 @@ func TestListSchedule(t *testing.T) {
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 			require.LessOrEqual(t, len(resp.Schedule), step)
 			require.Subset(t,
-            	nullify.Fill(objs),
-            	nullify.Fill(resp.Schedule),
-            )
+				nullify.Fill(objs),
+				nullify.Fill(resp.Schedule),
+			)
 		}
 	})
 	t.Run("ByKey", func(t *testing.T) {
@@ -141,9 +139,9 @@ func TestListSchedule(t *testing.T) {
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 			require.LessOrEqual(t, len(resp.Schedule), step)
 			require.Subset(t,
-            	nullify.Fill(objs),
-            	nullify.Fill(resp.Schedule),
-            )
+				nullify.Fill(objs),
+				nullify.Fill(resp.Schedule),
+			)
 			next = resp.Pagination.NextKey
 		}
 	})

@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"encoding/json"
 	"fmt"
+
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
