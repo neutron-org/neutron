@@ -12,10 +12,10 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyNeutronDenom        = []byte("NeutronDenom")
-	DefaultNeutronDenom    = params.DefaultDenom
-	KeyTreasuryAddress     = []byte("TreasuryAddress")
-	DefaultTreasuryAddress = ""
+	KeyNeutronDenom       = []byte("NeutronDenom")
+	DefaultNeutronDenom   = params.DefaultDenom
+	KeyReserveAddress     = []byte("ReserveAddress")
+	DefaultReserveAddress = ""
 )
 
 // ParamKeyTable the param key table for launch module
@@ -27,24 +27,24 @@ func ParamKeyTable() paramtypes.KeyTable {
 			validateNeutronDenom,
 		),
 		paramtypes.NewParamSetPair(
-			KeyTreasuryAddress,
-			DefaultTreasuryAddress,
-			validateTreasuryAddress,
+			KeyReserveAddress,
+			DefaultReserveAddress,
+			validateReserveAddress,
 		),
 	)
 }
 
 // NewParams creates a new Params instance
-func NewParams(neutronDenom, treasuryAddress string) Params {
+func NewParams(neutronDenom, ReserveAddress string) Params {
 	return Params{
-		NeutronDenom:    neutronDenom,
-		TreasuryAddress: treasuryAddress,
+		NeutronDenom:   neutronDenom,
+		ReserveAddress: ReserveAddress,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultNeutronDenom, DefaultTreasuryAddress)
+	return NewParams(DefaultNeutronDenom, DefaultReserveAddress)
 }
 
 // ParamSetPairs get the params.ParamSet
@@ -56,9 +56,9 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 			validateNeutronDenom,
 		),
 		paramtypes.NewParamSetPair(
-			KeyTreasuryAddress,
-			&p.TreasuryAddress,
-			validateTreasuryAddress,
+			KeyReserveAddress,
+			&p.ReserveAddress,
+			validateReserveAddress,
 		),
 	}
 }
@@ -70,7 +70,7 @@ func (p Params) Validate() error {
 		return err
 	}
 
-	err = validateTreasuryAddress(p.TreasuryAddress)
+	err = validateReserveAddress(p.ReserveAddress)
 	if err != nil {
 		return err
 	}
@@ -97,20 +97,20 @@ func validateNeutronDenom(i interface{}) error {
 	return nil
 }
 
-func validateTreasuryAddress(i interface{}) error {
+func validateReserveAddress(i interface{}) error {
 	v, ok := i.(string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	// treasury might be explicitly empty in test environments
+	// Reserve might be explicitly empty in test environments
 	if len(v) == 0 {
 		return nil
 	}
 
 	_, err := sdk.AccAddressFromBech32(v)
 	if err != nil {
-		return fmt.Errorf("invalid treasury address: %w", err)
+		return fmt.Errorf("invalid Reserve address: %w", err)
 	}
 
 	return nil

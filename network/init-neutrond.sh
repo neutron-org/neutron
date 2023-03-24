@@ -18,7 +18,7 @@ NEUTRON_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_vault.wasm
 LOCKDROP_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/lockdrop_vault.wasm
 PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_multiple.wasm
 PRE_PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_multiple.wasm
-TREASURY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_treasury.wasm
+RESERVE_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_reserve.wasm
 DISTRIBUTION_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_distribution.wasm
 PRE_PROPOSAL_OVERRULE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_overrule.wasm
 
@@ -43,7 +43,7 @@ VOTING_REGISTRY_CONTRACT_BINARY_ID=$(store_binary       "$VOTING_REGISTRY_CONTRA
 PRE_PROPOSAL_CONTRACT_BINARY_ID=$(store_binary          "$PRE_PROPOSAL_CONTRACT")
 PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary     "$PROPOSAL_MULTIPLE_CONTRACT")
 PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary "$PRE_PROPOSAL_MULTIPLE_CONTRACT")
-TREASURY_CONTRACT_BINARY_ID=$(store_binary              "$TREASURY_CONTRACT")
+RESERVE_CONTRACT_BINARY_ID=$(store_binary              "$reserve_CONTRACT")
 DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary          "$DISTRIBUTION_CONTRACT")
 LOCKDROP_VAULT_CONTRACT_BINARY_ID=$(store_binary        "$LOCKDROP_VAULT_CONTRACT")
 PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID=$(store_binary "$PRE_PROPOSAL_OVERRULE_CONTRACT")
@@ -65,7 +65,7 @@ PRE_PROPOSAL_MULTIPLE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address
 PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"      "$PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"  "$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 VOTING_REGISTRY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"        "$VOTING_REGISTRY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-TREASURY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"               "$TREASURY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+RESERVE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                "$RESERVE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 DISTRIBUTION_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"           "$DISTRIBUTION_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 LOCKDROP_VAULT_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"         "$LOCKDROP_VAULT_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
@@ -223,15 +223,15 @@ DAO_INIT='{
   }
 }'
 
-# TODO: properly initialize treasury
-TREASURY_INIT='{
+# TODO: properly initialize reserve
+RESERVE_INIT='{
   "main_dao_address": "'"$ADMIN_ADDRESS"'",
   "security_dao_address": "'"$ADMIN_ADDRESS"'",
   "denom": "'"$STAKEDENOM"'",
   "distribution_rate": "0",
   "min_period": 10,
   "distribution_contract": "'"$DISTRIBUTION_CONTRACT_ADDRESS"'",
-  "reserve_contract": "'"$ADMIN_ADDRESS"'",
+  "treasury_contract": "'"$ADMIN_ADDRESS"'",
   "vesting_denominator": "1"
 }'
 
@@ -270,9 +270,9 @@ echo "Instantiate contracts"
 # If you're to do any changes, please do it consistently in both sections
 $BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"  --label "DAO_Neutron_voting_vault"   --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"            --label "DAO"                        --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID"        "$TREASURY_INIT"       --label "Treasury"                   --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$RESERVE_CONTRACT_BINARY_ID"        "$RESERVE_INIT"       --label "Reserve"                   --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"   --label "Distribution"               --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_ID"  "$LOCKDROP_VAULT_INIT" --label "DAO_Neutron_lockdrop_vault" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"reserve_address\":.*/\"reserve_address\":\"'"$reserve_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
