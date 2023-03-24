@@ -2,9 +2,11 @@ package network
 
 import (
 	"fmt"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"testing"
 	"time"
+
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/neutron-org/neutron/app/params"
 
 	"github.com/neutron-org/neutron/app"
 
@@ -67,8 +69,8 @@ func DefaultConfig() network.Config {
 		TimeoutCommit:   2 * time.Second,
 		ChainID:         "chain-" + tmrand.NewRand().Str(6),
 		NumValidators:   1,
-		BondDenom:       sdk.DefaultBondDenom,
-		MinGasPrices:    fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom),
+		BondDenom:       params.DefaultDenom,
+		MinGasPrices:    fmt.Sprintf("0.000006%s", params.DefaultDenom),
 		AccountTokens:   sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction),
 		StakingTokens:   sdk.TokensFromConsensusPower(500, sdk.DefaultPowerReduction),
 		BondedTokens:    sdk.TokensFromConsensusPower(100, sdk.DefaultPowerReduction),

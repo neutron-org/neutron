@@ -62,7 +62,7 @@ func (k *Keeper) CheckTimer(ctx sdk.Context) {
 }
 
 // period in blocks
-func (k *Keeper) AddSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
+func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
 	// TODO: check contractAddr is DAO admin
 	schedule := types.Schedule{
 		Name:              name,
@@ -73,7 +73,7 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, name 
 	k.storeSchedule(ctx, schedule)
 }
 
-func (k *Keeper) RemoveSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, name string) {
+func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 	// TODO: check contractAddr is DAO admin or Security DAO admin
 	k.removeSchedule(ctx, name)
 }
@@ -100,11 +100,11 @@ func (k *Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, boo
 	bzSchedule := store.Get(types.GetScheduleKey(name))
 	if bzSchedule == nil {
 		return nil, false
-	} else {
-		var schedule types.Schedule
-		k.cdc.MustUnmarshal(bzSchedule, &schedule)
-		return &schedule, true
 	}
+
+	var schedule types.Schedule
+	k.cdc.MustUnmarshal(bzSchedule, &schedule)
+	return &schedule, true
 }
 
 func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
@@ -123,7 +123,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 
 		if k.intervalPassed(ctx, schedule) {
 			res = append(res, schedule)
-			count += 1
+			count++
 
 			if count >= params.Limit {
 				return res
@@ -135,10 +135,16 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 }
 
 func (k *Keeper) executeSchedule(ctx sdk.Context, msgServer wasmtypes.MsgServer, schedule types.Schedule) {
-	for _, msg := range schedule.Msgs {
-		_, err := msgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg)
+	for idx, msg := range schedule.Msgs {
+		_, err := msgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
 		if err != nil {
 			// TODO: return err, log warn or err?
+			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
+				"schedule_name", schedule.Name,
+				"msg_idx", idx,
+				"msg_contract", msg.Contract,
+				"error", err,
+			)
 		}
 
 		// Even if contract execution returned an error, we still increase the height

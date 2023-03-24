@@ -1,6 +1,9 @@
 package types
 
 import (
+	"fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 )
@@ -29,6 +32,18 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
+	_, err := sdk.AccAddressFromBech32(p.AdminAddress)
+	if err != nil {
+		return fmt.Errorf("invalid format of AdminAddress in params: %w", err)
+	}
+	_, err = sdk.AccAddressFromBech32(p.SecurityAddress)
+	if err != nil {
+		return fmt.Errorf("invalid format of AdminAddress in params: %w", err)
+	}
+
+	if p.Limit == 0 {
+		return fmt.Errorf("limit of operations cannot be zero")
+	}
 	return nil
 }
 

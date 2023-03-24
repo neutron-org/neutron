@@ -36,7 +36,7 @@ func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, tran
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
 			Adminserver:    adminkeeper.NewMsgServerImpl(*admKeeper),
-			cronKeeper:     *cronKeeper,
+			cronKeeper:     cronKeeper,
 		}
 	}
 }
@@ -48,7 +48,7 @@ type CustomMessenger struct {
 	Icqmsgserver   icqtypes.MsgServer
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
 	Adminserver    admintypes.MsgServer
-	cronKeeper     cronkeeper.Keeper
+	cronKeeper     *cronkeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -488,7 +488,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
-	m.cronKeeper.AddSchedule(ctx, contractAddr, addSchedule.Name, addSchedule.Period, addSchedule.Msgs)
+	m.cronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, addSchedule.Msgs)
 
 	resp := bindings.AddScheduleResponse{}
 	data, err := json.Marshal(&resp)
@@ -515,7 +515,7 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
-	m.cronKeeper.RemoveSchedule(ctx, contractAddr, removeSchedule.Name)
+	m.cronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
 
 	resp := bindings.RemoveScheduleResponse{}
 	data, err := json.Marshal(&resp)
