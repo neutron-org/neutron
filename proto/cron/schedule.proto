@@ -1,0 +1,16 @@
+syntax = "proto3";
+package neutronorg.neutron.cron;
+
+option go_package = "github.com/neutron-org/neutron/x/cron/types";
+
+import "cosmwasm/wasm/v1/tx.proto";
+
+message Schedule {
+  string name = 1;
+  uint64 update_period = 2;
+  repeated cosmwasm.wasm.v1.MsgExecuteContract msgs = 3 [
+//    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", // todo
+    (gogoproto.nullable) = false
+  ];
+  uint64 last_executed_height = 4;
+}

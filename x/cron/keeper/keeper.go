@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -23,10 +23,10 @@ type (
 )
 
 func NewKeeper(
-	cdc codec.BinaryCodec,
-	storeKey,
-	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
+		cdc codec.BinaryCodec,
+		storeKey,
+		memKey storetypes.StoreKey,
+		ps paramtypes.Subspace,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -52,7 +52,7 @@ func (k *Keeper) CheckTimer(ctx sdk.Context) {
 }
 
 // period in blocks
-func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []wasm.MsgExecuteContract) {
+func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
 
 }
 
