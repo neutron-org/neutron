@@ -429,7 +429,8 @@ func New(
 	)
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
-	app.CronKeeper = cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName))
+	opsKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	app.CronKeeper = cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), opsKeeper)
 	cronModule := cron.NewAppModule(appCodec, *app.CronKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route

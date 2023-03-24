@@ -1,8 +1,9 @@
 syntax = "proto3";
-package neutronorg.neutron.cron;
+package neutron.cron;
 
 option go_package = "github.com/neutron-org/neutron/x/cron/types";
 
+import "gogoproto/gogo.proto";
 import "cosmwasm/wasm/v1/tx.proto";
 
 message Schedule {

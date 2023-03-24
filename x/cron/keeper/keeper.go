@@ -20,6 +20,7 @@ type (
 		storeKey   storetypes.StoreKey
 		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
+		permKeeper *wasmkeeper.PermissionedKeeper
 	}
 )
 
@@ -28,6 +29,7 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
+	permKeeper *wasmkeeper.PermissionedKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -39,6 +41,7 @@ func NewKeeper(
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
+		permKeeper: permKeeper,
 	}
 }
 
@@ -52,7 +55,7 @@ func (k *Keeper) CheckTimer(ctx sdk.Context) {
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
-		wasmMsgServer := wasmkeeper.NewMsgServerImpl(h.ContractKeeper)
+		wasmMsgServer := wasmkeeper.NewMsgServerImpl(k.permKeeper)
 		k.executeSchedule(ctx, wasmMsgServer, schedule)
 	}
 }
@@ -64,7 +67,7 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, name 
 		Name:              name,
 		Period:            period,
 		Msgs:              msgs,
-		LastExecuteHeight: ctx.BlockHeight(), // lets execute newly added schedule on `now + period` block
+		LastExecuteHeight: uint64(ctx.BlockHeight()), // lets execute newly added schedule on `now + period` block // TODO: ok conversion?
 	}
 	k.storeSchedule(ctx, schedule)
 }
@@ -91,7 +94,7 @@ func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	return res
 }
 
-func (k Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, bool) {
+func (k *Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 	bzSchedule := store.Get(types.GetScheduleKey(name))
 	if bzSchedule == nil {
@@ -106,7 +109,7 @@ func (k Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, bool
 func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
 	params := k.GetParams(ctx)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
-	count := 0
+	count := uint64(0)
 
 	res := make([]types.Schedule, 0)
 
@@ -132,31 +135,31 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 
 func (k *Keeper) executeSchedule(ctx sdk.Context, msgServer wasmtypes.MsgServer, schedule types.Schedule) {
 	for _, msg := range schedule.Msgs {
-		_, err := msgServer.ExecuteContract(sdk.WrapSDKContext(ctx), msg)
+		_, err := msgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg)
 		if err != nil {
 			// TODO: return err, log warn or err?
 		}
 
 		// Even if contract execution returned an error, we still increase the height
 		// and execute it after this interval
-		schedule.LastExecuteHeight = ctx.BlockHeight()
+		schedule.LastExecuteHeight = uint64(ctx.BlockHeight()) // TODO: ok conversion?
 		k.storeSchedule(ctx, schedule)
 	}
 }
 
-func (k Keeper) storeSchedule(ctx sdk.Context, schedule types.Schedule) {
+func (k *Keeper) storeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	store := ctx.KVStore(k.storeKey)
 
 	bzSchedule := k.cdc.MustMarshal(&schedule)
 	store.Set(types.GetScheduleKey(schedule.Name), bzSchedule)
 }
 
-func (k Keeper) removeSchedule(ctx sdk.Context, name string) {
+func (k *Keeper) removeSchedule(ctx sdk.Context, name string) {
 	store := ctx.KVStore(k.storeKey)
 
 	store.Delete(types.GetScheduleKey(name))
 }
 
-func (k Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
-	return ctx.BlockHeight() > (schedule.LastExecuteHeight + schedule.Period)
+func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
+	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period) // TODO: ok conversion?
 }

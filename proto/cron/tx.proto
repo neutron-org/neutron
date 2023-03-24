@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutronorg.neutron.cron;
+package neutron.cron;
 
 // this line is used by starport scaffolding # proto/tx/import
 

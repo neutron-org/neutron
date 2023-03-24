@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleRequest) (*types.QueryAllScheduleResponse, error) {
+func (k *Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleRequest) (*types.QueryAllScheduleResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -39,7 +39,7 @@ func (k Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleReques
 	return &types.QueryAllScheduleResponse{Schedule: schedules, Pagination: pageRes}, nil
 }
 
-func (k Keeper) Schedule(c context.Context, req *types.QueryGetScheduleRequest) (*types.QueryGetScheduleResponse, error) {
+func (k *Keeper) Schedule(c context.Context, req *types.QueryGetScheduleRequest) (*types.QueryGetScheduleResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -53,5 +53,5 @@ func (k Keeper) Schedule(c context.Context, req *types.QueryGetScheduleRequest) 
 		return nil, status.Error(codes.NotFound, "not found")
 	}
 
-	return &types.QueryGetScheduleResponse{Schedule: val}, nil
+	return &types.QueryGetScheduleResponse{Schedule: *val}, nil
 }

@@ -483,7 +483,7 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 
 func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
 	params := m.cronKeeper.GetParams(ctx)
-	if !contractAddr.Equals(params.AdminAddress) {
+	if contractAddr.String() != params.AdminAddress {
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
@@ -510,7 +510,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
 	params := m.cronKeeper.GetParams(ctx)
 	// TODO: is .Equals appropriate here?
-	if !contractAddr.Equals(params.AdminAddress) && !contractAddr.Equals(params.SecurityAddress) {
+	if contractAddr.String() != params.AdminAddress && contractAddr.String() != params.SecurityAddress {
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 

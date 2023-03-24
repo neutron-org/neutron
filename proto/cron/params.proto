@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutronorg.neutron.cron;
+package neutron.cron;
 
 import "gogoproto/gogo.proto";
 
