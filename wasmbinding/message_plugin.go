@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"encoding/json"
 	"fmt"
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
@@ -25,7 +26,7 @@ import (
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
-func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper, admKeeper *adminkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper, admKeeper *adminkeeper.Keeper, cronKeeper cronkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
 			Keeper:         *ictx,
@@ -34,6 +35,7 @@ func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, tran
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
 			Adminserver:    adminkeeper.NewMsgServerImpl(*admKeeper),
+			cronKeeper:     cronKeeper,
 		}
 	}
 }
@@ -45,6 +47,7 @@ type CustomMessenger struct {
 	Icqmsgserver   icqtypes.MsgServer
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
 	Adminserver    admintypes.MsgServer
+	cronKeeper     cronkeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -81,6 +84,12 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		}
 		if contractMsg.SubmitAdminProposal != nil {
 			return m.submitAdminProposal(ctx, contractAddr, contractMsg.SubmitAdminProposal)
+		}
+		if contractMsg.AddSchedule != nil {
+			return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
+		}
+		if contractMsg.RemoveSchedule != nil {
+			return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 		}
 	}
 
@@ -470,4 +479,56 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 	}
 
 	return (*bindings.RegisterInterchainQueryResponse)(response), nil
+}
+
+func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
+	params := m.cronKeeper.GetParams(ctx)
+	if !contractAddr.Equals(params.AdminAddress) {
+		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
+	}
+
+	m.cronKeeper.AddSchedule(ctx, contractAddr, addSchedule.Name, addSchedule.Period, addSchedule.Msgs)
+
+	resp := bindings.AddScheduleResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal add schedule response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("schedule added",
+		"from_address", contractAddr.String(),
+		"name", addSchedule.Name,
+		"period", addSchedule.Period,
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
+	params := m.cronKeeper.GetParams(ctx)
+	// TODO: is .Equals appropriate here?
+	if !contractAddr.Equals(params.AdminAddress) && !contractAddr.Equals(params.SecurityAddress) {
+		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
+	}
+
+	m.cronKeeper.RemoveSchedule(ctx, contractAddr, removeSchedule.Name)
+
+	resp := bindings.RemoveScheduleResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal remove schedule response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("schedule removed",
+		"from_address", contractAddr.String(),
+		"name", removeSchedule.Name,
+	)
+	return nil, [][]byte{data}, nil
 }

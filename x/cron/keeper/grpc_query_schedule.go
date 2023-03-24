@@ -20,7 +20,7 @@ func (k Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleReques
 	ctx := sdk.UnwrapSDKContext(c)
 
 	store := ctx.KVStore(k.storeKey)
-	scheduleStore := prefix.NewStore(store, types.KeyPrefix(types.ScheduleKeyPrefix))
+	scheduleStore := prefix.NewStore(store, types.ScheduleKey) // TODO: works?
 
 	pageRes, err := query.Paginate(scheduleStore, req.Pagination, func(key []byte, value []byte) error {
 		var schedule types.Schedule
@@ -46,11 +46,11 @@ func (k Keeper) Schedule(c context.Context, req *types.QueryGetScheduleRequest) 
 	ctx := sdk.UnwrapSDKContext(c)
 
 	val, found := k.GetSchedule(
-	    ctx,
-	    req.Index,
-        )
+		ctx,
+		req.Name,
+	)
 	if !found {
-	    return nil, status.Error(codes.NotFound, "not found")
+		return nil, status.Error(codes.NotFound, "not found")
 	}
 
 	return &types.QueryGetScheduleResponse{Schedule: val}, nil

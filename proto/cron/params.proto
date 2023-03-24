@@ -8,5 +8,10 @@ option go_package = "github.com/neutron-org/neutron/x/cron/types";
 // Params defines the parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
-  
+  // Admin address that can add/remove schedules
+  string admin_address = 1;
+  // Security address that can remove schedules
+  string security_address = 2;
+  // Limit of schedules executed in one block
+  uint64 limit = 3;
 }

@@ -18,8 +18,8 @@ const (
 	prefixFeeKey = iota + 1
 )
 
-var FeeKey = []byte{prefixFeeKey}
+var ScheduleKey = []byte{prefixFeeKey}
 
 func GetScheduleKey(name string) []byte {
-	return append(FeeKey, []byte(name)...)
+	return append(ScheduleKey, []byte(name)...)
 }

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 
@@ -23,10 +24,10 @@ type (
 )
 
 func NewKeeper(
-		cdc codec.BinaryCodec,
-		storeKey,
-		memKey storetypes.StoreKey,
-		ps paramtypes.Subspace,
+	cdc codec.BinaryCodec,
+	storeKey,
+	memKey storetypes.StoreKey,
+	ps paramtypes.Subspace,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -48,23 +49,32 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k *Keeper) CheckTimer(ctx sdk.Context) {
-	// TODO
+	schedules := k.getSchedulesReadyForExecution(ctx)
+
+	for _, schedule := range schedules {
+		wasmMsgServer := wasmkeeper.NewMsgServerImpl(h.ContractKeeper)
+		k.executeSchedule(ctx, wasmMsgServer, schedule)
+	}
 }
 
 // period in blocks
-func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
-
+func (k *Keeper) AddSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
+	// TODO: check contractAddr is DAO admin
+	schedule := types.Schedule{
+		Name:              name,
+		Period:            period,
+		Msgs:              msgs,
+		LastExecuteHeight: ctx.BlockHeight(), // lets execute newly added schedule on `now + period` block
+	}
+	k.storeSchedule(ctx, schedule)
 }
 
-func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
-
+func (k *Keeper) RemoveSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, name string) {
+	// TODO: check contractAddr is DAO admin or Security DAO admin
+	k.removeSchedule(ctx, name)
 }
 
-func (k *Keeper) ExecuteSchedule() {
-	// TODO
-}
-
-func (k Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
+func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 
 	res := make([]types.Schedule, 0)
@@ -81,15 +91,72 @@ func (k Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	return res
 }
 
+func (k Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, bool) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
+	bzSchedule := store.Get(types.GetScheduleKey(name))
+	if bzSchedule == nil {
+		return nil, false
+	} else {
+		var schedule types.Schedule
+		k.cdc.MustUnmarshal(bzSchedule, &schedule)
+		return &schedule, true
+	}
+}
+
+func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
+	params := k.GetParams(ctx)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
+	count := 0
+
+	res := make([]types.Schedule, 0)
+
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var schedule types.Schedule
+		k.cdc.MustUnmarshal(iterator.Value(), &schedule)
+
+		if k.intervalPassed(ctx, schedule) {
+			res = append(res, schedule)
+			count += 1
+
+			if count >= params.Limit {
+				return res
+			}
+		}
+	}
+
+	return res
+}
+
+func (k *Keeper) executeSchedule(ctx sdk.Context, msgServer wasmtypes.MsgServer, schedule types.Schedule) {
+	for _, msg := range schedule.Msgs {
+		_, err := msgServer.ExecuteContract(sdk.WrapSDKContext(ctx), msg)
+		if err != nil {
+			// TODO: return err, log warn or err?
+		}
+
+		// Even if contract execution returned an error, we still increase the height
+		// and execute it after this interval
+		schedule.LastExecuteHeight = ctx.BlockHeight()
+		k.storeSchedule(ctx, schedule)
+	}
+}
+
 func (k Keeper) storeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	store := ctx.KVStore(k.storeKey)
 
 	bzSchedule := k.cdc.MustMarshal(&schedule)
-	store.Set(types.GetScheduleKey(schedule.name), bzSchedule)
+	store.Set(types.GetScheduleKey(schedule.Name), bzSchedule)
 }
 
 func (k Keeper) removeSchedule(ctx sdk.Context, name string) {
 	store := ctx.KVStore(k.storeKey)
 
 	store.Delete(types.GetScheduleKey(name))
+}
+
+func (k Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
+	return ctx.BlockHeight() > (schedule.LastExecuteHeight + schedule.Period)
 }

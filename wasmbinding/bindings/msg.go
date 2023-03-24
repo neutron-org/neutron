@@ -2,6 +2,7 @@
 package bindings
 
 import (
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -26,6 +27,8 @@ type NeutronMsg struct {
 	RemoveInterchainQuery     *RemoveInterchainQuery            `json:"remove_interchain_query,omitempty"`
 	IBCTransfer               *transferwrappertypes.MsgTransfer `json:"ibc_transfer,omitempty"`
 	SubmitAdminProposal       *SubmitAdminProposal              `json:"submit_admin_proposal,omitempty"`
+	AddSchedule               *AddSchedule                      `json:"add_schedule,omitempty"`
+	RemoveSchedule            *RemoveSchedule                   `json:"remove_schedule,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -122,3 +125,17 @@ type UpdateInterchainQuery struct {
 }
 
 type UpdateInterchainQueryResponse struct{}
+
+type AddSchedule struct {
+	Name   string                         `json:"name"`
+	Period uint64                         `json:"period"`
+	Msgs   []wasmtypes.MsgExecuteContract `json:"msgs"`
+}
+
+type AddScheduleResponse struct{}
+
+type RemoveSchedule struct {
+	Name string `json:"name"`
+}
+
+type RemoveScheduleResponse struct{}
