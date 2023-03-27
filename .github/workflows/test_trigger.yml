@@ -1,0 +1,25 @@
+name: Dispatch Workflow
+
+concurrency: neutron-tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        if: |
+          github.event.pull_request.merged == true &&
+          contains(github.event.pull_request.labels.*.name, 'trigger-tests')
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: neutron-org/neutron-tests
+          event-type: run-tests

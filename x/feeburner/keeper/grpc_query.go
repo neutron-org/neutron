@@ -9,7 +9,7 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
-func (k Keeper) TotalBurnedNeutronsAmount(goCtx context.Context, request *types.QueryTotalBurnedNeutronsAmountRequest) (*types.QueryTotalBurnedNeutronsAmountResponse, error) {
+func (k Keeper) TotalBurnedNeutronsAmount(goCtx context.Context, _ *types.QueryTotalBurnedNeutronsAmountRequest) (*types.QueryTotalBurnedNeutronsAmountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	totalBurnedNeutronsAmount := k.GetTotalBurnedNeutronsAmount(ctx)

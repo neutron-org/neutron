@@ -110,7 +110,7 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 	// try to return unused timeout fee
 	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.TimeoutFee); err != nil {
 		k.Logger(ctx).Error("error returning unused timeout fee", "receiver", feeInfo.Payer, "packet", packetID)
-		panic(sdkerrors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%v", receiver, packetID))
+		panic(sdkerrors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%v", feeInfo.Payer, packetID))
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -147,7 +147,7 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 	// try to return unused ack fee
 	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.AckFee); err != nil {
 		k.Logger(ctx).Error("error returning unused ack fee", "receiver", feeInfo.Payer, "packet", packetID)
-		panic(sdkerrors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%v", receiver, packetID))
+		panic(sdkerrors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%v", feeInfo.Payer, packetID))
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -202,6 +202,11 @@ func (k Keeper) StoreFeeInfo(ctx sdk.Context, feeInfo types.FeeInfo) {
 
 	bzFeeInfo := k.cdc.MustMarshal(&feeInfo)
 	store.Set(types.GetFeePacketKey(feeInfo.PacketId), bzFeeInfo)
+}
+
+func (k Keeper) GetMinFee(ctx sdk.Context) types.Fee {
+	params := k.GetParams(ctx)
+	return params.GetMinFee()
 }
 
 func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {

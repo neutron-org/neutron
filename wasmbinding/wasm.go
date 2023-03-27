@@ -4,6 +4,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 
 	adminmodulemodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
@@ -19,8 +20,9 @@ func RegisterCustomPlugins(
 	transfer transfer.KeeperTransferWrapper,
 	admKeeper *adminmodulemodulekeeper.Keeper,
 	feeBurnerKeeper *feeburnerkeeper.Keeper,
+	feeRefunderKeeper *feerefunderkeeper.Keeper,
 ) []wasmkeeper.Option {
-	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper)
+	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper)
 
 	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
 		Custom: CustomQuerier(wasmQueryPlugin),
