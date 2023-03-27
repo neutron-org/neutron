@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 
 	"github.com/neutron-org/neutron/x/contractmanager/types"
@@ -173,7 +174,7 @@ func (k Keeper) SudoTxQueryResult(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
 	queryID uint64,
-	height int64,
+	height ibcclienttypes.Height,
 	data []byte,
 ) ([]byte, error) {
 	k.Logger(ctx).Debug("SudoTxQueryResult", "contractAddress", contractAddress)
@@ -185,7 +186,7 @@ func (k Keeper) SudoTxQueryResult(
 
 	x := types.MessageTxQueryResult{}
 	x.TxQueryResult.QueryID = queryID
-	x.TxQueryResult.Height = uint64(height)
+	x.TxQueryResult.Height = height
 	x.TxQueryResult.Data = data
 
 	m, err := json.Marshal(x)

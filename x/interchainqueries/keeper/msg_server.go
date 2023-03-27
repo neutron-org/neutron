@@ -175,11 +175,11 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		if !types.InterchainQueryType(query.QueryType).IsKV() {
 			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
 		}
-		if err := k.checkLastRemoteHeight(ctx, *query, msg.Result.Height); err != nil {
+		if err := k.checkLastRemoteHeight(ctx, *query, ibcclienttypes.NewHeight(msg.Result.Revision, msg.Result.Height)); err != nil {
 			return nil, sdkerrors.Wrap(types.ErrInvalidHeight, err.Error())
 		}
 		if len(msg.Result.KvResults) != len(query.Keys) {
-			return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), query.Keys)
+			return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), len(query.Keys))
 		}
 
 		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
