@@ -15,7 +15,7 @@ var (
 	KeyNeutronDenom        = []byte("NeutronDenom")
 	DefaultNeutronDenom    = params.DefaultDenom
 	KeyTreasuryAddress     = []byte("TreasuryAddress")
-	DefaultTreasuryAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
+	DefaultTreasuryAddress = ""
 )
 
 // ParamKeyTable the param key table for launch module
@@ -101,6 +101,11 @@ func validateTreasuryAddress(i interface{}) error {
 	v, ok := i.(string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	// treasury might be explicitly empty in test environments
+	if len(v) == 0 {
+		return nil
 	}
 
 	_, err := sdk.AccAddressFromBech32(v)
