@@ -17,11 +17,11 @@ import (
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		memKey     storetypes.StoreKey
-		paramstore paramtypes.Subspace
-		permKeeper *wasmkeeper.PermissionedKeeper
+		cdc           codec.BinaryCodec
+		storeKey      storetypes.StoreKey
+		memKey        storetypes.StoreKey
+		paramstore    paramtypes.Subspace
+		wasmMsgServer wasmtypes.MsgServer
 	}
 )
 
@@ -30,7 +30,7 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
-	permKeeper *wasmkeeper.PermissionedKeeper,
+	permKeeper types.ContractOpsKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -38,11 +38,11 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
-		permKeeper: permKeeper,
+		cdc:           cdc,
+		storeKey:      storeKey,
+		memKey:        memKey,
+		paramstore:    ps,
+		wasmMsgServer: wasmkeeper.NewMsgServerImpl(permKeeper),
 	}
 }
 
@@ -56,8 +56,7 @@ func (k *Keeper) CheckTimer(ctx sdk.Context) {
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
-		wasmMsgServer := wasmkeeper.NewMsgServerImpl(k.permKeeper)
-		k.executeSchedule(ctx, wasmMsgServer, schedule)
+		k.executeSchedule(ctx, schedule)
 	}
 }
 
@@ -132,9 +131,9 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 	return res
 }
 
-func (k *Keeper) executeSchedule(ctx sdk.Context, msgServer wasmtypes.MsgServer, schedule types.Schedule) {
+func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	for idx, msg := range schedule.Msgs {
-		_, err := msgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
+		_, err := k.wasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
