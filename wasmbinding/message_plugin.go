@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"encoding/json"
 	"fmt"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 
@@ -488,7 +489,17 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
-	m.cronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, addSchedule.Msgs)
+	msgs := make([]wasmtypes.MsgExecuteContract, len(addSchedule.Msgs))
+	for _, msg := range addSchedule.Msgs {
+		msgs = append(msgs, wasmtypes.MsgExecuteContract{
+			Sender:   msg.Sender,
+			Contract: msg.Contract,
+			Msg:      []byte(msg.Msg),
+			Funds:    msg.Funds,
+		})
+	}
+
+	m.cronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
 
 	resp := bindings.AddScheduleResponse{}
 	data, err := json.Marshal(&resp)

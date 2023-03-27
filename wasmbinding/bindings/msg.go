@@ -2,7 +2,7 @@
 package bindings
 
 import (
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -121,9 +121,9 @@ type UpdateInterchainQuery struct {
 type UpdateInterchainQueryResponse struct{}
 
 type AddSchedule struct {
-	Name   string                         `json:"name"`
-	Period uint64                         `json:"period"`
-	Msgs   []wasmtypes.MsgExecuteContract `json:"msgs"`
+	Name   string               `json:"name"`
+	Period uint64               `json:"period"`
+	Msgs   []MsgExecuteContract `json:"msgs"`
 }
 
 type AddScheduleResponse struct{}
@@ -133,3 +133,16 @@ type RemoveSchedule struct {
 }
 
 type RemoveScheduleResponse struct{}
+
+// TODO: better description
+/// MsgExecuteContract define separate from wasmtypes since we can get away with just passing the string into bindings
+type MsgExecuteContract struct {
+	// Sender is the that actor that signed the messages
+	Sender string `json:"sender,omitempty"`
+	// Contract is the address of the smart contract
+	Contract string `protobuf:"bytes,2,opt,name=contract,proto3" json:"contract,omitempty"`
+	// Msg json encoded message to be passed to the contract
+	Msg string `json:"msg,omitempty"`
+	// Funds coins that are transferred to the contract on execution
+	Funds github_com_cosmos_cosmos_sdk_types.Coins `json:"funds"`
+}

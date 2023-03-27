@@ -2,6 +2,11 @@ package keeper
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/armon/go-metrics"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -13,6 +18,13 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/neutron-org/neutron/x/cron/types"
 	"github.com/tendermint/tendermint/libs/log"
+)
+
+var (
+	LabelCheckTimer    = "check_timer"
+	MetricLabelSuccess = "success"
+	MetricMsgIndex     = "msg_idx"
+	MetricScheduleName = "schedule_name"
 )
 
 type (
@@ -53,6 +65,7 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k *Keeper) CheckTimer(ctx sdk.Context) {
+	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelCheckTimer)
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
@@ -66,7 +79,7 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 		Name:              name,
 		Period:            period,
 		Msgs:              msgs,
-		LastExecuteHeight: uint64(ctx.BlockHeight()), // lets execute newly added schedule on `now + period` block // TODO: ok conversion?
+		LastExecuteHeight: uint64(ctx.BlockHeight()), // lets execute newly added schedule on `now + period` block
 	}
 	k.storeSchedule(ctx, schedule)
 }
@@ -134,6 +147,9 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	for idx, msg := range schedule.Msgs {
 		_, err := k.wasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
+
+		countMsgExecuted(err, schedule.Name, idx)
+
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
@@ -165,4 +181,13 @@ func (k *Keeper) removeSchedule(ctx sdk.Context, name string) {
 
 func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
 	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period)
+}
+
+func countMsgExecuted(err error, scheduleName string, idx int) {
+	telemetry.IncrCounterWithLabels([]string{"execute_schedule"}, 1, []metrics.Label{
+		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
+		telemetry.NewLabel(MetricScheduleName, scheduleName),
+		telemetry.NewLabel(MetricLabelSuccess, strconv.FormatBool(err == nil)),
+		telemetry.NewLabel(MetricMsgIndex, strconv.Itoa(idx)),
+	})
 }
