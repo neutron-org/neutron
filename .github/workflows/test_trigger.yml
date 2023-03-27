@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Repository Dispatch
         if: |
-          github.event.pull_request.merged == true &&
+          github.event.pull_request.closed == true &&
           contains(github.event.pull_request.labels.*.name, 'trigger-tests')
         uses: peter-evans/repository-dispatch@v2
         with:
