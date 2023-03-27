@@ -63,7 +63,6 @@ func (k *Keeper) CheckTimer(ctx sdk.Context) {
 
 // period in blocks
 func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
-	// TODO: check contractAddr is DAO admin
 	schedule := types.Schedule{
 		Name:              name,
 		Period:            period,
@@ -74,7 +73,6 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 }
 
 func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
-	// TODO: check contractAddr is DAO admin or Security DAO admin
 	k.removeSchedule(ctx, name)
 }
 
@@ -138,7 +136,6 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, msgServer wasmtypes.MsgServer,
 	for idx, msg := range schedule.Msgs {
 		_, err := msgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
 		if err != nil {
-			// TODO: return err, log warn or err?
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
 				"msg_idx", idx,
@@ -149,7 +146,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, msgServer wasmtypes.MsgServer,
 
 		// Even if contract execution returned an error, we still increase the height
 		// and execute it after this interval
-		schedule.LastExecuteHeight = uint64(ctx.BlockHeight()) // TODO: ok conversion?
+		schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
 		k.storeSchedule(ctx, schedule)
 	}
 }
@@ -168,5 +165,5 @@ func (k *Keeper) removeSchedule(ctx sdk.Context, name string) {
 }
 
 func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
-	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period) // TODO: ok conversion?
+	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period)
 }
