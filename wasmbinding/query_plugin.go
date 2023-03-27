@@ -26,5 +26,4 @@ func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *
 		feeRefunderKeeper:   feeRefunderKeeper,
 		tokenFactoryKeeper:  tfk,
 	}
-
 }
