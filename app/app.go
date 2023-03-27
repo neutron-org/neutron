@@ -501,7 +501,7 @@ func New(
 		app.FeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,

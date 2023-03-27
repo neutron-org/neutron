@@ -93,6 +93,9 @@ PROPOSAL_SINGLE_INIT_MSG='{
    "pre_propose_info":{
       "module_may_propose":{
          "info":{
+            "admin": {
+              "core_module": {}
+            },
             "code_id": '"$PRE_PROPOSAL_CONTRACT_BINARY_ID"',
             "msg": "'"$PRE_PROPOSE_INIT_MSG_BASE64"'",
             "label":"neutron"
@@ -126,6 +129,9 @@ PROPOSAL_MULTIPLE_INIT_MSG='{
    "pre_propose_info":{
       "module_may_propose":{
          "info":{
+            "admin": {
+              "core_module": {}
+            },
             "code_id": '"$PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID"',
             "msg": "'"$PRE_PROPOSE_INIT_MSG_BASE64"'",
             "label":"neutron"
@@ -160,6 +166,9 @@ PROPOSAL_OVERRULE_INIT_MSG='{
    "pre_propose_info":{
       "module_may_propose":{
          "info":{
+            "admin": {
+              "core_module": {}
+            },
             "code_id": '"$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID"',
             "msg": "'"$PRE_PROPOSE_OVERRULE_INIT_MSG_BASE64"'",
             "label":"neutron"
@@ -201,22 +210,34 @@ DAO_INIT='{
   "initial_items": null,
   "proposal_modules_instantiate_info": [
     {
+      "admin": {
+        "core_module": {}
+      },
       "code_id": '"$PROPOSAL_CONTRACT_BINARY_ID"',
       "label": "DAO_Neutron_cw-proposal-single",
       "msg": "'"$PROPOSAL_SINGLE_INIT_MSG_BASE64"'"
     },
     {
+      "admin": {
+        "core_module": {}
+      },
       "code_id": '"$PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID"',
       "label": "DAO_Neutron_cw-proposal-multiple",
       "msg": "'"$PROPOSAL_MULTIPLE_INIT_MSG_BASE64"'"
     },
     {
+      "admin": {
+        "core_module": {}
+      },
       "code_id": '"$PROPOSAL_CONTRACT_BINARY_ID"',
       "label": "DAO_Neutron_cw-proposal-overrule",
       "msg": "'"$PROPOSAL_OVERRULE_INIT_MSG_BASE64"'"
     }
   ],
   "voting_registry_module_instantiate_info": {
+    "admin": {
+      "core_module": {}
+    },
     "code_id": '"$VOTING_REGISTRY_CONTRACT_BINARY_ID"',
     "label": "DAO_Neutron_voting_registry",
     "msg": "'"$VOTING_REGISTRY_INIT_MSG_BASE64"'"

@@ -9,22 +9,22 @@ import (
 
 var _ sdk.Msg = &MsgRemoveInterchainQueryRequest{}
 
-func NewMsgRemoveInterchainQuery(sender string, queryID uint64) *MsgRemoveInterchainQueryRequest {
-	return &MsgRemoveInterchainQueryRequest{
+func NewMsgRemoveInterchainQuery(sender string, queryID uint64) MsgRemoveInterchainQueryRequest {
+	return MsgRemoveInterchainQueryRequest{
 		QueryId: queryID,
 		Sender:  sender,
 	}
 }
 
-func (msg *MsgRemoveInterchainQueryRequest) Route() string {
+func (msg MsgRemoveInterchainQueryRequest) Route() string {
 	return RouterKey
 }
 
-func (msg *MsgRemoveInterchainQueryRequest) Type() string {
+func (msg MsgRemoveInterchainQueryRequest) Type() string {
 	return "remove-interchain-query"
 }
 
-func (msg *MsgRemoveInterchainQueryRequest) ValidateBasic() error {
+func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
 	if msg.GetQueryId() == 0 {
 		return sdkerrors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
@@ -40,11 +40,11 @@ func (msg *MsgRemoveInterchainQueryRequest) ValidateBasic() error {
 	return nil
 }
 
-func (msg *MsgRemoveInterchainQueryRequest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+func (msg MsgRemoveInterchainQueryRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
-func (msg *MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {
+func (msg MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
