@@ -14,16 +14,16 @@ option go_package = "github.com/neutron-org/neutron/x/cron/types";
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/neutron-org/neutron/cron/params";
+    option (google.api.http).get = "/neutron/cron/params";
   }
   // Queries a Schedule by index.
 	rpc Schedule(QueryGetScheduleRequest) returns (QueryGetScheduleResponse) {
-		option (google.api.http).get = "/neutron-org/neutron/cron/schedule/{name}";
+		option (google.api.http).get = "/neutron/cron/schedule/{name}";
 	}
 
 	// Queries a list of Schedule items.
 	rpc ScheduleAll(QueryAllScheduleRequest) returns (QueryAllScheduleResponse) {
-		option (google.api.http).get = "/neutron-org/neutron/cron/schedule";
+		option (google.api.http).get = "/neutron/cron/schedule";
 	}
 
 // this line is used by starport scaffolding # 2

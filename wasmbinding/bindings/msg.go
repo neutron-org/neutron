@@ -135,7 +135,7 @@ type RemoveSchedule struct {
 type RemoveScheduleResponse struct{}
 
 // TODO: better description
-/// MsgExecuteContract define separate from wasmtypes since we can get away with just passing the string into bindings
+// / MsgExecuteContract define separate from wasmtypes since we can get away with just passing the string into bindings
 type MsgExecuteContract struct {
 	// Sender is the that actor that signed the messages
 	Sender string `json:"sender,omitempty"`
