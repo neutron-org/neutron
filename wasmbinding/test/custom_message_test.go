@@ -2,8 +2,9 @@ package test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
+
+	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
@@ -55,20 +56,12 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Craft RegisterInterchainAccount message
-	msgStr := []byte(fmt.Sprintf(
-		`
-{
-	"register_interchain_account": {
-		"connection_id": "%s",
-		"interchain_account_id": "%s"
-	}
-}
-		`,
-		suite.Path.EndpointA.ConnectionID,
-		testutil.TestInterchainID,
-	))
-	var msg json.RawMessage
-	err := json.Unmarshal(msgStr, &msg)
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
+			ConnectionId:        suite.Path.EndpointA.ConnectionID,
+			InterchainAccountId: testutil.TestInterchainID,
+		},
+	})
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
@@ -78,6 +71,30 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	suite.NoError(err)
 	suite.Nil(events)
 	suite.Equal([][]byte{[]byte(`{}`)}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Craft RegisterInterchainAccount message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
+			ConnectionId: suite.Path.EndpointA.ConnectionID,
+			// the limit is 47, this line is 50 characters long
+			InterchainAccountId: "01234567890123456789012345678901234567890123456789",
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch RegisterInterchainAccount message
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.Error(err)
+	suite.ErrorIs(err, ictxtypes.ErrLongInterchainAccountID)
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
@@ -93,29 +110,24 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
-	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
-
-	// Craft RegisterInterchainQuery message
-	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-	updatePeriod := uint64(20)
-
-	regMsg := bindings.RegisterInterchainQuery{
-		QueryType: string(icqtypes.InterchainQueryTypeKV),
-		Keys: []*icqtypes.KVKey{
-			{Path: host.StoreKey, Key: clientKey},
-		},
-		TransactionsFilter: "{}",
-		ConnectionId:       suite.Path.EndpointA.ConnectionID,
-		UpdatePeriod:       updatePeriod,
-	}
-
-	fullMsg := bindings.NeutronMsg{
-		RegisterInterchainQuery: &regMsg,
-	}
-
-	msg, err := json.Marshal(fullMsg)
+	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
 
+	// Craft RegisterInterchainQuery message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		RegisterInterchainQuery: &bindings.RegisterInterchainQuery{
+			QueryType: string(icqtypes.InterchainQueryTypeKV),
+			Keys: []*icqtypes.KVKey{
+				{Path: host.StoreKey, Key: host.FullClientStateKey(suite.Path.EndpointB.ClientID)},
+			},
+			TransactionsFilter: "{}",
+			ConnectionId:       suite.Path.EndpointA.ConnectionID,
+			UpdatePeriod:       20,
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch RegisterInterchainQuery message
 	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
 		Custom: msg,
 	})
@@ -127,20 +139,15 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {
 	// reuse register interchain query test to get query registered
 	suite.TestRegisterInterchainQuery()
+
 	// Craft UpdateInterchainQuery message
-	queryID := uint64(1)
-	newUpdatePeriod := uint64(111)
-	updMsg := bindings.UpdateInterchainQuery{
-		QueryId:         queryID,
-		NewKeys:         nil,
-		NewUpdatePeriod: newUpdatePeriod,
-	}
-
-	fullMsg := bindings.NeutronMsg{
-		UpdateInterchainQuery: &updMsg,
-	}
-
-	msg, err := json.Marshal(fullMsg)
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		UpdateInterchainQuery: &bindings.UpdateInterchainQuery{
+			QueryId:         1,
+			NewKeys:         nil,
+			NewUpdatePeriod: 111,
+		},
+	})
 	suite.NoError(err)
 
 	// Dispatch UpdateInterchainQuery message
@@ -154,19 +161,13 @@ func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {
 
 func (suite *CustomMessengerTestSuite) TestUpdateInterchainQueryFailed() {
 	// Craft UpdateInterchainQuery message
-	queryID := uint64(1)
-	newUpdatePeriod := uint64(111)
-	updMsg := bindings.UpdateInterchainQuery{
-		QueryId:         queryID,
-		NewKeys:         nil,
-		NewUpdatePeriod: newUpdatePeriod,
-	}
-
-	fullMsg := bindings.NeutronMsg{
-		UpdateInterchainQuery: &updMsg,
-	}
-
-	msg, err := json.Marshal(fullMsg)
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		UpdateInterchainQuery: &bindings.UpdateInterchainQuery{
+			QueryId:         1,
+			NewKeys:         nil,
+			NewUpdatePeriod: 1,
+		},
+	})
 	suite.NoError(err)
 
 	// Dispatch UpdateInterchainQuery message
@@ -182,19 +183,15 @@ func (suite *CustomMessengerTestSuite) TestUpdateInterchainQueryFailed() {
 }
 
 func (suite *CustomMessengerTestSuite) TestRemoveInterchainQuery() {
-	// reuse register interchain query test to get query registered
+	// Reuse register interchain query test to get query registered
 	suite.TestRegisterInterchainQuery()
+
 	// Craft RemoveInterchainQuery message
-	queryID := uint64(1)
-	remMsg := bindings.RemoveInterchainQuery{
-		QueryId: queryID,
-	}
-
-	fullMsg := bindings.NeutronMsg{
-		RemoveInterchainQuery: &remMsg,
-	}
-
-	msg, err := json.Marshal(fullMsg)
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		RemoveInterchainQuery: &bindings.RemoveInterchainQuery{
+			QueryId: 1,
+		},
+	})
 	suite.NoError(err)
 
 	// Dispatch RemoveInterchainQuery message
@@ -209,16 +206,11 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQuery() {
 
 func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 	// Craft RemoveInterchainQuery message
-	queryID := uint64(1)
-	remMsg := bindings.RemoveInterchainQuery{
-		QueryId: queryID,
-	}
-
-	fullMsg := bindings.NeutronMsg{
-		RemoveInterchainQuery: &remMsg,
-	}
-
-	msg, err := json.Marshal(fullMsg)
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		RemoveInterchainQuery: &bindings.RemoveInterchainQuery{
+			QueryId: 1,
+		},
+	})
 	suite.NoError(err)
 
 	// Dispatch RemoveInterchainQuery message
@@ -242,21 +234,18 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
-	bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
-
-	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
-	suite.Require().NoError(err)
-
-	var msg json.RawMessage
-	err = json.Unmarshal(suite.craftMarshaledMsgSubmitTxWithNumMsgs(1), &msg)
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
+
+	err = testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
+	suite.Require().NoError(err)
 
 	events, data, err := suite.messenger.DispatchMsg(
 		suite.ctx,
 		suite.contractAddress,
 		suite.Path.EndpointA.ChannelConfig.PortID,
 		types.CosmosMsg{
-			Custom: msg,
+			Custom: suite.craftMarshaledMsgSubmitTxWithNumMsgs(1),
 		},
 	)
 	suite.NoError(err)
@@ -278,16 +267,12 @@ func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
-	var msg json.RawMessage
-	err = json.Unmarshal(suite.craftMarshaledMsgSubmitTxWithNumMsgs(20), &msg)
-	suite.NoError(err)
-
 	_, _, err = suite.messenger.DispatchMsg(
 		suite.ctx,
 		suite.contractAddress,
 		suite.Path.EndpointA.ChannelConfig.PortID,
 		types.CosmosMsg{
-			Custom: msg,
+			Custom: suite.craftMarshaledMsgSubmitTxWithNumMsgs(20),
 		},
 	)
 	suite.ErrorContains(err, "MsgSubmitTx contains more messages than allowed")
@@ -298,25 +283,21 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
 
 	// Craft SubmitAdminProposal message
-	submitProposalMsg := bindings.SubmitAdminProposal{
-		AdminProposal: bindings.AdminProposal{
-			SoftwareUpgradeProposal: &bindings.SoftwareUpgradeProposal{
-				Title:       "Test",
-				Description: "Test",
-				Plan: bindings.Plan{
-					Name:   "TestPlan",
-					Height: 150,
-					Info:   "TestInfo",
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		SubmitAdminProposal: &bindings.SubmitAdminProposal{
+			AdminProposal: bindings.AdminProposal{
+				SoftwareUpgradeProposal: &bindings.SoftwareUpgradeProposal{
+					Title:       "Test",
+					Description: "Test",
+					Plan: bindings.Plan{
+						Name:   "TestPlan",
+						Height: 150,
+						Info:   "TestInfo",
+					},
 				},
 			},
 		},
-	}
-
-	fullMsg := bindings.NeutronMsg{
-		SubmitAdminProposal: &submitProposalMsg,
-	}
-
-	msg, err := json.Marshal(fullMsg)
+	})
 	suite.NoError(err)
 
 	// Dispatch SubmitAdminProposal message
@@ -342,19 +323,16 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	// Check CancelSubmitAdminProposal
 
 	// Craft CancelSubmitAdminProposal message
-	submitCancelProposalMsg := bindings.SubmitAdminProposal{
-		AdminProposal: bindings.AdminProposal{
-			CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
-				Title:       "Test",
-				Description: "Test",
+	msg, err = json.Marshal(bindings.NeutronMsg{
+		SubmitAdminProposal: &bindings.SubmitAdminProposal{
+			AdminProposal: bindings.AdminProposal{
+				CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
+					Title:       "Test",
+					Description: "Test",
+				},
 			},
 		},
-	}
-
-	fullMsg = bindings.NeutronMsg{
-		SubmitAdminProposal: &submitCancelProposalMsg,
-	}
-	msg, err = json.Marshal(fullMsg)
+	})
 	suite.NoError(err)
 
 	// Dispatch SubmitAdminProposal message
@@ -368,6 +346,64 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	})
 	suite.NoError(err)
 	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
+	suite.Require().NoError(err)
+
+	// Craft  message with 2 proposals
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		SubmitAdminProposal: &bindings.SubmitAdminProposal{
+			AdminProposal: bindings.AdminProposal{
+				CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
+					Title:       "Test",
+					Description: "Test",
+				},
+				ClearAdminProposal: &bindings.ClearAdminProposal{
+					Title:       "Test",
+					Description: "Test",
+					Contract:    "Test",
+				},
+			},
+		},
+	})
+
+	cosmosMsg := types.CosmosMsg{Custom: msg}
+
+	// Dispatch SubmitAdminProposal message
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+
+	suite.ErrorContains(err, "more than one admin proposal type is present in message")
+}
+
+func (suite *CustomMessengerTestSuite) TestNoProposals() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
+	suite.Require().NoError(err)
+
+	// Craft  message with 0 proposals
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		SubmitAdminProposal: &bindings.SubmitAdminProposal{
+			AdminProposal: bindings.AdminProposal{},
+		},
+	})
+
+	cosmosMsg := types.CosmosMsg{Custom: msg}
+
+	// Dispatch SubmitAdminProposal message
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+
+	suite.ErrorContains(err, "no admin proposal type is present in message")
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {

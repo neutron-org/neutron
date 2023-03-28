@@ -93,6 +93,9 @@ PROPOSAL_SINGLE_INIT_MSG='{
    "pre_propose_info":{
       "module_may_propose":{
          "info":{
+            "admin": {
+              "core_module": {}
+            },
             "code_id": '"$PRE_PROPOSAL_CONTRACT_BINARY_ID"',
             "msg": "'"$PRE_PROPOSE_INIT_MSG_BASE64"'",
             "label":"neutron"
@@ -126,6 +129,9 @@ PROPOSAL_MULTIPLE_INIT_MSG='{
    "pre_propose_info":{
       "module_may_propose":{
          "info":{
+            "admin": {
+              "core_module": {}
+            },
             "code_id": '"$PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID"',
             "msg": "'"$PRE_PROPOSE_INIT_MSG_BASE64"'",
             "label":"neutron"
@@ -160,6 +166,9 @@ PROPOSAL_OVERRULE_INIT_MSG='{
    "pre_propose_info":{
       "module_may_propose":{
          "info":{
+            "admin": {
+              "core_module": {}
+            },
             "code_id": '"$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID"',
             "msg": "'"$PRE_PROPOSE_OVERRULE_INIT_MSG_BASE64"'",
             "label":"neutron"
@@ -183,7 +192,11 @@ PROPOSAL_OVERRULE_INIT_MSG_BASE64=$(echo "$PROPOSAL_OVERRULE_INIT_MSG" | base64 
 
 VOTING_REGISTRY_INIT_MSG='{
   "manager": null,
-  "owner": null,
+  "owner": {
+    "address": {
+      "addr": "'"$ADMIN_ADDRESS"'"
+    }
+  },
   "voting_vaults": [
     "'"$NEUTRON_VAULT_CONTRACT_ADDRESS"'",
     "'"$LOCKDROP_VAULT_CONTRACT_ADDRESS"'"
@@ -197,22 +210,34 @@ DAO_INIT='{
   "initial_items": null,
   "proposal_modules_instantiate_info": [
     {
+      "admin": {
+        "core_module": {}
+      },
       "code_id": '"$PROPOSAL_CONTRACT_BINARY_ID"',
       "label": "DAO_Neutron_cw-proposal-single",
       "msg": "'"$PROPOSAL_SINGLE_INIT_MSG_BASE64"'"
     },
     {
+      "admin": {
+        "core_module": {}
+      },
       "code_id": '"$PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID"',
       "label": "DAO_Neutron_cw-proposal-multiple",
       "msg": "'"$PROPOSAL_MULTIPLE_INIT_MSG_BASE64"'"
     },
     {
+      "admin": {
+        "core_module": {}
+      },
       "code_id": '"$PROPOSAL_CONTRACT_BINARY_ID"',
       "label": "DAO_Neutron_cw-proposal-overrule",
       "msg": "'"$PROPOSAL_OVERRULE_INIT_MSG_BASE64"'"
     }
   ],
   "voting_registry_module_instantiate_info": {
+    "admin": {
+      "core_module": {}
+    },
     "code_id": '"$VOTING_REGISTRY_CONTRACT_BINARY_ID"',
     "label": "DAO_Neutron_voting_registry",
     "msg": "'"$VOTING_REGISTRY_INIT_MSG_BASE64"'"
@@ -238,12 +263,22 @@ DISTRIBUTION_INIT='{
 }'
 
 NEUTRON_VAULT_INIT='{
+  "owner": {
+    "address": {
+      "addr": "'"$ADMIN_ADDRESS"'"
+    }
+  },
   "name": "voting vault",
   "denom": "'"$STAKEDENOM"'",
   "description": "a simple voting vault for testing purposes"
 }'
 # since the lockdrop_contract is still a mock, the address is a random valid one just to pass instantiation
 LOCKDROP_VAULT_INIT='{
+  "owner": {
+    "address": {
+      "addr": "'"$ADMIN_ADDRESS"'"
+    }
+  },
   "name": "lockdrop vault",
   "description": "a lockdrop vault for testing purposes",
   "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"

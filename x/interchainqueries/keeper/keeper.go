@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -85,7 +86,6 @@ func (k Keeper) SetLastRegisteredQueryKey(ctx sdk.Context, id uint64) {
 
 func (k Keeper) SaveQuery(ctx sdk.Context, query *types.RegisteredQuery) error {
 	store := ctx.KVStore(k.storeKey)
-
 	bz, err := k.cdc.Marshal(query)
 	if err != nil {
 		return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal registered query: %v", err)
@@ -132,9 +132,59 @@ func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuer
 	return queries
 }
 
-func (k Keeper) RemoveQueryByID(ctx sdk.Context, id uint64) {
+// RemoveQuery removes the given query and relative result data from the store. For a KV query it
+// deletes the *types.QueryResult stored by the query ID, for a TX query it stores the query ID to
+// the list of queries to be removed so the ICQ module can remove the query hashes later.
+func (k Keeper) RemoveQuery(ctx sdk.Context, query *types.RegisteredQuery) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetRegisteredQueryByIDKey(id))
+	store.Delete(types.GetRegisteredQueryByIDKey(query.Id))
+	queryType := types.InterchainQueryType(query.GetQueryType())
+	switch {
+	case queryType.IsKV():
+		store.Delete(types.GetRegisteredQueryResultByIDKey(query.Id))
+	case queryType.IsTX():
+		store.Set(types.GetTxQueryToRemoveByIDKey(query.Id), []byte{})
+	}
+}
+
+// TxQueriesCleanup cleans the module store from obsolete registered TX queries and relative
+// stored transaction hashes. Cleans up to params.TxQueryRemovalLimit hashes at a time or all
+// the hashes if params.TxQueryRemovalLimit is 0.
+func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
+	st := time.Now()
+	rmLimit := k.GetParams(ctx).TxQueryRemovalLimit
+	limited := rmLimit != 0
+
+	queriesToRm := make([]*TxQueryToRemove, 0, rmLimit/10)
+	for _, queryID := range k.GetTxQueriesToRemove(ctx, rmLimit) {
+		queryToRm := k.calculateTxQueryRemoval(ctx, queryID, rmLimit)
+		queriesToRm = append(queriesToRm, queryToRm)
+
+		if limited {
+			rmLimit -= uint64(len(queryToRm.Hashes))
+			if rmLimit <= 0 {
+				break
+			}
+		}
+	}
+
+	var totalHashesRemoved uint64
+	store := ctx.KVStore(k.storeKey)
+	for _, query := range queriesToRm {
+		totalHashesRemoved += uint64(len(query.Hashes))
+		for _, txHash := range query.Hashes {
+			store.Delete(types.GetSubmittedTransactionIDForQueryKey(query.ID, txHash))
+		}
+		if query.CompleteRemoval {
+			store.Delete(types.GetTxQueryToRemoveByIDKey(query.ID))
+		}
+	}
+
+	k.Logger(ctx).Debug("TxQueriesCleanup performed",
+		"duration_ms", time.Since(st).Milliseconds(),
+		"hashes_removed", totalHashesRemoved,
+		"queries_removed", len(queriesToRm),
+	)
 }
 
 // SaveKVQueryResult saves the result of the query and updates the query's local and remote heights
@@ -183,12 +233,6 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 	return &query, nil
 }
 
-func (k Keeper) removeQueryResultByID(ctx sdk.Context, id uint64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetRegisteredQueryResultByIDKey(id))
-}
-
-// UpdateLastLocalHeight updates the relative query's local height of the last result submission.
 func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalHeight uint64) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
@@ -202,7 +246,7 @@ func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalH
 // UpdateLastRemoteHeight updates the relative query's remote height of the last result submission.
 // The height must be greater than the current remote height of the last query result submission,
 // otherwise operation fails.
-func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemoteHeight uint64) error {
+func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemoteHeight ibcclienttypes.Height) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
 		return sdkerrors.Wrap(err, "failed to get registered query")
@@ -227,7 +271,7 @@ func (k Keeper) saveKVQueryResult(ctx sdk.Context, query *types.RegisteredQuery,
 	}
 	store.Set(types.GetRegisteredQueryResultByIDKey(query.Id), bz)
 
-	k.updateLastRemoteHeight(ctx, query, result.Height)
+	k.updateLastRemoteHeight(ctx, query, ibcclienttypes.NewHeight(result.Revision, result.Height))
 	k.updateLastLocalHeight(ctx, query, uint64(ctx.BlockHeight()))
 	if err := k.SaveQuery(ctx, query); err != nil {
 		return sdkerrors.Wrapf(err, "failed to save query %d: %v", query.Id, err)
@@ -244,17 +288,16 @@ func (k Keeper) updateLastLocalHeight(ctx sdk.Context, query *types.RegisteredQu
 }
 
 // checkLastRemoteHeight checks whether the given height is greater than the query's remote height
-// of the last result submission.
-func (k Keeper) checkLastRemoteHeight(ctx sdk.Context, query types.RegisteredQuery, height uint64) error {
-	if query.LastSubmittedResultRemoteHeight >= height {
+func (k Keeper) checkLastRemoteHeight(_ sdk.Context, query types.RegisteredQuery, height ibcclienttypes.Height) error {
+	if query.LastSubmittedResultRemoteHeight != nil && query.LastSubmittedResultRemoteHeight.GTE(height) {
 		return fmt.Errorf("result's remote height %d is less than or equal to last result's remote height %d", height, query.LastSubmittedResultRemoteHeight)
 	}
 	return nil
 }
 
 // updateLastRemoteHeight updates query's remote height of the last result submission.
-func (k Keeper) updateLastRemoteHeight(ctx sdk.Context, query *types.RegisteredQuery, height uint64) {
-	query.LastSubmittedResultRemoteHeight = height
+func (k Keeper) updateLastRemoteHeight(ctx sdk.Context, query *types.RegisteredQuery, height ibcclienttypes.Height) {
+	query.LastSubmittedResultRemoteHeight = &height
 	k.Logger(ctx).Debug("Updated last remote height on given query", "queryID", query.Id, "new_remote_height", height)
 }
 
@@ -289,6 +332,7 @@ func clearQueryResult(result *types.QueryResult) types.QueryResult {
 		KvResults: storageValues,
 		Block:     nil,
 		Height:    result.Height,
+		Revision:  result.Revision,
 	}
 
 	return cleanResult
@@ -333,4 +377,56 @@ func (k Keeper) MustPayOutDeposit(ctx sdk.Context, deposit sdk.Coins, sender sdk
 	if err != nil {
 		panic(err.Error())
 	}
+}
+
+// GetTxQueriesToRemove retrieves the list of TX queries registered to be removed. Returns a slice
+// with no more than limit entities or all entities if limit is 0.
+func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context, limit uint64) []uint64 {
+	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.TxQueryToRemoveKey)
+	iterator := prefixStore.Iterator(nil, nil)
+	defer iterator.Close()
+	ids := make([]uint64, 0, 100)
+	for ; iterator.Valid(); iterator.Next() {
+		ids = append(ids, sdk.BigEndianToUint64(iterator.Key()))
+		if limit != 0 && uint64(len(ids)) >= limit {
+			return ids
+		}
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	return ids
+}
+
+// calculateTxQueryRemoval creates a TxQueryToRemove populated with the data relative to the query
+// with the given queryID. The result TxQueryToRemove contains up to the limit tx hashes. If the
+// limit is 0, it retrieves all the hashes for the given query.
+func (k Keeper) calculateTxQueryRemoval(ctx sdk.Context, queryID uint64, limit uint64) *TxQueryToRemove {
+	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(queryID))
+	iterator := prefixStore.Iterator(nil, nil)
+	defer iterator.Close()
+
+	result := &TxQueryToRemove{ID: queryID, Hashes: make([][]byte, 0, limit)}
+	for ; iterator.Valid(); iterator.Next() {
+		result.Hashes = append(result.Hashes, iterator.Key())
+		if limit != 0 && uint64(len(result.Hashes)) >= limit {
+			result.CompleteRemoval = !iterator.Valid()
+			return result
+		}
+	}
+	result.CompleteRemoval = true
+	return result
+}
+
+// TxQueryToRemove contains data related to a single query listed for removal and needed in the
+// removal process.
+type TxQueryToRemove struct {
+	// ID is the query ID.
+	ID uint64
+	// Hashes is the list of tx hashes previously submitted for the query. It can be either
+	// the whole list of tx hashes of the query of only a part of them to fit removal limit.
+	Hashes [][]byte
+	// CompleteRemoval represents whether all tx hashes (true) of the query or only a part of
+	// them (false) are collected in the Hashes field.
+	CompleteRemoval bool
 }

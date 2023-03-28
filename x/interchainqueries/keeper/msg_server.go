@@ -66,6 +66,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		ConnectionId:       msg.ConnectionId,
 		Deposit:            params.QueryDeposit,
 		SubmitTimeout:      params.QuerySubmitTimeout,
+		RegisteredAtHeight: uint64(ctx.BlockHeader().Height),
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
@@ -96,24 +97,15 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 
-	timeoutBlock := query.LastSubmittedResultLocalHeight + query.SubmitTimeout
-	if uint64(ctx.BlockHeight()) <= timeoutBlock && query.GetOwner() != msg.GetSender() {
+	if err := query.ValidateRemoval(ctx, msg.GetSender()); err != nil {
 		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
-			"msg", msg)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
+			"error", err, "msg", msg)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, err.Error())
 	}
 
-	k.RemoveQueryByID(ctx, query.Id)
+	k.RemoveQuery(ctx, query)
 	k.MustPayOutDeposit(ctx, query.Deposit, msg.GetSigners()[0])
-	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
-		k.removeQueryResultByID(ctx, query.Id)
-	}
-
 	ctx.EventManager().EmitEvents(getEventsQueryRemoved(query))
-
-	// NOTE: there is no easy way to remove the list of processed transactions
-	// without knowing transaction hashes.
-
 	return &types.MsgRemoveInterchainQueryResponse{}, nil
 }
 
@@ -183,11 +175,11 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		if !types.InterchainQueryType(query.QueryType).IsKV() {
 			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
 		}
-		if err := k.checkLastRemoteHeight(ctx, *query, msg.Result.Height); err != nil {
+		if err := k.checkLastRemoteHeight(ctx, *query, ibcclienttypes.NewHeight(msg.Result.Revision, msg.Result.Height)); err != nil {
 			return nil, sdkerrors.Wrap(types.ErrInvalidHeight, err.Error())
 		}
 		if len(msg.Result.KvResults) != len(query.Keys) {
-			return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), query.Keys)
+			return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), len(query.Keys))
 		}
 
 		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{

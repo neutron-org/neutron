@@ -1,0 +1,36 @@
+---
+name: Dispatch Workflow
+
+concurrency: neutron-tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  dispatch:
+    name: Dispatch Tests Workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate PR Merged Status and Labels
+        run: |
+          PR_MERGED=${{ github.event.pull_request.merged }}
+          CONTAINS_LABEL=${{ contains(github.event.pull_request.labels.*.name, 'trigger-tests') }}
+          echo "PR Merged Status: $PR_MERGED"
+          echo "Contains 'trigger-tests' label: $CONTAINS_LABEL"
+          if [[ "$PR_MERGED" == "true" && "$CONTAINS_LABEL" == "true" ]]; then
+            echo "CONTINUE=true" >> $GITHUB_ENV
+          else
+            echo "CONTINUE=false" >> $GITHUB_ENV
+          fi
+      - name: Repository Dispatch
+        if: ${{ env.CONTINUE == 'true' }}
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: neutron-org/neutron-tests
+          event-type: run-tests

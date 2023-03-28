@@ -52,7 +52,7 @@ func FeeburnerKeeperWithDeps(t testing.TB, accountKeeper types.AccountKeeper, ba
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
 	// Initialize params
-	k.SetParams(ctx, types.DefaultParams())
+	k.SetParams(ctx, types.NewParams(types.DefaultNeutronDenom, "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"))
 
 	return k, ctx
 }

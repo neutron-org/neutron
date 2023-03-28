@@ -110,7 +110,7 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 	// try to return unused timeout fee
 	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.TimeoutFee); err != nil {
 		k.Logger(ctx).Error("error returning unused timeout fee", "receiver", feeInfo.Payer, "packet", packetID)
-		panic(sdkerrors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%v", receiver, packetID))
+		panic(sdkerrors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%v", feeInfo.Payer, packetID))
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -147,7 +147,7 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 	// try to return unused ack fee
 	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.AckFee); err != nil {
 		k.Logger(ctx).Error("error returning unused ack fee", "receiver", feeInfo.Payer, "packet", packetID)
-		panic(sdkerrors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%v", receiver, packetID))
+		panic(sdkerrors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%v", feeInfo.Payer, packetID))
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -204,6 +204,11 @@ func (k Keeper) StoreFeeInfo(ctx sdk.Context, feeInfo types.FeeInfo) {
 	store.Set(types.GetFeePacketKey(feeInfo.PacketId), bzFeeInfo)
 }
 
+func (k Keeper) GetMinFee(ctx sdk.Context) types.Fee {
+	params := k.GetParams(ctx)
+	return params.GetMinFee()
+}
+
 func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 	store := ctx.KVStore(k.storeKey)
 
@@ -221,6 +226,14 @@ func (k Keeper) checkFees(ctx sdk.Context, fees types.Fee) error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "provided ack fee is less than min governance set ack fee: %v < %v", fees.AckFee, params.MinFee.AckFee)
 	}
 
+	if allowedCoins(fees.TimeoutFee, params.MinFee.TimeoutFee) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "timeout fee cannot have coins other than in params")
+	}
+
+	if allowedCoins(fees.AckFee, params.MinFee.AckFee) {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "ack fee cannot have coins other than in params")
+	}
+
 	// we don't allow users to set recv fees, because we can't refund relayers for such messages
 	if !fees.RecvFee.IsZero() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
@@ -236,4 +249,15 @@ func (k Keeper) distributeFee(ctx sdk.Context, receiver sdk.AccAddress, fee sdk.
 		return sdkerrors.Wrapf(err, "error distributing fee to a receiver: %s", receiver.String())
 	}
 	return nil
+}
+
+// allowedCoins returns true if one or more coins from `fees` are not present in coins from `params`
+// assumes that `params` is sorted
+func allowedCoins(fees sdk.Coins, params sdk.Coins) bool {
+	for _, fee := range fees {
+		if params.AmountOf(fee.Denom).IsZero() {
+			return true
+		}
+	}
+	return false
 }
