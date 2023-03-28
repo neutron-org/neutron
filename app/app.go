@@ -541,8 +541,7 @@ func New(
 		supportedFeatures,
 		wasmOpts...,
 	)
-    wasmHooks.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
-
+	wasmHooks.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 
 	if len(enabledProposals) != 0 {
 		app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))

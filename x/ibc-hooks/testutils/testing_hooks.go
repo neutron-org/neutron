@@ -33,10 +33,10 @@ func (t TestRecvOverrideHooks) OnRecvPacketOverride(im ibchooks.IBCMiddleware, c
 
 type TestRecvBeforeAfterHooks struct{ Status *Status }
 
-func (t TestRecvBeforeAfterHooks) OnRecvPacketBeforeHook(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) {
+func (t TestRecvBeforeAfterHooks) OnRecvPacketBeforeHook(_ sdk.Context, _ channeltypes.Packet, _ sdk.AccAddress) {
 	t.Status.BeforeRan = true
 }
 
-func (t TestRecvBeforeAfterHooks) OnRecvPacketAfterHook(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress, ack ibcexported.Acknowledgement) {
+func (t TestRecvBeforeAfterHooks) OnRecvPacketAfterHook(_ sdk.Context, _ channeltypes.Packet, _ sdk.AccAddress, _ ibcexported.Acknowledgement) {
 	t.Status.AfterRan = true
 }
