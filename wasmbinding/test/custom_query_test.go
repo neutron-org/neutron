@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -177,6 +179,37 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().ErrorContains(err, expectedErrorMsg)
+}
+
+func (suite *CustomQuerierTestSuite) TestMinIbcFee() {
+	var (
+		ctx   = suite.ChainA.GetContext()
+		owner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	query := bindings.NeutronQuery{
+		MinIbcFee: &bindings.QueryMinIbcFeeRequest{},
+	}
+	resp := bindings.QueryMinIbcFeeResponse{}
+
+	err := suite.queryCustom(ctx, contractAddress, query, &resp)
+	suite.Require().NoError(err)
+	suite.Require().Equal(
+		feerefundertypes.Fee{
+			RecvFee: sdk.Coins{},
+			AckFee: sdk.Coins{
+				sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1000)},
+			},
+			TimeoutFee: sdk.Coins{
+				sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1000)},
+			},
+		},
+		resp.MinFee)
 }
 
 type ChainRequest struct {

@@ -57,7 +57,7 @@ func (msg MsgRegisterInterchainAccount) GetSignBytes() []byte {
 
 //----------------------------------------------------------------
 
-func (msg *MsgSubmitTx) ValidateBasic() error {
+func (msg MsgSubmitTx) ValidateBasic() error {
 	if err := msg.Fee.Validate(); err != nil {
 		return err
 	}
@@ -85,16 +85,16 @@ func (msg *MsgSubmitTx) ValidateBasic() error {
 	return nil
 }
 
-func (msg *MsgSubmitTx) GetSigners() []sdk.AccAddress {
+func (msg MsgSubmitTx) GetSigners() []sdk.AccAddress {
 	fromAddress, _ := sdk.AccAddressFromBech32(msg.FromAddress)
 	return []sdk.AccAddress{fromAddress}
 }
 
-func (msg *MsgSubmitTx) Route() string {
+func (msg MsgSubmitTx) Route() string {
 	return RouterKey
 }
 
-func (msg *MsgSubmitTx) Type() string {
+func (msg MsgSubmitTx) Type() string {
 	return "submit-tx"
 }
 

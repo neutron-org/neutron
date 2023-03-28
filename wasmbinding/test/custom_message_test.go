@@ -348,6 +348,64 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	suite.Equal([][]uint8{expected}, data)
 }
 
+func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
+	suite.Require().NoError(err)
+
+	// Craft  message with 2 proposals
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		SubmitAdminProposal: &bindings.SubmitAdminProposal{
+			AdminProposal: bindings.AdminProposal{
+				CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
+					Title:       "Test",
+					Description: "Test",
+				},
+				ClearAdminProposal: &bindings.ClearAdminProposal{
+					Title:       "Test",
+					Description: "Test",
+					Contract:    "Test",
+				},
+			},
+		},
+	})
+
+	cosmosMsg := types.CosmosMsg{Custom: msg}
+
+	// Dispatch SubmitAdminProposal message
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+
+	suite.ErrorContains(err, "more than one admin proposal type is present in message")
+}
+
+func (suite *CustomMessengerTestSuite) TestNoProposals() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
+	suite.Require().NoError(err)
+
+	// Craft  message with 0 proposals
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		SubmitAdminProposal: &bindings.SubmitAdminProposal{
+			AdminProposal: bindings.AdminProposal{},
+		},
+	})
+
+	cosmosMsg := types.CosmosMsg{Custom: msg}
+
+	// Dispatch SubmitAdminProposal message
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+
+	suite.ErrorContains(err, "no admin proposal type is present in message")
+}
+
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {
 	msg := bindings.ProtobufAny{
 		TypeURL: "/cosmos.staking.v1beta1.MsgDelegate",

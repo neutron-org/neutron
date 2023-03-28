@@ -197,7 +197,7 @@ func TestSudoTxQueryResult(t *testing.T) {
 	resp, err := k.SudoTxQueryResult(ctx,
 		address,
 		sudoTxQueryResultMsg.TxQueryResult.QueryID,
-		int64(sudoTxQueryResultMsg.TxQueryResult.Height),
+		sudoTxQueryResultMsg.TxQueryResult.Height,
 		sudoTxQueryResultMsg.TxQueryResult.Data,
 	)
 	require.NoError(t, err)
@@ -208,7 +208,7 @@ func TestSudoTxQueryResult(t *testing.T) {
 	resp, err = k.SudoTxQueryResult(ctx,
 		address,
 		sudoTxQueryResultMsg.TxQueryResult.QueryID,
-		int64(sudoTxQueryResultMsg.TxQueryResult.Height),
+		sudoTxQueryResultMsg.TxQueryResult.Height,
 		sudoTxQueryResultMsg.TxQueryResult.Data,
 	)
 	require.Nil(t, resp)
@@ -218,7 +218,7 @@ func TestSudoTxQueryResult(t *testing.T) {
 	resp, err = k.SudoTxQueryResult(ctx,
 		address,
 		sudoTxQueryResultMsg.TxQueryResult.QueryID,
-		int64(sudoTxQueryResultMsg.TxQueryResult.Height),
+		sudoTxQueryResultMsg.TxQueryResult.Height,
 		sudoTxQueryResultMsg.TxQueryResult.Data,
 	)
 	require.Nil(t, resp)
