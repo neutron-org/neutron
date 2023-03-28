@@ -204,6 +204,11 @@ func (k Keeper) StoreFeeInfo(ctx sdk.Context, feeInfo types.FeeInfo) {
 	store.Set(types.GetFeePacketKey(feeInfo.PacketId), bzFeeInfo)
 }
 
+func (k Keeper) GetMinFee(ctx sdk.Context) types.Fee {
+	params := k.GetParams(ctx)
+	return params.GetMinFee()
+}
+
 func (k Keeper) removeFeeInfo(ctx sdk.Context, packetID types.PacketID) {
 	store := ctx.KVStore(k.storeKey)
 
