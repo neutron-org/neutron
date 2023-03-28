@@ -296,4 +296,4 @@ $BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"
 $BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_ID"  "$LOCKDROP_VAULT_INIT" --label "DAO_Neutron_lockdrop_vault" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"reserve_address\":.*/\"reserve_address\":\"'"$reserve_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"reserve_address\":.*/\"reserve_address\":\"'"$RESERVE_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
