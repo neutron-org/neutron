@@ -35,10 +35,10 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(neutronDenom, ReserveAddress string) Params {
+func NewParams(neutronDenom, reserveAddress string) Params {
 	return Params{
 		NeutronDenom:   neutronDenom,
-		ReserveAddress: ReserveAddress,
+		ReserveAddress: reserveAddress,
 	}
 }
 
