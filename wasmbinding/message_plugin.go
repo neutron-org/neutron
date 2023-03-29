@@ -611,6 +611,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "only admin can add schedule: %+v, %+v", contractAddr.String(), params.AdminAddress)
 	}
 
+	// convert MsgExecuteContract - this allows to send msgs as a string rather than encoded and decode it into base64
 	msgs := make([]wasmtypes.MsgExecuteContract, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
 		msgs = append(msgs, wasmtypes.MsgExecuteContract{
@@ -643,7 +644,6 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
 	params := m.cronKeeper.GetParams(ctx)
-	// TODO: is .Equals appropriate here?
 	if contractAddr.String() != params.AdminAddress && contractAddr.String() != params.SecurityAddress {
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}

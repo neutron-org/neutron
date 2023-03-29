@@ -64,17 +64,17 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func (p Params) Validate() error {
 	err := validateAddress(p.AdminAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid admin address: %w", err)
 	}
 
 	err = validateAddress(p.SecurityAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid security address: %w", err)
 	}
 
 	err = validateLimit(p.Limit)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid limit: %w", err)
 	}
 
 	return nil

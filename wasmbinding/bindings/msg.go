@@ -165,22 +165,25 @@ type ClearAdminProposal struct {
 	Contract    string `json:"contract,omitempty"`
 }
 
+// AddSchedule adds new schedule to the cron module
 type AddSchedule struct {
 	Name   string               `json:"name"`
 	Period uint64               `json:"period"`
 	Msgs   []MsgExecuteContract `json:"msgs"`
 }
 
+// AddScheduleResponse holds response AddSchedule
 type AddScheduleResponse struct{}
 
+// RemoveSchedule removes existing schedule with given name
 type RemoveSchedule struct {
 	Name string `json:"name"`
 }
 
+// RemoveScheduleResponse holds response RemoveSchedule
 type RemoveScheduleResponse struct{}
 
-// TODO: better description
-// / MsgExecuteContract define separate from wasmtypes since we can get away with just passing the string into bindings
+// MsgExecuteContract defined separate from wasmtypes since we can get away with just passing the string into bindings
 type MsgExecuteContract struct {
 	// Sender is the that actor that signed the messages
 	Sender string `json:"sender,omitempty"`
@@ -188,6 +191,6 @@ type MsgExecuteContract struct {
 	Contract string `protobuf:"bytes,2,opt,name=contract,proto3" json:"contract,omitempty"`
 	// Msg json encoded message to be passed to the contract
 	Msg string `json:"msg,omitempty"`
-	// Funds coins that are transferred to the contract on execution
+	// Funds are coins that are transferred to the contract on execution
 	Funds sdktypes.Coins `json:"funds"`
 }

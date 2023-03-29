@@ -55,13 +55,14 @@ func NewKeeper(
 	}
 }
 
-// TODO: DOC comments
-
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k *Keeper) CheckTimer(ctx sdk.Context) {
+// ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equals to Params.Limit)
+// and executes messages in each one
+// NOTE that errors in contract calls do NOT stop schedule execution
+func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelCheckTimer)
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
@@ -70,7 +71,8 @@ func (k *Keeper) CheckTimer(ctx sdk.Context) {
 	}
 }
 
-// period in blocks
+// AddSchedule adds new schedule to execution for every block `period`.
+// First schedule execution is supposed to be on `now + period` block.
 func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
 	schedule := types.Schedule{
 		Name:              name,
@@ -81,10 +83,12 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 	k.storeSchedule(ctx, schedule)
 }
 
+// RemoveSchedule removes schedule with a given `name`
 func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 	k.removeSchedule(ctx, name)
 }
 
+// GetAllSchedules returns all schedules
 func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 
@@ -102,6 +106,7 @@ func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	return res
 }
 
+// GetSchedule returns schedule with a given `name`
 func (k *Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 	bzSchedule := store.Get(types.GetScheduleKey(name))
@@ -141,6 +146,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 	return res
 }
 
+// executeSchedule executes given schedule and changes LastExecuteHeight
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	for idx, msg := range schedule.Msgs {
 		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint

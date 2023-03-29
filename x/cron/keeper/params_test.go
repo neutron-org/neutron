@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/testutil"
+
 	"github.com/neutron-org/neutron/app"
 
 	testkeeper "github.com/neutron-org/neutron/testutil/cron/keeper"
@@ -16,8 +18,8 @@ func TestGetParams(t *testing.T) {
 
 	k, ctx := testkeeper.CronKeeper(t, nil)
 	params := types.Params{
-		AdminAddress:    "neutron13xvjxhkkxxhztcugr6weyt76eedj5ucpt4xluv",
-		SecurityAddress: "neutron13xvjxhkkxxhztcugr6weyt76eedj5ucpt4xluv",
+		AdminAddress:    testutil.TestOwnerAddress,
+		SecurityAddress: testutil.TestOwnerAddress,
 		Limit:           5,
 	}
 
