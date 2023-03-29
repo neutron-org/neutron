@@ -345,7 +345,7 @@ SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG='{
 SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG_BASE64=$(echo "$SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG" | base64 | tr -d "\n")
 
 SECURITY_SUBDAO_PROPOSAL_INIT_MSG='{
-   "allow_revoting": true,
+   "allow_revoting": false,
    "pre_propose_info":{
          "module_may_propose":{
             "info":{
@@ -362,7 +362,7 @@ SECURITY_SUBDAO_PROPOSAL_INIT_MSG='{
       },
    "only_members_execute":false,
    "max_voting_period":{
-      "height": 10
+      "height": 1000000000000
    },
    "close_proposal_on_execution_failure":false,
    "threshold":{
@@ -426,7 +426,7 @@ GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG='{
 GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG_BASE64=$(echo "$GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG" | base64 | tr -d "\n")
 
 GRANTS_SUBDAO_PROPOSAL_INIT_MSG='{
-   "allow_revoting": true,
+   "allow_revoting": false,
    "pre_propose_info":{
       "module_may_propose":{
          "info":{
@@ -443,7 +443,7 @@ GRANTS_SUBDAO_PROPOSAL_INIT_MSG='{
    },
    "only_members_execute":false,
    "max_voting_period":{
-      "height": 10
+      "height": 1000000000000
    },
    "close_proposal_on_execution_failure":false,
    "threshold":{
