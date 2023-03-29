@@ -487,7 +487,7 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
 	params := m.cronKeeper.GetParams(ctx)
 	if contractAddr.String() != params.AdminAddress {
-		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
+		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "only admin can add schedule: %+v, %+v", contractAddr.String(), params.AdminAddress)
 	}
 
 	msgs := make([]wasmtypes.MsgExecuteContract, len(addSchedule.Msgs))

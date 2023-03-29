@@ -270,7 +270,7 @@ type App struct {
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
-	CronKeeper          *cronkeeper.Keeper
+	CronKeeper          cronkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -508,8 +508,8 @@ func New(
 		app.FeeKeeper,
 	)
 
-	// TODO: register cronkeeper?
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.CronKeeper), wasmOpts...)
+	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName))
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, &app.CronKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -531,9 +531,8 @@ func New(
 		wasmOpts...,
 	)
 
-	opsKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
-	app.CronKeeper = cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), opsKeeper)
-	cronModule := cron.NewAppModule(appCodec, *app.CronKeeper)
+	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper))
+	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 
@@ -922,6 +921,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(feeburnertypes.ModuleName)
+	paramsKeeper.Subspace(crontypes.ModuleName)
 
 	return paramsKeeper
 }

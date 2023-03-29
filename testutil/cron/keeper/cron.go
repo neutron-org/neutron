@@ -43,8 +43,8 @@ func CronKeeper(t testing.TB, permKeeper *wasmkeeper.PermissionedKeeper) (*keepe
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		permKeeper,
 	)
+	k.WasmMsgServer = wasmkeeper.NewMsgServerImpl(permKeeper)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 

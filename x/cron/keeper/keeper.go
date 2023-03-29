@@ -8,7 +8,6 @@ import (
 	"github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 
@@ -33,7 +32,7 @@ type (
 		storeKey      storetypes.StoreKey
 		memKey        storetypes.StoreKey
 		paramstore    paramtypes.Subspace
-		wasmMsgServer wasmtypes.MsgServer
+		WasmMsgServer wasmtypes.MsgServer
 	}
 )
 
@@ -42,7 +41,6 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
-	permKeeper types.ContractOpsKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -50,11 +48,10 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:           cdc,
-		storeKey:      storeKey,
-		memKey:        memKey,
-		paramstore:    ps,
-		wasmMsgServer: wasmkeeper.NewMsgServerImpl(permKeeper),
+		cdc:        cdc,
+		storeKey:   storeKey,
+		memKey:     memKey,
+		paramstore: ps,
 	}
 }
 
@@ -146,7 +143,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	for idx, msg := range schedule.Msgs {
-		_, err := k.wasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
+		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
 
 		countMsgExecuted(err, schedule.Name, idx)
 

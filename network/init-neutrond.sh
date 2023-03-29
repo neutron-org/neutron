@@ -286,7 +286,7 @@ LOCKDROP_VAULT_INIT='{
 
 echo "Instantiate contracts"
 # WARNING!
-# The following code is to add contracts instantiations messages to genesys
+# The following code is to add contracts instantiations messages to genesis
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
 $BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"  --label "DAO_Neutron_voting_vault"   --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --home "$CHAIN_DIR"
@@ -297,3 +297,6 @@ $BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_I
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"admin_address\":.*/\"admin_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"

@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/x/cron/keeper"
 	"github.com/neutron-org/neutron/x/cron/types"
@@ -9,6 +10,7 @@ import (
 // InitGenesis initializes the module's state from a provided genesis state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// this line is used by starport scaffolding # genesis/module/init
+	ctx.Logger().Error(fmt.Sprintf("InitGenesis: SetParams: %+v", genState.Params))
 	k.SetParams(ctx, genState.Params)
 }
 
