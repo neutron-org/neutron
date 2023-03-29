@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
@@ -611,14 +613,11 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "only admin can add schedule: %+v, %+v", contractAddr.String(), params.AdminAddress)
 	}
 
-	// convert MsgExecuteContract - this allows to send msgs as a string rather than encoded and decode it into base64
-	msgs := make([]wasmtypes.MsgExecuteContract, len(addSchedule.Msgs))
+	msgs := make([]crontypes.MsgExecuteContract, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
-		msgs = append(msgs, wasmtypes.MsgExecuteContract{
-			Sender:   msg.Sender,
+		msgs = append(msgs, crontypes.MsgExecuteContract{
 			Contract: msg.Contract,
 			Msg:      []byte(msg.Msg),
-			Funds:    msg.Funds,
 		})
 	}
 

@@ -4,11 +4,17 @@ package neutron.cron;
 option go_package = "github.com/neutron-org/neutron/x/cron/types";
 
 import "gogoproto/gogo.proto";
-import "cosmwasm/wasm/v1/tx.proto";
 
 message Schedule {
   string name = 1;
   uint64 period = 2;
-  repeated cosmwasm.wasm.v1.MsgExecuteContract msgs = 3 [ (gogoproto.nullable) = false ];
+  repeated MsgExecuteContract msgs = 3 [ (gogoproto.nullable) = false ];
   uint64 last_execute_height = 4;
+}
+
+message MsgExecuteContract {
+  // Contract is the address of the smart contract
+  string contract = 1;
+  // Msg json encoded message to be passed to the contract
+  bytes msg = 2;
 }

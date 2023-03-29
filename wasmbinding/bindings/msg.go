@@ -3,7 +3,6 @@ package bindings
 
 import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -185,12 +184,8 @@ type RemoveScheduleResponse struct{}
 
 // MsgExecuteContract defined separate from wasmtypes since we can get away with just passing the string into bindings
 type MsgExecuteContract struct {
-	// Sender is the that actor that signed the messages
-	Sender string `json:"sender,omitempty"`
 	// Contract is the address of the smart contract
 	Contract string `protobuf:"bytes,2,opt,name=contract,proto3" json:"contract,omitempty"`
 	// Msg json encoded message to be passed to the contract
 	Msg string `json:"msg,omitempty"`
-	// Funds are coins that are transferred to the contract on execution
-	Funds sdktypes.Coins `json:"funds"`
 }

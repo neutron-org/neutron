@@ -16,7 +16,7 @@ import (
 func TestGetParams(t *testing.T) {
 	_ = app.GetDefaultConfig()
 
-	k, ctx := testkeeper.CronKeeper(t, nil)
+	k, ctx := testkeeper.CronKeeper(t, nil, nil)
 	params := types.Params{
 		AdminAddress:    testutil.TestOwnerAddress,
 		SecurityAddress: testutil.TestOwnerAddress,

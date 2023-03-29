@@ -16,7 +16,7 @@ func TestGenesis(t *testing.T) {
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
-	k, ctx := keeper.CronKeeper(t, nil)
+	k, ctx := keeper.CronKeeper(t, nil, nil)
 	cron.InitGenesis(ctx, *k, genesisState)
 	got := cron.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)

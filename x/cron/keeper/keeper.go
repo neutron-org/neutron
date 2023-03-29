@@ -32,6 +32,7 @@ type (
 		storeKey      storetypes.StoreKey
 		memKey        storetypes.StoreKey
 		paramstore    paramtypes.Subspace
+		accountKeeper types.AccountKeeper
 		WasmMsgServer wasmtypes.MsgServer
 	}
 )
@@ -41,6 +42,7 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
+	accountKeeper types.AccountKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -48,10 +50,11 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
+		cdc:           cdc,
+		storeKey:      storeKey,
+		memKey:        memKey,
+		paramstore:    ps,
+		accountKeeper: accountKeeper,
 	}
 }
 
@@ -73,12 +76,12 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 
 // AddSchedule adds new schedule to execution for every block `period`.
 // First schedule execution is supposed to be on `now + period` block.
-func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []wasmtypes.MsgExecuteContract) {
+func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []types.MsgExecuteContract) {
 	schedule := types.Schedule{
 		Name:              name,
 		Period:            period,
 		Msgs:              msgs,
-		LastExecuteHeight: uint64(ctx.BlockHeight()), // lets execute newly added schedule on `now + period` block
+		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
 	}
 	k.storeSchedule(ctx, schedule)
 }
@@ -149,7 +152,13 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 // executeSchedule executes given schedule and changes LastExecuteHeight
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	for idx, msg := range schedule.Msgs {
-		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &msg) //nolint
+		executeMsg := wasmtypes.MsgExecuteContract{
+			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(), // TODO: store in constructor to avoid calculating every time?
+			Contract: msg.Contract,
+			Msg:      msg.Msg,
+			Funds:    sdk.NewCoins(),
+		}
+		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &executeMsg)
 
 		countMsgExecuted(err, schedule.Name, idx)
 
