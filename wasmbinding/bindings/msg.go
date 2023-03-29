@@ -2,9 +2,9 @@
 package bindings
 
 import (
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
@@ -75,6 +75,12 @@ type AdminProposal struct {
 	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
 	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
 	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
+	UpgradeProposal               *UpgradeProposal               `json:"upgrade_proposal,omitempty"`
+	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal,omitempty"`
+	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal,omitempty"`
+	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal,omitempty"`
+	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal,omitempty"`
+	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal,omitempty"`
 }
 
 type ParamChangeProposal struct {
@@ -120,6 +126,45 @@ type UpdateInterchainQuery struct {
 
 type UpdateInterchainQueryResponse struct{}
 
+type UpgradeProposal struct {
+	Title               string           `json:"title,omitempty"`
+	Description         string           `json:"description,omitempty"`
+	Plan                Plan             `json:"plan"`
+	UpgradedClientState *cosmostypes.Any `json:"upgraded_client_state,omitempty"`
+}
+
+type ClientUpdateProposal struct {
+	Title              string `json:"title,omitempty"`
+	Description        string `json:"description,omitempty"`
+	SubjectClientId    string `json:"subject_client_id,omitempty"`
+	SubstituteClientId string `json:"substitute_client_id,omitempty"`
+}
+
+type PinCodesProposal struct {
+	Title       string   `json:"title,omitempty"`
+	Description string   `json:"description,omitempty"`
+	CodeIDs     []uint64 `json:"code_ids,omitempty"`
+}
+
+type UnpinCodesProposal struct {
+	Title       string   `json:"title,omitempty"`
+	Description string   `json:"description,omitempty"`
+	CodeIDs     []uint64 `json:"code_ids,omitempty"`
+}
+
+type UpdateAdminProposal struct {
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	NewAdmin    string `json:"new_admin"`
+	Contract    string `json:"contract,omitempty"`
+}
+
+type ClearAdminProposal struct {
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Contract    string `json:"contract,omitempty"`
+}
+
 type AddSchedule struct {
 	Name   string               `json:"name"`
 	Period uint64               `json:"period"`
@@ -144,5 +189,5 @@ type MsgExecuteContract struct {
 	// Msg json encoded message to be passed to the contract
 	Msg string `json:"msg,omitempty"`
 	// Funds coins that are transferred to the contract on execution
-	Funds github_com_cosmos_cosmos_sdk_types.Coins `json:"funds"`
+	Funds sdktypes.Coins `json:"funds"`
 }

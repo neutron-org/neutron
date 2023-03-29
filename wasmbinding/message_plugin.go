@@ -20,6 +20,7 @@ import (
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -291,6 +292,10 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
 	proposal := submitAdminProposal.AdminProposal
 
+	err := m.validateProposalQty(&proposal)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to validate proposal quantity")
+	}
 	if proposal.ParamChangeProposal != nil {
 		p := proposal.ParamChangeProposal
 		err := msg.SetContent(&paramChange.ParameterChangeProposal{
@@ -330,8 +335,83 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		}
 	}
 
-	if proposal.ParamChangeProposal == nil && proposal.SoftwareUpgradeProposal == nil && proposal.CancelSoftwareUpgradeProposal == nil {
-		return nil, fmt.Errorf("no admin proposal type is present")
+	if proposal.UpgradeProposal != nil {
+		p := proposal.UpgradeProposal
+		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			Plan: softwareUpgrade.Plan{
+				Name:   p.Plan.Name,
+				Height: p.Plan.Height,
+				Info:   p.Plan.Info,
+			},
+			UpgradedClientState: p.UpgradedClientState,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on UpgradeProposal")
+		}
+	}
+
+	if proposal.ClientUpdateProposal != nil {
+		p := proposal.ClientUpdateProposal
+		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{
+			Title:              p.Title,
+			Description:        p.Description,
+			SubjectClientId:    p.SubjectClientId,
+			SubstituteClientId: p.SubstituteClientId,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on ClientUpdateProposal")
+		}
+	}
+
+	if proposal.PinCodesProposal != nil {
+		p := proposal.PinCodesProposal
+		err := msg.SetContent(&wasmtypes.PinCodesProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			CodeIDs:     p.CodeIDs,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on PinCodesProposal")
+		}
+	}
+
+	if proposal.UnpinCodesProposal != nil {
+		p := proposal.UnpinCodesProposal
+		err := msg.SetContent(&wasmtypes.UnpinCodesProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			CodeIDs:     p.CodeIDs,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on UnpinCodesProposal")
+		}
+	}
+
+	if proposal.UpdateAdminProposal != nil {
+		p := proposal.UpdateAdminProposal
+		err := msg.SetContent(&wasmtypes.UpdateAdminProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			NewAdmin:    p.NewAdmin,
+			Contract:    p.Contract,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on UpdateAdminProposal")
+		}
+	}
+
+	if proposal.ClearAdminProposal != nil {
+		p := proposal.ClearAdminProposal
+		err := msg.SetContent(&wasmtypes.ClearAdminProposal{
+			Title:       p.Title,
+			Description: p.Description,
+			Contract:    p.Contract,
+		})
+		if err != nil {
+			return nil, sdkerrors.Wrap(err, "failed to set content on ClearAdminProposal")
+		}
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
@@ -482,6 +562,47 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 	}
 
 	return (*bindings.RegisterInterchainQueryResponse)(response), nil
+}
+
+func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) error {
+	qty := 0
+	if proposal.ParamChangeProposal != nil {
+		qty++
+	}
+	if proposal.SoftwareUpgradeProposal != nil {
+		qty++
+	}
+	if proposal.CancelSoftwareUpgradeProposal != nil {
+		qty++
+	}
+	if proposal.ClientUpdateProposal != nil {
+		qty++
+	}
+	if proposal.UpgradeProposal != nil {
+		qty++
+	}
+	if proposal.PinCodesProposal != nil {
+		qty++
+	}
+	if proposal.UnpinCodesProposal != nil {
+		qty++
+	}
+	if proposal.UpdateAdminProposal != nil {
+		qty++
+	}
+	if proposal.ClearAdminProposal != nil {
+		qty++
+	}
+
+	if qty == 0 {
+		return fmt.Errorf("no admin proposal type is present in message")
+	}
+
+	if qty == 1 {
+		return nil
+	}
+
+	return fmt.Errorf("more than one admin proposal type is present in message")
 }
 
 func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {

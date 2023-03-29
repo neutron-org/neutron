@@ -1,8 +1,9 @@
 package keeper_test
 
 import (
-	"github.com/neutron-org/neutron/app"
 	"testing"
+
+	"github.com/neutron-org/neutron/app"
 
 	testkeeper "github.com/neutron-org/neutron/testutil/cron/keeper"
 
