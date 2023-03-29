@@ -337,11 +337,29 @@ CW4_VOTE_INIT_MSG_BASE64=$(echo "$CW4_VOTE_INIT_MSG" | base64 | tr -d "\n")
 
 # SECURITY_SUBDAO
 
+# SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG will be put into the SECURITY_SUBDAO_PROPOSAL_INIT_MSG
+SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG='{
+   "open_proposal_submission":true
+}'
+
+SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG_BASE64=$(echo "$SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG" | base64 | tr -d "\n")
+
 SECURITY_SUBDAO_PROPOSAL_INIT_MSG='{
    "allow_revoting": true,
    "pre_propose_info":{
-      "anyone_may_propose":{}
-   },
+         "module_may_propose":{
+            "info":{
+               "admin": {
+                     "address": {
+                       "addr": "'"$DAO_CONTRACT_ADDRESS"'"
+                     }
+               },
+               "code_id": '"$PRE_PROPOSAL_CONTRACT_BINARY_ID"',
+               "msg": "'"$SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG_BASE64"'",
+               "label":"neutron"
+            }
+         }
+      },
    "only_members_execute":false,
    "max_voting_period":{
       "height": 10
@@ -468,7 +486,7 @@ GRANTS_SUBDAO_CORE_INIT_MSG='{
 
 echo "Instantiate contracts"
 # WARNING!
-# The following code is to add contracts instantiations messages to genesys
+# The following code is to add contracts instantiations messages to genesis
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
 $BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"             --label "DAO_Neutron_voting_vault"    --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
