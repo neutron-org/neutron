@@ -6,9 +6,13 @@ option go_package = "github.com/neutron-org/neutron/x/cron/types";
 import "gogoproto/gogo.proto";
 
 message Schedule {
+  // Name of schedule
   string name = 1;
+  // Period in blocks
   uint64 period = 2;
+  // Msgs that will be executed every period amount of time
   repeated MsgExecuteContract msgs = 3 [ (gogoproto.nullable) = false ];
+  // Last block height of execution
   uint64 last_execute_height = 4;
 }
 
@@ -17,4 +21,9 @@ message MsgExecuteContract {
   string contract = 1;
   // Msg json encoded message to be passed to the contract
   bytes msg = 2;
+}
+
+message ScheduleCount {
+  // Count is the number of current schedules
+  int64 count = 1;
 }

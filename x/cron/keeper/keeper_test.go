@@ -152,21 +152,23 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	require.Equal(t, uint64(5), ready2.LastExecuteHeight)
 	require.Equal(t, uint64(4), unready2.LastExecuteHeight)
 	require.Equal(t, uint64(6), ready3.LastExecuteHeight)
+
+	// TODO: check total counts
 }
 
 func TestAddSchedule(t *testing.T) {
-	
+
 }
 
 func TestRemoveSchedule(t *testing.T) {
 
 }
 
-func TestGetSchedule() {
+func TestGetSchedule(t *testing.T) {
 
 }
 
-func TestGetAllSchedules() {
+func TestGetAllSchedules(t *testing.T) {
 
 }
 

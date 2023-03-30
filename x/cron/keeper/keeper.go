@@ -21,6 +21,7 @@ import (
 
 var (
 	LabelCheckTimer    = "check_timer"
+	LabelScheduleCount = "schedule_count"
 	MetricLabelSuccess = "success"
 	MetricMsgIndex     = "msg_idx"
 	MetricScheduleName = "schedule_name"
@@ -88,6 +89,7 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
 	}
 	k.storeSchedule(ctx, schedule)
+	k.changeTotalCount(ctx, 1)
 
 	return nil
 }
@@ -95,6 +97,7 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 // RemoveSchedule removes schedule with a given `name`
 func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 	k.removeSchedule(ctx, name)
+	k.changeTotalCount(ctx, -1)
 }
 
 // GetSchedule returns schedule with a given `name`
@@ -200,12 +203,33 @@ func (k *Keeper) removeSchedule(ctx sdk.Context, name string) {
 
 func (k *Keeper) scheduleExists(ctx sdk.Context, name string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
-	bz := store.Get(types.GetScheduleKey(name))
-	return bz != nil
+	return store.Has(types.GetScheduleKey(name))
 }
 
 func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
 	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period)
+}
+
+func (k *Keeper) changeTotalCount(ctx sdk.Context, incrementAmount int64) {
+	store := ctx.KVStore(k.storeKey)
+	count := k.getScheduleCount(ctx)
+	newCount := types.ScheduleCount{Count: count + incrementAmount}
+	bzCount := k.cdc.MustMarshal(&newCount)
+	store.Set(types.ScheduleCountKey, bzCount)
+
+	telemetry.ModuleSetGauge(types.ModuleName, newCount.Count, LabelScheduleCount)
+}
+
+func (k *Keeper) getScheduleCount(ctx sdk.Context) int64 {
+	store := ctx.KVStore(k.storeKey)
+	bzCount := store.Get(types.ScheduleCountKey)
+	if bzCount == nil {
+		return 0
+	} else {
+		var count types.ScheduleCount
+		k.cdc.MustUnmarshal(bzCount, &count)
+		return count.Count
+	}
 }
 
 func countMsgExecuted(err error, scheduleName string, idx int) {

@@ -15,10 +15,12 @@ const (
 )
 
 const (
-	prefixFeeKey = iota + 1
+	prefixScheduleKey      = iota + 1
+	prefixScheduleCountKey = iota + 2
 )
 
-var ScheduleKey = []byte{prefixFeeKey}
+var ScheduleKey = []byte{prefixScheduleKey}
+var ScheduleCountKey = []byte{prefixScheduleCountKey}
 
 func GetScheduleKey(name string) []byte {
 	return []byte(name)
