@@ -110,6 +110,28 @@ func (k *Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, boo
 	return &schedule, true
 }
 
+// GetAllSchedules returns all schedules
+func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
+
+	res := make([]types.Schedule, 0)
+
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var schedule types.Schedule
+		k.cdc.MustUnmarshal(iterator.Value(), &schedule)
+		res = append(res, schedule)
+	}
+
+	return res
+}
+
+func (k *Keeper) SetSchedule(ctx sdk.Context, schedule types.Schedule) {
+	k.storeSchedule(ctx, schedule)
+}
+
 func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
 	params := k.GetParams(ctx)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
