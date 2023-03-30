@@ -21,7 +21,6 @@ func TestGenesisState_Validate(t *testing.T) {
 			desc: "valid genesis state",
 			genState: &types.GenesisState{
 				Params: types.Params{
-					AdminAddress:    "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 					SecurityAddress: "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 					Limit:           1,
 				},
@@ -33,7 +32,6 @@ func TestGenesisState_Validate(t *testing.T) {
 			desc: "invalid genesis state - params are invalid",
 			genState: &types.GenesisState{
 				Params: types.Params{
-					AdminAddress:    "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh",
 					SecurityAddress: "",
 					Limit:           0,
 				},

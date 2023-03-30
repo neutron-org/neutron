@@ -19,7 +19,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	softwareUpgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
@@ -32,7 +32,13 @@ import (
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
 
-func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper, admKeeper *adminkeeper.Keeper, cronKeeper *cronkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(
+	ictx *ictxkeeper.Keeper,
+	icq *icqkeeper.Keeper,
+	transferKeeper transferwrapperkeeper.KeeperTransferWrapper,
+	adminKeeper *adminmodulekeeper.Keeper,
+	cronKeeper *cronkeeper.Keeper,
+) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
 			Keeper:         *ictx,
@@ -40,8 +46,9 @@ func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, tran
 			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
-			Adminserver:    adminkeeper.NewMsgServerImpl(*admKeeper),
+			Adminserver:    adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
 			cronKeeper:     cronKeeper,
+			adminKeeper:    adminKeeper,
 		}
 	}
 }
@@ -54,6 +61,7 @@ type CustomMessenger struct {
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
 	Adminserver    admintypes.MsgServer
 	cronKeeper     *cronkeeper.Keeper
+	adminKeeper    *adminmodulekeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -608,9 +616,8 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 }
 
 func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
-	params := m.cronKeeper.GetParams(ctx)
-	if contractAddr.String() != params.AdminAddress {
-		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "only admin can add schedule: %+v, %+v", contractAddr.String(), params.AdminAddress)
+	if !m.isAdmin(ctx, contractAddr) {
+		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
 	msgs := make([]crontypes.MsgExecuteContract, len(addSchedule.Msgs))
@@ -650,7 +657,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
 	params := m.cronKeeper.GetParams(ctx)
-	if contractAddr.String() != params.AdminAddress && contractAddr.String() != params.SecurityAddress {
+	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
@@ -671,4 +678,14 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 		"name", removeSchedule.Name,
 	)
 	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
+	for _, admin := range m.adminKeeper.GetAdmins(ctx) {
+		if admin == contractAddr.String() {
+			return true
+		}
+	}
+
+	return false
 }

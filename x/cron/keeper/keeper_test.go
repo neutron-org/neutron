@@ -32,7 +32,6 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	ctx = ctx.WithBlockHeight(0)
 
 	k.SetParams(ctx, types.Params{
-		AdminAddress:    testutil.TestOwnerAddress,
 		SecurityAddress: testutil.TestOwnerAddress,
 		Limit:           2,
 	})

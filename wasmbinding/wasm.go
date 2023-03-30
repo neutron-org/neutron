@@ -7,7 +7,7 @@ import (
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 
-	adminmodulemodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
@@ -19,7 +19,7 @@ func RegisterCustomPlugins(
 	ictxKeeper *interchaintransactionsmodulekeeper.Keeper,
 	icqKeeper *interchainqueriesmodulekeeper.Keeper,
 	transfer transfer.KeeperTransferWrapper,
-	admKeeper *adminmodulemodulekeeper.Keeper,
+	adminKeeper *adminmodulekeeper.Keeper,
 	feeBurnerKeeper *feeburnerkeeper.Keeper,
 	feeRefunderKeeper *feerefunderkeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
@@ -30,7 +30,7 @@ func RegisterCustomPlugins(
 		Custom: CustomQuerier(wasmQueryPlugin),
 	})
 	messagePluginOpt := wasmkeeper.WithMessageHandlerDecorator(
-		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, admKeeper, cronKeeper),
+		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, adminKeeper, cronKeeper),
 	)
 
 	return []wasm.Option{

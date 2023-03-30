@@ -11,11 +11,9 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyAdminAddress    = []byte("AdminAddress")
 	KeySecurityAddress = []byte("SecurityAddress")
 	KeyLimit           = []byte("Limit")
 
-	DefaultAdminAddress    = ""
 	DefaultSecurityAddress = ""
 	DefaultLimit           = uint64(5)
 )
@@ -26,9 +24,8 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(adminAddress, securityAddress string, limit uint64) Params {
+func NewParams(securityAddress string, limit uint64) Params {
 	return Params{
-		AdminAddress:    adminAddress,
 		SecurityAddress: securityAddress,
 		Limit:           limit,
 	}
@@ -36,17 +33,12 @@ func NewParams(adminAddress, securityAddress string, limit uint64) Params {
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultAdminAddress, DefaultSecurityAddress, DefaultLimit)
+	return NewParams(DefaultSecurityAddress, DefaultLimit)
 }
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(
-			KeyAdminAddress,
-			&p.AdminAddress,
-			validateAddress,
-		),
 		paramtypes.NewParamSetPair(
 			KeySecurityAddress,
 			&p.SecurityAddress,
@@ -62,12 +54,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	err := validateAddress(p.AdminAddress)
-	if err != nil {
-		return fmt.Errorf("invalid admin address: %w", err)
-	}
-
-	err = validateAddress(p.SecurityAddress)
+	err := validateAddress(p.SecurityAddress)
 	if err != nil {
 		return fmt.Errorf("invalid security address: %w", err)
 	}
@@ -92,7 +79,7 @@ func validateAddress(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	// treasury might be explicitly empty in test environments
+	// address might be explicitly empty in test environments
 	if len(v) == 0 {
 		return nil
 	}

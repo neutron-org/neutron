@@ -18,7 +18,6 @@ func TestGetParams(t *testing.T) {
 
 	k, ctx := testkeeper.CronKeeper(t, nil, nil)
 	params := types.Params{
-		AdminAddress:    testutil.TestOwnerAddress,
 		SecurityAddress: testutil.TestOwnerAddress,
 		Limit:           5,
 	}
