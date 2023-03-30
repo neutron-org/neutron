@@ -136,6 +136,9 @@ func (k *Keeper) GetScheduleCount(ctx sdk.Context) int32 {
 }
 
 func (k *Keeper) StoreSchedule(ctx sdk.Context, schedule types.Schedule) {
+	if !k.scheduleExists(ctx, schedule.Name) {
+		k.changeTotalCount(ctx, 1)
+	}
 	k.storeSchedule(ctx, schedule)
 }
 

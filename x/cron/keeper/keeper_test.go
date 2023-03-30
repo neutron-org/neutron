@@ -2,7 +2,10 @@ package keeper_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,10 +17,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// ExecuteReadySchedules
+// ExecuteReadySchedules:
 // - calls msgServer.execute() on ready schedules
-// - updates ready schedules executeHeight
-// - does not update heights of unready schedules
+// - updates ready schedules lastExecuteHeight
+// - does not update lastExecuteHeight of unready schedules
 // - does not go over the limit
 func TestKeeperExecuteReadySchedules(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -154,30 +157,92 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	require.Equal(t, uint64(5), ready2.LastExecuteHeight)
 	require.Equal(t, uint64(4), unready2.LastExecuteHeight)
 	require.Equal(t, uint64(6), ready3.LastExecuteHeight)
-
-	// TODO: check total counts
 }
 
 func TestAddSchedule(t *testing.T) {
-}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-func TestRemoveSchedule(t *testing.T) {
-}
+	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
 
-func TestGetSchedule(t *testing.T) {
+	wasmMsgServer := mock_types.NewMockWasmMsgServer(ctrl)
+	k, ctx := testutil_keeper.CronKeeper(t, wasmMsgServer, accountKeeper)
+	ctx = ctx.WithBlockHeight(0)
+
+	k.SetParams(ctx, types.Params{
+		SecurityAddress: testutil.TestOwnerAddress,
+		Limit:           2,
+	})
+
+	// normal add schedule
+	err := k.AddSchedule(ctx, "a", 7, []types.MsgExecuteContract{
+		{
+			Contract: "c",
+			Msg:      "m",
+		},
+	})
+	require.NoError(t, err)
+
+	// second time with same name returns error
+	err = k.AddSchedule(ctx, "a", 5, []types.MsgExecuteContract{})
+	require.Error(t, err)
+
+	scheduleA, found := k.GetSchedule(ctx, "a")
+	require.True(t, found)
+	require.Equal(t, scheduleA.Name, "a")
+	require.Equal(t, scheduleA.Period, uint64(7))
+	require.Equal(t, scheduleA.Msgs, []types.MsgExecuteContract{
+		{Contract: "c", Msg: "m"},
+	})
+
+	// remove schedule works
+	k.RemoveSchedule(ctx, "a")
+	_, found = k.GetSchedule(ctx, "a")
+	assert.False(t, found)
+
+	// does not panic even though we don't have it
+	k.RemoveSchedule(ctx, "a")
 }
 
 func TestGetAllSchedules(t *testing.T) {
+	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
+
+	k.SetParams(ctx, types.Params{
+		SecurityAddress: testutil.TestOwnerAddress,
+		Limit:           2,
+	})
+	expectedSchedules := make([]types.Schedule, 0, 3)
+	for i := range []int{1, 2, 3} {
+		s := types.Schedule{
+			Name:              strconv.Itoa(i),
+			Period:            5,
+			Msgs:              nil,
+			LastExecuteHeight: 0,
+		}
+		expectedSchedules = append(expectedSchedules, s)
+		k.StoreSchedule(ctx, s)
+	}
+
+	schedules := k.GetAllSchedules(ctx)
+	assert.Equal(t, 3, len(schedules))
+	assert.ElementsMatch(t, schedules, expectedSchedules)
+	assert.Equal(t, int32(3), k.GetScheduleCount(ctx))
 }
 
-// AddSchedule
-// - adds new schedule if ok
-// - returns error if exists
+func TestStoreSchedule(t *testing.T) {
+	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
+	s := types.Schedule{
+		Name:              "0",
+		Period:            5,
+		Msgs:              nil,
+		LastExecuteHeight: 0,
+	}
+	k.StoreSchedule(ctx, s)
 
-// RemoveSchedule
-// - removes schedule
-// - if not found does not fail
+	ss, found := k.GetSchedule(ctx, "0")
+	assert.True(t, found)
+	assert.Equal(t, s, *ss)
 
-// GetSchedule gets schedule or not found
-
-// GetAllSchedules gets all schedules
+	// increments total count
+	assert.Equal(t, int32(1), k.GetScheduleCount(ctx))
+}
