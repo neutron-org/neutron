@@ -22,7 +22,7 @@ service Query {
 	}
 
 	// Queries a list of Schedule items.
-	rpc ScheduleAll(QueryAllScheduleRequest) returns (QueryAllScheduleResponse) {
+	rpc Schedules(QuerySchedulesRequest) returns (QuerySchedulesResponse) {
 		option (google.api.http).get = "/neutron/cron/schedule";
 	}
 
@@ -46,11 +46,11 @@ message QueryGetScheduleResponse {
 	Schedule schedule = 1 [(gogoproto.nullable) = false];
 }
 
-message QueryAllScheduleRequest {
+message QuerySchedulesRequest {
 	cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
-message QueryAllScheduleResponse {
+message QuerySchedulesResponse {
 	repeated Schedule schedule = 1 [(gogoproto.nullable) = false];
 	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

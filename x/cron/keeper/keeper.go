@@ -76,7 +76,11 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 
 // AddSchedule adds new schedule to execution for every block `period`.
 // First schedule execution is supposed to be on `now + period` block.
-func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []types.MsgExecuteContract) {
+func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []types.MsgExecuteContract) error {
+	if k.scheduleExists(ctx, name) {
+		return fmt.Errorf("schedule already exists with name=%v", name)
+	}
+
 	schedule := types.Schedule{
 		Name:              name,
 		Period:            period,
@@ -84,29 +88,13 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
 	}
 	k.storeSchedule(ctx, schedule)
+
+	return nil
 }
 
 // RemoveSchedule removes schedule with a given `name`
 func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 	k.removeSchedule(ctx, name)
-}
-
-// GetAllSchedules returns all schedules
-func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
-
-	res := make([]types.Schedule, 0)
-
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var schedule types.Schedule
-		k.cdc.MustUnmarshal(iterator.Value(), &schedule)
-		res = append(res, schedule)
-	}
-
-	return res
 }
 
 // GetSchedule returns schedule with a given `name`
@@ -141,6 +129,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 			count++
 
 			if count >= params.Limit {
+				k.Logger(ctx).Info("limit of schedule executions per block reached")
 				return res
 			}
 		}
@@ -189,6 +178,12 @@ func (k *Keeper) removeSchedule(ctx sdk.Context, name string) {
 	store := ctx.KVStore(k.storeKey)
 
 	store.Delete(types.GetScheduleKey(name))
+}
+
+func (k *Keeper) scheduleExists(ctx sdk.Context, name string) bool {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetScheduleKey(name))
+	return bz != nil
 }
 
 func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {

@@ -23,11 +23,11 @@ func CmdListSchedule() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryAllScheduleRequest{
+			params := &types.QuerySchedulesRequest{
 				Pagination: pageReq,
 			}
 
-			res, err := queryClient.ScheduleAll(context.Background(), params)
+			res, err := queryClient.Schedules(context.Background(), params)
 			if err != nil {
 				return err
 			}

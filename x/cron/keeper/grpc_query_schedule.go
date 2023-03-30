@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleRequest) (*types.QueryAllScheduleResponse, error) {
+func (k Keeper) Schedules(c context.Context, req *types.QuerySchedulesRequest) (*types.QuerySchedulesResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -19,14 +19,11 @@ func (k Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleReques
 	var schedules []types.Schedule
 	ctx := sdk.UnwrapSDKContext(c)
 
-	store := ctx.KVStore(k.storeKey)
-	scheduleStore := prefix.NewStore(store, types.ScheduleKey)
+	scheduleStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 
 	pageRes, err := query.Paginate(scheduleStore, req.Pagination, func(key []byte, value []byte) error {
 		var schedule types.Schedule
-		if err := k.cdc.Unmarshal(value, &schedule); err != nil {
-			return err
-		}
+		k.cdc.MustUnmarshal(value, &schedule)
 
 		schedules = append(schedules, schedule)
 		return nil
@@ -35,7 +32,7 @@ func (k Keeper) ScheduleAll(c context.Context, req *types.QueryAllScheduleReques
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryAllScheduleResponse{Schedule: schedules, Pagination: pageRes}, nil
+	return &types.QuerySchedulesResponse{Schedule: schedules, Pagination: pageRes}, nil
 }
 
 func (k Keeper) Schedule(c context.Context, req *types.QueryGetScheduleRequest) (*types.QueryGetScheduleResponse, error) {

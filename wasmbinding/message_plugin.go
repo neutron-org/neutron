@@ -621,7 +621,14 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		})
 	}
 
-	m.cronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	err := m.cronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	if err != nil {
+		ctx.Logger().Error("failed to addSchedule",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
 
 	resp := bindings.AddScheduleResponse{}
 	data, err := json.Marshal(&resp)
