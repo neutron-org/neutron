@@ -15,8 +15,8 @@ const (
 )
 
 const (
-	prefixScheduleKey      = iota + 1
-	prefixScheduleCountKey = iota + 2
+	prefixScheduleKey = iota + 1
+	prefixScheduleCountKey
 )
 
 var (

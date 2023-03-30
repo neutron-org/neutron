@@ -31,9 +31,8 @@ func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.
 			Name:              strconv.Itoa(i),
 			Period:            5,
 			Msgs:              []types.MsgExecuteContract{},
-			LastExecuteHeight: uint64(0),
+			LastExecuteHeight: uint64(50),
 		}
-		// nullify.Fill(&schedule)
 		state.ScheduleList = append(state.ScheduleList, schedule)
 	}
 	state.Params = types.DefaultParams()

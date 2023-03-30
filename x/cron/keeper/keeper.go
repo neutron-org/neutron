@@ -135,6 +135,10 @@ func (k *Keeper) GetScheduleCount(ctx sdk.Context) int32 {
 	return k.getScheduleCount(ctx)
 }
 
+func (k *Keeper) StoreSchedule(ctx sdk.Context, schedule types.Schedule) {
+	k.storeSchedule(ctx, schedule)
+}
+
 func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
 	params := k.GetParams(ctx)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
@@ -165,29 +169,30 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 
 // executeSchedule executes given schedule and changes LastExecuteHeight
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
+	// Even if contract execution returned an error, we still increase the height
+	// and execute it after this interval
+	schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
+	k.storeSchedule(ctx, schedule)
+
 	subCtx, commit := ctx.CacheContext()
 
 	for idx, msg := range schedule.Msgs {
 		executeMsg := wasmtypes.MsgExecuteContract{
 			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
 			Contract: msg.Contract,
-			Msg:      msg.Msg,
+			Msg:      []byte(msg.Msg),
 			Funds:    sdk.NewCoins(),
 		}
 		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(subCtx), &executeMsg)
 
 		countMsgExecuted(err, schedule.Name, idx)
 
-		// Even if contract execution returned an error, we still increase the height
-		// and execute it after this interval
-		schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
-		k.storeSchedule(ctx, schedule)
-
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
 				"msg_idx", idx,
 				"msg_contract", msg.Contract,
+				"msg", msg.Msg,
 				"error", err,
 			)
 			return

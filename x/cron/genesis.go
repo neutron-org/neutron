@@ -10,10 +10,7 @@ import (
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// Set all the schedule
 	for _, elem := range genState.ScheduleList {
-		err := k.AddSchedule(ctx, elem.Name, elem.Period, elem.Msgs)
-		if err != nil {
-			panic("adding existing schedule in genesis")
-		}
+		k.StoreSchedule(ctx, elem)
 	}
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)

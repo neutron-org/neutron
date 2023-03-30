@@ -20,7 +20,7 @@ message MsgExecuteContract {
   // Contract is the address of the smart contract
   string contract = 1;
   // Msg json encoded message to be passed to the contract
-  bytes msg = 2;
+  string msg = 2;
 }
 
 message ScheduleCount {

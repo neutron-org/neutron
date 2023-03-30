@@ -43,7 +43,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 			Msgs: []types.MsgExecuteContract{
 				{
 					Contract: "1_neutron",
-					Msg:      []byte("1_msg"),
+					Msg:      "1_msg",
 				},
 			},
 			LastExecuteHeight: 4,
@@ -54,7 +54,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 			Msgs: []types.MsgExecuteContract{
 				{
 					Contract: "2_neutron",
-					Msg:      []byte("2_msg"),
+					Msg:      "2_msg",
 				},
 			},
 			LastExecuteHeight: 0,
@@ -65,7 +65,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 			Msgs: []types.MsgExecuteContract{
 				{
 					Contract: "3_neutron",
-					Msg:      []byte("3_msg"),
+					Msg:      "3_msg",
 				},
 			},
 			LastExecuteHeight: 0,
@@ -82,7 +82,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 			Msgs: []types.MsgExecuteContract{
 				{
 					Contract: "5_neutron",
-					Msg:      []byte("5_msg"),
+					Msg:      "5_msg",
 				},
 			},
 			LastExecuteHeight: 0,

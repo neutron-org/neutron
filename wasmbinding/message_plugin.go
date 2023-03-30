@@ -620,11 +620,11 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
-	msgs := make([]crontypes.MsgExecuteContract, len(addSchedule.Msgs))
+	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
 		msgs = append(msgs, crontypes.MsgExecuteContract{
 			Contract: msg.Contract,
-			Msg:      []byte(msg.Msg),
+			Msg:      msg.Msg,
 		})
 	}
 
