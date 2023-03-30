@@ -154,6 +154,22 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	require.Equal(t, uint64(6), ready3.LastExecuteHeight)
 }
 
+func TestAddSchedule(t *testing.T) {
+	
+}
+
+func TestRemoveSchedule(t *testing.T) {
+
+}
+
+func TestGetSchedule() {
+
+}
+
+func TestGetAllSchedules() {
+
+}
+
 // AddSchedule
 // - adds new schedule if ok
 // - returns error if exists
