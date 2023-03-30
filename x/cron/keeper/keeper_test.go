@@ -95,17 +95,20 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+	count := k.GetScheduleCount(ctx)
+	require.Equal(t, count, int32(5))
+
 	ctx = ctx.WithBlockHeight(5)
 
 	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(addr)
 	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(addr)
-	wasmMsgServer.EXPECT().ExecuteContract(sdk.WrapSDKContext(ctx), &wasmtypes.MsgExecuteContract{
+	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
 		Sender:   testutil.TestOwnerAddress,
 		Contract: "2_neutron",
 		Msg:      []byte("2_msg"),
 		Funds:    sdk.NewCoins(),
 	}).Return(nil, fmt.Errorf("executeerror"))
-	wasmMsgServer.EXPECT().ExecuteContract(sdk.WrapSDKContext(ctx), &wasmtypes.MsgExecuteContract{
+	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
 		Sender:   testutil.TestOwnerAddress,
 		Contract: "3_neutron",
 		Msg:      []byte("3_msg"),
@@ -131,7 +134,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	ctx = ctx.WithBlockHeight(6)
 
 	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(addr)
-	wasmMsgServer.EXPECT().ExecuteContract(sdk.WrapSDKContext(ctx), &wasmtypes.MsgExecuteContract{
+	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
 		Sender:   testutil.TestOwnerAddress,
 		Contract: "5_neutron",
 		Msg:      []byte("5_msg"),

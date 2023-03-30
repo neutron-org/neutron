@@ -131,6 +131,10 @@ func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	return res
 }
 
+func (k *Keeper) GetScheduleCount(ctx sdk.Context) int32 {
+	return k.getScheduleCount(ctx)
+}
+
 func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
 	params := k.GetParams(ctx)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
@@ -174,6 +178,11 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 
 		countMsgExecuted(err, schedule.Name, idx)
 
+		// Even if contract execution returned an error, we still increase the height
+		// and execute it after this interval
+		schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
+		k.storeSchedule(ctx, schedule)
+
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
@@ -183,11 +192,6 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 			)
 			return
 		}
-
-		// Even if contract execution returned an error, we still increase the height
-		// and execute it after this interval
-		schedule.LastExecuteHeight = uint64(subCtx.BlockHeight())
-		k.storeSchedule(subCtx, schedule)
 	}
 
 	commit()
