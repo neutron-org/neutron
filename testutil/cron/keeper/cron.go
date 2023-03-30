@@ -3,8 +3,6 @@ package keeper
 import (
 	"testing"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -19,7 +17,7 @@ import (
 	tmdb "github.com/tendermint/tm-db"
 )
 
-func CronKeeper(t testing.TB, permKeeper *wasmkeeper.PermissionedKeeper, accountKeeper types.AccountKeeper) (*keeper.Keeper, sdk.Context) {
+func CronKeeper(t testing.TB, wasmMsgServer types.WasmMsgServer, accountKeeper types.AccountKeeper) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -45,7 +43,7 @@ func CronKeeper(t testing.TB, permKeeper *wasmkeeper.PermissionedKeeper, account
 		paramsSubspace,
 		accountKeeper,
 	)
-	k.WasmMsgServer = wasmkeeper.NewMsgServerImpl(permKeeper)
+	k.WasmMsgServer = wasmMsgServer
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 

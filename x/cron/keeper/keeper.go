@@ -33,7 +33,7 @@ type (
 		memKey        storetypes.StoreKey
 		paramstore    paramtypes.Subspace
 		accountKeeper types.AccountKeeper
-		WasmMsgServer wasmtypes.MsgServer
+		WasmMsgServer types.WasmMsgServer
 	}
 )
 
@@ -64,7 +64,7 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equals to Params.Limit)
 // and executes messages in each one
-// NOTE that errors in contract calls do NOT stop schedule execution
+// NOTE that errors in contract calls DO NOT stop schedule execution
 func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelCheckTimer)
 	schedules := k.getSchedulesReadyForExecution(ctx)
@@ -100,7 +100,7 @@ func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 // GetSchedule returns schedule with a given `name`
 func (k *Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
-	bzSchedule := store.Get([]byte(name))
+	bzSchedule := store.Get(types.GetScheduleKey(name))
 	if bzSchedule == nil {
 		return nil, false
 	}
@@ -160,7 +160,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 	for idx, msg := range schedule.Msgs {
 		executeMsg := wasmtypes.MsgExecuteContract{
-			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(), // TODO: store in constructor to avoid calculating every time?
+			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
 			Contract: msg.Contract,
 			Msg:      msg.Msg,
 			Funds:    sdk.NewCoins(),
