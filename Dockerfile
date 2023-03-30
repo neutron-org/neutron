@@ -7,7 +7,7 @@ RUN git clone https://github.com/informalsystems/hermes.git && \
     git checkout 7defaf067dbe6f60588518ea1619f228d38ac48d && \
     cargo build --release --bin hermes
 
-FROM golang:1.18-bullseye
+FROM golang:1.20.2-bullseye
 EXPOSE 16657
 EXPOSE 16656
 EXPOSE 6060
