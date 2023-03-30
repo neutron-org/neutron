@@ -44,7 +44,7 @@ func CmdListSchedule() *cobra.Command {
 
 func CmdShowSchedule() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-schedule [index]",
+		Use:   "show-schedule [name]",
 		Short: "shows a schedule",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {

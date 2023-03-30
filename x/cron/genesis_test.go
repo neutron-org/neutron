@@ -13,6 +13,14 @@ import (
 func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
+		ScheduleList: []types.Schedule{
+			{
+				Name:              "a",
+				Period:            5,
+				Msgs:              nil,
+				LastExecuteHeight: 0,
+			},
+		},
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
@@ -25,5 +33,6 @@ func TestGenesis(t *testing.T) {
 	nullify.Fill(got)
 
 	require.Equal(t, genesisState.Params, got.Params)
+	require.ElementsMatch(t, genesisState.ScheduleList, got.ScheduleList)
 	// this line is used by starport scaffolding # genesis/test/assert
 }

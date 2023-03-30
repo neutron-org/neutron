@@ -100,7 +100,7 @@ func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 // GetSchedule returns schedule with a given `name`
 func (k *Keeper) GetSchedule(ctx sdk.Context, name string) (*types.Schedule, bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
-	bzSchedule := store.Get(types.GetScheduleKey(name))
+	bzSchedule := store.Get([]byte(name))
 	if bzSchedule == nil {
 		return nil, false
 	}
@@ -126,10 +126,6 @@ func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 	}
 
 	return res
-}
-
-func (k *Keeper) SetSchedule(ctx sdk.Context, schedule types.Schedule) {
-	k.storeSchedule(ctx, schedule)
 }
 
 func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
@@ -190,20 +186,20 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 }
 
 func (k *Keeper) storeSchedule(ctx sdk.Context, schedule types.Schedule) {
-	store := ctx.KVStore(k.storeKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 
 	bzSchedule := k.cdc.MustMarshal(&schedule)
 	store.Set(types.GetScheduleKey(schedule.Name), bzSchedule)
 }
 
 func (k *Keeper) removeSchedule(ctx sdk.Context, name string) {
-	store := ctx.KVStore(k.storeKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 
 	store.Delete(types.GetScheduleKey(name))
 }
 
 func (k *Keeper) scheduleExists(ctx sdk.Context, name string) bool {
-	store := ctx.KVStore(k.storeKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 	bz := store.Get(types.GetScheduleKey(name))
 	return bz != nil
 }

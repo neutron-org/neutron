@@ -5,6 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	staking "github.com/cosmos/cosmos-sdk/x/staking"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/neutron-org/neutron/testutil/consumer"
+
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/neutron-org/neutron/app/params"
 
@@ -47,6 +53,10 @@ func New(t *testing.T, configs ...network.Config) *network.Network {
 // DefaultConfig will initialize config for the network with custom application,
 // genesis and single validator. All other parameters are inherited from cosmos-sdk/testutil/network.DefaultConfig
 func DefaultConfig() network.Config {
+	// app doesn't have this modules anymore, but we need them for test setup, which uses gentx and MsgCreateValidator
+	app.ModuleBasics[genutiltypes.ModuleName] = genutil.AppModuleBasic{}
+	app.ModuleBasics[stakingtypes.ModuleName] = staking.AppModuleBasic{}
+
 	encoding := app.MakeEncodingConfig()
 	return network.Config{
 		Codec:             encoding.Marshaler,
@@ -55,6 +65,11 @@ func DefaultConfig() network.Config {
 		InterfaceRegistry: encoding.InterfaceRegistry,
 		AccountRetriever:  authtypes.AccountRetriever{},
 		AppConstructor: func(val network.Validator) servertypes.Application {
+			err := consumer.ModifyConsumerGenesis(val)
+			if err != nil {
+				panic(err)
+			}
+
 			return app.New(
 				val.Ctx.Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.Ctx.Config.RootDir, 0,
 				encoding,
@@ -65,9 +80,11 @@ func DefaultConfig() network.Config {
 				baseapp.SetMinGasPrices(val.AppConfig.MinGasPrices),
 			)
 		},
-		GenesisState:    app.ModuleBasics.DefaultGenesis(encoding.Marshaler),
-		TimeoutCommit:   2 * time.Second,
-		ChainID:         "chain-" + tmrand.NewRand().Str(6),
+		GenesisState:  app.ModuleBasics.DefaultGenesis(encoding.Marshaler),
+		TimeoutCommit: 2 * time.Second,
+		ChainID:       "chain-" + tmrand.NewRand().Str(6),
+		// Some changes are introduced to make the tests run as if neutron is a standalone chain.
+		// This will only work if NumValidators is set to 1.
 		NumValidators:   1,
 		BondDenom:       params.DefaultDenom,
 		MinGasPrices:    fmt.Sprintf("0.000006%s", params.DefaultDenom),

@@ -21,5 +21,5 @@ const (
 var ScheduleKey = []byte{prefixFeeKey}
 
 func GetScheduleKey(name string) []byte {
-	return append(ScheduleKey, []byte(name)...)
+	return []byte(name)
 }

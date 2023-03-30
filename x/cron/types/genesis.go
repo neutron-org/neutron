@@ -2,9 +2,6 @@ package types
 
 import "fmt"
 
-// DefaultIndex is the default global index
-const DefaultIndex uint64 = 1
-
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
@@ -21,7 +18,7 @@ func (gs GenesisState) Validate() error {
 	scheduleIndexMap := make(map[string]struct{})
 
 	for _, elem := range gs.ScheduleList {
-		index := string(ScheduleKey(elem.Name))
+		index := string(GetScheduleKey(elem.Name))
 		if _, ok := scheduleIndexMap[index]; ok {
 			return fmt.Errorf("duplicated index for schedule")
 		}
