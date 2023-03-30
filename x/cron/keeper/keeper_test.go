@@ -157,19 +157,15 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 }
 
 func TestAddSchedule(t *testing.T) {
-
 }
 
 func TestRemoveSchedule(t *testing.T) {
-
 }
 
 func TestGetSchedule(t *testing.T) {
-
 }
 
 func TestGetAllSchedules(t *testing.T) {
-
 }
 
 // AddSchedule

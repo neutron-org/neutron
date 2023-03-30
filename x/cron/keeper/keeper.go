@@ -65,7 +65,7 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equals to Params.Limit)
 // and executes messages in each one
-// NOTE that errors in contract calls DO NOT stop schedule execution
+// NOTE that errors in contract calls rollback all already executed messages
 func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelCheckTimer)
 	schedules := k.getSchedulesReadyForExecution(ctx)
@@ -161,6 +161,8 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 
 // executeSchedule executes given schedule and changes LastExecuteHeight
 func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
+	subCtx, commit := ctx.CacheContext()
+
 	for idx, msg := range schedule.Msgs {
 		executeMsg := wasmtypes.MsgExecuteContract{
 			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
@@ -168,7 +170,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 			Msg:      msg.Msg,
 			Funds:    sdk.NewCoins(),
 		}
-		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), &executeMsg)
+		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(subCtx), &executeMsg)
 
 		countMsgExecuted(err, schedule.Name, idx)
 
@@ -179,13 +181,16 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 				"msg_contract", msg.Contract,
 				"error", err,
 			)
+			return
 		}
 
 		// Even if contract execution returned an error, we still increase the height
 		// and execute it after this interval
-		schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
-		k.storeSchedule(ctx, schedule)
+		schedule.LastExecuteHeight = uint64(subCtx.BlockHeight())
+		k.storeSchedule(subCtx, schedule)
 	}
+
+	commit()
 }
 
 func (k *Keeper) storeSchedule(ctx sdk.Context, schedule types.Schedule) {
@@ -210,26 +215,26 @@ func (k *Keeper) intervalPassed(ctx sdk.Context, schedule types.Schedule) bool {
 	return uint64(ctx.BlockHeight()) > (schedule.LastExecuteHeight + schedule.Period)
 }
 
-func (k *Keeper) changeTotalCount(ctx sdk.Context, incrementAmount int64) {
+func (k *Keeper) changeTotalCount(ctx sdk.Context, incrementAmount int32) {
 	store := ctx.KVStore(k.storeKey)
 	count := k.getScheduleCount(ctx)
 	newCount := types.ScheduleCount{Count: count + incrementAmount}
 	bzCount := k.cdc.MustMarshal(&newCount)
 	store.Set(types.ScheduleCountKey, bzCount)
 
-	telemetry.ModuleSetGauge(types.ModuleName, newCount.Count, LabelScheduleCount)
+	telemetry.ModuleSetGauge(types.ModuleName, float32(newCount.Count), LabelScheduleCount)
 }
 
-func (k *Keeper) getScheduleCount(ctx sdk.Context) int64 {
+func (k *Keeper) getScheduleCount(ctx sdk.Context) int32 {
 	store := ctx.KVStore(k.storeKey)
 	bzCount := store.Get(types.ScheduleCountKey)
 	if bzCount == nil {
 		return 0
-	} else {
-		var count types.ScheduleCount
-		k.cdc.MustUnmarshal(bzCount, &count)
-		return count.Count
 	}
+
+	var count types.ScheduleCount
+	k.cdc.MustUnmarshal(bzCount, &count)
+	return count.Count
 }
 
 func countMsgExecuted(err error, scheduleName string, idx int) {

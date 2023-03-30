@@ -25,5 +25,5 @@ message MsgExecuteContract {
 
 message ScheduleCount {
   // Count is the number of current schedules
-  int64 count = 1;
+  int32 count = 1;
 }
