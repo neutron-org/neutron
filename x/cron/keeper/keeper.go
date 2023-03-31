@@ -141,13 +141,6 @@ func (k *Keeper) GetScheduleCount(ctx sdk.Context) int32 {
 	return k.getScheduleCount(ctx)
 }
 
-func (k *Keeper) StoreSchedule(ctx sdk.Context, schedule types.Schedule) {
-	if !k.scheduleExists(ctx, schedule.Name) {
-		k.changeTotalCount(ctx, 1)
-	}
-	k.storeSchedule(ctx, schedule)
-}
-
 func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
 	params := k.GetParams(ctx)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
@@ -184,7 +177,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 	schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
 	k.storeSchedule(ctx, schedule)
 
-	subCtx, commit := ctx.CacheContext()
+	cacheCtx, writeFn := ctx.CacheContext()
 
 	for idx, msg := range schedule.Msgs {
 		executeMsg := wasmtypes.MsgExecuteContract{
@@ -193,7 +186,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 			Msg:      []byte(msg.Msg),
 			Funds:    sdk.NewCoins(),
 		}
-		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(subCtx), &executeMsg)
+		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(cacheCtx), &executeMsg)
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
@@ -207,7 +200,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 	}
 
 	// only save state if all the messages in a schedule were executed successfully
-	commit()
+	writeFn()
 	return nil
 }
 

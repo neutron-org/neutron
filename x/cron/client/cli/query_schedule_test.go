@@ -29,9 +29,9 @@ func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.
 	for i := 0; i < n; i++ {
 		schedule := types.Schedule{
 			Name:              strconv.Itoa(i),
-			Period:            5,
+			Period:            1000,
 			Msgs:              []types.MsgExecuteContract{},
-			LastExecuteHeight: uint64(50),
+			LastExecuteHeight: uint64(0),
 		}
 		state.ScheduleList = append(state.ScheduleList, schedule)
 	}

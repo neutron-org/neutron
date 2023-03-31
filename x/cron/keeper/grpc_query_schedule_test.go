@@ -21,7 +21,7 @@ var _ = strconv.IntSize
 func TestScheduleQuerySingle(t *testing.T) {
 	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
 	wctx := sdk.WrapSDKContext(ctx)
-	schedules := createNSchedule(ctx, k, 2)
+	schedules := createNSchedule(t, ctx, k, 2)
 
 	for _, tc := range []struct {
 		desc     string
@@ -73,7 +73,7 @@ func TestScheduleQuerySingle(t *testing.T) {
 func TestScheduleQueryPaginated(t *testing.T) {
 	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
 	wctx := sdk.WrapSDKContext(ctx)
-	schedules := createNSchedule(ctx, k, 5)
+	schedules := createNSchedule(t, ctx, k, 5)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QuerySchedulesRequest {
 		return &types.QuerySchedulesRequest{
@@ -126,16 +126,18 @@ func TestScheduleQueryPaginated(t *testing.T) {
 	})
 }
 
-func createNSchedule(ctx sdk.Context, k *cronkeeper.Keeper, n int32) []types.Schedule {
+func createNSchedule(t *testing.T, ctx sdk.Context, k *cronkeeper.Keeper, n int32) []types.Schedule {
 	res := make([]types.Schedule, n)
 
 	for idx, item := range res {
 		item.Name = strconv.Itoa(idx)
-		item.Period = 5
+		item.Period = 1000
 		item.Msgs = nil
-		item.LastExecuteHeight = 0
+		item.LastExecuteHeight = uint64(ctx.BlockHeight())
 
-		k.StoreSchedule(ctx, item)
+		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs)
+		require.NoError(t, err)
+
 		res[idx] = item
 	}
 

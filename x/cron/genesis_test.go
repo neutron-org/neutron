@@ -11,6 +11,8 @@ import (
 )
 
 func TestGenesis(t *testing.T) {
+	k, ctx := keeper.CronKeeper(t, nil, nil)
+
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
 		ScheduleList: []types.Schedule{
@@ -18,13 +20,12 @@ func TestGenesis(t *testing.T) {
 				Name:              "a",
 				Period:            5,
 				Msgs:              nil,
-				LastExecuteHeight: 0,
+				LastExecuteHeight: uint64(ctx.BlockHeight()),
 			},
 		},
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
-	k, ctx := keeper.CronKeeper(t, nil, nil)
 	cron.InitGenesis(ctx, *k, genesisState)
 	got := cron.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)

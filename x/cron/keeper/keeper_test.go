@@ -217,32 +217,15 @@ func TestGetAllSchedules(t *testing.T) {
 			Name:              strconv.Itoa(i),
 			Period:            5,
 			Msgs:              nil,
-			LastExecuteHeight: 0,
+			LastExecuteHeight: uint64(ctx.BlockHeight()),
 		}
 		expectedSchedules = append(expectedSchedules, s)
-		k.StoreSchedule(ctx, s)
+		err := k.AddSchedule(ctx, s.Name, s.Period, s.Msgs)
+		require.NoError(t, err)
 	}
 
 	schedules := k.GetAllSchedules(ctx)
 	assert.Equal(t, 3, len(schedules))
 	assert.ElementsMatch(t, schedules, expectedSchedules)
 	assert.Equal(t, int32(3), k.GetScheduleCount(ctx))
-}
-
-func TestStoreSchedule(t *testing.T) {
-	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
-	s := types.Schedule{
-		Name:              "0",
-		Period:            5,
-		Msgs:              nil,
-		LastExecuteHeight: 0,
-	}
-	k.StoreSchedule(ctx, s)
-
-	ss, found := k.GetSchedule(ctx, "0")
-	assert.True(t, found)
-	assert.Equal(t, s, *ss)
-
-	// increments total count
-	assert.Equal(t, int32(1), k.GetScheduleCount(ctx))
 }
