@@ -47,8 +47,8 @@ func CustomMessageDecorator(
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
 			Adminserver:    adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
-			cronKeeper:     cronKeeper,
-			adminKeeper:    adminKeeper,
+			CronKeeper:     cronKeeper,
+			AdminKeeper:    adminKeeper,
 		}
 	}
 }
@@ -60,8 +60,8 @@ type CustomMessenger struct {
 	Icqmsgserver   icqtypes.MsgServer
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
 	Adminserver    admintypes.MsgServer
-	cronKeeper     *cronkeeper.Keeper
-	adminKeeper    *adminmodulekeeper.Keeper
+	CronKeeper     *cronkeeper.Keeper
+	AdminKeeper    *adminmodulekeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -628,7 +628,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		})
 	}
 
-	err := m.cronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
 	if err != nil {
 		ctx.Logger().Error("failed to addSchedule",
 			"from_address", contractAddr.String(),
@@ -656,12 +656,12 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
-	params := m.cronKeeper.GetParams(ctx)
+	params := m.CronKeeper.GetParams(ctx)
 	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
 		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
-	m.cronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
+	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
 
 	resp := bindings.RemoveScheduleResponse{}
 	data, err := json.Marshal(&resp)
@@ -681,7 +681,7 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 }
 
 func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
-	for _, admin := range m.adminKeeper.GetAdmins(ctx) {
+	for _, admin := range m.AdminKeeper.GetAdmins(ctx) {
 		if admin == contractAddr.String() {
 			return true
 		}

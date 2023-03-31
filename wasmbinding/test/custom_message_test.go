@@ -46,6 +46,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Keeper = suite.neutron.InterchainTxsKeeper
 	suite.messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(suite.neutron.InterchainQueriesKeeper)
 	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
+	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
+	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 }
 
@@ -404,6 +406,59 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
 
 	suite.ErrorContains(err, "no admin proposal type is present in message")
+}
+
+func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Set admin so that we can execute this proposal without permission error
+	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
+
+	// Craft AddSchedule message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		AddSchedule: &bindings.AddSchedule{
+			Name:   "schedule1",
+			Period: 5,
+			Msgs: []bindings.MsgExecuteContract{
+				{
+					Contract: suite.contractAddress.String(),
+					Msg:      "{\"send\": { \"to\": \"asdf\", \"amount\": 1000 }}",
+				},
+			},
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch AddSchedule message
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&bindings.AddScheduleResponse{})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+
+	// Craft RemoveSchedule message
+	msg, err = json.Marshal(bindings.NeutronMsg{
+		RemoveSchedule: &bindings.RemoveSchedule{
+			Name: "schedule1",
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch AddSchedule message
+	events, data, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {
