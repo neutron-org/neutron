@@ -20,11 +20,11 @@ import (
 )
 
 var (
-	LabelCheckTimer    = "check_timer"
-	LabelScheduleCount = "schedule_count"
-	MetricLabelSuccess = "success"
-	MetricMsgIndex     = "msg_idx"
-	MetricScheduleName = "schedule_name"
+	LabelExecuteReadySchedules = "execute_ready_schedules"
+	LabelScheduleCount         = "schedule_count"
+	MetricLabelSuccess         = "success"
+	MetricMsgIndex             = "msg_idx"
+	MetricScheduleName         = "schedule_name"
 )
 
 type (
@@ -67,7 +67,7 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 // and executes messages in each one
 // NOTE that errors in contract calls rollback all already executed messages
 func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
-	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelCheckTimer)
+	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelExecuteReadySchedules)
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
@@ -96,8 +96,12 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 
 // RemoveSchedule removes schedule with a given `name`
 func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
-	k.removeSchedule(ctx, name)
+	if !k.scheduleExists(ctx, name) {
+		return
+	}
+
 	k.changeTotalCount(ctx, -1)
+	k.removeSchedule(ctx, name)
 }
 
 // GetSchedule returns schedule with a given `name`
