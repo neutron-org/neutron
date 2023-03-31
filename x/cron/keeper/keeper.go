@@ -24,7 +24,8 @@ var (
 	LabelScheduleCount           = "schedule_count"
 	LabelScheduleExecutionsCount = "schedule_executions_count"
 
-	MetricLabelSuccess = "success"
+	MetricLabelSuccess      = "success"
+	MetricLabelScheduleName = "schedule_name"
 )
 
 type (
@@ -72,7 +73,7 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 
 	for _, schedule := range schedules {
 		err := k.executeSchedule(ctx, schedule)
-		recordExecutedSchedule(err)
+		recordExecutedSchedule(err, schedule)
 	}
 }
 
@@ -254,9 +255,10 @@ func (k *Keeper) getScheduleCount(ctx sdk.Context) int32 {
 	return count.Count
 }
 
-func recordExecutedSchedule(err error) {
+func recordExecutedSchedule(err error, schedule types.Schedule) {
 	telemetry.IncrCounterWithLabels([]string{LabelScheduleExecutionsCount}, 1, []metrics.Label{
 		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
 		telemetry.NewLabel(MetricLabelSuccess, strconv.FormatBool(err == nil)),
+		telemetry.NewLabel(MetricLabelScheduleName, schedule.Name),
 	})
 }
