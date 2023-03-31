@@ -30,7 +30,7 @@ type Schedule struct {
 	Period uint64 `protobuf:"varint,2,opt,name=period,proto3" json:"period,omitempty"`
 	// Msgs that will be executed every period amount of time
 	Msgs []MsgExecuteContract `protobuf:"bytes,3,rep,name=msgs,proto3" json:"msgs"`
-	// Last block height of execution
+	// Last execution's block height
 	LastExecuteHeight uint64 `protobuf:"varint,4,opt,name=last_execute_height,json=lastExecuteHeight,proto3" json:"last_execute_height,omitempty"`
 }
 
@@ -98,7 +98,7 @@ func (m *Schedule) GetLastExecuteHeight() uint64 {
 type MsgExecuteContract struct {
 	// Contract is the address of the smart contract
 	Contract string `protobuf:"bytes,1,opt,name=contract,proto3" json:"contract,omitempty"`
-	// Msg json encoded message to be passed to the contract
+	// Msg is json encoded message to be passed to the contract
 	Msg string `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 }
 
