@@ -64,7 +64,7 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equals to Params.Limit)
+// ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equal to Params.Limit)
 // and executes messages in each one
 // NOTE that errors in contract calls rollback all already executed messages
 func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
