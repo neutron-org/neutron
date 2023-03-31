@@ -2,7 +2,6 @@ package wasmbinding
 
 import (
 	"encoding/json"
-	"fmt"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -119,12 +118,12 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 		case contractQuery.DenomAdmin != nil:
 			res, err := qp.GetDenomAdmin(ctx, contractQuery.DenomAdmin.Subdenom)
 			if err != nil {
-				return nil, err
+				return nil, sdkerrors.Wrap(err, "unable to get denom admin")
 			}
 
 			bz, err := json.Marshal(res)
 			if err != nil {
-				return nil, fmt.Errorf("failed to JSON marshal DenomAdminResponse response: %w", err)
+				return nil, sdkerrors.Wrap(err, "failed to JSON marshal DenomAdminResponse response.")
 			}
 
 			return bz, nil

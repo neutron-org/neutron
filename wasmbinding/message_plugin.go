@@ -500,10 +500,12 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 	if err != nil {
 		return sdkerrors.Wrap(err, "minting coins from message")
 	}
+
 	err = b.SendCoins(ctx, contractAddr, rcpt, sdk.NewCoins(coin))
 	if err != nil {
 		return sdkerrors.Wrap(err, "sending newly minted coins from message")
 	}
+
 	return nil
 }
 
@@ -513,6 +515,7 @@ func (m *CustomMessenger) changeAdmin(ctx sdk.Context, contractAddr sdk.AccAddre
 	if err != nil {
 		return nil, nil, sdkerrors.Wrap(err, "failed to change admin")
 	}
+
 	return nil, nil, nil
 }
 
@@ -542,6 +545,7 @@ func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 	if err != nil {
 		return nil, nil, sdkerrors.Wrap(err, "perform burn")
 	}
+
 	return nil, nil, nil
 }
 
@@ -563,6 +567,7 @@ func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 	if err != nil {
 		return sdkerrors.Wrap(err, "burning coins from message")
 	}
+
 	return nil
 }
 
@@ -572,6 +577,7 @@ func GetFullDenom(contract string, subDenom string) (string, error) {
 	if _, err := parseAddress(contract); err != nil {
 		return "", err
 	}
+
 	fullDenom, err := tokenfactorytypes.GetTokenDenom(contract, subDenom)
 	if err != nil {
 		return "", sdkerrors.Wrap(err, "validate sub-denom")
@@ -586,10 +592,12 @@ func parseAddress(addr string) (sdk.AccAddress, error) {
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "address from bech32")
 	}
+
 	err = sdk.VerifyAddressFormat(parsed)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "verify address format")
 	}
+
 	return parsed, nil
 }
 
