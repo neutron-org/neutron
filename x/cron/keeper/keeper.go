@@ -20,11 +20,11 @@ import (
 )
 
 var (
-	LabelExecuteReadySchedules = "execute_ready_schedules"
-	LabelScheduleCount         = "schedule_count"
-	MetricLabelSuccess         = "success"
-	MetricMsgIndex             = "msg_idx"
-	MetricScheduleName         = "schedule_name"
+	LabelExecuteReadySchedules   = "execute_ready_schedules"
+	LabelScheduleCount           = "schedule_count"
+	LabelScheduleExecutionsCount = "schedule_executions_count"
+
+	MetricLabelSuccess = "success"
 )
 
 type (
@@ -71,7 +71,8 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
-		k.executeSchedule(ctx, schedule)
+		err := k.executeSchedule(ctx, schedule)
+		recordExecutedSchedule(err)
 	}
 }
 
@@ -174,8 +175,9 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 	return res
 }
 
-// executeSchedule executes given schedule and changes LastExecuteHeight
-func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
+// executeSchedule executes all msgs in a given schedule and changes LastExecuteHeight
+// if at least one msg execution fails, rollback all messages
+func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error {
 	// Even if contract execution returned an error, we still increase the height
 	// and execute it after this interval
 	schedule.LastExecuteHeight = uint64(ctx.BlockHeight())
@@ -191,9 +193,6 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 			Funds:    sdk.NewCoins(),
 		}
 		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(subCtx), &executeMsg)
-
-		countMsgExecuted(err, schedule.Name, idx)
-
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,
@@ -202,11 +201,13 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) {
 				"msg", msg.Msg,
 				"error", err,
 			)
-			return
+			return err
 		}
 	}
 
+	// only save state if all the messages in a schedule were executed successfully
 	commit()
+	return nil
 }
 
 func (k *Keeper) storeSchedule(ctx sdk.Context, schedule types.Schedule) {
@@ -253,11 +254,9 @@ func (k *Keeper) getScheduleCount(ctx sdk.Context) int32 {
 	return count.Count
 }
 
-func countMsgExecuted(err error, scheduleName string, idx int) {
-	telemetry.IncrCounterWithLabels([]string{"execute_schedule"}, 1, []metrics.Label{
+func recordExecutedSchedule(err error) {
+	telemetry.IncrCounterWithLabels([]string{LabelScheduleExecutionsCount}, 1, []metrics.Label{
 		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
-		telemetry.NewLabel(MetricScheduleName, scheduleName),
 		telemetry.NewLabel(MetricLabelSuccess, strconv.FormatBool(err == nil)),
-		telemetry.NewLabel(MetricMsgIndex, strconv.Itoa(idx)),
 	})
 }
