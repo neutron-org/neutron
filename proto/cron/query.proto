@@ -51,7 +51,7 @@ message QuerySchedulesRequest {
 }
 
 message QuerySchedulesResponse {
-	repeated Schedule schedule = 1 [(gogoproto.nullable) = false];
+	repeated Schedule schedules = 1 [(gogoproto.nullable) = false];
 	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

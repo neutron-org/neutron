@@ -32,7 +32,7 @@ func (k Keeper) Schedules(c context.Context, req *types.QuerySchedulesRequest) (
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QuerySchedulesResponse{Schedule: schedules, Pagination: pageRes}, nil
+	return &types.QuerySchedulesResponse{Schedules: schedules, Pagination: pageRes}, nil
 }
 
 func (k Keeper) Schedule(c context.Context, req *types.QueryGetScheduleRequest) (*types.QueryGetScheduleResponse, error) {
