@@ -62,15 +62,26 @@ func request_Query_DenomAuthorityMetadata_0(ctx context.Context, marshaler runti
 		_   = err
 	)
 
-	val, ok = pathParams["denom"]
+	val, ok = pathParams["creator"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "denom")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "creator")
 	}
 
-	protoReq.Denom, err = runtime.String(val)
+	protoReq.Creator, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "creator", err)
+	}
+
+	val, ok = pathParams["subdenom"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "subdenom")
+	}
+
+	protoReq.Subdenom, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "subdenom", err)
 	}
 
 	msg, err := client.DenomAuthorityMetadata(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -89,15 +100,26 @@ func local_request_Query_DenomAuthorityMetadata_0(ctx context.Context, marshaler
 		_   = err
 	)
 
-	val, ok = pathParams["denom"]
+	val, ok = pathParams["creator"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "denom")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "creator")
 	}
 
-	protoReq.Denom, err = runtime.String(val)
+	protoReq.Creator, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "creator", err)
+	}
+
+	val, ok = pathParams["subdenom"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "subdenom")
+	}
+
+	protoReq.Subdenom, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "subdenom", err)
 	}
 
 	msg, err := server.DenomAuthorityMetadata(ctx, &protoReq)
@@ -341,7 +363,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"osmosis", "tokenfactory", "v1beta1", "params"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_DenomAuthorityMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"osmosis", "tokenfactory", "v1beta1", "denoms", "denom", "authority_metadata"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DenomAuthorityMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"osmosis", "tokenfactory", "v1beta1", "denoms", "factory", "creator", "subdenom", "authority_metadata"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_DenomsFromCreator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"osmosis", "tokenfactory", "v1beta1", "denoms_from_creator", "creator"}, "", runtime.AssumeColonVerbOpt(true)))
 )

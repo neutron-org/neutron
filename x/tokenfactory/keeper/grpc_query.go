@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -20,7 +21,9 @@ func (k Keeper) Params(ctx context.Context, _ *types.QueryParamsRequest) (*types
 func (k Keeper) DenomAuthorityMetadata(ctx context.Context, req *types.QueryDenomAuthorityMetadataRequest) (*types.QueryDenomAuthorityMetadataResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	authorityMetadata, err := k.GetAuthorityMetadata(sdkCtx, req.GetDenom())
+	denom := fmt.Sprintf("factory/%s/%s", req.GetCreator(), req.GetSubdenom())
+
+	authorityMetadata, err := k.GetAuthorityMetadata(sdkCtx, denom)
 	if err != nil {
 		return nil, err
 	}

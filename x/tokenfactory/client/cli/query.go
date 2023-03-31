@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	// "strings"
 
@@ -76,8 +77,15 @@ func GetCmdDenomAuthorityMetadata() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
+			denom := strings.Split(args[0], "/")
+
+			if len(denom) != 3 {
+				return fmt.Errorf("invalid denom format, expected format: factory/[creator]/[subdenom]")
+			}
+
 			res, err := queryClient.DenomAuthorityMetadata(cmd.Context(), &types.QueryDenomAuthorityMetadataRequest{
-				Denom: args[0],
+				Creator:  denom[1],
+				Subdenom: denom[2],
 			})
 			if err != nil {
 				return err
