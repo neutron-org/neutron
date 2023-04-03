@@ -26,6 +26,12 @@ type NeutronQuery struct {
 	TotalBurnedNeutronsAmount *QueryTotalBurnedNeutronsAmountRequest `json:"total_burned_neutrons_amount,omitempty"`
 	// MinIbcFee
 	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
+	// Token Factory queries
+	/// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
+	/// returns the full denom as used by `BankMsg::Send`.
+	FullDenom *FullDenom `json:"full_denom,omitempty"`
+	/// Returns the admin of a denom, if the denom is a Token Factory denom.
+	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
 }
 
 /* Requests */
@@ -161,4 +167,21 @@ func (sv StorageValue) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(a)
+}
+
+type FullDenom struct {
+	CreatorAddr string `json:"creator_addr"`
+	Subdenom    string `json:"subdenom"`
+}
+
+type DenomAdmin struct {
+	Subdenom string `json:"subdenom"`
+}
+
+type DenomAdminResponse struct {
+	Admin string `json:"admin"`
+}
+
+type FullDenomResponse struct {
+	Denom string `json:"denom"`
 }
