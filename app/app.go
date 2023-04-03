@@ -368,7 +368,7 @@ func New(
 		ccvconsumertypes.ConsumerToSendToProviderName).String())
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
+		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), bankBlockedAddrs,
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
