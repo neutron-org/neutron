@@ -9,8 +9,8 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	types1 "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	types1 "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	types2 "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -154,7 +154,7 @@ func (mr *MockContractManagerKeeperMockRecorder) HasContractInfo(ctx, contractAd
 }
 
 // SudoError mocks base method.
-func (m *MockContractManagerKeeper) SudoError(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, details string) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoError(ctx types.Context, senderAddress types.AccAddress, request types2.Packet, details string) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SudoError", ctx, senderAddress, request, details)
 	ret0, _ := ret[0].([]byte)
@@ -184,7 +184,7 @@ func (mr *MockContractManagerKeeperMockRecorder) SudoKVQueryResult(ctx, contract
 }
 
 // SudoResponse mocks base method.
-func (m *MockContractManagerKeeper) SudoResponse(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, msg []byte) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoResponse(ctx types.Context, senderAddress types.AccAddress, request types2.Packet, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SudoResponse", ctx, senderAddress, request, msg)
 	ret0, _ := ret[0].([]byte)
@@ -199,7 +199,7 @@ func (mr *MockContractManagerKeeperMockRecorder) SudoResponse(ctx, senderAddress
 }
 
 // SudoTimeout mocks base method.
-func (m *MockContractManagerKeeper) SudoTimeout(ctx types.Context, senderAddress types.AccAddress, request types1.Packet) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoTimeout(ctx types.Context, senderAddress types.AccAddress, request types2.Packet) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SudoTimeout", ctx, senderAddress, request)
 	ret0, _ := ret[0].([]byte)
@@ -214,7 +214,7 @@ func (mr *MockContractManagerKeeperMockRecorder) SudoTimeout(ctx, senderAddress,
 }
 
 // SudoTxQueryResult mocks base method.
-func (m *MockContractManagerKeeper) SudoTxQueryResult(ctx types.Context, contractAddress types.AccAddress, queryID uint64, height ibcclienttypes.Height, data []byte) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoTxQueryResult(ctx types.Context, contractAddress types.AccAddress, queryID uint64, height types1.Height, data []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SudoTxQueryResult", ctx, contractAddress, queryID, height, data)
 	ret0, _ := ret[0].([]byte)
