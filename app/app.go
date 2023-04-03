@@ -125,6 +125,10 @@ import (
 	ccvconsumer "github.com/cosmos/interchain-security/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+
+	"github.com/strangelove-ventures/packet-forward-middleware/v4/router"
+	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v4/router/keeper"
+	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v4/router/types"
 )
 
 const (
@@ -202,6 +206,7 @@ var (
 				upgraderest.ProposalCancelRESTHandler,
 			),
 		),
+		router.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -273,6 +278,9 @@ type App struct {
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	CronKeeper          cronkeeper.Keeper
+	RouterKeeper        *routerkeeper.Keeper
+
+	RouterModule router.AppModule
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -324,7 +332,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey, routertypes.StoreKey,
 		crontypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -369,7 +377,7 @@ func New(
 	)
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
+		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.BlockedAddrs(),
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -423,12 +431,27 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
+	// RouterKeeper must be created before TransferKeeper
+	app.RouterKeeper = routerkeeper.NewKeeper(
+		appCodec,
+		app.keys[routertypes.StoreKey],
+		app.GetSubspace(routertypes.ModuleName),
+		app.TransferKeeper.Keeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.FeeBurnerKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+	)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		app.RouterKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.FeeKeeper, app.ContractManagerKeeper,
 	)
+
+	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
+
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -554,9 +577,19 @@ func New(
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 
+	app.RouterModule = router.NewAppModule(app.RouterKeeper)
+
+	ibcStack := router.NewIBCMiddleware(
+		transferIBCModule,
+		app.RouterKeeper,
+		0,
+		routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		routerkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+	)
+
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
+		AddRoute(ibctransfertypes.ModuleName, ibcStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
 		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
@@ -588,6 +621,7 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
+		app.RouterModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeModule,
@@ -624,6 +658,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		routertypes.ModuleName,
 		crontypes.ModuleName,
 	)
 
@@ -650,6 +685,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		routertypes.ModuleName,
 		crontypes.ModuleName,
 	)
 
@@ -681,6 +717,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		routertypes.ModuleName,
 		crontypes.ModuleName,
 	)
 
@@ -813,6 +850,19 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
+// BlockedAddrs returns the set of addresses that are not allowed
+// to send and receive funds
+func (app *App) BlockedAddrs() map[string]bool {
+	// Remove the fee-pool from the group of blocked recipient addresses in bank
+	// this is required for the consumer chain to be able to send tokens to
+	// the provider chain
+	bankBlockedAddrs := app.ModuleAccountAddrs()
+	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
+		ccvconsumertypes.ConsumerToSendToProviderName).String())
+
+	return bankBlockedAddrs
+}
+
 // LegacyAmino returns SimApp's amino codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
@@ -916,6 +966,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
+
+	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
