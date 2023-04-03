@@ -36,11 +36,11 @@ func TestGenesis(t *testing.T) {
 	k, ctx := keepertest.InterchainQueriesKeeper(t, nil, nil, nil, nil)
 	interchainqueries.InitGenesis(ctx, *k, genesisState)
 	got := interchainqueries.ExportGenesis(ctx, *k)
-	lastQueryId := k.GetLastRegisteredQueryKey(ctx)
+	lastQueryID := k.GetLastRegisteredQueryKey(ctx)
 
 	require.EqualValues(t, got.Params, types.DefaultParams())
 	require.NotNil(t, got)
-	require.EqualValues(t, 4, lastQueryId)
+	require.EqualValues(t, 4, lastQueryID)
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)

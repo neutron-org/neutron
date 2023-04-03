@@ -7,7 +7,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
@@ -26,8 +25,8 @@ func createNFailure(keeper *keeper.Keeper, ctx sdk.Context, addresses int, failu
 	items := make([][]types.Failure, addresses)
 	for i := range items {
 		items[i] = make([]types.Failure, failures)
-		rand.Read(pub.Key)
-		acc := sdktypes.AccAddress(pub.Address())
+		rand.Read(pub.Key) //nolint:errcheck
+		acc := sdk.AccAddress(pub.Address())
 
 		for c := range items[i] {
 			items[i][c].Address = acc.String()

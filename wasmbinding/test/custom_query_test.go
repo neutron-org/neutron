@@ -33,8 +33,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Register and submit query result
@@ -105,8 +105,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Query interchain query result
@@ -128,8 +128,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -160,8 +160,8 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, contractAddress.String())

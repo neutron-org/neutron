@@ -8,7 +8,8 @@ option go_package = "github.com/neutron-org/neutron/x/feeburner/types";
 // Params defines the parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
-  // Defines Neutron denom, which will be burned during fee processing, any other denom will be sent to Treasury
+  // Defines Neutron denom, which will be burned during fee processing, any
+  // other denom will be sent to Treasury
   string neutron_denom = 1;
   // Defines Treasury address
   string treasury_address = 2;
