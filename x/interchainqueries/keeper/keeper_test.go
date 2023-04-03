@@ -1296,7 +1296,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 		},
 		{
 			"query result revision number check",
-			func(sender string, ctx sdktypes.Context) {
+			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
@@ -1311,7 +1311,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
