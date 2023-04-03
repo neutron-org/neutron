@@ -796,7 +796,7 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-// BlockedAddrs returns addresses the set of addresses that are not allowed
+// BlockedAddrs returns the set of addresses that are not allowed
 // to send and receive funds
 func (app *App) BlockedAddrs() map[string]bool {
 	// Remove the fee-pool from the group of blocked recipient addresses in bank
