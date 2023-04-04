@@ -7,6 +7,7 @@ require (
 	github.com/CosmWasm/wasmvm v1.1.1
 	github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
+	github.com/cosmos/cosmos-proto v1.0.0-alpha8
 	github.com/cosmos/cosmos-sdk v0.45.13
 	github.com/cosmos/ibc-go/v4 v4.3.0
 	github.com/cosmos/interchain-security v1.0.0-rc3
@@ -17,7 +18,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
-	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.6.1
 	github.com/strangelove-ventures/packet-forward-middleware/v4 v4.0.5
@@ -44,7 +44,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coinbase/rosetta-sdk-go v0.7.9 // indirect
 	github.com/cosmos/btcutil v1.0.4 // indirect
-	github.com/cosmos/cosmos-proto v1.0.0-alpha8 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogoproto v1.4.3 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
@@ -62,7 +61,6 @@ require (
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
@@ -111,6 +109,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/rakyll/statik v0.1.7 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
+	github.com/regen-network/cosmos-proto v0.3.1 // indirect
 	github.com/rs/cors v1.8.2 // indirect
 	github.com/rs/zerolog v1.27.0 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
@@ -135,7 +134,7 @@ require (
 	google.golang.org/protobuf v1.28.2-0.20220831092852-f930b1dc76e8 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	nhooyr.io/websocket v1.8.6 // indirect
+	nhooyr.io/websocket v1.8.7 // indirect
 )
 
 replace (
