@@ -350,8 +350,8 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 
 func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -373,6 +373,7 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 			},
 		},
 	})
+	suite.NoError(err)
 
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
@@ -384,8 +385,8 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 
 func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -397,6 +398,7 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 			AdminProposal: bindings.AdminProposal{},
 		},
 	})
+	suite.NoError(err)
 
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
