@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/neutron-org/neutron/x/cron"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -78,6 +80,8 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/cosmos/interchain-security/legacy_ibc_testing/core"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -110,6 +114,8 @@ import (
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"github.com/neutron-org/neutron/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
+	ibchookstypes "github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchainqueriesmoduletypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -192,6 +198,7 @@ var (
 		feerefunder.AppModuleBasic{},
 		feeburner.AppModuleBasic{},
 		contractmanager.AppModuleBasic{},
+		cron.AppModuleBasic{},
 		adminmodulemodule.NewAppModuleBasic(
 			govclient.NewProposalHandler(
 				adminmodulecli.NewSubmitParamChangeProposalTxCmd,
@@ -206,6 +213,7 @@ var (
 				upgraderest.ProposalCancelRESTHandler,
 			),
 		),
+		ibchooks.AppModuleBasic{},
 		router.AppModuleBasic{},
 	)
 
@@ -221,6 +229,7 @@ var (
 		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
 		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
+		crontypes.ModuleName:                          nil,
 	}
 )
 
@@ -278,9 +287,13 @@ type App struct {
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
+	CronKeeper          cronkeeper.Keeper
 	RouterKeeper        *routerkeeper.Keeper
 
 	RouterModule router.AppModule
+
+	HooksTransferIBCModule *ibchooks.IBCMiddleware
+	HooksICS4Wrapper       ibchooks.ICS4Middleware
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -333,6 +346,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -441,12 +455,25 @@ func New(
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 	)
+	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+		app.RouterKeeper,
+		&wasmHooks,
+	)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
-		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.RouterKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.FeeKeeper, app.ContractManagerKeeper,
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		app.HooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		scopedTransferKeeper,
+		app.FeeKeeper,
+		app.ContractManagerKeeper,
 	)
 
 	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
@@ -538,7 +565,8 @@ func New(
 		app.FeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper), wasmOpts...)
+	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), app.AccountKeeper)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -559,11 +587,18 @@ func New(
 		supportedFeatures,
 		wasmOpts...,
 	)
+	wasmHooks.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+
+	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper))
+	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
 
 	if len(enabledProposals) != 0 {
 		app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
+	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
+	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
+	app.HooksTransferIBCModule = &ibcHooksMiddleware
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -580,11 +615,12 @@ func New(
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
+	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
 	app.RouterModule = router.NewAppModule(app.RouterKeeper)
 
 	ibcStack := router.NewIBCMiddleware(
-		transferIBCModule,
+		app.HooksTransferIBCModule,
 		app.RouterKeeper,
 		0,
 		routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
@@ -632,7 +668,9 @@ func New(
 		feeBurnerModule,
 		contractManagerModule,
 		adminModule,
+		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
+		cronModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -663,7 +701,9 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -690,7 +730,9 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -722,7 +764,9 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName, // after auth keeper
 		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -744,6 +788,7 @@ func New(
 		transferModule,
 		interchainQueriesModule,
 		interchainTxsModule,
+		cronModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -980,6 +1025,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(feeburnertypes.ModuleName)
+	paramsKeeper.Subspace(crontypes.ModuleName)
 
 	return paramsKeeper
 }
