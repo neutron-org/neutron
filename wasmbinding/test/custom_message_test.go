@@ -519,8 +519,8 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 
 func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Set admin so that we can execute this proposal without permission error

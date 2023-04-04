@@ -154,6 +154,7 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 
 	// recv in chain a
 	res, err := suite.TransferPath.EndpointA.RecvPacketWithResult(packet)
+	suite.Require().NoError(err)
 
 	// get the ack from the chain a's response
 	ack, err := ibctesting.ParseAckFromEvents(res.GetEvents())
@@ -169,8 +170,8 @@ func (suite *HooksTestSuite) TestRecvTransferWithMetadata() {
 	suite.ConfigureTransferChannel()
 
 	// Setup contract
-	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
-	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
+	codeID := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeID, "{}")
 
 	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"echo": {"msg": "test"} } } }`, addr))
 	ackStr := string(ackBytes)
@@ -187,8 +188,8 @@ func (suite *HooksTestSuite) TestFundsAreTransferredToTheContract() {
 	suite.ConfigureTransferChannel()
 
 	// Setup contract
-	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
-	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
+	codeID := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeID, "{}")
 
 	// Check that the contract has no funds
 	localDenom := utils.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
@@ -215,8 +216,8 @@ func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
 	suite.ConfigureTransferChannel()
 
 	// Setup contract
-	codeId := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
-	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeId, "{}")
+	codeID := suite.StoreContractCode(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), "./bytecode/echo.wasm")
+	addr := suite.InstantiateContract(suite.ChainA, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress), codeID, "{}")
 
 	// Check that the contract has no funds
 	localDenom := utils.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
@@ -278,7 +279,7 @@ func (suite *HooksTestSuite) TestPacketsThatShouldBeSkipped() {
 		} else {
 			suite.Require().Contains(ackStr, "error", tc.memo)
 		}
-		sequence += 1
+		sequence++
 	}
 }
 
