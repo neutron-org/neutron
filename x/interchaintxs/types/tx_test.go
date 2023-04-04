@@ -8,13 +8,16 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/app"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
+const TestAddress = "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
 
 func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
+	_ = app.GetDefaultConfig()
+
 	tests := []struct {
 		name        string
 		malleate    func() sdktypes.Msg

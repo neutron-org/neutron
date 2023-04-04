@@ -18,6 +18,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
 	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -184,6 +185,14 @@ func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.Coordinator.SetupConnections(suite.TransferPath)
 	err := SetupTransferPath(suite.TransferPath)
 	suite.Require().NoError(err)
+}
+
+func (suite *IBCConnectionTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coins) {
+	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
+	err := bankKeeper.MintCoins(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, amounts)
+	suite.Require().NoError(err)
+
+	bankKeeper.SendCoinsFromModuleToAccount(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, acc, amounts)
 }
 
 // update CCV path with correct info

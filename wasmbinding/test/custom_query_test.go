@@ -209,7 +209,59 @@ func (suite *CustomQuerierTestSuite) TestMinIbcFee() {
 				sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1000)},
 			},
 		},
-		resp.MinFee)
+		resp.MinFee,
+	)
+}
+
+func (suite *CustomQuerierTestSuite) TestFullDenom() {
+	var (
+		ctx   = suite.ChainA.GetContext()
+		owner = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	query := bindings.NeutronQuery{
+		FullDenom: &bindings.FullDenom{
+			CreatorAddr: contractAddress.String(),
+			Subdenom:    "test",
+		},
+	}
+	resp := bindings.FullDenomResponse{}
+	err := suite.queryCustom(ctx, contractAddress, query, &resp)
+	suite.Require().NoError(err)
+
+	expected := fmt.Sprintf("factory/%s/test", contractAddress.String())
+	suite.Require().Equal(expected, resp.Denom)
+}
+
+func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
+	var (
+		neutron = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx     = suite.ChainA.GetContext()
+		owner   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+
+	// Store code and instantiate reflect contract
+	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	suite.Require().NotEmpty(contractAddress)
+
+	denom, _ := neutron.TokenFactoryKeeper.CreateDenom(ctx, contractAddress.String(), "test")
+
+	query := bindings.NeutronQuery{
+		DenomAdmin: &bindings.DenomAdmin{
+			Subdenom: denom,
+		},
+	}
+	resp := bindings.DenomAdminResponse{}
+	err := suite.queryCustom(ctx, contractAddress, query, &resp)
+	suite.Require().NoError(err)
+
+	suite.Require().Equal(contractAddress.String(), resp.Admin)
 }
 
 type ChainRequest struct {
