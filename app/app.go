@@ -893,6 +893,9 @@ func (app *App) setupUpgradeHandlers() {
 			upgrade.CreateUpgradeHandler(
 				app.mm,
 				app.configurator,
+				app.InterchainQueriesKeeper,
+				app.CronKeeper,
+				app.TokenFactoryKeeper,
 			),
 		)
 	}
