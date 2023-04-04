@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/neutron-org/neutron/x/cron"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -78,6 +80,8 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/cosmos/interchain-security/legacy_ibc_testing/core"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -192,6 +196,7 @@ var (
 		feerefunder.AppModuleBasic{},
 		feeburner.AppModuleBasic{},
 		contractmanager.AppModuleBasic{},
+		cron.AppModuleBasic{},
 		adminmodulemodule.NewAppModuleBasic(
 			govclient.NewProposalHandler(
 				adminmodulecli.NewSubmitParamChangeProposalTxCmd,
@@ -221,6 +226,7 @@ var (
 		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
 		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
+		crontypes.ModuleName:                          nil,
 	}
 )
 
@@ -278,6 +284,7 @@ type App struct {
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
+	CronKeeper          cronkeeper.Keeper
 	RouterKeeper        *routerkeeper.Keeper
 
 	RouterModule router.AppModule
@@ -333,6 +340,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
+		crontypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -538,7 +546,8 @@ func New(
 		app.FeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper), wasmOpts...)
+	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), app.AccountKeeper)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -559,6 +568,9 @@ func New(
 		supportedFeatures,
 		wasmOpts...,
 	)
+
+	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper))
+	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
 
 	if len(enabledProposals) != 0 {
 		app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
@@ -633,6 +645,7 @@ func New(
 		contractManagerModule,
 		adminModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
+		cronModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -664,6 +677,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
 		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -691,6 +705,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
 		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -723,6 +738,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
 		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -744,6 +760,7 @@ func New(
 		transferModule,
 		interchainQueriesModule,
 		interchainTxsModule,
+		cronModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -980,6 +997,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(feeburnertypes.ModuleName)
+	paramsKeeper.Subspace(crontypes.ModuleName)
 
 	return paramsKeeper
 }

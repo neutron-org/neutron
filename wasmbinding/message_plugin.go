@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
+
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	softwareUpgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -35,9 +40,10 @@ func CustomMessageDecorator(
 	ictx *ictxkeeper.Keeper,
 	icq *icqkeeper.Keeper,
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper,
-	admKeeper *adminkeeper.Keeper,
+	adminKeeper *adminmodulekeeper.Keeper,
 	bankKeeper *bankkeeper.BaseKeeper,
 	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
+	cronKeeper *cronkeeper.Keeper,
 ) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
@@ -46,9 +52,11 @@ func CustomMessageDecorator(
 			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
-			Adminserver:    adminkeeper.NewMsgServerImpl(*admKeeper),
+			Adminserver:    adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
 			Bank:           bankKeeper,
 			TokenFactory:   tokenFactoryKeeper,
+			CronKeeper:     cronKeeper,
+			AdminKeeper:    adminKeeper,
 		}
 	}
 }
@@ -62,6 +70,8 @@ type CustomMessenger struct {
 	Adminserver    admintypes.MsgServer
 	Bank           *bankkeeper.BaseKeeper
 	TokenFactory   *tokenfactorykeeper.Keeper
+	CronKeeper     *cronkeeper.Keeper
+	AdminKeeper    *adminmodulekeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -110,6 +120,12 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		}
 		if contractMsg.BurnTokens != nil {
 			return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
+		}
+		if contractMsg.AddSchedule != nil {
+			return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
+		}
+		if contractMsg.RemoveSchedule != nil {
+			return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 		}
 	}
 
@@ -778,4 +794,79 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	}
 
 	return fmt.Errorf("more than one admin proposal type is present in message")
+}
+
+func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
+	if !m.isAdmin(ctx, contractAddr) {
+		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
+	}
+
+	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
+	for _, msg := range addSchedule.Msgs {
+		msgs = append(msgs, crontypes.MsgExecuteContract{
+			Contract: msg.Contract,
+			Msg:      msg.Msg,
+		})
+	}
+
+	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	if err != nil {
+		ctx.Logger().Error("failed to addSchedule",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	resp := bindings.AddScheduleResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal add schedule response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("schedule added",
+		"from_address", contractAddr.String(),
+		"name", addSchedule.Name,
+		"period", addSchedule.Period,
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
+	params := m.CronKeeper.GetParams(ctx)
+	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
+		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
+	}
+
+	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
+
+	resp := bindings.RemoveScheduleResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal remove schedule response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("schedule removed",
+		"from_address", contractAddr.String(),
+		"name", removeSchedule.Name,
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
+	for _, admin := range m.AdminKeeper.GetAdmins(ctx) {
+		if admin == contractAddr.String() {
+			return true
+		}
+	}
+
+	return false
 }

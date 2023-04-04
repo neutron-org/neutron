@@ -7,3 +7,4 @@ package mocks
 //go:generate mockgen -source=./../../x/interchaintxs/types/expected_keepers.go -destination ./interchaintxs/types/expected_keepers.go
 //go:generate mockgen -source=./../../x/transfer/types/expected_keepers.go -destination ./transfer/types/expected_keepers.go
 //go:generate mockgen -source=./../../x/feeburner/types/expected_keepers.go -destination ./feeburner/types/expected_keepers.go
+//go:generate mockgen -source=./../../x/cron/types/expected_keepers.go -destination ./cron/types/expected_keepers.go

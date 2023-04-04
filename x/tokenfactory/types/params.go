@@ -10,7 +10,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(denomCreationFee sdk.Coins) Params {
+func NewParams(_ sdk.Coins) Params {
 	return Params{}
 }
 
