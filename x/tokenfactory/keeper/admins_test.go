@@ -34,10 +34,12 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 	_, err = suite.msgServer.Burn(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgBurn(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 5)))
 	addr0bal -= 5
 	suite.Require().NoError(err)
+	suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom).Amount.Int64() == addr0bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom))
 	suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[1], suite.defaultDenom).Amount.Int64() == addr1bal)
 
 	// Test Change Admin
 	_, err = suite.msgServer.ChangeAdmin(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgChangeAdmin(suite.TestAccs[0].String(), suite.defaultDenom, suite.TestAccs[1].String()))
+	suite.Require().NoError(err)
 	denom = strings.Split(suite.defaultDenom, "/")
 	queryRes, err = suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
 		Creator:  denom[1],
@@ -130,7 +132,8 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 	suite.CreateDefaultDenom()
 
 	// mint 10 default token for testAcc[0]
-	suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
+	_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
+	suite.NoError(err)
 	addr0bal += 10
 
 	for _, tc := range []struct {

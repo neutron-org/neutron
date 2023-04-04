@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	"github.com/golang/mock/gomock"
@@ -29,7 +28,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	chanKeeper := mock_types.NewMockChannelKeeper(ctrl)
 	authKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	// required to initialize keeper
-	authKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return([]byte("address"))
+	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx := testkeeper.TransferKeeper(t, cmKeeper, feeKeeper, chanKeeper, authKeeper)
 	txModule := transfer.NewIBCModule(*txKeeper)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -68,6 +67,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		Receiver: TestCosmosAddress,
 	}
 	tokenBz, err := ictxtypes.ModuleCdc.MarshalJSON(&token)
+	require.NoError(t, err)
 	p.Data = tokenBz
 
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
@@ -80,6 +80,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		Receiver: TestCosmosAddress,
 	}
 	tokenBz, err = ictxtypes.ModuleCdc.MarshalJSON(&token)
+	require.NoError(t, err)
 	p.Data = tokenBz
 
 	// error during SudoResponse non contract
@@ -193,7 +194,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, "channel-0", contractAddress.String(), p.GetSequence(), "ack").Do(func(ctx sdk.Context, channelId string, address string, ackID uint64, ackType string) {
 		ctx.GasMeter().ConsumeGas(keeper.GasReserve, "out of gas")
 	})
-	require.Panics(t, func() { txModule.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) })
+	require.Panics(t, func() { txModule.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a test
 }
 
 func TestHandleTimeout(t *testing.T) {
@@ -204,7 +205,7 @@ func TestHandleTimeout(t *testing.T) {
 	chanKeeper := mock_types.NewMockChannelKeeper(ctrl)
 	authKeeper := mock_types.NewMockAccountKeeper(ctrl)
 	// required to initialize keeper
-	authKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return([]byte("address"))
+	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx := testkeeper.TransferKeeper(t, cmKeeper, feeKeeper, chanKeeper, authKeeper)
 	txModule := transfer.NewIBCModule(*txKeeper)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -227,6 +228,7 @@ func TestHandleTimeout(t *testing.T) {
 		Receiver: TestCosmosAddress,
 	}
 	tokenBz, err := ictxtypes.ModuleCdc.MarshalJSON(&token)
+	require.NoError(t, err)
 	p.Data = tokenBz
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
 	require.ErrorContains(t, err, "failed to decode address from bech32")
@@ -239,6 +241,7 @@ func TestHandleTimeout(t *testing.T) {
 		Receiver: TestCosmosAddress,
 	}
 	tokenBz, err = ictxtypes.ModuleCdc.MarshalJSON(&token)
+	require.NoError(t, err)
 	p.Data = tokenBz
 	gasReserved := false
 	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(ctx), contractAddress, p).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) {

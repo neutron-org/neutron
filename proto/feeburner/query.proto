@@ -18,8 +18,10 @@ service Query {
   }
 
   // TotalBurnedNeutronsAmount queries total amount of burned neutron fees.
-  rpc TotalBurnedNeutronsAmount(QueryTotalBurnedNeutronsAmountRequest) returns (QueryTotalBurnedNeutronsAmountResponse) {
-    option (google.api.http).get = "/neutron/feeburner/total_burned_neutrons_amount";
+  rpc TotalBurnedNeutronsAmount(QueryTotalBurnedNeutronsAmountRequest)
+      returns (QueryTotalBurnedNeutronsAmountResponse) {
+    option (google.api.http).get =
+        "/neutron/feeburner/total_burned_neutrons_amount";
   }
   // this line is used by starport scaffolding # 2
 }
@@ -40,7 +42,8 @@ message QueryTotalBurnedNeutronsAmountRequest {}
 // QueryTotalBurnedNeutronsAmountResponse is response type for the
 // Query/QueryTotalBurnedNeutronsAmount method.
 message QueryTotalBurnedNeutronsAmountResponse {
-  TotalBurnedNeutronsAmount total_burned_neutrons_amount = 1 [ (gogoproto.nullable) = false ];
+  TotalBurnedNeutronsAmount total_burned_neutrons_amount = 1
+      [ (gogoproto.nullable) = false ];
 }
 
 // this line is used by starport scaffolding # 3

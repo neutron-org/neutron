@@ -57,8 +57,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Craft RegisterInterchainAccount message
@@ -81,8 +81,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Craft RegisterInterchainAccount message
@@ -105,8 +105,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -143,8 +143,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 }
 
 func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	fullMsg := bindings.NeutronMsg{
@@ -165,8 +165,8 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 		lucky   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
 	)
 
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// lucky was broke
@@ -335,8 +335,8 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
@@ -368,8 +368,8 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -459,8 +459,8 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 
 func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -482,6 +482,7 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 			},
 		},
 	})
+	suite.NoError(err)
 
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
@@ -493,8 +494,8 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 
 func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -506,6 +507,7 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 			AdminProposal: bindings.AdminProposal{},
 		},
 	})
+	suite.NoError(err)
 
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
@@ -517,8 +519,8 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 
 func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Set admin so that we can execute this proposal without permission error
