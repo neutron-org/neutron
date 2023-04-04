@@ -80,8 +80,6 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/cosmos/interchain-security/legacy_ibc_testing/core"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
-	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
-	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -89,6 +87,9 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
 
 	"github.com/neutron-org/neutron/x/tokenfactory"
 	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
@@ -402,6 +403,10 @@ func New(
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
+
+	app.UpgradeKeeper.SetUpgradeHandler("v0.3.0", func(ctx sdk.Context, _plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		return vm, nil
+	})
 
 	// ... other modules keepers
 
