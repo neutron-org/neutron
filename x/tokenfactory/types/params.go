@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -9,7 +10,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams() Params {
+func NewParams(_ sdk.Coins) Params {
 	return Params{}
 }
 

@@ -42,6 +42,10 @@ type NeutronMsg struct {
 	/// that they are the admin of.
 	/// Currently, the burn from address must be the admin contract.
 	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
+
+	// Cron types
+	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
+	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -206,4 +210,30 @@ type BurnTokens struct {
 	Amount sdk.Int `json:"amount"`
 	// BurnFromAddress must be set to "" for now.
 	BurnFromAddress string `json:"burn_from_address"`
+}
+
+// AddSchedule adds new schedule to the cron module
+type AddSchedule struct {
+	Name   string               `json:"name"`
+	Period uint64               `json:"period"`
+	Msgs   []MsgExecuteContract `json:"msgs"`
+}
+
+// AddScheduleResponse holds response AddSchedule
+type AddScheduleResponse struct{}
+
+// RemoveSchedule removes existing schedule with given name
+type RemoveSchedule struct {
+	Name string `json:"name"`
+}
+
+// RemoveScheduleResponse holds response RemoveSchedule
+type RemoveScheduleResponse struct{}
+
+// MsgExecuteContract defined separate from wasmtypes since we can get away with just passing the string into bindings
+type MsgExecuteContract struct {
+	// Contract is the address of the smart contract
+	Contract string `json:"contract,omitempty"`
+	// Msg json encoded message to be passed to the contract
+	Msg string `json:"msg,omitempty"`
 }

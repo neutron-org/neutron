@@ -5,25 +5,27 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	staking "github.com/cosmos/cosmos-sdk/x/staking"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/neutron-org/neutron/testutil/consumer"
+
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/neutron-org/neutron/app/params"
+
+	"github.com/neutron-org/neutron/app"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	genutil "github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	staking "github.com/cosmos/cosmos-sdk/x/staking"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/neutron-org/neutron/app/params"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	tmdb "github.com/tendermint/tm-db"
-
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil/consumer"
 )
 
 type (
@@ -51,7 +53,7 @@ func New(t *testing.T, configs ...network.Config) *network.Network {
 // DefaultConfig will initialize config for the network with custom application,
 // genesis and single validator. All other parameters are inherited from cosmos-sdk/testutil/network.DefaultConfig
 func DefaultConfig() network.Config {
-	// app doesn't have these modules anymore, but we need them for test setup, which uses gentx and MsgCreateValidator
+	// app doesn't have this modules anymore, but we need them for test setup, which uses gentx and MsgCreateValidator
 	app.ModuleBasics[genutiltypes.ModuleName] = genutil.AppModuleBasic{}
 	app.ModuleBasics[stakingtypes.ModuleName] = staking.AppModuleBasic{}
 

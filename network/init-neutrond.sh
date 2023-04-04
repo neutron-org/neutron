@@ -516,3 +516,5 @@ $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --ru
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"
