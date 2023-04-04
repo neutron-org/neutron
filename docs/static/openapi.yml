@@ -28027,6 +28027,244 @@ paths:
                   additionalProperties: {}
       tags:
         - Query
+  /neutron/cron/params:
+    get:
+      summary: Queries the parameters of the module.
+      operationId: NeutronCronParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params holds all the parameters of this module.
+                type: object
+                properties:
+                  security_address:
+                    type: string
+                    title: Security address that can remove schedules
+                  limit:
+                    type: string
+                    format: uint64
+                    title: Limit of schedules executed in one block
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Query
+  /neutron/cron/schedule:
+    get:
+      summary: Queries a list of Schedule items.
+      operationId: NeutronCronSchedules
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              schedules:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      title: Name of schedule
+                    period:
+                      type: string
+                      format: uint64
+                      title: Period in blocks
+                    msgs:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          contract:
+                            type: string
+                            title: Contract is the address of the smart contract
+                          msg:
+                            type: string
+                            title: >-
+                              Msg is json encoded message to be passed to the
+                              contract
+                      title: Msgs that will be executed every period amount of time
+                    last_execute_height:
+                      type: string
+                      format: uint64
+                      title: Last execution's block height
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    title: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/cron/schedule/{name}:
+    get:
+      summary: Queries a Schedule by name.
+      operationId: NeutronCronSchedule
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              schedule:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    title: Name of schedule
+                  period:
+                    type: string
+                    format: uint64
+                    title: Period in blocks
+                  msgs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        contract:
+                          type: string
+                          title: Contract is the address of the smart contract
+                        msg:
+                          type: string
+                          title: >-
+                            Msg is json encoded message to be passed to the
+                            contract
+                    title: Msgs that will be executed every period amount of time
+                  last_execute_height:
+                    type: string
+                    format: uint64
+                    title: Last execution's block height
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: name
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
   /neutron/feeburner/params:
     get:
       summary: Parameters queries the parameters of the module.
@@ -29377,11 +29615,26 @@ paths:
                         The local chain last block height when the query result
                         was updated.
                     last_submitted_result_remote_height:
-                      type: string
-                      format: uint64
                       description: >-
                         The remote chain last block height when the query result
                         was updated.
+                      type: object
+                      properties:
+                        revision_number:
+                          type: string
+                          format: uint64
+                          title: the revision that the client is currently on
+                        revision_height:
+                          type: string
+                          format: uint64
+                          title: the height within the given revision
+                      title: >-
+                        Height is a monotonically increasing data type
+
+                        that can be compared against another Height for the
+                        purposes of updating and
+
+                        freezing clients
                     deposit:
                       type: array
                       items:
@@ -29747,11 +30000,26 @@ paths:
                       The local chain last block height when the query result
                       was updated.
                   last_submitted_result_remote_height:
-                    type: string
-                    format: uint64
                     description: >-
                       The remote chain last block height when the query result
                       was updated.
+                    type: object
+                    properties:
+                      revision_number:
+                        type: string
+                        format: uint64
+                        title: the revision that the client is currently on
+                      revision_height:
+                        type: string
+                        format: uint64
+                        title: the height within the given revision
+                    title: >-
+                      Height is a monotonically increasing data type
+
+                      that can be compared against another Height for the
+                      purposes of updating and
+
+                      freezing clients
                   deposit:
                     type: array
                     items:
@@ -30674,6 +30942,16 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
       tags:
         - Query
   /ibc/apps/transfer/v1/denom_traces/{hash}:
@@ -31122,10 +31400,100 @@ paths:
                         }
       tags:
         - Query
-  /neutron-org/neutron/cron/params:
+  /osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata:
     get:
-      summary: Parameters queries the parameters of the module.
-      operationId: NeutronorgNeutronCronParams
+      operationId: OsmosisTokenfactoryV1Beta1DenomAuthorityMetadata
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              authority_metadata:
+                type: object
+                properties:
+                  Admin:
+                    type: string
+                    title: Can be empty for no admin, or a valid osmosis address
+                description: >-
+                  DenomAuthorityMetadata specifies metadata for addresses that
+                  have specific
+
+                  capabilities over a token factory denom. Right now there is
+                  only one Admin
+
+                  permission, but is planned to be extended to the future.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: creator
+          in: path
+          required: true
+          type: string
+        - name: subdenom
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /osmosis/tokenfactory/v1beta1/denoms_from_creator/{creator}:
+    get:
+      operationId: OsmosisTokenfactoryV1Beta1DenomsFromCreator
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              denoms:
+                type: array
+                items:
+                  type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: creator
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /osmosis/tokenfactory/v1beta1/params:
+    get:
+      summary: Params returns the total set of minting parameters.
+      operationId: OsmosisTokenfactoryV1Beta1Params
       responses:
         '200':
           description: A successful response.
@@ -31133,10 +31501,11 @@ paths:
             type: object
             properties:
               params:
-                description: params holds all the parameters of this module.
+                description: params defines the parameters of the module.
                 type: object
+                title: Params holds parameters for the tokenfactory module
             description: >-
-              QueryParamsResponse is response type for the Query/Params RPC
+              QueryParamsResponse is the response type for the Query/Params RPC
               method.
         default:
           description: An unexpected error response.
@@ -31158,58 +31527,25 @@ paths:
                   additionalProperties: {}
       tags:
         - Query
-  /neutron-org/neutron/cron/schedule:
+  /ibc/apps/router/v1/params:
     get:
-      summary: Queries a list of Schedule items.
-      operationId: NeutronorgNeutronCronScheduleAll
+      summary: Params queries all parameters of the router module.
+      operationId: RouterV1Params
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              schedule:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    index:
-                      type: string
-                    name:
-                      type: string
-                    period:
-                      type: string
-                    msgs:
-                      type: string
-                    creator:
-                      type: string
-              pagination:
+              params:
+                description: params defines the parameters of the module.
                 type: object
                 properties:
-                  next_key:
+                  fee_percentage:
                     type: string
-                    format: byte
-                    title: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently
-                  total:
-                    type: string
-                    format: uint64
-                    title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
-
-                      was set, its value is undefined otherwise
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
-                           repeated Bar results = 1;
-                           PageResponse page = 2;
-                   }
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
         default:
           description: An unexpected error response.
           schema:
@@ -31228,101 +31564,6 @@ paths:
                     '@type':
                       type: string
                   additionalProperties: {}
-      parameters:
-        - name: pagination.key
-          description: |-
-            key is a value returned in PageResponse.next_key to begin
-            querying the next page most efficiently. Only one of offset or key
-            should be set.
-          in: query
-          required: false
-          type: string
-          format: byte
-        - name: pagination.offset
-          description: >-
-            offset is a numeric offset that can be used when key is unavailable.
-
-            It is less efficient than using key. Only one of offset or key
-            should
-
-            be set.
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.limit
-          description: >-
-            limit is the total number of results to be returned in the result
-            page.
-
-            If left empty it will default to a value to be set by each app.
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.count_total
-          description: >-
-            count_total is set to true  to indicate that the result set should
-            include
-
-            a count of the total number of items available for pagination in
-            UIs.
-
-            count_total is only respected when offset is used. It is ignored
-            when key
-
-            is set.
-          in: query
-          required: false
-          type: boolean
-      tags:
-        - Query
-  /neutron-org/neutron/cron/schedule/{index}:
-    get:
-      summary: Queries a Schedule by index.
-      operationId: NeutronorgNeutronCronSchedule
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              schedule:
-                type: object
-                properties:
-                  index:
-                    type: string
-                  name:
-                    type: string
-                  period:
-                    type: string
-                  msgs:
-                    type: string
-                  creator:
-                    type: string
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    '@type':
-                      type: string
-                  additionalProperties: {}
-      parameters:
-        - name: index
-          in: path
-          required: true
-          type: string
       tags:
         - Query
 definitions:
@@ -52656,6 +52897,151 @@ definitions:
         description: params holds all the parameters of this module.
         type: object
     description: QueryParamsResponse is response type for the Query/Params RPC method.
+  neutron.cron.MsgExecuteContract:
+    type: object
+    properties:
+      contract:
+        type: string
+        title: Contract is the address of the smart contract
+      msg:
+        type: string
+        title: Msg is json encoded message to be passed to the contract
+  neutron.cron.Params:
+    type: object
+    properties:
+      security_address:
+        type: string
+        title: Security address that can remove schedules
+      limit:
+        type: string
+        format: uint64
+        title: Limit of schedules executed in one block
+    description: Params defines the parameters for the module.
+  neutron.cron.QueryGetScheduleResponse:
+    type: object
+    properties:
+      schedule:
+        type: object
+        properties:
+          name:
+            type: string
+            title: Name of schedule
+          period:
+            type: string
+            format: uint64
+            title: Period in blocks
+          msgs:
+            type: array
+            items:
+              type: object
+              properties:
+                contract:
+                  type: string
+                  title: Contract is the address of the smart contract
+                msg:
+                  type: string
+                  title: Msg is json encoded message to be passed to the contract
+            title: Msgs that will be executed every period amount of time
+          last_execute_height:
+            type: string
+            format: uint64
+            title: Last execution's block height
+  neutron.cron.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params holds all the parameters of this module.
+        type: object
+        properties:
+          security_address:
+            type: string
+            title: Security address that can remove schedules
+          limit:
+            type: string
+            format: uint64
+            title: Limit of schedules executed in one block
+  neutron.cron.QuerySchedulesResponse:
+    type: object
+    properties:
+      schedules:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+              title: Name of schedule
+            period:
+              type: string
+              format: uint64
+              title: Period in blocks
+            msgs:
+              type: array
+              items:
+                type: object
+                properties:
+                  contract:
+                    type: string
+                    title: Contract is the address of the smart contract
+                  msg:
+                    type: string
+                    title: Msg is json encoded message to be passed to the contract
+              title: Msgs that will be executed every period amount of time
+            last_execute_height:
+              type: string
+              format: uint64
+              title: Last execution's block height
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            title: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.cron.Schedule:
+    type: object
+    properties:
+      name:
+        type: string
+        title: Name of schedule
+      period:
+        type: string
+        format: uint64
+        title: Period in blocks
+      msgs:
+        type: array
+        items:
+          type: object
+          properties:
+            contract:
+              type: string
+              title: Contract is the address of the smart contract
+            msg:
+              type: string
+              title: Msg is json encoded message to be passed to the contract
+        title: Msgs that will be executed every period amount of time
+      last_execute_height:
+        type: string
+        format: uint64
+        title: Last execution's block height
   neutron.feeburner.Params:
     type: object
     properties:
@@ -53656,11 +54042,26 @@ definitions:
                 The local chain last block height when the query result was
                 updated.
             last_submitted_result_remote_height:
-              type: string
-              format: uint64
               description: >-
                 The remote chain last block height when the query result was
                 updated.
+              type: object
+              properties:
+                revision_number:
+                  type: string
+                  format: uint64
+                  title: the revision that the client is currently on
+                revision_height:
+                  type: string
+                  format: uint64
+                  title: the height within the given revision
+              title: >-
+                Height is a monotonically increasing data type
+
+                that can be compared against another Height for the purposes of
+                updating and
+
+                freezing clients
             deposit:
               type: array
               items:
@@ -53757,11 +54158,26 @@ definitions:
               The local chain last block height when the query result was
               updated.
           last_submitted_result_remote_height:
-            type: string
-            format: uint64
             description: >-
               The remote chain last block height when the query result was
               updated.
+            type: object
+            properties:
+              revision_number:
+                type: string
+                format: uint64
+                title: the revision that the client is currently on
+              revision_height:
+                type: string
+                format: uint64
+                title: the height within the given revision
+            title: >-
+              Height is a monotonically increasing data type
+
+              that can be compared against another Height for the purposes of
+              updating and
+
+              freezing clients
           deposit:
             type: array
             items:
@@ -54847,9 +55263,24 @@ definitions:
         format: uint64
         description: The local chain last block height when the query result was updated.
       last_submitted_result_remote_height:
-        type: string
-        format: uint64
         description: The remote chain last block height when the query result was updated.
+        type: object
+        properties:
+          revision_number:
+            type: string
+            format: uint64
+            title: the revision that the client is currently on
+          revision_height:
+            type: string
+            format: uint64
+            title: the height within the given revision
+        title: >-
+          Height is a monotonically increasing data type
+
+          that can be compared against another Height for the purposes of
+          updating and
+
+          freezing clients
       deposit:
         type: array
         items:
@@ -55320,91 +55751,78 @@ definitions:
     description: |-
       MsgTransferResponse is the modified response type for
       ibc-go MsgTransfer.
-  neutronorg.neutron.cron.MsgCreateScheduleResponse:
-    type: object
-  neutronorg.neutron.cron.MsgDeleteScheduleResponse:
-    type: object
-  neutronorg.neutron.cron.MsgUpdateScheduleResponse:
-    type: object
-  neutronorg.neutron.cron.Params:
-    type: object
-    description: Params defines the parameters for the module.
-  neutronorg.neutron.cron.QueryAllScheduleResponse:
+  osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
     type: object
     properties:
-      schedule:
+      Admin:
+        type: string
+        title: Can be empty for no admin, or a valid osmosis address
+    description: |-
+      DenomAuthorityMetadata specifies metadata for addresses that have specific
+      capabilities over a token factory denom. Right now there is only one Admin
+      permission, but is planned to be extended to the future.
+  osmosis.tokenfactory.v1beta1.MsgBurnResponse:
+    type: object
+  osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse:
+    type: object
+  osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse:
+    type: object
+    properties:
+      new_token_denom:
+        type: string
+    title: |-
+      MsgCreateDenomResponse is the return value of MsgCreateDenom
+      It returns the full string of the newly created denom
+  osmosis.tokenfactory.v1beta1.MsgMintResponse:
+    type: object
+  osmosis.tokenfactory.v1beta1.Params:
+    type: object
+    title: Params holds parameters for the tokenfactory module
+  osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse:
+    type: object
+    properties:
+      authority_metadata:
+        type: object
+        properties:
+          Admin:
+            type: string
+            title: Can be empty for no admin, or a valid osmosis address
+        description: >-
+          DenomAuthorityMetadata specifies metadata for addresses that have
+          specific
+
+          capabilities over a token factory denom. Right now there is only one
+          Admin
+
+          permission, but is planned to be extended to the future.
+  osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse:
+    type: object
+    properties:
+      denoms:
         type: array
         items:
-          type: object
-          properties:
-            index:
-              type: string
-            name:
-              type: string
-            period:
-              type: string
-            msgs:
-              type: string
-            creator:
-              type: string
-      pagination:
-        type: object
-        properties:
-          next_key:
-            type: string
-            format: byte
-            title: |-
-              next_key is the key to be passed to PageRequest.key to
-              query the next page most efficiently
-          total:
-            type: string
-            format: uint64
-            title: >-
-              total is total number of results available if
-              PageRequest.count_total
-
-              was set, its value is undefined otherwise
-        description: |-
-          PageResponse is to be embedded in gRPC response messages where the
-          corresponding request message has used PageRequest.
-
-           message SomeResponse {
-                   repeated Bar results = 1;
-                   PageResponse page = 2;
-           }
-  neutronorg.neutron.cron.QueryGetScheduleResponse:
-    type: object
-    properties:
-      schedule:
-        type: object
-        properties:
-          index:
-            type: string
-          name:
-            type: string
-          period:
-            type: string
-          msgs:
-            type: string
-          creator:
-            type: string
-  neutronorg.neutron.cron.QueryParamsResponse:
+          type: string
+  osmosis.tokenfactory.v1beta1.QueryParamsResponse:
     type: object
     properties:
       params:
-        description: params holds all the parameters of this module.
+        description: params defines the parameters of the module.
         type: object
-    description: QueryParamsResponse is response type for the Query/Params RPC method.
-  neutronorg.neutron.cron.Schedule:
+        title: Params holds parameters for the tokenfactory module
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  router.v1.Params:
     type: object
     properties:
-      index:
+      fee_percentage:
         type: string
-      name:
-        type: string
-      period:
-        type: string
-      msgs:
-        type: string
-      creator:
-        type: string
+    description: Params defines the set of IBC router parameters.
+  router.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          fee_percentage:
+            type: string
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
