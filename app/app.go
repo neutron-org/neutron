@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/neutron-org/neutron/app/upgrades"
+	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
 	"github.com/neutron-org/neutron/x/cron"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -80,8 +82,6 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/cosmos/interchain-security/legacy_ibc_testing/core"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
-	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
-	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -89,6 +89,9 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
 
 	"github.com/neutron-org/neutron/x/tokenfactory"
 	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
@@ -169,6 +172,8 @@ func GetEnabledProposals() []wasm.ProposalType {
 }
 
 var (
+	Upgrades = []upgrades.Upgrade{v3.Upgrade}
+
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
 
@@ -257,6 +262,8 @@ type App struct {
 	cdc               *codec.LegacyAmino
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
+
+	configurator module.Configurator
 
 	encodingConfig appparams.EncodingConfig
 
@@ -644,6 +651,8 @@ func New(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
+	app.setupUpgradeStoreLoaders()
+
 	app.mm = module.NewManager(
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
@@ -771,7 +780,10 @@ func New(
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
+	app.configurator = module.NewConfigurator(app.AppCodec(), app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter()))
+
+	app.setupUpgradeHandlers()
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
 	app.sm = module.NewSimulationManager(
@@ -855,6 +867,38 @@ func New(
 	app.ScopedCCVConsumerKeeper = scopedCCVConsumerKeeper
 
 	return app
+}
+
+func (app *App) setupUpgradeStoreLoaders() {
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
+
+	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		return
+	}
+
+	for _, upgrade := range Upgrades {
+		if upgradeInfo.Name == upgrade.UpgradeName {
+			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrade.StoreUpgrades))
+		}
+	}
+}
+
+func (app *App) setupUpgradeHandlers() {
+	for _, upgrade := range Upgrades {
+		app.UpgradeKeeper.SetUpgradeHandler(
+			upgrade.UpgradeName,
+			upgrade.CreateUpgradeHandler(
+				app.mm,
+				app.configurator,
+				app.InterchainQueriesKeeper,
+				app.CronKeeper,
+				app.TokenFactoryKeeper,
+			),
+		)
+	}
 }
 
 // Name returns the name of the App
