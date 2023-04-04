@@ -1,7 +1,8 @@
 package types
 
 import (
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 )
 
 const TransferPort = "transfer"
@@ -10,9 +11,9 @@ const TransferPort = "transfer"
 // for a transaction query.
 type MessageTxQueryResult struct {
 	TxQueryResult struct {
-		QueryID uint64 `json:"query_id"`
-		Height  uint64 `json:"height"`
-		Data    []byte `json:"data"`
+		QueryID uint64                `json:"query_id"`
+		Height  ibcclienttypes.Height `json:"height"`
+		Data    []byte                `json:"data"`
 	} `json:"tx_query_result"`
 }
 

@@ -5,7 +5,7 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	"github.com/stretchr/testify/require"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"

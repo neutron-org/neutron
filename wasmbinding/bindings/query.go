@@ -3,21 +3,35 @@ package bindings
 import (
 	"encoding/json"
 
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.
 type NeutronQuery struct {
-	/// Registered Interchain Query Result for specified QueryID
+	// Registered Interchain Query Result for specified QueryID
 	InterchainQueryResult *QueryRegisteredQueryResultRequest `json:"interchain_query_result,omitempty"`
-	/// Interchain account address for specified ConnectionID and OwnerAddress
+	// Interchain account address for specified ConnectionID and OwnerAddress
 	InterchainAccountAddress *QueryInterchainAccountAddressRequest `json:"interchain_account_address,omitempty"`
-	/// RegisteredInterchainQueries
+	// RegisteredInterchainQueries
 	RegisteredInterchainQueries *QueryRegisteredQueriesRequest `json:"registered_interchain_queries,omitempty"`
-	/// RegisteredInterchainQuery
+	// RegisteredInterchainQuery
 	RegisteredInterchainQuery *QueryRegisteredQueryRequest `json:"registered_interchain_query,omitempty"`
+	// TotalBurnedNeutronsAmount
+	TotalBurnedNeutronsAmount *QueryTotalBurnedNeutronsAmountRequest `json:"total_burned_neutrons_amount,omitempty"`
+	// MinIbcFee
+	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
+	// Token Factory queries
+	/// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
+	/// returns the full denom as used by `BankMsg::Send`.
+	FullDenom *FullDenom `json:"full_denom,omitempty"`
+	/// Returns the admin of a denom, if the denom is a Token Factory denom.
+	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
 }
 
 /* Requests */
@@ -73,11 +87,25 @@ type RegisteredQuery struct {
 	// The local chain last block height when the query result was updated.
 	LastSubmittedResultLocalHeight uint64 `json:"last_submitted_result_local_height"`
 	// The remote chain last block height when the query result was updated.
-	LastSubmittedResultRemoteHeight uint64 `json:"last_submitted_result_remote_height"`
+	LastSubmittedResultRemoteHeight *ibcclienttypes.Height `json:"last_submitted_result_remote_height,omitempty"`
 	// Amount of coins deposited for the query.
-	QueryDeposit sdktypes.Coins `json:"query_deposit"`
+	Deposit sdktypes.Coins `json:"deposit"`
 	// Timeout before query becomes available for everybody to remove.
 	SubmitTimeout uint64 `json:"submit_timeout"`
+	// The local chain height when the query was registered.
+	RegisteredAtHeight uint64 `json:"registered_at_height"`
+}
+
+type QueryTotalBurnedNeutronsAmountRequest struct{}
+
+type QueryTotalBurnedNeutronsAmountResponse struct {
+	Coin sdktypes.Coin `json:"coin"`
+}
+
+type QueryMinIbcFeeRequest struct{}
+
+type QueryMinIbcFeeResponse struct {
+	MinFee feerefundertypes.Fee `json:"min_fee"`
 }
 
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
@@ -139,4 +167,21 @@ func (sv StorageValue) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(a)
+}
+
+type FullDenom struct {
+	CreatorAddr string `json:"creator_addr"`
+	Subdenom    string `json:"subdenom"`
+}
+
+type DenomAdmin struct {
+	Subdenom string `json:"subdenom"`
+}
+
+type DenomAdminResponse struct {
+	Admin string `json:"admin"`
+}
+
+type FullDenomResponse struct {
+	Denom string `json:"denom"`
 }

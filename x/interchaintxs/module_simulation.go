@@ -10,13 +10,13 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	interchainadaptersimulation "github.com/neutron-org/neutron/x/interchaintxs/simulation"
+	interchaintxssimulation "github.com/neutron-org/neutron/x/interchaintxs/simulation"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
 // avoid unused import issue
 var (
-	_ = interchainadaptersimulation.FindAccount
+	_ = interchaintxssimulation.FindAccount
 	_ = simappparams.StakePerAccount
 	_ = simulation.MsgEntryKind
 	_ = baseapp.Paramspace
@@ -28,10 +28,10 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	for i, acc := range simState.Accounts {
 		accs[i] = acc.Address.String()
 	}
-	interchainadapterGenesis := types.GenesisState{
+	interchaintxsGenesis := types.GenesisState{
 		Params: types.DefaultParams(),
 	}
-	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&interchainadapterGenesis)
+	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&interchaintxsGenesis)
 }
 
 // ProposalContents doesn't return any content functions for governance proposals
@@ -48,7 +48,7 @@ func (am AppModule) RandomizedParams(_ *rand.Rand) []simtypes.ParamChange {
 func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
 
 // WeightedOperations returns the all the gov module operations with their respective weights.
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
+func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
 	operations := make([]simtypes.WeightedOperation, 0)
 
 	return operations

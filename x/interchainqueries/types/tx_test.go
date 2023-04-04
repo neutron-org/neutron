@@ -7,7 +7,7 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/proto/tendermint/crypto"
 
@@ -161,6 +161,34 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 				}
 			},
 			iqtypes.ErrEmptyKeyID,
+		},
+		{
+			"nil key",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}, nil},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidType,
+		},
+		{
+			"duplicated keys",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgRegisterInterchainQuery{
+					ConnectionId:       "connection-0",
+					TransactionsFilter: "{}",
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}, {Key: []byte("key1"), Path: "path1"}},
+					QueryType:          string(iqtypes.InterchainQueryTypeKV),
+					UpdatePeriod:       1,
+					Sender:             TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
 		},
 		{
 			"valid",
@@ -377,7 +405,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			"valid",
+			"valid kv",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
@@ -392,13 +420,42 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 			nil,
 		},
 		{
-			"empty keys and update_period",
+			"valid tx",
 			func() sdktypes.Msg {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
-					QueryId:         1,
-					NewKeys:         nil,
-					NewUpdatePeriod: 0,
-					Sender:          TestAddress,
+					QueryId:               1,
+					NewUpdatePeriod:       10,
+					NewTransactionsFilter: `[{"field":"transfer.recipient","op":"eq","value":"cosmos1xxx"}]`,
+					Sender:                TestAddress,
+				}
+			},
+			nil,
+		},
+		{
+			"both keys and filter sent",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId: 1,
+					NewKeys: []*iqtypes.KVKey{{
+						Path: "staking",
+						Key:  []byte{1, 2, 3},
+					}},
+					NewUpdatePeriod:       0,
+					NewTransactionsFilter: `{"field":"transfer.recipient","op":"eq","value":"cosmos1xxx"}`,
+					Sender:                TestAddress,
+				}
+			},
+			sdkerrors.ErrInvalidRequest,
+		},
+		{
+			"empty keys, update_period and tx filter",
+			func() sdktypes.Msg {
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
+					QueryId:               1,
+					NewKeys:               nil,
+					NewUpdatePeriod:       0,
+					NewTransactionsFilter: "",
+					Sender:                TestAddress,
 				}
 			},
 			sdkerrors.ErrInvalidRequest,
@@ -490,9 +547,9 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		msg := tt.malleate()
 
 		if tt.expectedErr != nil {
-			require.ErrorIs(t, msg.ValidateBasic(), tt.expectedErr)
+			require.ErrorIsf(t, msg.ValidateBasic(), tt.expectedErr, tt.name)
 		} else {
-			require.NoError(t, msg.ValidateBasic())
+			require.NoErrorf(t, msg.ValidateBasic(), tt.name)
 		}
 	}
 }

@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
 )
 
 const Delimiter = "."
@@ -19,13 +19,17 @@ func (i ICAOwner) String() string {
 	return i.contractAddress.String() + Delimiter + i.interchainAccountID
 }
 
-func NewICAOwner(contractAddress, interchainAccountID string) (ICAOwner, error) {
-	sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddress)
+func NewICAOwner(contractAddressBech32, interchainAccountID string) (ICAOwner, error) {
+	sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddressBech32)
 	if err != nil {
 		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
 	}
 
 	return ICAOwner{contractAddress: sdkContractAddress, interchainAccountID: interchainAccountID}, nil
+}
+
+func NewICAOwnerFromAddress(address sdk.AccAddress, interchainAccountID string) ICAOwner {
+	return ICAOwner{contractAddress: address, interchainAccountID: interchainAccountID}
 }
 
 func ICAOwnerFromPort(port string) (ICAOwner, error) {

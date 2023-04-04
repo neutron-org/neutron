@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/neutron-org/neutron/app/params"
 	"gopkg.in/yaml.v2"
 )
 
@@ -13,9 +14,9 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 var (
 	KeyFees     = []byte("FEES")
 	DefaultFees = Fee{
-		RecvFee:    sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
-		AckFee:     sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000))),
+		RecvFee:    nil,
+		AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
 	}
 )
 
@@ -41,7 +42,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	return nil
+	return p.MinFee.Validate()
 }
 
 // String implements the Stringer interface.
@@ -56,9 +57,5 @@ func validateFee(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.RecvFee.IsZero() || v.AckFee.IsZero() || v.TimeoutFee.IsZero() {
-		return fmt.Errorf("feerefunder can't be zero: %s", v)
-	}
-
-	return nil
+	return v.Validate()
 }

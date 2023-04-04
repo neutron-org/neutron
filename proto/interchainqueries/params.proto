@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron.interchainadapter.interchainqueries;
+package neutron.interchainqueries;
 
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
@@ -18,4 +18,8 @@ message Params {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable) = false
   ];
+
+  // Amount of tx hashes to be removed during a single EndBlock. Can vary to balance
+  // between network cleaning speed and EndBlock duration. A zero value means no limit.
+  uint64 tx_query_removal_limit = 3;
 }

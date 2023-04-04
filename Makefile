@@ -186,9 +186,10 @@ proto-format:
 	test-sim-import-export \
 
 init: kill-dev install
+	@echo "Building gaiad binary..."
+	@cd ./../gaia/ && make install
 	@echo "Initializing both blockchains..."
-	./network/init.sh
-	./network/start.sh
+	./network/init-and-start-both.sh
 	@echo "Initializing relayer..."
 	./network/hermes/restore-keys.sh
 	./network/hermes/create-conn.sh
@@ -211,6 +212,7 @@ kill-dev:
 	@echo "Killing neutrond and removing previous data"
 	-@rm -rf ./data
 	-@killall neutrond 2>/dev/null
+	-@killall gaiad 2>/dev/null
 
 build-docker-image:
 	@docker build . -t neutron-org/neutron
@@ -221,10 +223,6 @@ start-docker-container:
 stop-docker-container:
 	@docker stop neutron
 
-start-cosmopark:
-	@echo "\033[1;33mMake sure you have added your key with ssh-add"
-	@cd ./../neutron-query-relayer/ && make build-docker
-	@docker-compose up -d
-
-stop-cosmopark:
-	@docker-compose down --remove-orphans -v
+mocks:
+	@echo "Regenerate mocks..."
+	@go generate ./...

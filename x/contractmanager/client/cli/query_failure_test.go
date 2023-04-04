@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/neutron-org/neutron/app"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
@@ -15,6 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/testutil/contractmanager/network"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager/client/cli"
@@ -46,6 +49,8 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 }
 
 func TestAddressFailures(t *testing.T) {
+	_ = app.GetDefaultConfig()
+
 	net, objs := networkWithFailureObjects(t, 2)
 
 	ctx := net.Validators[0].ClientCtx

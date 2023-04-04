@@ -1,10 +1,9 @@
 syntax = "proto3";
 
-package neutron.interchainadapter.transfer;
+package neutron.transfer;
 
 option go_package = "github.com/neutron-org/neutron/x/transfer/types";
 
-import "gogoproto/gogo.proto";
 import "ibc/applications/transfer/v1/query.proto";
 import "google/api/annotations.proto";
 

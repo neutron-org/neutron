@@ -6,10 +6,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
+
+const FailuresQueryMaxLimit uint64 = query.DefaultLimit
 
 func (k Keeper) Failures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
 	return k.AddressFailures(c, req)
@@ -18,6 +21,11 @@ func (k Keeper) Failures(c context.Context, req *types.QueryFailuresRequest) (*t
 func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	pagination := req.GetPagination()
+	if pagination != nil && pagination.Limit > FailuresQueryMaxLimit {
+		return nil, status.Errorf(codes.InvalidArgument, "limit is more than maximum allowed (%d > %d)", pagination.Limit, FailuresQueryMaxLimit)
 	}
 
 	var failures []types.Failure

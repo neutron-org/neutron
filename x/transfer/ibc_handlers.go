@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -23,6 +23,7 @@ func (im IBCModule) outOfGasRecovery(
 	senderAddress sdk.AccAddress,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
+	failureType string,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
@@ -31,8 +32,8 @@ func (im IBCModule) outOfGasRecovery(
 		}
 
 		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
-		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
-
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureType)
+		// FIXME: add distribution call
 	}
 }
 
@@ -73,7 +74,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data)
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "ack")
 
 	if ack.Success() {
 		_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
@@ -85,7 +86,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "ack")
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "ack")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		writeFn()
@@ -94,7 +95,10 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
-	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	// distribute fees only if the sender is a contract
+	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+		im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	}
 
 	return nil
 }
@@ -114,17 +118,21 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data)
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "timeout")
 
 	_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, senderAddress.String(), packet.GetSequence(), "timeout")
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "timeout")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
 		writeFn()
 	}
 
-	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	// distribute fee only if the sender is a contract
+	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+		im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	}
+
 	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
 
 	return nil

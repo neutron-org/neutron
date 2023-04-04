@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/hex"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	clientkeeper "github.com/cosmos/ibc-go/v4/modules/core/02-client/keeper"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v3/modules/core/exported"
-	tendermintLightClientTypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	"github.com/cosmos/ibc-go/v4/modules/core/exported"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -53,17 +56,19 @@ func checkHeadersOrder(header *tendermintLightClientTypes.Header, nextHeader *te
 	return nil
 }
 
+type Verifier struct{}
+
 // VerifyHeaders verify that headers are valid tendermint headers, checks them on validity by trying call ibcClient.UpdateClient(header)
 // to update light client's consensus state and checks that they are sequential (tl;dr header.Height + 1 == nextHeader.Height)
-func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.Header, nextHeader exported.Header) error {
+func (v Verifier) VerifyHeaders(ctx sdk.Context, clientKeeper clientkeeper.Keeper, clientID string, header exported.Header, nextHeader exported.Header) error {
 	// this IBC handler updates the consensus state and the state root from a provided header.
 	// But more importantly in the current situation, it checks that header is valid.
 	// Honestly we need only to verify headers, but since the check functions are private, and we don't want to duplicate the code,
 	// we update consensus state at the same time (because why not?)
-	if err := k.ibcKeeper.ClientKeeper.UpdateClient(ctx, clientID, header); err != nil {
+	if err := clientKeeper.UpdateClient(ctx, clientID, header); err != nil {
 		return sdkerrors.Wrapf(err, "failed to update client: %v", err)
 	}
-	if err := k.ibcKeeper.ClientKeeper.UpdateClient(ctx, clientID, nextHeader); err != nil {
+	if err := clientKeeper.UpdateClient(ctx, clientID, nextHeader); err != nil {
 		return sdkerrors.Wrapf(err, "failed to update client: %v", err)
 	}
 
@@ -85,22 +90,26 @@ func (k Keeper) VerifyHeaders(ctx sdk.Context, clientID string, header exported.
 	return nil
 }
 
+func (v Verifier) UnpackHeader(any *codectypes.Any) (exported.Header, error) {
+	return ibcclienttypes.UnpackHeader(any)
+}
+
 // ProcessBlock verifies headers and transaction in the block, and then passes the tx query result to
 // the querying contract's sudo handler.
 func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID uint64, clientID string, block *types.Block) error {
-	header, err := ibcclienttypes.UnpackHeader(block.Header)
+	header, err := k.headerVerifier.UnpackHeader(block.Header)
 	if err != nil {
 		ctx.Logger().Debug("ProcessBlock: failed to unpack block header", "error", err)
 		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
 	}
 
-	nextHeader, err := ibcclienttypes.UnpackHeader(block.NextBlockHeader)
+	nextHeader, err := k.headerVerifier.UnpackHeader(block.NextBlockHeader)
 	if err != nil {
 		ctx.Logger().Debug("ProcessBlock: failed to unpack block header", "error", err)
-		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack block header: %v", err)
+		return sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unpack next block header: %v", err)
 	}
 
-	if err := k.VerifyHeaders(ctx, clientID, header, nextHeader); err != nil {
+	if err := k.headerVerifier.VerifyHeaders(ctx, k.ibcKeeper.ClientKeeper, clientID, header, nextHeader); err != nil {
 		ctx.Logger().Debug("ProcessBlock: failed to verify headers", "error", err)
 		return sdkerrors.Wrapf(types.ErrInvalidHeader, "failed to verify headers: %v", err)
 	}
@@ -124,14 +133,14 @@ func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID
 	)
 	if !k.CheckTransactionIsAlreadyProcessed(ctx, queryID, txHash) {
 		// Check that cryptography is O.K. (tx is included in the block, tx was executed successfully)
-		if err = k.verifyTransaction(tmHeader, tmNextHeader, tx); err != nil {
+		if err = k.transactionVerifier.VerifyTransaction(tmHeader, tmNextHeader, tx); err != nil {
 			ctx.Logger().Debug("ProcessBlock: failed to verifyTransaction",
 				"error", err, "query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
 			return sdkerrors.Wrapf(types.ErrInternal, "failed to verifyTransaction %s: %v", hex.EncodeToString(txHash), err)
 		}
 
 		// Let the query owner contract process the query result.
-		if _, err := k.contractManagerKeeper.SudoTxQueryResult(ctx, queryOwner, queryID, tmHeader.Header.Height, txData); err != nil {
+		if _, err := k.contractManagerKeeper.SudoTxQueryResult(ctx, queryOwner, queryID, ibcclienttypes.NewHeight(tmHeader.TrustedHeight.GetRevisionNumber(), uint64(tmHeader.Header.Height)), txData); err != nil {
 			ctx.Logger().Debug("ProcessBlock: failed to SudoTxQueryResult",
 				"error", err, "query_id", queryID, "tx_hash", hex.EncodeToString(txHash))
 			return sdkerrors.Wrapf(err, "contract %s rejected transaction query result (tx_hash: %s)",
@@ -147,13 +156,15 @@ func (k Keeper) ProcessBlock(ctx sdk.Context, queryOwner sdk.AccAddress, queryID
 	return nil
 }
 
-// verifyTransaction verifies that some transaction is included in block, and the transaction was executed successfully.
+type TransactionVerifier struct{}
+
+// VerifyTransaction verifies that some transaction is included in block, and the transaction was executed successfully.
 // The function checks:
 // * transaction is included in block - header.DataHash merkle root contains transactions hash;
 // * transactions was executed successfully - transaction's responseDeliveryTx.Code == 0;
 // * transaction's responseDeliveryTx is legitimate - nextHeaderLastResultsDataHash merkle root contains
 // deterministicResponseDeliverTx(ResponseDeliveryTx).Bytes()
-func (k Keeper) verifyTransaction(
+func (v TransactionVerifier) VerifyTransaction(
 	header *tendermintLightClientTypes.Header,
 	nextHeader *tendermintLightClientTypes.Header,
 	tx *types.TxValue,

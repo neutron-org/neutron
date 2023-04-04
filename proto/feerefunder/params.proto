@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutronorg.neutron.feerefunder;
+package neutron.feerefunder;
 
 import "gogoproto/gogo.proto";
 import "feerefunder/fee.proto";
@@ -10,5 +10,5 @@ option go_package = "github.com/neutron-org/neutron/x/feerefunder/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
 
-  Fee min_fee = 1 [(gogoproto.nullable) = false];
+  Fee min_fee = 1 [ (gogoproto.nullable) = false ];
 }

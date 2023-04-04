@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -45,13 +48,10 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
-	icaOwner, err := ictxtypes.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
-	if err != nil {
-		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount", "error", err)
-		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
-	}
+	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
 
-	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String()); err != nil {
+	// FIXME: empty version string doesn't look good
+	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String(), ""); err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "msg", &msg)
 		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
@@ -61,6 +61,14 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 
 func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
 	defer telemetry.ModuleMeasureSince(ictxtypes.ModuleName, time.Now(), LabelSubmitTx)
+
+	if msg == nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "nil msg is prohibited")
+	}
+
+	if msg.Msgs == nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "empty Msgs field is prohibited")
+	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("SubmitTx", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
@@ -90,10 +98,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		)
 	}
 
-	icaOwner, err := ictxtypes.NewICAOwner(msg.FromAddress, msg.InterchainAccountId)
-	if err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to create ICA owner")
-	}
+	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
 
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
@@ -113,13 +118,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "failed to GetCapability")
 	}
 
-	sdkMsgs, err := msg.GetTxMsgs()
-	if err != nil {
-		k.Logger(ctx).Debug("SubmitTx: failed to GetTxMsgs", "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
-		return nil, sdkerrors.Wrap(err, "failed to GetTxMsgs")
-	}
-
-	data, err := icatypes.SerializeCosmosTx(k.Codec, sdkMsgs)
+	data, err := SerializeCosmosTx(k.Codec, msg.Msgs)
 	if err != nil {
 		k.Logger(ctx).Debug("SubmitTx: failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
 		return nil, sdkerrors.Wrap(err, "failed to SerializeCosmosTx")
@@ -155,4 +154,26 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		SequenceId: sequence,
 		Channel:    channelID,
 	}, nil
+}
+
+// SerializeCosmosTx serializes a slice of *types.Any messages using the CosmosTx type. The proto marshaled CosmosTx
+// bytes are returned. This differs from icatypes.SerializeCosmosTx in that it does not serialize sdk.Msgs, but
+// simply uses the already serialized values.
+func SerializeCosmosTx(cdc codec.BinaryCodec, msgs []*codectypes.Any) (bz []byte, err error) {
+	// only ProtoCodec is supported
+	if _, ok := cdc.(*codec.ProtoCodec); !ok {
+		return nil, sdkerrors.Wrap(icatypes.ErrInvalidCodec,
+			"only ProtoCodec is supported for receiving messages on the host chain")
+	}
+
+	cosmosTx := &icatypes.CosmosTx{
+		Messages: msgs,
+	}
+
+	bz, err = cdc.Marshal(cosmosTx)
+	if err != nil {
+		return nil, err
+	}
+
+	return bz, nil
 }

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron.interchainadapter.interchainqueries;
+package neutron.interchainqueries;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -14,8 +14,7 @@ option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get =
-        "/neutron/interchainqueries/params";
+    option (google.api.http).get = "/neutron/interchainqueries/params";
   }
 
   rpc RegisteredQueries(QueryRegisteredQueriesRequest)
@@ -32,14 +31,12 @@ service Query {
 
   rpc QueryResult(QueryRegisteredQueryResultRequest)
       returns (QueryRegisteredQueryResultResponse) {
-    option (google.api.http).get =
-        "/neutron/interchainqueries/query_result";
+    option (google.api.http).get = "/neutron/interchainqueries/query_result";
   }
 
   rpc LastRemoteHeight(QueryLastRemoteHeight)
       returns (QueryLastRemoteHeightResponse) {
-    option (google.api.http).get =
-        "/neutron/interchainqueries/remote_height";
+    option (google.api.http).get = "/neutron/interchainqueries/remote_height";
   }
 }
 

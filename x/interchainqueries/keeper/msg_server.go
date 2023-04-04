@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/url"
 	"strconv"
 	"time"
@@ -11,9 +12,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
-	ibccommitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v4/modules/core/03-connection/types"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v4/modules/core/23-commitment/types"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -55,7 +56,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	params := k.GetParams(ctx)
 
-	registeredQuery := types.RegisteredQuery{
+	registeredQuery := &types.RegisteredQuery{
 		Id:                 lastID,
 		Owner:              msg.Sender,
 		TransactionsFilter: msg.TransactionsFilter,
@@ -65,11 +66,12 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		ConnectionId:       msg.ConnectionId,
 		Deposit:            params.QueryDeposit,
 		SubmitTimeout:      params.QuerySubmitTimeout,
+		RegisteredAtHeight: uint64(ctx.BlockHeader().Height),
 	}
 
 	k.SetLastRegisteredQueryKey(ctx, lastID)
 
-	if err := k.CollectDeposit(ctx, registeredQuery); err != nil {
+	if err := k.CollectDeposit(ctx, *registeredQuery); err != nil {
 		ctx.Logger().Debug("RegisterInterchainQuery: failed to collect deposit", "message", &msg, "error", err)
 		return nil, sdkerrors.Wrapf(err, "failed to collect deposit")
 	}
@@ -79,7 +81,7 @@ func (k msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrapf(err, "failed to save query: %v", err)
 	}
 
-	ctx.EventManager().EmitEvents(getEventsQueryUpdated(&registeredQuery))
+	ctx.EventManager().EmitEvents(getEventsQueryUpdated(registeredQuery))
 
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
 }
@@ -95,24 +97,15 @@ func (k msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 		return nil, sdkerrors.Wrapf(err, "failed to get query by query id: %v", err)
 	}
 
-	timeoutBlock := query.LastSubmittedResultLocalHeight + query.SubmitTimeout
-	if uint64(ctx.BlockHeight()) <= timeoutBlock && query.GetOwner() != msg.GetSender() {
+	if err := query.ValidateRemoval(ctx, msg.GetSender()); err != nil {
 		ctx.Logger().Debug("RemoveInterchainQuery: authorization failed",
-			"msg", msg)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
+			"error", err, "msg", msg)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, err.Error())
 	}
 
-	k.RemoveQueryByID(ctx, query.Id)
+	k.RemoveQuery(ctx, query)
 	k.MustPayOutDeposit(ctx, query.Deposit, msg.GetSigners()[0])
-	if types.InterchainQueryType(query.GetQueryType()).IsKV() {
-		k.removeQueryResultByID(ctx, query.Id)
-	}
-
 	ctx.EventManager().EmitEvents(getEventsQueryRemoved(query))
-
-	// NOTE: there is no easy way to remove the list of processed transactions
-	// without knowing transaction hashes.
-
 	return &types.MsgRemoveInterchainQueryResponse{}, nil
 }
 
@@ -133,18 +126,22 @@ func (k msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "authorization failed")
 	}
 
+	if err := k.validateUpdateInterchainQueryParams(query, msg); err != nil {
+		ctx.Logger().Debug("UpdateInterchainQuery: invalid request",
+			"error", err, "query_id", msg.QueryId)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
 	if msg.GetNewUpdatePeriod() > 0 {
 		query.UpdatePeriod = msg.GetNewUpdatePeriod()
 	}
 	if len(msg.GetNewKeys()) > 0 && types.InterchainQueryType(query.GetQueryType()).IsKV() {
 		query.Keys = msg.GetNewKeys()
 	}
-	if len(msg.NewTransactionsFilter) > 0 && types.InterchainQueryType(query.GetQueryType()).IsTX() {
-		query.TransactionsFilter = msg.NewTransactionsFilter
+	if msg.GetNewTransactionsFilter() != "" && types.InterchainQueryType(query.GetQueryType()).IsTX() {
+		query.TransactionsFilter = msg.GetNewTransactionsFilter()
 	}
 
-	err = k.SaveQuery(ctx, *query)
-	if err != nil {
+	if err := k.SaveQuery(ctx, query); err != nil {
 		ctx.Logger().Debug("UpdateInterchainQuery: failed to save query", "message", &msg, "error", err)
 		return nil, sdkerrors.Wrapf(err, "failed to save query by query id: %v", err)
 	}
@@ -167,10 +164,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		return nil, sdkerrors.Wrapf(err, "failed to get query by id: %v", err)
 	}
 
-	if len(msg.Result.KvResults) != len(query.Keys) {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), query.Keys)
-	}
-
 	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
 	if err != nil {
 		ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
@@ -181,6 +174,12 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	if msg.Result.KvResults != nil {
 		if !types.InterchainQueryType(query.QueryType).IsKV() {
 			return nil, sdkerrors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
+		}
+		if err := k.checkLastRemoteHeight(ctx, *query, ibcclienttypes.NewHeight(msg.Result.Revision, msg.Result.Height)); err != nil {
+			return nil, sdkerrors.Wrap(types.ErrInvalidHeight, err.Error())
+		}
+		if len(msg.Result.KvResults) != len(query.Keys) {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidSubmittedResult, "KV keys length from result is not equal to registered query keys length: %v != %v", len(msg.Result.KvResults), len(query.Keys))
 		}
 
 		resp, err := k.ibcKeeper.ConnectionConsensusState(goCtx, &ibcconnectiontypes.QueryConnectionConsensusStateRequest{
@@ -246,7 +245,7 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			}
 		}
 
-		if err = k.SaveKVQueryResult(ctx, msg.QueryId, msg.Result); err != nil {
+		if err = k.saveKVQueryResult(ctx, query, msg.Result); err != nil {
 			ctx.Logger().Error("SubmitQueryResult: failed to SaveKVQueryResult",
 				"error", err, "query", query, "message", msg)
 			return nil, sdkerrors.Wrapf(err, "failed to SaveKVQueryResult: %v", err)
@@ -282,6 +281,25 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 	}
 
 	return &types.MsgSubmitQueryResultResponse{}, nil
+}
+
+// validateUpdateInterchainQueryParams checks whether the parameters to be updated corresponds
+// with the query type.
+func (k msgServer) validateUpdateInterchainQueryParams(
+	query *types.RegisteredQuery,
+	msg *types.MsgUpdateInterchainQueryRequest,
+) error {
+	queryType := types.InterchainQueryType(query.GetQueryType())
+	newKvKeysSet := len(msg.GetNewKeys()) != 0
+	newTxFilterSet := msg.GetNewTransactionsFilter() != ""
+
+	if queryType.IsKV() && !newKvKeysSet && newTxFilterSet {
+		return fmt.Errorf("params to update don't correspond with query type: can't update TX filter for a KV query")
+	}
+	if queryType.IsTX() && !newTxFilterSet && newKvKeysSet {
+		return fmt.Errorf("params to update don't correspond with query type: can't update KV keys for a TX query")
+	}
+	return nil
 }
 
 func getEventsQueryUpdated(query *types.RegisteredQuery) sdk.Events {

@@ -17,8 +17,13 @@ curl https://get.ignite.com/cli! | bash
 
 ### How to install Hermes IBC Relayer
 
+For current CCV modules support there is not any suitable version of hermes, so you need to build it by yourself.
+
 ```shell
-cargo install --version 1.0.0 ibc-relayer-cli --bin hermes --locked
+git clone https://github.com/informalsystems/hermes.git
+cd hermes
+git checkout 7defaf067dbe6f60588518ea1619f228d38ac48d
+cargo build --release --bin hermes
 ```
 
 ## Build and Install Neutron Zone
@@ -30,6 +35,17 @@ make install
 ## Run local testnet node instances connected via IBC
 
 ### Bootstrap two chains and create an IBC connection
+
+In order to bootstrap two chains it is required to clone gaiad v7.0.3 next to `neutron` repository and install it.
+
+```shell
+git clone https://github.com/cosmos/gaia.git
+cd gaia
+git checkout v7.0.3
+make install
+```
+
+after that you can turn back into `neutron` directory and run:
 
 ```shell
 make init
@@ -70,7 +86,7 @@ make stop-cosmopark
 
 Make sure you delete node image if you use the whole thing in dev purposes
 ```shell
-@docker rmi neutron_node
+@docker rmi neutron-node
 ```
 
 ## Documentation

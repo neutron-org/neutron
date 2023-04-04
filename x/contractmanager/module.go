@@ -18,6 +18,7 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
 	"github.com/neutron-org/neutron/x/contractmanager/client/cli"
 	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
@@ -62,7 +63,7 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis used to validate the GenesisState, given in its json.RawMessage form
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var genState types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
@@ -71,7 +72,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 }
 
 // RegisterRESTRoutes registers the capability module's REST service handlers.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module
