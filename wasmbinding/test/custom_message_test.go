@@ -141,8 +141,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 }
 
 func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	fullMsg := bindings.NeutronMsg{
@@ -163,8 +163,8 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 		lucky   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
 	)
 
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// lucky was broke

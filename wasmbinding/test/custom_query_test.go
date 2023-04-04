@@ -220,8 +220,8 @@ func (suite *CustomQuerierTestSuite) TestFullDenom() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
@@ -246,8 +246,8 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeId)
+	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	denom, _ := neutron.TokenFactoryKeeper.CreateDenom(ctx, contractAddress.String(), "test")
