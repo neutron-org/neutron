@@ -26,7 +26,7 @@ type KeeperTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
 
-func (suite KeeperTestSuite) TestTransfer() {
+func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so it's okay to copy locks
 	suite.ConfigureTransferChannel()
 
 	msgSrv := suite.GetNeutronZoneApp(suite.ChainA).TransferKeeper
@@ -91,8 +91,8 @@ func (suite KeeperTestSuite) TestTransfer() {
 	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 
 	// Store code and instantiate reflect contract.
-	codeId := suite.StoreReflectCode(ctx, testOwner, reflectContractPath)
-	contractAddress := suite.InstantiateReflectContract(ctx, testOwner, codeId)
+	codeID := suite.StoreReflectCode(ctx, testOwner, reflectContractPath)
+	contractAddress := suite.InstantiateReflectContract(ctx, testOwner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	ctx = suite.ChainA.GetContext()
@@ -138,7 +138,8 @@ func (suite KeeperTestSuite) TestTransfer() {
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
 	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
-	bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
+	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
+	suite.Require().NoError(err)
 }
 
 func TestKeeperTestSuite(t *testing.T) {

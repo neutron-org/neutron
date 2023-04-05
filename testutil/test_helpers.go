@@ -18,13 +18,14 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
 	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
-	e2e "github.com/cosmos/interchain-security/testutil/e2e"
+	"github.com/cosmos/interchain-security/testutil/e2e"
 	"github.com/cosmos/interchain-security/x/ccv/utils"
 	tmtypes "github.com/tendermint/tendermint/types"
 
@@ -183,6 +184,15 @@ func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
 	suite.Coordinator.SetupConnections(suite.TransferPath)
 	err := SetupTransferPath(suite.TransferPath)
+	suite.Require().NoError(err)
+}
+
+func (suite *IBCConnectionTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coins) {
+	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
+	err := bankKeeper.MintCoins(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, amounts)
+	suite.Require().NoError(err)
+
+	err = bankKeeper.SendCoinsFromModuleToAccount(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, acc, amounts)
 	suite.Require().NoError(err)
 }
 
@@ -404,13 +414,12 @@ func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibcte
 
 // SetupTransferPath
 func SetupTransferPath(path *ibctesting.Path) error {
-	ctx := path.EndpointA.Chain.GetContext()
-
-	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(ctx)
+	channelSequence := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointA.Chain.GetContext())
+	channelSequenceB := path.EndpointB.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(path.EndpointB.Chain.GetContext())
 
 	// update port/channel ids
 	path.EndpointA.ChannelID = channeltypes.FormatChannelIdentifier(channelSequence)
-	path.EndpointA.ChannelConfig.PortID = types.PortID
+	path.EndpointB.ChannelID = channeltypes.FormatChannelIdentifier(channelSequenceB)
 
 	if err := path.EndpointA.ChanOpenInit(); err != nil {
 		return err

@@ -9,6 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/neutron-org/neutron/app/upgrades"
+	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
+	"github.com/neutron-org/neutron/x/cron"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -86,6 +90,13 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
+
+	"github.com/neutron-org/neutron/x/tokenfactory"
+	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+
 	adminmodulemodule "github.com/cosmos/admin-module/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/x/adminmodule/client/cli"
 	adminmodulemodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -106,6 +117,8 @@ import (
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"github.com/neutron-org/neutron/x/feerefunder"
 	feekeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
+	ibchookstypes "github.com/neutron-org/neutron/x/ibc-hooks/types"
 	"github.com/neutron-org/neutron/x/interchainqueries"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchainqueriesmoduletypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -121,6 +134,10 @@ import (
 	ccvconsumer "github.com/cosmos/interchain-security/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+
+	"github.com/strangelove-ventures/packet-forward-middleware/v4/router"
+	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v4/router/keeper"
+	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v4/router/types"
 )
 
 const (
@@ -155,6 +172,8 @@ func GetEnabledProposals() []wasm.ProposalType {
 }
 
 var (
+	Upgrades = []upgrades.Upgrade{v3.Upgrade}
+
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
 
@@ -178,11 +197,13 @@ var (
 		vesting.AppModuleBasic{},
 		ccvconsumer.AppModuleBasic{},
 		wasm.AppModuleBasic{},
+		tokenfactory.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
 		interchaintxs.AppModuleBasic{},
 		feerefunder.AppModuleBasic{},
 		feeburner.AppModuleBasic{},
 		contractmanager.AppModuleBasic{},
+		cron.AppModuleBasic{},
 		adminmodulemodule.NewAppModuleBasic(
 			govclient.NewProposalHandler(
 				adminmodulecli.NewSubmitParamChangeProposalTxCmd,
@@ -197,6 +218,8 @@ var (
 				upgraderest.ProposalCancelRESTHandler,
 			),
 		),
+		ibchooks.AppModuleBasic{},
+		router.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -210,6 +233,8 @@ var (
 		feeburnertypes.ModuleName:                     nil,
 		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
+		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
+		crontypes.ModuleName:                          nil,
 	}
 )
 
@@ -238,6 +263,8 @@ type App struct {
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
 
+	configurator module.Configurator
+
 	encodingConfig appparams.EncodingConfig
 
 	invCheckPeriod uint
@@ -251,7 +278,7 @@ type App struct {
 	AccountKeeper       authkeeper.AccountKeeper
 	AdminmoduleKeeper   adminmodulemodulekeeper.Keeper
 	AuthzKeeper         authzkeeper.Keeper
-	BankKeeper          bankkeeper.Keeper
+	BankKeeper          bankkeeper.BaseKeeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
@@ -266,6 +293,14 @@ type App struct {
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
+	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
+	CronKeeper          cronkeeper.Keeper
+	RouterKeeper        *routerkeeper.Keeper
+
+	RouterModule router.AppModule
+
+	HooksTransferIBCModule *ibchooks.IBCMiddleware
+	HooksICS4Wrapper       ibchooks.ICS4Middleware
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -317,7 +352,8 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -361,7 +397,7 @@ func New(
 	)
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
+		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.BlockedAddrs(),
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -415,12 +451,40 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
+	// RouterKeeper must be created before TransferKeeper
+	app.RouterKeeper = routerkeeper.NewKeeper(
+		appCodec,
+		app.keys[routertypes.StoreKey],
+		app.GetSubspace(routertypes.ModuleName),
+		app.TransferKeeper.Keeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.FeeBurnerKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+	)
+	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+		app.RouterKeeper,
+		&wasmHooks,
+	)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
-		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper, app.FeeKeeper, app.ContractManagerKeeper,
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		app.HooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		scopedTransferKeeper,
+		app.FeeKeeper,
+		app.ContractManagerKeeper,
 	)
+
+	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
+
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -448,6 +512,15 @@ func New(
 	)
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper)
+
+	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
+		appCodec,
+		app.keys[tokenfactorytypes.StoreKey],
+		app.GetSubspace(tokenfactorytypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+	)
+	app.TokenFactoryKeeper = &tokenFactoryKeeper
 
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
@@ -499,7 +572,8 @@ func New(
 		app.FeeKeeper,
 	)
 
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper), wasmOpts...)
+	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), app.AccountKeeper)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -520,11 +594,18 @@ func New(
 		supportedFeatures,
 		wasmOpts...,
 	)
+	wasmHooks.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+
+	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper))
+	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
 
 	if len(enabledProposals) != 0 {
 		app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
+	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
+	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
+	app.HooksTransferIBCModule = &ibcHooksMiddleware
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -541,10 +622,21 @@ func New(
 	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
+	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
+
+	app.RouterModule = router.NewAppModule(app.RouterKeeper)
+
+	ibcStack := router.NewIBCMiddleware(
+		app.HooksTransferIBCModule,
+		app.RouterKeeper,
+		0,
+		routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		routerkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+	)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
+		AddRoute(ibctransfertypes.ModuleName, ibcStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
 		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
@@ -558,6 +650,8 @@ func New(
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
+
+	app.setupUpgradeStoreLoaders()
 
 	app.mm = module.NewManager(
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
@@ -576,12 +670,16 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
+		app.RouterModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeModule,
 		feeBurnerModule,
 		contractManagerModule,
 		adminModule,
+		ibcHooksModule,
+		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
+		cronModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -603,6 +701,7 @@ func New(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		ccvconsumertypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -611,6 +710,9 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName,
+		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -628,6 +730,7 @@ func New(
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
 		ccvconsumertypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -636,6 +739,9 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName,
+		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -658,6 +764,7 @@ func New(
 		upgradetypes.ModuleName,
 		feegrant.ModuleName,
 		ccvconsumertypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
@@ -666,11 +773,17 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmodulemoduletypes.ModuleName,
+		ibchookstypes.ModuleName, // after auth keeper
+		routertypes.ModuleName,
+		crontypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
+	app.configurator = module.NewConfigurator(app.AppCodec(), app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter()))
+
+	app.setupUpgradeHandlers()
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
 	app.sm = module.NewSimulationManager(
@@ -687,6 +800,7 @@ func New(
 		transferModule,
 		interchainQueriesModule,
 		interchainTxsModule,
+		cronModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -755,6 +869,38 @@ func New(
 	return app
 }
 
+func (app *App) setupUpgradeStoreLoaders() {
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
+
+	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		return
+	}
+
+	for _, upgrade := range Upgrades {
+		if upgradeInfo.Name == upgrade.UpgradeName {
+			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrade.StoreUpgrades))
+		}
+	}
+}
+
+func (app *App) setupUpgradeHandlers() {
+	for _, upgrade := range Upgrades {
+		app.UpgradeKeeper.SetUpgradeHandler(
+			upgrade.UpgradeName,
+			upgrade.CreateUpgradeHandler(
+				app.mm,
+				app.configurator,
+				app.InterchainQueriesKeeper,
+				app.CronKeeper,
+				app.TokenFactoryKeeper,
+			),
+		)
+	}
+}
+
 // Name returns the name of the App
 func (app *App) Name() string { return app.BaseApp.Name() }
 
@@ -794,6 +940,19 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
+}
+
+// BlockedAddrs returns the set of addresses that are not allowed
+// to send and receive funds
+func (app *App) BlockedAddrs() map[string]bool {
+	// Remove the fee-pool from the group of blocked recipient addresses in bank
+	// this is required for the consumer chain to be able to send tokens to
+	// the provider chain
+	bankBlockedAddrs := app.ModuleAccountAddrs()
+	delete(bankBlockedAddrs, authtypes.NewModuleAddress(
+		ccvconsumertypes.ConsumerToSendToProviderName).String())
+
+	return bankBlockedAddrs
 }
 
 // LegacyAmino returns SimApp's amino codec.
@@ -900,12 +1059,17 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 
+	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
+
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
+	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
+
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
 	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(feeburnertypes.ModuleName)
+	paramsKeeper.Subspace(crontypes.ModuleName)
 
 	return paramsKeeper
 }

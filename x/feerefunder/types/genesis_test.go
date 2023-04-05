@@ -29,7 +29,7 @@ func TestGenesisState_Validate(t *testing.T) {
 
 	invalidRecvFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1)))
 
-	validPacketId := types.NewPacketID("port", "channel-1", 64)
+	validPacketID := types.NewPacketID("port", "channel-1", 64)
 
 	for _, tc := range []struct {
 		desc             string
@@ -49,7 +49,7 @@ func TestGenesisState_Validate(t *testing.T) {
 				Params: types.DefaultParams(),
 				FeeInfos: []types.FeeInfo{{
 					Payer:    TestContractAddressNeutron,
-					PacketId: validPacketId,
+					PacketId: validPacketID,
 					Fee: types.Fee{
 						RecvFee:    validRecvFee,
 						AckFee:     validAckFee,
@@ -66,7 +66,7 @@ func TestGenesisState_Validate(t *testing.T) {
 				Params: types.DefaultParams(),
 				FeeInfos: []types.FeeInfo{{
 					Payer:    "address",
-					PacketId: validPacketId,
+					PacketId: validPacketID,
 					Fee: types.Fee{
 						RecvFee:    validRecvFee,
 						AckFee:     validAckFee,
@@ -83,7 +83,7 @@ func TestGenesisState_Validate(t *testing.T) {
 				Params: types.DefaultParams(),
 				FeeInfos: []types.FeeInfo{{
 					Payer:    TestAddressNeutron,
-					PacketId: validPacketId,
+					PacketId: validPacketID,
 					Fee: types.Fee{
 						RecvFee:    validRecvFee,
 						AckFee:     validAckFee,
@@ -100,7 +100,7 @@ func TestGenesisState_Validate(t *testing.T) {
 				Params: types.DefaultParams(),
 				FeeInfos: []types.FeeInfo{{
 					Payer:    TestContractAddressJuno,
-					PacketId: validPacketId,
+					PacketId: validPacketID,
 					Fee: types.Fee{
 						RecvFee:    validRecvFee,
 						AckFee:     validAckFee,
@@ -151,7 +151,7 @@ func TestGenesisState_Validate(t *testing.T) {
 				Params: types.DefaultParams(),
 				FeeInfos: []types.FeeInfo{{
 					Payer:    TestContractAddressNeutron,
-					PacketId: validPacketId,
+					PacketId: validPacketID,
 					Fee: types.Fee{
 						RecvFee:    invalidRecvFee,
 						AckFee:     validAckFee,
@@ -168,7 +168,7 @@ func TestGenesisState_Validate(t *testing.T) {
 				Params: types.DefaultParams(),
 				FeeInfos: []types.FeeInfo{{
 					Payer:    TestContractAddressNeutron,
-					PacketId: validPacketId,
+					PacketId: validPacketID,
 					Fee: types.Fee{
 						RecvFee:    nil,
 						AckFee:     validAckFee,
