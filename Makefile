@@ -194,10 +194,12 @@ kill-dev:
 	-@killall gaiad 2>/dev/null
 
 build-docker-image:
-	@docker build . -t neutron-org/neutron
+	# please keep the image name consistent with https://github.com/neutron-org/neutron-integration-tests/blob/main/setup/docker-compose.yml
+	@docker buildx build --load --build-context app=. -t neutron-node --build-arg BINARY=neutrond .
 
 start-docker-container:
-	@docker run --rm --name neutron -d -p 1316:1316 -p 1317:1317 -p 26657:26657 -p 26656:26656 -p 16657:16657 -p 16656:16656 neutron-org/neutron
+	# please keep the ports consistent with https://github.com/neutron-org/neutron-integration-tests/blob/main/setup/docker-compose.yml
+	@docker run --rm --name neutron -d -p 1317:1317 -p 26657:26657 -p 26656:26656 -p 16657:16657 -p 8090:9090 -e RUN_BACKGROUND=0 neutron-node
 
 stop-docker-container:
 	@docker stop neutron
