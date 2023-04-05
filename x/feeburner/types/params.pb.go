@@ -25,7 +25,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
 type Params struct {
-	// Defines Neutron denom, which will be burned during fee processing, any other denom will be sent to reserve
+	// Defines Neutron denom, which will be burned during fee processing, any
+	// other denom will be sent to Reserve
 	NeutronDenom string `protobuf:"bytes,1,opt,name=neutron_denom,json=neutronDenom,proto3" json:"neutron_denom,omitempty"`
 	// Defines reserve address
 	ReserveAddress string `protobuf:"bytes,2,opt,name=reserve_address,json=reserveAddress,proto3" json:"reserve_address,omitempty"`
