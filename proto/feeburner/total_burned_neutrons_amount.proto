@@ -8,8 +8,6 @@ option go_package = "github.com/neutron-org/neutron/x/feeburner/types";
 
 // TotalBurnedNeutronsAmount defines total amount of burned neutron fees
 message TotalBurnedNeutronsAmount {
-  cosmos.base.v1beta1.Coin coin = 1 [
-    (gogoproto.moretags) = "yaml:\"coin\"",
-    (gogoproto.nullable) = false
-  ];
+  cosmos.base.v1beta1.Coin coin = 1
+      [ (gogoproto.moretags) = "yaml:\"coin\"", (gogoproto.nullable) = false ];
 }

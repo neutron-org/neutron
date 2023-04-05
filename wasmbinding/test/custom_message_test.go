@@ -2,6 +2,7 @@ package test
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -14,6 +15,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
 	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,13 +48,17 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Keeper = suite.neutron.InterchainTxsKeeper
 	suite.messenger.Icqmsgserver = icqkeeper.NewMsgServerImpl(suite.neutron.InterchainQueriesKeeper)
 	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
+	suite.messenger.Bank = &suite.neutron.BankKeeper
+	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
+	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
+	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Craft RegisterInterchainAccount message
@@ -75,8 +81,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Craft RegisterInterchainAccount message
@@ -99,8 +105,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -134,6 +140,108 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	suite.NoError(err)
 	suite.Nil(events)
 	suite.Equal([][]byte{[]byte(`{"id":1}`)}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	fullMsg := bindings.NeutronMsg{
+		CreateDenom: &bindings.CreateDenom{
+			Subdenom: "SUN",
+		},
+	}
+
+	data, _ := suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	suite.Equal([][]byte(nil), data)
+}
+
+func (suite *CustomMessengerTestSuite) TestMintMsg() {
+	var (
+		neutron = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx     = suite.ChainA.GetContext()
+		lucky   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// lucky was broke
+	balances := neutron.BankKeeper.GetAllBalances(suite.ctx, lucky)
+	require.Empty(suite.T(), balances)
+
+	// Create denom for minting
+	fullMsg := bindings.NeutronMsg{
+		CreateDenom: &bindings.CreateDenom{
+			Subdenom: "SUN",
+		},
+	}
+
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
+
+	amount, ok := sdk.NewIntFromString("808010808")
+	require.True(suite.T(), ok)
+
+	fullMsg = bindings.NeutronMsg{
+		MintTokens: &bindings.MintTokens{
+			Denom:         sunDenom,
+			Amount:        amount,
+			MintToAddress: lucky.String(),
+		},
+	}
+
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
+	require.Len(suite.T(), balances, 1)
+	coin := balances[0]
+	require.Equal(suite.T(), amount, coin.Amount)
+	require.Contains(suite.T(), coin.Denom, "factory/")
+	require.Equal(suite.T(), sunDenom, coin.Denom)
+
+	// mint the same denom again
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
+	require.Len(suite.T(), balances, 1)
+	coin = balances[0]
+	require.Equal(suite.T(), amount.MulRaw(2), coin.Amount)
+	require.Contains(suite.T(), coin.Denom, "factory/")
+	require.Equal(suite.T(), sunDenom, coin.Denom)
+
+	// now mint another amount / denom
+	// create it first
+	fullMsg = bindings.NeutronMsg{
+		CreateDenom: &bindings.CreateDenom{
+			Subdenom: "MOON",
+		},
+	}
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	moonDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
+
+	amount = amount.SubRaw(1)
+	fullMsg = bindings.NeutronMsg{
+		MintTokens: &bindings.MintTokens{
+			Denom:         moonDenom,
+			Amount:        amount,
+			MintToAddress: lucky.String(),
+		},
+	}
+
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
+	require.Len(suite.T(), balances, 2)
+	coin = balances[0]
+	require.Equal(suite.T(), amount, coin.Amount)
+	require.Contains(suite.T(), coin.Denom, "factory/")
+	require.Equal(suite.T(), moonDenom, coin.Denom)
 }
 
 func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {
@@ -227,8 +335,8 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
@@ -260,8 +368,8 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -306,6 +414,7 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	})
 	suite.NoError(err)
 	suite.Nil(events)
+
 	expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
 		ProposalId: 1,
 	})
@@ -350,8 +459,8 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 
 func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -373,6 +482,7 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 			},
 		},
 	})
+	suite.NoError(err)
 
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
@@ -384,8 +494,8 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 
 func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	// Store code and instantiate reflect contract
-	codeId := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeId)
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -397,6 +507,7 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 			AdminProposal: bindings.AdminProposal{},
 		},
 	})
+	suite.NoError(err)
 
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
@@ -404,6 +515,72 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
 
 	suite.ErrorContains(err, "no admin proposal type is present in message")
+}
+
+func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Set admin so that we can execute this proposal without permission error
+	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
+
+	// Craft AddSchedule message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		AddSchedule: &bindings.AddSchedule{
+			Name:   "schedule1",
+			Period: 5,
+			Msgs: []bindings.MsgExecuteContract{
+				{
+					Contract: suite.contractAddress.String(),
+					Msg:      "{\"send\": { \"to\": \"asdf\", \"amount\": 1000 }}",
+				},
+			},
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch AddSchedule message
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&bindings.AddScheduleResponse{})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+
+	// Craft RemoveSchedule message
+	msg, err = json.Marshal(bindings.NeutronMsg{
+		RemoveSchedule: &bindings.RemoveSchedule{
+			Name: "schedule1",
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch AddSchedule message
+	events, data, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) executeCustomMsg(owner sdk.AccAddress, fullMsg bindings.NeutronMsg) (result [][]byte, msg []byte) {
+	msg, err := json.Marshal(fullMsg)
+	suite.NoError(err)
+
+	events, result, err := suite.messenger.DispatchMsg(suite.ctx, owner, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+
+	return
 }
 
 func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numMsgs int) (result []byte) {

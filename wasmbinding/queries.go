@@ -84,6 +84,16 @@ func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindin
 	return &bindings.QueryRegisteredQueryResponse{RegisteredQuery: &query}, nil
 }
 
+// GetDenomAdmin is a query to get denom admin.
+func (qp QueryPlugin) GetDenomAdmin(ctx sdk.Context, denom string) (*bindings.DenomAdminResponse, error) {
+	metadata, err := qp.tokenFactoryKeeper.GetAuthorityMetadata(ctx, denom)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to get admin for denom: %s", denom)
+	}
+
+	return &bindings.DenomAdminResponse{Admin: metadata.Admin}, nil
+}
+
 func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {
 	grpcResp := qp.feeBurnerKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	return &bindings.QueryTotalBurnedNeutronsAmountResponse{Coin: grpcResp.Coin}, nil

@@ -9,7 +9,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -460,6 +459,7 @@ func (suite *KeeperTestSuite) TestRegisteredQueries() {
 			suite.SetupTest()
 
 			for _, q := range tt.registeredQueries {
+				q := q
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.SaveQuery(suite.ChainA.GetContext(), &q))
 			}
 
@@ -475,8 +475,8 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 	ctx := suite.ChainA.GetContext()
 	contractOwner := wasmKeeper.RandomAccountAddress(suite.T())
-	codeId := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeId)
+	codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
+	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
 	registerMsg := iqtypes.MsgRegisterInterchainQuery{
 		ConnectionId: suite.Path.EndpointA.ConnectionID,
 		Keys: []*iqtypes.KVKey{
@@ -491,12 +491,12 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	suite.TopUpWallet(ctx, senderAddress, contractAddress)
 
 	msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
-	regQuery1, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+	regQuery1, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
 	suite.Require().NoError(err)
 
 	// Top up contract address with native coins for deposit
 	suite.TopUpWallet(ctx, senderAddress, contractAddress)
-	regQuery2, err := msgSrv.RegisterInterchainQuery(sdktypes.WrapSDKContext(ctx), &registerMsg)
+	regQuery2, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
 	suite.Require().NoError(err)
 
 	resp := suite.ChainB.App.Query(abci.RequestQuery{
@@ -525,10 +525,10 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 		},
 	}
 
-	_, err = msgSrv.SubmitQueryResult(sdktypes.WrapSDKContext(ctx), &msg)
+	_, err = msgSrv.SubmitQueryResult(sdk.WrapSDKContext(ctx), &msg)
 	suite.NoError(err)
 
-	queryResultResponse, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdktypes.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+	queryResultResponse, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdk.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
 		QueryId: regQuery1.Id,
 	})
 	suite.NoError(err)
@@ -545,12 +545,12 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	}
 	suite.Equal(len(expectKvResults), len(queryKvResult))
 
-	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdktypes.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdk.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
 		QueryId: regQuery2.Id,
 	})
 	suite.ErrorContains(err, "no query result")
 
-	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdktypes.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdk.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
 		QueryId: regQuery2.Id + 1,
 	})
 	suite.ErrorContains(err, "invalid query id")

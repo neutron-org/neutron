@@ -1,0 +1,9 @@
+syntax = "proto3";
+package osmosis.tokenfactory.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/x/tokenfactory/types";
+
+// Params holds parameters for the tokenfactory module
+message Params {}

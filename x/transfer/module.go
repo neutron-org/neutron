@@ -135,6 +135,7 @@ func NewHandler(k wrapkeeper.KeeperTransferWrapper) sdk.Handler {
 				TimeoutHeight:    msg.TimeoutHeight,
 				TimeoutTimestamp: msg.TimeoutTimestamp,
 				Fee:              feetypes.Fee{},
+				Memo:             msg.Memo,
 			}
 			res, err := k.Transfer(sdk.WrapSDKContext(ctx), &neutronMsg)
 			return sdk.WrapServiceResult(ctx, res, err)

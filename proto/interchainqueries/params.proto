@@ -19,7 +19,8 @@ message Params {
     (gogoproto.nullable) = false
   ];
 
-  // Amount of tx hashes to be removed during a single EndBlock. Can vary to balance
-  // between network cleaning speed and EndBlock duration. A zero value means no limit.
+  // Amount of tx hashes to be removed during a single EndBlock. Can vary to
+  // balance between network cleaning speed and EndBlock duration. A zero value
+  // means no limit.
   uint64 tx_query_removal_limit = 3;
 }
