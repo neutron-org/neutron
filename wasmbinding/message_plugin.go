@@ -4,19 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
+
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	softwareUpgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -25,9 +31,20 @@ import (
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	transferwrapperkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
+
+	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
-func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, transferKeeper transferwrapperkeeper.KeeperTransferWrapper, admKeeper *adminkeeper.Keeper) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
+func CustomMessageDecorator(
+	ictx *ictxkeeper.Keeper,
+	icq *icqkeeper.Keeper,
+	transferKeeper transferwrapperkeeper.KeeperTransferWrapper,
+	adminKeeper *adminmodulekeeper.Keeper,
+	bankKeeper *bankkeeper.BaseKeeper,
+	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
+	cronKeeper *cronkeeper.Keeper,
+) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
 			Keeper:         *ictx,
@@ -35,7 +52,11 @@ func CustomMessageDecorator(ictx *ictxkeeper.Keeper, icq *icqkeeper.Keeper, tran
 			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
 			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
 			transferKeeper: transferKeeper,
-			Adminserver:    adminkeeper.NewMsgServerImpl(*admKeeper),
+			Adminserver:    adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
+			Bank:           bankKeeper,
+			TokenFactory:   tokenFactoryKeeper,
+			CronKeeper:     cronKeeper,
+			AdminKeeper:    adminKeeper,
 		}
 	}
 }
@@ -47,6 +68,10 @@ type CustomMessenger struct {
 	Icqmsgserver   icqtypes.MsgServer
 	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
 	Adminserver    admintypes.MsgServer
+	Bank           *bankkeeper.BaseKeeper
+	TokenFactory   *tokenfactorykeeper.Keeper
+	CronKeeper     *cronkeeper.Keeper
+	AdminKeeper    *adminmodulekeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -83,6 +108,24 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		}
 		if contractMsg.SubmitAdminProposal != nil {
 			return m.submitAdminProposal(ctx, contractAddr, contractMsg.SubmitAdminProposal)
+		}
+		if contractMsg.CreateDenom != nil {
+			return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
+		}
+		if contractMsg.MintTokens != nil {
+			return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
+		}
+		if contractMsg.ChangeAdmin != nil {
+			return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
+		}
+		if contractMsg.BurnTokens != nil {
+			return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
+		}
+		if contractMsg.AddSchedule != nil {
+			return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
+		}
+		if contractMsg.RemoveSchedule != nil {
+			return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 		}
 	}
 
@@ -415,6 +458,165 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	return response, nil
 }
 
+// createDenom creates a new token denom
+func (m *CustomMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) ([]sdk.Event, [][]byte, error) {
+	err := PerformCreateDenom(m.TokenFactory, m.Bank, ctx, contractAddr, createDenom)
+	if err != nil {
+		return nil, nil, sdkerrors.Wrap(err, "perform create denom")
+	}
+	return nil, nil, nil
+}
+
+// PerformCreateDenom is used with createDenom to create a token denom; validates the msgCreateDenom.
+func PerformCreateDenom(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) error {
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+
+	msgCreateDenom := tokenfactorytypes.NewMsgCreateDenom(contractAddr.String(), createDenom.Subdenom)
+
+	if err := msgCreateDenom.ValidateBasic(); err != nil {
+		return sdkerrors.Wrap(err, "failed validating MsgCreateDenom")
+	}
+
+	// Create denom
+	_, err := msgServer.CreateDenom(
+		sdk.WrapSDKContext(ctx),
+		msgCreateDenom,
+	)
+	if err != nil {
+		return sdkerrors.Wrap(err, "creating denom")
+	}
+	return nil
+}
+
+// mintTokens mints tokens of a specified denom to an address.
+func (m *CustomMessenger) mintTokens(ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) ([]sdk.Event, [][]byte, error) {
+	err := PerformMint(m.TokenFactory, m.Bank, ctx, contractAddr, mint)
+	if err != nil {
+		return nil, nil, sdkerrors.Wrap(err, "perform mint")
+	}
+	return nil, nil, nil
+}
+
+// PerformMint used with mintTokens to validate the mint message and mint through token factory.
+func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
+	rcpt, err := parseAddress(mint.MintToAddress)
+	if err != nil {
+		return err
+	}
+
+	coin := sdk.Coin{Denom: mint.Denom, Amount: mint.Amount}
+	sdkMsg := tokenfactorytypes.NewMsgMint(contractAddr.String(), coin)
+	if err = sdkMsg.ValidateBasic(); err != nil {
+		return err
+	}
+
+	// Mint through token factory / message server
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+	_, err = msgServer.Mint(sdk.WrapSDKContext(ctx), sdkMsg)
+	if err != nil {
+		return sdkerrors.Wrap(err, "minting coins from message")
+	}
+
+	err = b.SendCoins(ctx, contractAddr, rcpt, sdk.NewCoins(coin))
+	if err != nil {
+		return sdkerrors.Wrap(err, "sending newly minted coins from message")
+	}
+
+	return nil
+}
+
+// changeAdmin changes the admin.
+func (m *CustomMessenger) changeAdmin(ctx sdk.Context, contractAddr sdk.AccAddress, changeAdmin *bindings.ChangeAdmin) ([]sdk.Event, [][]byte, error) {
+	err := ChangeAdmin(m.TokenFactory, ctx, contractAddr, changeAdmin)
+	if err != nil {
+		return nil, nil, sdkerrors.Wrap(err, "failed to change admin")
+	}
+
+	return nil, nil, nil
+}
+
+// ChangeAdmin is used with changeAdmin to validate changeAdmin messages and to dispatch.
+func ChangeAdmin(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, changeAdmin *bindings.ChangeAdmin) error {
+	newAdminAddr, err := parseAddress(changeAdmin.NewAdminAddress)
+	if err != nil {
+		return err
+	}
+
+	changeAdminMsg := tokenfactorytypes.NewMsgChangeAdmin(contractAddr.String(), changeAdmin.Denom, newAdminAddr.String())
+	if err := changeAdminMsg.ValidateBasic(); err != nil {
+		return err
+	}
+
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+	_, err = msgServer.ChangeAdmin(sdk.WrapSDKContext(ctx), changeAdminMsg)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed changing admin from message")
+	}
+	return nil
+}
+
+// burnTokens burns tokens.
+func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) ([]sdk.Event, [][]byte, error) {
+	err := PerformBurn(m.TokenFactory, ctx, contractAddr, burn)
+	if err != nil {
+		return nil, nil, sdkerrors.Wrap(err, "perform burn")
+	}
+
+	return nil, nil, nil
+}
+
+// PerformBurn performs token burning after validating tokenBurn message.
+func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) error {
+	if burn.BurnFromAddress != "" && burn.BurnFromAddress != contractAddr.String() {
+		return wasmvmtypes.InvalidRequest{Err: "BurnFromAddress must be \"\""}
+	}
+
+	coin := sdk.Coin{Denom: burn.Denom, Amount: burn.Amount}
+	sdkMsg := tokenfactorytypes.NewMsgBurn(contractAddr.String(), coin)
+	if err := sdkMsg.ValidateBasic(); err != nil {
+		return err
+	}
+
+	// Burn through token factory / message server
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+	_, err := msgServer.Burn(sdk.WrapSDKContext(ctx), sdkMsg)
+	if err != nil {
+		return sdkerrors.Wrap(err, "burning coins from message")
+	}
+
+	return nil
+}
+
+// GetFullDenom is a function, not method, so the message_plugin can use it
+func GetFullDenom(contract string, subDenom string) (string, error) {
+	// Address validation
+	if _, err := parseAddress(contract); err != nil {
+		return "", err
+	}
+
+	fullDenom, err := tokenfactorytypes.GetTokenDenom(contract, subDenom)
+	if err != nil {
+		return "", sdkerrors.Wrap(err, "validate sub-denom")
+	}
+
+	return fullDenom, nil
+}
+
+// parseAddress parses address from bech32 string and verifies its format.
+func parseAddress(addr string) (sdk.AccAddress, error) {
+	parsed, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "address from bech32")
+	}
+
+	err = sdk.VerifyAddressFormat(parsed)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "verify address format")
+	}
+
+	return parsed, nil
+}
+
 func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {
 	tx := ictxtypes.MsgSubmitTx{
 		FromAddress:         contractAddr.String(),
@@ -592,4 +794,79 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	}
 
 	return fmt.Errorf("more than one admin proposal type is present in message")
+}
+
+func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
+	if !m.isAdmin(ctx, contractAddr) {
+		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
+	}
+
+	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
+	for _, msg := range addSchedule.Msgs {
+		msgs = append(msgs, crontypes.MsgExecuteContract{
+			Contract: msg.Contract,
+			Msg:      msg.Msg,
+		})
+	}
+
+	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	if err != nil {
+		ctx.Logger().Error("failed to addSchedule",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	resp := bindings.AddScheduleResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal add schedule response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("schedule added",
+		"from_address", contractAddr.String(),
+		"name", addSchedule.Name,
+		"period", addSchedule.Period,
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
+	params := m.CronKeeper.GetParams(ctx)
+	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
+		return nil, nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
+	}
+
+	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
+
+	resp := bindings.RemoveScheduleResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal remove schedule response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, sdkerrors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug("schedule removed",
+		"from_address", contractAddr.String(),
+		"name", removeSchedule.Name,
+	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
+	for _, admin := range m.AdminKeeper.GetAdmins(ctx) {
+		if admin == contractAddr.String() {
+			return true
+		}
+	}
+
+	return false
 }
