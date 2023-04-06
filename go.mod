@@ -5,11 +5,11 @@ go 1.18
 require (
 	github.com/CosmWasm/wasmd v0.30.0
 	github.com/CosmWasm/wasmvm v1.1.1
-	github.com/armon/go-metrics v0.4.0
+	github.com/armon/go-metrics v0.4.1
 	github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
-	github.com/cosmos/cosmos-sdk v0.45.14
+	github.com/cosmos/cosmos-sdk v0.45.15
 	github.com/cosmos/ibc-go/v4 v4.3.0
 	github.com/cosmos/interchain-security v1.0.0
 	github.com/gogo/protobuf v1.3.3
@@ -23,7 +23,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/strangelove-ventures/packet-forward-middleware/v4 v4.0.5
 	github.com/stretchr/testify v1.8.2
-	github.com/tendermint/tendermint v0.34.26
+	github.com/tendermint/tendermint v0.34.27
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923
 	google.golang.org/grpc v1.53.0
@@ -43,7 +43,6 @@ require (
 	github.com/Workiva/go-datastructures v1.0.53 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816 // indirect
-	github.com/btcsuite/btcd v0.23.0 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
@@ -53,6 +52,7 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20220817183557-09c6e030a677 // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/coinbase/rosetta-sdk-go v0.7.9 // indirect
+	github.com/cometbft/cometbft-db v0.7.0 // indirect
 	github.com/cosmos/btcutil v1.0.4 // indirect
 	github.com/cosmos/cosmos-db v0.0.0-20221226095112-f3c38ecb5e32 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
@@ -135,6 +135,7 @@ require (
 	github.com/spf13/viper v1.14.0 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
+	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
 	github.com/tendermint/spm v0.1.9 // indirect
 	github.com/tidwall/btree v1.5.0 // indirect
@@ -157,8 +158,8 @@ replace (
 	github.com/CosmWasm/wasmd v0.30.0 => github.com/neutron-org/wasmd v0.30.0-ics-support
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
-	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.14-ics
+	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.15-ics
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/tendermint/tendermint => github.com/skip-mev/mev-tendermint v0.34.26-mev.16
+	github.com/tendermint/tendermint => github.com/skip-mev/mev-cometbft v0.34.27-mev.17
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )

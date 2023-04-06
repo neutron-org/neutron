@@ -7,6 +7,9 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
+ENABLED_PROPOSALS := MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes
+GO_VERSION=1.19
+BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
 DOCKER := $(shell which docker)
@@ -58,7 +61,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=neutron \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
-		  -X "github.com/neutron-org/neutron/app.EnableSpecificProposals=MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes"
+		  -X "github.com/neutron-org/neutron/app.EnableSpecificProposals=$(ENABLED_PROPOSALS)"
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
@@ -79,6 +82,24 @@ ifeq ($(OS),Windows_NT)
 else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/neutrond ./cmd/neutrond
 endif
+
+build-static-linux-amd64: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name neutronbuilder || true
+	$(DOCKER) buildx use neutronbuilder
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
+		--build-arg ENABLED_PROPOSALS=$(ENABLED_PROPOSALS) \
+		--platform linux/amd64 \
+		-t neutron-amd64 \
+		--load \
+		-f Dockerfile.builder .
+	$(DOCKER) rm -f neutronbinary || true
+	$(DOCKER) create -ti --name neutronbinary neutron-amd64
+	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
+	$(DOCKER) rm -f neutronbinary
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/neutrond
@@ -194,12 +215,10 @@ kill-dev:
 	-@killall gaiad 2>/dev/null
 
 build-docker-image:
-	# please keep the image name consistent with https://github.com/neutron-org/neutron-integration-tests/blob/main/setup/docker-compose.yml
-	@docker buildx build --load --build-context app=. -t neutron-node --build-arg BINARY=neutrond .
+	@docker build . -t neutron-org/neutron
 
 start-docker-container:
-	# please keep the ports consistent with https://github.com/neutron-org/neutron-integration-tests/blob/main/setup/docker-compose.yml
-	@docker run --rm --name neutron -d -p 1317:1317 -p 26657:26657 -p 26656:26656 -p 16657:16657 -p 8090:9090 -e RUN_BACKGROUND=0 neutron-node
+	@docker run --rm --name neutron -d -p 1316:1316 -p 1317:1317 -p 26657:26657 -p 26656:26656 -p 16657:16657 -p 16656:16656 neutron-org/neutron
 
 stop-docker-container:
 	@docker stop neutron
