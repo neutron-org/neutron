@@ -96,9 +96,9 @@ VOTING_REGISTRY_MANAGER=null
 DAO_DESCRIPTION="awesome neutron dao"
 DAO_NAME=Neutron
 DAO_ITEMS=null
-DAO_PROPOSAL_SINGLE_LABEL="proposal single"
-DAO_PROPOSAL_MULTIPLE_LABEL="proposal multiple"
-DAO_PROPOSAL_OVERRULE_LABEL="proposal overrule"
+DAO_PROPOSAL_SINGLE_LABEL="DAO_Neutron_cw-proposal-single"
+DAO_PROPOSAL_MULTIPLE_LABEL="DAO_Neutron_cw-proposal-multiple"
+DAO_PROPOSAL_OVERRULE_LABEL="DAO_Neutron_cw-proposal-overrule"
 DAO_VOTING_REGISTRY_LABEL="neutron voting registry"
 
 ## Voting vault
@@ -627,7 +627,7 @@ ADD_SUBDAOS_MSG='{
 
 $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --run-as "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
-
+echo DAO $DAO_CONTRACT_ADDRESS
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"reserve_address\":.*/\"reserve_address\":\"'"$RESERVE_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
