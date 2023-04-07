@@ -106,11 +106,11 @@ NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 
 
 ## Lockdrop vault
-LOCKDROP_VAULT_NAME="voting vault"
+LOCKDROP_VAULT_NAME="lockdrop vault"
 LOCKDROP_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 
 ## Basic vault
-NEUTRON_VAULT_NAME="vault"
+NEUTRON_VAULT_NAME="voting vault"
 NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 
 ## Treasury (should be renamed to reserve, pr is not merged yet)
@@ -127,7 +127,7 @@ GRANTS_SUBDAO_VOTING_MODULE_LABEL="grants voting module"
 GRANTS_SUBDAO_PROPOSAL_LABEL="grants single proposal"
 
 ## Timelock
-GRANTS_SUBDAO_TIMELOCK_DURATION=10
+GRANTS_SUBDAO_TIMELOCK_DURATION=1200
 GRANTS_SUBDAO_TIMELOCK_LABEL="subDAO timelock contract"
 
 ## Security subdao
@@ -627,7 +627,6 @@ ADD_SUBDAOS_MSG='{
 
 $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --run-as "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
-echo  1488 $VOTING_REGISTRY_CONTRACT_ADDRESS
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
