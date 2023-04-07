@@ -6,7 +6,7 @@ BASE_DIR=./data
 CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
-
+CONTRACTS_THIRDPARTY_BINARIES_DIR=${CONTRACTS_THIRDPARTY_BINARIES_DIR:-./contracts_thirdparty}
 CHAIN_DIR="$BASE_DIR/$CHAINID"
 
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
@@ -30,8 +30,8 @@ SUBDAO_CORE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_core.wasm
 SUBDAO_TIMELOCK_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_timelock_single.wasm
 SUBDAO_PRE_PROPOSE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_pre_propose_single.wasm
 SUBDAO_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_proposal_single.wasm
-CW4_VOTING_CONTRACT=$CONTRACTS_BINARIES_DIR/cw4_voting.wasm
-CW4_GROUP_CONTRACT=$CONTRACTS_BINARIES_DIR/cw4_group.wasm
+CW4_VOTING_CONTRACT=$CONTRACTS_THIRDPARTY_BINARIES_DIR/cw4_voting.wasm
+CW4_GROUP_CONTRACT=$CONTRACTS_THIRDPARTY_BINARIES_DIR/cw4_group.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
@@ -49,8 +49,6 @@ PRE_PROPOSAL_SINGLE_LABEL=neutron
 ## propose singe params
 # revoting
 PROPOSAL_ALLOW_REVOTING=false
-# contract label (UNUSED!)
-# PROPOSAL_SINGLE_LABEL=neutron
 # if only users w voting power can execute passed proposals
 PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
@@ -63,7 +61,7 @@ PROPOSAL_SINGLE_QUORUM=0.05
 PROPOSAL_SINGLE_THRESHOLD=0.5
 
 ## propose multiple params
-# revoting
+# revoting [bool]
 PROPOSAL_MULTIPLE_ALLOW_REVOTING=false
 # contract label
 PROPOSAL_MULTIPLE_LABEL=neutron
@@ -85,10 +83,8 @@ PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
 PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=33333
 # if proposal will be closed on execution fail [bool]
 PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
-# quorum to consider proposal's result viable [float]
-PROPOSAL_OVERRULE_QUORUM=0.05
 #
-PROPOSAL_OVERRULE_THRESHOLD=0.50
+PROPOSAL_OVERRULE_THRESHOLD=0.005
 # if proposal will be closed on execution fail
 PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 
@@ -140,7 +136,7 @@ SECURITY_SUBDAO_CORE_NAME="GRANTS"
 SECURITY_SUBDAO_CORE_DESCRIPTION="subdao that secures neutron"
 SECURITY_SUBDAO_PROPOSAL_LABEL="security subdao single proposal"
 SECURITY_SUBDAO_PREPROPOSAL_LABEL="security prerpopose"
-SECURITY_SUBDAO_VOTE_LABEL="security subdao voting module" # TODO
+SECURITY_SUBDAO_VOTE_LABEL="security subdao voting module"
 SECURITY_SUBDAO_CORE_URI="security.subdao.org"
 
 echo "Initializing dao contract in genesis..."
@@ -329,11 +325,10 @@ PROPOSAL_OVERRULE_INIT_MSG='{
    "close_proposal_on_execution_failure":'"$PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE"',
    "threshold":{
      "threshold_quorum":{
-       "quorum":{
-         "percent":"'"$PROPOSAL_OVERRULE_QUORUM"'"
-       },
-       "threshold":{
-         "percent":"'"$PROPOSAL_OVERRULE_THRESHOLD"'"
+       "absolute_percentage":{
+          "percentage":{
+            "percent":"'"$PROPOSAL_OVERRULE_THRESHOLD"'"
+          }
        }
      }
    }
