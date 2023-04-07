@@ -80,7 +80,7 @@ PROPOSAL_OVERRULE_LABEL=neutron
 # only users w voting power can execute passed proposals
 PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
-PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=33333
+PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=600
 # if proposal will be closed on execution fail [bool]
 PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 #
@@ -627,6 +627,7 @@ ADD_SUBDAOS_MSG='{
 
 $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --run-as "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
+echo  VOTING $VOTING_REGISTRY_CONTRACT_ADDRESS
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
