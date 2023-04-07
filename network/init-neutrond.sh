@@ -52,7 +52,7 @@ PROPOSAL_ALLOW_REVOTING=false
 # if only users w voting power can execute passed proposals
 PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
-PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD=33333
+PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD=1200
 # if proposal will be closed on execution fail [bool]
 PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 # quorum to consider proposal's result viable [float] < 1
@@ -68,7 +68,7 @@ PROPOSAL_MULTIPLE_LABEL=neutron
 # if only users w voting power can execute passed proposals
 PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
-PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD=33333
+PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD=1200
 # if proposal will be closed on execution fail [bool]
 PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 
@@ -80,7 +80,7 @@ PROPOSAL_OVERRULE_LABEL=neutron
 # only users w voting power can execute passed proposals
 PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
-PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=600
+PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=1200
 # if proposal will be closed on execution fail [bool]
 PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 #
@@ -101,12 +101,12 @@ DAO_PROPOSAL_OVERRULE_LABEL="proposal overrule"
 DAO_VOTING_REGISTRY_LABEL="neutron voting registry"
 
 ## Voting vault
-NEUTRON_VAULT_NAME="vault"
+NEUTRON_VAULT_NAME="voting vault"
 NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 
 
 ## Lockdrop vault
-LOCKDROP_VAULT_NAME="vault"
+LOCKDROP_VAULT_NAME="voting vault"
 LOCKDROP_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 
 ## Basic vault
@@ -627,7 +627,8 @@ ADD_SUBDAOS_MSG='{
 
 $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --run-as "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
-echo  VOTING $VOTING_REGISTRY_CONTRACT_ADDRESS
+echo  1488 $VOTING_REGISTRY_CONTRACT_ADDRESS
+
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
