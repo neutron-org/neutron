@@ -6,7 +6,8 @@ BASE_DIR=./data
 CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
-THIRD_PARTY_CONTRACTS_DIR=${CONTRACTS_THIRDPARTY_BINARIES_DIR:-./contracts_thirdparty}
+THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
+
 CHAIN_DIR="$BASE_DIR/$CHAINID"
 
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
@@ -195,11 +196,10 @@ PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$I
 PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"     "$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 VOTING_REGISTRY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"           "$VOTING_REGISTRY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
-# TREASURY
+# RESERVE
 RESERVE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                   "$RESERVE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 DISTRIBUTION_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"              "$DISTRIBUTION_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 TREASURY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                  "$TREASURY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-
 # SUBDAOS
 SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"      "$SUBDAO_CORE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER" "$PRE_PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
@@ -387,15 +387,15 @@ DAO_INIT='{
   }
 }'
 
-# TREASURY & RESERVE
-TREASURY_INIT='{
+# RESERVE
+RESERVE_INIT='{
   "main_dao_address": "'"$ADMIN_ADDRESS"'",
   "security_dao_address": "'"$ADMIN_ADDRESS"'",
   "denom": "'"$STAKEDENOM"'",
   "distribution_rate": "'"$DISTRIBUTION_RATE"'",
   "min_period": '"$MIN_PERIOD"',
   "distribution_contract": "'"$DISTRIBUTION_CONTRACT_ADDRESS"'",
-  "reserve_contract": "'"$RESERVE_CONTRACT_ADDRESS"'",
+  "treasury_contract": "'"$TREASURY_CONTRACT_ADDRESS"'",
   "vesting_denominator": "'"$VESTING_DENOMINATOR"'"
 }'
 
@@ -405,7 +405,7 @@ DISTRIBUTION_INIT='{
   "denom": "'"$STAKEDENOM"'"
 }'
 
-RESERVE_INIT='{
+TREASURY_INIT='{
   "main_dao_address": "'"$ADMIN_ADDRESS"'",
   "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom": "'"$STAKEDENOM"'"
@@ -629,6 +629,6 @@ $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --ru
 
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"reserve_address\":.*/\"reserve_address\":\"'"$RESERVE_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"
