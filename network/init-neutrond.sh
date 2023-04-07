@@ -324,13 +324,11 @@ PROPOSAL_OVERRULE_INIT_MSG='{
    },
    "close_proposal_on_execution_failure":'"$PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE"',
    "threshold":{
-     "threshold_quorum":{
        "absolute_percentage":{
           "percentage":{
             "percent":"'"$PROPOSAL_OVERRULE_THRESHOLD"'"
           }
        }
-     }
    }
 }'
 PROPOSAL_OVERRULE_INIT_MSG_BASE64=$(echo "$PROPOSAL_OVERRULE_INIT_MSG" | base64 | tr -d "\n")
