@@ -6,7 +6,7 @@ BASE_DIR=./data
 CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
-CONTRACTS_THIRDPARTY_BINARIES_DIR=${CONTRACTS_THIRDPARTY_BINARIES_DIR:-./contracts_thirdparty}
+THIRD_PARTY_CONTRACTS_DIR=${CONTRACTS_THIRDPARTY_BINARIES_DIR:-./contracts_thirdparty}
 CHAIN_DIR="$BASE_DIR/$CHAINID"
 
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
@@ -30,8 +30,8 @@ SUBDAO_CORE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_core.wasm
 SUBDAO_TIMELOCK_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_timelock_single.wasm
 SUBDAO_PRE_PROPOSE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_pre_propose_single.wasm
 SUBDAO_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_proposal_single.wasm
-CW4_VOTING_CONTRACT=$CONTRACTS_THIRDPARTY_BINARIES_DIR/cw4_voting.wasm
-CW4_GROUP_CONTRACT=$CONTRACTS_THIRDPARTY_BINARIES_DIR/cw4_group.wasm
+CW4_VOTING_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_voting.wasm
+CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
@@ -337,7 +337,7 @@ VOTING_REGISTRY_INIT_MSG='{
   "manager": '"$VOTING_REGISTRY_MANAGER"',
   "owner": {
     "address": {
-      "addr": "'"$ADMIN_ADDRESS"'"
+      "addr": "'"$DAO_CONTRACT_ADDRESS"'"
     }
   },
   "voting_vaults": [
