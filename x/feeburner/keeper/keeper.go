@@ -84,7 +84,7 @@ func (k Keeper) GetTotalBurnedNeutronsAmount(ctx sdk.Context) types.TotalBurnedN
 // BurnAndDistribute is an important part of tokenomics. It does few things:
 // 1. Burns NTRN fee coins distributed to consumertypes.ConsumerRedistributeName in ICS (https://github.com/cosmos/interchain-security/blob/v0.2.0/x/ccv/consumer/keeper/distribution.go#L17)
 // 2. Updates total amount of burned NTRN coins
-// 3. Sends non-NTRN fee tokens to treasury contract address
+// 3. Sends non-NTRN fee tokens to reserve contract address
 // Panics if no `consumertypes.ConsumerRedistributeName` module found OR could not burn NTRN tokens
 func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 	moduleAddr := k.accountKeeper.GetModuleAddress(consumertypes.ConsumerRedistributeName)
@@ -94,7 +94,7 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 
 	params := k.GetParams(ctx)
 	balances := k.bankKeeper.GetAllBalances(ctx, moduleAddr)
-	fundsForTreasury := make(sdk.Coins, 0, len(balances))
+	fundsForReserve := make(sdk.Coins, 0, len(balances))
 
 	for _, balance := range balances {
 		if !balance.IsZero() {
@@ -106,18 +106,18 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 
 				k.RecordBurnedFees(ctx, balance)
 			} else {
-				fundsForTreasury = append(fundsForTreasury, balance)
+				fundsForReserve = append(fundsForReserve, balance)
 			}
 		}
 	}
 
-	if len(fundsForTreasury) > 0 {
-		addr, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
+	if len(fundsForReserve) > 0 {
+		addr, err := sdk.AccAddressFromBech32(params.ReserveAddress)
 		if err != nil {
 			// there's no way we face this kind of situation in production, since it means the chain is misconfigured
-			// still, in test environments it might be the case when the chain is started without treasury
+			// still, in test environments it might be the case when the chain is started without Reserve
 			// in such case we just burn the tokens
-			err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, fundsForTreasury)
+			err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, fundsForReserve)
 			if err != nil {
 				panic(sdkerrors.Wrapf(err, "failed to burn tokens during fee processing"))
 			}
@@ -125,10 +125,10 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 			err = k.bankKeeper.SendCoins(
 				ctx,
 				moduleAddr, addr,
-				fundsForTreasury,
+				fundsForReserve,
 			)
 			if err != nil {
-				panic(sdkerrors.Wrapf(err, "failed sending funds to treasury"))
+				panic(sdkerrors.Wrapf(err, "failed sending funds to Reserve"))
 			}
 		}
 	}

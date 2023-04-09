@@ -32,8 +32,9 @@ type Params struct {
 	QuerySubmitTimeout uint64 `protobuf:"varint,1,opt,name=query_submit_timeout,json=querySubmitTimeout,proto3" json:"query_submit_timeout,omitempty"`
 	// Amount of coins deposited for the query.
 	QueryDeposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=query_deposit,json=queryDeposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"query_deposit"`
-	// Amount of tx hashes to be removed during a single EndBlock. Can vary to balance
-	// between network cleaning speed and EndBlock duration. A zero value means no limit.
+	// Amount of tx hashes to be removed during a single EndBlock. Can vary to
+	// balance between network cleaning speed and EndBlock duration. A zero value
+	// means no limit.
 	TxQueryRemovalLimit uint64 `protobuf:"varint,3,opt,name=tx_query_removal_limit,json=txQueryRemovalLimit,proto3" json:"tx_query_removal_limit,omitempty"`
 }
 
