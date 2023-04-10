@@ -18,7 +18,7 @@ import (
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-func IsConsumerProposalWhitelisted(content govtypes.Content) bool {
+func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
 	switch c := content.(type) {
 	case *proposal.ParameterChangeProposal:
 		return isConsumerParamChangeWhitelisted(c.Changes)
