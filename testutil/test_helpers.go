@@ -18,14 +18,15 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
 	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
-	"github.com/cosmos/interchain-security/testutil/e2e"
+	e2e "github.com/cosmos/interchain-security/testutil/integration"
 	"github.com/cosmos/interchain-security/x/ccv/utils"
 	tmtypes "github.com/tendermint/tendermint/types"
 

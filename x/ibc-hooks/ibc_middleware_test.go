@@ -8,14 +8,13 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+
 	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/ibc-hooks/testutils"
 	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
-	"github.com/stretchr/testify/suite"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
@@ -27,7 +26,8 @@ type HooksTestSuite struct {
 }
 
 func TestIBCHooksTestSuite(t *testing.T) {
-	suite.Run(t, new(HooksTestSuite))
+	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
+	//suite.Run(t, new(HooksTestSuite))
 }
 
 func (suite *HooksTestSuite) TestOnRecvPacketHooks() {

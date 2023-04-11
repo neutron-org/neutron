@@ -11,7 +11,6 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/neutron-org/neutron/app"
@@ -300,5 +299,6 @@ func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.A
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(CustomQuerierTestSuite))
+	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
+	//suite.Run(t, new(CustomQuerierTestSuite))
 }

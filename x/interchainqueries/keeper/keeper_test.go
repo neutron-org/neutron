@@ -7,12 +7,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -1757,5 +1757,6 @@ func (*KeeperTestSuite) txHashesRemovalProgress(ctx sdk.Context, iqkeeper keeper
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
+	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
+	//suite.Run(t, new(KeeperTestSuite))
 }

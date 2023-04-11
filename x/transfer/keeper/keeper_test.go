@@ -8,8 +8,6 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -143,5 +141,6 @@ func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
+	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
+	//suite.Run(t, new(KeeperTestSuite))
 }

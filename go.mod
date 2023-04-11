@@ -102,6 +102,7 @@ require (
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lib/pq v1.10.6 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/linxGnu/grocksdb v1.7.10 // indirect
@@ -137,8 +138,10 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
-	github.com/tendermint/spm v0.1.9 // indirect
 	github.com/tidwall/btree v1.5.0 // indirect
+	github.com/tidwall/gjson v1.14.4 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/zondax/hid v0.9.1 // indirect
 	github.com/zondax/ledger-go v0.14.1 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
@@ -148,17 +151,19 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
-	google.golang.org/protobuf v1.28.2-0.20220831092852-f930b1dc76e8 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
 
 replace (
-	github.com/CosmWasm/wasmd v0.30.0 => github.com/neutron-org/wasmd v0.30.0-ics-support
+	github.com/CosmWasm/wasmd v0.30.0 => github.com/neutron-org/wasmd v0.30.0-ics-removed-genesis-checks
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.15-ics
+	// use forked ICS with v0.45.15, cometbft and soft opt-out with some disabled tests
+	github.com/cosmos/interchain-security => github.com/neutron-org/interchain-security v1.0.1-0.20230411132545-f3b496d73bdd
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/skip-mev/mev-cometbft v0.34.27-mev.17
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
