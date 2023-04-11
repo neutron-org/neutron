@@ -133,6 +133,8 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 
 // HandleChanOpenAck passes the data about a successfully created channel to the appropriate contract
 // (== the data about a successfully registered interchain account).
+// Notice that in the case of an ICA channel - it is not yet in OPEN state here
+// the last step of channel opening(confirm) happens on the host chain.
 func (k *Keeper) HandleChanOpenAck(
 	ctx sdk.Context,
 	portID,
