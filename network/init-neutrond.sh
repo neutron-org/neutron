@@ -423,7 +423,7 @@ NEUTRON_VAULT_INIT='{
   "description": "'"$NEUTRON_VAULT_DESCRIPTION"'"
 }'
 
-# since the lockdrop_contract is still a mock, the address is a random valid one just to pass instantiation TODO: get rid of mock
+# since the lockdrop_contract is still a mock, the three last addresses are all random valid ones just to pass instantiation TODO: get rid of mock
 LOCKDROP_VAULT_INIT='{
   "owner": {
     "address": {
@@ -432,7 +432,9 @@ LOCKDROP_VAULT_INIT='{
   },
   "name": "'"$LOCKDROP_VAULT_NAME"'",
   "description": "'"$LOCKDROP_VAULT_DESCRIPTION"'",
-  "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"
+  "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq",
+  "oracle_usdc_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq",
+  "oracle_atom_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"
 }'
 
 # CW4 MODULES FOR SUBDAOS
