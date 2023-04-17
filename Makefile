@@ -181,9 +181,9 @@ init-golang-rly: kill-dev install
 	./network/relayer/interchain-acc-config/rly.sh
 
 start: kill-dev install
-	@echo "Starting up test network"
-	BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn ./network/init.sh && \
-    ./network/init-neutrond.sh && ./network/start.sh
+	@echo "Starting up neutrond alone..."
+	BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
+	./network/init.sh && ./network/init-neutrond.sh && ./network/start.sh
 
 start-rly:
 	./network/hermes/start.sh
