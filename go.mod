@@ -3,8 +3,8 @@ module github.com/neutron-org/neutron
 go 1.18
 
 require (
-	github.com/CosmWasm/wasmd v0.30.0
-	github.com/CosmWasm/wasmvm v1.1.1
+	github.com/CosmWasm/wasmd v0.31.0
+	github.com/CosmWasm/wasmvm v1.2.1
 	github.com/armon/go-metrics v0.4.1
 	github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
@@ -155,7 +155,7 @@ require (
 )
 
 replace (
-	github.com/CosmWasm/wasmd v0.30.0 => github.com/neutron-org/wasmd v0.30.0-ics-removed-genesis-checks
+	github.com/CosmWasm/wasmd v0.31.0 => github.com/neutron-org/wasmd v0.31.0-neutron-fixes
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.15-ics

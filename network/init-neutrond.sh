@@ -21,7 +21,6 @@ PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_multiple.wasm
 VOTING_REGISTRY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_voting_registry.wasm
 # VAULTS
 NEUTRON_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_vault.wasm
-LOCKDROP_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/lockdrop_vault.wasm
 # TREASURY
 RESERVE_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_reserve.wasm
 DISTRIBUTION_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_distribution.wasm
@@ -105,11 +104,6 @@ DAO_VOTING_REGISTRY_LABEL="neutron voting registry"
 NEUTRON_VAULT_NAME="voting vault"
 NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 
-
-## Lockdrop vault
-LOCKDROP_VAULT_NAME="lockdrop vault"
-LOCKDROP_VAULT_DESCRIPTION="simple voting vault for testing purposes"
-
 ## Basic vault
 NEUTRON_VAULT_NAME="voting vault"
 NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
@@ -128,12 +122,11 @@ GRANTS_SUBDAO_VOTING_MODULE_LABEL="grants voting module"
 GRANTS_SUBDAO_PROPOSAL_LABEL="grants single proposal"
 
 ## Timelock
-GRANTS_SUBDAO_TIMELOCK_DURATION=1200
 GRANTS_SUBDAO_TIMELOCK_LABEL="subDAO timelock contract"
 
 ## Security subdao
-SECURITY_SUBDAO_CORE_LABEL="neutron grants subdao"
-SECURITY_SUBDAO_CORE_NAME="GRANTS"
+SECURITY_SUBDAO_CORE_LABEL="neutron security subdao"
+SECURITY_SUBDAO_CORE_NAME="SECURITY"
 SECURITY_SUBDAO_CORE_DESCRIPTION="subdao that secures neutron"
 SECURITY_SUBDAO_PROPOSAL_LABEL="security subdao single proposal"
 SECURITY_SUBDAO_PREPROPOSAL_LABEL="security prerpopose"
@@ -160,7 +153,6 @@ PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary     "$PROPOSAL_MULTIPLE_CONT
 VOTING_REGISTRY_CONTRACT_BINARY_ID=$(store_binary       "$VOTING_REGISTRY_CONTRACT")
 # VAULTS
 NEUTRON_VAULT_CONTRACT_BINARY_ID=$(store_binary         "$NEUTRON_VAULT_CONTRACT")
-LOCKDROP_VAULT_CONTRACT_BINARY_ID=$(store_binary        "$LOCKDROP_VAULT_CONTRACT")
 # TREASURY & RESERVE
 TREASURY_CONTRACT_BINARY_ID=$(store_binary              "$TREASURY_CONTRACT")
 DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary          "$DISTRIBUTION_CONTRACT")
@@ -184,7 +176,6 @@ INSTANCE_ID_COUNTER=1
 
 # VAULTS
 NEUTRON_VAULT_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"             "$NEUTRON_VAULT_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-LOCKDROP_VAULT_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"            "$LOCKDROP_VAULT_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
 # MAIN_DAO
 DAO_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                       "$DAO_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
@@ -202,8 +193,8 @@ DISTRIBUTION_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTAN
 TREASURY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                  "$TREASURY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 # SUBDAOS
 SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"      "$SUBDAO_CORE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-SECURITY_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER" "$PRE_PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_PROPOSAL_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"  "$SUBDAO_PROPOSAL_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+SECURITY_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"  "$SUBDAO_PROPOSAL_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_VOTING_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"    "$CW4_VOTING_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_GROUP_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"     "$CW4_GROUP_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 GRANTS_SUBDAO_CORE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"        "$SUBDAO_CORE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
@@ -341,8 +332,7 @@ VOTING_REGISTRY_INIT_MSG='{
     }
   },
   "voting_vaults": [
-    "'"$NEUTRON_VAULT_CONTRACT_ADDRESS"'",
-    "'"$LOCKDROP_VAULT_CONTRACT_ADDRESS"'"
+    "'"$NEUTRON_VAULT_CONTRACT_ADDRESS"'"
   ]
 }'
 VOTING_REGISTRY_INIT_MSG_BASE64=$(echo "$VOTING_REGISTRY_INIT_MSG" | base64 | tr -d "\n")
@@ -421,18 +411,6 @@ NEUTRON_VAULT_INIT='{
   "name": "'"$NEUTRON_VAULT_NAME"'",
   "denom": "'"$STAKEDENOM"'",
   "description": "'"$NEUTRON_VAULT_DESCRIPTION"'"
-}'
-
-# since the lockdrop_contract is still a mock, the address is a random valid one just to pass instantiation TODO: get rid of mock
-LOCKDROP_VAULT_INIT='{
-  "owner": {
-    "address": {
-      "addr": "'"$ADMIN_ADDRESS"'"
-    }
-  },
-  "name": "'"$LOCKDROP_VAULT_NAME"'",
-  "description": "'"$LOCKDROP_VAULT_DESCRIPTION"'",
-  "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"
 }'
 
 # CW4 MODULES FOR SUBDAOS
@@ -519,7 +497,7 @@ SECURITY_SUBDAO_CORE_INIT_MSG='{
 # GRANTS_SUBDAO
 
 GRANTS_SUBDAO_TIMELOCK_INIT_MSG='{
-  "timelock_duration": '"$GRANTS_SUBDAO_TIMELOCK_DURATION"'
+  "overrule_pre_propose": "'"$PROPOSAL_OVERRULE_CONTRACT_ADDRESS"'"
 }'
 GRANTS_SUBDAO_TIMELOCK_INIT_MSG_BASE64=$(echo "$GRANTS_SUBDAO_TIMELOCK_INIT_MSG" | base64 | tr -d "\n")
 
@@ -603,7 +581,6 @@ echo "Instantiate contracts"
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
 $BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"             --label "DAO_Neutron_voting_vault"    --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$LOCKDROP_VAULT_CONTRACT_BINARY_ID"  "$LOCKDROP_VAULT_INIT"            --label "DAO_Neutron_lockdrop_vault"  --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       --label "DAO"                         --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$RESERVE_CONTRACT_BINARY_ID"         "$RESERVE_INIT"                   --label "Reserve"                     --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"              --label "Distribution"                --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"

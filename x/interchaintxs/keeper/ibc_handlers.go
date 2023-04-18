@@ -78,6 +78,8 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
 	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack")
 
+	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+
 	// Actually we have only one kind of error returned from acknowledgement
 	// maybe later we'll retrieve actual errors from events
 	errorText := ack.GetError()
@@ -86,8 +88,6 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	} else {
 		_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
 	}
-
-	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	if err != nil {
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
@@ -117,6 +117,8 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
 	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "timeout")
 
+	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+
 	_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
 	if err != nil {
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
@@ -125,7 +127,6 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 		writeFn()
 	}
 
-	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
 
 	return nil
