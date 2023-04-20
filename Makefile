@@ -12,6 +12,9 @@ SIMAPP = ./app
 DOCKER := $(shell which docker)
 HTTPS_GIT := https://github.com/neutron-org/neutron.git
 
+GO_SYSTEM_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1-2)
+REQUIRE_GO_VERSION = 1.20
+
 export GO111MODULE = on
 
 # process build tags
@@ -71,16 +74,22 @@ BUILD_FLAGS := -tags "$(build_tags_comma_sep)" -ldflags '$(ldflags)' -trimpath
 # The below include contains the tools and runsim targets.
 include contrib/devtools/Makefile
 
+check_version:
+ifneq ($(GO_SYSTEM_VERSION), $(REQUIRE_GO_VERSION))
+	@echo "ERROR: Go version ${REQUIRE_GO_VERSION} is required for $(VERSION) of Neutron."
+	exit 1
+endif
+
 all: install lint test
 
-build: go.sum
+build: check_version go.sum
 ifeq ($(OS),Windows_NT)
 	exit 1
 else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/neutrond ./cmd/neutrond
 endif
 
-install: go.sum
+install: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/neutrond
 
 ########################################
@@ -92,7 +101,7 @@ go-mod-cache: go.sum
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
-#	@go mod verify
+	@go mod verify
 
 draw-deps:
 	@# requires brew install graphviz or apt-get install graphviz
