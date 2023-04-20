@@ -22,6 +22,6 @@ func TestCCVTestSuite(t *testing.T) {
 		// TODO: These three tests just don't work in IS, so skip them for now
 		[]string{"TestSendRewardsRetries", "TestRewardsDistribution", "TestEndBlockRD"})
 
-	//Run tests
+	// Run tests
 	suite.Run(t, ccvSuite)
 }
