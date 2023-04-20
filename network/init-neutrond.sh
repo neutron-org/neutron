@@ -609,3 +609,5 @@ sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAI
 sed -i -e 's/\"reserve_address\":.*/\"reserve_address\":\"'"$RESERVE_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"*\"]/g' "$CHAIN_DIR/config/genesis.json"
+
