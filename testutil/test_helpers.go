@@ -27,7 +27,6 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
 	e2e "github.com/cosmos/interchain-security/testutil/integration"
-	utils "github.com/cosmos/interchain-security/x/ccv/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/neutron-org/neutron/app"
@@ -122,9 +121,9 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Require().True(len(providerValUpdates) == len(consumerBValUpdates), "initial valset not matching")
 
 	for i := 0; i < len(providerValUpdates); i++ {
-		addr1, _ := utils.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
-		addr2, _ := utils.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
-		addr3, _ := utils.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
+		addr1, _ := ccv.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
+		addr2, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
+		addr3, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
 		suite.Require().True(bytes.Equal(addr1, addr2), "validator mismatch")
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
 	}
