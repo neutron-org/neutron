@@ -26,8 +26,8 @@ import (
 
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
-	"github.com/cosmos/interchain-security/testutil/e2e"
-	"github.com/cosmos/interchain-security/x/ccv/utils"
+	e2e "github.com/cosmos/interchain-security/testutil/integration"
+	utils "github.com/cosmos/interchain-security/x/ccv/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/neutron-org/neutron/app"

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -299,6 +301,5 @@ func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.A
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
-	//suite.Run(t, new(CustomQuerierTestSuite))
+	suite.Run(t, new(CustomQuerierTestSuite))
 }

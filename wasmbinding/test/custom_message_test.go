@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
@@ -611,6 +613,5 @@ func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numM
 }
 
 func TestMessengerTestSuite(t *testing.T) {
-	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
-	//suite.Run(t, new(CustomMessengerTestSuite))
+	suite.Run(t, new(CustomMessengerTestSuite))
 }

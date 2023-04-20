@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/app/params"
 
@@ -1757,6 +1758,5 @@ func (*KeeperTestSuite) txHashesRemovalProgress(ctx sdk.Context, iqkeeper keeper
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
-	//suite.Run(t, new(KeeperTestSuite))
+	suite.Run(t, new(KeeperTestSuite))
 }

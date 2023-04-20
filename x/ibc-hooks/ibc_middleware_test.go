@@ -10,6 +10,7 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
@@ -26,8 +27,7 @@ type HooksTestSuite struct {
 }
 
 func TestIBCHooksTestSuite(t *testing.T) {
-	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
-	//suite.Run(t, new(HooksTestSuite))
+	suite.Run(t, new(HooksTestSuite))
 }
 
 func (suite *HooksTestSuite) TestOnRecvPacketHooks() {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
 	"github.com/neutron-org/neutron/testutil"
@@ -26,8 +27,7 @@ type KeeperTestSuite struct {
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	//COMMENTED OUT BECAUSE OF SOFT OPT OUT FEATURE
-	//suite.Run(t, new(KeeperTestSuite))
+	suite.Run(t, new(KeeperTestSuite))
 }
 
 func (suite *KeeperTestSuite) Setup() {
