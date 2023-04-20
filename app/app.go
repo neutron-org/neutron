@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/neutron-org/neutron/app/upgrades"
+	v044 "github.com/neutron-org/neutron/app/upgrades/v0.4.4"
 	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
 	"github.com/neutron-org/neutron/x/cron"
 
@@ -172,7 +173,7 @@ func GetEnabledProposals() []wasm.ProposalType {
 }
 
 var (
-	Upgrades = []upgrades.Upgrade{v3.Upgrade}
+	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -893,9 +894,12 @@ func (app *App) setupUpgradeHandlers() {
 			upgrade.CreateUpgradeHandler(
 				app.mm,
 				app.configurator,
-				app.InterchainQueriesKeeper,
-				app.CronKeeper,
-				app.TokenFactoryKeeper,
+				&upgrades.UpgradeKeepers{
+					FeeBurnerKeeper:    app.FeeBurnerKeeper,
+					CronKeeper:         app.CronKeeper,
+					IcqKeeper:          app.InterchainQueriesKeeper,
+					TokenFactoryKeeper: app.TokenFactoryKeeper,
+				},
 			),
 		)
 	}

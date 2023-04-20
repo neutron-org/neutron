@@ -112,7 +112,7 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 	}
 
 	if len(fundsForReserve) > 0 {
-		addr, err := sdk.AccAddressFromBech32(params.ReserveAddress)
+		addr, err := sdk.AccAddressFromBech32(params.TreasuryAddress)
 		if err != nil {
 			// there's no way we face this kind of situation in production, since it means the chain is misconfigured
 			// still, in test environments it might be the case when the chain is started without Reserve

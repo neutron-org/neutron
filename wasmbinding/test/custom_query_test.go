@@ -7,7 +7,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/neutron-org/neutron/app/params"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
@@ -246,10 +248,21 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 		owner   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
 	)
 
+	neutron.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.NewParams(
+		sdk.NewCoins(sdk.NewInt64Coin(tokenfactorytypes.DefaultNeutronDenom, 10_000_000)),
+		FeeCollectorAddress,
+	))
+
 	// Store code and instantiate reflect contract
 	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
 	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
+
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	bankKeeper := neutron.BankKeeper
+	err := bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
+	suite.NoError(err)
 
 	denom, _ := neutron.TokenFactoryKeeper.CreateDenom(ctx, contractAddress.String(), "test")
 
@@ -259,7 +272,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 		},
 	}
 	resp := bindings.DenomAdminResponse{}
-	err := suite.queryCustom(ctx, contractAddress, query, &resp)
+	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
 	suite.Require().Equal(contractAddress.String(), resp.Admin)

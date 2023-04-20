@@ -124,7 +124,7 @@ func TestKeeper_BurnAndDistribute_NonNtrn(t *testing.T) {
 	defer ctrl.Finish()
 	feeKeeper, ctx, mockBankKeeper, redistrAddr := setupBurnAndDistribute(t, ctrl, sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
 
-	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).ReserveAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
+	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
 
 	feeKeeper.BurnAndDistribute(ctx)
 
@@ -137,7 +137,7 @@ func TestKeeper_BurnAndDistribute_SendCoinsFail(t *testing.T) {
 	defer ctrl.Finish()
 	feeKeeper, ctx, mockBankKeeper, redistrAddr := setupBurnAndDistribute(t, ctrl, sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))})
 
-	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).ReserveAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))}).Return(fmt.Errorf("testerror"))
+	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(50))}).Return(fmt.Errorf("testerror"))
 
 	assert.Panics(t, func() {
 		feeKeeper.BurnAndDistribute(ctx)
@@ -154,7 +154,7 @@ func TestKeeper_BurnAndDistribute_NtrnAndNonNtrn(t *testing.T) {
 	feeKeeper, ctx, mockBankKeeper, redistrAddr := setupBurnAndDistribute(t, ctrl, coins)
 
 	mockBankKeeper.EXPECT().BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{sdk.NewCoin(feetypes.DefaultNeutronDenom, sdk.NewInt(70))})
-	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).ReserveAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(20))})
+	mockBankKeeper.EXPECT().SendCoins(ctx, redistrAddr, sdk.MustAccAddressFromBech32(feeKeeper.GetParams(ctx).TreasuryAddress), sdk.Coins{sdk.NewCoin("nonntrn", sdk.NewInt(20))})
 
 	feeKeeper.BurnAndDistribute(ctx)
 	burnedAmount := feeKeeper.GetTotalBurnedNeutronsAmount(ctx)

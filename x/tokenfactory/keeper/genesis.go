@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
@@ -25,7 +23,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 			panic(err)
 		}
 		err = k.setAuthorityMetadata(ctx, genDenom.GetDenom(), genDenom.GetAuthorityMetadata())
-		fmt.Println("set auth meta", genDenom.GetDenom(), genDenom.GetAuthorityMetadata(), err)
 		if err != nil {
 			panic(err)
 		}

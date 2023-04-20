@@ -12,10 +12,10 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyNeutronDenom       = []byte("NeutronDenom")
-	DefaultNeutronDenom   = params.DefaultDenom
-	KeyReserveAddress     = []byte("ReserveAddress")
-	DefaultReserveAddress = ""
+	KeyNeutronDenom        = []byte("NeutronDenom")
+	DefaultNeutronDenom    = params.DefaultDenom
+	KeyTreasuryAddress     = []byte("TreasuryAddress")
+	DefaultTreasuryAddress = ""
 )
 
 // ParamKeyTable the param key table for launch module
@@ -27,24 +27,24 @@ func ParamKeyTable() paramtypes.KeyTable {
 			validateNeutronDenom,
 		),
 		paramtypes.NewParamSetPair(
-			KeyReserveAddress,
-			DefaultReserveAddress,
-			validateReserveAddress,
+			KeyTreasuryAddress,
+			DefaultTreasuryAddress,
+			validateTreasuryAddress,
 		),
 	)
 }
 
 // NewParams creates a new Params instance
-func NewParams(neutronDenom, reserveAddress string) Params {
+func NewParams(neutronDenom, treasuryAddress string) Params {
 	return Params{
-		NeutronDenom:   neutronDenom,
-		ReserveAddress: reserveAddress,
+		NeutronDenom:    neutronDenom,
+		TreasuryAddress: treasuryAddress,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultNeutronDenom, DefaultReserveAddress)
+	return NewParams(DefaultNeutronDenom, DefaultTreasuryAddress)
 }
 
 // ParamSetPairs get the params.ParamSet
@@ -56,9 +56,9 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 			validateNeutronDenom,
 		),
 		paramtypes.NewParamSetPair(
-			KeyReserveAddress,
-			&p.ReserveAddress,
-			validateReserveAddress,
+			KeyTreasuryAddress,
+			&p.TreasuryAddress,
+			validateTreasuryAddress,
 		),
 	}
 }
@@ -70,7 +70,7 @@ func (p Params) Validate() error {
 		return err
 	}
 
-	err = validateReserveAddress(p.ReserveAddress)
+	err = validateTreasuryAddress(p.TreasuryAddress)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func validateNeutronDenom(i interface{}) error {
 	return nil
 }
 
-func validateReserveAddress(i interface{}) error {
+func validateTreasuryAddress(i interface{}) error {
 	v, ok := i.(string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
