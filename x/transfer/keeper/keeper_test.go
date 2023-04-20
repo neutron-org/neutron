@@ -7,7 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/app/params"

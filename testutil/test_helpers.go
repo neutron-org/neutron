@@ -18,15 +18,15 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
 	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
-	"github.com/cosmos/interchain-security/testutil/e2e"
-	"github.com/cosmos/interchain-security/x/ccv/utils"
+	e2e "github.com/cosmos/interchain-security/testutil/integration"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/neutron-org/neutron/app"
@@ -121,9 +121,9 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Require().True(len(providerValUpdates) == len(consumerBValUpdates), "initial valset not matching")
 
 	for i := 0; i < len(providerValUpdates); i++ {
-		addr1, _ := utils.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
-		addr2, _ := utils.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
-		addr3, _ := utils.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
+		addr1, _ := ccv.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
+		addr2, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
+		addr3, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
 		suite.Require().True(bytes.Equal(addr1, addr2), "validator mismatch")
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
 	}
