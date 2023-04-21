@@ -28,8 +28,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params holds parameters for the tokenfactory module
 type Params struct {
-	DenomCreationFee    github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,1,rep,name=denom_creation_fee,json=denomCreationFee,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"denom_creation_fee" yaml:"denom_creation_fee"`
-	FeeCollectorAddress string                                   `protobuf:"bytes,2,opt,name=fee_collector_address,json=feeCollectorAddress,proto3" json:"fee_collector_address,omitempty"`
+	// DenomCreationFee is the fee required to create a new denom using the tokenfactory module
+	DenomCreationFee github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,1,rep,name=denom_creation_fee,json=denomCreationFee,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"denom_creation_fee" yaml:"denom_creation_fee"`
+	// FeeCollectorAddress is the address where fees collected from denom creation are sent to
+	FeeCollectorAddress string `protobuf:"bytes,2,opt,name=fee_collector_address,json=feeCollectorAddress,proto3" json:"fee_collector_address,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
