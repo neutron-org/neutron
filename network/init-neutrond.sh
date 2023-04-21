@@ -39,22 +39,22 @@ $BINARY add-consumer-section --home "$CHAIN_DIR"
 
 ##pre propose single parameters
 # amount of tokens to be deposited on proposal creation [uint]
-PRE_PROPOSAL_SINGLE_AMOUNT=1000
-# refund policy: [always/never]
-PRE_PROPOSAL_SINGLE_REFUND_POLICY=always
+PRE_PROPOSAL_SINGLE_AMOUNT=50000000  # 50 USD if NTRN = 1 USD
+# refund policy: [always/never/only_passed]
+PRE_PROPOSAL_SINGLE_REFUND_POLICY=only_passed
 # open proposal submission [bool]
-PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION=false
-PRE_PROPOSAL_SINGLE_LABEL=neutron
+PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION=true
+PRE_PROPOSAL_SINGLE_LABEL=neutron_dao_prepropose_single
 
 ## propose singe params
 # revoting
-PROPOSAL_ALLOW_REVOTING=false
+PROPOSAL_ALLOW_REVOTING=true
 # if only users w voting power can execute passed proposals
 PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
-PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD=1200
+PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD=1209600
 # if proposal will be closed on execution fail [bool]
-PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
+PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_SINGLE_QUORUM=0.05
 # % of votes should vote for the proposal to pass [float] <1
@@ -62,54 +62,54 @@ PROPOSAL_SINGLE_THRESHOLD=0.5
 
 ## propose multiple params
 # revoting [bool]
-PROPOSAL_MULTIPLE_ALLOW_REVOTING=false
+PROPOSAL_MULTIPLE_ALLOW_REVOTING=true
 # contract label
-PROPOSAL_MULTIPLE_LABEL=neutron
+PRE_PROPOSAL_MULTIPLE_LABEL=neutron_dao_prepropose_multiple
 # if only users w voting power can execute passed proposals
 PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
-PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD=1200
+PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD=1209600
 # if proposal will be closed on execution fail [bool]
-PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
+PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
+# quorum to consider proposal's result viable [float] < 1
+PROPOSAL_MULTIPLE_QUORUM=0.05
 
 ## Propose overrule params
 # revoting
 PROPOSAL_OVERRULE_ALLOW_REVOTING=false
 # contract label
-PROPOSAL_OVERRULE_LABEL=neutron
+PROPOSAL_OVERRULE_LABEL=neutron_dao_proposal_overrule
 # only users w voting power can execute passed proposals
 PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
-PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=1200
+PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=259200
 # if proposal will be closed on execution fail [bool]
-PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
-#
+PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
+# % of votes should vote for the proposal to pass [float] <1
 PROPOSAL_OVERRULE_THRESHOLD=0.005
-# if proposal will be closed on execution fail
-PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 
 ## Voting registry
 VOTING_REGISTRY_MANAGER=null
 
+## Soft Opt Out
+#
+SOFT_OPT_OUT_THRESHOLD=TODO
+
 ## DAO
-DAO_DESCRIPTION="awesome neutron dao"
-DAO_NAME=Neutron
+DAO_DESCRIPTION="Neutron DAO"
+DAO_NAME="Neutron DAO"
 DAO_ITEMS=null
-DAO_PROPOSAL_SINGLE_LABEL="DAO_Neutron_cw-proposal-single"
-DAO_PROPOSAL_MULTIPLE_LABEL="DAO_Neutron_cw-proposal-multiple"
-DAO_PROPOSAL_OVERRULE_LABEL="DAO_Neutron_cw-proposal-overrule"
-DAO_VOTING_REGISTRY_LABEL="neutron voting registry"
+DAO_PROPOSAL_SINGLE_LABEL="neutron_proposal_single"
+DAO_PROPOSAL_MULTIPLE_LABEL="neutron_proposal_multiple"
+DAO_PROPOSAL_OVERRULE_LABEL="neutron_proposal_overrule"
+DAO_VOTING_REGISTRY_LABEL="neutron_voting_registry"
 
 ## Voting vault
-NEUTRON_VAULT_NAME="voting vault"
-NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
+NEUTRON_VAULT_NAME="neutron_neutron_voting_vault"
+NEUTRON_VAULT_DESCRIPTION="Neutron NTRN voting vault"
 
-## Basic vault
-NEUTRON_VAULT_NAME="voting vault"
-NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
-
-## Treasury (should be renamed to reserve, pr is not merged yet)
-DISTRIBUTION_RATE=0
+## Reserve
+DISTRIBUTION_RATE=02
 MIN_PERIOD=10
 VESTING_DENOMINATOR=1
 
@@ -268,7 +268,7 @@ PROPOSAL_MULTIPLE_INIT_MSG='{
             },
             "code_id": '"$PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID"',
             "msg": "'"$PRE_PROPOSE_INIT_MSG_BASE64"'",
-            "label":"'"$PROPOSAL_MULTIPLE_LABEL"'"
+            "label":"'"$PRE_PROPOSAL_MULTIPLE_LABEL"'"
          }
       }
    },
@@ -280,8 +280,7 @@ PROPOSAL_MULTIPLE_INIT_MSG='{
    "voting_strategy":{
      "single_choice": {
         "quorum": {
-          "majority": {
-          }
+          "percent":"'"$PROPOSAL_MULTIPLE_QUORUM"'"
         }
      }
    }
