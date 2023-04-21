@@ -34,19 +34,23 @@ func CreateUpgradeHandler(
 			panic("global fee burner params subspace not found")
 		}
 		var reserveAddress string
-		ctx.Logger().Info("Get ReserveAddres Param")
 		s.Get(ctx, feeburnertypes.KeyReserveAddress, &reserveAddress)
-		ctx.Logger().Info("Get ReserveAddres Param", "reserveAddress", reserveAddress)
+
 		var neutronDenom string
 		s.Get(ctx, feeburnertypes.KeyNeutronDenom, &neutronDenom)
-		ctx.Logger().Info("Get ReserveAddres Param", "neutronDenom", neutronDenom)
 
-		oldFeeBurnerParams := keepers.FeeBurnerKeeper.GetParams(ctx)
-		ctx.Logger().Info("Assigning treasury address...")
-		oldFeeBurnerParams.TreasuryAddress = oldFeeBurnerParams.ReserveAddress
+		feeburnerDefaultParams := feeburnertypes.DefaultParams()
+		ctx.Logger().Info("Default params", "params", feeburnerDefaultParams)
+		feeburnerDefaultParams.TreasuryAddress = reserveAddress
+		feeburnerDefaultParams.NeutronDenom = neutronDenom
+		ctx.Logger().Info("Updted params", "params", feeburnerDefaultParams)
+
+		keepers.FeeBurnerKeeper.GetParams(ctx)
 
 		ctx.Logger().Info("Set params...")
-		keepers.FeeBurnerKeeper.SetParams(ctx, oldFeeBurnerParams)
+		keepers.FeeBurnerKeeper.SetParams(ctx, feeburnerDefaultParams)
+
+		panic("halt it")
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err
