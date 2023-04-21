@@ -91,10 +91,6 @@ PROPOSAL_OVERRULE_THRESHOLD=0.005
 ## Voting registry
 VOTING_REGISTRY_MANAGER=null
 
-## Soft Opt Out
-#
-SOFT_OPT_OUT_THRESHOLD=TODO
-
 ## DAO
 DAO_DESCRIPTION="Neutron DAO"
 DAO_NAME="Neutron DAO"
@@ -109,29 +105,27 @@ NEUTRON_VAULT_NAME="neutron_neutron_voting_vault"
 NEUTRON_VAULT_DESCRIPTION="Neutron NTRN voting vault"
 
 ## Reserve
-DISTRIBUTION_RATE=02
-MIN_PERIOD=10
-VESTING_DENOMINATOR=1
+DISTRIBUTION_RATE=0 # how much tokens will be distributed to the distribution contract (decimal share [0,1])
+MIN_PERIOD=86400 # minimal time between distribution periods (seconds)
+VESTING_DENOMINATOR=1 # manages how much tokens will be distributed based on the amount of transaction fees spent for period (decimal share [0,1])
 
 ## Grants subdao
-GRANTS_SUBDAO_CORE_NAME="GRANTS"
-GRANTS_SUBDAO_CORE_LABEL="neutron grants subdao"
-GRANTS_SUBDAO_CORE_URI="subdao.neutron.org"
+GRANTS_SUBDAO_CORE_NAME="Grants subDAO"
+GRANTS_SUBDAO_CORE_LABEL="neutron grants subdao core"
+GRANTS_SUBDAO_CORE_URI="grants.subdao.neutron.org"
 GRANTS_SUBDAO_CORE_DESCRIPTION="neutron grants subdao"
-GRANTS_SUBDAO_VOTING_MODULE_LABEL="grants voting module"
+GRANTS_SUBDAO_VOTING_MODULE_LABEL="grants subdao voting module"
 GRANTS_SUBDAO_PROPOSAL_LABEL="grants single proposal"
-
-## Timelock
-GRANTS_SUBDAO_TIMELOCK_LABEL="subDAO timelock contract"
+GRANTS_SUBDAO_TIMELOCK_LABEL="grants subdao timelock contract"
 
 ## Security subdao
-SECURITY_SUBDAO_CORE_LABEL="neutron security subdao"
-SECURITY_SUBDAO_CORE_NAME="SECURITY"
+SECURITY_SUBDAO_CORE_NAME="Security subDAO"
+SECURITY_SUBDAO_CORE_LABEL="neutron security subdao core"
+SECURITY_SUBDAO_CORE_URI="security.subdao.neutron.org"
 SECURITY_SUBDAO_CORE_DESCRIPTION="subdao that secures neutron"
 SECURITY_SUBDAO_PROPOSAL_LABEL="security subdao single proposal"
-SECURITY_SUBDAO_PREPROPOSAL_LABEL="security prerpopose"
+SECURITY_SUBDAO_PREPROPOSAL_LABEL="security subdao prerpopose module"
 SECURITY_SUBDAO_VOTE_LABEL="security subdao voting module"
-SECURITY_SUBDAO_CORE_URI="security.subdao.org"
 
 echo "Initializing dao contract in genesis..."
 
