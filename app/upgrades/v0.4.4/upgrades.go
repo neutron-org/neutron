@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 
 	"github.com/neutron-org/neutron/app/upgrades"
 )
@@ -28,7 +29,6 @@ func CreateUpgradeHandler(
 		keepers.SlashingKeeper.SetParams(ctx, oldSlashingParams)
 
 		ctx.Logger().Info("Migrating FeeBurner Params...")
-
 		s, ok := keepers.ParamsKeeper.GetSubspace(feeburnertypes.ModuleName)
 		if !ok {
 			panic("global fee burner params subspace not found")
@@ -40,16 +40,14 @@ func CreateUpgradeHandler(
 		s.Get(ctx, feeburnertypes.KeyNeutronDenom, &neutronDenom)
 
 		feeburnerDefaultParams := feeburnertypes.DefaultParams()
-		ctx.Logger().Info("Default params", "params", feeburnerDefaultParams)
 		feeburnerDefaultParams.TreasuryAddress = reserveAddress
 		feeburnerDefaultParams.NeutronDenom = neutronDenom
-		ctx.Logger().Info("Updted params", "params", feeburnerDefaultParams)
-		ctx.Logger().Info("Set params...")
 		keepers.FeeBurnerKeeper.SetParams(ctx, feeburnerDefaultParams)
 
-		keepers.FeeBurnerKeeper.GetParams(ctx)
-
-		panic("halt it")
+		ctx.Logger().Info("Migrating TokenFactory Params...")
+		tokenfactoryDefaultParams := tokenfactorytypes.DefaultParams()
+		tokenfactoryDefaultParams.FeeCollectorAddress = reserveAddress
+		keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactoryDefaultParams)
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err
