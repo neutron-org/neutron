@@ -900,6 +900,7 @@ func (app *App) setupUpgradeHandlers() {
 					IcqKeeper:          app.InterchainQueriesKeeper,
 					TokenFactoryKeeper: app.TokenFactoryKeeper,
 					SlashingKeeper:     app.SlashingKeeper,
+					ParamsKeeper:       app.ParamsKeeper,
 				},
 			),
 		)

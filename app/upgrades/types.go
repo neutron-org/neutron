@@ -6,6 +6,7 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
+	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -34,4 +35,5 @@ type UpgradeKeepers struct {
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper
 	FeeBurnerKeeper    *feeburnerkeeper.Keeper
 	SlashingKeeper     slashingkeeper.Keeper
+	ParamsKeeper       paramskeeper.Keeper
 }
