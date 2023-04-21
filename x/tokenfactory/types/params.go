@@ -61,8 +61,8 @@ func validateDenomCreationFee(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.Validate() != nil {
-		return fmt.Errorf("invalid denom creation fee: %+v", i)
+	if err := v.Validate(); err != nil {
+		return fmt.Errorf("invalid denom creation fee: %+v, %w", i, err)
 	}
 
 	return nil

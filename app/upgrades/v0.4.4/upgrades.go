@@ -1,9 +1,12 @@
 package v044
 
 import (
+	"errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 
@@ -31,7 +34,7 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info("Migrating FeeBurner Params...")
 		s, ok := keepers.ParamsKeeper.GetSubspace(feeburnertypes.ModuleName)
 		if !ok {
-			panic("global fee burner params subspace not found")
+			return nil, errors.New("global fee burner params subspace not found")
 		}
 		var reserveAddress string
 		s.Get(ctx, feeburnertypes.KeyReserveAddress, &reserveAddress)
