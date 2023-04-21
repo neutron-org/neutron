@@ -14,6 +14,8 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 var (
 	KeyNeutronDenom        = []byte("NeutronDenom")
 	DefaultNeutronDenom    = params.DefaultDenom
+	KeyReserveAddress      = []byte("ReserveAddress")
+	DefaultReserveAddress  = ""
 	KeyTreasuryAddress     = []byte("TreasuryAddress")
 	DefaultTreasuryAddress = ""
 )
@@ -27,6 +29,11 @@ func ParamKeyTable() paramtypes.KeyTable {
 			validateNeutronDenom,
 		),
 		paramtypes.NewParamSetPair(
+			KeyReserveAddress,
+			DefaultReserveAddress,
+			func(i interface{}) error { return nil },
+		),
+		paramtypes.NewParamSetPair(
 			KeyTreasuryAddress,
 			DefaultTreasuryAddress,
 			validateTreasuryAddress,
@@ -38,6 +45,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 func NewParams(neutronDenom, treasuryAddress string) Params {
 	return Params{
 		NeutronDenom:    neutronDenom,
+		ReserveAddress:  DefaultReserveAddress,
 		TreasuryAddress: treasuryAddress,
 	}
 }
@@ -54,6 +62,11 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 			KeyNeutronDenom,
 			&p.NeutronDenom,
 			validateNeutronDenom,
+		),
+		paramtypes.NewParamSetPair(
+			KeyReserveAddress,
+			&p.ReserveAddress,
+			func(i interface{}) error { return nil },
 		),
 		paramtypes.NewParamSetPair(
 			KeyTreasuryAddress,
