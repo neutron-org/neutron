@@ -44,11 +44,10 @@ func CreateUpgradeHandler(
 		feeburnerDefaultParams.TreasuryAddress = reserveAddress
 		feeburnerDefaultParams.NeutronDenom = neutronDenom
 		ctx.Logger().Info("Updted params", "params", feeburnerDefaultParams)
-
-		keepers.FeeBurnerKeeper.GetParams(ctx)
-
 		ctx.Logger().Info("Set params...")
 		keepers.FeeBurnerKeeper.SetParams(ctx, feeburnerDefaultParams)
+
+		keepers.FeeBurnerKeeper.GetParams(ctx)
 
 		panic("halt it")
 
