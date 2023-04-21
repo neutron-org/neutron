@@ -8,7 +8,7 @@ SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
 ENABLED_PROPOSALS := MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes
-GO_VERSION=1.19
+GO_VERSION=1.20.0
 BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
