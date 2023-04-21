@@ -18,8 +18,10 @@ func CreateUpgradeHandler(
 
 		ctx.Logger().Info("Migrating FeeBurner Params...")
 		oldFeeBurnerParams := keepers.FeeBurnerKeeper.GetParams(ctx)
+		ctx.Logger().Info("Assigning treasury address...")
 		oldFeeBurnerParams.TreasuryAddress = oldFeeBurnerParams.ReserveAddress
 
+		ctx.Logger().Info("Set params...")
 		keepers.FeeBurnerKeeper.SetParams(ctx, oldFeeBurnerParams)
 
 		ctx.Logger().Info("Migrating SlashingKeeper Params...")
