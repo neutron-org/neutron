@@ -38,7 +38,7 @@ func CreateUpgradeHandler(
 		s.Get(ctx, feeburnertypes.KeyReserveAddress, &reserveAddress)
 		ctx.Logger().Info("Get ReserveAddres Param", "reserveAddress", reserveAddress)
 		var neutronDenom string
-		s.Get(ctx, feeburnertypes.KeyReserveAddress, &neutronDenom)
+		s.Get(ctx, feeburnertypes.KeyNeutronDenom, &neutronDenom)
 		ctx.Logger().Info("Get ReserveAddres Param", "neutronDenom", neutronDenom)
 
 		oldFeeBurnerParams := keepers.FeeBurnerKeeper.GetParams(ctx)
