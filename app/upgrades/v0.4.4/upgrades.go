@@ -15,6 +15,10 @@ func CreateUpgradeHandler(
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")
+		vm, err := mm.RunMigrations(ctx, configurator, vm)
+		if err != nil {
+			return vm, err
+		}
 
 		ctx.Logger().Info("Migrating FeeBurner Params...")
 		oldFeeBurnerParams := keepers.FeeBurnerKeeper.GetParams(ctx)
@@ -29,11 +33,6 @@ func CreateUpgradeHandler(
 		oldSlashingParams.SignedBlocksWindow = int64(36000)
 
 		keepers.SlashingKeeper.SetParams(ctx, oldSlashingParams)
-
-		vm, err := mm.RunMigrations(ctx, configurator, vm)
-		if err != nil {
-			return vm, err
-		}
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err
