@@ -12,10 +12,29 @@ import (
 func (suite *KeeperTestSuite) TestMsgCreateDenom() {
 	suite.Setup()
 
+	// Create denom without enough funds
+	_, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
+	suite.Require().ErrorContains(err, "unable to charge for denom creation")
+
 	// Creating a denom should work
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
+
+	balance := suite.WalletBalance(suite.ChainA.GetContext(), suite.TestAccs[0].String())
+	suite.Require().Equal(sdk.NewInt(TopUpCoinsAmount), balance)
+
+	feeCollectorBalance := suite.WalletBalance(suite.ChainA.GetContext(), FeeCollectorAddress)
+	suite.Require().Equal(sdk.NewInt(0), feeCollectorBalance)
+
 	res, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 	suite.Require().NoError(err)
 	suite.Require().NotEmpty(res.GetNewTokenDenom())
+
+	balance = suite.WalletBalance(suite.ChainA.GetContext(), suite.TestAccs[0].String())
+	suite.Require().Equal(sdk.NewInt(0), balance)
+
+	feeCollectorBalance = suite.WalletBalance(suite.ChainA.GetContext(), FeeCollectorAddress)
+	suite.Require().Equal(sdk.NewInt(TopUpCoinsAmount), feeCollectorBalance)
 
 	// Make sure that the admin is set correctly
 	denom := strings.Split(res.GetNewTokenDenom(), "/")
@@ -33,6 +52,8 @@ func (suite *KeeperTestSuite) TestMsgCreateDenom() {
 	suite.Require().Error(err)
 
 	// Creating a second denom should work
+	suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
+
 	res, err = suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "litecoin"))
 	suite.Require().NoError(err)
 	suite.Require().NotEmpty(res.GetNewTokenDenom())
@@ -45,6 +66,8 @@ func (suite *KeeperTestSuite) TestMsgCreateDenom() {
 	suite.Require().Len(queryRes2.Denoms, 2)
 
 	// Make sure that a second account can create a denom with the same subdenom
+	suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[1])
+
 	res, err = suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[1].String(), "bitcoin"))
 	suite.Require().NoError(err)
 	suite.Require().NotEmpty(res.GetNewTokenDenom())
@@ -70,6 +93,8 @@ func (suite *KeeperTestSuite) TestCreateDenom() {
 		{
 			desc: "subdenom and creator pair already exists",
 			setup: func() {
+				senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+				suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
 				_, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 				suite.Require().NoError(err)
 			},
@@ -94,6 +119,9 @@ func (suite *KeeperTestSuite) TestCreateDenom() {
 				tc.setup()
 			}
 			// Create a denom
+			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+			suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
+
 			res, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), tc.subdenom))
 			if tc.valid {
 				suite.Require().NoError(err)

@@ -16,6 +16,7 @@ import (
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
@@ -72,8 +73,11 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyQueryDeposit)}:        {},
 	{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyTxQueryRemovalLimit)}: {},
 	// feeburner
-	{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyReserveAddress)}: {},
-	{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyNeutronDenom)}:   {},
+	{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyTreasuryAddress)}: {},
+	{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyNeutronDenom)}:    {},
+	// tokenfactory
+	{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyDenomCreationFee)}:    {},
+	{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyFeeCollectorAddress)}: {},
 	// cron
 	{Subspace: crontypes.ModuleName, Key: string(crontypes.KeySecurityAddress)}: {},
 	{Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},

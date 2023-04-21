@@ -28,7 +28,11 @@ import (
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
+
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 )
+
+const FeeCollectorAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
 
 type CustomMessengerTestSuite struct {
 	testutil.IBCConnectionTestSuite
@@ -53,6 +57,11 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
+
+	suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
+		sdk.NewCoins(sdk.NewInt64Coin(tokenfactorytypes.DefaultNeutronDenom, 10_000_000)),
+		FeeCollectorAddress,
+	))
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
@@ -147,6 +156,12 @@ func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
 	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+	suite.NoError(err)
+
 	fullMsg := bindings.NeutronMsg{
 		CreateDenom: &bindings.CreateDenom{
 			Subdenom: "SUN",
@@ -168,6 +183,12 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
 	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
+
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(20_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+	suite.NoError(err)
 
 	// lucky was broke
 	balances := neutron.BankKeeper.GetAllBalances(suite.ctx, lucky)
