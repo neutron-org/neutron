@@ -17,10 +17,16 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info("Starting module migrations...")
 
 		ctx.Logger().Info("Migrating FeeBurner Params...")
-		oldParams := keepers.FeeBurnerKeeper.GetParams(ctx)
-		oldParams.TreasuryAddress = oldParams.ReserveAddress
+		oldFeeBurnerParams := keepers.FeeBurnerKeeper.GetParams(ctx)
+		oldFeeBurnerParams.TreasuryAddress = oldFeeBurnerParams.ReserveAddress
 
-		keepers.FeeBurnerKeeper.SetParams(ctx, oldParams)
+		keepers.FeeBurnerKeeper.SetParams(ctx, oldFeeBurnerParams)
+
+		ctx.Logger().Info("Migrating SlashingKeeper Params...")
+		oldSlashingParams := keepers.SlashingKeeper.GetParams(ctx)
+		oldSlashingParams.SignedBlocksWindow = int64(36000)
+
+		keepers.SlashingKeeper.SetParams(ctx, oldSlashingParams)
 
 		vm, err := mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {

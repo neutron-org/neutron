@@ -3,6 +3,7 @@ package upgrades
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
@@ -32,4 +33,5 @@ type UpgradeKeepers struct {
 	CronKeeper         cronkeeper.Keeper
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper
 	FeeBurnerKeeper    *feeburnerkeeper.Keeper
+	SlashingKeeper     slashingkeeper.Keeper
 }
