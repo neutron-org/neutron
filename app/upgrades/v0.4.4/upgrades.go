@@ -20,19 +20,20 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
+		ctx.Logger().Info("Migrating SlashingKeeper Params...")
+		oldSlashingParams := keepers.SlashingKeeper.GetParams(ctx)
+		oldSlashingParams.SignedBlocksWindow = int64(36000)
+
+		keepers.SlashingKeeper.SetParams(ctx, oldSlashingParams)
+
 		ctx.Logger().Info("Migrating FeeBurner Params...")
+
 		oldFeeBurnerParams := keepers.FeeBurnerKeeper.GetParams(ctx)
 		ctx.Logger().Info("Assigning treasury address...")
 		oldFeeBurnerParams.TreasuryAddress = oldFeeBurnerParams.ReserveAddress
 
 		ctx.Logger().Info("Set params...")
 		keepers.FeeBurnerKeeper.SetParams(ctx, oldFeeBurnerParams)
-
-		ctx.Logger().Info("Migrating SlashingKeeper Params...")
-		oldSlashingParams := keepers.SlashingKeeper.GetParams(ctx)
-		oldSlashingParams.SignedBlocksWindow = int64(36000)
-
-		keepers.SlashingKeeper.SetParams(ctx, oldSlashingParams)
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err
