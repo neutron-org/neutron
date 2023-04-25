@@ -5,7 +5,7 @@
 **NOTE: current version is a WIP.**
 
 ## Requirements
-* Go 1.18
+* Go 1.20
 * Ignite Cli
 * Hermes IBC Relayer
 
@@ -22,7 +22,7 @@ For current CCV modules support there is not any suitable version of hermes, so 
 ```shell
 git clone https://github.com/informalsystems/hermes.git
 cd hermes
-git checkout 7defaf067dbe6f60588518ea1619f228d38ac48d
+git checkout v1.4.0
 cargo build --release --bin hermes
 ```
 
@@ -36,12 +36,12 @@ make install
 
 ### Bootstrap two chains and create an IBC connection
 
-In order to bootstrap two chains it is required to clone gaiad v7.0.3 next to `neutron` repository and install it.
+In order to bootstrap two chains it is required to clone gaiad v8.0.1 next to `neutron` repository and install it.
 
 ```shell
 git clone https://github.com/cosmos/gaia.git
 cd gaia
-git checkout v7.0.3
+git checkout v8.0.1
 make install
 ```
 
