@@ -1,23 +1,29 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/tokenfactory/keeper"
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
+const (
+	FeeCollectorAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
+	TopUpCoinsAmount    = 1_000_000
+)
+
 type KeeperTestSuite struct {
 	testutil.IBCConnectionTestSuite
 
-	TestAccs    []sdk.AccAddress
+	TestAccs    []sdktypes.AccAddress
 	QueryHelper *baseapp.QueryServiceTestHelper
 
 	queryClient types.QueryClient
@@ -38,13 +44,17 @@ func (suite *KeeperTestSuite) Setup() {
 		Ctx:             suite.ChainA.GetContext(),
 	}
 	suite.TestAccs = CreateRandomAccounts(3)
-	fmt.Printf("Setup: %s\n", suite.TestAccs)
 
 	suite.SetupTokenFactory()
 
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 
 	tokeFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
+	tokeFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
+		sdktypes.NewCoins(sdktypes.NewInt64Coin(types.DefaultNeutronDenom, TopUpCoinsAmount)),
+		FeeCollectorAddress,
+	))
+
 	suite.msgServer = keeper.NewMsgServerImpl(*tokeFactoryKeeper)
 }
 
@@ -52,18 +62,41 @@ func (suite *KeeperTestSuite) SetupTokenFactory() {
 	suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper.CreateModuleAccount(suite.ChainA.GetContext())
 }
 
-func (suite *KeeperTestSuite) CreateDefaultDenom() {
-	fmt.Printf("CreateDefaultDenom: %s\n", suite.TestAccs)
-	res, _ := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
+func (suite *KeeperTestSuite) CreateDefaultDenom(ctx sdktypes.Context) {
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	suite.TopUpWallet(ctx, senderAddress, suite.TestAccs[0])
+
+	res, _ := suite.msgServer.CreateDenom(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 	suite.defaultDenom = res.GetNewTokenDenom()
 }
 
+func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(TopUpCoinsAmount)))
+	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
+	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
+	suite.Require().NoError(err)
+}
+
+func (suite *KeeperTestSuite) WalletBalance(ctx sdktypes.Context, address string) sdktypes.Int {
+	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
+	balance, err := bankKeeper.Balance(
+		sdktypes.WrapSDKContext(ctx),
+		&banktypes.QueryBalanceRequest{
+			Address: address,
+			Denom:   params.DefaultDenom,
+		},
+	)
+	suite.Require().NoError(err)
+
+	return balance.Balance.Amount
+}
+
 // CreateRandomAccounts is a function return a list of randomly generated AccAddresses
-func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
-	testAddrs := make([]sdk.AccAddress, numAccts)
+func CreateRandomAccounts(numAccts int) []sdktypes.AccAddress {
+	testAddrs := make([]sdktypes.AccAddress, numAccts)
 	for i := 0; i < numAccts; i++ {
 		pk := ed25519.GenPrivKey().PubKey()
-		testAddrs[i] = sdk.AccAddress(pk.Address())
+		testAddrs[i] = sdktypes.AccAddress(pk.Address())
 	}
 
 	return testAddrs

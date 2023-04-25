@@ -14,7 +14,7 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 	addr1bal := int64(0)
 
 	suite.Setup()
-	suite.CreateDefaultDenom()
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 	// Make sure that the admin is set correctly
 	denom := strings.Split(suite.defaultDenom, "/")
 	queryRes, err := suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
@@ -79,7 +79,7 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 	suite.Setup()
 
 	// Create a denom
-	suite.CreateDefaultDenom()
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 
 	for _, tc := range []struct {
 		desc      string
@@ -129,7 +129,7 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 	suite.Setup()
 
 	// Create a denom.
-	suite.CreateDefaultDenom()
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 
 	// mint 10 default token for testAcc[0]
 	_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
@@ -233,6 +233,9 @@ func (suite *KeeperTestSuite) TestChangeAdminDenom() {
 			suite.Setup()
 
 			// Create a denom and mint
+			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+			suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
+
 			res, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 			suite.Require().NoError(err)
 

@@ -9,15 +9,10 @@ option go_package = "github.com/neutron-org/neutron/x/feeburner/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
   // Defines Neutron denom, which will be burned during fee processing, any
-  // other denom will be sent to Reserve
+  // other denom will be sent to Treasury
   string neutron_denom = 1;
-  // Defines reserve address
-  // TODO: it is important to remember that it used to be treasury_address here.
-  // A name conflict can lead to an error if the network is upgraded from
-  // a previous version to the current one (for example, on a testnet).
-  // This issue does not affect the mainnet, as the first version
-  // of neutron mainnet will include a proper name (reserve_address).
-  // If we still want to upgrade the network from the old version to the new one,
-  // we need to implement the handler to migrate treasury_address to reserve_address.
+  // Deprecated in v0.4.4. Is not used anymore
   string reserve_address = 2;
+  // Defines treasury address
+  string treasury_address = 3;
 }
