@@ -16,9 +16,12 @@ curl https://get.ignite.com/cli! | bash
 ```
 
 ### How to install Hermes IBC Relayer
+Install binary
+```
+cargo install --version 1.4.0 ibc-relayer-cli --bin hermes --locked
+```
 
-For current CCV modules support there is not any suitable version of hermes, so you need to build it by yourself.
-
+or install from sources
 ```shell
 git clone https://github.com/informalsystems/hermes.git
 cd hermes
