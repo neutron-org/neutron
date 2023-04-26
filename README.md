@@ -39,12 +39,12 @@ make install
 
 ### Bootstrap two chains and create an IBC connection
 
-In order to bootstrap two chains it is required to clone gaiad v8.0.1 next to `neutron` repository and install it.
+In order to bootstrap two chains it is required to clone gaiad v9.0.3 next to `neutron` repository and install it.
 
 ```shell
 git clone https://github.com/cosmos/gaia.git
 cd gaia
-git checkout v8.0.1
+git checkout v9.0.3
 make install
 ```
 
