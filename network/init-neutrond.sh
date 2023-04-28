@@ -44,7 +44,6 @@ PRE_PROPOSAL_SINGLE_AMOUNT=1000
 PRE_PROPOSAL_SINGLE_REFUND_POLICY=always
 # open proposal submission [bool]
 PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION=false
-PRE_PROPOSAL_SINGLE_LABEL=neutron
 
 ## propose singe params
 # revoting
@@ -59,6 +58,7 @@ PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 PROPOSAL_SINGLE_QUORUM=0.05
 # % of votes should vote for the proposal to pass [float] <1
 PROPOSAL_SINGLE_THRESHOLD=0.5
+PRE_PROPOSAL_SINGLE_LABEL="neutron.proposal.single.pre_propose"
 
 ## propose multiple params
 # revoting [bool]
@@ -71,12 +71,13 @@ PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE=false
 PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD=1200
 # if proposal will be closed on execution fail [bool]
 PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
+PRE_PROPOSAL_MULTIPLE_LABEL="neutron.proposal.multiple.pre_propose"
 
 ## Propose overrule params
 # revoting
 PROPOSAL_OVERRULE_ALLOW_REVOTING=false
 # contract label
-PROPOSAL_OVERRULE_LABEL=neutron
+PROPOSAL_OVERRULE_LABEL="neutron.proposal.overrule.pre_propose"
 # only users w voting power can execute passed proposals
 PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
 # max voting period
@@ -92,21 +93,17 @@ PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 VOTING_REGISTRY_MANAGER=null
 
 ## DAO
-DAO_DESCRIPTION="awesome neutron dao"
-DAO_NAME=Neutron
-DAO_ITEMS=null
-DAO_PROPOSAL_SINGLE_LABEL="DAO_Neutron_cw-proposal-single"
-DAO_PROPOSAL_MULTIPLE_LABEL="DAO_Neutron_cw-proposal-multiple"
-DAO_PROPOSAL_OVERRULE_LABEL="DAO_Neutron_cw-proposal-overrule"
-DAO_VOTING_REGISTRY_LABEL="neutron voting registry"
+DAO_NAME="Neutron DAO"
+DAO_DESCRIPTION="Neutron DAO is a DAO DAO-based governance of Neutron chain"
+DAO_CORE_LABEL="neutron.core"
+DAO_PROPOSAL_SINGLE_LABEL="neutron.proposal.single"
+DAO_PROPOSAL_MULTIPLE_LABEL="neutron.proposal.multiple"
+DAO_PROPOSAL_OVERRULE_LABEL="neutron.proposal.overrule"
+DAO_VOTING_REGISTRY_LABEL="neutron.proposal.voting"
 
-## Voting vault
-NEUTRON_VAULT_NAME="voting vault"
-NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
-
-## Basic vault
-NEUTRON_VAULT_NAME="voting vault"
-NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
+## Neutron vault
+NEUTRON_VAULT_NAME="Neutron Vault"
+NEUTRON_VAULT_DESCRIPTION="Vault to put NTRN tokens to get voting power"
 
 ## Treasury (should be renamed to reserve, pr is not merged yet)
 DISTRIBUTION_RATE=0
@@ -114,24 +111,22 @@ MIN_PERIOD=10
 VESTING_DENOMINATOR=1
 
 ## Grants subdao
-GRANTS_SUBDAO_CORE_NAME="GRANTS"
-GRANTS_SUBDAO_CORE_LABEL="neutron grants subdao"
-GRANTS_SUBDAO_CORE_URI="subdao.neutron.org"
-GRANTS_SUBDAO_CORE_DESCRIPTION="neutron grants subdao"
-GRANTS_SUBDAO_VOTING_MODULE_LABEL="grants voting module"
-GRANTS_SUBDAO_PROPOSAL_LABEL="grants single proposal"
+GRANTS_SUBDAO_CORE_NAME="Grants SubDAO"
+GRANTS_SUBDAO_CORE_LABEL="neutron.subdaos.grants"
+GRANTS_SUBDAO_CORE_DESCRIPTION="SubDAO to distribute grants to projects"
+GRANTS_SUBDAO_VOTING_MODULE_LABEL="neutron.subdaos.grants.voting"
+GRANTS_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.grants.proposal.single"
 
 ## Timelock
-GRANTS_SUBDAO_TIMELOCK_LABEL="subDAO timelock contract"
+GRANTS_SUBDAO_TIMELOCK_LABEL="neutron.subdaos.grants.proposal.single.pre_propose.timelock"
 
 ## Security subdao
-SECURITY_SUBDAO_CORE_LABEL="neutron security subdao"
-SECURITY_SUBDAO_CORE_NAME="SECURITY"
-SECURITY_SUBDAO_CORE_DESCRIPTION="subdao that secures neutron"
-SECURITY_SUBDAO_PROPOSAL_LABEL="security subdao single proposal"
-SECURITY_SUBDAO_PREPROPOSAL_LABEL="security prerpopose"
-SECURITY_SUBDAO_VOTE_LABEL="security subdao voting module"
-SECURITY_SUBDAO_CORE_URI="security.subdao.org"
+SECURITY_SUBDAO_CORE_LABEL="neutron.subdaos.security"
+SECURITY_SUBDAO_CORE_NAME="Security SubDAO"
+SECURITY_SUBDAO_CORE_DESCRIPTION="SubDAO with power to pause specific Neutron DAO modules"
+SECURITY_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.security.proposal.single"
+SECURITY_SUBDAO_PREPROPOSAL_LABEL="neutron.subdaos.security.proposal.single.pre_propose"
+SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
 
 echo "Initializing dao contract in genesis..."
 
@@ -340,7 +335,6 @@ VOTING_REGISTRY_INIT_MSG_BASE64=$(echo "$VOTING_REGISTRY_INIT_MSG" | base64 | tr
 DAO_INIT='{
   "description": "'"$DAO_DESCRIPTION"'",
   "name": "'"$DAO_NAME"'",
-  "initial_items": '"$DAO_ITEMS"',
   "proposal_modules_instantiate_info": [
     {
       "admin": {
@@ -489,7 +483,6 @@ SECURITY_SUBDAO_CORE_INIT_MSG='{
       "msg": "'"$SECURITY_SUBDAO_PROPOSAL_INIT_MSG_BASE64"'"
     }
   ],
-  "dao_uri": "'"$SECURITY_SUBDAO_CORE_URI"'",
   "main_dao": "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
@@ -570,7 +563,6 @@ GRANTS_SUBDAO_CORE_INIT_MSG='{
       "msg": "'"$GRANTS_SUBDAO_PROPOSAL_INIT_MSG_BASE64"'"
     }
   ],
-  "dao_uri": "'"$GRANTS_SUBDAO_CORE_URI"'",
   "main_dao": "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
@@ -581,12 +573,12 @@ echo "Instantiate contracts"
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
 $BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"             --label "DAO_Neutron_voting_vault"    --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       --label "DAO"                         --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       --label "$DAO_CORE_LABEL"                         --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$RESERVE_CONTRACT_BINARY_ID"         "$RESERVE_INIT"                   --label "Reserve"                     --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"              --label "Distribution"                --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID"        "$TREASURY_INIT"                  --label "Treasury"                    --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  --label "DAO_Neutron_security_subdao" --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    --label "DAO_Neutron_grants_subdao"   --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  --label "$SECURITY_SUBDAO_CORE_LABEL" --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
+$BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    --label "$GRANTS_SUBDAO_CORE_LABEL"   --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
@@ -604,11 +596,18 @@ ADD_SUBDAOS_MSG='{
 
 $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --run-as "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
-echo DAO $DAO_CONTRACT_ADDRESS
-sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"fee_collector_address\":.*/\"fee_collector_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"*\"]/g' "$CHAIN_DIR/config/genesis.json"
+function set_param() {
+  config_path=$1
+  param_name=$2
+  param_value=$3
+  sed -i -e "s/\"$param_name\":.*/\"$param_name\": $param_value/g" "$config_path"
+}
 
+set_param "$CHAIN_DIR/config/genesis.json" admins                 "[\"$DAO_CONTRACT_ADDRESS\"]"
+set_param "$CHAIN_DIR/config/genesis.json" treasury_address       "\"$TREASURY_CONTRACT_ADDRESS\""
+set_param "$CHAIN_DIR/config/genesis.json" fee_collector_address  "\"$TREASURY_CONTRACT_ADDRESS\""
+set_param "$CHAIN_DIR/config/genesis.json" security_address       "\"$DAO_CONTRACT_ADDRESS\","
+set_param "$CHAIN_DIR/config/genesis.json" limit                  5
+set_param "$CHAIN_DIR/config/genesis.json" allow_messages         "[\"*\"]"
+
+echo "DAO $DAO_CONTRACT_ADDRESS"
