@@ -612,3 +612,4 @@ sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDR
 sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"*\"]/g' "$CHAIN_DIR/config/genesis.json"
 
+sed -i -e '1s/^/disable-ccv-handler = true\n/' "$CHAIN_DIR/config/app.toml"

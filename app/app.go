@@ -814,6 +814,8 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
+	disableCcvHandler := cast.ToBool(appOpts.Get("disable-ccv-handler"))
+
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -828,6 +830,7 @@ func New(
 			TXCounterStoreKey: keys[wasm.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
 		},
+		disableCcvHandler,
 	)
 	if err != nil {
 		panic(err)

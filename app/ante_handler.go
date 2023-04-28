@@ -23,7 +23,7 @@ type HandlerOptions struct {
 	TXCounterStoreKey sdk.StoreKey
 }
 
-func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
+func NewAnteHandler(options HandlerOptions, disableCcvHandler bool) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
 	}
@@ -65,6 +65,13 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewAnteDecorator(options.IBCKeeper),
+	}
+
+	if !disableCcvHandler {
+		print("Adding CCV Ante Decorator\n")
+		anteDecorators = append(anteDecorators, consumerante.NewMsgFilterDecorator(options.ConsumerKeeper))
+	} else {
+		print("Not adding CCV Ante Decorator\n")
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
