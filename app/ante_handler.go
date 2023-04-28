@@ -23,7 +23,7 @@ type HandlerOptions struct {
 	TXCounterStoreKey sdk.StoreKey
 }
 
-func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
+func NewAnteHandler(options HandlerOptions, disableCcvHandler bool) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
 	}
@@ -50,7 +50,6 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreKey),
 		ante.NewRejectExtensionOptionsDecorator(),
-		consumerante.NewMsgFilterDecorator(options.ConsumerKeeper),
 		consumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
 		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),
@@ -65,6 +64,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewAnteDecorator(options.IBCKeeper),
+	}
+
+	if !disableCcvHandler {
+		anteDecorators = append(anteDecorators, consumerante.NewMsgFilterDecorator(options.ConsumerKeeper))
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil

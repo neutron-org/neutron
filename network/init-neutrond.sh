@@ -610,4 +610,6 @@ set_param "$CHAIN_DIR/config/genesis.json" security_address       "\"$DAO_CONTRA
 set_param "$CHAIN_DIR/config/genesis.json" limit                  5
 set_param "$CHAIN_DIR/config/genesis.json" allow_messages         "[\"*\"]"
 
+sed -i -e '1s/^/disable-ccv-handler = true\n/' "$CHAIN_DIR/config/app.toml"
+
 echo "DAO $DAO_CONTRACT_ADDRESS"
