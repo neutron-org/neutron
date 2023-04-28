@@ -68,10 +68,7 @@ func NewAnteHandler(options HandlerOptions, disableCcvHandler bool) (sdk.AnteHan
 	}
 
 	if !disableCcvHandler {
-		print("Adding CCV Ante Decorator\n")
 		anteDecorators = append(anteDecorators, consumerante.NewMsgFilterDecorator(options.ConsumerKeeper))
-	} else {
-		print("Not adding CCV Ante Decorator\n")
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
