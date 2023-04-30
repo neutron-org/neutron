@@ -10,6 +10,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/x/ccv/consumer/keeper"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -23,7 +24,7 @@ type HandlerOptions struct {
 	TXCounterStoreKey sdk.StoreKey
 }
 
-func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
+func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
 	}
@@ -66,8 +67,12 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ibcante.NewAnteDecorator(options.IBCKeeper),
 	}
 
+	// Don't delete it even if IDE tells you so.
+	// This constant depends on build tag.
 	if !SKIP_CCV_MSG_FILTER {
 		anteDecorators = append(anteDecorators, consumerante.NewMsgFilterDecorator(options.ConsumerKeeper))
+	} else {
+		logger.Error("WARNING: LAUNCHED WITH SKIP_CCV_MSG_FILTER\nTHIS IS NOT A PRODUCTION BUILD")
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
