@@ -2,4 +2,4 @@
 
 package app
 
-const SKIP_CCV_MSG_FILTER = true
+const SkipCcvMsgFilter = true

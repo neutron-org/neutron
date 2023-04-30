@@ -69,10 +69,10 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 
 	// Don't delete it even if IDE tells you so.
 	// This constant depends on build tag.
-	if !SKIP_CCV_MSG_FILTER {
+	if !SkipCcvMsgFilter {
 		anteDecorators = append(anteDecorators, consumerante.NewMsgFilterDecorator(options.ConsumerKeeper))
 	} else {
-		logger.Error("WARNING: LAUNCHED WITH SKIP_CCV_MSG_FILTER\nTHIS IS NOT A PRODUCTION BUILD")
+		logger.Error("WARNING: LAUNCHED WITH skip_ccv_msg_filter. THIS IS NOT A PRODUCTION BUILD")
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
