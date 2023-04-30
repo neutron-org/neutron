@@ -21,10 +21,9 @@ PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_multiple.wasm
 VOTING_REGISTRY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_voting_registry.wasm
 # VAULTS
 NEUTRON_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_vault.wasm
-# TREASURY
+# RESERVE
 RESERVE_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_reserve.wasm
 DISTRIBUTION_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_distribution.wasm
-TREASURY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_treasury.wasm
 # SUBDAOS
 SUBDAO_CORE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_core.wasm
 SUBDAO_TIMELOCK_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_timelock_single.wasm
@@ -108,7 +107,7 @@ NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 NEUTRON_VAULT_NAME="voting vault"
 NEUTRON_VAULT_DESCRIPTION="simple voting vault for testing purposes"
 
-## Treasury (should be renamed to reserve, pr is not merged yet)
+## Reserve
 DISTRIBUTION_RATE=0
 MIN_PERIOD=10
 VESTING_DENOMINATOR=1
@@ -153,8 +152,7 @@ PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary     "$PROPOSAL_MULTIPLE_CONT
 VOTING_REGISTRY_CONTRACT_BINARY_ID=$(store_binary       "$VOTING_REGISTRY_CONTRACT")
 # VAULTS
 NEUTRON_VAULT_CONTRACT_BINARY_ID=$(store_binary         "$NEUTRON_VAULT_CONTRACT")
-# TREASURY & RESERVE
-TREASURY_CONTRACT_BINARY_ID=$(store_binary              "$TREASURY_CONTRACT")
+# RESERVE
 DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary          "$DISTRIBUTION_CONTRACT")
 RESERVE_CONTRACT_BINARY_ID=$(store_binary               "$RESERVE_CONTRACT")
 # SUBDAOS
@@ -190,7 +188,6 @@ VOTING_REGISTRY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INS
 # RESERVE
 RESERVE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                   "$RESERVE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 DISTRIBUTION_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"              "$DISTRIBUTION_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-TREASURY_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"                  "$TREASURY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 # SUBDAOS
 SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"      "$SUBDAO_CORE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_PROPOSAL_CONTRACT_ADDRESS=$($BINARY debug generate-contract-address "$INSTANCE_ID_COUNTER"  "$SUBDAO_PROPOSAL_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
@@ -385,7 +382,7 @@ RESERVE_INIT='{
   "distribution_rate": "'"$DISTRIBUTION_RATE"'",
   "min_period": '"$MIN_PERIOD"',
   "distribution_contract": "'"$DISTRIBUTION_CONTRACT_ADDRESS"'",
-  "treasury_contract": "'"$TREASURY_CONTRACT_ADDRESS"'",
+  "treasury_contract": "'"$DAO_CONTRACT_ADDRESS"'",
   "vesting_denominator": "'"$VESTING_DENOMINATOR"'"
 }'
 
@@ -395,11 +392,6 @@ DISTRIBUTION_INIT='{
   "denom": "'"$STAKEDENOM"'"
 }'
 
-TREASURY_INIT='{
-  "main_dao_address": "'"$ADMIN_ADDRESS"'",
-  "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
-  "denom": "'"$STAKEDENOM"'"
-}'
 # VAULTS
 
 NEUTRON_VAULT_INIT='{
@@ -584,7 +576,6 @@ $BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID
 $BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       --label "DAO"                         --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$RESERVE_CONTRACT_BINARY_ID"         "$RESERVE_INIT"                   --label "Reserve"                     --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"              --label "Distribution"                --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID"        "$TREASURY_INIT"                  --label "Treasury"                    --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  --label "DAO_Neutron_security_subdao" --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 $BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    --label "DAO_Neutron_grants_subdao"   --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
@@ -606,8 +597,8 @@ $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --ru
 
 echo DAO $DAO_CONTRACT_ADDRESS
 sed -i -e 's/\"admins\":.*/\"admins\": [\"'"$DAO_CONTRACT_ADDRESS"'\"]/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
-sed -i -e 's/\"fee_collector_address\":.*/\"fee_collector_address\":\"'"$TREASURY_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"treasury_address\":.*/\"treasury_address\":\"'"$DAO_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"fee_collector_address\":.*/\"fee_collector_address\":\"'"$DAO_CONTRACT_ADDRESS"'\"/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"*\"]/g' "$CHAIN_DIR/config/genesis.json"
