@@ -72,7 +72,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	if !SkipCcvMsgFilter {
 		anteDecorators = append(anteDecorators, consumerante.NewMsgFilterDecorator(options.ConsumerKeeper))
 	} else {
-		logger.Error("WARNING: LAUNCHED WITH skip_ccv_msg_filter. THIS IS NOT A PRODUCTION BUILD")
+		logger.Error("WARNING: BUILT WITH skip_ccv_msg_filter. THIS IS NOT A PRODUCTION BUILD")
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
