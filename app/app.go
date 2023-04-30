@@ -828,6 +828,7 @@ func New(
 			TXCounterStoreKey: keys[wasm.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
 		},
+		app.Logger(),
 	)
 	if err != nil {
 		panic(err)
