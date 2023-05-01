@@ -50,8 +50,8 @@ PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD=1200 # seconds; should be 2 weeks in prod
 PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 PROPOSAL_SINGLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_SINGLE_THRESHOLD=0.5 # % of votes should vote for the proposal to pass [float] <1
-PROPOSAL_SINGLE_LABEL="neutron.proposal.single"
-PRE_PROPOSAL_SINGLE_LABEL="neutron.proposal.single.pre_propose"
+PROPOSAL_SINGLE_LABEL="neutron.proposals.single"
+PRE_PROPOSAL_SINGLE_LABEL="neutron.proposals.single.pre_propose"
 
 ## propose multiple params
 PROPOSAL_MULTIPLE_ALLOW_REVOTING=false # should be true for non-testing env
@@ -59,8 +59,8 @@ PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE=false
 PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD=1200 # seconds; should be 2 weeks in production
 PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 PROPOSAL_MULTIPLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
-PROPOSAL_MULTIPLE_LABEL="neutron.proposal.multiple"
-PRE_PROPOSAL_MULTIPLE_LABEL="neutron.proposal.multiple.pre_propose"
+PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple"
+PRE_PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple.pre_propose"
 
 ## Propose overrule params
 PROPOSAL_OVERRULE_ALLOW_REVOTING=false
@@ -68,12 +68,12 @@ PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
 PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=1200 # seconds; should be 3 days in production
 PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
 PROPOSAL_OVERRULE_THRESHOLD=0.005 # around 10 times lower than for regular proposals
-PROPOSAL_OVERRULE_LABEL="neutron.proposal.overrule.pre_propose"
-PRE_PROPOSE_OVERRULE_LABEL="neutron.proposal.overrule.pre_propose"
+PROPOSAL_OVERRULE_LABEL="neutron.proposals.overrule"
+PRE_PROPOSE_OVERRULE_LABEL="neutron.proposals.overrule.pre_propose"
 
 ## Voting registry
 VOTING_REGISTRY_MANAGER=null
-VOTING_REGISTRY_LABEL="neutron.proposal.voting"
+VOTING_REGISTRY_LABEL="neutron.voting"
 
 ## DAO
 DAO_NAME="Neutron DAO"
@@ -97,19 +97,19 @@ DISTRIBUTION_LABEL="distribution"
 GRANTS_SUBDAO_CORE_NAME="Grants SubDAO"
 GRANTS_SUBDAO_CORE_DESCRIPTION="SubDAO to distribute grants to projects"
 GRANTS_SUBDAO_CORE_LABEL="neutron.subdaos.grants"
-GRANTS_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.grants.proposal.single"
-GRANTS_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.grants.proposal.single.pre_propose"
+GRANTS_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.grants.proposals.single"
+GRANTS_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.grants.proposals.single.pre_propose"
 GRANTS_SUBDAO_VOTING_MODULE_LABEL="neutron.subdaos.grants.voting"
 
 ## Timelock
-GRANTS_SUBDAO_TIMELOCK_LABEL="neutron.subdaos.grants.proposal.single.pre_propose.timelock"
+GRANTS_SUBDAO_TIMELOCK_LABEL="neutron.subdaos.grants.proposals.single.pre_propose.timelock"
 
 ## Security subdao
 SECURITY_SUBDAO_CORE_NAME="Security SubDAO"
 SECURITY_SUBDAO_CORE_DESCRIPTION="SubDAO with power to pause specific Neutron DAO modules"
 SECURITY_SUBDAO_CORE_LABEL="neutron.subdaos.security"
-SECURITY_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.security.proposal.single"
-SECURITY_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.security.proposal.single.pre_propose"
+SECURITY_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.security.proposals.single"
+SECURITY_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.security.proposals.single.pre_propose"
 SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
 
 echo "Initializing dao contract in genesis..."
@@ -377,7 +377,7 @@ DAO_INIT='{
 
 # RESERVE
 RESERVE_INIT='{
-  "main_dao_address":       "'"$DAO_CONTRACT"'",
+  "main_dao_address":       "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao_address":   "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                  "'"$STAKEDENOM"'",
   "distribution_rate":      "'"$RESERVE_DISTRIBUTION_RATE"'",
@@ -388,13 +388,13 @@ RESERVE_INIT='{
 }'
 
 DISTRIBUTION_INIT='{
-  "main_dao_address":     "'"$DAO_CONTRACT"'",
+  "main_dao_address":     "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                "'"$STAKEDENOM"'"
 }'
 
 TREASURY_INIT='{
-  "main_dao_address":     "'"$DAO_CONTRACT"'",
+  "main_dao_address":     "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                "'"$STAKEDENOM"'"
 }'
@@ -403,7 +403,7 @@ TREASURY_INIT='{
 NEUTRON_VAULT_INIT='{
   "owner": {
     "address": {
-      "addr": "'"$DAO_CONTRACT"'"
+      "addr": "'"$DAO_CONTRACT_ADDRESS"'"
     }
   },
   "name":         "'"$NEUTRON_VAULT_NAME"'",
