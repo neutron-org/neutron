@@ -96,7 +96,7 @@ DISTRIBUTION_LABEL="distribution"
 ## Grants subdao
 GRANTS_SUBDAO_CORE_NAME="Grants SubDAO"
 GRANTS_SUBDAO_CORE_DESCRIPTION="SubDAO to distribute grants to projects"
-GRANTS_SUBDAO_CORE_LABEL="neutron.subdaos.grants"
+GRANTS_SUBDAO_CORE_LABEL="neutron.subdaos.grants.core"
 GRANTS_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.grants.proposals.single"
 GRANTS_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.grants.proposals.single.pre_propose"
 GRANTS_SUBDAO_VOTING_MODULE_LABEL="neutron.subdaos.grants.voting"
@@ -107,7 +107,7 @@ GRANTS_SUBDAO_TIMELOCK_LABEL="neutron.subdaos.grants.proposals.single.pre_propos
 ## Security subdao
 SECURITY_SUBDAO_CORE_NAME="Security SubDAO"
 SECURITY_SUBDAO_CORE_DESCRIPTION="SubDAO with power to pause specific Neutron DAO modules"
-SECURITY_SUBDAO_CORE_LABEL="neutron.subdaos.security"
+SECURITY_SUBDAO_CORE_LABEL="neutron.subdaos.security.core"
 SECURITY_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.security.proposals.single"
 SECURITY_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.security.proposals.single.pre_propose"
 SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
