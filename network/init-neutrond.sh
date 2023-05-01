@@ -116,7 +116,8 @@ echo "Initializing dao contract in genesis..."
 
 function store_binary() {
   CONTRACT_BINARY_PATH=$1
-  $BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" --output json --run-as "${ADMIN_ADDRESS}" --keyring-backend=test --home "$CHAIN_DIR"
+  $BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" \
+    --output json --run-as "${ADMIN_ADDRESS}" --keyring-backend=test --home "$CHAIN_DIR"
   BINARY_ID=$(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" "$CHAIN_DIR/config/genesis.json")
   echo "$BINARY_ID"
 }
@@ -376,8 +377,8 @@ DAO_INIT='{
 
 # RESERVE
 RESERVE_INIT='{
-  "main_dao_address":       "'"$ADMIN_ADDRESS"'",
-  "security_dao_address":   "'"$ADMIN_ADDRESS"'",
+  "main_dao_address":       "'"$DAO_CONTRACT"'",
+  "security_dao_address":   "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                  "'"$STAKEDENOM"'",
   "distribution_rate":      "'"$RESERVE_DISTRIBUTION_RATE"'",
   "min_period":             '"$RESERVE_MIN_PERIOD"',
@@ -387,13 +388,13 @@ RESERVE_INIT='{
 }'
 
 DISTRIBUTION_INIT='{
-  "main_dao_address":     "'"$ADMIN_ADDRESS"'",
-  "security_dao_address": "'"$ADMIN_ADDRESS"'",
+  "main_dao_address":     "'"$DAO_CONTRACT"'",
+  "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                "'"$STAKEDENOM"'"
 }'
 
 TREASURY_INIT='{
-  "main_dao_address":     "'"$ADMIN_ADDRESS"'",
+  "main_dao_address":     "'"$DAO_CONTRACT"'",
   "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                "'"$STAKEDENOM"'"
 }'
@@ -402,7 +403,7 @@ TREASURY_INIT='{
 NEUTRON_VAULT_INIT='{
   "owner": {
     "address": {
-      "addr": "'"$ADMIN_ADDRESS"'"
+      "addr": "'"$DAO_CONTRACT"'"
     }
   },
   "name":         "'"$NEUTRON_VAULT_NAME"'",
