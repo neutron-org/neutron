@@ -9,6 +9,7 @@ CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 
 CHAIN_DIR="$BASE_DIR/$CHAINID"
+GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
 # MAIN_DAO
@@ -365,7 +366,6 @@ DAO_INIT='{
     "msg":      "'"$VOTING_REGISTRY_INIT_MSG_BASE64"'"
   }
 }'
-check_json "$DAO_INIT"
 
 # RESERVE
 RESERVE_INIT='{
@@ -378,21 +378,18 @@ RESERVE_INIT='{
   "treasury_contract":      "'"$TREASURY_CONTRACT_ADDRESS"'",
   "vesting_denominator":    "'"$RESERVE_VESTING_DENOMINATOR"'"
 }'
-check_json "$RESERVE_INIT"
 
 DISTRIBUTION_INIT='{
   "main_dao_address":     "'"$ADMIN_ADDRESS"'",
   "security_dao_address": "'"$ADMIN_ADDRESS"'",
   "denom":                "'"$STAKEDENOM"'"
 }'
-check_json "$DISTRIBUTION_INIT"
 
 TREASURY_INIT='{
   "main_dao_address":     "'"$ADMIN_ADDRESS"'",
   "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                "'"$STAKEDENOM"'"
 }'
-check_json "$TREASURY_INIT"
 # VAULTS
 
 NEUTRON_VAULT_INIT='{
@@ -405,7 +402,6 @@ NEUTRON_VAULT_INIT='{
   "denom":        "'"$STAKEDENOM"'",
   "description":  "'"$NEUTRON_VAULT_DESCRIPTION"'"
 }'
-check_json "$NEUTRON_VAULT_INIT"
 
 # CW4 MODULES FOR SUBDAOS
 
@@ -485,7 +481,6 @@ SECURITY_SUBDAO_CORE_INIT_MSG='{
   "main_dao":     "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
-check_json "$SECURITY_SUBDAO_CORE_INIT_MSG"
 
 # GRANTS_SUBDAO
 
@@ -566,20 +561,29 @@ GRANTS_SUBDAO_CORE_INIT_MSG='{
   "main_dao":     "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
-check_json "$GRANTS_SUBDAO_CORE_INIT_MSG"
 
 echo "Instantiate contracts"
+
+function init_contract() {
+  BINARY_ID=$1
+  INIT_MSG=$2
+  LABEL=$3
+  check_json "$INIT_MSG"
+  $BINARY add-wasm-message instantiate-contract "$BINARY_ID" "$INIT_MSG" --label "$LABEL" \
+    --run-as "$DAO_CONTRACT_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
+}
+
 # WARNING!
 # The following code is to add contracts instantiations messages to genesis
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
-$BINARY add-wasm-message instantiate-contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"             --label "$NEUTRON_VAULT_LABEL"    --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       --label "$DAO_CORE_LABEL"                         --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$RESERVE_CONTRACT_BINARY_ID"         "$RESERVE_INIT"                   --label "$RESERVE_LABEL"                     --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"              --label "$DISTRIBUTION_LABEL"                --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$TREASURY_CONTRACT_BINARY_ID"        "$TREASURY_INIT"                  --label "Treasury"                    --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  --label "$SECURITY_SUBDAO_CORE_LABEL" --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
-$BINARY add-wasm-message instantiate-contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    --label "$GRANTS_SUBDAO_CORE_LABEL"   --run-as "$ADMIN_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
+init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"             "$NEUTRON_VAULT_LABEL"
+init_contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       "$DAO_CORE_LABEL"
+init_contract "$RESERVE_CONTRACT_BINARY_ID"         "$RESERVE_INIT"                   "$RESERVE_LABEL"
+init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"
+init_contract "$TREASURY_CONTRACT_BINARY_ID"        "$TREASURY_INIT"                  "Treasury"
+init_contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL"
+init_contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
@@ -594,14 +598,15 @@ ADD_SUBDAOS_MSG='{
     "to_remove": []
   }
 }'
+check_json "$ADD_SUBDAOS_MSG"
 
-$BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" --run-as "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
+$BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" \
+  --run-as "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
 
 function set_genesis_param() {
-  genesis_path="$CHAIN_DIR/config/genesis.json"
   param_name=$1
   param_value=$2
-  sed -i -e "s/\"$param_name\":.*/\"$param_name\": $param_value/g" "$genesis_path"
+  sed -i -e "s/\"$param_name\":.*/\"$param_name\": $param_value/g" "$GENESIS_PATH"
 }
 
 set_genesis_param admins                 "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
@@ -610,5 +615,10 @@ set_genesis_param fee_collector_address  "\"$TREASURY_CONTRACT_ADDRESS\""       
 set_genesis_param security_address       "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"," # cron
 set_genesis_param limit                  5                                             # cron
 set_genesis_param allow_messages         "[\"*\"]"                                     # interchainaccounts
+
+if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
+    echo "genesis appears to become incorrect json" >&2
+    exit 1
+fi
 
 echo "DAO $DAO_CONTRACT_ADDRESS"
