@@ -590,6 +590,10 @@ init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"        
 init_contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL"
 init_contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"
 
+#Top up reserve contract with some NTRNs
+RESERVE_TOPUP_AMOUNT=100000000untrn
+$BINARY add-genesis-account $RESERVE_CONTRACT_ADDRESS $RESERVE_TOPUP_AMOUNT --home "$CHAIN_DIR"
+
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
     "to_add": [
