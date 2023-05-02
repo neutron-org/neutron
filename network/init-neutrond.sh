@@ -32,6 +32,8 @@ SUBDAO_PRE_PROPOSE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_pre_propose_singl
 SUBDAO_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_proposal_single.wasm
 CW4_VOTING_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_voting.wasm
 CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
+CW3_FIXED_MULTISIG_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw3_fixed_multisig.wasm
+RESCUEEER_CONTRACT=$CONTRACTS_BINARIES_DIR/rescueeer.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
@@ -148,6 +150,9 @@ SUBDAO_PRE_PROPOSE_BINARY_ID=$(store_binary             "$SUBDAO_PRE_PROPOSE_CON
 SUBDAO_PROPOSAL_BINARY_ID=$(store_binary                "$SUBDAO_PROPOSAL_CONTRACT")
 CW4_VOTING_CONTRACT_BINARY_ID=$(store_binary            "$CW4_VOTING_CONTRACT")
 CW4_GROUP_CONTRACT_BINARY_ID=$(store_binary             "$CW4_GROUP_CONTRACT")
+# RESCUEEER
+RESCUEEER_CONTRACT_BINARY_ID=$(store_binary             "$RESCUEEER_CONTRACT")
+CW3_FIXED_MULTISIG_CONTRACT_BINARY_ID=$(store_binary    "$CW3_FIXED_MULTISIG_CONTRACT")
 
 # WARNING!
 # The following code is needed to pre-generate the contract addresses
@@ -193,6 +198,10 @@ GRANTS_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS=$(genaddr   "$SUBDAO_PRE_PROPOSE_BINA
 GRANTS_SUBDAO_TIMELOCK_CONTRACT_ADDRESS=$(genaddr      "$SUBDAO_TIMELOCK_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 GRANTS_SUBDAO_VOTING_CONTRACT_ADDRESS=$(genaddr        "$CW4_VOTING_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 GRANTS_SUBDAO_GROUP_CONTRACT_ADDRESS=$(genaddr         "$CW4_GROUP_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+# RESCUEEER
+CW3_FIXED_MULTISIG_CONTRACT_ADDRESS=$(genaddr          "$CW3_FIXED_MULTISIG_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+RESCUEEER_CONTRACT_ADDRESS=$(genaddr                   "$RESCUEEER_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+
 
 function check_json() {
   MSG=$1
@@ -568,27 +577,47 @@ GRANTS_SUBDAO_CORE_INIT_MSG='{
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
 
+RESCUEEER_MULTISIG_INIT_MSG='{
+  "voters": [
+    {
+      "addr": "'"$ADMIN_ADDRESS"'",
+      "weight": 1
+    }
+  ],
+  "threshold": { "absolute_count": { "weight": 1 } },
+  "max_voting_period": { "height": 1000 }
+}'
+
+RESCUEEER_INIT_MSG='{
+  "owner": "'"$CW3_FIXED_MULTISIG_CONTRACT_ADDRESS"'",
+  "true_admin": "'"$DAO_CONTRACT_ADDRESS"'",
+  "eol": 1684797825
+}'
+
 echo "Instantiate contracts"
 
 function init_contract() {
   BINARY_ID=$1
   INIT_MSG=$2
   LABEL=$3
+  ADMIN=$4
   check_json "$INIT_MSG"
   $BINARY add-wasm-message instantiate-contract "$BINARY_ID" "$INIT_MSG" --label "$LABEL" \
-    --run-as "$DAO_CONTRACT_ADDRESS" --admin "$DAO_CONTRACT_ADDRESS" --home "$CHAIN_DIR"
+    --run-as "$DAO_CONTRACT_ADDRESS" --admin "$ADMIN" --home "$CHAIN_DIR"
 }
 
 # WARNING!
 # The following code is to add contracts instantiations messages to genesis
 # It affects the section of predicting contracts addresses at the beginning of the script
 # If you're to do any changes, please do it consistently in both sections
-init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"             "$NEUTRON_VAULT_LABEL"
-init_contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       "$DAO_CORE_LABEL"
-init_contract "$RESERVE_CONTRACT_BINARY_ID"         "$RESERVE_INIT"                   "$RESERVE_LABEL"
-init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"
-init_contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL"
-init_contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"
+init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"      "$NEUTRON_VAULT_INIT"             "$NEUTRON_VAULT_LABEL"        "$RESCUEEER_CONTRACT_ADDRESS"
+init_contract "$DAO_CONTRACT_BINARY_ID"                "$DAO_INIT"                       "$DAO_CORE_LABEL"             "$RESCUEEER_CONTRACT_ADDRESS"
+init_contract "$RESERVE_CONTRACT_BINARY_ID"            "$RESERVE_INIT"                   "$RESERVE_LABEL"              "$RESCUEEER_CONTRACT_ADDRESS"
+init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"       "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"         "$RESCUEEER_CONTRACT_ADDRESS"
+init_contract "$SUBDAO_CORE_BINARY_ID"                 "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL" "$RESCUEEER_CONTRACT_ADDRESS"
+init_contract "$SUBDAO_CORE_BINARY_ID"                 "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"   "$RESCUEEER_CONTRACT_ADDRESS"
+init_contract "$CW3_FIXED_MULTISIG_CONTRACT_BINARY_ID" "$RESCUEEER_MULTISIG_INIT_MSG"    "rescueeer multisig"          "$CW3_FIXED_MULTISIG_CONTRACT_ADDRESS"
+init_contract "$RESCUEEER_CONTRACT_BINARY_ID"          "$RESCUEEER_INIT_MSG"             "rescueeer itself"            "$RESCUEEER_CONTRACT_ADDRESS"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
