@@ -22,10 +22,9 @@ PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_multiple.wasm
 VOTING_REGISTRY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_voting_registry.wasm
 # VAULTS
 NEUTRON_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_vault.wasm
-# TREASURY
+# RESERVE
 RESERVE_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_reserve.wasm
 DISTRIBUTION_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_distribution.wasm
-TREASURY_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_treasury.wasm
 # SUBDAOS
 SUBDAO_CORE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_core.wasm
 SUBDAO_TIMELOCK_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_timelock_single.wasm
@@ -37,6 +36,12 @@ CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
 ### PARAMETERS SECTION
+
+## slashing params
+SLASHING_SIGNED_BLOCKS_WINDOW=140000
+SLASHING_MIN_SIGNED=0.050000000000000000
+SLASHING_FRACTION_DOUBLE_SIGN=0.010000000000000000
+SLASHING_FRACTION_DOWNTIME=0.000100000000000000
 
 ##pre propose single parameters
 PRE_PROPOSAL_SINGLE_AMOUNT=1000
@@ -133,8 +138,7 @@ PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary     "$PROPOSAL_MULTIPLE_CONT
 VOTING_REGISTRY_CONTRACT_BINARY_ID=$(store_binary       "$VOTING_REGISTRY_CONTRACT")
 # VAULTS
 NEUTRON_VAULT_CONTRACT_BINARY_ID=$(store_binary         "$NEUTRON_VAULT_CONTRACT")
-# TREASURY & RESERVE
-TREASURY_CONTRACT_BINARY_ID=$(store_binary              "$TREASURY_CONTRACT")
+# RESERVE
 DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary          "$DISTRIBUTION_CONTRACT")
 RESERVE_CONTRACT_BINARY_ID=$(store_binary               "$RESERVE_CONTRACT")
 # SUBDAOS
@@ -177,7 +181,6 @@ VOTING_REGISTRY_CONTRACT_ADDRESS=$(genaddr              "$VOTING_REGISTRY_CONTRA
 # RESERVE
 RESERVE_CONTRACT_ADDRESS=$(genaddr                     "$RESERVE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 DISTRIBUTION_CONTRACT_ADDRESS=$(genaddr                "$DISTRIBUTION_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-TREASURY_CONTRACT_ADDRESS=$(genaddr                    "$TREASURY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 # SUBDAOS
 SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS=$(genaddr        "$SUBDAO_CORE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_PROPOSAL_CONTRACT_ADDRESS=$(genaddr    "$SUBDAO_PROPOSAL_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
@@ -383,7 +386,7 @@ RESERVE_INIT='{
   "distribution_rate":      "'"$RESERVE_DISTRIBUTION_RATE"'",
   "min_period":             '"$RESERVE_MIN_PERIOD"',
   "distribution_contract":  "'"$DISTRIBUTION_CONTRACT_ADDRESS"'",
-  "treasury_contract":      "'"$TREASURY_CONTRACT_ADDRESS"'",
+  "treasury_contract":      "'"$DAO_CONTRACT_ADDRESS"'",
   "vesting_denominator":    "'"$RESERVE_VESTING_DENOMINATOR"'"
 }'
 
@@ -393,11 +396,6 @@ DISTRIBUTION_INIT='{
   "denom":                "'"$STAKEDENOM"'"
 }'
 
-TREASURY_INIT='{
-  "main_dao_address":     "'"$DAO_CONTRACT_ADDRESS"'",
-  "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
-  "denom":                "'"$STAKEDENOM"'"
-}'
 # VAULTS
 
 NEUTRON_VAULT_INIT='{
@@ -589,7 +587,6 @@ init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"   "$NEUTRON_VAULT_INIT"       
 init_contract "$DAO_CONTRACT_BINARY_ID"             "$DAO_INIT"                       "$DAO_CORE_LABEL"
 init_contract "$RESERVE_CONTRACT_BINARY_ID"         "$RESERVE_INIT"                   "$RESERVE_LABEL"
 init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"    "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"
-init_contract "$TREASURY_CONTRACT_BINARY_ID"        "$TREASURY_INIT"                  "Treasury"
 init_contract "$SUBDAO_CORE_BINARY_ID"              "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL"
 init_contract "$SUBDAO_CORE_BINARY_ID"              "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"
 
@@ -617,12 +614,16 @@ function set_genesis_param() {
   sed -i -e "s/\"$param_name\":.*/\"$param_name\": $param_value/g" "$GENESIS_PATH"
 }
 
-set_genesis_param admins                 "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
-set_genesis_param treasury_address       "\"$TREASURY_CONTRACT_ADDRESS\""              # feeburner
-set_genesis_param fee_collector_address  "\"$TREASURY_CONTRACT_ADDRESS\""              # tokenfactory
-set_genesis_param security_address       "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"," # cron
-set_genesis_param limit                  5                                             # cron
-set_genesis_param allow_messages         "[\"*\"]"                                     # interchainaccounts
+set_genesis_param admins                      "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
+set_genesis_param treasury_address            "\"$TREASURY_CONTRACT_ADDRESS\""              # feeburner
+set_genesis_param fee_collector_address       "\"$TREASURY_CONTRACT_ADDRESS\""              # tokenfactory
+set_genesis_param security_address            "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"," # cron
+set_genesis_param limit                       5                                             # cron
+set_genesis_param allow_messages              "[\"*\"]"                                     # interchainaccounts
+set_genesis_param signed_blocks_window        "\"$SLASHING_SIGNED_BLOCKS_WINDOW\","         # slashing
+set_genesis_param min_signed_per_window       "\"$SLASHING_MIN_SIGNED\","                   # slashing
+set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
+set_genesis_param slash_fraction_downtime     "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
