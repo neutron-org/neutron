@@ -602,4 +602,8 @@ sed -i -e 's/\"fee_collector_address\":.*/\"fee_collector_address\":\"'"$DAO_CON
 sed -i -e 's/\"security_address\":.*/\"security_address\":\"'"$DAO_CONTRACT_ADDRESS"'\",/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"limit\":.*/\"limit\":5/g' "$CHAIN_DIR/config/genesis.json"
 sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"*\"]/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"signed_blocks_window\":.*/\"signed_blocks_window\":\"140000\",/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"min_signed_per_window\":.*/\"min_signed_per_window\":\"0.050000000000000000\",/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"slash_fraction_double_sign\":.*/\"slash_fraction_double_sign\":\"0.010000000000000000\",/g' "$CHAIN_DIR/config/genesis.json"
+sed -i -e 's/\"slash_fraction_downtime\":.*/\"slash_fraction_downtime\":\"0.000100000000000000\"/g' "$CHAIN_DIR/config/genesis.json"
 
