@@ -44,25 +44,25 @@ SLASHING_FRACTION_DOUBLE_SIGN=0.010000000000000000
 SLASHING_FRACTION_DOWNTIME=0.000100000000000000
 
 ##pre propose single parameters
-PRE_PROPOSAL_SINGLE_AMOUNT=1000
+PRE_PROPOSAL_SINGLE_DEPOSIT_AMOUNT_U_NTRN=50000000
 PRE_PROPOSAL_SINGLE_REFUND_POLICY="only_passed"
-PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION=false
+PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION=true
 
-## proposal singe params
-PROPOSAL_ALLOW_REVOTING=false # should be true for non-testing env
+## proposal single params
+PROPOSAL_ALLOW_REVOTING=true
 PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE=false
-PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD=1200 # seconds; should be 2 weeks in production
-PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
+PROPOSAL_SINGLE_MAX_VOTING_PERIOD_SECONDS=1209600 # seconds; should be 2 weeks in production
+PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
 PROPOSAL_SINGLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_SINGLE_THRESHOLD=0.5 # % of votes should vote for the proposal to pass [float] <1
 PROPOSAL_SINGLE_LABEL="neutron.proposals.single"
 PRE_PROPOSAL_SINGLE_LABEL="neutron.proposals.single.pre_propose"
 
 ## propose multiple params
-PROPOSAL_MULTIPLE_ALLOW_REVOTING=false # should be true for non-testing env
+PROPOSAL_MULTIPLE_ALLOW_REVOTING=true # should be true for non-testing env
 PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE=false
-PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD=1200 # seconds; should be 2 weeks in production
-PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
+PROPOSAL_MULTIPLE_MAX_VOTING_PERIOD_SECONDS=1209600 # seconds; should be 2 weeks in production
+PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
 PROPOSAL_MULTIPLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple"
 PRE_PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple.pre_propose"
@@ -70,9 +70,9 @@ PRE_PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple.pre_propose"
 ## Propose overrule params
 PROPOSAL_OVERRULE_ALLOW_REVOTING=false
 PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
-PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD=1200 # seconds; should be 3 days in production
-PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=false
-PROPOSAL_OVERRULE_THRESHOLD=0.005 # around 10 times lower than for regular proposals
+PROPOSAL_OVERRULE_MAX_VOTING_PERIOD=259200 # seconds; should be 3 days in production
+PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
+PROPOSAL_OVERRULE_ABSOLUTE_THRESHOLD=0.005 # around 10 times lower than for regular proposals
 PROPOSAL_OVERRULE_LABEL="neutron.proposals.overrule"
 PRE_PROPOSE_OVERRULE_LABEL="neutron.proposals.overrule.pre_propose"
 
@@ -82,7 +82,7 @@ VOTING_REGISTRY_LABEL="neutron.voting"
 
 ## DAO
 DAO_NAME="Neutron DAO"
-DAO_DESCRIPTION="Neutron DAO is a DAO DAO-based governance of Neutron chain"
+DAO_DESCRIPTION="Neutron DAO is the DAO DAO-based governance of Neutron chain"
 DAO_CORE_LABEL="neutron.core"
 
 ## Neutron vault
@@ -92,8 +92,8 @@ NEUTRON_VAULT_LABEL="neutron.voting.vaults.neutron"
 
 ## Reserve
 RESERVE_DISTRIBUTION_RATE=0
-RESERVE_MIN_PERIOD=10
-RESERVE_VESTING_DENOMINATOR=1
+RESERVE_MIN_DISTRIBUTE_PERIOD_SECONDS=86400
+RESERVE_VESTING_DENOMINATOR=1000
 RESERVE_LABEL="reserve"
 
 DISTRIBUTION_LABEL="distribution"
@@ -218,7 +218,7 @@ PRE_PROPOSE_INIT_MSG='{
             }
          }
       },
-     "amount": "'"$PRE_PROPOSAL_SINGLE_AMOUNT"'",
+     "amount": "'"$PRE_PROPOSAL_SINGLE_DEPOSIT_AMOUNT_U_NTRN"'",
      "refund_policy":"'"$PRE_PROPOSAL_SINGLE_REFUND_POLICY"'"
    },
    "open_proposal_submission": '"$PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION"'
@@ -243,7 +243,7 @@ PROPOSAL_SINGLE_INIT_MSG='{
    },
    "only_members_execute":'"$PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE"',
    "max_voting_period":{
-      "time":'"$PROPOSAL_SINGLE_ONLY_MAX_VOTING_PERIOD"'
+      "time":'"$PROPOSAL_SINGLE_MAX_VOTING_PERIOD_SECONDS"'
    },
    "close_proposal_on_execution_failure":'"$PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE"',
    "threshold":{
@@ -277,7 +277,7 @@ PROPOSAL_MULTIPLE_INIT_MSG='{
    },
    "only_members_execute":'"$PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE"',
    "max_voting_period":{
-      "time":'"$PROPOSAL_MULTIPLE_ONLY_MAX_VOTING_PERIOD"'
+      "time":'"$PROPOSAL_MULTIPLE_MAX_VOTING_PERIOD_SECONDS"'
    },
    "close_proposal_on_execution_failure": '"$PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE"',
    "voting_strategy":{
@@ -313,13 +313,13 @@ PROPOSAL_OVERRULE_INIT_MSG='{
    },
    "only_members_execute": '"$PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE"',
    "max_voting_period":{
-      "time": '"$PROPOSAL_OVERRULE_ONLY_MAX_VOTING_PERIOD"'
+      "time": '"$PROPOSAL_OVERRULE_MAX_VOTING_PERIOD"'
    },
    "close_proposal_on_execution_failure": '"$PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE"',
    "threshold":{
        "absolute_percentage":{
           "percentage":{
-            "percent": "'"$PROPOSAL_OVERRULE_THRESHOLD"'"
+            "percent": "'"$PROPOSAL_OVERRULE_ABSOLUTE_THRESHOLD"'"
           }
        }
    }
@@ -384,7 +384,7 @@ RESERVE_INIT='{
   "security_dao_address":   "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
   "denom":                  "'"$STAKEDENOM"'",
   "distribution_rate":      "'"$RESERVE_DISTRIBUTION_RATE"'",
-  "min_period":             '"$RESERVE_MIN_PERIOD"',
+  "min_period":             '"$RESERVE_MIN_DISTRIBUTE_PERIOD_SECONDS"',
   "distribution_contract":  "'"$DISTRIBUTION_CONTRACT_ADDRESS"'",
   "treasury_contract":      "'"$DAO_CONTRACT_ADDRESS"'",
   "vesting_denominator":    "'"$RESERVE_VESTING_DENOMINATOR"'"
