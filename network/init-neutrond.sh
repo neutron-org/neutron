@@ -4,7 +4,7 @@ set -e
 BINARY=${BINARY:-neutrond}
 BASE_DIR=./data
 CHAINID=${CHAINID:-test-1}
-STAKEDENOM=${STAKEDENOM:-untrn}
+STAKE_DENOM=${STAKE_DENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 
@@ -14,7 +14,7 @@ GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
 # MAIN_DAO
 DAO_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_core.wasm
-PRE_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_single.wasm
+PRE_PROPOSAL_SINGLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_single.wasm
 PRE_PROPOSAL_MULTIPLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_multiple.wasm
 PRE_PROPOSAL_OVERRULE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_overrule.wasm
 PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_proposal_single.wasm
@@ -44,9 +44,9 @@ SLASHING_FRACTION_DOUBLE_SIGN=0.010000000000000000
 SLASHING_FRACTION_DOWNTIME=0.000100000000000000
 
 ##pre propose single parameters
-PRE_PROPOSAL_SINGLE_DEPOSIT_AMOUNT_U_NTRN=50000000
-PRE_PROPOSAL_SINGLE_REFUND_POLICY="only_passed"
-PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION=true
+PRE_PROPOSAL_SHARED_DEPOSIT_AMOUNT_U_NTRN=50000000
+PRE_PROPOSAL_SHARED_REFUND_POLICY="only_passed"
+PRE_PROPOSAL_SHARED_OPEN_PROPOSAL_SUBMISSION=true
 
 ## proposal single params
 PROPOSAL_ALLOW_REVOTING=true
@@ -130,10 +130,10 @@ function store_binary() {
 # Upload the dao contracts
 # MAIN_DAO
 DAO_CONTRACT_BINARY_ID=$(store_binary                   "$DAO_CONTRACT")
-PRE_PROPOSAL_CONTRACT_BINARY_ID=$(store_binary          "$PRE_PROPOSAL_CONTRACT")
+PRE_PROPOSAL_SINGLE_CONTRACT_BINARY_ID=$(store_binary   "$PRE_PROPOSAL_SINGLE_CONTRACT")
 PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary "$PRE_PROPOSAL_MULTIPLE_CONTRACT")
 PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID=$(store_binary "$PRE_PROPOSAL_OVERRULE_CONTRACT")
-PROPOSAL_CONTRACT_BINARY_ID=$(store_binary              "$PROPOSAL_CONTRACT")
+PROPOSAL_SINGLE_CONTRACT_BINARY_ID=$(store_binary              "$PROPOSAL_CONTRACT")
 PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary     "$PROPOSAL_MULTIPLE_CONTRACT")
 VOTING_REGISTRY_CONTRACT_BINARY_ID=$(store_binary       "$VOTING_REGISTRY_CONTRACT")
 # VAULTS
@@ -170,11 +170,11 @@ NEUTRON_VAULT_CONTRACT_ADDRESS=$(genaddr                "$NEUTRON_VAULT_CONTRACT
 
 # MAIN_DAO
 DAO_CONTRACT_ADDRESS=$(genaddr                          "$DAO_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-PROPOSAL_SINGLE_CONTRACT_ADDRESS=$(genaddr              "$PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-PRE_PROPOSAL_CONTRACT_ADDRESS=$(genaddr                 "$PRE_PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PROPOSAL_SINGLE_CONTRACT_ADDRESS=$(genaddr              "$PROPOSAL_SINGLE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PRE_PROPOSAL_CONTRACT_ADDRESS=$(genaddr                 "$PRE_PROPOSAL_SINGLE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 PROPOSAL_MULTIPLE_CONTRACT_ADDRESS=$(genaddr            "$PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 PRE_PROPOSAL_MULTIPLE_CONTRACT_ADDRESS=$(genaddr        "$PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$(genaddr            "$PROPOSAL_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$(genaddr            "$PROPOSAL_SINGLE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS=$(genaddr        "$PRE_PROPOSAL_OVERRULE_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 VOTING_REGISTRY_CONTRACT_ADDRESS=$(genaddr              "$VOTING_REGISTRY_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
@@ -208,22 +208,22 @@ function json_to_base64() {
   echo "$MSG" | base64 | tr -d "\n"
 }
 
-# PRE_PROPOSE_INIT_MSG will be put into the PROPOSAL_SINGLE_INIT_MSG and PROPOSAL_MULTIPLE_INIT_MSG
-PRE_PROPOSE_INIT_MSG='{
+# PRE_PROPOSE_SHARED_INIT_MSG will be put into the PROPOSAL_SINGLE_INIT_MSG and PROPOSAL_MULTIPLE_INIT_MSG
+PRE_PROPOSE_SHARED_INIT_MSG='{
    "deposit_info":{
       "denom":{
          "token":{
             "denom":{
-               "native":"'"$STAKEDENOM"'"
+               "native":"'"$STAKE_DENOM"'"
             }
          }
       },
-     "amount": "'"$PRE_PROPOSAL_SINGLE_DEPOSIT_AMOUNT_U_NTRN"'",
-     "refund_policy":"'"$PRE_PROPOSAL_SINGLE_REFUND_POLICY"'"
+     "amount": "'"$PRE_PROPOSAL_SHARED_DEPOSIT_AMOUNT_U_NTRN"'",
+     "refund_policy":"'"$PRE_PROPOSAL_SHARED_REFUND_POLICY"'"
    },
-   "open_proposal_submission": '"$PRE_PROPOSAL_SINGLE_OPEN_PROPOSAL_SUBMISSION"'
+   "open_proposal_submission": '"$PRE_PROPOSAL_SHARED_OPEN_PROPOSAL_SUBMISSION"'
 }'
-PRE_PROPOSE_INIT_MSG_BASE64=$(json_to_base64 "$PRE_PROPOSE_INIT_MSG")
+PRE_PROPOSE_SHARED_INIT_MSG_BASE64=$(json_to_base64 "$PRE_PROPOSE_SHARED_INIT_MSG")
 
 # -------------------- PROPOSE-SINGLE { PRE-PROPOSE } --------------------
 
@@ -235,8 +235,8 @@ PROPOSAL_SINGLE_INIT_MSG='{
             "admin": {
               "core_module": {}
             },
-            "code_id":  '"$PRE_PROPOSAL_CONTRACT_BINARY_ID"',
-            "msg":      "'"$PRE_PROPOSE_INIT_MSG_BASE64"'",
+            "code_id":  '"$PRE_PROPOSAL_SINGLE_CONTRACT_BINARY_ID"',
+            "msg":      "'"$PRE_PROPOSE_SHARED_INIT_MSG_BASE64"'",
             "label":    "'"$PRE_PROPOSAL_SINGLE_LABEL"'"
          }
       }
@@ -270,7 +270,7 @@ PROPOSAL_MULTIPLE_INIT_MSG='{
               "core_module": {}
             },
             "code_id":  '"$PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID"',
-            "msg":      "'"$PRE_PROPOSE_INIT_MSG_BASE64"'",
+            "msg":      "'"$PRE_PROPOSE_SHARED_INIT_MSG_BASE64"'",
             "label":    "'"$PRE_PROPOSAL_MULTIPLE_LABEL"'"
          }
       }
@@ -347,7 +347,7 @@ DAO_INIT='{
       "admin": {
         "core_module": {}
       },
-      "code_id":  '"$PROPOSAL_CONTRACT_BINARY_ID"',
+      "code_id":  '"$PROPOSAL_SINGLE_CONTRACT_BINARY_ID"',
       "label":    "'"$PROPOSAL_SINGLE_LABEL"'",
       "msg":      "'"$PROPOSAL_SINGLE_INIT_MSG_BASE64"'"
     },
@@ -363,7 +363,7 @@ DAO_INIT='{
       "admin": {
         "core_module": {}
       },
-      "code_id":  '"$PROPOSAL_CONTRACT_BINARY_ID"',
+      "code_id":  '"$PROPOSAL_SINGLE_CONTRACT_BINARY_ID"',
       "label":    "'"$PROPOSAL_OVERRULE_LABEL"'",
       "msg":      "'"$PROPOSAL_OVERRULE_INIT_MSG_BASE64"'"
     }
@@ -382,7 +382,7 @@ DAO_INIT='{
 RESERVE_INIT='{
   "main_dao_address":       "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao_address":   "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
-  "denom":                  "'"$STAKEDENOM"'",
+  "denom":                  "'"$STAKE_DENOM"'",
   "distribution_rate":      "'"$RESERVE_DISTRIBUTION_RATE"'",
   "min_period":             '"$RESERVE_MIN_DISTRIBUTE_PERIOD_SECONDS"',
   "distribution_contract":  "'"$DISTRIBUTION_CONTRACT_ADDRESS"'",
@@ -393,7 +393,7 @@ RESERVE_INIT='{
 DISTRIBUTION_INIT='{
   "main_dao_address":     "'"$DAO_CONTRACT_ADDRESS"'",
   "security_dao_address": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
-  "denom":                "'"$STAKEDENOM"'"
+  "denom":                "'"$STAKE_DENOM"'"
 }'
 
 # VAULTS
@@ -405,7 +405,7 @@ NEUTRON_VAULT_INIT='{
     }
   },
   "name":         "'"$NEUTRON_VAULT_NAME"'",
-  "denom":        "'"$STAKEDENOM"'",
+  "denom":        "'"$STAKE_DENOM"'",
   "description":  "'"$NEUTRON_VAULT_DESCRIPTION"'"
 }'
 
@@ -440,7 +440,7 @@ SECURITY_SUBDAO_PROPOSAL_INIT_MSG='{
                        "addr": "'"$DAO_CONTRACT_ADDRESS"'"
                      }
                },
-               "code_id": '"$PRE_PROPOSAL_CONTRACT_BINARY_ID"',
+               "code_id": '"$PRE_PROPOSAL_SINGLE_CONTRACT_BINARY_ID"',
                "msg":     "'"$SECURITY_SUBDAO_PRE_PROPOSE_INIT_MSG_BASE64"'",
                "label":   "'"$SECURITY_SUBDAO_PRE_PROPOSE_LABEL"'"
             }
