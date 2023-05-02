@@ -4,7 +4,7 @@ FROM golang:1.20-bullseye
 RUN apt-get update && apt-get install -y jq
 EXPOSE 26656 26657 1317 9090
 COPY --from=app . /opt/neutron
-RUN cd /opt/neutron && make install
+RUN cd /opt/neutron && make install-test-binary
 WORKDIR /opt/neutron
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD \
