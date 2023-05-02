@@ -27,4 +27,5 @@ var (
 	ErrEmptyKeyPath              = sdkerrors.Register(ModuleName, 1118, "key path is empty")
 	ErrEmptyKeyID                = sdkerrors.Register(ModuleName, 1119, "key id is empty")
 	ErrTooManyKVQueryKeys        = sdkerrors.Register(ModuleName, 1120, "too many keys")
+	ErrEmptyQueryTypeGenesis     = sdkerrors.Register(ModuleName, 1121, "empty query type")
 )
