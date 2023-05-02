@@ -615,8 +615,8 @@ function set_genesis_param() {
 }
 
 set_genesis_param admins                      "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
-set_genesis_param treasury_address            "\"$TREASURY_CONTRACT_ADDRESS\""              # feeburner
-set_genesis_param fee_collector_address       "\"$TREASURY_CONTRACT_ADDRESS\""              # tokenfactory
+set_genesis_param treasury_address            "\"$DAO_CONTRACT_ADDRESS\""                   # feeburner
+set_genesis_param fee_collector_address       "\"$DAO_CONTRACT_ADDRESS\""                   # tokenfactory
 set_genesis_param security_address            "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"," # cron
 set_genesis_param limit                       5                                             # cron
 set_genesis_param allow_messages              "[\"*\"]"                                     # interchainaccounts
