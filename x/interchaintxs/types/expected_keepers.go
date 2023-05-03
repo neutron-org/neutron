@@ -26,7 +26,7 @@ type BankKeeper interface {
 
 type ContractManagerKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
-	AddContractFailure(ctx sdk.Context, channelID string, address string, ackID uint64, ackType string)
+	AddContractFailure(ctx sdk.Context, channelID, address string, ackID uint64, ackType string)
 	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) ([]byte, error)
 	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
 	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
@@ -36,7 +36,7 @@ type ContractManagerKeeper interface {
 type ICAControllerKeeper interface {
 	GetActiveChannelID(ctx sdk.Context, connectionID, portID string) (string, bool)
 	GetInterchainAccountAddress(ctx sdk.Context, connectionID, portID string) (string, bool)
-	RegisterInterchainAccount(ctx sdk.Context, connectionID, owner string, version string) error
+	RegisterInterchainAccount(ctx sdk.Context, connectionID, owner, version string) error
 	SendTx(ctx sdk.Context, chanCap *capabilitytypes.Capability, connectionID, portID string, icaPacketData icatypes.InterchainAccountPacketData, timeoutTimestamp uint64) (uint64, error)
 }
 
