@@ -1,12 +1,11 @@
 syntax = "proto3";
 package neutron.feeburner;
 
-import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "feeburner/params.proto";
 import "feeburner/total_burned_neutrons_amount.proto";
-// this line is used by starport scaffolding # 1
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/feeburner/types";
 
@@ -18,12 +17,9 @@ service Query {
   }
 
   // TotalBurnedNeutronsAmount queries total amount of burned neutron fees.
-  rpc TotalBurnedNeutronsAmount(QueryTotalBurnedNeutronsAmountRequest)
-      returns (QueryTotalBurnedNeutronsAmountResponse) {
-    option (google.api.http).get =
-        "/neutron/feeburner/total_burned_neutrons_amount";
+  rpc TotalBurnedNeutronsAmount(QueryTotalBurnedNeutronsAmountRequest) returns (QueryTotalBurnedNeutronsAmountResponse) {
+    option (google.api.http).get = "/neutron/feeburner/total_burned_neutrons_amount";
   }
-  // this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -32,7 +28,7 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryTotalBurnedNeutronsAmountRequest is request type for the
@@ -42,8 +38,5 @@ message QueryTotalBurnedNeutronsAmountRequest {}
 // QueryTotalBurnedNeutronsAmountResponse is response type for the
 // Query/QueryTotalBurnedNeutronsAmount method.
 message QueryTotalBurnedNeutronsAmountResponse {
-  TotalBurnedNeutronsAmount total_burned_neutrons_amount = 1
-      [ (gogoproto.nullable) = false ];
+  TotalBurnedNeutronsAmount total_burned_neutrons_amount = 1 [(gogoproto.nullable) = false];
 }
-
-// this line is used by starport scaffolding # 3
