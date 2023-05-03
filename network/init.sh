@@ -51,7 +51,7 @@ echo "$RLY_MNEMONIC_2" | $BINARY keys add rly2 --home "$CHAIN_DIR" --recover --k
 
 #$BINARY add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show val1 --keyring-backend test -a)" "100000000000000$STAKEDENOM"  --home "$CHAIN_DIR"
 #$BINARY add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show val2 --keyring-backend test -a)" "100000000000000$STAKEDENOM"  --home "$CHAIN_DIR"
-$BINARY add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show demowallet1 --keyring-backend test -a)" "100000000000000$STAKEDENOM,1000000000000000$IBCATOMDENOM,1000000000000000$IBCUSDCDENOM"  --home "$CHAIN_DIR"
+#$BINARY add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show demowallet1 --keyring-backend test -a)" "100000000000000$STAKEDENOM,1000000000000000$IBCATOMDENOM,1000000000000000$IBCUSDCDENOM"  --home "$CHAIN_DIR"
 #$BINARY add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show demowallet2 --keyring-backend test -a)" "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$CHAIN_DIR"
 #$BINARY add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show demowallet3 --keyring-backend test -a)" "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$CHAIN_DIR"
 $BINARY add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show rly1 --keyring-backend test -a)" "0$STAKEDENOM"  --home "$CHAIN_DIR"

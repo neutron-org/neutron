@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
 	"github.com/neutron-org/neutron/app/upgrades"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
@@ -19,7 +20,6 @@ func CreateUpgradeHandler(
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")
 
-		// todo: FIXME
 		keepers.IcqKeeper.SetParams(ctx, icqtypes.DefaultParams())
 		keepers.CronKeeper.SetParams(ctx, crontypes.DefaultParams())
 		keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())

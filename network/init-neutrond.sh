@@ -53,7 +53,7 @@ PRE_PROPOSAL_SHARED_OPEN_PROPOSAL_SUBMISSION=true
 ## proposal single params
 PROPOSAL_ALLOW_REVOTING=true
 PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE=false
-PROPOSAL_SINGLE_MAX_VOTING_PERIOD_SECONDS=1200 # seconds; should be 2 weeks in production
+PROPOSAL_SINGLE_MAX_VOTING_PERIOD_SECONDS=1209600 # seconds; should be 2 weeks in production
 PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
 PROPOSAL_SINGLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_SINGLE_THRESHOLD=0.5 # % of votes should vote for the proposal to pass [float] <1
@@ -63,7 +63,7 @@ PRE_PROPOSAL_SINGLE_LABEL="neutron.proposals.single.pre_propose"
 ## propose multiple params
 PROPOSAL_MULTIPLE_ALLOW_REVOTING=true # should be true for non-testing env
 PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE=false
-PROPOSAL_MULTIPLE_MAX_VOTING_PERIOD_SECONDS=1200 # seconds; should be 2 weeks in production
+PROPOSAL_MULTIPLE_MAX_VOTING_PERIOD_SECONDS=1209600 # seconds; should be 2 weeks in production
 PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
 PROPOSAL_MULTIPLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple"
@@ -72,7 +72,7 @@ PRE_PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple.pre_propose"
 ## Propose overrule params
 PROPOSAL_OVERRULE_ALLOW_REVOTING=false
 PROPOSAL_OVERRULE_ONLY_MEMBERS_EXECUTE=false
-PROPOSAL_OVERRULE_MAX_VOTING_PERIOD=1200 # seconds; should be 3 days in production
+PROPOSAL_OVERRULE_MAX_VOTING_PERIOD=259200 # seconds; should be 3 days in production
 PROPOSAL_OVERRULE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
 PROPOSAL_OVERRULE_ABSOLUTE_THRESHOLD=0.005 # around 10 times lower than for regular proposals
 PROPOSAL_OVERRULE_LABEL="neutron.proposals.overrule"
@@ -117,6 +117,9 @@ SECURITY_SUBDAO_CORE_LABEL="neutron.subdaos.security.core"
 SECURITY_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.security.proposals.single"
 SECURITY_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.security.proposals.single.pre_propose"
 SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
+
+## RESCUEEER
+RESCUEEER_EOL=1683129600
 
 echo "Initializing dao contract in genesis..."
 
@@ -580,7 +583,7 @@ RESCUEEER_MULTISIG_INIT_MSG='{
  RESCUEEER_INIT_MSG='{
    "owner": "'"$CW3_FIXED_MULTISIG_CONTRACT_ADDRESS"'",
    "true_admin": "'"$DAO_CONTRACT_ADDRESS"'",
-   "eol": 1683129600
+   "eol": '"$RESCUEEER_EOL"'
  }'
 
 echo "Instantiate contracts"
