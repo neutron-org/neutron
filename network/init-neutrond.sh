@@ -77,7 +77,6 @@ PROPOSAL_OVERRULE_LABEL="neutron.proposals.overrule"
 PRE_PROPOSE_OVERRULE_LABEL="neutron.proposals.overrule.pre_propose"
 
 ## Voting registry
-VOTING_REGISTRY_MANAGER=null
 VOTING_REGISTRY_LABEL="neutron.voting"
 
 ## DAO
@@ -327,12 +326,7 @@ PROPOSAL_OVERRULE_INIT_MSG='{
 PROPOSAL_OVERRULE_INIT_MSG_BASE64=$(json_to_base64 "$PROPOSAL_OVERRULE_INIT_MSG")
 
 VOTING_REGISTRY_INIT_MSG='{
-  "manager": '"$VOTING_REGISTRY_MANAGER"',
-  "owner": {
-    "address": {
-      "addr": "'"$DAO_CONTRACT_ADDRESS"'"
-    }
-  },
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
   "voting_vaults": [
     "'"$NEUTRON_VAULT_CONTRACT_ADDRESS"'"
   ]
@@ -399,11 +393,7 @@ DISTRIBUTION_INIT='{
 # VAULTS
 
 NEUTRON_VAULT_INIT='{
-  "owner": {
-    "address": {
-      "addr": "'"$DAO_CONTRACT_ADDRESS"'"
-    }
-  },
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
   "name":         "'"$NEUTRON_VAULT_NAME"'",
   "denom":        "'"$STAKE_DENOM"'",
   "description":  "'"$NEUTRON_VAULT_DESCRIPTION"'"
