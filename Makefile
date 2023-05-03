@@ -189,11 +189,6 @@ format:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-
-###############################################################################
-###                                Protobuf                                 ###
-###############################################################################
-
 containerProtoVer=0.9.0
 containerProtoImage=ghcr.io/cosmos/proto-builder:$(containerProtoVer)
 containerProtoGen=cosmos-sdk-proto-gen-$(containerProtoVer)
