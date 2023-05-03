@@ -10,8 +10,8 @@ require (
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
 	github.com/cosmos/cosmos-sdk v0.45.15
-	github.com/cosmos/ibc-go/v4 v4.3.0
-	github.com/cosmos/interchain-security v1.0.1-0.20230419165046-6089b6121c33
+	github.com/cosmos/ibc-go/v4 v4.4.0
+	github.com/cosmos/interchain-security v1.0.1-0.20230503123339-0a000ff33958
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
@@ -74,7 +74,6 @@ require (
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/getsentry/sentry-go v0.17.0 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
@@ -89,7 +88,6 @@ require (
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
 	github.com/gtank/merlin v0.1.1 // indirect
 	github.com/gtank/ristretto255 v0.1.2 // indirect
@@ -156,11 +154,16 @@ require (
 )
 
 replace (
+	// use wasmd with Neutron's fixes and changes
 	github.com/CosmWasm/wasmd v0.31.0 => github.com/neutron-org/wasmd v0.31.1-neutron-fixes
-	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
+	// use a forked admin module
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
+	// use cosmos-sdk v0.45.15-ics
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.15-ics
+	// use cosmos-sdk compatible gogo protobuf
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	// use skip by default, instead of tendermint
 	github.com/tendermint/tendermint => github.com/skip-mev/mev-cometbft v0.34.27-mev.17
+	// use grpc compatible with cosmos flavored gogo protobuf
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
