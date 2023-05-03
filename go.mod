@@ -157,7 +157,6 @@ require (
 
 replace (
 	github.com/CosmWasm/wasmd v0.31.0 => github.com/neutron-org/wasmd v0.31.1-neutron-fixes
-	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.15-ics
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
