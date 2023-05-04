@@ -46,8 +46,8 @@ SLASHING_MIN_SIGNED=0.050000000000000000
 SLASHING_FRACTION_DOUBLE_SIGN=0.050000000000000000
 SLASHING_FRACTION_DOWNTIME=0.000100000000000000
 
-##pre propose single parameters
-PRE_PROPOSAL_SHARED_DEPOSIT_AMOUNT_U_NTRN=50000000
+## pre propose single parameters
+PRE_PROPOSAL_SHARED_DEPOSIT_AMOUNT_U_NTRN=1000000000
 PRE_PROPOSAL_SHARED_REFUND_POLICY="only_passed"
 PRE_PROPOSAL_SHARED_OPEN_PROPOSAL_SUBMISSION=true
 
@@ -56,7 +56,7 @@ PROPOSAL_ALLOW_REVOTING=true
 PROPOSAL_SINGLE_ONLY_MEMBERS_EXECUTE=false
 PROPOSAL_SINGLE_MAX_VOTING_PERIOD_SECONDS=1209600 # seconds; should be 2 weeks in production
 PROPOSAL_SINGLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
-PROPOSAL_SINGLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
+PROPOSAL_SINGLE_QUORUM=0.1 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_SINGLE_THRESHOLD=0.5 # % of votes should vote for the proposal to pass [float] <1
 PROPOSAL_SINGLE_LABEL="neutron.proposals.single"
 PRE_PROPOSAL_SINGLE_LABEL="neutron.proposals.single.pre_propose"
@@ -66,7 +66,7 @@ PROPOSAL_MULTIPLE_ALLOW_REVOTING=true # should be true for non-testing env
 PROPOSAL_MULTIPLE_ONLY_MEMBERS_EXECUTE=false
 PROPOSAL_MULTIPLE_MAX_VOTING_PERIOD_SECONDS=1209600 # seconds; should be 2 weeks in production
 PROPOSAL_MULTIPLE_CLOSE_PROPOSAL_ON_EXECUTION_FAILURE=true
-PROPOSAL_MULTIPLE_QUORUM=0.05 # quorum to consider proposal's result viable [float] < 1
+PROPOSAL_MULTIPLE_QUORUM=0.1 # quorum to consider proposal's result viable [float] < 1
 PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple"
 PRE_PROPOSAL_MULTIPLE_LABEL="neutron.proposals.multiple.pre_propose"
 
@@ -110,7 +110,13 @@ SECURITY_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.security.proposals.single.pre
 SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
 
 ## RESCUEEER
-RESCUEEER_EOL=1683129600
+RESCUEEER_EOL=1684663200  # Sun May 21 2023 10:00:00 GMT+0000
+
+## MULTISIG ALLOCATIONS
+
+HADRON_LABS_MULTISIG_ALLOCATION=
+TOKEN_ISSUER_ALLOCATION=
+P2P_ALLOCATION=
 
 echo "Initializing dao contract in genesis..."
 
@@ -398,13 +404,30 @@ NEUTRON_VAULT_INIT='{
 
 # SECURITY SUBDAO
 
-# CW4 MODULE FOR  SECURITY SUBDAOSUBDAOS
+# CW4 MODULE FOR  SECURITY SUBDAO
+
+A_Z_ADDRESS="neutron1h8vf3ueml7ah7m8z9e6vx09trq5lv2fw9e049f"
+K_T_ADDRESS="neutron1tkavhfqt8358vl74z7r5kdkdy05s98yka0gl0t"
+A_M_ADDRESS="neutron10ng7hj4ucz2pzgmw6l22cpkhaxvhyh4pvu0dzk"
+N_L_ADDRESS="neutron1083svrca4t350mphfv9x45wq9asrs60cvs77fx"
 
 SECURITY_SUBDAO_CW4_VOTE_INIT_MSG='{
   "cw4_group_code_id": '"$SECURITY_SUBDAO_CW4_GROUP_CONTRACT_BINARY_ID"',
   "initial_members": [
     {
-      "addr": "'"$ADMIN_ADDRESS"'",
+      "addr": "'"$A_Z_ADDRESS"'",
+      "weight": 1
+    },
+    {
+      "addr": "'"$K_T_ADDRESS"'",
+      "weight": 1
+    },
+    {
+      "addr": "'"$A_M_ADDRESS"'",
+      "weight": 1
+    },
+    {
+      "addr": "'"$N_L_ADDRESS"'",
       "weight": 1
     }
   ]
@@ -476,11 +499,24 @@ SECURITY_SUBDAO_CORE_INIT_MSG='{
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
 
+
 # RESCUEEER
 RESCUEEER_MULTISIG_INIT_MSG='{
    "voters": [
      {
-       "addr": "'"$ADMIN_ADDRESS"'",
+       "addr": "'"$A_Z_ADDRESS"'",
+       "weight": 1
+     },
+     {
+       "addr": "'"$K_T_ADDRESS"'",
+       "weight": 1
+     },
+     {
+       "addr": "'"$A_M_ADDRESS"'",
+       "weight": 1
+     },
+     {
+       "addr": "'"$N_L_ADDRESS"'",
        "weight": 1
      }
    ],
