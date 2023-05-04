@@ -523,10 +523,6 @@ RESCUEEER_MULTISIG_INIT_MSG='{
      {
        "addr": "'"$N_L_ADDRESS"'",
        "weight": 1
-     },
-     {
-       "addr": "'"$J_T_ADDRESS"'",
-       "weight": 1
      }
    ],
    "threshold": { "absolute_count": { "weight": 1 } },
