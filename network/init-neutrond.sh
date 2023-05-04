@@ -97,7 +97,7 @@ RESERVE_DISTRIBUTION_RATE=0
 RESERVE_MIN_DISTRIBUTE_PERIOD_SECONDS=86400
 RESERVE_VESTING_DENOMINATOR=10000
 RESERVE_LABEL="reserve"
-RESERVE_TOPUP_AMOUNT=100000000000000untrn
+RESERVE_TOPUP_AMOUNT=240011111000000untrn
 
 DISTRIBUTION_LABEL="distribution"
 
@@ -411,6 +411,7 @@ K_T_ADDRESS="neutron1tkavhfqt8358vl74z7r5kdkdy05s98yka0gl0t"
 A_M_ADDRESS="neutron10ng7hj4ucz2pzgmw6l22cpkhaxvhyh4pvu0dzk"
 N_L_ADDRESS="neutron1083svrca4t350mphfv9x45wq9asrs60cvs77fx"
 J_T_ADDRESS="neutron14xgp8mgs4tg6dj47ud5408cs5s53sf9ydxs3kp"
+C_C_ADDRESS="neutron1705swa2kgn9pvancafzl254f63a3jda9hhy3ze"
 
 SECURITY_SUBDAO_CW4_VOTE_INIT_MSG='{
   "cw4_group_code_id": '"$SECURITY_SUBDAO_CW4_GROUP_CONTRACT_BINARY_ID"',
@@ -522,6 +523,10 @@ RESCUEEER_MULTISIG_INIT_MSG='{
      },
      {
        "addr": "'"$N_L_ADDRESS"'",
+       "weight": 1
+     },
+     {
+       "addr": "'"$C_C_ADDRESS"'",
        "weight": 1
      }
    ],
