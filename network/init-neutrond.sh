@@ -100,17 +100,6 @@ RESERVE_TOPUP_AMOUNT=100000000000000untrn
 
 DISTRIBUTION_LABEL="distribution"
 
-## Grants subdao
-GRANTS_SUBDAO_CORE_NAME="Grants SubDAO"
-GRANTS_SUBDAO_CORE_DESCRIPTION="SubDAO to distribute grants to projects"
-GRANTS_SUBDAO_CORE_LABEL="neutron.subdaos.grants.core"
-GRANTS_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.grants.proposals.single"
-GRANTS_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.grants.proposals.single.pre_propose"
-GRANTS_SUBDAO_VOTING_MODULE_LABEL="neutron.subdaos.grants.voting"
-
-## Timelock
-GRANTS_SUBDAO_TIMELOCK_LABEL="neutron.subdaos.grants.proposals.single.pre_propose.timelock"
-
 ## Security subdao
 SECURITY_SUBDAO_CORE_NAME="Security SubDAO"
 SECURITY_SUBDAO_CORE_DESCRIPTION="SubDAO with power to pause specific Neutron DAO modules"
@@ -195,12 +184,6 @@ SECURITY_SUBDAO_VOTING_CONTRACT_ADDRESS=$(genaddr      "$CW4_VOTING_CONTRACT_BIN
 SECURITY_SUBDAO_GROUP_CONTRACT_ADDRESS=$(genaddr       "$CW4_GROUP_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_PROPOSAL_CONTRACT_ADDRESS=$(genaddr    "$SUBDAO_PROPOSAL_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 SECURITY_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS=$(genaddr "$SUBDAO_PROPOSAL_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-GRANTS_SUBDAO_CORE_CONTRACT_ADDRESS=$(genaddr          "$SUBDAO_CORE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-GRANTS_SUBDAO_VOTING_CONTRACT_ADDRESS=$(genaddr        "$CW4_VOTING_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-GRANTS_SUBDAO_GROUP_CONTRACT_ADDRESS=$(genaddr         "$CW4_GROUP_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-GRANTS_SUBDAO_PROPOSAL_CONTRACT_ADDRESS=$(genaddr      "$SUBDAO_PROPOSAL_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-GRANTS_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS=$(genaddr   "$SUBDAO_PRE_PROPOSE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
-GRANTS_SUBDAO_TIMELOCK_CONTRACT_ADDRESS=$(genaddr      "$SUBDAO_TIMELOCK_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 # RESCUEEER
 CW3_FIXED_MULTISIG_CONTRACT_ADDRESS=$(genaddr          "$CW3_FIXED_MULTISIG_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 RESCUEEER_CONTRACT_ADDRESS=$(genaddr                   "$RESCUEEER_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
@@ -490,86 +473,6 @@ SECURITY_SUBDAO_CORE_INIT_MSG='{
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
 
-# GRANTS_SUBDAO
-
-GRANTS_SUBDAO_TIMELOCK_INIT_MSG='{
-  "overrule_pre_propose": "'"$PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS"'"
-}'
-GRANTS_SUBDAO_TIMELOCK_INIT_MSG_BASE64=$(json_to_base64 "$GRANTS_SUBDAO_TIMELOCK_INIT_MSG")
-
-GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG='{
-  "open_proposal_submission": true,
-  "timelock_module_instantiate_info": {
-    "admin": {
-      "address": {
-        "addr": "'"$DAO_CONTRACT_ADDRESS"'"
-      }
-    },
-    "code_id":  '"$SUBDAO_TIMELOCK_BINARY_ID"',
-    "label":    "'"$GRANTS_SUBDAO_TIMELOCK_LABEL"'",
-    "msg":      "'"$GRANTS_SUBDAO_TIMELOCK_INIT_MSG_BASE64"'"
-  }
-}'
-GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG_BASE64=$(json_to_base64 "$GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG")
-
-GRANTS_SUBDAO_PROPOSAL_INIT_MSG='{
-   "allow_revoting": false,
-   "pre_propose_info":{
-      "module_may_propose":{
-         "info":{
-            "admin": {
-              "address": {
-                "addr": "'"$DAO_CONTRACT_ADDRESS"'"
-              }
-            },
-            "code_id":  '"$SUBDAO_PRE_PROPOSE_BINARY_ID"',
-            "msg":      "'"$GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG_BASE64"'",
-            "label":    "'"$GRANTS_SUBDAO_PRE_PROPOSE_LABEL"'"
-         }
-      }
-   },
-   "only_members_execute":false,
-   "max_voting_period":{
-      "height": 1000000000000
-   },
-   "close_proposal_on_execution_failure":false,
-   "threshold":{
-      "absolute_count":{
-         "threshold": "1"
-      }
-   }
-}'
-GRANTS_SUBDAO_PROPOSAL_INIT_MSG_BASE64=$(json_to_base64 "$GRANTS_SUBDAO_PROPOSAL_INIT_MSG")
-
-GRANTS_SUBDAO_CORE_INIT_MSG='{
-  "name":         "'"$GRANTS_SUBDAO_CORE_NAME"'",
-  "description":  "'"$GRANTS_SUBDAO_CORE_DESCRIPTION"'",
-  "vote_module_instantiate_info": {
-    "admin": {
-      "address": {
-        "addr": "'"$DAO_CONTRACT_ADDRESS"'"
-      }
-    },
-    "code_id":  '"$CW4_VOTING_CONTRACT_BINARY_ID"',
-    "label":    "'"$GRANTS_SUBDAO_VOTING_MODULE_LABEL"'",
-    "msg":      "'"$CW4_VOTE_INIT_MSG_BASE64"'"
-  },
-  "proposal_modules_instantiate_info": [
-    {
-      "admin": {
-        "address": {
-          "addr": "'"$DAO_CONTRACT_ADDRESS"'"
-        }
-      },
-      "code_id":  '"$SUBDAO_PROPOSAL_BINARY_ID"',
-      "label":    "'"$GRANTS_SUBDAO_PROPOSAL_LABEL"'",
-      "msg":      "'"$GRANTS_SUBDAO_PROPOSAL_INIT_MSG_BASE64"'"
-    }
-  ],
-  "main_dao":     "'"$DAO_CONTRACT_ADDRESS"'",
-  "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
-}'
-
 RESCUEEER_MULTISIG_INIT_MSG='{
    "voters": [
      {
@@ -608,7 +511,6 @@ init_contract "$DAO_CONTRACT_BINARY_ID"                "$DAO_INIT"              
 init_contract "$RESERVE_CONTRACT_BINARY_ID"            "$RESERVE_INIT"                   "$RESERVE_LABEL"              "$RESCUEEER_CONTRACT_ADDRESS"
 init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"       "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"         "$RESCUEEER_CONTRACT_ADDRESS"
 init_contract "$SUBDAO_CORE_BINARY_ID"                 "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL" "$RESCUEEER_CONTRACT_ADDRESS"
-init_contract "$SUBDAO_CORE_BINARY_ID"                 "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"   "$RESCUEEER_CONTRACT_ADDRESS"
 init_contract "$CW3_FIXED_MULTISIG_CONTRACT_BINARY_ID" "$RESCUEEER_MULTISIG_INIT_MSG"    "rescueeer multisig"          "$CW3_FIXED_MULTISIG_CONTRACT_ADDRESS"
 init_contract "$RESCUEEER_CONTRACT_BINARY_ID"          "$RESCUEEER_INIT_MSG"             "rescueeer itself"            "$RESCUEEER_CONTRACT_ADDRESS"
 
@@ -620,9 +522,6 @@ ADD_SUBDAOS_MSG='{
     "to_add": [
       {
         "addr": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
-      },
-      {
-        "addr": "'"$GRANTS_SUBDAO_CORE_CONTRACT_ADDRESS"'"
       }
     ],
     "to_remove": []
