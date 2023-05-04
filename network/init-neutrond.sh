@@ -410,6 +410,7 @@ A_Z_ADDRESS="neutron1h8vf3ueml7ah7m8z9e6vx09trq5lv2fw9e049f"
 K_T_ADDRESS="neutron1tkavhfqt8358vl74z7r5kdkdy05s98yka0gl0t"
 A_M_ADDRESS="neutron10ng7hj4ucz2pzgmw6l22cpkhaxvhyh4pvu0dzk"
 N_L_ADDRESS="neutron1083svrca4t350mphfv9x45wq9asrs60cvs77fx"
+J_T_ADDRESS="neutron14xgp8mgs4tg6dj47ud5408cs5s53sf9ydxs3kp"
 
 SECURITY_SUBDAO_CW4_VOTE_INIT_MSG='{
   "cw4_group_code_id": '"$SECURITY_SUBDAO_CW4_GROUP_CONTRACT_BINARY_ID"',
@@ -428,6 +429,10 @@ SECURITY_SUBDAO_CW4_VOTE_INIT_MSG='{
     },
     {
       "addr": "'"$N_L_ADDRESS"'",
+      "weight": 1
+    },
+    {
+      "addr": "'"$J_T_ADDRESS"'",
       "weight": 1
     }
   ]
@@ -517,6 +522,10 @@ RESCUEEER_MULTISIG_INIT_MSG='{
      },
      {
        "addr": "'"$N_L_ADDRESS"'",
+       "weight": 1
+     },
+     {
+       "addr": "'"$J_T_ADDRESS"'",
        "weight": 1
      }
    ],
