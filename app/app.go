@@ -131,7 +131,7 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
-	e2e "github.com/cosmos/interchain-security/testutil/integration"
+	e2e "github.com/cosmos/interchain-security/testutil/e2e"
 	ccvconsumer "github.com/cosmos/interchain-security/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
@@ -1124,21 +1124,21 @@ func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
 }
 
 // GetE2eBankKeeper implements the ConsumerApp interface.
-func (app *App) GetTestBankKeeper() e2e.TestBankKeeper {
+func (app *App) GetE2eBankKeeper() e2e.E2eBankKeeper {
 	return app.BankKeeper
 }
 
 // GetE2eAccountKeeper implements the ConsumerApp interface.
-func (app *App) GetTestAccountKeeper() e2e.TestAccountKeeper {
+func (app *App) GetE2eAccountKeeper() e2e.E2eAccountKeeper {
 	return app.AccountKeeper
 }
 
 // GetE2eSlashingKeeper implements the ConsumerApp interface.
-func (app *App) GetTestSlashingKeeper() e2e.TestSlashingKeeper {
+func (app *App) GetE2eSlashingKeeper() e2e.E2eSlashingKeeper {
 	return app.SlashingKeeper
 }
 
 // GetE2eEvidenceKeeper implements the ConsumerApp interface.
-func (app *App) GetTestEvidenceKeeper() e2e.TestEvidenceKeeper {
+func (app *App) GetE2eEvidenceKeeper() e2e.E2eEvidenceKeeper {
 	return app.EvidenceKeeper
 }
