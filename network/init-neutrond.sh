@@ -411,7 +411,7 @@ DISTRIBUTION_INIT='{
 # VAULTS
 
 NEUTRON_VAULT_INIT='{
-  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
+  "owner":        "'"$DAO_CONTRACT_ADDRESS"'",
   "name":         "'"$NEUTRON_VAULT_NAME"'",
   "denom":        "'"$STAKE_DENOM"'",
   "description":  "'"$NEUTRON_VAULT_DESCRIPTION"'"
@@ -486,7 +486,7 @@ SECURITY_SUBDAO_PROPOSAL_INIT_MSG='{
    "close_proposal_on_execution_failure":false,
    "threshold":{
       "absolute_count":{
-         "threshold": "1"
+         "threshold": "3"
       }
    }
 }'
@@ -542,7 +542,7 @@ RESCUEEER_MULTISIG_INIT_MSG='{
        "weight": 1
      }
    ],
-   "threshold": { "absolute_count": { "weight": 1 } },
+   "threshold": { "absolute_count": { "weight": 3 } },
    "max_voting_period": { "height": 1000 }
  }'
 
@@ -617,4 +617,6 @@ echo "DAO $DAO_CONTRACT_ADDRESS"
 echo $RESERVE_CONTRACT_ADDRESS
 echo $RESCUEEER_CONTRACT_ADDRESS
 echo $VOTING_REGISTRY_CONTRACT_ADDRESS
+echo $SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS
+echo $RESCUEEER_CONTRACT_ADDRESS
 echo $INSTANCE_ID_COUNTER
