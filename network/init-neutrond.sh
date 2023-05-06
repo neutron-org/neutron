@@ -8,6 +8,8 @@ STAKE_DENOM=${STAKE_DENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 
+CONTRACTS_TO_CODE_IDS=${CONTRACTS_TO_CODE_IDS:-"contracts_to_code_ids.txt"}
+
 CHAIN_DIR="$BASE_DIR/$CHAINID"
 GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 
@@ -118,6 +120,8 @@ function store_binary() {
   $BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" \
     --output json --run-as "${ADMIN_ADDRESS}" --keyring-backend=test --home "$CHAIN_DIR"
   BINARY_ID=$(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" "$CHAIN_DIR/config/genesis.json")
+  CONTRACT_NAME=${CONTRACT_BINARY_PATH##*/}
+  echo "$CONTRACT_NAME, $BINARY_ID" >> $CONTRACTS_TO_CODE_IDS
   echo "$BINARY_ID"
 }
 
