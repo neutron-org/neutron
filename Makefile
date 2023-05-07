@@ -215,8 +215,8 @@ init: kill-dev install-test-binary
 
 start: kill-dev install-test-binary
 	@echo "Starting up neutrond alone..."
-	BINARY=neutrond CHAINID=$(CHAIN_ID) P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
-	./network/init.sh && ./network/init-neutrond.sh && ./network/start.sh
+	BINARY=neutrond CHAIN_ID=$(CHAIN_ID) P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
+	./network/init.sh && ./network/init-neutrond.sh && CHAIN_ID=$(CHAIN_ID) ./network/start.sh
 
 start-rly:
 	./network/hermes/start.sh

@@ -3,11 +3,11 @@ set -e
 
 BINARY=${BINARY:-neutrond}
 BASE_DIR=./data
-CHAINID=${CHAINID:-test-1}
+CHAIN_ID=${CHAIN_ID:-test-1}
 STAKEDENOM=${STAKEDENOM:-untrn}
 IBCATOMDENOM=${IBCATOMDENOM:-uibcatom}
 IBCUSDCDENOM=${IBCUSDCDENOM:-uibcusdc}
-CHAIN_DIR="$BASE_DIR/$CHAINID"
+CHAIN_DIR="$BASE_DIR/$CHAIN_ID"
 
 P2PPORT=${P2PPORT:-26656}
 RPCPORT=${RPCPORT:-26657}
@@ -37,8 +37,8 @@ if ! mkdir -p "$CHAIN_DIR" 2>/dev/null; then
     exit 1
 fi
 
-echo "Initializing $CHAINID..."
-$BINARY init test --home "$CHAIN_DIR" --chain-id="$CHAINID"
+echo "Initializing $CHAIN_ID..."
+$BINARY init test --home "$CHAIN_DIR" --chain-id="$CHAIN_ID"
 
 echo "Adding genesis accounts..."
 echo "$VAL_MNEMONIC_1" | $BINARY keys add val1 --home "$CHAIN_DIR" --recover --keyring-backend=test

@@ -4,7 +4,7 @@ set -e
 script_full_path=$(dirname "$0")
 
 export BINARY=neutrond
-export CHAINID=test-1
+export CHAIN_ID=test-1
 export P2PPORT=26656
 export RPCPORT=26657
 export RESTPORT=1317
@@ -18,7 +18,7 @@ export STAKEDENOM=untrn
 "$script_full_path"/start.sh
 
 export BINARY=gaiad
-export CHAINID=test-2
+export CHAIN_ID=test-2
 export P2PPORT=16656
 export RPCPORT=16657
 export RESTPORT=1316
