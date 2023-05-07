@@ -548,7 +548,7 @@ RESCUEEER_MULTISIG_INIT_MSG='{
      }
    ],
    "threshold": { "absolute_count": { "weight": 3 } },
-   "max_voting_period": { "height": 1000 }
+   "max_voting_period": { "height": 100000 }
  }'
 
  RESCUEEER_INIT_MSG='{
