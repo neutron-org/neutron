@@ -18,6 +18,8 @@ HTTPS_GIT := https://github.com/neutron-org/neutron.git
 GO_SYSTEM_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1-2)
 REQUIRE_GO_VERSION = 1.20
 
+CHAIN_ID ?= test-1
+
 export GO111MODULE = on
 
 # process build tags
@@ -213,7 +215,7 @@ init: kill-dev install-test-binary
 
 start: kill-dev install-test-binary
 	@echo "Starting up neutrond alone..."
-	BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
+	BINARY=neutrond CHAINID=$(CHAIN_ID) P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
 	./network/init.sh && ./network/init-neutrond.sh && ./network/start.sh
 
 start-rly:

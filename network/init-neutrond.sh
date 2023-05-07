@@ -3,12 +3,12 @@ set -e
 
 BINARY=${BINARY:-neutrond}
 BASE_DIR=./data
-CHAINID=${CHAINID:-test-1}
+CHAIN_ID=${CHAIN_ID:-test-1}
 STAKE_DENOM=${STAKE_DENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 
-CHAIN_DIR="$BASE_DIR/$CHAINID"
+CHAIN_DIR="$BASE_DIR/$CHAIN_ID"
 GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
