@@ -33,7 +33,7 @@ echo "Initializing $CHAIN_ID..."
 $BINARY init test --home "$CHAIN_DIR" --chain-id="$CHAIN_ID"
 
 echo "Adding genesis accounts..."
-$BINARY add-genesis-account "$($BINARY keys show relayer_production -a --keyring-backend test)" "0$STAKEDENOM"  --home "$CHAIN_DIR"
+$BINARY add-genesis-account "neutron1hfdndqcqfyrql53lzmmtunezufmz3h4335znl4" "0$STAKEDENOM"  --home "$CHAIN_DIR"
 
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "1s"/g' "$CHAIN_DIR/config/config.toml"
 sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' "$CHAIN_DIR/config/config.toml"
