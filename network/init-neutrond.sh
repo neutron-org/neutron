@@ -9,11 +9,12 @@ CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 
 CONTRACTS_TO_CODE_IDS=${CONTRACTS_TO_CODE_IDS:-"contracts_to_code_ids.txt"}
+RESULT_PATH=${RESULT_PATH:-"result.json"}
 
 CHAIN_DIR="$BASE_DIR/$CHAIN_ID"
 GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 
-ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
+STORER_ADDRESS="neutron1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhufaa6"
 # MAIN_DAO
 DAO_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_core.wasm
 PRE_PROPOSAL_SINGLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_single.wasm
@@ -118,7 +119,7 @@ echo "Initializing dao contract in genesis..."
 function store_binary() {
   CONTRACT_BINARY_PATH=$1
   $BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" \
-    --output json --run-as "${ADMIN_ADDRESS}" --keyring-backend=test --home "$CHAIN_DIR"
+    --output json --run-as "${STORER_ADDRESS}" --keyring-backend=test --home "$CHAIN_DIR"
   BINARY_ID=$(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" "$CHAIN_DIR/config/genesis.json")
   CONTRACT_NAME=${CONTRACT_BINARY_PATH##*/}
   echo "$CONTRACT_NAME, $BINARY_ID" >> $CONTRACTS_TO_CODE_IDS
@@ -551,7 +552,7 @@ RESCUEEER_MULTISIG_INIT_MSG='{
      }
    ],
    "threshold": { "absolute_count": { "weight": 3 } },
-   "max_voting_period": { "height": 1000 }
+   "max_voting_period": { "height": 100000 }
  }'
 
  RESCUEEER_INIT_MSG='{
@@ -581,8 +582,8 @@ init_contract "$DAO_CONTRACT_BINARY_ID"                "$DAO_INIT"              
 init_contract "$RESERVE_CONTRACT_BINARY_ID"            "$RESERVE_INIT"                   "$RESERVE_LABEL"              "$RESCUEEER_CONTRACT_ADDRESS"
 init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"       "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"         "$RESCUEEER_CONTRACT_ADDRESS"
 init_contract "$SECURITY_SUBDAO_CORE_BINARY_ID"        "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL" "$RESCUEEER_CONTRACT_ADDRESS"
-init_contract "$CW3_FIXED_MULTISIG_CONTRACT_BINARY_ID" "$RESCUEEER_MULTISIG_INIT_MSG"    "rescueeer multisig"          "$CW3_FIXED_MULTISIG_CONTRACT_ADDRESS"
-init_contract "$RESCUEEER_CONTRACT_BINARY_ID"          "$RESCUEEER_INIT_MSG"             "rescueeer itself"            "$RESCUEEER_CONTRACT_ADDRESS"
+init_contract "$CW3_FIXED_MULTISIG_CONTRACT_BINARY_ID" "$RESCUEEER_MULTISIG_INIT_MSG"    "rescueeer.multisig"          "$CW3_FIXED_MULTISIG_CONTRACT_ADDRESS"
+init_contract "$RESCUEEER_CONTRACT_BINARY_ID"          "$RESCUEEER_INIT_MSG"             "rescueeer.rescueeer"         "$RESCUEEER_CONTRACT_ADDRESS"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
@@ -621,10 +622,80 @@ if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "DAO $DAO_CONTRACT_ADDRESS"
-echo $RESERVE_CONTRACT_ADDRESS
-echo $RESCUEEER_CONTRACT_ADDRESS
-echo $VOTING_REGISTRY_CONTRACT_ADDRESS
-echo $SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS
-echo $CW3_FIXED_MULTISIG_CONTRACT_ADDRESS
-echo $INSTANCE_ID_COUNTER
+RESULT='{
+  "next_instance_id": "'"$INSTANCE_ID_COUNTER"'",
+  "neutron": {
+    "core": {
+      "address": "'"$DAO_CONTRACT_ADDRESS"'"
+    },
+    "proposals": {
+      "single": {
+        "address": "'"$PROPOSAL_SINGLE_CONTRACT_ADDRESS"'",
+        "pre_propose": {
+          "address": "'"$PRE_PROPOSAL_CONTRACT_ADDRESS"'"
+        }
+      },
+       "multiple": {
+         "address": "'"$PROPOSAL_MULTIPLE_CONTRACT_ADDRESS"'",
+         "pre_propose": {
+           "address": "'"$PRE_PROPOSAL_MULTIPLE_CONTRACT_ADDRESS"'"
+         }
+       },
+      "overrule": {
+        "address": "'"$PROPOSAL_OVERRULE_CONTRACT_ADDRESS"'",
+        "pre_propose": {
+          "address": "'"$PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS"'"
+        }
+      }
+    },
+    "voting": {
+      "address": "'"$VOTING_REGISTRY_CONTRACT_ADDRESS"'",
+      "vaults": {
+        "neutron": {
+          "address": "'"$NEUTRON_VAULT_CONTRACT_ADDRESS"'"
+        }
+      }
+    },
+    "subdaos": {
+      "security": {
+        "core": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'",
+        "proposals": {
+          "single": {
+            "address": "'"$SECURITY_SUBDAO_PROPOSAL_CONTRACT_ADDRESS"'",
+            "pre_propose": {
+              "address": "'"$SECURITY_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS"'",
+              "timelock": {
+                "address": "'"$SECURITY_SUBDAO_TIMELOCK_CONTRACT_ADDRESS"'"
+              }
+            }
+          }
+        },
+        "voting": {
+          "address": "'"$SECURITY_SUBDAO_VOTING_CONTRACT_ADDRESS"'",
+          "cw4group": {
+            "address": "'"$SECURITY_SUBDAO_GROUP_CONTRACT_ADDRESS"'"
+          }
+        }
+      }
+    }
+  },
+  "reserve": {
+    "address": "'"$RESERVE_CONTRACT_ADDRESS"'"
+  },
+  "distribution": {
+    "address": "'"$DISTRIBUTION_CONTRACT_ADDRESS"'"
+  },
+  "rescueeer": {
+    "multisig": {
+      "address": "'"$CW3_FIXED_MULTISIG_CONTRACT_ADDRESS"'"
+    },
+    "rescueeer": {
+      "address": "'"$RESCUEEER_CONTRACT_ADDRESS"'"
+    }
+  }
+}'
+
+check_json "$RESULT"
+
+echo "$RESULT" | jq
+echo "$RESULT" > "$RESULT_PATH"
