@@ -14,7 +14,7 @@ RESULT_PATH=${RESULT_PATH:-"result.json"}
 CHAIN_DIR="$BASE_DIR/$CHAIN_ID"
 GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 
-ADMIN_ADDRESS="neutron1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhufaa6"
+STORER_ADDRESS="neutron1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhufaa6"
 # MAIN_DAO
 DAO_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_core.wasm
 PRE_PROPOSAL_SINGLE_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_single.wasm
@@ -117,7 +117,7 @@ echo "Initializing dao contract in genesis..."
 function store_binary() {
   CONTRACT_BINARY_PATH=$1
   $BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" \
-    --output json --run-as "${ADMIN_ADDRESS}" --keyring-backend=test --home "$CHAIN_DIR"
+    --output json --run-as "${STORER_ADDRESS}" --keyring-backend=test --home "$CHAIN_DIR"
   BINARY_ID=$(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" "$CHAIN_DIR/config/genesis.json")
   CONTRACT_NAME=${CONTRACT_BINARY_PATH##*/}
   echo "$CONTRACT_NAME, $BINARY_ID" >> $CONTRACTS_TO_CODE_IDS
