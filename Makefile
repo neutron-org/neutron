@@ -7,6 +7,9 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
+ENABLED_PROPOSALS := SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes
+GO_VERSION=1.20.0
+BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
 DOCKER := $(shell which docker)
@@ -49,10 +52,14 @@ endif
 build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
+build_tags_test_binary = $(build_tags)
+build_tags_test_binary += skip_ccv_msg_filter
+
 whitespace :=
 empty = $(whitespace) $(whitespace)
 comma := ,
 build_tags_comma_sep := $(subst $(empty),$(comma),$(build_tags))
+build_tags_test_binary_comma_sep := $(subst $(empty),$(comma),$(build_tags_test_binary))
 
 # process linker flags
 
@@ -61,7 +68,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=neutron \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
-		  -X "github.com/neutron-org/neutron/app.EnableSpecificProposals=MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes"
+		  -X "github.com/neutron-org/neutron/app.EnableSpecificProposals=$(ENABLED_PROPOSALS)"
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
@@ -70,6 +77,7 @@ ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags_comma_sep)" -ldflags '$(ldflags)' -trimpath
+BUILD_FLAGS_TEST_BINARY := -tags "$(build_tags_test_binary_comma_sep)" -ldflags '$(ldflags)' -trimpath
 
 # The below include contains the tools and runsim targets.
 include contrib/devtools/Makefile
@@ -89,8 +97,29 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/neutrond ./cmd/neutrond
 endif
 
+build-static-linux-amd64: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name neutronbuilder || true
+	$(DOCKER) buildx use neutronbuilder
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
+		--build-arg ENABLED_PROPOSALS=$(ENABLED_PROPOSALS) \
+		--platform linux/amd64 \
+		-t neutron-amd64 \
+		--load \
+		-f Dockerfile.builder .
+	$(DOCKER) rm -f neutronbinary || true
+	$(DOCKER) create -ti --name neutronbinary neutron-amd64
+	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
+	$(DOCKER) rm -f neutronbinary
+
 install: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/neutrond
+
+install-test-binary: check_version go.sum
+	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
 
 ########################################
 ### Tools & dependencies
@@ -173,7 +202,7 @@ proto-format:
 	test test-all test-build test-cover test-unit test-race \
 	test-sim-import-export \
 
-init: kill-dev install
+init: kill-dev install-test-binary
 	@echo "Building gaiad binary..."
 	@cd ./../gaia/ && make install
 	@echo "Initializing both blockchains..."
@@ -182,14 +211,7 @@ init: kill-dev install
 	./network/hermes/restore-keys.sh
 	./network/hermes/create-conn.sh
 
-init-golang-rly: kill-dev install
-	@echo "Initializing both blockchains..."
-	./network/init.sh
-	./network/start.sh
-	@echo "Initializing relayer..."
-	./network/relayer/interchain-acc-config/rly.sh
-
-start: kill-dev install
+start: kill-dev install-test-binary
 	@echo "Starting up neutrond alone..."
 	BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
 	./network/init.sh && ./network/init-neutrond.sh && ./network/start.sh
