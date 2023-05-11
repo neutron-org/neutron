@@ -1,5 +1,5 @@
 [global]
-log_level = "info"
+log_level = 'debug'
 
 [mode.clients]
 enabled = true
@@ -7,10 +7,10 @@ refresh = true
 misbehaviour = true
 
 [mode.connections]
-enabled = false
+enabled = true
 
 [mode.channels]
-enabled = false
+enabled = true
 
 [mode.packets]
 enabled = true
@@ -21,35 +21,34 @@ auto_register_counterparty_payee = false
 
 [rest]
 enabled = false
-host = "127.0.0.1"
+host = '127.0.0.1'
 port = 3000
 
 [telemetry]
 enabled = false
-host = "127.0.0.1"
+host = '127.0.0.1'
 port = 3001
 
 [[chains]]
-id = "cosmoshub-4"
-type = "CosmosSdk"
-rpc_addr = "http://127.0.0.1:26657"
-websocket_addr = "ws://127.0.0.1:26657/websocket"
-grpc_addr = "http://127.0.0.1:9090"
-rpc_timeout = "10s"
-account_prefix = "cosmos"
-key_name = ""
-key_store_type = "Test"
-store_prefix = "ibc"
+id = 'cosmoshub-4'
+rpc_addr = 'http://127.0.0.1:2010'
+websocket_addr = 'ws://127.0.0.1:2010/websocket'
+grpc_addr = 'http://127.0.0.1:2012'
+rpc_timeout = '10s'
+account_prefix = 'cosmos'
+key_name = ''
+key_store_type = 'Test'
+store_prefix = 'ibc'
 default_gas = 100000
 gas_price = { price = 0.001, denom = 'uatom' }
 max_gas = 400000
 gas_multiplier = 1.1
 max_msg_num = 30
 max_tx_size = 180000
-clock_drift = "5s"
-max_block_time = "30s"
+clock_drift = '5s'
+max_block_time = '30s'
 ccv_consumer_chain = false
-memo_prefix = ""
+memo_prefix = 'Notional'
 sequential_batch_tx = false
 trust_threshold = { numerator = '1', denominator = '3' }
 address_type = { derivation = 'cosmos' }
@@ -61,12 +60,12 @@ policy = "allowall"
 
 [[chains]]
 id = 'neutron-1'
-rpc_addr = 'http://127.0.0.1:8010'
-grpc_addr = 'http://127.0.0.1:8011'
-websocket_addr = 'ws://127.0.0.1:8010/websocket'
+rpc_addr = 'http://127.0.0.1:26657'
+grpc_addr = 'http://127.0.0.1:9090'
+websocket_addr = 'ws://127.0.0.1:26657/websocket'
 rpc_timeout = '10s'
-account_prefix = 'cosmos'
-key_name = 'testkey'
+account_prefix = 'neutron'
+key_name = ''
 store_prefix = 'ibc'
 default_gas = 100000
 max_gas = 400000
@@ -76,6 +75,7 @@ max_msg_num = 30
 max_tx_size = 2097152
 clock_drift = '5s'
 max_block_time = '30s'
+memo_prefix = 'Notional'
 trusting_period = '14days'
 ccv_consumer_chain = true
 trust_threshold = { numerator = '1', denominator = '3' }
