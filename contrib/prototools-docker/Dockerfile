@@ -1,4 +1,4 @@
-FROM golang:1.16.8-alpine3.13 AS build
+FROM golang:alpine AS build
 
 #ARG PROTOTOOL_VERSION=1.10.0
 ARG PROTODOC_VERSION=1.3.2
