@@ -53,12 +53,12 @@ echo "trust_hash: $TRUST_HASH"
 # Export state sync variables.
 export NEUTROND_STATESYNC_ENABLE=true
 export NEUTROND_P2P_MAX_NUM_OUTBOUND_PEERS=500
-export NEUTROND_STATESYNC_RPC_SERVERS="https://rpc-kralum.neutron-1.neutron.org:443,https://rpc-kralum.neutron-1.neutron.org:443"
+export NEUTROND_STATESYNC_RPC_SERVERS="https://rpc.novel.remedy.tm.p2p.org:443,https://rpc-kralum.neutron-1.neutron.org:443"
 export NEUTROND_STATESYNC_TRUST_HEIGHT=$BLOCK_HEIGHT
 export NEUTROND_STATESYNC_TRUST_HASH=$TRUST_HASH
-export NEUTROND_P2P_LADDR=tcp://0.0.0.0:7777
-export NEUTROND_RPC_LADDR=tcp://127.0.0.1:7711
-export NEUTROND_GRPC_ADDRESS=127.0.0.1:7712
+export NEUTROND_P2P_LADDR=tcp://0.0.0.0:8010
+export NEUTROND_RPC_LADDR=tcp://127.0.0.1:8011
+export NEUTROND_GRPC_ADDRESS=127.0.0.1:8012
 export NEUTROND_GRPC_WEB_ADDRESS=127.0.0.1:8014
 export NEUTROND_API_ADDRESS=tcp://127.0.0.1:8013
 export NEUTROND_NODE=tcp://127.0.0.1:8011
