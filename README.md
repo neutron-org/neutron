@@ -9,6 +9,12 @@ You can check the documentation here: https://docs.neutron.org/
 
 You can check out the build instructions here: https://docs.neutron.org/neutron/build-and-run/overview
 
+## Sync and join the network
+
+```bash
+bash contrib/statesync.bash
+```
+
 ## Examples
 
 You can check out the example contracts here: https://github.com/neutron-org/neutron-contracts
