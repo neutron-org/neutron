@@ -25,6 +25,7 @@ func (gs GenesisState) Validate() error {
 		if seenIDs[val.Id] {
 			return sdkerrors.Wrapf(ErrInvalidQueryID, "duplicate query id: %d", val.Id)
 		}
+		seenIDs[val.Id] = true
 
 		_, err = sdk.AccAddressFromBech32(val.Owner)
 		if err != nil {
