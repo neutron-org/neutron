@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
 	github.com/cosmos/cosmos-sdk v0.45.15
-	github.com/cosmos/ibc-go/v4 v4.3.0
+	github.com/cosmos/ibc-go/v4 v4.3.1
 	github.com/cosmos/interchain-security v1.2.0-multiden
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
