@@ -33,11 +33,11 @@ func (gs GenesisState) Validate() error {
 		}
 
 		switch val.QueryType {
-		case "tx":
+		case string(InterchainQueryTypeTX):
 			if err := ValidateTransactionsFilter(val.TransactionsFilter); err != nil {
 				return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 			}
-		case "kv":
+		case string(InterchainQueryTypeKV):
 			if len(val.Keys) == 0 {
 				return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 			}
