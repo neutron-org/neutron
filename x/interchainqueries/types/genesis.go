@@ -32,22 +32,20 @@ func (gs GenesisState) Validate() error {
 			return sdkerrors.Wrapf(err, "Invalid owner address (%s)", err)
 		}
 
-		if val.QueryType == "" {
-			return sdkerrors.Wrapf(ErrEmptyQueryTypeGenesis, "Query type is empty, id: %d", val.Id)
-		}
-
-		if val.QueryType == "tx" {
+		switch val.QueryType {
+		case "tx":
 			if err := ValidateTransactionsFilter(val.TransactionsFilter); err != nil {
 				return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 			}
-		}
-		if val.QueryType == "kv" {
+		case "kv":
 			if len(val.Keys) == 0 {
 				return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 			}
 			if err := validateKeys(val.GetKeys()); err != nil {
 				return err
 			}
+		default:
+			return sdkerrors.Wrapf(ErrUnexpectedQueryTypeGenesis, "Unexpected query type: %s", val.QueryType)
 		}
 	}
 	return nil
