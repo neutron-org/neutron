@@ -107,8 +107,8 @@ max_tx_size = 2097152
 clock_drift = '5s'
 max_block_time = '10s'
 trusting_period = '14days'
-unbonding_period = '20days'
 trust_threshold = { numerator = '1', denominator = '3' }
+ccv_consumer_chain = true
 address_type = { derivation = 'cosmos' }
 
 [[chains]]
