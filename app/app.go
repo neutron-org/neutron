@@ -532,7 +532,7 @@ func New(
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	// NOTE: we need staking feature here even if there is no staking module anymore because cosmwasm-std in the CosmWasm SDK requires this feature
-	supportedFeatures := "iterator,stargate,staking,neutron"
+	supportedFeatures := "iterator,stargate,staking,neutron,cosmwasm_1_1,cosmwasm_1_2"
 
 	// register the proposal types
 	adminRouter := govtypes.NewRouter()
