@@ -3,10 +3,13 @@ package upgrades
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/x/ccv/consumer/keeper"
 
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -30,10 +33,13 @@ type Upgrade struct {
 
 type UpgradeKeepers struct {
 	// keepers
-	IcqKeeper          icqkeeper.Keeper
-	CronKeeper         cronkeeper.Keeper
-	TokenFactoryKeeper *tokenfactorykeeper.Keeper
-	FeeBurnerKeeper    *feeburnerkeeper.Keeper
-	SlashingKeeper     slashingkeeper.Keeper
-	ParamsKeeper       paramskeeper.Keeper
+	IcqKeeper              icqkeeper.Keeper
+	CronKeeper             cronkeeper.Keeper
+	TokenFactoryKeeper     *tokenfactorykeeper.Keeper
+	FeeBurnerKeeper        *feeburnerkeeper.Keeper
+	SlashingKeeper         slashingkeeper.Keeper
+	ParamsKeeper           paramskeeper.Keeper
+	ConsumerKeeper         ccvconsumerkeeper.Keeper
+	ConsumerParamsSubspace paramtypes.Subspace
+	ConsumerStoreKey       store.StoreKey
 }
