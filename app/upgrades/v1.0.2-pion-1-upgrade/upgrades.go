@@ -85,7 +85,6 @@ func CreateUpgradeHandler(
 		paramsSubspace.Get(ctx, types.KeySoftOptOutThreshold, &softOptOutThreshold)
 
 		// Recycle old params, set new params to default values
-		defaultParams := types.DefaultParams()
 		newParams := types.NewParams(
 			enabled,
 			blocksPerDistributionTransmission,
@@ -97,8 +96,8 @@ func CreateUpgradeHandler(
 			historicalEntries,
 			unbondingPeriod,
 			softOptOutThreshold,
-			defaultParams.RewardDenoms,
-			defaultParams.ProviderRewardDenoms,
+			[]string{"untrn"},
+			[]string{"uatom"},
 		)
 
 		// Persist new params
