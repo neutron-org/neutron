@@ -22,7 +22,7 @@ const OldCrossChainValidatorBytePrefix = 15
 
 func OldGetAllCCValidator(ctx sdk.Context, consumerStoreKey store.Key) (validators []OldValidator) {
 	store := ctx.KVStore(consumerStoreKey)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{types.CrossChainValidatorBytePrefix})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{OldCrossChainValidatorBytePrefix})
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {

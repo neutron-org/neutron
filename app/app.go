@@ -11,6 +11,7 @@ import (
 
 	"github.com/neutron-org/neutron/app/upgrades"
 	v044 "github.com/neutron-org/neutron/app/upgrades/v0.4.4"
+	v102 "github.com/neutron-org/neutron/app/upgrades/v1.0.2-pion-1-upgrade"
 	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
 	"github.com/neutron-org/neutron/x/cron"
 
@@ -173,7 +174,7 @@ func GetEnabledProposals() []wasm.ProposalType {
 }
 
 var (
-	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade}
+	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade, v102.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
