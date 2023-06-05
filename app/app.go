@@ -904,6 +904,7 @@ func (app *App) setupUpgradeHandlers() {
 					ParamsKeeper:           app.ParamsKeeper,
 					ConsumerKeeper:         app.ConsumerKeeper,
 					ConsumerParamsSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
+					ConsumerStoreKey:       app.keys[ccvconsumertypes.StoreKey],
 				},
 			),
 		)
