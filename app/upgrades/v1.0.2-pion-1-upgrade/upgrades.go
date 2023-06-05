@@ -90,7 +90,7 @@ func CreateUpgradeHandler(
 			enabled,
 			blocksPerDistributionTransmission,
 			distributionTransmissionChannel,
-			providerFeePoolAddrStr,
+			"", // because we will get an error about wrong prefix, we'll set it later
 			ccvTimeoutPeriod,
 			transferTimeoutPeriod,
 			consumerRedistributionFrac,
@@ -103,6 +103,8 @@ func CreateUpgradeHandler(
 
 		// Persist new params
 		paramsSubspace.SetParamSet(ctx, &newParams)
+
+		keepers.ConsumerKeeper.SetProviderFeePoolAddrStr(ctx, providerFeePoolAddrStr)
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err
