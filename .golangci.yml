@@ -33,6 +33,10 @@ issues:
   max-same-issues: 10000
 
 linters-settings:
+  gofumpt:
+    # Choose whether to use the extra rules.
+    # Default: false
+    extra-rules: true
   nolintlint:
     allow-unused: false
     allow-leading-space: true
