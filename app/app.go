@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/neutron-org/neutron/app/upgrades"
+	next_upgrade "github.com/neutron-org/neutron/app/upgrades/next_upgrade"
 	v044 "github.com/neutron-org/neutron/app/upgrades/v0.4.4"
 	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
 	"github.com/neutron-org/neutron/x/cron"
@@ -176,7 +177,7 @@ func GetEnabledProposals() []wasm.ProposalType {
 }
 
 var (
-	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade}
+	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade, next_upgrade.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -224,6 +225,7 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		router.AppModuleBasic{},
+		globalfee.AppModule{},
 	)
 
 	// module account permissions
@@ -686,6 +688,7 @@ func New(
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
+		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -719,6 +722,7 @@ func New(
 		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
 		crontypes.ModuleName,
+		globalfee.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -748,6 +752,7 @@ func New(
 		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
 		crontypes.ModuleName,
+		globalfee.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -782,6 +787,7 @@ func New(
 		ibchookstypes.ModuleName, // after auth keeper
 		routertypes.ModuleName,
 		crontypes.ModuleName,
+		globalfee.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -922,6 +928,7 @@ func (app *App) setupUpgradeHandlers() {
 					TokenFactoryKeeper: app.TokenFactoryKeeper,
 					SlashingKeeper:     app.SlashingKeeper,
 					ParamsKeeper:       app.ParamsKeeper,
+					GlobalFeeSubspace:  app.GetSubspace(globalfee.ModuleName),
 				},
 			),
 		)
@@ -1097,6 +1104,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(feeburnertypes.ModuleName)
 	paramsKeeper.Subspace(crontypes.ModuleName)
+	paramsKeeper.Subspace(globalfee.ModuleName)
 
 	return paramsKeeper
 }

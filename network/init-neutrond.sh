@@ -615,6 +615,9 @@ set_genesis_param min_signed_per_window       "\"$SLASHING_MIN_SIGNED\","       
 set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
 set_genesis_param slash_fraction_downtime     "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
 
+# IMPORTANT! minimum_gas_prices should always contain at least on record, otherwise the chain will not start or halt
+set_genesis_param minimum_gas_prices          "[{\"denom\": \"$STAKEDENOM\", \"amount\": \"0\"}]" # globalfee
+
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
     exit 1
