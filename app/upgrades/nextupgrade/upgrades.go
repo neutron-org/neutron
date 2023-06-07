@@ -26,7 +26,7 @@ func CreateUpgradeHandler(
 
 		ctx.Logger().Info("Migrating GlobalFee Params...")
 
-		if keepers.GlobalFeeSubspace.Has(ctx, types.ParamStoreKeyMinGasPrices) == false {
+		if !keepers.GlobalFeeSubspace.Has(ctx, types.ParamStoreKeyMinGasPrices) {
 			return vm, errors.New("minimum_gas_prices param not found")
 		}
 		// global fee is empty set, set global fee to
