@@ -417,7 +417,12 @@ func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		simapp.EmptyAppOptions{},
 		nil,
 	)
-	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
+
+	genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
+	minGasPrices := json.RawMessage(`{"params":{"minimum_gas_prices":[{"denom": "untrn", "amount": "0"}]}}`)
+	genesisState["globalfee"] = minGasPrices
+
+	return testApp, genesisState
 }
 
 func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting.Path {
