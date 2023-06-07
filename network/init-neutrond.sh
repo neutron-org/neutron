@@ -616,7 +616,7 @@ set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\
 set_genesis_param slash_fraction_downtime     "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
 
 # IMPORTANT! minimum_gas_prices should always contain at least on record, otherwise the chain will not start or halt
-set_genesis_param minimum_gas_prices          "[{\"denom\": \"$STAKEDENOM\", \"amount\": \"0\"}, {\"denom\": \"uatom\", \"amount\": \"0\"}]" # globalfee
+set_genesis_param minimum_gas_prices          "[{\"denom\": \"uatom\", \"amount\": \"0\"}, {\"denom\": \"$STAKEDENOM\", \"amount\": \"0\"}]" # globalfee
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
