@@ -1,4 +1,4 @@
-package next_upgrade
+package nextupgrade
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"

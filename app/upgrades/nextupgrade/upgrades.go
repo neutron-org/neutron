@@ -1,4 +1,4 @@
-package next_upgrade
+package nextupgrade
 
 import (
 	"errors"
