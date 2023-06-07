@@ -22,6 +22,11 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/neutron-org/neutron/app/params"
+
+	"github.com/cosmos/gaia/v8/x/globalfee"
+	globalfeetypes "github.com/cosmos/gaia/v8/x/globalfee/types"
+
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
@@ -128,6 +133,10 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
 	}
 
+	// IMPORTANT! Chain will panic if empty fee will not be set, because of absence of staking module
+	suite.SetEmptyGlobalFees(suite.ChainA)
+	suite.SetEmptyGlobalFees(suite.ChainB)
+
 	// move chains to the next block
 	suite.ChainProvider.NextBlock()
 	suite.ChainA.NextBlock()
@@ -178,6 +187,26 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
 
 	suite.Coordinator.SetupConnections(suite.Path)
+}
+
+func (suite *IBCConnectionTestSuite) SetEmptyGlobalFees(chain *ibctesting.TestChain) {
+	var (
+		app               = suite.GetNeutronZoneApp(chain)
+		globalFeeSubspace = app.GetSubspace(globalfee.ModuleName)
+		ctx               = chain.GetContext()
+	)
+
+	var globalMinGasPrices sdk.DecCoins
+
+	if globalFeeSubspace.Has(ctx, globalfeetypes.ParamStoreKeyMinGasPrices) {
+		globalFeeSubspace.Get(ctx, globalfeetypes.ParamStoreKeyMinGasPrices, &globalMinGasPrices)
+
+		requiredGlobalFees := sdk.DecCoins{
+			sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.NewDec(0)),
+		}
+		globalFeeSubspace.Set(ctx, globalfeetypes.ParamStoreKeyMinGasPrices, &requiredGlobalFees)
+	}
+
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
