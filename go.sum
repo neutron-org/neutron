@@ -983,6 +983,8 @@ github.com/cosmos/cosmos-proto v1.0.0-beta.3 h1:VitvZ1lPORTVxkmF2fAp3IiA61xVwArQ
 github.com/cosmos/cosmos-proto v1.0.0-beta.3/go.mod h1:t8IASdLaAq+bbHbjq4p960BvcTqtwuAxid3b/2rOD6I=
 github.com/cosmos/cosmos-sdk v0.45.15-ics h1:ujrXsulYGwggLCC0oD7CizvlAerqMQHfCHHjHqIamfY=
 github.com/cosmos/cosmos-sdk v0.45.15-ics/go.mod h1:bScuNwWAP0TZJpUf+SHXRU3xGoUPp+X9nAzfeIXts40=
+github.com/cosmos/gaia/v8 v8.0.1 h1:w0e3h2SEZIEmR6bSqypuspjdlkhVKa7f6tAL0gsgzi4=
+github.com/cosmos/gaia/v8 v8.0.1/go.mod h1:paw6qam2TYhBb6UAbDaPz3idCz7+xr21BU9USPNsOsc=
 github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d/go.mod h1:tSxLoYXyBmiFeKpvmq4dzayMdCjCnu8uqmCysIGBT2Y=
 github.com/cosmos/go-bip39 v1.0.0 h1:pcomnQdrdH22njcAatO0yWojsUnCO3y2tNoV1cb6hHY=
 github.com/cosmos/go-bip39 v1.0.0/go.mod h1:RNJv0H/pOIVgxw6KS7QeX2a0Uo0aKUlfhZ4xuwvCdJw=

@@ -6,11 +6,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	ibcante "github.com/cosmos/ibc-go/v4/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/x/ccv/consumer/keeper"
 	"github.com/tendermint/tendermint/libs/log"
+
+	globalfeeante "github.com/cosmos/gaia/v8/x/globalfee/ante"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -18,10 +21,12 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 
-	IBCKeeper         *ibckeeper.Keeper
-	ConsumerKeeper    ibcconsumerkeeper.Keeper
-	WasmConfig        *wasmTypes.WasmConfig
-	TXCounterStoreKey sdk.StoreKey
+	IBCKeeper            *ibckeeper.Keeper
+	ConsumerKeeper       ibcconsumerkeeper.Keeper
+	WasmConfig           *wasmTypes.WasmConfig
+	TXCounterStoreKey    sdk.StoreKey
+	BypassMinFeeMsgTypes []string
+	GlobalFeeSubspace    paramtypes.Subspace
 }
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
@@ -40,11 +45,20 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	if options.TXCounterStoreKey == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "tx counter key is required for ante builder")
 	}
+	if options.GlobalFeeSubspace.Name() == "" {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
+	}
 
 	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
+
+	// maxBypassMinFeeMsgGasUsage is the maximum gas usage per message
+	// so that a transaction that contains only message types that can
+	// bypass the minimum fee can be accepted with a zero fee.
+	// For details, see gaiafeeante.NewFeeDecorator()
+	var maxBypassMinFeeMsgGasUsage uint64 = 500_000 // Should be high enough because /ibc.core.client.v1.MsgUpdateClient is the most expensive message
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
@@ -57,6 +71,10 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
+		// We are providing options.GlobalFeeSubspace because we do not have staking module
+		// In this case you should be sure that
+		globalfeeante.NewFeeDecorator(options.BypassMinFeeMsgTypes, options.GlobalFeeSubspace, options.GlobalFeeSubspace, maxBypassMinFeeMsgGasUsage),
+
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
