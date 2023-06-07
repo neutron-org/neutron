@@ -154,12 +154,10 @@ require (
 )
 
 replace (
-	// use wasmd with Neutron's fixes and changes
-	github.com/CosmWasm/wasmd v0.31.0 => github.com/neutron-org/wasmd v0.31.1-neutron-fixes
-	// use a forked admin module
+	github.com/CosmWasm/wasmd v0.31.0 => github.com/neutron-org/wasmd v0.31.1-neutron-fixes.0.20230426103416-67da724a1eaf
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
 	// use cosmos-sdk v0.45.15-ics
-	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.15-ics
+	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.16-ics
 	// use cosmos-sdk compatible gogo protobuf
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	// use skip by default, instead of tendermint

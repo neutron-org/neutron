@@ -233,7 +233,7 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 	return &query, nil
 }
 
-func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID uint64, newLocalHeight uint64) error {
+func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID, newLocalHeight uint64) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
 		return sdkerrors.Wrap(err, "failed to get registered query")
@@ -401,7 +401,7 @@ func (k Keeper) GetTxQueriesToRemove(ctx sdk.Context, limit uint64) []uint64 {
 // calculateTxQueryRemoval creates a TxQueryToRemove populated with the data relative to the query
 // with the given queryID. The result TxQueryToRemove contains up to the limit tx hashes. If the
 // limit is 0, it retrieves all the hashes for the given query.
-func (k Keeper) calculateTxQueryRemoval(ctx sdk.Context, queryID uint64, limit uint64) *TxQueryToRemove {
+func (k Keeper) calculateTxQueryRemoval(ctx sdk.Context, queryID, limit uint64) *TxQueryToRemove {
 	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetSubmittedTransactionIDForQueryKeyPrefix(queryID))
 	iterator := prefixStore.Iterator(nil, nil)
 	defer iterator.Close()

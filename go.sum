@@ -997,8 +997,8 @@ github.com/cosmos/cosmos-db v0.0.0-20221226095112-f3c38ecb5e32/go.mod h1:kwMlEC4
 github.com/cosmos/cosmos-proto v1.0.0-beta.1/go.mod h1:8k2GNZghi5sDRFw/scPL8gMSowT1vDA+5ouxL8GjaUE=
 github.com/cosmos/cosmos-proto v1.0.0-beta.3 h1:VitvZ1lPORTVxkmF2fAp3IiA61xVwArQYKXTdEcpW6o=
 github.com/cosmos/cosmos-proto v1.0.0-beta.3/go.mod h1:t8IASdLaAq+bbHbjq4p960BvcTqtwuAxid3b/2rOD6I=
-github.com/cosmos/cosmos-sdk v0.45.15-ics h1:ujrXsulYGwggLCC0oD7CizvlAerqMQHfCHHjHqIamfY=
-github.com/cosmos/cosmos-sdk v0.45.15-ics/go.mod h1:bScuNwWAP0TZJpUf+SHXRU3xGoUPp+X9nAzfeIXts40=
+github.com/cosmos/cosmos-sdk v0.45.16-ics h1:KsPigLNmdyyQMktAsJzW42eBFsq1uajhQF7rlnHDUgM=
+github.com/cosmos/cosmos-sdk v0.45.16-ics/go.mod h1:bScuNwWAP0TZJpUf+SHXRU3xGoUPp+X9nAzfeIXts40=
 github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d/go.mod h1:tSxLoYXyBmiFeKpvmq4dzayMdCjCnu8uqmCysIGBT2Y=
 github.com/cosmos/go-bip39 v1.0.0 h1:pcomnQdrdH22njcAatO0yWojsUnCO3y2tNoV1cb6hHY=
 github.com/cosmos/go-bip39 v1.0.0/go.mod h1:RNJv0H/pOIVgxw6KS7QeX2a0Uo0aKUlfhZ4xuwvCdJw=
@@ -2163,8 +2163,8 @@ github.com/neelance/sourcemap v0.0.0-20200213170602-2833bce08e4c/go.mod h1:Qr6/a
 github.com/neilotoole/errgroup v0.1.5/go.mod h1:Q2nLGf+594h0CLBs/Mbg6qOr7GtqDK7C2S41udRnToE=
 github.com/neilotoole/errgroup v0.1.6/go.mod h1:Q2nLGf+594h0CLBs/Mbg6qOr7GtqDK7C2S41udRnToE=
 github.com/networkplumbing/go-nft v0.2.0/go.mod h1:HnnM+tYvlGAsMU7yoYwXEVLLiDW9gdMmb5HoGcwpuQs=
-github.com/neutron-org/wasmd v0.31.1-neutron-fixes h1:kTjZLA0I0qL6T8SW9TFFpEIOwY4nRWOMR7NdxMvCVvA=
-github.com/neutron-org/wasmd v0.31.1-neutron-fixes/go.mod h1:flAY8k+S04M6ndyZGQTZUY+r7ai+qom33s6PqO8YBCc=
+github.com/neutron-org/wasmd v0.31.1-neutron-fixes.0.20230426103416-67da724a1eaf h1:XqGxQcpGQsjgZrxO2YNKfu1Qoc1XiPkeNeb94YliYRU=
+github.com/neutron-org/wasmd v0.31.1-neutron-fixes.0.20230426103416-67da724a1eaf/go.mod h1:flAY8k+S04M6ndyZGQTZUY+r7ai+qom33s6PqO8YBCc=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nishanths/exhaustive v0.8.3/go.mod h1:qj+zJJUgJ76tR92+25+03oYUhzF4R7/2Wk7fGTfCHmg=
 github.com/nishanths/predeclared v0.0.0-20190419143655-18a43bb90ffc/go.mod h1:62PewwiQTlm/7Rj+cxVYqZvDIUc+JjZq6GHAC1fsObQ=
