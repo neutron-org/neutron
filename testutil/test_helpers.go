@@ -206,7 +206,6 @@ func (suite *IBCConnectionTestSuite) SetEmptyGlobalFees(chain *ibctesting.TestCh
 		}
 		globalFeeSubspace.Set(ctx, globalfeetypes.ParamStoreKeyMinGasPrices, &requiredGlobalFees)
 	}
-
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
