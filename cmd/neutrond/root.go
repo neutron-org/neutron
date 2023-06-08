@@ -79,7 +79,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 			customTemplate, customGaiaConfig := initAppConfig()
 			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customGaiaConfig)
-			// return server.InterceptConfigsPreRunHandler(cmd, "", tmcfg.DefaultConfig())
 		},
 	}
 
