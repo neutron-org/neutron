@@ -601,7 +601,7 @@ $BINARY add-wasm-message execute "$DAO_CONTRACT_ADDRESS" "$ADD_SUBDAOS_MSG" \
 function set_genesis_param() {
   param_name=$1
   param_value=$2
-  sed -i -e "s/\"$param_name\":.*/\"$param_name\": $param_value/g" "$GENESIS_PATH"
+  sed -i -e "s;\"$param_name\":.*;\"$param_name\": $param_value;g" "$GENESIS_PATH"
 }
 
 set_genesis_param admins                      "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
@@ -616,7 +616,19 @@ set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\
 set_genesis_param slash_fraction_downtime     "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
 
 # IMPORTANT! minimum_gas_prices should always contain at least on record, otherwise the chain will not start or halt
-set_genesis_param minimum_gas_prices          "[{\"denom\": \"uatom\", \"amount\": \"0\"}, {\"denom\": \"$STAKEDENOM\", \"amount\": \"0\"}]" # globalfee
+# ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2 denom is required by intgration tests (test:tokenomics)
+MIN_GAS_PRICES='[
+  {
+    "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2", 
+    "amount": "0"
+  }, 
+  {
+    "denom": "'$STAKEDENOM'", 
+    "amount": "0"
+  }
+]'
+check_json "$MIN_GAS_PRICES"
+set_genesis_param minimum_gas_prices          "$(echo "$MIN_GAS_PRICES" | jq -c .)"
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
