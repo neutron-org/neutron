@@ -20,6 +20,7 @@ type OldValidator struct {
 
 const OldCrossChainValidatorBytePrefix = 15
 
+// OldGetAllCCValidator reads validators under old keys
 func OldGetAllCCValidator(ctx sdk.Context, consumerStoreKey store.Key) (validators []OldValidator) {
 	store := ctx.KVStore(consumerStoreKey)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{OldCrossChainValidatorBytePrefix})
@@ -27,7 +28,7 @@ func OldGetAllCCValidator(ctx sdk.Context, consumerStoreKey store.Key) (validato
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		validators = append(validators, OldValidator{
-			Key:   iterator.Key(),
+			Key:   iterator.Key()[1:], // remove prefix from a key
 			Value: iterator.Value(),
 		})
 	}
@@ -35,6 +36,7 @@ func OldGetAllCCValidator(ctx sdk.Context, consumerStoreKey store.Key) (validato
 	return validators
 }
 
+// SetCCValidator saves a validator under a new proper key
 func SetCCValidator(ctx sdk.Context, storeKey store.Key, key, bz []byte) {
 	store := ctx.KVStore(storeKey)
 
