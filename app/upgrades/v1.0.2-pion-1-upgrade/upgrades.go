@@ -29,6 +29,7 @@ func MigratePendingDataPackets(ctx sdk.Context, consumerStoreKey store.Key) {
 	}
 
 	store.Set([]byte{types.PendingDataPacketsBytePrefix}, oldData)
+	store.Delete([]byte{types.PendingDataPacketsByteKey}) // remove old data
 }
 
 // OldGetAllCCValidator reads validators under old keys
