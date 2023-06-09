@@ -20,6 +20,17 @@ type OldValidator struct {
 
 const OldCrossChainValidatorBytePrefix = 15
 
+func MigratePendingDataPackets(ctx sdk.Context, consumerStoreKey store.Key) {
+	store := ctx.KVStore(consumerStoreKey)
+
+	oldData := store.Get([]byte{types.PendingDataPacketsByteKey})
+	if len(oldData) == 0 {
+		return
+	}
+
+	store.Set([]byte{types.PendingDataPacketsBytePrefix}, oldData)
+}
+
 // OldGetAllCCValidator reads validators under old keys
 func OldGetAllCCValidator(ctx sdk.Context, consumerStoreKey store.Key) (validators []OldValidator) {
 	store := ctx.KVStore(consumerStoreKey)
@@ -33,7 +44,29 @@ func OldGetAllCCValidator(ctx sdk.Context, consumerStoreKey store.Key) (validato
 		})
 	}
 
+	// remove corrupted data
+	for _, validator := range validators {
+		store.Delete(append([]byte{OldCrossChainValidatorBytePrefix}, validator.Key...))
+	}
+
 	return validators
+}
+
+// RemoveOutdatedValidators removes outdated validators from corrupted storage
+func RemoveOutdatedValidators(ctx sdk.Context, consumerStoreKey store.Key) {
+	store := ctx.KVStore(consumerStoreKey)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{types.CrossChainValidatorBytePrefix})
+	defer iterator.Close()
+
+	var keys [][]byte
+	for ; iterator.Valid(); iterator.Next() {
+		keys = append(keys, iterator.Key())
+	}
+
+	// remove corrupted data
+	for _, key := range keys {
+		store.Delete(key)
+	}
 }
 
 // SetCCValidator saves a validator under a new proper key
@@ -56,10 +89,15 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Migrating CrossChainValidators...")
+		RemoveOutdatedValidators(ctx, keepers.ConsumerStoreKey)
+
 		oldValidators := OldGetAllCCValidator(ctx, keepers.ConsumerStoreKey)
 		for _, oldValidator := range oldValidators {
 			SetCCValidator(ctx, keepers.ConsumerStoreKey, oldValidator.Key, oldValidator.Value)
 		}
+
+		ctx.Logger().Info("Migrating PendingDataPackets...")
+		MigratePendingDataPackets(ctx, keepers.ConsumerStoreKey)
 
 		ctx.Logger().Info("Migrating CCVConsumerKeeper Params...")
 
