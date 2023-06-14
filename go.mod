@@ -9,8 +9,8 @@ require (
 	github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
-	github.com/cosmos/cosmos-sdk v0.45.15
-	github.com/cosmos/ibc-go/v4 v4.3.0
+	github.com/cosmos/cosmos-sdk v0.45.16-ics
+	github.com/cosmos/ibc-go/v4 v4.4.2
 	github.com/cosmos/interchain-security v1.0.1-0.20230419165046-6089b6121c33
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
@@ -23,7 +23,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/strangelove-ventures/packet-forward-middleware/v4 v4.0.5
 	github.com/stretchr/testify v1.8.2
-	github.com/tendermint/tendermint v0.34.27
+	github.com/tendermint/tendermint v0.34.28
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923
 	google.golang.org/grpc v1.53.0
@@ -155,9 +155,8 @@ require (
 
 replace (
 	github.com/CosmWasm/wasmd v0.31.0 => github.com/neutron-org/wasmd v0.31.1-neutron-fixes.0.20230426103416-67da724a1eaf
-	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2
 	github.com/cosmos/admin-module => github.com/Ethernal-Tech/admin-module v0.0.0-20221102105340-e693f4d379c3
-	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.15-ics
+	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.16-ics
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/skip-mev/mev-cometbft v0.34.27-mev.17
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
