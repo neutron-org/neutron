@@ -620,4 +620,8 @@ if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     exit 1
 fi
 
+<<<<<<< HEAD
 echo "DAO $DAO_CONTRACT_ADDRESS"
+=======
+echo "DAO $DAO_CONTRACT_ADDRESS"
+>>>>>>> v1.0.2
