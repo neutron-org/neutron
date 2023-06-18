@@ -3,13 +3,14 @@ package wasmbinding
 import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
-	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
+	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"

@@ -3,13 +3,12 @@ package types_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/app/params"
-
-	"github.com/neutron-org/neutron/app"
-
 	"github.com/stretchr/testify/require"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 

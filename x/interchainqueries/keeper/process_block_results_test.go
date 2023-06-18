@@ -5,17 +5,8 @@ import (
 	"testing"
 	"time"
 
-	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
-	"github.com/golang/mock/gomock"
-	icqtestkeeper "github.com/neutron-org/neutron/testutil/interchainqueries/keeper"
-	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchainqueries/types"
-
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v4/modules/core/exported"
-	ibctmtypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
-	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -24,9 +15,19 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/version"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	clientkeeper "github.com/cosmos/ibc-go/v4/modules/core/02-client/keeper"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	"github.com/cosmos/ibc-go/v4/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
+	ibctmtypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
+	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/testutil"
+	icqtestkeeper "github.com/neutron-org/neutron/testutil/interchainqueries/keeper"
+	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchainqueries/types"
 	iqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )

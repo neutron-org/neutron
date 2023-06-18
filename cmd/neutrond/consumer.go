@@ -4,6 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/spf13/cobra"
+	types1 "github.com/tendermint/tendermint/abci/types"
+	pvm "github.com/tendermint/tendermint/privval"
+	tmtypes "github.com/tendermint/tendermint/types"
+
+	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -11,11 +18,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
-	"github.com/spf13/cobra"
-	types1 "github.com/tendermint/tendermint/abci/types"
-	pvm "github.com/tendermint/tendermint/privval"
-	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/neutron-org/neutron/testutil/consumer"
 )

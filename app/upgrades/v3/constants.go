@@ -1,8 +1,9 @@
 package v3
 
 import (
-	store "github.com/cosmos/cosmos-sdk/store/types"
 	ccvprovider "github.com/cosmos/interchain-security/x/ccv/provider/types"
+
+	store "github.com/cosmos/cosmos-sdk/store/types"
 
 	"github.com/neutron-org/neutron/app/upgrades"
 )

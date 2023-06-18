@@ -6,18 +6,17 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neutron-org/neutron/app"
-
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/stretchr/testify/require"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil/contractmanager/network"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager/client/cli"

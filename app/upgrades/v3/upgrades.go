@@ -4,8 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/neutron-org/neutron/app/upgrades"
 
+	"github.com/neutron-org/neutron/app/upgrades"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"

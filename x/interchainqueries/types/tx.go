@@ -3,10 +3,11 @@ package types
 import (
 	"strings"
 
+	"github.com/cosmos/ibc-go/v4/modules/core/exported"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/ibc-go/v4/modules/core/exported"
 )
 
 const (

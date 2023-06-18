@@ -3,11 +3,12 @@ package cron_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/testutil/cron/keeper"
 	"github.com/neutron-org/neutron/testutil/cron/nullify"
 	"github.com/neutron-org/neutron/x/cron"
 	"github.com/neutron-org/neutron/x/cron/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {

@@ -5,16 +5,17 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/testutil"
 	testutil_keeper "github.com/neutron-org/neutron/testutil/cron/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/cron/types"
 	"github.com/neutron-org/neutron/x/cron/types"
-	"github.com/stretchr/testify/require"
 )
 
 // ExecuteReadySchedules:

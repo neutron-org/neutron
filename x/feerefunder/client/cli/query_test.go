@@ -3,12 +3,12 @@ package cli_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/stretchr/testify/require"
 
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil/contractmanager/network"
 	"github.com/neutron-org/neutron/x/feerefunder/client/cli"
 	"github.com/neutron-org/neutron/x/feerefunder/types"

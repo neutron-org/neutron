@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	"github.com/golang/mock/gomock"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/testutil"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/transfer/types"
 	testkeeper "github.com/neutron-org/neutron/testutil/transfer/keeper"
@@ -15,7 +19,6 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/neutron-org/neutron/x/transfer"
-	"github.com/stretchr/testify/require"
 )
 
 const TestCosmosAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"

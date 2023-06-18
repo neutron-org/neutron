@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	mock_types "github.com/neutron-org/neutron/testutil/mocks/feeburner/types"
-	"github.com/neutron-org/neutron/x/feeburner/keeper"
+	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	feekeeperutil "github.com/neutron-org/neutron/testutil/feeburner/keeper"
+	mock_types "github.com/neutron-org/neutron/testutil/mocks/feeburner/types"
+	"github.com/neutron-org/neutron/x/feeburner/keeper"
 	feetypes "github.com/neutron-org/neutron/x/feeburner/types"
 )
 

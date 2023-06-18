@@ -3,15 +3,17 @@ package keeper
 import (
 	"context"
 
+	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	contypes "github.com/cosmos/ibc-go/v4/modules/core/03-connection/types"
+	tndtypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	querytypes "github.com/cosmos/cosmos-sdk/types/query"
-	contypes "github.com/cosmos/ibc-go/v4/modules/core/03-connection/types"
-	tndtypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
-	"github.com/gogo/protobuf/proto"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )

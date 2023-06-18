@@ -8,33 +8,31 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
-	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
+	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
-
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	appProvider "github.com/cosmos/interchain-security/app/provider"
+	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
 	e2e "github.com/cosmos/interchain-security/testutil/integration"
-	tmtypes "github.com/tendermint/tendermint/types"
-
-	"github.com/neutron-org/neutron/app"
-	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-
 	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
 	providertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
 	ccv "github.com/cosmos/interchain-security/x/ccv/types"
+
+	"github.com/cosmos/cosmos-sdk/simapp"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/neutron-org/neutron/app"
+	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
 var (

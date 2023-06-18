@@ -2,6 +2,7 @@ package feeburner
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/feeburner/keeper"
 	"github.com/neutron-org/neutron/x/feeburner/types"
 )

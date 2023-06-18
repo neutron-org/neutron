@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
+	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
-
-	"github.com/neutron-org/neutron/x/ibc-hooks/types"
-
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
 )
 
 // GetQueryCmd returns the cli query commands for this module.

@@ -3,12 +3,12 @@ package feerefunder_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/app/params"
-	"github.com/neutron-org/neutron/testutil/feerefunder/keeper"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/testutil/feerefunder/keeper"
 	"github.com/neutron-org/neutron/testutil/interchainqueries/nullify"
 	"github.com/neutron-org/neutron/x/feerefunder"
 	"github.com/neutron-org/neutron/x/feerefunder/types"

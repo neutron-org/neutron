@@ -3,11 +3,11 @@ package types
 import (
 	"fmt"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/gogo/protobuf/proto"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // const interchainAccountIDLimit = 47

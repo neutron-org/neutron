@@ -3,8 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	feekeeperutil "github.com/neutron-org/neutron/testutil/feeburner/keeper"
 	"github.com/neutron-org/neutron/x/feeburner/types"

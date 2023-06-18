@@ -2,11 +2,14 @@ package types
 
 import (
 	"fmt"
+
 	// this line is used by starport scaffolding # genesis/types/import
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 )
 
 // DefaultGenesis returns the default genesis state

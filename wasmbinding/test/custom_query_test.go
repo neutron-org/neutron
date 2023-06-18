@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
-	"github.com/neutron-org/neutron/app/params"
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
-
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
 type CustomQuerierTestSuite struct {

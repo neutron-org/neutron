@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"testing"
 
-	simapp "github.com/cosmos/cosmos-sdk/simapp"
-	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmdb "github.com/tendermint/tm-db"
+
+	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+
+	simapp "github.com/cosmos/cosmos-sdk/simapp"
 
 	"github.com/neutron-org/neutron/app"
 )

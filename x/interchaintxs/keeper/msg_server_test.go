@@ -5,23 +5,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	types2 "github.com/cosmos/cosmos-sdk/x/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	types2 "github.com/cosmos/cosmos-sdk/x/capability/types"
 
 	"github.com/neutron-org/neutron/testutil"
 	testkeeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchaintxs/types"
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 

@@ -3,10 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	testkeeper "github.com/neutron-org/neutron/testutil/feerefunder/keeper"
-
 	"github.com/stretchr/testify/require"
 
+	testkeeper "github.com/neutron-org/neutron/testutil/feerefunder/keeper"
 	"github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
