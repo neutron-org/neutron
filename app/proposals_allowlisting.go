@@ -9,6 +9,8 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+	ccvtypes "github.com/cosmos/interchain-security/x/ccv/types"
 	packetforwardmiddlewaretypes "github.com/strangelove-ventures/packet-forward-middleware/v4/router/types"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
@@ -83,4 +85,15 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	{Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},
 	// packet-forward-middleware
 	{Subspace: packetforwardmiddlewaretypes.ModuleName, Key: string(packetforwardmiddlewaretypes.KeyFeePercentage)}: {},
+	// ccvconsumer
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyEnabled)}:                           {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyBlocksPerDistributionTransmission)}: {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyDistributionTransmissionChannel)}:   {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyProviderFeePoolAddrStr)}:            {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvtypes.KeyCCVTimeoutPeriod)}:                          {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyTransferTimeoutPeriod)}:             {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyConsumerRedistributionFrac)}:        {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyHistoricalEntries)}:                 {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeyConsumerUnbondingPeriod)}:           {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccvconsumertypes.KeySoftOptOutThreshold)}:               {},
 }
