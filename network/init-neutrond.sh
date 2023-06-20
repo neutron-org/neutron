@@ -615,7 +615,7 @@ set_genesis_param min_signed_per_window       "\"$SLASHING_MIN_SIGNED\","       
 set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
 set_genesis_param slash_fraction_downtime     "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
 
-# IMPORTANT! minimum_gas_prices should always contain at least on record, otherwise the chain will not start or halt
+# IMPORTANT! minimum_gas_prices should always contain at least one record, otherwise the chain will not start or halt
 # ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2 denom is required by intgration tests (test:tokenomics)
 MIN_GAS_PRICES='[
   {
