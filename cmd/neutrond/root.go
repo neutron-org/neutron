@@ -54,9 +54,13 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithHomeDir(app.DefaultNodeHome).
 		WithViper("")
 
+	// Allows you to add extra params to your client.toml
+	// gas, gas-price, gas-adjustment, fees, note, etc.
+	setCustomEnvVariablesFromClientToml(initClientCtx)
+
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: "IntechainAdapteerd (daemon)",
+		Short: "Neutron",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -98,7 +102,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		addGenesisWasmMsgCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debugCmd,
-		config.Cmd(),
+		ConfigCmd(),
 	)
 
 	ac := appCreator{
@@ -272,4 +276,45 @@ func (ac appCreator) appExport(
 	}
 
 	return interchainapp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+}
+
+// Reads the custom extra values in the config.toml file if set.
+// If they are, then use them.
+func setCustomEnvVariablesFromClientToml(ctx client.Context) {
+	configFilePath := filepath.Join(ctx.HomeDir, "config", "client.toml")
+
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		return
+	}
+
+	viper := ctx.Viper
+	viper.SetConfigFile(configFilePath)
+
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
+	}
+
+	setEnvFromConfig := func(key, envVar string) {
+		// if the user sets the env key manually, then we don't want to override it
+		if os.Getenv(envVar) != "" {
+			return
+		}
+
+		// reads from the config file
+		val := viper.GetString(key)
+		if val != "" {
+			// Sets the env for this instance of the app only.
+			os.Setenv(envVar, val)
+		}
+	}
+
+	// gas
+	setEnvFromConfig("gas", "NEUTROND_GAS")
+	setEnvFromConfig("gas-prices", "NEUTROND_GAS_PRICES")
+	setEnvFromConfig("gas-adjustment", "NEUTROND_GAS_ADJUSTMENT")
+	// fees
+	setEnvFromConfig("fees", "NEUTROND_FEES")
+	setEnvFromConfig("fee-account", "NEUTROND_FEE_ACCOUNT")
+	// memo
+	setEnvFromConfig("note", "NEUTROND_NOTE")
 }
