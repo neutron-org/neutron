@@ -11,9 +11,9 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v4/modules/core/23-commitment/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
-	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
-	ccvprovidertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
-	"github.com/cosmos/interchain-security/x/ccv/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v2/x/ccv/consumer/types"
+	ccvprovidertypes "github.com/cosmos/interchain-security/v2/x/ccv/provider/types"
+	"github.com/cosmos/interchain-security/v2/x/ccv/types"
 	types1 "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 

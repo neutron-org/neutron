@@ -81,8 +81,8 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
-	"github.com/cosmos/interchain-security/legacy_ibc_testing/core"
-	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
+	"github.com/cosmos/interchain-security/v2/legacy_ibc_testing/core"
+	ibctesting "github.com/cosmos/interchain-security/v2/legacy_ibc_testing/testing"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -131,10 +131,10 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
-	e2e "github.com/cosmos/interchain-security/testutil/integration"
-	ccvconsumer "github.com/cosmos/interchain-security/x/ccv/consumer"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/x/ccv/consumer/keeper"
-	ccvconsumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
+	e2e "github.com/cosmos/interchain-security/v2/testutil/integration"
+	ccvconsumer "github.com/cosmos/interchain-security/v2/x/ccv/consumer"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v2/x/ccv/consumer/keeper"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v2/x/ccv/consumer/types"
 
 	"github.com/strangelove-ventures/packet-forward-middleware/v4/router"
 	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v4/router/keeper"
@@ -512,7 +512,7 @@ func New(
 		authtypes.FeeCollectorName,
 	)
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
-	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper)
+	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,

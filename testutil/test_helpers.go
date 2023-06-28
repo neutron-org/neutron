@@ -16,8 +16,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
-	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
+	ibctesting "github.com/cosmos/interchain-security/v2/legacy_ibc_testing/testing"
+	icssimapp "github.com/cosmos/interchain-security/v2/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -25,16 +25,16 @@ import (
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	appProvider "github.com/cosmos/interchain-security/app/provider"
-	e2e "github.com/cosmos/interchain-security/testutil/integration"
+	appProvider "github.com/cosmos/interchain-security/v2/app/provider"
+	e2e "github.com/cosmos/interchain-security/v2/testutil/integration"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/neutron-org/neutron/app"
 	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 
-	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
-	providertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/x/ccv/types"
+	consumertypes "github.com/cosmos/interchain-security/v2/x/ccv/consumer/types"
+	providertypes "github.com/cosmos/interchain-security/v2/x/ccv/provider/types"
+	ccv "github.com/cosmos/interchain-security/v2/x/ccv/types"
 )
 
 var (
@@ -91,6 +91,7 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		time.Now(),
 		consumertypes.DefaultConsumerRedistributeFrac,
 		consumertypes.DefaultBlocksPerDistributionTransmission,
+		consumertypes.DefaultParams().DistributionTransmissionChannel,
 		consumertypes.DefaultHistoricalEntries,
 		ccv.DefaultCCVTimeoutPeriod,
 		consumertypes.DefaultTransferTimeoutPeriod,
