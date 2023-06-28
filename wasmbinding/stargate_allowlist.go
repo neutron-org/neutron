@@ -8,9 +8,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v4/modules/core/03-connection/types"
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
@@ -41,37 +39,17 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/cosmos.bank.v1beta1.Query/Params":        &banktypes.QueryParamsResponse{},
 		"/cosmos.bank.v1beta1.Query/SupplyOf":      &banktypes.QuerySupplyOfResponse{},
 
-		// TODO: check all queries below if DETERMINISTIC
-
-		// cron
-		"/neutron.cron.Query/Params":    &crontypes.QueryParamsResponse{},
-		"/neutron.cron.Query/Schedule":  &crontypes.QueryGetScheduleResponse{},
-		"/neutron.cron.Query/Schedules": &crontypes.QuerySchedulesResponse{},
-
 		// contractmanager
-		"/neutron.contractmanager.Query/Params":          &contractmanagertypes.QueryParamsResponse{},
 		"/neutron.contractmanager.Query/AddressFailures": &contractmanagertypes.QueryFailuresResponse{},
 		"/neutron.contractmanager.Query/Failures":        &contractmanagertypes.QueryFailuresResponse{},
 
 		// interchaintxs
-		// TODO: do we need it or duplicated in custom queries
-		"/neutron.interchaintxs.Query/Params":                   &interchaintxstypes.QueryParamsResponse{},
-		"/neutron.interchaintxs.Query/InterchainAccountAddress": &interchaintxstypes.QueryInterchainAccountAddressResponse{},
+		"/neutron.interchaintxs.Query/Params": &interchaintxstypes.QueryParamsResponse{},
 
 		// interchainqueries
-		// TODO: do we need it or duplicated in custom queries
-		"/neutron.interchainqueries.Query/Params":            &interchainqueriestypes.QueryParamsResponse{},
-		"/neutron.interchainqueries.Query/RegisteredQueries": &interchainqueriestypes.QueryRegisteredQueriesResponse{},
-		"/neutron.interchainqueries.Query/RegisteredQuery":   &interchainqueriestypes.QueryRegisteredQueryResponse{},
-		"/neutron.interchainqueries.Query/QueryResult":       &interchainqueriestypes.QueryRegisteredQueryResultResponse{},
-		"/neutron.interchainqueries.Query/LastRemoteHeight":  &interchainqueriestypes.QueryLastRemoteHeightResponse{},
-
-		// feerefunder
-		"/neutron.feerefunder.Query/Params":  &feerefundertypes.QueryParamsResponse{},
-		"/neutron.feerefunder.Query/FeeInfo": &feerefundertypes.FeeInfoResponse{},
+		"/neutron.interchainqueries.Query/Params": &interchainqueriestypes.QueryParamsResponse{},
 
 		// feeburner
-		"/neutron.feeburner.Query/Params":                    &feeburnertypes.QueryParamsResponse{},
-		"/neutron.feeburner.Query/TotalBurnedNeutronsAmount": &feeburnertypes.QueryTotalBurnedNeutronsAmountResponse{},
+		"/neutron.feeburner.Query/Params": &feeburnertypes.QueryParamsResponse{},
 	}
 }
