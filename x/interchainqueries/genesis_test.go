@@ -59,3 +59,241 @@ func TestGenesisNullQueries(t *testing.T) {
 
 	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
 }
+
+func TestGenesisFilledQueries(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		RegisteredQueries: []*types.RegisteredQuery{
+			{
+				Id:        4,
+				QueryType: "kv",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:        3,
+				QueryType: "kv",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:                 2,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+			{
+				Id:                 1,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+		},
+	}
+
+	k, ctx := keepertest.InterchainQueriesKeeper(t, nil, nil, nil, nil)
+	interchainqueries.InitGenesis(ctx, *k, genesisState)
+	got := interchainqueries.ExportGenesis(ctx, *k)
+	err := got.Validate()
+	require.NoError(t, err)
+
+	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
+}
+
+func TestGenesisMalformedQueriesInvalidTxFilter(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		RegisteredQueries: []*types.RegisteredQuery{
+			{
+				Id:        4,
+				QueryType: "kv",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:        3,
+				QueryType: "kv",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:                 2,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+			{
+				Id:                 1,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"fi><eld":"tx.height","op":"Eq","value":1000}]`,
+			},
+		},
+	}
+
+	k, ctx := keepertest.InterchainQueriesKeeper(t, nil, nil, nil, nil)
+	interchainqueries.InitGenesis(ctx, *k, genesisState)
+	got := interchainqueries.ExportGenesis(ctx, *k)
+	err := got.Validate()
+	require.ErrorContains(t, err, "invalid transactions filter")
+
+	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
+}
+
+func TestGenesisMalformedQueriesNoKvKeys(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		RegisteredQueries: []*types.RegisteredQuery{
+			{
+				Id:        4,
+				QueryType: "kv",
+				Owner:     "neutron18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+			},
+			{
+				Id:        3,
+				QueryType: "kv",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:                 2,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+			{
+				Id:                 1,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+		},
+	}
+
+	k, ctx := keepertest.InterchainQueriesKeeper(t, nil, nil, nil, nil)
+	interchainqueries.InitGenesis(ctx, *k, genesisState)
+	got := interchainqueries.ExportGenesis(ctx, *k)
+	err := got.Validate()
+	require.ErrorContains(t, err, "Invalid owner address")
+
+	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
+}
+
+func TestGenesisMalformedQueriesInvalidQueryType(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		RegisteredQueries: []*types.RegisteredQuery{
+			{
+				Id:        4,
+				QueryType: "fake",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+			},
+			{
+				Id:        3,
+				QueryType: "kv",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:                 2,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+			{
+				Id:                 1,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+		},
+	}
+
+	k, ctx := keepertest.InterchainQueriesKeeper(t, nil, nil, nil, nil)
+	interchainqueries.InitGenesis(ctx, *k, genesisState)
+	got := interchainqueries.ExportGenesis(ctx, *k)
+	err := got.Validate()
+	require.ErrorContains(t, err, "Unexpected query type")
+
+	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
+}
+
+func TestGenesisMalformedQueriesInvalidPrefix(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		RegisteredQueries: []*types.RegisteredQuery{
+			{
+				Id:        4,
+				QueryType: "kv",
+				Owner:     "neutron18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:        3,
+				QueryType: "kv",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Keys: []*types.KVKey{
+					{
+						Path: "newpath",
+						Key:  []byte("newdata"),
+					},
+				},
+			},
+			{
+				Id:                 2,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+			{
+				Id:                 1,
+				QueryType:          "tx",
+				Owner:              "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				TransactionsFilter: `[{"field":"tx.height","op":"Eq","value":1000}]`,
+			},
+		},
+	}
+
+	k, ctx := keepertest.InterchainQueriesKeeper(t, nil, nil, nil, nil)
+	interchainqueries.InitGenesis(ctx, *k, genesisState)
+	got := interchainqueries.ExportGenesis(ctx, *k)
+	err := got.Validate()
+	require.ErrorContains(t, err, "Invalid owner address")
+
+	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
+}
