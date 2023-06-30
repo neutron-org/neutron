@@ -167,7 +167,7 @@ func TestGenesisMalformedQueriesNoKvKeys(t *testing.T) {
 			{
 				Id:        4,
 				QueryType: "kv",
-				Owner:     "neutron18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
+				Owner:     "cosmos18g0avxazu3dkgd5n5ea8h8rtl78de0hytsj9vm",
 			},
 			{
 				Id:        3,
@@ -199,7 +199,7 @@ func TestGenesisMalformedQueriesNoKvKeys(t *testing.T) {
 	interchainqueries.InitGenesis(ctx, *k, genesisState)
 	got := interchainqueries.ExportGenesis(ctx, *k)
 	err := got.Validate()
-	require.ErrorContains(t, err, "Invalid owner address")
+	require.ErrorContains(t, err, "keys are empty")
 
 	require.ElementsMatch(t, genesisState.RegisteredQueries, got.RegisteredQueries)
 }
