@@ -37,12 +37,27 @@ func (k *Keeper) outOfGasRecovery(
 	}
 }
 
+// createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
+// If there is an error during Sudo call, we can safely revert changes made in cached context.
 func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
 	gasMeter := ctx.GasMeter()
+	// determines type of gas meter by its prefix:
+	// * BasicGasMeter - basic gas meter which is used for processing tx directly in block;
+	// * InfiniteGasMeter - is used to process txs during simulation calls. We don't need to create a limit for such meter,
+	// since it's infinite.
 	gasMeterIsLimited := strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter")
 
 	cacheCtx, writeFn := ctx.CacheContext()
 
+	// if gas meter is limited:
+	// 1. calculate how much free gas left we have for a Sudo call;
+	// 2. If gasLeft less than reserved gas (GasReserved), we set gas limit for cached context to zero, meaning we can't
+	// 		process Sudo call;
+	// 3. If we have more gas left than reserved gas (GasReserved) for Sudo call, we set gas limit for cached context to
+	// 		difference between gas left and reserved gas: (gasLeft - GasReserve);
+	//
+	// GasReserve is the amount of gas on the context gas meter we need to reserve in order to add contract failure to keeper
+	// and process failed Sudo call
 	if gasMeterIsLimited {
 		gasLeft := gasMeter.Limit() - gasMeter.GasConsumed()
 
