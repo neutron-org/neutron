@@ -34,26 +34,29 @@ func (k *Keeper) outOfGasRecovery(
 
 		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureAckType)
-		// FIXME: add distribution call
 	}
 }
 
 func (k *Keeper) createCachedContext(ctx sdk.Context) (cacheCtx sdk.Context, writeFn func(), newGasMeter sdk.GasMeter) {
-	gasLeft := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
-
-	var newLimit uint64
-	if gasLeft < GasReserve {
-		newLimit = 0
-	} else {
-		newLimit = gasLeft - GasReserve
-	}
-
-	newGasMeter = sdk.NewGasMeter(newLimit)
+	gasMeter := ctx.GasMeter()
+	gasMeterIsLimited := strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter")
 
 	cacheCtx, writeFn = ctx.CacheContext()
-	if strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter") {
-		cacheCtx = ctx.WithGasMeter(newGasMeter)
+
+	if gasMeterIsLimited {
+		gasLeft := gasMeter.Limit() - gasMeter.GasConsumed()
+
+		var newLimit uint64
+		if gasLeft < GasReserve {
+			newLimit = 0
+		} else {
+			newLimit = gasLeft - GasReserve
+		}
+
+		gasMeter = sdk.NewGasMeter(newLimit)
 	}
+
+	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
 
 	return
 }
