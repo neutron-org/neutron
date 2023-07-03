@@ -37,11 +37,11 @@ func (k *Keeper) outOfGasRecovery(
 	}
 }
 
-func (k *Keeper) createCachedContext(ctx sdk.Context) (cacheCtx sdk.Context, writeFn func(), newGasMeter sdk.GasMeter) {
+func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
 	gasMeter := ctx.GasMeter()
 	gasMeterIsLimited := strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter")
 
-	cacheCtx, writeFn = ctx.CacheContext()
+	cacheCtx, writeFn := ctx.CacheContext()
 
 	if gasMeterIsLimited {
 		gasLeft := gasMeter.Limit() - gasMeter.GasConsumed()
@@ -58,7 +58,7 @@ func (k *Keeper) createCachedContext(ctx sdk.Context) (cacheCtx sdk.Context, wri
 
 	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
 
-	return
+	return cacheCtx, writeFn, gasMeter
 }
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
