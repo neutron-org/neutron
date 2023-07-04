@@ -27,12 +27,13 @@ func CreateUpgradeHandler(
 		if !keepers.GlobalFeeSubspace.Has(ctx, types.ParamStoreKeyMinGasPrices) {
 			return vm, errors.New("minimum_gas_prices param not found")
 		}
-		// global fee is empty set, set global fee to
-		// 0.01untrn,0.005ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9,0.05ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349
+		// global fee is empty set, set global fee to equal to 0.05 USD (for 200k of gas) in appropriate coin
+		// As of June 22nd, 2023 this is
+		// 0.9untrn,0.026ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9,0.25ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349
 		requiredGlobalFees := sdk.DecCoins{
-			sdk.NewDecCoinFromDec("untrn", sdk.MustNewDecFromStr("0.01")),
-			sdk.NewDecCoinFromDec("ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9", sdk.MustNewDecFromStr("0.005")),
-			sdk.NewDecCoinFromDec("ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349", sdk.MustNewDecFromStr("0.05")),
+			sdk.NewDecCoinFromDec("untrn", sdk.MustNewDecFromStr("0.9")),
+			sdk.NewDecCoinFromDec("ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9", sdk.MustNewDecFromStr("0.026")),
+			sdk.NewDecCoinFromDec("ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349", sdk.MustNewDecFromStr("0.25")),
 		}
 		requiredGlobalFees = requiredGlobalFees.Sort()
 

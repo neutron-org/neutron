@@ -77,8 +77,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			customTemplate, customGaiaConfig := initAppConfig()
-			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customGaiaConfig)
+			customTemplate, customNeutronConfig := initAppConfig()
+			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig)
 		},
 	}
 

@@ -58,7 +58,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	// so that a transaction that contains only message types that can
 	// bypass the minimum fee can be accepted with a zero fee.
 	// For details, see gaiafeeante.NewFeeDecorator()
-	var maxBypassMinFeeMsgGasUsage uint64 = 500_000 // Should be high enough because /ibc.core.client.v1.MsgUpdateClient is the most expensive message
+	const maxBypassMinFeeMsgGasUsage uint64 = 500_000 // Should be high enough because /ibc.core.client.v1.MsgUpdateClient is the most expensive message
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
@@ -72,7 +72,8 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		// We are providing options.GlobalFeeSubspace because we do not have staking module
-		// In this case you should be sure that
+		// In this case you should be sure that you implemented upgrade to set default global fee param and it SHOULD contain at least one record
+		// otherwise you will get panic
 		globalfeeante.NewFeeDecorator(options.BypassMinFeeMsgTypes, options.GlobalFeeSubspace, options.GlobalFeeSubspace, maxBypassMinFeeMsgGasUsage),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
