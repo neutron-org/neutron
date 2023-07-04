@@ -13,6 +13,7 @@ BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
 DOCKER := $(shell which docker)
+BUILDDIR ?= $(CURDIR)/build
 HTTPS_GIT := https://github.com/neutron-org/neutron.git
 
 GO_SYSTEM_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1-2)
@@ -90,12 +91,19 @@ endif
 
 all: install lint test
 
-build: check_version go.sum
+BUILD_TARGETS := build install
+
+build: BUILD_ARGS=-o $(BUILDDIR)/
+
+$(BUILD_TARGETS): check_version go.sum $(BUILDDIR)/
 ifeq ($(OS),Windows_NT)
 	exit 1
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/neutrond ./cmd/neutrond
+	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) ./cmd/neutrond
 endif
+
+$(BUILDDIR)/:
+	mkdir -p $(BUILDDIR)/
 
 build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) buildx create --name neutronbuilder || true
@@ -114,9 +122,6 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) create -ti --name neutronbinary neutron-amd64
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
-
-install: check_version go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/neutrond
 
 install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
@@ -138,7 +143,7 @@ draw-deps:
 	@goviz -i ./cmd/neutrond -d 2 | dot -Tpng -o dependency-graph.png
 
 clean:
-	rm -rf snapcraft-local.yaml build/
+	rm -rf snapcraft-local.yaml $(BUILDDIR)/
 
 distclean: clean
 	rm -rf vendor/
