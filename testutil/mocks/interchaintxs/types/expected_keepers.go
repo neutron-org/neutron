@@ -10,9 +10,9 @@ import (
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types1 "github.com/cosmos/cosmos-sdk/x/capability/types"
-	types2 "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	types3 "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	exported "github.com/cosmos/ibc-go/v4/modules/core/exported"
+	types2 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	types3 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	gomock "github.com/golang/mock/gomock"
 	types4 "github.com/neutron-org/neutron/x/contractmanager/types"
 	types5 "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -342,58 +342,6 @@ func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types.AccAddre
 func (mr *MockFeeRefunderKeeperMockRecorder) LockFees(ctx, payer, packetID, fee interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockFees", reflect.TypeOf((*MockFeeRefunderKeeper)(nil).LockFees), ctx, payer, packetID, fee)
-}
-
-// MockScopedKeeper is a mock of ScopedKeeper interface.
-type MockScopedKeeper struct {
-	ctrl     *gomock.Controller
-	recorder *MockScopedKeeperMockRecorder
-}
-
-// MockScopedKeeperMockRecorder is the mock recorder for MockScopedKeeper.
-type MockScopedKeeperMockRecorder struct {
-	mock *MockScopedKeeper
-}
-
-// NewMockScopedKeeper creates a new mock instance.
-func NewMockScopedKeeper(ctrl *gomock.Controller) *MockScopedKeeper {
-	mock := &MockScopedKeeper{ctrl: ctrl}
-	mock.recorder = &MockScopedKeeperMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockScopedKeeper) EXPECT() *MockScopedKeeperMockRecorder {
-	return m.recorder
-}
-
-// ClaimCapability mocks base method.
-func (m *MockScopedKeeper) ClaimCapability(ctx types.Context, cap *types1.Capability, name string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClaimCapability", ctx, cap, name)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ClaimCapability indicates an expected call of ClaimCapability.
-func (mr *MockScopedKeeperMockRecorder) ClaimCapability(ctx, cap, name interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClaimCapability", reflect.TypeOf((*MockScopedKeeper)(nil).ClaimCapability), ctx, cap, name)
-}
-
-// GetCapability mocks base method.
-func (m *MockScopedKeeper) GetCapability(ctx types.Context, name string) (*types1.Capability, bool) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCapability", ctx, name)
-	ret0, _ := ret[0].(*types1.Capability)
-	ret1, _ := ret[1].(bool)
-	return ret0, ret1
-}
-
-// GetCapability indicates an expected call of GetCapability.
-func (mr *MockScopedKeeperMockRecorder) GetCapability(ctx, name interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCapability", reflect.TypeOf((*MockScopedKeeper)(nil).GetCapability), ctx, name)
 }
 
 // MockChannelKeeper is a mock of ChannelKeeper interface.

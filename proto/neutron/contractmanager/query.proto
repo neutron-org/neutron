@@ -4,8 +4,8 @@ package neutron.contractmanager;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "contractmanager/params.proto";
-import "contractmanager/genesis.proto";
+import "neutron/contractmanager/params.proto";
+import "neutron/contractmanager/genesis.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";

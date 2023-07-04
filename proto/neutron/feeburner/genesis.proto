@@ -2,8 +2,8 @@ syntax = "proto3";
 package neutron.feeburner;
 
 import "gogoproto/gogo.proto";
-import "feeburner/params.proto";
-import "feeburner/total_burned_neutrons_amount.proto";
+import "neutron/feeburner/params.proto";
+import "neutron/feeburner/total_burned_neutrons_amount.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/feeburner/types";

@@ -2,14 +2,13 @@ package app
 
 import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	packetforwardmiddlewaretypes "github.com/strangelove-ventures/packet-forward-middleware/v4/router/types"
+	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	packetforwardmiddlewaretypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
@@ -53,8 +52,6 @@ type paramChangeKey struct {
 }
 
 var WhitelistedParams = map[paramChangeKey]struct{}{
-	// bank
-	{Subspace: banktypes.ModuleName, Key: string(banktypes.KeySendEnabled)}: {},
 	// ibc transfer
 	{Subspace: ibctransfertypes.ModuleName, Key: string(ibctransfertypes.KeySendEnabled)}:    {},
 	{Subspace: ibctransfertypes.ModuleName, Key: string(ibctransfertypes.KeyReceiveEnabled)}: {},
@@ -62,8 +59,8 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	{Subspace: icahosttypes.SubModuleName, Key: string(icahosttypes.KeyHostEnabled)}:   {},
 	{Subspace: icahosttypes.SubModuleName, Key: string(icahosttypes.KeyAllowMessages)}: {},
 	// cosmwasm
-	{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyUploadAccess)}:      {},
-	{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyInstantiateAccess)}: {},
+	//{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyUploadAccess)}:      {},
+	//{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyInstantiateAccess)}: {},
 	// feerefunder
 	{Subspace: feerefundertypes.ModuleName, Key: string(feerefundertypes.KeyFees)}: {},
 	// interchaintxs

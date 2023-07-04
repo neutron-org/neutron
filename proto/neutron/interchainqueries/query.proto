@@ -4,9 +4,9 @@ package neutron.interchainqueries;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "interchainqueries/params.proto";
-import "interchainqueries/genesis.proto";
-import "interchainqueries/tx.proto";
+import "neutron/interchainqueries/params.proto";
+import "neutron/interchainqueries/genesis.proto";
+import "neutron/interchainqueries/tx.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
 

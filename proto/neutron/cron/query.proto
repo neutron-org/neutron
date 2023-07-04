@@ -4,8 +4,8 @@ package neutron.cron;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "cron/params.proto";
-import "cron/schedule.proto";
+import "neutron/cron/params.proto";
+import "neutron/cron/schedule.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/neutron-org/neutron/x/cron/types";

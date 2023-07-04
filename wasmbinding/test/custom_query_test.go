@@ -13,9 +13,10 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	abci "github.com/tendermint/tendermint/abci/types"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
@@ -47,7 +48,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	registeredQuery := &icqtypes.RegisteredQuery{
 		Id: lastID,
 		Keys: []*icqtypes.KVKey{
-			{Path: host.StoreKey, Key: clientKey},
+			{Path: ibchost.StoreKey, Key: clientKey},
 		},
 		QueryType:    string(icqtypes.InterchainQueryTypeKV),
 		UpdatePeriod: 1,
@@ -58,7 +59,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	suite.Require().NoError(err)
 
 	chainBResp := suite.ChainB.App.Query(abci.RequestQuery{
-		Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 		Height: suite.ChainB.LastHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
@@ -69,7 +70,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 			Key:           chainBResp.Key,
 			Proof:         chainBResp.ProofOps,
 			Value:         chainBResp.Value,
-			StoragePrefix: host.StoreKey,
+			StoragePrefix: ibchost.StoreKey,
 		}},
 		// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 		Block:    nil,
@@ -97,7 +98,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 		Key:           chainBResp.Key,
 		Proof:         nil,
 		Value:         chainBResp.Value,
-		StoragePrefix: host.StoreKey,
+		StoragePrefix: ibchost.StoreKey,
 	}}, resp.Result.KvResults)
 }
 

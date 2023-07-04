@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 )
 
 const Delimiter = "."
@@ -33,7 +33,7 @@ func NewICAOwnerFromAddress(address sdk.AccAddress, interchainAccountID string) 
 }
 
 func ICAOwnerFromPort(port string) (ICAOwner, error) {
-	splitOwner := strings.SplitN(strings.TrimPrefix(port, icatypes.PortPrefix), Delimiter, 2)
+	splitOwner := strings.SplitN(strings.TrimPrefix(port, icatypes.ControllerPortPrefix), Delimiter, 2)
 	if len(splitOwner) < 2 {
 		return ICAOwner{}, sdkerrors.Wrap(ErrInvalidICAOwner, "invalid ICA interchainAccountID format")
 	}

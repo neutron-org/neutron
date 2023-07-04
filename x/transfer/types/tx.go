@@ -1,7 +1,10 @@
 package types
 
 import (
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	"context"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	"google.golang.org/grpc"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -11,7 +14,7 @@ func (msg *MsgTransfer) ValidateBasic() error {
 		return err
 	}
 
-	sdkMsg := types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp)
+	sdkMsg := types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp, msg.Memo)
 	return sdkMsg.ValidateBasic()
 }
 
@@ -20,14 +23,56 @@ func (msg *MsgTransfer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{fromAddress}
 }
 
-func (msg *MsgTransfer) Route() string {
-	return types.RouterKey
+func Msg_Transfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(types.MsgTransfer)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	conv := &MsgTransfer{
+		SourcePort:       in.SourcePort,
+		SourceChannel:    in.SourceChannel,
+		Token:            in.Token,
+		Sender:           in.Sender,
+		Receiver:         in.Receiver,
+		TimeoutHeight:    in.TimeoutHeight,
+		TimeoutTimestamp: in.TimeoutTimestamp,
+		Memo:             in.Memo,
+		Fee:              feerefundertypes.Fee{},
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).Transfer(ctx, conv)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/neutron.transfer.Msg/Transfer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		reqT := req.(*types.MsgTransfer)
+		convReq := &MsgTransfer{
+			SourcePort:       reqT.SourcePort,
+			SourceChannel:    reqT.SourceChannel,
+			Token:            reqT.Token,
+			Sender:           reqT.Sender,
+			Receiver:         reqT.Receiver,
+			TimeoutHeight:    reqT.TimeoutHeight,
+			TimeoutTimestamp: reqT.TimeoutTimestamp,
+			Memo:             reqT.Memo,
+			Fee:              feerefundertypes.Fee{},
+		}
+		return srv.(MsgServer).Transfer(ctx, convReq)
+	}
+	return interceptor(ctx, conv, info, handler)
 }
 
-func (msg *MsgTransfer) Type() string {
-	return types.TypeMsgTransfer
-}
-
-func (msg MsgTransfer) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+var MsgServiceDescOrig = grpc.ServiceDesc{
+	ServiceName: "ibc.applications.transfer.v1.Msg",
+	HandlerType: (*MsgServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Transfer",
+			Handler:    Msg_Transfer_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "ibc/applications/transfer/v1/tx.proto",
 }

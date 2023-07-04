@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"encoding/hex"
 	"fmt"
+	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,9 +13,9 @@ import (
 	"github.com/neutron-org/neutron/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
@@ -618,7 +619,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 
 			clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 			resp := suite.ChainB.App.Query(abci.RequestQuery{
-				Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+				Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 				Height: suite.ChainB.LastHeader.Header.Height - 1,
 				Data:   clientKey,
 				Prove:  true,
@@ -632,7 +633,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 						Key:           resp.Key,
 						Proof:         resp.ProofOps,
 						Value:         resp.Value,
-						StoragePrefix: host.StoreKey,
+						StoragePrefix: ibchost.StoreKey,
 					}},
 					Block:    nil,
 					Height:   1,
@@ -763,7 +764,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -778,7 +779,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
@@ -796,7 +797,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -812,7 +813,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -827,7 +828,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
@@ -846,7 +847,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -862,7 +863,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -877,12 +878,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}, {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
@@ -915,7 +916,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -930,7 +931,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
@@ -949,7 +950,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -965,7 +966,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -980,7 +981,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         nil,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
@@ -1000,7 +1001,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1015,7 +1016,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   []byte("non-registered key"),
 					Prove:  true,
@@ -1030,7 +1031,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
@@ -1049,7 +1050,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1065,7 +1066,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -1100,7 +1101,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1117,7 +1118,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -1132,7 +1133,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here
@@ -1151,7 +1152,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1167,7 +1168,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height,
 					Data:   clientKey,
 					Prove:  true,
@@ -1182,7 +1183,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
@@ -1200,7 +1201,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1216,7 +1217,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -1231,7 +1232,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         []byte("some evil data"),
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
@@ -1250,7 +1251,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1269,7 +1270,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -1284,7 +1285,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:    nil,
@@ -1303,7 +1304,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: clientKey},
+						{Path: ibchost.StoreKey, Key: clientKey},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1325,7 +1326,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber()+1, 1)))
 
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
@@ -1340,7 +1341,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer, and we don't have access to it here
 						Block:  nil,
@@ -1362,7 +1363,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
-						{Path: host.StoreKey, Key: keyWithSpecialBytes},
+						{Path: ibchost.StoreKey, Key: keyWithSpecialBytes},
 					},
 					QueryType:    string(iqtypes.InterchainQueryTypeKV),
 					UpdatePeriod: 1,
@@ -1379,7 +1380,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				resp := suite.ChainB.App.Query(abci.RequestQuery{
-					Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   keyWithSpecialBytes,
 					Prove:  true,
@@ -1394,7 +1395,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 							Key:           resp.Key,
 							Proof:         resp.ProofOps,
 							Value:         resp.Value,
-							StoragePrefix: host.StoreKey,
+							StoragePrefix: ibchost.StoreKey,
 						}},
 						// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 						// and we don't have access to it here

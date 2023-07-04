@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
@@ -24,7 +24,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil, nil)
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 
 	errACK := channeltypes.Acknowledgement{
@@ -41,7 +41,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 	p := channeltypes.Packet{
 		Sequence:      100,
-		SourcePort:    icatypes.PortPrefix + testutil.TestOwnerAddress + ".ica0",
+		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0",
 		SourceChannel: "channel-0",
 	}
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
@@ -118,14 +118,14 @@ func TestHandleTimeout(t *testing.T) {
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil, nil)
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
 	p := channeltypes.Packet{
 		Sequence:      100,
-		SourcePort:    icatypes.PortPrefix + testutil.TestOwnerAddress + ".ica0",
+		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0",
 		SourceChannel: "channel-0",
 	}
 
@@ -167,8 +167,8 @@ func TestHandleChanOpenAck(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, nil, nil, nil)
-	portID := icatypes.PortPrefix + testutil.TestOwnerAddress + ".ica0"
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, nil, nil)
+	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0"
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	channelID := "channel-0"
 	counterpartyChannelID := "channel-1"

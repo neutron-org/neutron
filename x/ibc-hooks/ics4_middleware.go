@@ -3,45 +3,58 @@ package ibchooks
 import (
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	"github.com/neutron-org/neutron/x/ibc-hooks/types"
 
 	// ibc-go
-	porttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v4/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
 var _ porttypes.ICS4Wrapper = &ICS4Middleware{}
 
 type ICS4Middleware struct {
-	channel porttypes.ICS4Wrapper
+	channelKeeper types.ChannelKeeper
+	channel       porttypes.ICS4Wrapper
 
 	// Hooks
 	Hooks Hooks
 }
 
-func NewICS4Middleware(channel porttypes.ICS4Wrapper, hooks Hooks) ICS4Middleware {
+func NewICS4Middleware(channelKeeper types.ChannelKeeper, channel porttypes.ICS4Wrapper, hooks Hooks) ICS4Middleware {
 	return ICS4Middleware{
-		channel: channel,
-		Hooks:   hooks,
+		channelKeeper: channelKeeper,
+		channel:       channel,
+		Hooks:         hooks,
 	}
 }
 
-func (i ICS4Middleware) SendPacket(ctx sdk.Context, channelCap *capabilitytypes.Capability, packet ibcexported.PacketI) error {
+func (i ICS4Middleware) SendPacket(ctx sdk.Context, channelCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {
+	channel, found := i.channelKeeper.GetChannel(ctx, sourcePort, sourceChannel)
+	if !found {
+		return 0, sdkerrors.Wrap(channeltypes.ErrChannelNotFound, sourceChannel)
+	}
+
+	packet := channeltypes.NewPacket(data, sequence, sourcePort, sourceChannel,
+		channel.Counterparty.PortId, channel.Counterparty.ChannelId, timeoutHeight, timeoutTimestamp)
 	if hook, ok := i.Hooks.(SendPacketOverrideHooks); ok {
-		return hook.SendPacketOverride(i, ctx, channelCap, packet)
+		return 0, hook.SendPacketOverride(i, ctx, channelCap, packet)
 	}
 
 	if hook, ok := i.Hooks.(SendPacketBeforeHooks); ok {
 		hook.SendPacketBeforeHook(ctx, channelCap, packet)
 	}
 
-	err := i.channel.SendPacket(ctx, channelCap, packet)
+	sequence, err = i.channel.SendPacket(ctx, channelCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 
 	if hook, ok := i.Hooks.(SendPacketAfterHooks); ok {
 		hook.SendPacketAfterHook(ctx, channelCap, packet, err)
 	}
 
-	return err
+	return sequence, err
 }
 
 func (i ICS4Middleware) WriteAcknowledgement(ctx sdk.Context, chanCap *capabilitytypes.Capability, packet ibcexported.PacketI, ack ibcexported.Acknowledgement) error {

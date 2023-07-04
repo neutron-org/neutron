@@ -17,7 +17,8 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/app"
@@ -133,7 +134,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 		RegisterInterchainQuery: &bindings.RegisterInterchainQuery{
 			QueryType: string(icqtypes.InterchainQueryTypeKV),
 			Keys: []*icqtypes.KVKey{
-				{Path: host.StoreKey, Key: host.FullClientStateKey(suite.Path.EndpointB.ClientID)},
+				{Path: ibchost.StoreKey, Key: host.FullClientStateKey(suite.Path.EndpointB.ClientID)},
 			},
 			TransactionsFilter: "{}",
 			ConnectionId:       suite.Path.EndpointA.ConnectionID,

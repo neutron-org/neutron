@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
+	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -480,7 +481,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	registerMsg := iqtypes.MsgRegisterInterchainQuery{
 		ConnectionId: suite.Path.EndpointA.ConnectionID,
 		Keys: []*iqtypes.KVKey{
-			{Path: host.StoreKey, Key: clientKey},
+			{Path: ibchost.StoreKey, Key: clientKey},
 		},
 		QueryType:    string(iqtypes.InterchainQueryTypeKV),
 		UpdatePeriod: 1,
@@ -500,7 +501,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	suite.Require().NoError(err)
 
 	resp := suite.ChainB.App.Query(abci.RequestQuery{
-		Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 		Height: suite.ChainB.LastHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
@@ -515,7 +516,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 				Key:           resp.Key,
 				Proof:         resp.ProofOps,
 				Value:         resp.Value,
-				StoragePrefix: host.StoreKey,
+				StoragePrefix: ibchost.StoreKey,
 			}},
 			// we don't have tests to test transactions proofs verification since it's a tendermint layer,
 			// and we don't have access to it here

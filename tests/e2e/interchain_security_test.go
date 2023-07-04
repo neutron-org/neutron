@@ -3,11 +3,11 @@ package e2e_test
 import (
 	"testing"
 
-	appProvider "github.com/cosmos/interchain-security/app/provider"
-	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
+	appProvider "github.com/cosmos/interchain-security/v3/app/provider"
+	icssimapp "github.com/cosmos/interchain-security/v3/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	e2e "github.com/cosmos/interchain-security/tests/integration"
+	e2e "github.com/cosmos/interchain-security/v3/tests/integration"
 
 	appConsumer "github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"

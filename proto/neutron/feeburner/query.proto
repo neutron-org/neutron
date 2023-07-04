@@ -4,8 +4,8 @@ package neutron.feeburner;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "feeburner/params.proto";
-import "feeburner/total_burned_neutrons_amount.proto";
+import "neutron/feeburner/params.proto";
+import "neutron/feeburner/total_burned_neutrons_amount.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/neutron-org/neutron/x/feeburner/types";

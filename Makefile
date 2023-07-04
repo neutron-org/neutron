@@ -188,6 +188,16 @@ format:
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
+protoVer=0.11.6
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=docker run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
+proto-gen:
+	@echo "Generating Protobuf files"
+	@$(protoImage) sh ./scripts/protocgen.sh
+
+proto-swagger-gen:
+	@$(protoImage) sh ./scripts/protoc-swagger-gen.sh
+
 PROTO_FORMATTER_IMAGE=tendermintdev/docker-build-proto@sha256:aabcfe2fc19c31c0f198d4cd26393f5e5ca9502d7ea3feafbfe972448fee7cae
 
 proto-format:

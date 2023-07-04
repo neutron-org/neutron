@@ -2,8 +2,8 @@ syntax = "proto3";
 package neutron.cron;
 
 import "gogoproto/gogo.proto";
-import "cron/params.proto";
-import "cron/schedule.proto";
+import "neutron/cron/params.proto";
+import "neutron/cron/schedule.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/cron/types";

@@ -6,10 +6,7 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	types2 "github.com/cosmos/cosmos-sdk/x/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
 
@@ -30,7 +27,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, icaKeeper, nil, nil)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, icaKeeper, nil)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	msgRegAcc := types.MsgRegisterInterchainAccount{
@@ -68,10 +65,9 @@ func TestSubmitTx(t *testing.T) {
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
-	capabilityKeeper := mock_types.NewMockScopedKeeper(ctrl)
 	refundKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, refundKeeper, icaKeeper, channelKeeper, capabilityKeeper)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, refundKeeper, icaKeeper, channelKeeper)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	cosmosMsg := codectypes.Any{
@@ -126,15 +122,6 @@ func TestSubmitTx(t *testing.T) {
 	activeChannel := "channel-0"
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
-	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(nil, false)
-	resp, err = icak.SubmitTx(goCtx, &submitMsg)
-	require.Nil(t, resp)
-	require.ErrorContains(t, err, "failed to GetCapability")
-
-	capability := types2.Capability{Index: 1}
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
-	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
-	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	currCodec := icak.Codec
 	icak.Codec = &codec.AminoCodec{}
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
@@ -144,7 +131,6 @@ func TestSubmitTx(t *testing.T) {
 
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
-	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(uint64(0), false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
@@ -153,7 +139,6 @@ func TestSubmitTx(t *testing.T) {
 	sequence := uint64(100)
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
-	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(fmt.Errorf("failed to lock fees"))
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
@@ -171,20 +156,18 @@ func TestSubmitTx(t *testing.T) {
 	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(submitMsg.Timeout) * time.Second).UnixNano()
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
-	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
-	icaKeeper.EXPECT().SendTx(ctx, &capability, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), fmt.Errorf("faile to send tx"))
+	icaKeeper.EXPECT().SendTx(ctx, nil, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), fmt.Errorf("faile to send tx"))
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "failed to SendTx")
 
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
-	capabilityKeeper.EXPECT().GetCapability(ctx, host.ChannelCapabilityPath(portID, activeChannel)).Return(&capability, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
-	icaKeeper.EXPECT().SendTx(ctx, &capability, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), nil)
+	icaKeeper.EXPECT().SendTx(ctx, nil, "connection-0", portID, packetData, uint64(timeoutTimestamp)).Return(uint64(0), nil)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Equal(t, types.MsgSubmitTxResponse{
 		SequenceId: sequence,

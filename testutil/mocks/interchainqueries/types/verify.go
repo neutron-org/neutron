@@ -9,9 +9,9 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
-	keeper "github.com/cosmos/ibc-go/v4/modules/core/02-client/keeper"
-	exported "github.com/cosmos/ibc-go/v4/modules/core/exported"
-	types1 "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
+	keeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
+	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	types1 "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	gomock "github.com/golang/mock/gomock"
 
 	types2 "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -41,10 +41,10 @@ func (m *MockHeaderVerifier) EXPECT() *MockHeaderVerifierMockRecorder {
 }
 
 // UnpackHeader mocks base method.
-func (m *MockHeaderVerifier) UnpackHeader(any *types.Any) (exported.Header, error) {
+func (m *MockHeaderVerifier) UnpackHeader(any *types.Any) (exported.ClientMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnpackHeader", any)
-	ret0, _ := ret[0].(exported.Header)
+	ret0, _ := ret[0].(exported.ClientMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -56,7 +56,7 @@ func (mr *MockHeaderVerifierMockRecorder) UnpackHeader(any interface{}) *gomock.
 }
 
 // VerifyHeaders mocks base method.
-func (m *MockHeaderVerifier) VerifyHeaders(ctx types0.Context, cleintkeeper keeper.Keeper, clientID string, header, nextHeader exported.Header) error {
+func (m *MockHeaderVerifier) VerifyHeaders(ctx types0.Context, cleintkeeper keeper.Keeper, clientID string, header, nextHeader exported.ClientMessage) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VerifyHeaders", ctx, cleintkeeper, clientID, header, nextHeader)
 	ret0, _ := ret[0].(error)

@@ -108,7 +108,7 @@ clock_drift = '5s'
 max_block_time = '10s'
 trusting_period = '14days'
 trust_threshold = { numerator = '1', denominator = '3' }
-ccv_consumer_chain = true
+unbonding_period = '20days'
 address_type = { derivation = 'cosmos' }
 
 [[chains]]

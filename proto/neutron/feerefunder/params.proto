@@ -2,7 +2,7 @@ syntax = "proto3";
 package neutron.feerefunder;
 
 import "gogoproto/gogo.proto";
-import "feerefunder/fee.proto";
+import "neutron/feerefunder/fee.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/feerefunder/types";
 

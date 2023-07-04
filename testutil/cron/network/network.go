@@ -2,6 +2,8 @@ package network
 
 import (
 	"fmt"
+	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 
@@ -11,21 +13,20 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/neutron-org/neutron/testutil/consumer"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/neutron-org/neutron/app/params"
 
 	"github.com/neutron-org/neutron/app"
 
+	tmdb "github.com/cometbft/cometbft-db"
+	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	tmdb "github.com/tendermint/tm-db"
 )
 
 type (
@@ -45,7 +46,8 @@ func New(t *testing.T, configs ...network.Config) *network.Network {
 	} else {
 		cfg = configs[0]
 	}
-	net := network.New(t, cfg)
+	net, err := network.New(t, t.TempDir(), cfg)
+	require.NoError(t, err)
 	t.Cleanup(net.Cleanup)
 	return net
 }
@@ -58,31 +60,33 @@ func DefaultConfig() network.Config {
 	app.ModuleBasics[stakingtypes.ModuleName] = staking.AppModuleBasic{}
 
 	encoding := app.MakeEncodingConfig()
+	chainID := "chain-" + tmrand.NewRand().Str(6)
 	return network.Config{
 		Codec:             encoding.Marshaler,
 		TxConfig:          encoding.TxConfig,
 		LegacyAmino:       encoding.Amino,
 		InterfaceRegistry: encoding.InterfaceRegistry,
 		AccountRetriever:  authtypes.AccountRetriever{},
-		AppConstructor: func(val network.Validator) servertypes.Application {
-			err := consumer.ModifyConsumerGenesis(val)
+		AppConstructor: func(val network.ValidatorI) servertypes.Application {
+			err := consumer.ModifyConsumerGenesis(val.(network.Validator))
 			if err != nil {
 				panic(err)
 			}
 
 			return app.New(
-				val.Ctx.Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.Ctx.Config.RootDir, 0,
+				val.GetCtx().Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
 				app.GetEnabledProposals(),
-				simapp.EmptyAppOptions{},
+				sims.EmptyAppOptions{},
 				nil,
-				baseapp.SetPruning(storetypes.NewPruningOptionsFromString(val.AppConfig.Pruning)),
-				baseapp.SetMinGasPrices(val.AppConfig.MinGasPrices),
+				baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
+				baseapp.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
+				baseapp.SetChainID(chainID),
 			)
 		},
 		GenesisState:  app.ModuleBasics.DefaultGenesis(encoding.Marshaler),
 		TimeoutCommit: 2 * time.Second,
-		ChainID:       "chain-" + tmrand.NewRand().Str(6),
+		ChainID:       chainID,
 		// Some changes are introduced to make the tests run as if neutron is a standalone chain.
 		// This will only work if NumValidators is set to 1.
 		NumValidators:   1,
@@ -91,7 +95,7 @@ func DefaultConfig() network.Config {
 		AccountTokens:   sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction),
 		StakingTokens:   sdk.TokensFromConsensusPower(500, sdk.DefaultPowerReduction),
 		BondedTokens:    sdk.TokensFromConsensusPower(100, sdk.DefaultPowerReduction),
-		PruningStrategy: storetypes.PruningOptionNothing,
+		PruningStrategy: pruningtypes.PruningOptionNothing,
 		CleanupDir:      true,
 		SigningAlgo:     string(hd.Secp256k1Type),
 		KeyringOptions:  []keyring.Option{},

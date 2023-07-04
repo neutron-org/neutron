@@ -2,7 +2,7 @@ syntax = "proto3";
 package neutron.contractmanager;
 
 import "gogoproto/gogo.proto";
-import "contractmanager/params.proto";
+import "neutron/contractmanager/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";

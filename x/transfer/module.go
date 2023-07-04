@@ -1,6 +1,7 @@
 package transfer
 
 import (
+	"cosmossdk.io/core/appmodule"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -8,10 +9,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
@@ -68,6 +69,8 @@ func (im IBCModule) OnTimeoutPacket(
 	return im.HandleTimeout(ctx, packet, relayer)
 }
 
+var _ appmodule.AppModule = AppModule{}
+
 type AppModule struct {
 	transfer.AppModule
 	keeper wrapkeeper.KeeperTransferWrapper
@@ -81,10 +84,21 @@ func NewAppModule(k wrapkeeper.KeeperTransferWrapper) AppModule {
 	}
 }
 
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (am AppModule) IsOnePerModuleType() { // marker
+}
+
+// IsAppModule implements the appmodule.AppModule interface.
+func (am AppModule) IsAppModule() { // marker
+}
+
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+
+	cfg.MsgServer().RegisterService(&neutrontypes.MsgServiceDescOrig, am.keeper)
+
 }
 
 type AppModuleBasic struct {
@@ -113,11 +127,6 @@ func (am AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
 // Name returns the capability module's name.
 func (am AppModule) Name() string {
 	return am.AppModuleBasic.Name()
-}
-
-// Deprecated: Route returns the capability module's message routing key.
-func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
 }
 
 func NewHandler(k wrapkeeper.KeeperTransferWrapper) sdk.Handler {

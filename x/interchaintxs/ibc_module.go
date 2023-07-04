@@ -5,10 +5,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	ibcexported "github.com/cosmos/ibc-go/v4/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
 	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
 )
@@ -32,14 +31,14 @@ func (im IBCModule) OnChanOpenInit(
 	ctx sdk.Context,
 	_ channeltypes.Order,
 	_ []string,
-	portID string,
-	channelID string,
-	chanCap *capabilitytypes.Capability,
+	_ string,
+	_ string,
+	_ *capabilitytypes.Capability,
 	_ channeltypes.Counterparty,
 	version string,
 ) (string, error) {
 	// FIXME: always returning plain version is probably a bad idea!
-	return version, im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID))
+	return version, nil
 }
 
 // OnChanOpenTry implements the IBCModule interface. We don't need to implement this handler.

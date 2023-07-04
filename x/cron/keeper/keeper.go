@@ -2,21 +2,21 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/armon/go-metrics"
 	"strconv"
 	"time"
 
-	"github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/neutron-org/neutron/x/cron/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 var (

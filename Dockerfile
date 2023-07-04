@@ -8,7 +8,7 @@ RUN cd /opt/neutron && make install-test-binary
 WORKDIR /opt/neutron
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD \
-    curl -f http://127.0.0.1:1317/blocks/1 >/dev/null 2>&1 || exit 1
+    curl -f http://127.0.0.1:1317/cosmos/base/tendermint/v1beta1/blocks/1 >/dev/null 2>&1 || exit 1
 
 CMD bash /opt/neutron/network/init.sh && \
     bash /opt/neutron/network/init-neutrond.sh && \

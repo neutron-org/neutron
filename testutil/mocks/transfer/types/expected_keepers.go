@@ -9,7 +9,7 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types1 "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	types1 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
 	types2 "github.com/neutron-org/neutron/x/feerefunder/types"
 )
@@ -190,6 +190,20 @@ func NewMockChannelKeeper(ctrl *gomock.Controller) *MockChannelKeeper {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockChannelKeeper) EXPECT() *MockChannelKeeperMockRecorder {
 	return m.recorder
+}
+
+// GetAllChannelsWithPortPrefix mocks base method.
+func (m *MockChannelKeeper) GetAllChannelsWithPortPrefix(ctx types.Context, portPrefix string) []types1.IdentifiedChannel {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllChannelsWithPortPrefix", ctx, portPrefix)
+	ret0, _ := ret[0].([]types1.IdentifiedChannel)
+	return ret0
+}
+
+// GetAllChannelsWithPortPrefix indicates an expected call of GetAllChannelsWithPortPrefix.
+func (mr *MockChannelKeeperMockRecorder) GetAllChannelsWithPortPrefix(ctx, portPrefix interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllChannelsWithPortPrefix", reflect.TypeOf((*MockChannelKeeper)(nil).GetAllChannelsWithPortPrefix), ctx, portPrefix)
 }
 
 // GetChannel mocks base method.

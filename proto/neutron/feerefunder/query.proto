@@ -4,8 +4,8 @@ package neutron.feerefunder;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "feerefunder/params.proto";
-import "feerefunder/genesis.proto";
+import "neutron/feerefunder/params.proto";
+import "neutron/feerefunder/genesis.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/neutron-org/neutron/x/feerefunder/types";

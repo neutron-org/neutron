@@ -1,9 +1,8 @@
 package ibchooks
 
 import (
+	"cosmossdk.io/core/appmodule"
 	"encoding/json"
-	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -16,8 +15,8 @@ import (
 
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
@@ -68,6 +67,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 }
 
 // ___________________________________________________________________________
+var _ appmodule.AppModule = AppModule{}
 
 // AppModule implements an application module for the ibc-hooks module.
 type AppModule struct {
@@ -89,22 +89,20 @@ func (AppModule) Name() string {
 	return types.ModuleName
 }
 
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (am AppModule) IsOnePerModuleType() { // marker
+}
+
+// IsAppModule implements the appmodule.AppModule interface.
+func (am AppModule) IsAppModule() { // marker
+}
+
 // RegisterInvariants registers the ibc-hooks module invariants.
 func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// Route returns the message routing key for the ibc-hooks module.
-func (AppModule) Route() sdk.Route { return sdk.Route{} }
-
 // QuerierRoute returns the module's querier route name.
 func (AppModule) QuerierRoute() string {
-	return ""
-}
-
-// LegacyQuerierHandler returns the x/ibc-hooks module's sdk.Querier.
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return func(sdk.Context, []string, abci.RequestQuery) ([]byte, error) {
-		return nil, fmt.Errorf("legacy querier not supported for the x/%s module", types.ModuleName)
-	}
+	return types.RouteKey
 }
 
 // RegisterServices registers a gRPC query service to respond to the
