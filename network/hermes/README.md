@@ -7,25 +7,21 @@
 ## Getting started
 
 - Install [Rust](https://www.rust-lang.org/tools/install)
-- Install [Hermes](https://hermes.informal.systems/installation.html)
+- Install [Hermes](https://hermes.informal.systems/quick-start/installation.html) version 1.4.1: `cargo install ibc-relayer-cli --bin hermes --version 1.4.1 --locked`
 
-The following directory contains a basic executable script which handles creation of clients, connections and channels in order to facilitate packet relaying between distributed ledgers using the IBC protocol.
+This directory contains Hermes config and startup scripts which handle creation of clients, connections and channels in order to facilitate packet relaying between distributed ledgers using the IBC protocol.
 This serves as a basis for demonstration of interchain accounts e2e functionality validation.
 
 ## Usage
 
 - Before attempting to create clients, connections and channels, the private keys for existing chains must be restored. Please note - currently the relayer does NOT support a keyring store to securely store the private key file. The key file will be stored on the local file system in the user `$HOME` folder under `$HOME/.hermes`
+
 ```
 $HERMES_BINARY --config config.toml keys add --key-name testkey_1 --chain $CHAIN_ID_1 --mnemonic-file <(echo "$MNEMONIC_1")
 $HERMES_BINARY --config config.toml keys add --key-name testkey_2 --chain $CHAIN_ID_2 --mnemonic-file <(echo "$MNEMONIC_2")
 ```
 
-- Execute the script
-```
-./hermes.sh
-```
-
-- Useful commands
+- Other useful commands
 ```
 # Query client state
 hermes query client state $CHAIN_ID 07-tendermint-0

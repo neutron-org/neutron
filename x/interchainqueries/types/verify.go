@@ -9,7 +9,7 @@ import (
 )
 
 type HeaderVerifier interface {
-	VerifyHeaders(ctx sdk.Context, cleintkeeper clientkeeper.Keeper, clientID string, header exported.Header, nextHeader exported.Header) error
+	VerifyHeaders(ctx sdk.Context, cleintkeeper clientkeeper.Keeper, clientID string, header, nextHeader exported.Header) error
 	UnpackHeader(any *codectypes.Any) (exported.Header, error)
 }
 
