@@ -16,6 +16,12 @@ import (
 	globalfeeante "github.com/cosmos/gaia/v8/x/globalfee/ante"
 )
 
+// maxBypassMinFeeMsgGasUsage is the maximum gas usage per message
+// so that a transaction that contains only message types that can
+// bypass the minimum fee can be accepted with a zero fee.
+// For details, see gaiafeeante.NewFeeDecorator()
+const maxBypassMinFeeMsgGasUsage uint64 = 500_000 // Should be high enough because /ibc.core.client.v1.MsgUpdateClient is the most expensive message
+
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
 // channel keeper.
 type HandlerOptions struct {
@@ -53,12 +59,6 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
-
-	// maxBypassMinFeeMsgGasUsage is the maximum gas usage per message
-	// so that a transaction that contains only message types that can
-	// bypass the minimum fee can be accepted with a zero fee.
-	// For details, see gaiafeeante.NewFeeDecorator()
-	const maxBypassMinFeeMsgGasUsage uint64 = 500_000 // Should be high enough because /ibc.core.client.v1.MsgUpdateClient is the most expensive message
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
