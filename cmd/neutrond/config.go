@@ -206,11 +206,11 @@ func writeConfigToFile(configFilePath string, config *NeutronCustomClient) error
 	tmpl := template.New("clientConfigFileTemplate")
 	configTemplate, err := tmpl.Parse(defaultConfigTemplate)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not parse default config template: %w", err)
 	}
 
 	if err := configTemplate.Execute(&buffer, config); err != nil {
-		return err
+		return fmt.Errorf("could not apply data to config template: %w", err)
 	}
 
 	return os.WriteFile(configFilePath, buffer.Bytes(), 0o600)
@@ -223,12 +223,12 @@ func getClientConfig(configPath string, v *viper.Viper) (*scconfig.ClientConfig,
 	v.SetConfigType("toml")
 
 	if err := v.ReadInConfig(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read client config: %w", err)
 	}
 
 	conf := new(scconfig.ClientConfig)
 	if err := v.Unmarshal(conf); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal client config: %w", err)
 	}
 
 	return conf, nil
