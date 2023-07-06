@@ -49,7 +49,7 @@ func runConfigCmd(cmd *cobra.Command, args []string) error {
 
 	conf, err := getClientConfig(configPath, clientCtx.Viper)
 	if err != nil {
-		return fmt.Errorf("couldn't get client config: %v", err)
+		return fmt.Errorf("couldn't get client config: %w", err)
 	}
 
 	ncc := NeutronCustomClient{
@@ -69,7 +69,7 @@ func runConfigCmd(cmd *cobra.Command, args []string) error {
 	case 0:
 		s, err := json.MarshalIndent(ncc, "", "\t")
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to marshal neutron custom client: %w", err)
 		}
 
 		cmd.Println(string(s))
@@ -153,7 +153,7 @@ func runConfigCmd(cmd *cobra.Command, args []string) error {
 		}
 
 	default:
-		panic("could not execute config command")
+		return fmt.Errorf("too many arguments: accepts between 0 and 2 args")
 	}
 
 	return nil

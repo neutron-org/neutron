@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -291,7 +292,7 @@ func setCustomEnvVariablesFromClientToml(ctx client.Context) {
 	viper.SetConfigFile(configFilePath)
 
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		panic(fmt.Errorf("unable to read config file: %w", err))
 	}
 
 	setEnvFromConfig := func(key, envVar string) {
