@@ -11,6 +11,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	packetforwardmiddlewaretypes "github.com/strangelove-ventures/packet-forward-middleware/v4/router/types"
 
+	globalfeetypes "github.com/cosmos/gaia/v8/x/globalfee/types"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -78,6 +79,8 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	// tokenfactory
 	{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyDenomCreationFee)}:    {},
 	{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyFeeCollectorAddress)}: {},
+	// globalfee
+	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMinGasPrices)}: {},
 	// cron
 	{Subspace: crontypes.ModuleName, Key: string(crontypes.KeySecurityAddress)}: {},
 	{Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},
