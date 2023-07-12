@@ -17,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -30,11 +31,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	tmcfg "github.com/tendermint/tendermint/config"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	gaiaparams "github.com/cosmos/gaia/v8/app/params"
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/app/params"
 )
@@ -81,13 +82,23 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			return server.InterceptConfigsPreRunHandler(cmd, "", tmcfg.DefaultConfig())
+			customTemplate, customNeutronConfig := initAppConfig()
+			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig)
 		},
 	}
 
 	initRootCmd(rootCmd, encodingConfig)
 
 	return rootCmd, encodingConfig
+}
+
+func initAppConfig() (string, interface{}) {
+	srvCfg := serverconfig.DefaultConfig()
+
+	return gaiaparams.CustomConfigTemplate(), gaiaparams.CustomAppConfig{
+		Config:               *srvCfg,
+		BypassMinFeeMsgTypes: app.GetDefaultBypassFeeMessages(),
+	}
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {

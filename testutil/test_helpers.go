@@ -388,6 +388,7 @@ func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		simapp.EmptyAppOptions{},
 		nil,
 	)
+
 	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
 }
 
