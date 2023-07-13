@@ -17,5 +17,14 @@ type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
 func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
-	return ModuleBasics.DefaultGenesis(cdc)
+	// This ugly hack is required to alter globalfee module genesis state
+	// because in current chain implementation staking module is absent which is required by globalfee module
+	// and we can't use default genesis state for globalfee module.
+	// If we will not alter globalfee module genesis state, then we will get panic during tests run.
+
+	genesisState := ModuleBasics.DefaultGenesis(cdc)
+	minGasPrices := json.RawMessage(`{"params":{"minimum_gas_prices":[{"denom": "untrn", "amount": "0"}]}}`)
+	genesisState["globalfee"] = minGasPrices
+
+	return genesisState
 }
