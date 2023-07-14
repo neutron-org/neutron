@@ -211,13 +211,6 @@ init: kill-dev install-test-binary
 	./network/hermes/restore-keys.sh
 	./network/hermes/create-conn.sh
 
-init-golang-rly: kill-dev install
-	@echo "Initializing both blockchains..."
-	./network/init.sh
-	./network/start.sh
-	@echo "Initializing relayer..."
-	./network/relayer/interchain-acc-config/rly.sh
-
 start: kill-dev install-test-binary
 	@echo "Starting up neutrond alone..."
 	BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
