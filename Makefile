@@ -52,10 +52,14 @@ endif
 build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
+build_tags_test_binary = $(build_tags)
+build_tags_test_binary += skip_ccv_msg_filter
+
 whitespace :=
 empty = $(whitespace) $(whitespace)
 comma := ,
 build_tags_comma_sep := $(subst $(empty),$(comma),$(build_tags))
+build_tags_test_binary_comma_sep := $(subst $(empty),$(comma),$(build_tags_test_binary))
 
 # process linker flags
 
@@ -73,6 +77,7 @@ ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags_comma_sep)" -ldflags '$(ldflags)' -trimpath
+BUILD_FLAGS_TEST_BINARY := -tags "$(build_tags_test_binary_comma_sep)" -ldflags '$(ldflags)' -trimpath
 
 # The below include contains the tools and runsim targets.
 include contrib/devtools/Makefile
@@ -112,6 +117,9 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 
 install: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/neutrond
+
+install-test-binary: check_version go.sum
+	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
 
 ########################################
 ### Tools & dependencies
@@ -194,7 +202,7 @@ proto-format:
 	test test-all test-build test-cover test-unit test-race \
 	test-sim-import-export \
 
-init: kill-dev install
+init: kill-dev install-test-binary
 	@echo "Building gaiad binary..."
 	@cd ./../gaia/ && make install
 	@echo "Initializing both blockchains..."
@@ -210,7 +218,7 @@ init-golang-rly: kill-dev install
 	@echo "Initializing relayer..."
 	./network/relayer/interchain-acc-config/rly.sh
 
-start: kill-dev install
+start: kill-dev install-test-binary
 	@echo "Starting up neutrond alone..."
 	BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
 	./network/init.sh && ./network/init-neutrond.sh && ./network/start.sh
