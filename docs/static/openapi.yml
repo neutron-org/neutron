@@ -14846,6 +14846,56 @@ paths:
           type: boolean
       tags:
         - Query
+  /gaia/globalfee/v1beta1/minimum_gas_prices:
+    get:
+      operationId: GaiaGlobalfeeV1Beta1MinimumGasPrices
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              minimum_gas_prices:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+            description: |-
+              QueryMinimumGasPricesResponse is the response type for the
+              Query/MinimumGasPrices RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Query
   /ibc/apps/interchain_accounts/controller/v1/owners/{owner}/connections/{connection_id}:
     get:
       summary: >-
@@ -28046,6 +28096,16 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
       tags:
         - Query
   /neutron/cron/schedule/{name}:
@@ -29155,7 +29215,6 @@ paths:
 
                                     Later, transactions may be queried using
                                     these events.
-                                title: nondeterministic
                               codespace:
                                 type: string
                           delivery_proof:
@@ -29779,6 +29838,16 @@ paths:
             when key
 
             is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
           in: query
           required: false
           type: boolean
@@ -31366,8 +31435,14 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                    title: >-
+                      DenomCreationFee is the fee required to create a new denom
+                      using the tokenfactory module
                   fee_collector_address:
                     type: string
+                    title: >-
+                      FeeCollectorAddress is the address where fees collected
+                      from denom creation are sent to
                 title: Params holds parameters for the tokenfactory module
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
@@ -44035,6 +44110,38 @@ definitions:
     title: |-
       QuerySmartContractStateResponse is the response type for the
       Query/SmartContractState RPC method
+  cosmos.base.v1beta1.DecCoin:
+    type: object
+    properties:
+      denom:
+        type: string
+      amount:
+        type: string
+    description: |-
+      DecCoin defines a token with a denomination and a decimal amount.
+
+      NOTE: The amount field is an Dec which implements the custom method
+      signatures required by gogoproto.
+  gaia.globalfee.v1beta1.QueryMinimumGasPricesResponse:
+    type: object
+    properties:
+      minimum_gas_prices:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+    description: |-
+      QueryMinimumGasPricesResponse is the response type for the
+      Query/MinimumGasPrices RPC method.
   ibc.applications.interchain_accounts.controller.v1.Params:
     type: object
     properties:
@@ -52988,7 +53095,6 @@ definitions:
                     ResponseDeliverTx.
 
                     Later, transactions may be queried using these events.
-                title: nondeterministic
               codespace:
                 type: string
           delivery_proof:
@@ -53831,7 +53937,6 @@ definitions:
 
                             Later, transactions may be queried using these
                             events.
-                        title: nondeterministic
                       codespace:
                         type: string
                   delivery_proof:
@@ -54334,7 +54439,6 @@ definitions:
                         and ResponseDeliverTx.
 
                         Later, transactions may be queried using these events.
-                    title: nondeterministic
                   codespace:
                     type: string
               delivery_proof:
@@ -54572,7 +54676,6 @@ definitions:
                 ResponseDeliverTx.
 
                 Later, transactions may be queried using these events.
-            title: nondeterministic
           codespace:
             type: string
       delivery_proof:
@@ -54676,7 +54779,6 @@ definitions:
             ResponseDeliverTx.
 
             Later, transactions may be queried using these events.
-        title: nondeterministic
       codespace:
         type: string
   tendermint.crypto.Proof:
@@ -54971,8 +55073,14 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+        title: >-
+          DenomCreationFee is the fee required to create a new denom using the
+          tokenfactory module
       fee_collector_address:
         type: string
+        title: >-
+          FeeCollectorAddress is the address where fees collected from denom
+          creation are sent to
     title: Params holds parameters for the tokenfactory module
   osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse:
     type: object
@@ -55022,8 +55130,14 @@ definitions:
                 method
 
                 signatures required by gogoproto.
+            title: >-
+              DenomCreationFee is the fee required to create a new denom using
+              the tokenfactory module
           fee_collector_address:
             type: string
+            title: >-
+              FeeCollectorAddress is the address where fees collected from denom
+              creation are sent to
         title: Params holds parameters for the tokenfactory module
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   router.v1.Params:

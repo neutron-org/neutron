@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/neutron-org/neutron/app/upgrades"
+	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
 	v044 "github.com/neutron-org/neutron/app/upgrades/v0.4.4"
 	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
 	"github.com/neutron-org/neutron/x/cron"
@@ -66,6 +67,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/cosmos/gaia/v8/x/globalfee"
 	ica "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts"
 	icacontroller "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/keeper"
@@ -78,6 +80,7 @@ import (
 	ibc "github.com/cosmos/ibc-go/v4/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v4/modules/core/02-client"
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibcporttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
@@ -107,6 +110,7 @@ import (
 	paramsrest "github.com/cosmos/cosmos-sdk/x/params/client/rest"
 	upgraderest "github.com/cosmos/cosmos-sdk/x/upgrade/client/rest"
 
+	gaiaappparams "github.com/cosmos/gaia/v8/app/params"
 	appparams "github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/docs"
 	"github.com/neutron-org/neutron/wasmbinding"
@@ -173,7 +177,7 @@ func GetEnabledProposals() []wasm.ProposalType {
 }
 
 var (
-	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade}
+	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade, nextupgrade.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -221,6 +225,7 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		router.AppModuleBasic{},
+		globalfee.AppModule{},
 	)
 
 	// module account permissions
@@ -683,6 +688,7 @@ func New(
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
+		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -716,6 +722,7 @@ func New(
 		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
 		crontypes.ModuleName,
+		globalfee.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -745,6 +752,7 @@ func New(
 		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
 		crontypes.ModuleName,
+		globalfee.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -779,6 +787,7 @@ func New(
 		ibchookstypes.ModuleName, // after auth keeper
 		routertypes.ModuleName,
 		crontypes.ModuleName,
+		globalfee.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -816,6 +825,11 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
+	bypassMinFeeMsgTypes := cast.ToStringSlice(appOpts.Get(gaiaappparams.BypassMinFeeMsgTypesKey))
+	if bypassMinFeeMsgTypes == nil {
+		bypassMinFeeMsgTypes = GetDefaultBypassFeeMessages()
+	}
+
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -825,10 +839,12 @@ func New(
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			IBCKeeper:         app.IBCKeeper,
-			WasmConfig:        &wasmConfig,
-			TXCounterStoreKey: keys[wasm.StoreKey],
-			ConsumerKeeper:    app.ConsumerKeeper,
+			IBCKeeper:            app.IBCKeeper,
+			WasmConfig:           &wasmConfig,
+			TXCounterStoreKey:    keys[wasm.StoreKey],
+			ConsumerKeeper:       app.ConsumerKeeper,
+			BypassMinFeeMsgTypes: bypassMinFeeMsgTypes,
+			GlobalFeeSubspace:    app.GetSubspace(globalfee.ModuleName),
 		},
 		app.Logger(),
 	)
@@ -873,6 +889,14 @@ func New(
 	return app
 }
 
+func GetDefaultBypassFeeMessages() []string {
+	return []string{
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgRecvPacket{}),
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgAcknowledgement{}),
+		sdk.MsgTypeURL(&ibcclienttypes.MsgUpdateClient{}),
+	}
+}
+
 func (app *App) setupUpgradeStoreLoaders() {
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
@@ -904,6 +928,7 @@ func (app *App) setupUpgradeHandlers() {
 					TokenFactoryKeeper: app.TokenFactoryKeeper,
 					SlashingKeeper:     app.SlashingKeeper,
 					ParamsKeeper:       app.ParamsKeeper,
+					GlobalFeeSubspace:  app.GetSubspace(globalfee.ModuleName),
 				},
 			),
 		)
@@ -1079,6 +1104,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(feetypes.ModuleName)
 	paramsKeeper.Subspace(feeburnertypes.ModuleName)
 	paramsKeeper.Subspace(crontypes.ModuleName)
+	paramsKeeper.Subspace(globalfee.ModuleName)
 
 	return paramsKeeper
 }
