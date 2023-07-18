@@ -10,7 +10,8 @@ import (
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
-// ConvertToBaseToken converts a fee amount in a whitelisted fee token to the base fee token amount
+// CreateDenom creates new denom with `factory/{creatorAddr}/{subdenom}` name.
+// Charges creatorAddr fee for creation
 func (k Keeper) CreateDenom(ctx sdk.Context, creatorAddr, subdenom string) (newTokenDenom string, err error) {
 	err = k.chargeFeeForDenomCreation(ctx, creatorAddr)
 	if err != nil {
