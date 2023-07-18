@@ -111,6 +111,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
+		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 
@@ -142,6 +143,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 	} else {
+		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 
