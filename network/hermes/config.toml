@@ -93,7 +93,7 @@ port = 3001
 id = 'test-1'
 rpc_addr = 'http://127.0.0.1:26657'
 grpc_addr = 'http://127.0.0.1:8090'
-websocket_addr = 'ws://127.0.0.1:26657/websocket'
+event_source = { mode = 'push', url = 'ws://127.0.0.1:26657/websocket', batch_delay = '200ms' }
 rpc_timeout = '10s'
 account_prefix = 'neutron'
 key_name = 'testkey_1'
@@ -107,15 +107,15 @@ max_tx_size = 2097152
 clock_drift = '5s'
 max_block_time = '10s'
 trusting_period = '14days'
-trust_threshold = { numerator = '1', denominator = '3' }
 ccv_consumer_chain = true
+trust_threshold = { numerator = '1', denominator = '3' }
 address_type = { derivation = 'cosmos' }
 
 [[chains]]
 id = 'test-2'
 rpc_addr = 'http://127.0.0.1:16657'
 grpc_addr = 'http://127.0.0.1:9090'
-websocket_addr = 'ws://127.0.0.1:16657/websocket'
+event_source = { mode = 'push', url = 'ws://127.0.0.1:16657/websocket', batch_delay = '200ms' }
 rpc_timeout = '10s'
 account_prefix = 'cosmos'
 key_name = 'testkey_2'
