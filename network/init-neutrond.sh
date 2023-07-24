@@ -604,6 +604,12 @@ function set_genesis_param() {
   sed -i -e "s/\"$param_name\":.*/\"$param_name\": $param_value/g" "$GENESIS_PATH"
 }
 
+function convert_bech32_base64_esc() {
+  $BINARY keys parse $1 --output json | jq .bytes | xxd -r -p | base64 | sed -e 's/\//\\\//g'
+}
+DAO_CONTRACT_ADDRESS_B64=$(convert_bech32_base64_esc "$DAO_CONTRACT_ADDRESS")
+echo $DAO_CONTRACT_ADDRESS_B64
+
 set_genesis_param admins                      "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
 set_genesis_param treasury_address            "\"$DAO_CONTRACT_ADDRESS\""                   # feeburner
 set_genesis_param fee_collector_address       "\"$DAO_CONTRACT_ADDRESS\""                   # tokenfactory
@@ -614,6 +620,9 @@ set_genesis_param signed_blocks_window        "\"$SLASHING_SIGNED_BLOCKS_WINDOW\
 set_genesis_param min_signed_per_window       "\"$SLASHING_MIN_SIGNED\","                   # slashing
 set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
 set_genesis_param slash_fraction_downtime     "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
+
+set_genesis_param proposer_fee                "\"0.25\""                                    # builder(POB)
+set_genesis_param escrow_account_address      "\"$DAO_CONTRACT_ADDRESS_B64\","              # builder(POB)
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2

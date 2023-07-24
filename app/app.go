@@ -8,6 +8,12 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/neutron-org/neutron/docs"
+	proposalhandler "github.com/skip-mev/pob/abci"
+	"github.com/skip-mev/pob/mempool"
+	"github.com/skip-mev/pob/x/builder"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	rewardsaddressprovider "github.com/skip-mev/pob/x/builder/rewards_address_provider"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	"io"
 	"io/fs"
 	"net/http"
@@ -223,11 +229,13 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		router.AppModuleBasic{},
+		builder.AppModuleBasic{},
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:                    nil,
+		buildertypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
 		wasm.ModuleName:                               {authtypes.Burner},
@@ -278,10 +286,12 @@ type App struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper       authkeeper.AccountKeeper
-	AdminmoduleKeeper   adminmodulemodulekeeper.Keeper
-	AuthzKeeper         authzkeeper.Keeper
-	BankKeeper          bankkeeper.BaseKeeper
+	AccountKeeper     authkeeper.AccountKeeper
+	AdminmoduleKeeper adminmodulemodulekeeper.Keeper
+	AuthzKeeper       authzkeeper.Keeper
+	BankKeeper        bankkeeper.BaseKeeper
+	// BuilderKeeper is the keeper that handles processing auction transactions
+	BuilderKeeper       builderkeeper.Keeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
@@ -325,11 +335,15 @@ type App struct {
 
 	// sm is the simulation manager
 	sm *module.SimulationManager
+
+	// Custom checkTx handler
+	checkTxHandler proposalhandler.CheckTx
 }
 
 // New returns a reference to an initialized blockchain app
 func New(
 	logger log.Logger,
+	chainID string,
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
@@ -346,10 +360,16 @@ func New(
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
+	config := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
+	// 0 - unlimited amount of txs
+	maxTx := 0
+	mempool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), maxTx, config)
+
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
+	bApp.SetMempool(mempool)
 
 	keys := sdk.NewKVStoreKeys(
 		authzkeeper.StoreKey, authtypes.StoreKey, banktypes.StoreKey, slashingtypes.StoreKey,
@@ -358,7 +378,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmodulemoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, buildertypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -565,6 +585,16 @@ func New(
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
 
+	app.BuilderKeeper = builderkeeper.NewKeeperWithRewardsAddressProvider(
+		appCodec,
+		keys[buildertypes.StoreKey],
+		app.AccountKeeper,
+		app.BankKeeper,
+		// 25% of rewards should be sent to the redistribute address
+		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
@@ -722,6 +752,7 @@ func New(
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
+		builder.NewAppModule(appCodec, app.BuilderKeeper),
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	)
 
@@ -730,6 +761,7 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
+		buildertypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -759,6 +791,7 @@ func New(
 	)
 
 	app.mm.SetOrderEndBlockers(
+		buildertypes.ModuleName,
 		crisistypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -793,6 +826,7 @@ func New(
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
 	app.mm.SetOrderInitGenesis(
+		buildertypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -872,6 +906,8 @@ func New(
 			WasmConfig:        &wasmConfig,
 			TXCounterStoreKey: keys[wasm.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
+			buildKeeper:       app.BuilderKeeper,
+			mempool:           mempool,
 		},
 		app.Logger(),
 	)
@@ -881,6 +917,25 @@ func New(
 
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
+
+	handler := proposalhandler.NewProposalHandler(
+		mempool,
+		bApp.Logger(),
+		anteHandler,
+		encodingConfig.TxConfig.TxEncoder(),
+		encodingConfig.TxConfig.TxDecoder(),
+	)
+	app.SetPrepareProposal(handler.PrepareProposalHandler())
+	app.SetProcessProposal(handler.ProcessProposalHandler())
+
+	checkTxHandler := proposalhandler.NewCheckTxHandler(
+		app.BaseApp,
+		encodingConfig.TxConfig.TxDecoder(),
+		mempool,
+		anteHandler,
+		chainID,
+	)
+	app.SetCheckTx(checkTxHandler.CheckTx())
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -951,6 +1006,19 @@ func (app *App) setupUpgradeHandlers() {
 			),
 		)
 	}
+}
+
+// CheckTx will check the transaction with the provided checkTxHandler. We override the default
+// handler so that we can verify bid transactions before they are inserted into the mempool.
+// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
+// before inserting the bid transaction into the mempool.
+func (app *App) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
+	return app.checkTxHandler(req)
+}
+
+// SetCheckTx sets the checkTxHandler for the app.
+func (app *App) SetCheckTx(handler proposalhandler.CheckTx) {
+	app.checkTxHandler = handler
 }
 
 // Name returns the name of the App

@@ -12,6 +12,9 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
+	"github.com/skip-mev/pob/mempool"
+	ante2 "github.com/skip-mev/pob/x/builder/ante"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -23,6 +26,9 @@ type HandlerOptions struct {
 	ConsumerKeeper    ibcconsumerkeeper.Keeper
 	WasmConfig        *wasmTypes.WasmConfig
 	TXCounterStoreKey storetypes.StoreKey
+	buildKeeper       builderkeeper.Keeper
+	txEncoder         sdk.TxEncoder
+	mempool           *mempool.AuctionMempool
 }
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
@@ -65,6 +71,11 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
+		ante2.NewBuilderDecorator(
+			options.buildKeeper,
+			options.txEncoder,
+			options.mempool,
+		),
 	}
 
 	// Don't delete it even if IDE tells you so.
