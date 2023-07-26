@@ -37,6 +37,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	tmcfg "github.com/cometbft/cometbft/config"
 	"github.com/neutron-org/neutron/app"
@@ -86,13 +87,29 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			customTemplate, customNeutronConfig := initAppConfig()
-			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig, tmcfg.DefaultConfig())
+			err = server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig, tmcfg.DefaultConfig())
+			if err != nil {
+				return err
+			}
+
+			setTimeoutCommit(cmd)
+
+			return nil
 		},
 	}
 
 	initRootCmd(rootCmd, encodingConfig)
 
 	return rootCmd, encodingConfig
+}
+
+// setTimeoutCommit sets default `Consensus.TimeoutCommit` to 1 second, if it was set to cosmos sdk default of 5 seconds
+func setTimeoutCommit(cmd *cobra.Command) {
+	serverCtxPtr := server.GetServerContextFromCmd(cmd)
+
+	if serverCtxPtr.Config.Consensus.TimeoutCommit == 5*time.Second {
+		serverCtxPtr.Config.Consensus.TimeoutCommit = 1 * time.Second
+	}
 }
 
 func initAppConfig() (string, interface{}) {
