@@ -291,7 +291,7 @@ const (
 	BtoA
 )
 
-func (suite *HooksTestSuite) GetEndpoints(direction Direction) (sender *ibctesting.Endpoint, receiver *ibctesting.Endpoint) {
+func (suite *HooksTestSuite) GetEndpoints(direction Direction) (sender, receiver *ibctesting.Endpoint) {
 	switch direction {
 	case AtoB:
 		sender = suite.TransferPath.EndpointA

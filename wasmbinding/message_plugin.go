@@ -588,7 +588,7 @@ func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 }
 
 // GetFullDenom is a function, not method, so the message_plugin can use it
-func GetFullDenom(contract string, subDenom string) (string, error) {
+func GetFullDenom(contract, subDenom string) (string, error) {
 	// Address validation
 	if _, err := parseAddress(contract); err != nil {
 		return "", err

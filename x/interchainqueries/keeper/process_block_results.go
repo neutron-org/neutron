@@ -31,7 +31,7 @@ func deterministicResponseDeliverTx(response *abci.ResponseDeliverTx) *abci.Resp
 }
 
 // checkHeadersOrder do some basic checks to verify that nextHeader is really next for the header
-func checkHeadersOrder(header *tendermintLightClientTypes.Header, nextHeader *tendermintLightClientTypes.Header) error {
+func checkHeadersOrder(header, nextHeader *tendermintLightClientTypes.Header) error {
 	if nextHeader.Header.Height != header.Header.Height+1 {
 		return sdkerrors.Wrapf(types.ErrInvalidHeader, "nextHeader.Height (%d) is not actually next for a header with height %d", nextHeader.Header.Height, header.Header.Height)
 	}

@@ -1729,7 +1729,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 	suite.ErrorContains(err, "only owner can remove a query within its service period")
 }
 
-func (suite *KeeperTestSuite) TopUpWallet(ctx sdk.Context, sender sdk.AccAddress, contractAddress sdk.AccAddress) {
+func (suite *KeeperTestSuite) TopUpWallet(ctx sdk.Context, sender, contractAddress sdk.AccAddress) {
 	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)

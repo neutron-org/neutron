@@ -9,6 +9,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	packetforwardmiddlewaretypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
+	globalfeetypes "github.com/cosmos/gaia/v8/x/globalfee/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
@@ -68,6 +69,8 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	// tokenfactory
 	//{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyDenomCreationFee)}:    {},
 	//{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyFeeCollectorAddress)}: {},
+	// globalfee
+	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMinGasPrices)}: {},
 	// cron
 	//{Subspace: crontypes.ModuleName, Key: string(crontypes.KeySecurityAddress)}: {},
 	//{Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},

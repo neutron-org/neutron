@@ -17,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
@@ -37,6 +38,7 @@ import (
 	"os"
 	"path/filepath"
 
+	gaiaparams "github.com/cosmos/gaia/v8/app/params"
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/app/params"
 )
@@ -57,9 +59,13 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithHomeDir(app.DefaultNodeHome).
 		WithViper("")
 
+	// Allows you to add extra params to your client.toml
+	// gas, gas-price, gas-adjustment, fees, note, etc.
+	setCustomEnvVariablesFromClientToml(initClientCtx)
+
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: "Neutrond (daemon)",
+		Short: "Neutron",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -79,13 +85,23 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			return server.InterceptConfigsPreRunHandler(cmd, "", nil, tmcfg.DefaultConfig())
+			customTemplate, customNeutronConfig := initAppConfig()
+			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig)
 		},
 	}
 
 	initRootCmd(rootCmd, encodingConfig)
 
 	return rootCmd, encodingConfig
+}
+
+func initAppConfig() (string, interface{}) {
+	srvCfg := serverconfig.DefaultConfig()
+
+	return gaiaparams.CustomConfigTemplate(), gaiaparams.CustomAppConfig{
+		Config:               *srvCfg,
+		BypassMinFeeMsgTypes: app.GetDefaultBypassFeeMessages(),
+	}
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
@@ -102,7 +118,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		addGenesisWasmMsgCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debugCmd,
-		config.Cmd(),
+		ConfigCmd(),
 	)
 
 	ac := appCreator{
@@ -299,4 +315,45 @@ func (ac appCreator) appExport(
 	}
 
 	return interchainapp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+}
+
+// Reads the custom extra values in the config.toml file if set.
+// If they are, then use them.
+func setCustomEnvVariablesFromClientToml(ctx client.Context) {
+	configFilePath := filepath.Join(ctx.HomeDir, "config", "client.toml")
+
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		return
+	}
+
+	viper := ctx.Viper
+	viper.SetConfigFile(configFilePath)
+
+	if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("unable to read config file: %w", err))
+	}
+
+	setEnvFromConfig := func(key, envVar string) {
+		// if the user sets the env key manually, then we don't want to override it
+		if os.Getenv(envVar) != "" {
+			return
+		}
+
+		// reads from the config file
+		val := viper.GetString(key)
+		if val != "" {
+			// Sets the env for this instance of the app only.
+			os.Setenv(envVar, val)
+		}
+	}
+
+	// gas
+	setEnvFromConfig("gas", "NEUTROND_GAS")
+	setEnvFromConfig("gas-prices", "NEUTROND_GAS_PRICES")
+	setEnvFromConfig("gas-adjustment", "NEUTROND_GAS_ADJUSTMENT")
+	// fees
+	setEnvFromConfig("fees", "NEUTROND_FEES")
+	setEnvFromConfig("fee-account", "NEUTROND_FEE_ACCOUNT")
+	// memo
+	setEnvFromConfig("note", "NEUTROND_NOTE")
 }

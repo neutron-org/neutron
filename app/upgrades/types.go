@@ -14,6 +14,8 @@ import (
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Upgrade defines a struct containing necessary fields that a SoftwareUpgradeProposal
@@ -41,6 +43,8 @@ type UpgradeKeepers struct {
 	ParamsKeeper       paramskeeper.Keeper
 	CapabilityKeeper   *capabilitykeeper.Keeper
 	BuilderKeeper      builderkeeper.Keeper
+	// subspaces
+	GlobalFeeSubspace paramtypes.Subspace
 }
 
 type StoreKeys interface {

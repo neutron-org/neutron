@@ -13,6 +13,7 @@ BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
 DOCKER := $(shell which docker)
+BUILDDIR ?= $(CURDIR)/build
 HTTPS_GIT := https://github.com/neutron-org/neutron.git
 
 GO_SYSTEM_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1-2)
@@ -90,12 +91,19 @@ endif
 
 all: install lint test
 
-build: check_version go.sum
+BUILD_TARGETS := build install
+
+build: BUILD_ARGS=-o $(BUILDDIR)/
+
+$(BUILD_TARGETS): check_version go.sum $(BUILDDIR)/
 ifeq ($(OS),Windows_NT)
 	exit 1
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/neutrond ./cmd/neutrond
+	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) ./cmd/neutrond
 endif
+
+$(BUILDDIR)/:
+	mkdir -p $(BUILDDIR)/
 
 build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) buildx create --name neutronbuilder || true
@@ -114,9 +122,6 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) create -ti --name neutronbinary neutron-amd64
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
-
-install: check_version go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/neutrond
 
 install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
@@ -138,7 +143,7 @@ draw-deps:
 	@goviz -i ./cmd/neutrond -d 2 | dot -Tpng -o dependency-graph.png
 
 clean:
-	rm -rf snapcraft-local.yaml build/
+	rm -rf snapcraft-local.yaml $(BUILDDIR)/
 
 distclean: clean
 	rm -rf vendor/
@@ -180,7 +185,7 @@ lint:
 
 format:
 	@go install mvdan.cc/gofumpt@latest
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.1
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name "*.pb.go" -not -name "*.pb.gw.go" -not -name "*.pulsar.go" -not -path "./crypto/keys/secp256k1/*" | xargs gofumpt -w -l
 	golangci-lint run --fix
 .PHONY: format
@@ -223,7 +228,7 @@ init: kill-dev install-test-binary
 
 start: kill-dev install-test-binary
 	@echo "Starting up neutrond alone..."
-	BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn \
+	export BINARY=neutrond CHAINID=test-1 P2PPORT=26656 RPCPORT=26657 RESTPORT=1317 ROSETTA=8080 GRPCPORT=8090 GRPCWEB=8091 STAKEDENOM=untrn && \
 	./network/init.sh && ./network/init-neutrond.sh && ./network/start.sh
 
 start-rly:

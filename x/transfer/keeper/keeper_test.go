@@ -134,7 +134,7 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	suite.NoError(err)
 }
 
-func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender sdktypes.AccAddress, contractAddress sdktypes.AccAddress) {
+func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contractAddress sdktypes.AccAddress) {
 	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
