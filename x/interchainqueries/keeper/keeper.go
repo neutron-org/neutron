@@ -10,7 +10,6 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
@@ -27,7 +26,6 @@ type (
 		cdc                   codec.BinaryCodec
 		storeKey              storetypes.StoreKey
 		memKey                storetypes.StoreKey
-		paramstore            paramtypes.Subspace
 		ibcKeeper             *ibckeeper.Keeper
 		bank                  types.BankKeeper
 		contractManagerKeeper types.ContractManagerKeeper
@@ -40,23 +38,16 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
 	bank types.BankKeeper,
 	contractManagerKeeper types.ContractManagerKeeper,
 	headerVerifier types.HeaderVerifier,
 	transactionVerifier types.TransactionVerifier,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return &Keeper{
 		cdc:                   cdc,
 		storeKey:              storeKey,
 		memKey:                memKey,
-		paramstore:            ps,
 		ibcKeeper:             ibcKeeper,
 		bank:                  bank,
 		contractManagerKeeper: contractManagerKeeper,

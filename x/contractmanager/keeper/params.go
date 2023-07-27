@@ -12,6 +12,13 @@ func (k Keeper) GetParams(_ sdk.Context) types.Params {
 }
 
 // SetParams set the params
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	k.paramstore.SetParamSet(ctx, &params)
+func (k Keeper) SetParams(ctx sdk.Context, params types.Params) error {
+	store := ctx.KVStore(k.storeKey)
+	bz, err := k.cdc.Marshal(&params)
+	if err != nil {
+		return err
+	}
+
+	store.Set(types.ParamsKey, bz)
+	return nil
 }

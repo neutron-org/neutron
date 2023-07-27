@@ -7,8 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
@@ -25,7 +23,6 @@ type (
 		Codec                 codec.BinaryCodec
 		storeKey              storetypes.StoreKey
 		memKey                storetypes.StoreKey
-		paramstore            paramtypes.Subspace
 		channelKeeper         types.ChannelKeeper
 		feeKeeper             types.FeeRefunderKeeper
 		icaControllerKeeper   types.ICAControllerKeeper
@@ -37,22 +34,15 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	paramstore paramtypes.Subspace,
 	channelKeeper types.ChannelKeeper,
 	icaControllerKeeper types.ICAControllerKeeper,
 	contractManagerKeeper types.ContractManagerKeeper,
 	feeKeeper types.FeeRefunderKeeper,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !paramstore.HasKeyTable() {
-		paramstore = paramstore.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return &Keeper{
 		Codec:                 cdc,
 		storeKey:              storeKey,
 		memKey:                memKey,
-		paramstore:            paramstore,
 		channelKeeper:         channelKeeper,
 		icaControllerKeeper:   icaControllerKeeper,
 		contractManagerKeeper: contractManagerKeeper,

@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/neutron-org/neutron/x/feeburner/keeper"
 	"github.com/neutron-org/neutron/x/feeburner/types"
 	"github.com/stretchr/testify/require"
@@ -34,17 +33,10 @@ func FeeburnerKeeperWithDeps(t testing.TB, accountKeeper types.AccountKeeper, ba
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
 
-	paramsSubspace := typesparams.NewSubspace(cdc,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"FeeburnerParams",
-	)
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
 		memStoreKey,
-		paramsSubspace,
 		accountKeeper,
 		bankkeeper,
 	)

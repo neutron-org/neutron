@@ -229,7 +229,6 @@ func (k msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			}
 
 			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, url.PathEscape(string(result.Key)))
-
 			// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
 			// and call corresponding method to verify it
 			switch proof.GetProofs()[0].GetProof().(type) {

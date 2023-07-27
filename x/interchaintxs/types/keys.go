@@ -16,3 +16,11 @@ const (
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_interchaintxs"
 )
+
+const (
+	prefixParamsKey = iota + 1
+)
+
+var (
+	ParamsKey = []byte{prefixParamsKey}
+)

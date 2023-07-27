@@ -495,18 +495,16 @@ func New(
 		appCodec,
 		keys[contractmanagermoduletypes.StoreKey],
 		keys[contractmanagermoduletypes.MemStoreKey],
-		app.GetSubspace(contractmanagermoduletypes.ModuleName),
 		&app.WasmKeeper,
 	)
 
-	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.GetSubspace(feetypes.ModuleName), app.IBCKeeper.ChannelKeeper, app.BankKeeper)
+	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper)
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
 		appCodec,
 		keys[feeburnertypes.StoreKey],
 		keys[feeburnertypes.MemStoreKey],
-		app.GetSubspace(feeburnertypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 	)
@@ -579,7 +577,6 @@ func New(
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
-		app.GetSubspace(tokenfactorytypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
 	)
@@ -626,7 +623,6 @@ func New(
 		appCodec,
 		keys[interchainqueriesmoduletypes.StoreKey],
 		keys[interchainqueriesmoduletypes.MemStoreKey],
-		app.GetSubspace(interchainqueriesmoduletypes.ModuleName),
 		app.IBCKeeper,
 		app.BankKeeper,
 		app.ContractManagerKeeper,
@@ -637,14 +633,13 @@ func New(
 		appCodec,
 		keys[interchaintxstypes.StoreKey],
 		memKeys[interchaintxstypes.MemStoreKey],
-		app.GetSubspace(interchaintxstypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
 		app.ICAControllerKeeper,
 		app.ContractManagerKeeper,
 		app.FeeKeeper,
 	)
 
-	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.GetSubspace(crontypes.ModuleName), app.AccountKeeper)
+	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper)
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper), wasmOpts...)
 
 	app.WasmKeeper = wasm.NewKeeper(
@@ -1002,7 +997,10 @@ func (app *App) setupUpgradeHandlers() {
 					TokenFactoryKeeper: app.TokenFactoryKeeper,
 					SlashingKeeper:     app.SlashingKeeper,
 					ParamsKeeper:       app.ParamsKeeper,
+					CapabilityKeeper:   app.CapabilityKeeper,
 				},
+				app,
+				app.AppCodec(),
 			),
 		)
 	}

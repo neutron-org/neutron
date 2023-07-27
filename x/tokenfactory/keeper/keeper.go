@@ -32,19 +32,12 @@ type (
 func NewKeeper(
 	cdc codec.Codec,
 	storeKey storetypes.StoreKey,
-	paramSpace paramtypes.Subspace,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 ) Keeper {
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		paramSpace: paramSpace,
-
+		cdc:           cdc,
+		storeKey:      storeKey,
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
 	}

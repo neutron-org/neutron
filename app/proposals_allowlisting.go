@@ -9,13 +9,6 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	packetforwardmiddlewaretypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
-
-	crontypes "github.com/neutron-org/neutron/x/cron/types"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
@@ -62,22 +55,22 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	//{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyUploadAccess)}:      {},
 	//{Subspace: wasmtypes.ModuleName, Key: string(wasmtypes.ParamStoreKeyInstantiateAccess)}: {},
 	// feerefunder
-	{Subspace: feerefundertypes.ModuleName, Key: string(feerefundertypes.KeyFees)}: {},
+	//{Subspace: feerefundertypes.ModuleName, Key: string(feerefundertypes.KeyFees)}: {},
 	// interchaintxs
-	{Subspace: interchaintxstypes.ModuleName, Key: string(interchaintxstypes.KeyMsgSubmitTxMaxMessages)}: {},
+	//{Subspace: interchaintxstypes.ModuleName, Key: string(interchaintxstypes.KeyMsgSubmitTxMaxMessages)}: {},
 	// interchainqueries
-	{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyQuerySubmitTimeout)}:  {},
-	{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyQueryDeposit)}:        {},
-	{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyTxQueryRemovalLimit)}: {},
+	//{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyQuerySubmitTimeout)}:  {},
+	//{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyQueryDeposit)}:        {},
+	//{Subspace: interchainqueriestypes.ModuleName, Key: string(interchainqueriestypes.KeyTxQueryRemovalLimit)}: {},
 	// feeburner
-	{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyTreasuryAddress)}: {},
-	{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyNeutronDenom)}:    {},
+	//{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyTreasuryAddress)}: {},
+	//{Subspace: feeburnertypes.ModuleName, Key: string(feeburnertypes.KeyNeutronDenom)}:    {},
 	// tokenfactory
-	{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyDenomCreationFee)}:    {},
-	{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyFeeCollectorAddress)}: {},
+	//{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyDenomCreationFee)}:    {},
+	//{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyFeeCollectorAddress)}: {},
 	// cron
-	{Subspace: crontypes.ModuleName, Key: string(crontypes.KeySecurityAddress)}: {},
-	{Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},
+	//{Subspace: crontypes.ModuleName, Key: string(crontypes.KeySecurityAddress)}: {},
+	//{Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},
 	// packet-forward-middleware
 	{Subspace: packetforwardmiddlewaretypes.ModuleName, Key: string(packetforwardmiddlewaretypes.KeyFeePercentage)}: {},
 }

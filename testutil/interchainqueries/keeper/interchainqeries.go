@@ -13,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -39,17 +38,10 @@ func InterchainQueriesKeeper(
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
 
-	paramsSubspace := typesparams.NewSubspace(cdc,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"InterchainQueriesParams",
-	)
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
 		memStoreKey,
-		paramsSubspace,
 		ibcKeeper, // TODO: do a real ibc keeper
 		nil,       // TODO: do a real wasm keeper
 		contractManager,

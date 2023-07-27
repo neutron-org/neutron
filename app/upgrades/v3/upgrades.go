@@ -1,6 +1,7 @@
 package v3
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -15,6 +16,8 @@ func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
 	keepers *upgrades.UpgradeKeepers,
+	_ upgrades.StoreKeys,
+	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")

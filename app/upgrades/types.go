@@ -1,16 +1,19 @@
 package upgrades
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
+	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 )
 
 // Upgrade defines a struct containing necessary fields that a SoftwareUpgradeProposal
@@ -22,7 +25,7 @@ type Upgrade struct {
 	UpgradeName string
 
 	// CreateUpgradeHandler defines the function that creates an upgrade handler
-	CreateUpgradeHandler func(*module.Manager, module.Configurator, *UpgradeKeepers) upgradetypes.UpgradeHandler
+	CreateUpgradeHandler func(*module.Manager, module.Configurator, *UpgradeKeepers, StoreKeys, codec.Codec) upgradetypes.UpgradeHandler
 
 	// Store upgrades, should be used for any new modules introduced, new modules deleted, or store names renamed.
 	StoreUpgrades store.StoreUpgrades
@@ -36,4 +39,10 @@ type UpgradeKeepers struct {
 	FeeBurnerKeeper    *feeburnerkeeper.Keeper
 	SlashingKeeper     slashingkeeper.Keeper
 	ParamsKeeper       paramskeeper.Keeper
+	CapabilityKeeper   *capabilitykeeper.Keeper
+	BuilderKeeper      builderkeeper.Keeper
+}
+
+type StoreKeys interface {
+	GetKey(string) *storetypes.KVStoreKey
 }

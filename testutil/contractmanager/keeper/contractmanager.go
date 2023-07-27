@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/x/contractmanager/keeper"
@@ -31,17 +30,10 @@ func ContractManagerKeeper(t testing.TB, wasmKeeper types.WasmKeeper) (*keeper.K
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
 
-	paramsSubspace := typesparams.NewSubspace(cdc,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"ContractManagerParams",
-	)
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
 		memStoreKey,
-		paramsSubspace,
 		wasmKeeper,
 	)
 

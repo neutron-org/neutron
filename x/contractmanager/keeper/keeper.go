@@ -7,8 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
@@ -17,7 +15,6 @@ type (
 		cdc        codec.BinaryCodec
 		storeKey   storetypes.StoreKey
 		memKey     storetypes.StoreKey
-		paramstore paramtypes.Subspace
 		wasmKeeper types.WasmKeeper
 	}
 )
@@ -26,19 +23,13 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
 	wasmKeeper types.WasmKeeper,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
 
 	return &Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
-		paramstore: ps,
 		wasmKeeper: wasmKeeper,
 	}
 }
