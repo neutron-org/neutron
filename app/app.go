@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/neutron-org/neutron/docs"
 	proposalhandler "github.com/skip-mev/pob/abci"
@@ -82,7 +83,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/gaia/v8/x/globalfee"
+	"github.com/cosmos/gaia/v11/x/globalfee"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	icacontroller "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
@@ -94,7 +95,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
-	ibcchanneltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcporttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
@@ -117,7 +118,6 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	gaiaappparams "github.com/cosmos/gaia/v8/app/params"
 	appparams "github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/wasmbinding"
 	"github.com/neutron-org/neutron/x/contractmanager"
@@ -899,11 +899,6 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
-	bypassMinFeeMsgTypes := cast.ToStringSlice(appOpts.Get(gaiaappparams.BypassMinFeeMsgTypesKey))
-	if bypassMinFeeMsgTypes == nil {
-		bypassMinFeeMsgTypes = GetDefaultBypassFeeMessages()
-	}
-
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -919,8 +914,7 @@ func New(
 			ConsumerKeeper:    app.ConsumerKeeper,
 			buildKeeper:       app.BuilderKeeper,
 			mempool:           mempool,
-			BypassMinFeeMsgTypes: bypassMinFeeMsgTypes,
-			GlobalFeeSubspace:    app.GetSubspace(globalfee.ModuleName),
+			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
 		},
 		app.Logger(),
 	)

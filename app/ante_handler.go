@@ -16,8 +16,6 @@ import (
 	"github.com/skip-mev/pob/mempool"
 	ante2 "github.com/skip-mev/pob/x/builder/ante"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
-
-	globalfeeante "github.com/cosmos/gaia/v8/x/globalfee/ante"
 )
 
 // maxBypassMinFeeMsgGasUsage is the maximum gas usage per message
@@ -38,6 +36,9 @@ type HandlerOptions struct {
 	buildKeeper       builderkeeper.Keeper
 	txEncoder         sdk.TxEncoder
 	mempool           *mempool.AuctionMempool
+
+	// globalFee
+	GlobalFeeSubspace paramtypes.Subspace
 }
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
@@ -78,7 +79,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// We are providing options.GlobalFeeSubspace because we do not have staking module
 		// In this case you should be sure that you implemented upgrade to set default global fee param and it SHOULD contain at least one record
 		// otherwise you will get panic
-		globalfeeante.NewFeeDecorator(options.BypassMinFeeMsgTypes, options.GlobalFeeSubspace, options.GlobalFeeSubspace, maxBypassMinFeeMsgGasUsage),
+		//globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators

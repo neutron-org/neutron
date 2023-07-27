@@ -3,7 +3,7 @@ package nextupgrade
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
 
-	"github.com/cosmos/gaia/v8/x/globalfee"
+	"github.com/cosmos/gaia/v11/x/globalfee"
 	"github.com/neutron-org/neutron/app/upgrades"
 )
 

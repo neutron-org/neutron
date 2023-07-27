@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/gaia/v8/x/globalfee"
-	globalfeetypes "github.com/cosmos/gaia/v8/x/globalfee/types"
+	"github.com/cosmos/gaia/v11/x/globalfee"
+	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/stretchr/testify/suite"

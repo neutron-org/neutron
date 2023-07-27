@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	dbm "github.com/cometbft/cometbft-db"
-	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cometbft/cometbft/libs/log"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -38,7 +38,7 @@ import (
 	"os"
 	"path/filepath"
 
-	gaiaparams "github.com/cosmos/gaia/v8/app/params"
+	tmcfg "github.com/cometbft/cometbft/config"
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/app/params"
 )
@@ -86,7 +86,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			customTemplate, customNeutronConfig := initAppConfig()
-			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig)
+			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig, tmcfg.DefaultConfig())
 		},
 	}
 
@@ -98,10 +98,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 func initAppConfig() (string, interface{}) {
 	srvCfg := serverconfig.DefaultConfig()
 
-	return gaiaparams.CustomConfigTemplate(), gaiaparams.CustomAppConfig{
-		Config:               *srvCfg,
-		BypassMinFeeMsgTypes: app.GetDefaultBypassFeeMessages(),
-	}
+	return serverconfig.DefaultConfigTemplate, srvCfg
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
