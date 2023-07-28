@@ -11,7 +11,7 @@ import (
 )
 
 func TestParamsQuery(t *testing.T) {
-	keeper, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil)
+	keeper, ctx, _ := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil)
 	wctx := sdk.WrapSDKContext(ctx)
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)

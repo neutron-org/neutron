@@ -7,7 +7,7 @@ import (
 	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	e2e "github.com/cosmos/interchain-security/tests/integration"
+	"github.com/cosmos/interchain-security/tests/e2e"
 
 	appConsumer "github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
