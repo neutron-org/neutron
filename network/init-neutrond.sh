@@ -621,7 +621,7 @@ function set_genesis_param() {
 function set_genesis_param_jq() {
   param_path=$1
   param_value=$2
-  cat "$GENESIS_PATH" | jq "${param_path} = ${param_value}" > tmp_genesis_file.json && mv tmp_genesis_file.json "$GENESIS_PATH"
+  jq "${param_path} = ${param_value}" > tmp_genesis_file.json < "$GENESIS_PATH" && mv tmp_genesis_file.json "$GENESIS_PATH"
 }
 
 function convert_bech32_base64_esc() {
