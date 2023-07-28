@@ -70,7 +70,9 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	//{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyDenomCreationFee)}:    {},
 	//{Subspace: tokenfactorytypes.ModuleName, Key: string(tokenfactorytypes.KeyFeeCollectorAddress)}: {},
 	// globalfee
-	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMinGasPrices)}: {},
+	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMinGasPrices)}:                    {},
+	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyBypassMinFeeMsgTypes)}:            {},
+	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage)}: {},
 	// cron
 	//{Subspace: crontypes.ModuleName, Key: string(crontypes.KeySecurityAddress)}: {},
 	//{Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},

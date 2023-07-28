@@ -13,6 +13,14 @@ THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 MIN_GAS_PRICES_DEFAULT='[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]'
 MIN_GAS_PRICES=${MIN_GAS_PRICES:-"$MIN_GAS_PRICES_DEFAULT"}
 
+#BYPASS_MIN_FEE_MSG_TYPES_DEFAULT='[\"/ibc.core.channel.v1.Msg/RecvPacket\", \"/ibc.core.channel.v1.Msg/Acknowledgement\", \"/ibc.core.client.v1.Msg/UpdateClient\"]'
+#BYPASS_MIN_FEE_MSG_TYPES=${BYPASS_MIN_FEE_MSG_TYPES:-"$BYPASS_MIN_FEE_MSG_TYPES_DEFAULT"}
+
+BYPASS_MIN_FEE_MSG_TYPES_DEFAULT='["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"]'
+BYPASS_MIN_FEE_MSG_TYPES=${BYPASS_MIN_FEE_MSG_TYPES:-"$BYPASS_MIN_FEE_MSG_TYPES_DEFAULT"}
+
+MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE_DEFAULT=1000000
+MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE=${MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE:-"$MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE_DEFAULT"}
 
 CHAIN_DIR="$BASE_DIR/$CHAINID"
 GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
@@ -610,23 +618,32 @@ function set_genesis_param() {
   sed -i -e "s;\"$param_name\":.*;\"$param_name\": $param_value;g" "$GENESIS_PATH"
 }
 
+function set_genesis_param_jq() {
+  param_path=$1
+  param_value=$2
+  cat "$GENESIS_PATH" | jq "${param_path} = ${param_value}" > tmp_genesis_file.json && mv tmp_genesis_file.json "$GENESIS_PATH"
+}
+
 function convert_bech32_base64_esc() {
   $BINARY keys parse $1 --output json | jq .bytes | xxd -r -p | base64 | sed -e 's/\//\\\//g'
 }
 DAO_CONTRACT_ADDRESS_B64=$(convert_bech32_base64_esc "$DAO_CONTRACT_ADDRESS")
 echo $DAO_CONTRACT_ADDRESS_B64
 
-set_genesis_param admins                      "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
-set_genesis_param treasury_address            "\"$DAO_CONTRACT_ADDRESS\""                   # feeburner
-set_genesis_param fee_collector_address       "\"$DAO_CONTRACT_ADDRESS\""                   # tokenfactory
-set_genesis_param security_address            "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"," # cron
-set_genesis_param limit                       5                                             # cron
-#set_genesis_param allow_messages              "[\"*\"]"                                     # interchainaccounts
-set_genesis_param signed_blocks_window        "\"$SLASHING_SIGNED_BLOCKS_WINDOW\","         # slashing
-set_genesis_param min_signed_per_window       "\"$SLASHING_MIN_SIGNED\","                   # slashing
-set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
-set_genesis_param slash_fraction_downtime     "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
-set_genesis_param minimum_gas_prices          "$MIN_GAS_PRICES"                             # globalfee
+set_genesis_param admins                                 "[\"$DAO_CONTRACT_ADDRESS\"]"                 # admin module
+set_genesis_param treasury_address                       "\"$DAO_CONTRACT_ADDRESS\""                   # feeburner
+set_genesis_param fee_collector_address                  "\"$DAO_CONTRACT_ADDRESS\""                   # tokenfactory
+set_genesis_param security_address                       "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"," # cron
+set_genesis_param limit                                  5                                             # cron
+#set_genesis_param allow_messages                        "[\"*\"]"                                     # interchainaccounts
+set_genesis_param signed_blocks_window                   "\"$SLASHING_SIGNED_BLOCKS_WINDOW\","         # slashing
+set_genesis_param min_signed_per_window                  "\"$SLASHING_MIN_SIGNED\","                   # slashing
+set_genesis_param slash_fraction_double_sign             "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
+set_genesis_param slash_fraction_downtime                "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
+set_genesis_param minimum_gas_prices                     "$MIN_GAS_PRICES,"                            # globalfee
+set_genesis_param max_total_bypass_min_fee_msg_gas_usage "\"$MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE\"" # globalfee
+
+set_genesis_param_jq ".app_state.globalfee.params.bypass_min_fee_msg_types" "$BYPASS_MIN_FEE_MSG_TYPES" # globalfee
 
 set_genesis_param proposer_fee                "\"0.25\""                                    # builder(POB)
 set_genesis_param escrow_account_address      "\"$DAO_CONTRACT_ADDRESS_B64\","              # builder(POB)

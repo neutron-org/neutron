@@ -9,6 +9,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
@@ -77,9 +78,10 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		// We are providing options.GlobalFeeSubspace because we do not have staking module
-		// In this case you should be sure that you implemented upgrade to set default global fee param and it SHOULD contain at least one record
+		// In this case you should be sure that you
+		// implemented upgrade to set default global fee param with at least one record
 		// otherwise you will get panic
-		//globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
+		globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
