@@ -13,9 +13,6 @@ THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 MIN_GAS_PRICES_DEFAULT='[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]'
 MIN_GAS_PRICES=${MIN_GAS_PRICES:-"$MIN_GAS_PRICES_DEFAULT"}
 
-#BYPASS_MIN_FEE_MSG_TYPES_DEFAULT='[\"/ibc.core.channel.v1.Msg/RecvPacket\", \"/ibc.core.channel.v1.Msg/Acknowledgement\", \"/ibc.core.client.v1.Msg/UpdateClient\"]'
-#BYPASS_MIN_FEE_MSG_TYPES=${BYPASS_MIN_FEE_MSG_TYPES:-"$BYPASS_MIN_FEE_MSG_TYPES_DEFAULT"}
-
 BYPASS_MIN_FEE_MSG_TYPES_DEFAULT='["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"]'
 BYPASS_MIN_FEE_MSG_TYPES=${BYPASS_MIN_FEE_MSG_TYPES:-"$BYPASS_MIN_FEE_MSG_TYPES_DEFAULT"}
 
