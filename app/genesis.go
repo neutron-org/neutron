@@ -43,7 +43,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	}
 	globalFeeGenesisStateBytes, err := json.Marshal(globalFeeGenesisState)
 	if err != nil {
-		panic("cannot marshal global fee genesis state")
+		panic("cannot marshal globalfee genesis state for tests")
 	}
 	genesisState["globalfee"] = globalFeeGenesisStateBytes
 
