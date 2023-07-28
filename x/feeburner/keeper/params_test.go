@@ -17,7 +17,8 @@ func TestGetParams(t *testing.T) {
 	k, ctx := testkeeper.FeeburnerKeeper(t)
 	params := types.DefaultParams()
 
-	k.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
+	require.NoError(t, err)
 
 	require.EqualValues(t, params, k.GetParams(ctx))
 }

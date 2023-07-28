@@ -30,13 +30,14 @@ const (
 func TestKeeperCheckFees(t *testing.T) {
 	k, ctx := testutil_keeper.FeeKeeper(t, nil, nil)
 
-	k.SetParams(ctx, types.Params{
+	err := k.SetParams(ctx, types.Params{
 		MinFee: types.Fee{
 			RecvFee:    nil,
 			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
 			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
 		},
 	})
+	require.NoError(t, err)
 
 	for _, tc := range []struct {
 		desc    string
@@ -138,13 +139,14 @@ func TestKeeperLockFees(t *testing.T) {
 
 	payer := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 
-	k.SetParams(ctx, types.Params{
+	err := k.SetParams(ctx, types.Params{
 		MinFee: types.Fee{
 			RecvFee:    nil,
 			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
 			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
 		},
 	})
+	require.NoError(t, err)
 
 	packet := types.PacketID{
 		ChannelId: "channel-0",
@@ -153,7 +155,7 @@ func TestKeeperLockFees(t *testing.T) {
 	}
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, false)
-	err := k.LockFees(ctx, payer, packet, types.Fee{})
+	err = k.LockFees(ctx, payer, packet, types.Fee{})
 	require.True(t, channeltypes.ErrChannelNotFound.Is(err))
 
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)

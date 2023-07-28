@@ -10,7 +10,10 @@ import (
 // InitGenesis initializes the capability module's state from a provided genesis
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
-	k.SetParams(ctx, genState.Params)
+	err := k.SetParams(ctx, genState.Params)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis returns the capability module's exported genesis.

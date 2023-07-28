@@ -1539,12 +1539,13 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		limit := 50
 		params := iqkeeper.GetParams(ctx)
 		params.TxQueryRemovalLimit = uint64(limit)
-		iqkeeper.SetParams(ctx, params)
+		err := iqkeeper.SetParams(ctx, params)
+		suite.Require().NoError(err)
 
 		// create a query and add results for it
 		var queryID uint64 = 1
 		query := iqtypes.RegisteredQuery{Id: queryID, QueryType: string(iqtypes.InterchainQueryTypeTX)}
-		err := iqkeeper.SaveQuery(ctx, &query)
+		err = iqkeeper.SaveQuery(ctx, &query)
 		suite.Require().NoError(err)
 		_, err = iqkeeper.GetQueryByID(ctx, queryID)
 		suite.Require().NoError(err)
@@ -1586,7 +1587,8 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		limit := 50
 		params := iqkeeper.GetParams(ctx)
 		params.TxQueryRemovalLimit = uint64(limit)
-		iqkeeper.SetParams(ctx, params)
+		err := iqkeeper.SetParams(ctx, params)
+		suite.Require().NoError(err)
 
 		limitOverflow := 10
 		txHashes := suite.buildTxHashes(limit + limitOverflow)
@@ -1595,7 +1597,7 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		// create a query and add results for it
 		var queryID1 uint64 = 1
 		query1 := iqtypes.RegisteredQuery{Id: queryID1, QueryType: string(iqtypes.InterchainQueryTypeTX)}
-		err := iqkeeper.SaveQuery(ctx, &query1)
+		err = iqkeeper.SaveQuery(ctx, &query1)
 		suite.Require().NoError(err)
 		_, err = iqkeeper.GetQueryByID(ctx, queryID1)
 		suite.Require().NoError(err)
@@ -1648,13 +1650,14 @@ func (suite *KeeperTestSuite) TestTxQueriesCleanup() {
 		// set TxQueryRemovalLimit to a low value
 		params := iqkeeper.GetParams(ctx)
 		params.TxQueryRemovalLimit = 0
-		iqkeeper.SetParams(ctx, params)
+		err := iqkeeper.SetParams(ctx, params)
+		suite.Require().NoError(err)
 		suite.Require().Equal(uint64(0), iqkeeper.GetParams(ctx).TxQueryRemovalLimit)
 
 		// create a query and add results for it
 		var queryID uint64 = 1
 		query := iqtypes.RegisteredQuery{Id: queryID, QueryType: string(iqtypes.InterchainQueryTypeTX)}
-		err := iqkeeper.SaveQuery(ctx, &query)
+		err = iqkeeper.SaveQuery(ctx, &query)
 		suite.Require().NoError(err)
 		_, err = iqkeeper.GetQueryByID(ctx, queryID)
 		suite.Require().NoError(err)
@@ -1698,7 +1701,8 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 	iqkeeper := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper
 	params := iqkeeper.GetParams(ctx)
 	params.QuerySubmitTimeout = 5
-	iqkeeper.SetParams(ctx, params)
+	err := iqkeeper.SetParams(ctx, params)
+	suite.Require().NoError(err)
 	msgSrv := keeper.NewMsgServerImpl(iqkeeper)
 
 	resRegister, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &iqtypes.MsgRegisterInterchainQuery{
