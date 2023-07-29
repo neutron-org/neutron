@@ -18,6 +18,7 @@ CHAIN_DIR="$BASE_DIR/$CHAINID"
 GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
+SECOND_MULTISIG_ADDRESS=$($BINARY keys show demowallet2 -a --home "$CHAIN_DIR" --keyring-backend test)
 # MAIN_DAO
 DAO_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_core.wasm
 PRE_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_pre_propose_single.wasm
@@ -413,6 +414,10 @@ CW4_VOTE_INIT_MSG='{
     {
       "addr": "'"$ADMIN_ADDRESS"'",
       "weight": 1
+    },
+    {
+      "addr": "'"$SECOND_MULTISIG_ADDRESS"'",
+      "weight": 1
     }
   ]
 }'
@@ -529,7 +534,7 @@ GRANTS_SUBDAO_PROPOSAL_INIT_MSG='{
    "close_proposal_on_execution_failure":false,
    "threshold":{
       "absolute_count":{
-         "threshold": "1"
+         "threshold": "2"
       }
    }
 }'
@@ -628,8 +633,4 @@ if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
 fi
 
 echo "DAO $DAO_CONTRACT_ADDRESS"
-echo "overrule pre propose $PRE_PROPOSAL_OVERRULE_CONTRACT_ADDRESS"
-echo "single $PROPOSAL_SINGLE_CONTRACT_ADDRESS"
-echo "multiple $PROPOSAL_MULTIPLE_CONTRACT_ADDRESS"
-echo "overrule $PROPOSAL_OVERRULE_CONTRACT_ADDRESS"
-echo "voting $VOTING_REGISTRY_CONTRACT_ADDRESS"
+
