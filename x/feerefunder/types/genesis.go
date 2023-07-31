@@ -2,6 +2,9 @@ package types
 
 import (
 	"fmt"
+
+	"cosmossdk.io/errors"
+
 	// this line is used by starport scaffolding # genesis/types/import
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +31,7 @@ func (gs GenesisState) Validate() error {
 		}
 
 		if len(addr) != wasmtypes.ContractAddrLen {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "fee payer address %s is not a contract", info.Payer)
+			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "fee payer address %s is not a contract", info.Payer)
 		}
 
 		if err := host.PortIdentifierValidator(info.PacketId.PortId); err != nil {

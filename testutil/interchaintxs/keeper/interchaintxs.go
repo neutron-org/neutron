@@ -44,7 +44,7 @@ func InterchainTxsKeeper(t testing.TB, managerKeeper types.ContractManagerKeeper
 
 	// Initialize params
 	err := k.SetParams(ctx, types.DefaultParams())
-	require.NoError(t,err)
+	require.NoError(t, err)
 
 	return k, ctx
 }

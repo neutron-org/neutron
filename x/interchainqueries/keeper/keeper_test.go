@@ -3,8 +3,9 @@ package keeper_test
 import (
 	"encoding/hex"
 	"fmt"
-	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"testing"
+
+	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

@@ -119,14 +119,14 @@ func TestSubmitTx(t *testing.T) {
 	require.ErrorContains(t, err, "failed to GetActiveChannelID for port")
 
 	activeChannel := "channel-0"
-	//cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
-	//icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
-	//currCodec := icak.Codec
-	//icak.Codec = &codec.AminoCodec{}
-	//resp, err = icak.SubmitTx(goCtx, &submitMsg)
-	//icak.Codec = currCodec
-	//require.Nil(t, resp)
-	//require.ErrorContains(t, err, "only ProtoCodec is supported for receiving messages on the host chain")
+	// cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	// icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
+	// currCodec := icak.Codec
+	// icak.Codec = &codec.AminoCodec{}
+	// resp, err = icak.SubmitTx(goCtx, &submitMsg)
+	// icak.Codec = currCodec
+	// require.Nil(t, resp)
+	// require.ErrorContains(t, err, "only ProtoCodec is supported for receiving messages on the host chain")
 
 	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)

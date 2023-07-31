@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/errors"
+
 	types1 "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -48,18 +49,18 @@ func ModifyConsumerGenesis(val network.Validator) error {
 	genFile := val.Ctx.Config.GenesisFile()
 	appState, genDoc, err := genutiltypes.GenesisStateFromGenFile(genFile)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to read genesis from the file")
+		return errors.Wrap(err, "failed to read genesis from the file")
 	}
 
 	tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(val.PubKey)
 	if err != nil {
-		return sdkerrors.Wrap(err, "invalid public key")
+		return errors.Wrap(err, "invalid public key")
 	}
 
 	initialValset := []types1.ValidatorUpdate{{PubKey: tmProtoPublicKey, Power: 100}}
 	vals, err := tmtypes.PB2TM.ValidatorUpdates(initialValset)
 	if err != nil {
-		return sdkerrors.Wrap(err, "could not convert val updates to validator set")
+		return errors.Wrap(err, "could not convert val updates to validator set")
 	}
 
 	consumerGenesisState := CreateMinimalConsumerTestGenesis()
@@ -67,24 +68,24 @@ func ModifyConsumerGenesis(val network.Validator) error {
 	consumerGenesisState.ProviderConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).Hash()
 
 	if err := consumerGenesisState.Validate(); err != nil {
-		return sdkerrors.Wrap(err, "invalid consumer genesis")
+		return errors.Wrap(err, "invalid consumer genesis")
 	}
 
 	consumerGenStateBz, err := val.ClientCtx.Codec.MarshalJSON(consumerGenesisState)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to marshal consumer genesis state into JSON")
+		return errors.Wrap(err, "failed to marshal consumer genesis state into JSON")
 	}
 
 	appState[ccvconsumertypes.ModuleName] = consumerGenStateBz
 	appStateJSON, err := json.Marshal(appState)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to marshal application genesis state into JSON")
+		return errors.Wrap(err, "failed to marshal application genesis state into JSON")
 	}
 
 	genDoc.AppState = appStateJSON
 	err = genutil.ExportGenesisFile(genDoc, genFile)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to export genesis state")
+		return errors.Wrap(err, "failed to export genesis state")
 	}
 
 	return nil

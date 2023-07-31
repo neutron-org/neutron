@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
+
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -78,7 +80,7 @@ func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contract
 	suite.Require().NoError(err)
 }
 
-func (suite *KeeperTestSuite) WalletBalance(ctx sdktypes.Context, address string) sdktypes.Int {
+func (suite *KeeperTestSuite) WalletBalance(ctx sdktypes.Context, address string) math.Int {
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	balance, err := bankKeeper.Balance(
 		sdktypes.WrapSDKContext(ctx),

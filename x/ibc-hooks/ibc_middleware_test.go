@@ -6,6 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"cosmossdk.io/math"
+
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -33,7 +35,7 @@ func TestIBCHooksTestSuite(t *testing.T) {
 func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 	var (
 		trace    transfertypes.DenomTrace
-		amount   sdk.Int
+		amount   math.Int
 		receiver string
 		status   testutils.Status
 	)
@@ -334,7 +336,7 @@ func (suite *HooksTestSuite) StoreContractCode(chain *ibctesting.TestChain, addr
 		panic(err)
 	}
 
-	codeID, _, err := wasmkeeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(chain).WasmKeeper).Create(chain.GetContext(), addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
+	codeID, _, err := wasmkeeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(chain).WasmKeeper).Create(chain.GetContext(), addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody})
 	if err != nil {
 		panic(err)
 	}

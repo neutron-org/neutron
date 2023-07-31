@@ -25,7 +25,6 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	wasmKeeper types.WasmKeeper,
 ) *Keeper {
-
 	return &Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,

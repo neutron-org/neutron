@@ -3,6 +3,8 @@ package types
 import (
 	fmt "fmt"
 
+	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -10,7 +12,7 @@ import (
 func (q *RegisteredQuery) GetOwnerAddress() (creator sdk.AccAddress, err error) {
 	creator, err = sdk.AccAddressFromBech32(q.Owner)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode owner address: %s", q.Owner)
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode owner address: %s", q.Owner)
 	}
 
 	return creator, nil

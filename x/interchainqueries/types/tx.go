@@ -1,8 +1,10 @@
 package types
 
 import (
-	"github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"strings"
+
+	"cosmossdk.io/errors"
+	"github.com/cosmos/ibc-go/v7/modules/core/exported"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,27 +27,27 @@ func (msg MsgSubmitQueryResult) Type() string {
 
 func (msg MsgSubmitQueryResult) ValidateBasic() error {
 	if msg.Result == nil {
-		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
+		return errors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
 
 	if len(msg.Result.KvResults) == 0 && msg.Result.Block == nil {
-		return sdkerrors.Wrap(ErrEmptyResult, "query result can't be empty")
+		return errors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
 
 	if msg.QueryId == 0 {
-		return sdkerrors.Wrap(ErrInvalidQueryID, "query id cannot be equal zero")
+		return errors.Wrap(ErrInvalidQueryID, "query id cannot be equal zero")
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+		return errors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
 	if strings.TrimSpace(msg.ClientId) == "" {
-		return sdkerrors.Wrap(ErrInvalidClientID, "client id cannot be empty")
+		return errors.Wrap(ErrInvalidClientID, "client id cannot be empty")
 	}
 
 	return nil
@@ -73,28 +75,28 @@ func (msg MsgRegisterInterchainQuery) Type() string {
 
 func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 	if msg.UpdatePeriod == 0 {
-		return sdkerrors.Wrap(ErrInvalidUpdatePeriod, "update period can not be equal to zero")
+		return errors.Wrap(ErrInvalidUpdatePeriod, "update period can not be equal to zero")
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+		return errors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
 	if strings.TrimSpace(msg.ConnectionId) == "" {
-		return sdkerrors.Wrap(ErrInvalidConnectionID, "connection id cannot be empty")
+		return errors.Wrap(ErrInvalidConnectionID, "connection id cannot be empty")
 	}
 
 	if !InterchainQueryType(msg.QueryType).IsValid() {
-		return sdkerrors.Wrap(ErrInvalidQueryType, "invalid query type")
+		return errors.Wrap(ErrInvalidQueryType, "invalid query type")
 	}
 
 	if InterchainQueryType(msg.QueryType).IsKV() {
 		if len(msg.Keys) == 0 {
-			return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
+			return errors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 		}
 		if err := validateKeys(msg.GetKeys()); err != nil {
 			return err
@@ -103,7 +105,7 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 
 	if InterchainQueryType(msg.QueryType).IsTX() {
 		if err := ValidateTransactionsFilter(msg.TransactionsFilter); err != nil {
-			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
+			return errors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 		}
 	}
 	return nil
@@ -133,21 +135,21 @@ func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker
 
 func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 	if msg.GetQueryId() == 0 {
-		return sdkerrors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
+		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
 
 	newKeys := msg.GetNewKeys()
 	newTxFilter := msg.GetNewTransactionsFilter()
 
 	if len(newKeys) == 0 && newTxFilter == "" && msg.GetNewUpdatePeriod() == 0 {
-		return sdkerrors.Wrap(
+		return errors.Wrap(
 			sdkerrors.ErrInvalidRequest,
 			"one of new_keys, new_transactions_filter or new_update_period should be set",
 		)
 	}
 
 	if len(newKeys) != 0 && newTxFilter != "" {
-		return sdkerrors.Wrap(
+		return errors.Wrap(
 			sdkerrors.ErrInvalidRequest,
 			"either new_keys or new_transactions_filter should be set",
 		)
@@ -161,15 +163,15 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 
 	if newTxFilter != "" {
 		if err := ValidateTransactionsFilter(newTxFilter); err != nil {
-			return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
+			return errors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 		}
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+		return errors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 	return nil
 }
@@ -188,25 +190,25 @@ func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 
 func validateKeys(keys []*KVKey) error {
 	if uint64(len(keys)) > MaxKVQueryKeysCount {
-		return sdkerrors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
+		return errors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
 	}
 
 	duplicates := make(map[string]struct{})
 	for _, key := range keys {
 		if key == nil {
-			return sdkerrors.Wrap(sdkerrors.ErrInvalidType, "key cannot be nil")
+			return errors.Wrap(sdkerrors.ErrInvalidType, "key cannot be nil")
 		}
 
 		if _, ok := duplicates[key.ToString()]; ok {
-			return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "keys cannot be duplicated")
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "keys cannot be duplicated")
 		}
 
 		if len(key.Path) == 0 {
-			return sdkerrors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
+			return errors.Wrap(ErrEmptyKeyPath, "keys path cannot be empty")
 		}
 
 		if len(key.Key) == 0 {
-			return sdkerrors.Wrap(ErrEmptyKeyID, "keys id cannot be empty")
+			return errors.Wrap(ErrEmptyKeyID, "keys id cannot be empty")
 		}
 
 		duplicates[key.ToString()] = struct{}{}

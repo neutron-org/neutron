@@ -1,14 +1,15 @@
 package app
 
 import (
+	"cosmossdk.io/errors"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	gaiaerrors "github.com/cosmos/gaia/v11/types/errors"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
@@ -43,22 +44,22 @@ type HandlerOptions struct {
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
+		return nil, errors.Wrap(gaiaerrors.ErrLogic, "account keeper is required for AnteHandler")
 	}
 	if options.BankKeeper == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for AnteHandler")
+		return nil, errors.Wrap(gaiaerrors.ErrLogic, "bank keeper is required for AnteHandler")
 	}
 	if options.SignModeHandler == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
+		return nil, errors.Wrap(gaiaerrors.ErrLogic, "sign mode handler is required for ante builder")
 	}
 	if options.WasmConfig == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "wasm config is required for ante builder")
+		return nil, errors.Wrap(gaiaerrors.ErrLogic, "wasm config is required for ante builder")
 	}
 	if options.TXCounterStoreKey == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "tx counter key is required for ante builder")
+		return nil, errors.Wrap(gaiaerrors.ErrLogic, "tx counter key is required for ante builder")
 	}
 	if options.GlobalFeeSubspace.Name() == "" {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
+		return nil, errors.Wrap(gaiaerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
 	}
 
 	sigGasConsumer := options.SigGasConsumer
@@ -79,7 +80,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// We are providing options.GlobalFeeSubspace because we do not have staking module
 		// In this case you should be sure that you implemented upgrade to set default global fee param and it SHOULD contain at least one record
 		// otherwise you will get panic
-		//globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
+		// globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators

@@ -4,6 +4,8 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -66,13 +68,13 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	icaOwner, err := types.ICAOwnerFromPort(packet.SourcePort)
 	if err != nil {
 		k.Logger(ctx).Error("HandleAcknowledgement: failed to get ica owner from source port", "error", err)
-		return sdkerrors.Wrap(err, "failed to get ica owner from port")
+		return errors.Wrap(err, "failed to get ica owner from port")
 	}
 
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		k.Logger(ctx).Error("HandleAcknowledgement: cannot unmarshal ICS-27 packet acknowledgement", "error", err)
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 packet acknowledgement: %v", err)
+		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 packet acknowledgement: %v", err)
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
@@ -111,7 +113,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	k.Logger(ctx).Debug("HandleTimeout")
 	if err != nil {
 		k.Logger(ctx).Error("HandleTimeout: failed to get ica owner from source port", "error", err)
-		return sdkerrors.Wrap(err, "failed to get ica owner from port")
+		return errors.Wrap(err, "failed to get ica owner from port")
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
@@ -149,7 +151,7 @@ func (k *Keeper) HandleChanOpenAck(
 	icaOwner, err := types.ICAOwnerFromPort(portID)
 	if err != nil {
 		k.Logger(ctx).Error("HandleChanOpenAck: failed to get ica owner from source port", "error", err)
-		return sdkerrors.Wrap(err, "failed to get ica owner from port")
+		return errors.Wrap(err, "failed to get ica owner from port")
 	}
 
 	_, err = k.contractManagerKeeper.SudoOnChanOpenAck(ctx, icaOwner.GetContract(), contractmanagertypes.OpenAckDetails{
@@ -160,7 +162,7 @@ func (k *Keeper) HandleChanOpenAck(
 	})
 	if err != nil {
 		k.Logger(ctx).Debug("HandleChanOpenAck: failed to Sudo contract on packet timeout", "error", err)
-		return sdkerrors.Wrap(err, "failed to Sudo the contract OnChanOpenAck")
+		return errors.Wrap(err, "failed to Sudo the contract OnChanOpenAck")
 	}
 
 	return nil

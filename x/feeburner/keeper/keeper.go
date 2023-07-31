@@ -3,7 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"cosmossdk.io/errors"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -35,7 +36,6 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 ) *Keeper {
-
 	return &Keeper{
 		cdc:           cdc,
 		storeKey:      storeKey,
@@ -92,7 +92,7 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 			if balance.Denom == params.NeutronDenom {
 				err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, sdk.Coins{balance})
 				if err != nil {
-					panic(sdkerrors.Wrapf(err, "failed to burn NTRN tokens during fee processing"))
+					panic(errors.Wrapf(err, "failed to burn NTRN tokens during fee processing"))
 				}
 
 				k.RecordBurnedFees(ctx, balance)
@@ -110,7 +110,7 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 			// in such case we just burn the tokens
 			err := k.bankKeeper.BurnCoins(ctx, consumertypes.ConsumerRedistributeName, fundsForReserve)
 			if err != nil {
-				panic(sdkerrors.Wrapf(err, "failed to burn tokens during fee processing"))
+				panic(errors.Wrapf(err, "failed to burn tokens during fee processing"))
 			}
 		} else {
 			err = k.bankKeeper.SendCoins(
@@ -119,7 +119,7 @@ func (k Keeper) BurnAndDistribute(ctx sdk.Context) {
 				fundsForReserve,
 			)
 			if err != nil {
-				panic(sdkerrors.Wrapf(err, "failed sending funds to Reserve"))
+				panic(errors.Wrapf(err, "failed sending funds to Reserve"))
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import (
 	testutil_keeper "github.com/neutron-org/neutron/testutil/feerefunder/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/feerefunder/types"
 
+	cosmoserrors "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
@@ -43,7 +44,7 @@ func TestKeeperCheckFees(t *testing.T) {
 		desc    string
 		fees    *types.Fee
 		minFees types.Fee
-		err     *sdkerrors.Error
+		err     *cosmoserrors.Error
 	}{
 		{
 			desc: "SingleProperDenomInsufficient",
@@ -223,14 +224,14 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 		PortId:    "transfer",
 		Sequence:  1,
 	}
-	panicErrorToCatch := sdkerrors.Wrapf(sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", invalidPacket.ChannelId, invalidPacket.PortId, invalidPacket.Sequence), "no fee info")
+	panicErrorToCatch := errors.Wrapf(errors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", invalidPacket.ChannelId, invalidPacket.PortId, invalidPacket.Sequence), "no fee info")
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeAcknowledgementFee(ctx, receiver, invalidPacket) })
 
-	panicErrorToCatch = sdkerrors.Wrapf(sdkerrors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing ack fee: receiver = %s, packetID=%v", receiver, packet)
+	panicErrorToCatch = errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing ack fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.AckFee).Return(fmt.Errorf("bank module error"))
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeAcknowledgementFee(ctx, receiver, packet) })
 
-	panicErrorToCatch = sdkerrors.Wrapf(sdkerrors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", payer.String()), "error distributing unused timeout fee: receiver = %s, packetID=%v", receiver, packet)
+	panicErrorToCatch = errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", payer.String()), "error distributing unused timeout fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.AckFee).Return(nil)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, payer, validFee.TimeoutFee).Return(fmt.Errorf("bank module error"))
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeAcknowledgementFee(ctx, receiver, packet) })
@@ -289,14 +290,14 @@ func TestDistributeTimeoutFee(t *testing.T) {
 		PortId:    "transfer",
 		Sequence:  1,
 	}
-	panicErrorToCatch := sdkerrors.Wrapf(sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", invalidPacket.ChannelId, invalidPacket.PortId, invalidPacket.Sequence), "no fee info")
+	panicErrorToCatch := errors.Wrapf(errors.Wrapf(sdkerrors.ErrKeyNotFound, "no fee info for the given channelID = %s, portID = %s and sequence = %d", invalidPacket.ChannelId, invalidPacket.PortId, invalidPacket.Sequence), "no fee info")
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeTimeoutFee(ctx, receiver, invalidPacket) })
 
-	panicErrorToCatch = sdkerrors.Wrapf(sdkerrors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing timeout fee: receiver = %s, packetID=%v", receiver, packet)
+	panicErrorToCatch = errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", receiver.String()), "error distributing timeout fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.TimeoutFee).Return(fmt.Errorf("bank module error"))
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeTimeoutFee(ctx, receiver, packet) })
 
-	panicErrorToCatch = sdkerrors.Wrapf(sdkerrors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", payer.String()), "error distributing unused ack fee: receiver = %s, packetID=%v", receiver, packet)
+	panicErrorToCatch = errors.Wrapf(errors.Wrapf(fmt.Errorf("bank module error"), "error distributing fee to a receiver: %s", payer.String()), "error distributing unused ack fee: receiver = %s, packetID=%v", receiver, packet)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, validFee.TimeoutFee).Return(nil)
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(ctx, types.ModuleName, payer, validFee.AckFee).Return(fmt.Errorf("bank module error"))
 	assert.PanicsWithError(t, panicErrorToCatch.Error(), func() { k.DistributeTimeoutFee(ctx, receiver, packet) })

@@ -1,8 +1,8 @@
 package types
 
 import (
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // DefaultGenesis returns the default Capability genesis state
@@ -23,29 +23,29 @@ func (gs GenesisState) Validate() error {
 
 	for _, val := range gs.GetRegisteredQueries() {
 		if seenIDs[val.Id] {
-			return sdkerrors.Wrapf(ErrInvalidQueryID, "duplicate query id: %d", val.Id)
+			return errors.Wrapf(ErrInvalidQueryID, "duplicate query id: %d", val.Id)
 		}
 		seenIDs[val.Id] = true
 
 		_, err = sdk.AccAddressFromBech32(val.Owner)
 		if err != nil {
-			return sdkerrors.Wrapf(err, "Invalid owner address (%s)", err)
+			return errors.Wrapf(err, "Invalid owner address (%s)", err)
 		}
 
 		switch val.QueryType {
 		case string(InterchainQueryTypeTX):
 			if err := ValidateTransactionsFilter(val.TransactionsFilter); err != nil {
-				return sdkerrors.Wrap(ErrInvalidTransactionsFilter, err.Error())
+				return errors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 			}
 		case string(InterchainQueryTypeKV):
 			if len(val.Keys) == 0 {
-				return sdkerrors.Wrap(ErrEmptyKeys, "keys cannot be empty")
+				return errors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 			}
 			if err := validateKeys(val.GetKeys()); err != nil {
 				return err
 			}
 		default:
-			return sdkerrors.Wrapf(ErrUnexpectedQueryTypeGenesis, "Unexpected query type: %s", val.QueryType)
+			return errors.Wrapf(ErrUnexpectedQueryTypeGenesis, "Unexpected query type: %s", val.QueryType)
 		}
 	}
 	return nil

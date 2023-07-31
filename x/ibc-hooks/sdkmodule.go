@@ -1,8 +1,10 @@
 package ibchooks
 
 import (
-	"cosmossdk.io/core/appmodule"
 	"encoding/json"
+
+	"cosmossdk.io/core/appmodule"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"

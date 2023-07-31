@@ -3,8 +3,9 @@ package types
 import (
 	"strings"
 
+	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 )
 
@@ -22,7 +23,7 @@ func (i ICAOwner) String() string {
 func NewICAOwner(contractAddressBech32, interchainAccountID string) (ICAOwner, error) {
 	sdkContractAddress, err := sdk.AccAddressFromBech32(contractAddressBech32)
 	if err != nil {
-		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
+		return ICAOwner{}, errors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
 	}
 
 	return ICAOwner{contractAddress: sdkContractAddress, interchainAccountID: interchainAccountID}, nil
@@ -35,12 +36,12 @@ func NewICAOwnerFromAddress(address sdk.AccAddress, interchainAccountID string) 
 func ICAOwnerFromPort(port string) (ICAOwner, error) {
 	splitOwner := strings.SplitN(strings.TrimPrefix(port, icatypes.ControllerPortPrefix), Delimiter, 2)
 	if len(splitOwner) < 2 {
-		return ICAOwner{}, sdkerrors.Wrap(ErrInvalidICAOwner, "invalid ICA interchainAccountID format")
+		return ICAOwner{}, errors.Wrap(ErrInvalidICAOwner, "invalid ICA interchainAccountID format")
 	}
 
 	contractAddress, err := sdk.AccAddressFromBech32(splitOwner[0])
 	if err != nil {
-		return ICAOwner{}, sdkerrors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
+		return ICAOwner{}, errors.Wrapf(ErrInvalidAccountAddress, "failed to decode address from bech32: %v", err)
 	}
 
 	return ICAOwner{contractAddress: contractAddress, interchainAccountID: splitOwner[1]}, nil

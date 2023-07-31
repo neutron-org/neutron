@@ -3,6 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	dbm "github.com/cometbft/cometbft-db"
@@ -34,9 +38,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	"io"
-	"os"
-	"path/filepath"
 
 	tmcfg "github.com/cometbft/cometbft/config"
 	"github.com/neutron-org/neutron/app"
@@ -262,6 +263,7 @@ func (ac appCreator) newApp(
 		baseapp.SetChainID(chainID),
 	)
 }
+
 func (ac appCreator) appExport(
 	logger log.Logger,
 	db dbm.DB,

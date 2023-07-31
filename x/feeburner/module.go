@@ -2,9 +2,10 @@ package feeburner
 
 import (
 	"context"
-	"cosmossdk.io/core/appmodule"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/core/appmodule"
 
 	"github.com/gorilla/mux"
 	// this line is used by starport scaffolding # 1

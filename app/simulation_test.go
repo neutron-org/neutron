@@ -4,7 +4,7 @@ package app_test
 // at the moment latest ibc-go release requires outdated app interface in the `simapp.SimulationOperations` method
 
 //
-//import (
+// import (
 //	"github.com/cosmos/cosmos-sdk/server/types"
 //	"github.com/cosmos/ibc-go/v7/testing/simapp"
 //	"os"

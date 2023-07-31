@@ -2,6 +2,13 @@ package app
 
 import (
 	"fmt"
+	"io"
+	"io/fs"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -15,12 +22,6 @@ import (
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	rewardsaddressprovider "github.com/skip-mev/pob/x/builder/rewards_address_provider"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
-	"io"
-	"io/fs"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/neutron-org/neutron/app/upgrades"
 	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"

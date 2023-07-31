@@ -214,7 +214,7 @@ func TestGetAllSchedules(t *testing.T) {
 		Limit:           2,
 	})
 	require.NoError(t, err)
-	
+
 	expectedSchedules := make([]types.Schedule, 0, 3)
 	for i := range []int{1, 2, 3} {
 		s := types.Schedule{
