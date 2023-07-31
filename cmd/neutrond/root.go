@@ -83,7 +83,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			customTemplate, customNeutronConfig := initAppConfig()
-			return server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig)
+			return InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig)
 		},
 	}
 
