@@ -26,7 +26,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, icaKeeper, nil)
+	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, icaKeeper, nil)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	msgRegAcc := types.MsgRegisterInterchainAccount{
@@ -66,7 +66,7 @@ func TestSubmitTx(t *testing.T) {
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
 	refundKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, refundKeeper, icaKeeper, channelKeeper)
+	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, cmKeeper, refundKeeper, icaKeeper, channelKeeper)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	cosmosMsg := codectypes.Any{

@@ -22,7 +22,7 @@ import (
 	"github.com/neutron-org/neutron/x/transfer/types"
 )
 
-func TransferKeeper(t testing.TB, managerKeeper types.ContractManagerKeeper, refunderKeeper types.FeeRefunderKeeper, channelKeeper types.ChannelKeeper, authKeeper types.AccountKeeper) (*keeper.KeeperTransferWrapper, sdk.Context) {
+func TransferKeeper(t testing.TB, managerKeeper types.ContractManagerKeeper, refunderKeeper types.FeeRefunderKeeper, channelKeeper types.ChannelKeeper, authKeeper types.AccountKeeper) (*keeper.KeeperTransferWrapper, sdk.Context, *sdk.KVStoreKey) {
 	storeKey := sdk.NewKVStoreKey(transfertypes.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey("mem_" + transfertypes.StoreKey)
 
@@ -60,5 +60,5 @@ func TransferKeeper(t testing.TB, managerKeeper types.ContractManagerKeeper, ref
 	// Initialize params
 	k.SetParams(ctx, transfertypes.DefaultParams())
 
-	return &k, ctx
+	return &k, ctx, storeKey
 }
