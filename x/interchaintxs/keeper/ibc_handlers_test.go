@@ -18,14 +18,25 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
 )
 
+var (
+	ShouldNotBeWrittenKey = []byte("shouldnotkey")
+	ShouldNotBeWritten    = []byte("should not be written")
+	ShouldBeWritten       = []byte("should be written")
+)
+
+func ShouldBeWrittenKey(suffix string) []byte {
+	return append([]byte("shouldkey"), []byte(suffix)...)
+}
+
 func TestHandleAcknowledgement(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil, nil)
+	icak, infCtx, storeKey := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil, nil)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	store := ctx.KVStore(storeKey)
 
 	errACK := channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Error{
@@ -55,61 +66,89 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.ErrorContains(t, err, "cannot unmarshal ICS-27 packet acknowledgement")
 
 	// error during SudoResponse
-	cmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(ctx), contractAddress, p, resACK.GetResult()).Return(nil, fmt.Errorf("SudoResponse error"))
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	cmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(ctx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
+	}).Return(nil, fmt.Errorf("SudoResponse error"))
 	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "ack")
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
+	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
 
 	// error during SudoError
-	cmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "ack")
-	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
-	require.NoError(t, err)
-
-	//  success during SudoError
-	cmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Return(nil, nil)
-	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
-	require.NoError(t, err)
-
-	// out of gas during SudoError
-	cmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Do(func(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, error string) {
-		ctx.GasMeter().ConsumeGas(ctx.GasMeter().Limit()+1, "out of gas test")
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	cmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, err string) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, fmt.Errorf("SudoError error"))
 	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "ack")
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
 	require.NoError(t, err)
+	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
+
+	//  success during SudoError
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	cmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, err string) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldBeWrittenKey("sudoerror"), ShouldBeWritten)
+	}).Return(nil, nil)
+	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
+	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
+	require.NoError(t, err)
+	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoerror")))
+
+	// out of gas during SudoError
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	cmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, error string) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
+		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
+	}).Return(nil, fmt.Errorf("SudoError error"))
+	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "ack")
+	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
+	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
+	require.NoError(t, err)
+	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
+	require.Equal(t, uint64(0), ctx.GasMeter().GasConsumed()) // due to out of gas recovery we consume 0 with a SudoError handler
 
 	// check we have ReserveGas reserved and
 	// check gas consumption from cachedCtx has added to the main ctx
 	// one of the ways to check it - make the check during SudoResponse call
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	gasReserved := false
 	cmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(ctx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
 		if ctx.GasMeter().Limit() == cachedCtx.GasMeter().Limit()+keeper.GasReserve {
 			gasReserved = true
 		}
-		cachedCtx.GasMeter().ConsumeGas(1_000_000, "Sudo response consumption")
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldBeWrittenKey("sudoresponse"), ShouldBeWritten) // consumes 3140 gas, 2000 flat write + 30 every byte of key+value
 	}).Return(nil, nil)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	consumedBefore := ctx.GasMeter().GasConsumed()
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 	require.True(t, gasReserved)
-	require.Equal(t, consumedBefore+1_000_000, ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3140), ctx.GasMeter().GasConsumed())
+	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoresponse")))
 
 	// not enough gas to reserve + not enough to make AddContractFailure failure after panic recover
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(keeper.GasReserve - 1))
 	cmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(lowGasCtx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(1, "Sudo response consumption")
 	}).Return(nil, nil)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, "channel-0", contractAddress.String(), p.GetSequence(), "ack").Do(func(ctx sdk.Context, channelId string, address string, ackID uint64, ackType string) {
+	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, "channel-0", contractAddress.String(), p.GetSequence(), "ack").Do(func(ctx sdk.Context, channelId, address string, ackID uint64, ackType string) {
 		ctx.GasMeter().ConsumeGas(keeper.GasReserve, "out of gas")
 	})
 	require.Panics(t, func() { icak.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a panic test
+	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 }
 
 func TestHandleTimeout(t *testing.T) {
@@ -118,8 +157,9 @@ func TestHandleTimeout(t *testing.T) {
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil, nil)
+	icak, infCtx, storeKey := testkeeper.InterchainTxsKeeper(t, cmKeeper, feeKeeper, icaKeeper, nil, nil)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	store := ctx.KVStore(storeKey)
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
@@ -133,41 +173,52 @@ func TestHandleTimeout(t *testing.T) {
 	require.ErrorContains(t, err, "failed to get ica owner from port")
 
 	gasReserved := false
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(ctx), contractAddress, p).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) {
 		if ctx.GasMeter().Limit() == cachedCtx.GasMeter().Limit()+keeper.GasReserve {
 			gasReserved = true
 		}
-		cachedCtx.GasMeter().ConsumeGas(1_000_000, "Sudo timeout consumption")
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldBeWrittenKey("sudotimeout"), ShouldBeWritten) // consumes 3110 gas, 2000 flat write + 30 every byte of key+value
 	}).Return(nil, nil)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	consumedBefore := ctx.GasMeter().GasConsumed()
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.True(t, gasReserved)
-	require.Equal(t, consumedBefore+1_000_000, ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3110), ctx.GasMeter().GasConsumed())
+	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudotimeout")))
 	require.NoError(t, err)
 
 	// error during SudoTimeOut
-	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(ctx), contractAddress, p).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "timeout")
-	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	err = icak.HandleTimeout(ctx, p, relayerAddress)
-	require.NoError(t, err)
-
-	// out of gas during SudoTimeOut
-	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(ctx), contractAddress, p).Do(func(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) {
-		ctx.GasMeter().ConsumeGas(ctx.GasMeter().Limit()+1, "out of gas test")
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(ctx), contractAddress, p).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
 	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "timeout")
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
+	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
+
+	// out of gas during SudoTimeOut
+	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(ctx), contractAddress, p).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
+		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
+	}).Return(nil, fmt.Errorf("SudoTimeout error"))
+	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "timeout")
+	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
+	err = icak.HandleTimeout(ctx, p, relayerAddress)
+	require.NoError(t, err)
+	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 }
 
 func TestHandleChanOpenAck(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, nil, nil, nil)
+	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, nil, nil, nil)
 	portID := icatypes.PortPrefix + testutil.TestOwnerAddress + ".ica0"
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	channelID := "channel-0"

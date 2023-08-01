@@ -10,8 +10,9 @@ import (
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
-// ConvertToBaseToken converts a fee amount in a whitelisted fee token to the base fee token amount
-func (k Keeper) CreateDenom(ctx sdk.Context, creatorAddr string, subdenom string) (newTokenDenom string, err error) {
+// CreateDenom creates new denom with `factory/{creatorAddr}/{subdenom}` name.
+// Charges creatorAddr fee for creation
+func (k Keeper) CreateDenom(ctx sdk.Context, creatorAddr, subdenom string) (newTokenDenom string, err error) {
 	err = k.chargeFeeForDenomCreation(ctx, creatorAddr)
 	if err != nil {
 		return "", sdkerrors.Wrapf(types.ErrUnableToCharge, "denom fee collection error: %v", err)
@@ -32,7 +33,7 @@ func (k Keeper) CreateDenom(ctx sdk.Context, creatorAddr string, subdenom string
 
 // Runs CreateDenom logic after the charge and all denom validation has been handled.
 // Made into a second function for genesis initialization.
-func (k Keeper) createDenomAfterValidation(ctx sdk.Context, creatorAddr string, denom string) (err error) {
+func (k Keeper) createDenomAfterValidation(ctx sdk.Context, creatorAddr, denom string) (err error) {
 	denomMetaData := banktypes.Metadata{
 		DenomUnits: []*banktypes.DenomUnit{{
 			Denom:    denom,
@@ -55,7 +56,7 @@ func (k Keeper) createDenomAfterValidation(ctx sdk.Context, creatorAddr string, 
 	return nil
 }
 
-func (k Keeper) validateCreateDenom(ctx sdk.Context, creatorAddr string, subdenom string) (newTokenDenom string, err error) {
+func (k Keeper) validateCreateDenom(ctx sdk.Context, creatorAddr, subdenom string) (newTokenDenom string, err error) {
 	// Temporary check until IBC bug is sorted out
 	if k.bankKeeper.HasSupply(ctx, subdenom) {
 		return "", fmt.Errorf("temporary error until IBC bug is sorted out, " +

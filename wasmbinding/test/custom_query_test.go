@@ -286,7 +286,7 @@ type ChainResponse struct {
 	Data []byte `json:"data"`
 }
 
-func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.AccAddress, request interface{}, response interface{}) error {
+func (suite *CustomQuerierTestSuite) queryCustom(ctx sdk.Context, contract sdk.AccAddress, request, response interface{}) error {
 	msgBz, err := json.Marshal(request)
 	suite.Require().NoError(err)
 

@@ -13,13 +13,13 @@ import (
 type Hooks interface{}
 
 type OnChanOpenInitOverrideHooks interface {
-	OnChanOpenInitOverride(im IBCMiddleware, ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, version string) (string, error)
+	OnChanOpenInitOverride(im IBCMiddleware, ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, version string) (string, error)
 }
 type OnChanOpenInitBeforeHooks interface {
-	OnChanOpenInitBeforeHook(ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, version string)
+	OnChanOpenInitBeforeHook(ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, version string)
 }
 type OnChanOpenInitAfterHooks interface {
-	OnChanOpenInitAfterHook(ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, version string, finalVersion string, err error)
+	OnChanOpenInitAfterHook(ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, version, finalVersion string, err error)
 }
 
 // OnChanOpenTry Hooks
@@ -30,18 +30,18 @@ type OnChanOpenTryBeforeHooks interface {
 	OnChanOpenTryBeforeHook(ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, counterpartyVersion string)
 }
 type OnChanOpenTryAfterHooks interface {
-	OnChanOpenTryAfterHook(ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, counterpartyVersion string, version string, err error)
+	OnChanOpenTryAfterHook(ctx sdk.Context, order channeltypes.Order, connectionHops []string, portID, channelID string, channelCap *capabilitytypes.Capability, counterparty channeltypes.Counterparty, counterpartyVersion, version string, err error)
 }
 
 // OnChanOpenAck Hooks
 type OnChanOpenAckOverrideHooks interface {
-	OnChanOpenAckOverride(im IBCMiddleware, ctx sdk.Context, portID, channelID string, counterpartyChannelID string, counterpartyVersion string) error
+	OnChanOpenAckOverride(im IBCMiddleware, ctx sdk.Context, portID, channelID, counterpartyChannelID, counterpartyVersion string) error
 }
 type OnChanOpenAckBeforeHooks interface {
-	OnChanOpenAckBeforeHook(ctx sdk.Context, portID, channelID string, counterpartyChannelID string, counterpartyVersion string)
+	OnChanOpenAckBeforeHook(ctx sdk.Context, portID, channelID, counterpartyChannelID, counterpartyVersion string)
 }
 type OnChanOpenAckAfterHooks interface {
-	OnChanOpenAckAfterHook(ctx sdk.Context, portID, channelID string, counterpartyChannelID string, counterpartyVersion string, err error)
+	OnChanOpenAckAfterHook(ctx sdk.Context, portID, channelID, counterpartyChannelID, counterpartyVersion string, err error)
 }
 
 // OnChanOpenConfirm Hooks
@@ -140,5 +140,5 @@ type GetAppVersionBeforeHooks interface {
 	GetAppVersionBeforeHook(ctx sdk.Context, portID, channelID string)
 }
 type GetAppVersionAfterHooks interface {
-	GetAppVersionAfterHook(ctx sdk.Context, portID, channelID string, result string, success bool)
+	GetAppVersionAfterHook(ctx sdk.Context, portID, channelID, result string, success bool)
 }
