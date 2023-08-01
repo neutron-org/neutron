@@ -22,9 +22,9 @@ package app_test
 //	"github.com/neutron-org/neutron/app"
 //)
 //
-//func init() {
+// func init() {
 //	simapp.GetSimulatorFlags()
-//}
+// }
 //
 //type SimApp interface {
 //	GetBaseApp() *baseapp.BaseApp

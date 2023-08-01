@@ -110,7 +110,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			bz, err := json.Marshal(res)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to JSON marshal FullDenomResponse response.")
+				return nil, errors.Wrap(err, "failed to JSON marshal FullDenomResponse response")
 			}
 
 			return bz, nil
@@ -123,7 +123,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			bz, err := json.Marshal(res)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to JSON marshal DenomAdminResponse response.")
+				return nil, errors.Wrap(err, "failed to JSON marshal DenomAdminResponse response")
 			}
 
 			return bz, nil

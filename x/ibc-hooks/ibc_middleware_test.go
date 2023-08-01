@@ -144,10 +144,10 @@ func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, pr
 
 	packet := suite.makeMockPacket(receiver, memo, prevSequence)
 
-	seq_id, err := suite.GetNeutronZoneApp(suite.ChainB).HooksICS4Wrapper.SendPacket(
+	seqID, err := suite.GetNeutronZoneApp(suite.ChainB).HooksICS4Wrapper.SendPacket(
 		suite.ChainB.GetContext(), channelCap, suite.TransferPath.EndpointA.ChannelConfig.PortID, suite.TransferPath.EndpointA.ChannelID, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
 	suite.Require().NoError(err, "IBC send failed. Expected success. %s", err)
-	suite.Require().Equal(prevSequence+1, seq_id)
+	suite.Require().Equal(prevSequence+1, seqID)
 
 	// Update both clients
 	err = suite.TransferPath.EndpointB.UpdateClient()

@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cosmos/interchain-security/v3/testutil/integration"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -142,7 +144,6 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
-	e2e "github.com/cosmos/interchain-security/v3/testutil/e2e"
 	ccvconsumer "github.com/cosmos/interchain-security/v3/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
@@ -344,6 +345,22 @@ type App struct {
 
 	// Custom checkTx handler
 	checkTxHandler proposalhandler.CheckTx
+}
+
+func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
+	return app.BankKeeper
+}
+
+func (app *App) GetTestAccountKeeper() integration.TestAccountKeeper {
+	return app.AccountKeeper
+}
+
+func (app *App) GetTestSlashingKeeper() integration.TestSlashingKeeper {
+	return app.SlashingKeeper
+}
+
+func (app *App) GetTestEvidenceKeeper() integration.TestEvidenceKeeper {
+	return app.EvidenceKeeper
 }
 
 // New returns a reference to an initialized blockchain app
@@ -1241,26 +1258,6 @@ func (app *App) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 // GetConsumerKeeper implements the ConsumerApp interface.
 func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
 	return app.ConsumerKeeper
-}
-
-// GetE2eBankKeeper implements the ConsumerApp interface.
-func (app *App) GetE2eBankKeeper() e2e.E2eBankKeeper {
-	return app.BankKeeper
-}
-
-// GetE2eAccountKeeper implements the ConsumerApp interface.
-func (app *App) GetE2eAccountKeeper() e2e.E2eAccountKeeper {
-	return app.AccountKeeper
-}
-
-// GetE2eSlashingKeeper implements the ConsumerApp interface.
-func (app *App) GetE2eSlashingKeeper() e2e.E2eSlashingKeeper {
-	return app.SlashingKeeper
-}
-
-// GetE2eEvidenceKeeper implements the ConsumerApp interface.
-func (app *App) GetE2eEvidenceKeeper() e2e.E2eEvidenceKeeper {
-	return app.EvidenceKeeper
 }
 
 func (app *App) RegisterNodeService(clientCtx client.Context) {

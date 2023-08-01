@@ -80,7 +80,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// We are providing options.GlobalFeeSubspace because we do not have staking module
 		// In this case you should be sure that you implemented upgrade to set default global fee param and it SHOULD contain at least one record
 		// otherwise you will get panic
-		// globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
+		//globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
