@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/admin-module v0.0.0-00010101000000-000000000000
 	github.com/cosmos/cosmos-sdk v0.45.15
 	github.com/cosmos/gaia/v8 v8.0.1
-	github.com/cosmos/gogoproto v1.4.6
+	github.com/cosmos/gogoproto v1.4.10
 	github.com/cosmos/ibc-go/v4 v4.3.1
 	github.com/cosmos/interchain-security v1.2.0-multiden
 	github.com/gogo/protobuf v1.3.3
