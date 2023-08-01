@@ -1,9 +1,9 @@
 package ibchooks
 
 import (
+	"cosmossdk.io/errors"
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/neutron-org/neutron/x/ibc-hooks/types"
@@ -32,10 +32,10 @@ func NewICS4Middleware(channelKeeper types.ChannelKeeper, channel porttypes.ICS4
 	}
 }
 
-func (i ICS4Middleware) SendPacket(ctx sdk.Context, channelCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {
+func (i ICS4Middleware) SendPacket(ctx sdk.Context, channelCap *capabilitytypes.Capability, sourcePort, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {
 	channel, found := i.channelKeeper.GetChannel(ctx, sourcePort, sourceChannel)
 	if !found {
-		return 0, sdkerrors.Wrap(channeltypes.ErrChannelNotFound, sourceChannel)
+		return 0, errors.Wrap(channeltypes.ErrChannelNotFound, sourceChannel)
 	}
 
 	packet := channeltypes.NewPacket(data, sequence, sourcePort, sourceChannel,

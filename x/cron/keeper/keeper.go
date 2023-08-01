@@ -2,9 +2,10 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/armon/go-metrics"
 	"strconv"
 	"time"
+
+	"github.com/armon/go-metrics"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 

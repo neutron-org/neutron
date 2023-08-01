@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -13,16 +14,12 @@ import (
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 type (
 	Keeper struct {
-		cdc      codec.Codec
-		storeKey storetypes.StoreKey
-
-		paramSpace paramtypes.Subspace
-
+		cdc           codec.Codec
+		storeKey      storetypes.StoreKey
 		accountKeeper types.AccountKeeper
 		bankKeeper    types.BankKeeper
 	}

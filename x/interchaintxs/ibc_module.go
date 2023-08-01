@@ -28,7 +28,7 @@ func NewIBCModule(k keeper.Keeper) IBCModule {
 
 // OnChanOpenInit implements the IBCModule interface. We don't need to implement this handler.
 func (im IBCModule) OnChanOpenInit(
-	ctx sdk.Context,
+	_ sdk.Context,
 	_ channeltypes.Order,
 	_ []string,
 	_ string,

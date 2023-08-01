@@ -2,10 +2,11 @@ package network
 
 import (
 	"fmt"
-	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	"github.com/stretchr/testify/require"
 
 	tmdb "github.com/cometbft/cometbft-db"
 	tmrand "github.com/cometbft/cometbft/libs/rand"

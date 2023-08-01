@@ -1,8 +1,8 @@
 package wasmbinding
 
 import (
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
@@ -77,7 +77,7 @@ func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindin
 		return nil, err
 	}
 	if grpcResp == nil {
-		return nil, sdkerrors.Wrapf(types.ErrEmptyResult, "interchain query response empty for query id %d", req.QueryID)
+		return nil, errors.Wrapf(types.ErrEmptyResult, "interchain query response empty for query id %d", req.QueryID)
 	}
 	query := mapGRPCRegisteredQueryToWasmBindings(*grpcResp)
 
@@ -88,7 +88,7 @@ func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindin
 func (qp QueryPlugin) GetDenomAdmin(ctx sdk.Context, denom string) (*bindings.DenomAdminResponse, error) {
 	metadata, err := qp.tokenFactoryKeeper.GetAuthorityMetadata(ctx, denom)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "failed to get admin for denom: %s", denom)
+		return nil, errors.Wrapf(err, "failed to get admin for denom: %s", denom)
 	}
 
 	return &bindings.DenomAdminResponse{Admin: metadata.Admin}, nil

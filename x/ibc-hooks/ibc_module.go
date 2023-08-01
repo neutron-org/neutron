@@ -236,7 +236,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 
 // SendPacket implements the ICS4 Wrapper interface
 func (im IBCMiddleware) SendPacket(
-	ctx sdk.Context, channelCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte,
+	ctx sdk.Context, channelCap *capabilitytypes.Capability, sourcePort, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte,
 ) (sequence uint64, err error) {
 	return im.ICS4Middleware.SendPacket(ctx, channelCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }

@@ -2,10 +2,11 @@ package network
 
 import (
 	"fmt"
-	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"

@@ -23,11 +23,22 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info("Starting module migrations...")
 
 		// todo: FIXME
-		keepers.IcqKeeper.SetParams(ctx, icqtypes.DefaultParams())
-		keepers.CronKeeper.SetParams(ctx, crontypes.DefaultParams())
-		keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())
+		err := keepers.IcqKeeper.SetParams(ctx, icqtypes.DefaultParams())
+		if err != nil {
+			return vm, err
+		}
 
-		vm, err := mm.RunMigrations(ctx, configurator, vm)
+		err = keepers.CronKeeper.SetParams(ctx, crontypes.DefaultParams())
+		if err != nil {
+			return vm, err
+		}
+
+		err = keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())
+		if err != nil {
+			return vm, err
+		}
+
+		vm, err = mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {
 			return vm, err
 		}

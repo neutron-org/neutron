@@ -168,7 +168,6 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 		{
 			"valid headers",
 			func() error {
-				//suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 				suite.Require().NoError(suite.Path.EndpointA.UpdateClient())
 
 				clientID := suite.Path.EndpointA.ClientID
@@ -282,7 +281,6 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 			err = tt.run()
 			if tt.expectedErrorMsg != "" {
-				//suite.Require().ErrorAs(err, tt.expectedError)
 				suite.Require().ErrorContains(err, tt.expectedErrorMsg)
 			} else {
 				suite.Require().NoError(err)

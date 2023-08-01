@@ -2,9 +2,10 @@ package feerefunder
 
 import (
 	"context"
-	"cosmossdk.io/core/appmodule"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/core/appmodule"
 
 	// this line is used by starport scaffolding # 1
 

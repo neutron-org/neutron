@@ -2,6 +2,15 @@ package app
 
 import (
 	"fmt"
+	"io"
+	"io/fs"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/cosmos/interchain-security/v3/testutil/integration"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -14,12 +23,6 @@ import (
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	rewardsaddressprovider "github.com/skip-mev/pob/x/builder/rewards_address_provider"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
-	"io"
-	"io/fs"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/neutron-org/neutron/app/upgrades"
 	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
@@ -139,7 +142,6 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
-	e2e "github.com/cosmos/interchain-security/v3/testutil/integration"
 	ccvconsumer "github.com/cosmos/interchain-security/v3/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
@@ -341,6 +343,22 @@ type App struct {
 
 	// Custom checkTx handler
 	checkTxHandler proposalhandler.CheckTx
+}
+
+func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
+	return app.BankKeeper
+}
+
+func (app *App) GetTestAccountKeeper() integration.TestAccountKeeper {
+	return app.AccountKeeper
+}
+
+func (app *App) GetTestSlashingKeeper() integration.TestSlashingKeeper {
+	return app.SlashingKeeper
+}
+
+func (app *App) GetTestEvidenceKeeper() integration.TestEvidenceKeeper {
+	return app.EvidenceKeeper
 }
 
 // New returns a reference to an initialized blockchain app
@@ -646,6 +664,10 @@ func New(
 
 	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper)
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper), wasmOpts...)
+
+	queryPlugins := wasmkeeper.WithQueryPlugins(
+		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
+	wasmOpts = append(wasmOpts, queryPlugins)
 
 	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
@@ -1226,26 +1248,6 @@ func (app *App) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 // GetConsumerKeeper implements the ConsumerApp interface.
 func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
 	return app.ConsumerKeeper
-}
-
-// GetE2eBankKeeper implements the ConsumerApp interface.
-func (app *App) GetTestBankKeeper() e2e.TestBankKeeper {
-	return app.BankKeeper
-}
-
-// GetE2eAccountKeeper implements the ConsumerApp interface.
-func (app *App) GetTestAccountKeeper() e2e.TestAccountKeeper {
-	return app.AccountKeeper
-}
-
-// GetE2eSlashingKeeper implements the ConsumerApp interface.
-func (app *App) GetTestSlashingKeeper() e2e.TestSlashingKeeper {
-	return app.SlashingKeeper
-}
-
-// GetE2eEvidenceKeeper implements the ConsumerApp interface.
-func (app *App) GetTestEvidenceKeeper() e2e.TestEvidenceKeeper {
-	return app.EvidenceKeeper
 }
 
 func (app *App) RegisterNodeService(clientCtx client.Context) {

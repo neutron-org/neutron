@@ -2,6 +2,7 @@ package nextupgrade
 
 import (
 	"errors"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"

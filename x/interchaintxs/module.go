@@ -1,9 +1,10 @@
 package interchaintxs
 
 import (
-	"cosmossdk.io/core/appmodule"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/core/appmodule"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"

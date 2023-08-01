@@ -29,7 +29,7 @@ func FeeKeeper(t testing.TB, channelKeeper types.ChannelKeeper, bankKeeper types
 
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
-	
+
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
@@ -41,7 +41,8 @@ func FeeKeeper(t testing.TB, channelKeeper types.ChannelKeeper, bankKeeper types
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
 	// Initialize params
-	k.SetParams(ctx, types.DefaultParams())
+	err := k.SetParams(ctx, types.DefaultParams())
+	require.NoError(t, err)
 
 	return k, ctx
 }
