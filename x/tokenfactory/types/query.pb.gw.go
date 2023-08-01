@@ -361,11 +361,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"osmosis", "tokenfactory", "v1beta1", "params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"osmosis", "tokenfactory", "v1beta1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_DenomAuthorityMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"osmosis", "tokenfactory", "v1beta1", "denoms", "factory", "creator", "subdenom", "authority_metadata"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DenomAuthorityMetadata_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"osmosis", "tokenfactory", "v1beta1", "denoms", "factory", "creator", "subdenom", "authority_metadata"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_DenomsFromCreator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"osmosis", "tokenfactory", "v1beta1", "denoms_from_creator", "creator"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_DenomsFromCreator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"osmosis", "tokenfactory", "v1beta1", "denoms_from_creator", "creator"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (
