@@ -21,6 +21,4 @@ const (
 	prefixParamsKey = iota + 1
 )
 
-var (
-	ParamsKey = []byte{prefixParamsKey}
-)
+var ParamsKey = []byte{prefixParamsKey}

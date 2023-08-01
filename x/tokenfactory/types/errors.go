@@ -5,20 +5,20 @@ package types
 import (
 	fmt "fmt"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"cosmossdk.io/errors"
 )
 
 // x/tokenfactory module sentinel errors
 var (
-	ErrDenomExists              = sdkerrors.Register(ModuleName, 2, "attempting to create a denom that already exists (has bank metadata)")
-	ErrUnauthorized             = sdkerrors.Register(ModuleName, 3, "unauthorized account")
-	ErrInvalidDenom             = sdkerrors.Register(ModuleName, 4, "invalid denom")
-	ErrInvalidCreator           = sdkerrors.Register(ModuleName, 5, "invalid creator")
-	ErrInvalidAuthorityMetadata = sdkerrors.Register(ModuleName, 6, "invalid authority metadata")
-	ErrInvalidGenesis           = sdkerrors.Register(ModuleName, 7, "invalid genesis")
-	ErrSubdenomTooLong          = sdkerrors.Register(ModuleName, 8, fmt.Sprintf("subdenom too long, max length is %d bytes", MaxSubdenomLength))
-	ErrCreatorTooLong           = sdkerrors.Register(ModuleName, 9, fmt.Sprintf("creator too long, max length is %d bytes", MaxCreatorLength))
-	ErrDenomDoesNotExist        = sdkerrors.Register(ModuleName, 10, "denom does not exist")
-	ErrUnableToCharge           = sdkerrors.Register(ModuleName, 11, "unable to charge for denom creation")
-	ErrTokenDenom               = sdkerrors.Register(ModuleName, 13, "wrong token denom")
+	ErrDenomExists              = errors.Register(ModuleName, 2, "attempting to create a denom that already exists (has bank metadata)")
+	ErrUnauthorized             = errors.Register(ModuleName, 3, "unauthorized account")
+	ErrInvalidDenom             = errors.Register(ModuleName, 4, "invalid denom")
+	ErrInvalidCreator           = errors.Register(ModuleName, 5, "invalid creator")
+	ErrInvalidAuthorityMetadata = errors.Register(ModuleName, 6, "invalid authority metadata")
+	ErrInvalidGenesis           = errors.Register(ModuleName, 7, "invalid genesis")
+	ErrSubdenomTooLong          = errors.Register(ModuleName, 8, fmt.Sprintf("subdenom too long, max length is %d bytes", MaxSubdenomLength))
+	ErrCreatorTooLong           = errors.Register(ModuleName, 9, fmt.Sprintf("creator too long, max length is %d bytes", MaxCreatorLength))
+	ErrDenomDoesNotExist        = errors.Register(ModuleName, 10, "denom does not exist")
+	ErrUnableToCharge           = errors.Register(ModuleName, 11, "unable to charge for denom creation")
+	ErrTokenDenom               = errors.Register(ModuleName, 13, "wrong token denom")
 )

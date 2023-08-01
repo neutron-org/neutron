@@ -59,10 +59,11 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
-	suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
+	err := suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
 		sdk.NewCoins(sdk.NewInt64Coin(tokenfactorytypes.DefaultNeutronDenom, 10_000_000)),
 		FeeCollectorAddress,
 	))
+	suite.Require().NoError(err)
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {

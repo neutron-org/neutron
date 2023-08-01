@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"google.golang.org/grpc"
@@ -23,7 +24,9 @@ func (msg *MsgTransfer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{fromAddress}
 }
 
-func Msg_Transfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+// MsgOrigTransferHandler - 1) helps to bind `/neutron.transfer.Msg/Transfer` as a handler for `ibc.applications.transfer.v1.MsgTransfer`
+// 2) converts `ibc.applications.transfer.v1.MsgTransfer` into neutron.transfer.MsgTransfer` before processing.
+func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(types.MsgTransfer)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -70,7 +73,7 @@ var MsgServiceDescOrig = grpc.ServiceDesc{
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Transfer",
-			Handler:    Msg_Transfer_Handler,
+			Handler:    MsgOrigTransferHandler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

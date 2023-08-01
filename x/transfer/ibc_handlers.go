@@ -3,6 +3,8 @@ package transfer
 import (
 	"strings"
 
+	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
@@ -37,40 +39,59 @@ func (im IBCModule) outOfGasRecovery(
 	}
 }
 
-func (im IBCModule) createCachedContext(ctx sdk.Context) (cacheCtx sdk.Context, writeFn func(), newGasMeter sdk.GasMeter) {
-	gasLeft := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumed()
+// createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
+// If there is an error during Sudo call, we can safely revert changes made in cached context.
+func (im *IBCModule) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
+	gasMeter := ctx.GasMeter()
+	// determines type of gas meter by its prefix:
+	// * BasicGasMeter - basic gas meter which is used for processing tx directly in block;
+	// * InfiniteGasMeter - is used to process txs during simulation calls. We don't need to create a limit for such meter,
+	// since it's infinite.
+	gasMeterIsLimited := strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter")
 
-	var newLimit uint64
-	if gasLeft < GasReserve {
-		newLimit = 0
-	} else {
-		newLimit = gasLeft - GasReserve
+	cacheCtx, writeFn := ctx.CacheContext()
+
+	// if gas meter is limited:
+	// 1. calculate how much free gas left we have for a Sudo call;
+	// 2. If gasLeft less than reserved gas (GasReserved), we set gas limit for cached context to zero, meaning we can't
+	// 		process Sudo call;
+	// 3. If we have more gas left than reserved gas (GasReserved) for Sudo call, we set gas limit for cached context to
+	// 		difference between gas left and reserved gas: (gasLeft - GasReserve);
+	//
+	// GasReserve is the amount of gas on the context gas meter we need to reserve in order to add contract failure to keeper
+	// and process failed Sudo call
+	if gasMeterIsLimited {
+		gasLeft := gasMeter.Limit() - gasMeter.GasConsumed()
+
+		var newLimit uint64
+		if gasLeft < GasReserve {
+			newLimit = 0
+		} else {
+			newLimit = gasLeft - GasReserve
+		}
+
+		gasMeter = sdk.NewGasMeter(newLimit)
 	}
 
-	newGasMeter = sdk.NewGasMeter(newLimit)
+	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
 
-	cacheCtx, writeFn = ctx.CacheContext()
-	if strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter") {
-		cacheCtx = ctx.WithGasMeter(newGasMeter)
-	}
-
-	return
+	return cacheCtx, writeFn, gasMeter
 }
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
 func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
+		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
 	}
 	var data transfertypes.FungibleTokenPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
 	senderAddress, err := sdk.AccAddressFromBech32(data.GetSender())
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
@@ -89,6 +110,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "ack")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
+		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 
@@ -109,12 +131,12 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	var data transfertypes.FungibleTokenPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
 	senderAddress, err := sdk.AccAddressFromBech32(data.GetSender())
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
@@ -125,6 +147,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "timeout")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
+		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 

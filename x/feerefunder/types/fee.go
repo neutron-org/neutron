@@ -3,6 +3,8 @@ package types
 import (
 	"strings"
 
+	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -42,16 +44,16 @@ func (m Fee) Validate() error {
 	}
 
 	if len(errFees) > 0 {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "contains invalid fees: %s", strings.Join(errFees, " , "))
+		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "contains invalid fees: %s", strings.Join(errFees, " , "))
 	}
 
 	if !m.RecvFee.IsZero() {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
+		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "recv fee must be zero")
 	}
 
 	// if ack or timeout fees are zero or empty return an error
 	if m.AckFee.IsZero() || m.TimeoutFee.IsZero() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")
+		return errors.Wrap(sdkerrors.ErrInvalidCoins, "ack fee or timeout fee is zero")
 	}
 
 	return nil

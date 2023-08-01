@@ -3,6 +3,8 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/errors"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -24,7 +26,7 @@ func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.FromAddress); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", msg.FromAddress)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", msg.FromAddress)
 	}
 
 	if len(msg.InterchainAccountId) == 0 {
@@ -67,7 +69,7 @@ func (msg MsgSubmitTx) ValidateBasic() error {
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.FromAddress); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", msg.FromAddress)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse FromAddress: %s", msg.FromAddress)
 	}
 
 	if len(msg.InterchainAccountId) == 0 {
@@ -79,7 +81,7 @@ func (msg MsgSubmitTx) ValidateBasic() error {
 	}
 
 	if msg.Timeout <= 0 {
-		return sdkerrors.Wrapf(ErrInvalidTimeout, "timeout must be greater than zero")
+		return errors.Wrapf(ErrInvalidTimeout, "timeout must be greater than zero")
 	}
 
 	return nil

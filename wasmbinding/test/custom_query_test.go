@@ -249,10 +249,11 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 		owner   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
 	)
 
-	neutron.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.NewParams(
+	err := neutron.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.NewParams(
 		sdk.NewCoins(sdk.NewInt64Coin(tokenfactorytypes.DefaultNeutronDenom, 10_000_000)),
 		FeeCollectorAddress,
 	))
+	suite.Require().NoError(err)
 
 	// Store code and instantiate reflect contract
 	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
@@ -262,7 +263,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
 	bankKeeper := neutron.BankKeeper
-	err := bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
+	err = bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
 	suite.NoError(err)
 
 	denom, _ := neutron.TokenFactoryKeeper.CreateDenom(ctx, contractAddress.String(), "test")

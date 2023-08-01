@@ -4,7 +4,7 @@ package app_test
 // at the moment latest ibc-go release requires outdated app interface in the `simapp.SimulationOperations` method
 
 //
-//import (
+// import (
 //	"github.com/cosmos/cosmos-sdk/server/types"
 //	"github.com/cosmos/ibc-go/v7/testing/simapp"
 //	"os"
@@ -22,9 +22,9 @@ package app_test
 //	"github.com/neutron-org/neutron/app"
 //)
 //
-//func init() {
+// func init() {
 //	simapp.GetSimulatorFlags()
-//}
+// }
 //
 //type SimApp interface {
 //	GetBaseApp() *baseapp.BaseApp

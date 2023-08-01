@@ -2,10 +2,10 @@
 package bindings
 
 import (
+	"cosmossdk.io/math"
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
@@ -200,14 +200,14 @@ type ChangeAdmin struct {
 }
 
 type MintTokens struct {
-	Denom         string  `json:"denom"`
-	Amount        sdk.Int `json:"amount"`
-	MintToAddress string  `json:"mint_to_address"`
+	Denom         string   `json:"denom"`
+	Amount        math.Int `json:"amount"`
+	MintToAddress string   `json:"mint_to_address"`
 }
 
 type BurnTokens struct {
-	Denom  string  `json:"denom"`
-	Amount sdk.Int `json:"amount"`
+	Denom  string   `json:"denom"`
+	Amount math.Int `json:"amount"`
 	// BurnFromAddress must be set to "" for now.
 	BurnFromAddress string `json:"burn_from_address"`
 }

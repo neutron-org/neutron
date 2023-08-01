@@ -1,8 +1,10 @@
 package transfer
 
 import (
-	"cosmossdk.io/core/appmodule"
 	"fmt"
+
+	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -51,7 +53,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 ) error {
 	err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to process original OnAcknowledgementPacket")
+		return errors.Wrap(err, "failed to process original OnAcknowledgementPacket")
 	}
 	return im.HandleAcknowledgement(ctx, packet, acknowledgement, relayer)
 }
@@ -64,7 +66,7 @@ func (im IBCModule) OnTimeoutPacket(
 ) error {
 	err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to process original OnTimeoutPacket")
+		return errors.Wrap(err, "failed to process original OnTimeoutPacket")
 	}
 	return im.HandleTimeout(ctx, packet, relayer)
 }
@@ -98,7 +100,6 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 
 	cfg.MsgServer().RegisterService(&neutrontypes.MsgServiceDescOrig, am.keeper)
-
 }
 
 type AppModuleBasic struct {
@@ -151,7 +152,7 @@ func NewHandler(k wrapkeeper.KeeperTransferWrapper) sdk.Handler {
 
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
+			return nil, errors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}
 }

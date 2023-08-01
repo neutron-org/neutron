@@ -3,6 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	dbm "github.com/cometbft/cometbft-db"
@@ -34,9 +38,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	"io"
-	"os"
-	"path/filepath"
 	"time"
 
 	tmcfg "github.com/cometbft/cometbft/config"
@@ -151,6 +152,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
+	wasm.AddModuleInitFlags(startCmd)
 }
 
 func queryCommand() *cobra.Command {
@@ -279,6 +281,7 @@ func (ac appCreator) newApp(
 		baseapp.SetChainID(chainID),
 	)
 }
+
 func (ac appCreator) appExport(
 	logger log.Logger,
 	db dbm.DB,

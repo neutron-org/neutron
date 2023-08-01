@@ -3,7 +3,6 @@ package upgrades
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -48,5 +47,5 @@ type UpgradeKeepers struct {
 }
 
 type StoreKeys interface {
-	GetKey(string) *storetypes.KVStoreKey
+	GetKey(string) *store.KVStoreKey
 }

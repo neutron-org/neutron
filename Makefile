@@ -7,7 +7,7 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
-ENABLED_PROPOSALS := SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes
+ENABLED_PROPOSALS := MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes
 GO_VERSION=1.20.0
 BUILDDIR ?= $(CURDIR)/build
 

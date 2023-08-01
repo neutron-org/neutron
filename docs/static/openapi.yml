@@ -4,6 +4,554 @@ info:
   name: ''
   description: ''
 paths:
+  /cosmos/adminmodule/adminmodule/admins:
+    get:
+      summary: Queries a list of admins items.
+      operationId: CosmosAdminmoduleAdminmoduleAdmins
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              admins:
+                type: array
+                items:
+                  type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                      description: >-
+                        A URL/resource name that uniquely identifies the type of
+                        the serialized
+
+                        protocol buffer message. This string must contain at
+                        least
+
+                        one "/" character. The last segment of the URL's path
+                        must represent
+
+                        the fully qualified name of the type (as in
+
+                        `path/google.protobuf.Duration`). The name should be in
+                        a canonical form
+
+                        (e.g., leading "." is not accepted).
+
+
+                        In practice, teams usually precompile into the binary
+                        all types that they
+
+                        expect it to use in the context of Any. However, for
+                        URLs which use the
+
+                        scheme `http`, `https`, or no scheme, one can optionally
+                        set up a type
+
+                        server that maps type URLs to message definitions as
+                        follows:
+
+
+                        * If no scheme is provided, `https` is assumed.
+
+                        * An HTTP GET on the URL must yield a
+                        [google.protobuf.Type][]
+                          value in binary format, or produce an error.
+                        * Applications are allowed to cache lookup results based
+                        on the
+                          URL, or have them precompiled into a binary to avoid any
+                          lookup. Therefore, binary compatibility needs to be preserved
+                          on changes to types. (Use versioned type names to manage
+                          breaking changes.)
+
+                        Note: this functionality is not currently available in
+                        the official
+
+                        protobuf release, and it is not used for type URLs
+                        beginning with
+
+                        type.googleapis.com.
+
+
+                        Schemes other than `http`, `https` (or the empty scheme)
+                        might be
+
+                        used with implementation specific semantics.
+                  additionalProperties: {}
+                  description: >-
+                    `Any` contains an arbitrary serialized protocol buffer
+                    message along with a
+
+                    URL that describes the type of the serialized message.
+
+
+                    Protobuf library provides support to pack/unpack Any values
+                    in the form
+
+                    of utility functions or additional generated methods of the
+                    Any type.
+
+
+                    Example 1: Pack and unpack a message in C++.
+
+                        Foo foo = ...;
+                        Any any;
+                        any.PackFrom(foo);
+                        ...
+                        if (any.UnpackTo(&foo)) {
+                          ...
+                        }
+
+                    Example 2: Pack and unpack a message in Java.
+
+                        Foo foo = ...;
+                        Any any = Any.pack(foo);
+                        ...
+                        if (any.is(Foo.class)) {
+                          foo = any.unpack(Foo.class);
+                        }
+
+                     Example 3: Pack and unpack a message in Python.
+
+                        foo = Foo(...)
+                        any = Any()
+                        any.Pack(foo)
+                        ...
+                        if any.Is(Foo.DESCRIPTOR):
+                          any.Unpack(foo)
+                          ...
+
+                     Example 4: Pack and unpack a message in Go
+
+                         foo := &pb.Foo{...}
+                         any, err := anypb.New(foo)
+                         if err != nil {
+                           ...
+                         }
+                         ...
+                         foo := &pb.Foo{}
+                         if err := any.UnmarshalTo(foo); err != nil {
+                           ...
+                         }
+
+                    The pack methods provided by protobuf library will by
+                    default use
+
+                    'type.googleapis.com/full.type.name' as the type URL and the
+                    unpack
+
+                    methods only use the fully qualified type name after the
+                    last '/'
+
+                    in the type URL, for example "foo.bar.com/x/y.z" will yield
+                    type
+
+                    name "y.z".
+
+
+
+                    JSON
+
+                    ====
+
+                    The JSON representation of an `Any` value uses the regular
+
+                    representation of the deserialized, embedded message, with
+                    an
+
+                    additional field `@type` which contains the type URL.
+                    Example:
+
+                        package google.profile;
+                        message Person {
+                          string first_name = 1;
+                          string last_name = 2;
+                        }
+
+                        {
+                          "@type": "type.googleapis.com/google.profile.Person",
+                          "firstName": <string>,
+                          "lastName": <string>
+                        }
+
+                    If the embedded message type is well-known and has a custom
+                    JSON
+
+                    representation, that representation will be embedded adding
+                    a field
+
+                    `value` which holds the custom JSON in addition to the
+                    `@type`
+
+                    field. Example (for message [google.protobuf.Duration][]):
+
+                        {
+                          "@type": "type.googleapis.com/google.protobuf.Duration",
+                          "value": "1.212s"
+                        }
+      tags:
+        - Query
+  /cosmos/adminmodule/adminmodule/archivedproposals:
+    get:
+      summary: Queries a list of archived proposals.
+      operationId: CosmosAdminmoduleAdminmoduleArchivedProposals
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              proposals:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    proposal_id:
+                      type: string
+                      format: uint64
+                      description: proposal_id defines the unique id of the proposal.
+                    content:
+                      description: content is the proposal's content.
+                      type: object
+                      properties:
+                        '@type':
+                          type: string
+                          description: >-
+                            A URL/resource name that uniquely identifies the
+                            type of the serialized
+
+                            protocol buffer message. This string must contain at
+                            least
+
+                            one "/" character. The last segment of the URL's
+                            path must represent
+
+                            the fully qualified name of the type (as in
+
+                            `path/google.protobuf.Duration`). The name should be
+                            in a canonical form
+
+                            (e.g., leading "." is not accepted).
+
+
+                            In practice, teams usually precompile into the
+                            binary all types that they
+
+                            expect it to use in the context of Any. However, for
+                            URLs which use the
+
+                            scheme `http`, `https`, or no scheme, one can
+                            optionally set up a type
+
+                            server that maps type URLs to message definitions as
+                            follows:
+
+
+                            * If no scheme is provided, `https` is assumed.
+
+                            * An HTTP GET on the URL must yield a
+                            [google.protobuf.Type][]
+                              value in binary format, or produce an error.
+                            * Applications are allowed to cache lookup results
+                            based on the
+                              URL, or have them precompiled into a binary to avoid any
+                              lookup. Therefore, binary compatibility needs to be preserved
+                              on changes to types. (Use versioned type names to manage
+                              breaking changes.)
+
+                            Note: this functionality is not currently available
+                            in the official
+
+                            protobuf release, and it is not used for type URLs
+                            beginning with
+
+                            type.googleapis.com.
+
+
+                            Schemes other than `http`, `https` (or the empty
+                            scheme) might be
+
+                            used with implementation specific semantics.
+                      additionalProperties: {}
+                    status:
+                      description: status defines the proposal status.
+                      type: string
+                      enum:
+                        - PROPOSAL_STATUS_UNSPECIFIED
+                        - PROPOSAL_STATUS_DEPOSIT_PERIOD
+                        - PROPOSAL_STATUS_VOTING_PERIOD
+                        - PROPOSAL_STATUS_PASSED
+                        - PROPOSAL_STATUS_REJECTED
+                        - PROPOSAL_STATUS_FAILED
+                      default: PROPOSAL_STATUS_UNSPECIFIED
+                    final_tally_result:
+                      description: >-
+                        final_tally_result is the final tally result of the
+                        proposal. When
+
+                        querying a proposal via gRPC, this field is not
+                        populated until the
+
+                        proposal's voting period has ended.
+                      type: object
+                      properties:
+                        'yes':
+                          type: string
+                          description: yes is the number of yes votes on a proposal.
+                        abstain:
+                          type: string
+                          description: >-
+                            abstain is the number of abstain votes on a
+                            proposal.
+                        'no':
+                          type: string
+                          description: no is the number of no votes on a proposal.
+                        no_with_veto:
+                          type: string
+                          description: >-
+                            no_with_veto is the number of no with veto votes on
+                            a proposal.
+                    submit_time:
+                      type: string
+                      format: date-time
+                      description: submit_time is the time of proposal submission.
+                    deposit_end_time:
+                      type: string
+                      format: date-time
+                      description: deposit_end_time is the end time for deposition.
+                    total_deposit:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      description: total_deposit is the total deposit on the proposal.
+                    voting_start_time:
+                      type: string
+                      format: date-time
+                      description: >-
+                        voting_start_time is the starting time to vote on a
+                        proposal.
+                    voting_end_time:
+                      type: string
+                      format: date-time
+                      description: voting_end_time is the end time of voting on a proposal.
+                  description: >-
+                    Proposal defines the core field members of a governance
+                    proposal.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                      description: >-
+                        A URL/resource name that uniquely identifies the type of
+                        the serialized
+
+                        protocol buffer message. This string must contain at
+                        least
+
+                        one "/" character. The last segment of the URL's path
+                        must represent
+
+                        the fully qualified name of the type (as in
+
+                        `path/google.protobuf.Duration`). The name should be in
+                        a canonical form
+
+                        (e.g., leading "." is not accepted).
+
+
+                        In practice, teams usually precompile into the binary
+                        all types that they
+
+                        expect it to use in the context of Any. However, for
+                        URLs which use the
+
+                        scheme `http`, `https`, or no scheme, one can optionally
+                        set up a type
+
+                        server that maps type URLs to message definitions as
+                        follows:
+
+
+                        * If no scheme is provided, `https` is assumed.
+
+                        * An HTTP GET on the URL must yield a
+                        [google.protobuf.Type][]
+                          value in binary format, or produce an error.
+                        * Applications are allowed to cache lookup results based
+                        on the
+                          URL, or have them precompiled into a binary to avoid any
+                          lookup. Therefore, binary compatibility needs to be preserved
+                          on changes to types. (Use versioned type names to manage
+                          breaking changes.)
+
+                        Note: this functionality is not currently available in
+                        the official
+
+                        protobuf release, and it is not used for type URLs
+                        beginning with
+
+                        type.googleapis.com.
+
+
+                        Schemes other than `http`, `https` (or the empty scheme)
+                        might be
+
+                        used with implementation specific semantics.
+                  additionalProperties: {}
+                  description: >-
+                    `Any` contains an arbitrary serialized protocol buffer
+                    message along with a
+
+                    URL that describes the type of the serialized message.
+
+
+                    Protobuf library provides support to pack/unpack Any values
+                    in the form
+
+                    of utility functions or additional generated methods of the
+                    Any type.
+
+
+                    Example 1: Pack and unpack a message in C++.
+
+                        Foo foo = ...;
+                        Any any;
+                        any.PackFrom(foo);
+                        ...
+                        if (any.UnpackTo(&foo)) {
+                          ...
+                        }
+
+                    Example 2: Pack and unpack a message in Java.
+
+                        Foo foo = ...;
+                        Any any = Any.pack(foo);
+                        ...
+                        if (any.is(Foo.class)) {
+                          foo = any.unpack(Foo.class);
+                        }
+
+                     Example 3: Pack and unpack a message in Python.
+
+                        foo = Foo(...)
+                        any = Any()
+                        any.Pack(foo)
+                        ...
+                        if any.Is(Foo.DESCRIPTOR):
+                          any.Unpack(foo)
+                          ...
+
+                     Example 4: Pack and unpack a message in Go
+
+                         foo := &pb.Foo{...}
+                         any, err := anypb.New(foo)
+                         if err != nil {
+                           ...
+                         }
+                         ...
+                         foo := &pb.Foo{}
+                         if err := any.UnmarshalTo(foo); err != nil {
+                           ...
+                         }
+
+                    The pack methods provided by protobuf library will by
+                    default use
+
+                    'type.googleapis.com/full.type.name' as the type URL and the
+                    unpack
+
+                    methods only use the fully qualified type name after the
+                    last '/'
+
+                    in the type URL, for example "foo.bar.com/x/y.z" will yield
+                    type
+
+                    name "y.z".
+
+
+
+                    JSON
+
+                    ====
+
+                    The JSON representation of an `Any` value uses the regular
+
+                    representation of the deserialized, embedded message, with
+                    an
+
+                    additional field `@type` which contains the type URL.
+                    Example:
+
+                        package google.profile;
+                        message Person {
+                          string first_name = 1;
+                          string last_name = 2;
+                        }
+
+                        {
+                          "@type": "type.googleapis.com/google.profile.Person",
+                          "firstName": <string>,
+                          "lastName": <string>
+                        }
+
+                    If the embedded message type is well-known and has a custom
+                    JSON
+
+                    representation, that representation will be embedded adding
+                    a field
+
+                    `value` which holds the custom JSON in addition to the
+                    `@type`
+
+                    field. Example (for message [google.protobuf.Duration][]):
+
+                        {
+                          "@type": "type.googleapis.com/google.protobuf.Duration",
+                          "value": "1.212s"
+                        }
+      tags:
+        - Query
   /cosmos/auth/v1beta1/account_info/{address}:
     get:
       summary: AccountInfo queries account info which is common to all account types.
@@ -21944,6 +22492,93 @@ paths:
           type: boolean
       tags:
         - Query
+  /gaia/globalfee/v1beta1/params:
+    get:
+      operationId: GaiaGlobalfeeV1Beta1Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                type: object
+                properties:
+                  minimum_gas_prices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    title: >-
+                      minimum_gas_prices stores the minimum gas price(s) for all
+                      TX on the chain.
+
+                      When multiple coins are defined then they are accepted
+                      alternatively.
+
+                      The list must be sorted by denoms asc. No duplicate denoms
+                      or zero amount
+
+                      values allowed. For more information see
+
+                      https://docs.cosmos.network/main/modules/auth#concepts
+                  bypass_min_fee_msg_types:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      bypass_min_fee_msg_types defines a list of message type
+                      urls
+
+                      that are free of fee charge.
+                  max_total_bypass_min_fee_msg_gas_usage:
+                    type: string
+                    format: uint64
+                    description: >-
+                      max_total_bypass_min_fee_msg_gas_usage defines the total
+                      maximum gas usage
+
+                      allowed for a transaction containing only messages of
+                      types in bypass_min_fee_msg_types
+
+                      to bypass fee charge.
+                description: Params defines the set of module parameters.
+            description: |-
+              QueryMinimumGasPricesResponse is the response type for the
+              Query/MinimumGasPrices RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Query
   /ibc/apps/interchain_accounts/controller/v1/owners/{owner}/connections/{connection_id}:
     get:
       summary: >-
@@ -29070,7 +29705,13 @@ paths:
                       type: string
                     description: >-
                       allowed_clients defines the list of allowed client state
-                      types.
+                      types which can be created
+
+                      and interacted with. If a client type is removed from the
+                      allowed clients list, usage
+
+                      of this client will be disabled until it is added again to
+                      the list.
             description: >-
               QueryClientParamsResponse is the response type for the
               Query/ClientParams RPC
@@ -32367,7 +33008,7 @@ paths:
                       The number of historical info entries to persist in store.
 
                       This param is a part of the cosmos sdk staking module. In
-                      the case of 
+                      the case of
 
                       a ccv enabled consumer chain, the ccv module acts as the
                       staking module.
@@ -32385,10 +33026,31 @@ paths:
                       bottom of the set who
 
                       can opt out of running the consumer chain without being
-                      punished. For example, a
+                      punished. For
 
-                      value of 0.05 means that the validators in the bottom 5%
-                      of the set can opt out
+                      example, a value of 0.05 means that the validators in the
+                      bottom 5% of the
+
+                      set can opt out
+                  reward_denoms:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      Reward denoms. These are the denominations which are
+                      allowed to be sent to
+
+                      the provider as rewards.
+                  provider_reward_denoms:
+                    type: array
+                    items:
+                      type: string
+                    title: >-
+                      Provider-originated reward denoms. These are denoms coming
+                      from the
+
+                      provider which are allowed to be used as rewards. e.g.
+                      "uatom"
                 title: Params defines the parameters for CCV consumer module
             description: >-
               QueryParamsResponse is response type for the Query/Params RPC
@@ -32608,17 +33270,19 @@ paths:
                           type: string
                           description: >-
                             the proposed chain-id of the new consumer chain,
-                            must be different from all other consumer chain ids
-                            of the executing
+                            must be different from all
 
-                            provider chain.
+                            other consumer chain ids of the executing provider
+                            chain.
                         initial_height:
                           description: >-
                             the proposed initial height of new consumer chain.
 
                             For a completely new chain, this will be {0,1}.
-                            However, it may be different if this is a chain that
-                            is converting to a consumer chain.
+                            However, it may be
+
+                            different if this is a chain that is converting to a
+                            consumer chain.
                           type: object
                           properties:
                             revision_number:
@@ -32641,9 +33305,11 @@ paths:
                           format: byte
                           description: >-
                             The hash of the consumer chain genesis state without
-                            the consumer CCV module genesis params. 
+                            the consumer CCV
 
-                            It is used for off-chain confirmation of
+                            module genesis params. It is used for off-chain
+                            confirmation of
+
                             genesis.json validity by validators and other
                             parties.
                         binary_hash:
@@ -32651,20 +33317,23 @@ paths:
                           format: byte
                           description: >-
                             The hash of the consumer chain binary that should be
-                            run by validators on chain initialization.
+                            run by validators on
 
-                            It is used for off-chain confirmation of binary
+                            chain initialization. It is used for off-chain
+                            confirmation of binary
+
                             validity by validators and other parties.
                         spawn_time:
                           type: string
                           format: date-time
                           description: >-
                             spawn time is the time on the provider chain at
-                            which the consumer chain genesis is finalized and
-                            all validators
+                            which the consumer chain
 
-                            will be responsible for starting their consumer
-                            chain validator node.
+                            genesis is finalized and all validators will be
+                            responsible for starting
+
+                            their consumer chain validator node.
                         unbonding_period:
                           type: string
                           description: >-
@@ -32698,11 +33367,14 @@ paths:
                           format: int64
                           description: >-
                             BlocksPerDistributionTransmission is the number of
-                            blocks between ibc-token-transfers from the consumer
-                            chain to the provider chain.
+                            blocks between
 
-                            On sending transmission event,
+                            ibc-token-transfers from the consumer chain to the
+                            provider chain. On
+
+                            sending transmission event,
                             `consumer_redistribution_fraction` of the
+
                             accumulated tokens are sent to the consumer
                             redistribution address.
                         historical_entries:
@@ -32713,24 +33385,50 @@ paths:
                             store.
 
                             This param is a part of the cosmos sdk staking
-                            module. In the case of 
+                            module. In the case of
 
                             a ccv enabled consumer chain, the ccv module acts as
                             the staking module.
+                        distribution_transmission_channel:
+                          type: string
+                          title: >-
+                            The ID of a token transfer channel used for the
+                            Reward Distribution
+
+                            sub-protocol. If DistributionTransmissionChannel ==
+                            "", a new transfer
+
+                            channel is created on top of the same connection as
+                            the CCV channel.
+
+                            Note that transfer_channel_id is the ID of the
+                            channel end on the consumer
+
+                            chain. it is most relevant for chains performing a
+                            sovereign to consumer
+
+                            changeover in order to maintan the existing ibc
+                            transfer channel
                       description: >-
                         ConsumerAdditionProposal is a governance proposal on the
-                        provider chain to spawn a new consumer chain.
+                        provider chain to
 
-                        If it passes, then all validators on the provider chain
-                        are expected to validate the consumer chain at spawn
-                        time
+                        spawn a new consumer chain. If it passes, then all
+                        validators on the provider
 
-                        or get slashed. It is recommended that spawn time occurs
-                        after the proposal end time.
+                        chain are expected to validate the consumer chain at
+                        spawn time or get
+
+                        slashed. It is recommended that spawn time occurs after
+                        the proposal end
+
+                        time.
                     title: proposals waiting for spawn_time to pass
                 description: >-
                   ConsumerAdditionProposals holds pending governance proposals
-                  on the provider chain to spawn a new chain.
+                  on the provider
+
+                  chain to spawn a new chain.
         default:
           description: An unexpected error response.
           schema:
@@ -32950,20 +33648,26 @@ paths:
                           format: date-time
                           title: >-
                             the time on the provider chain at which all
-                            validators are responsible to stop their consumer
-                            chain validator node
+                            validators are responsible to
+
+                            stop their consumer chain validator node
                       description: >-
                         ConsumerRemovalProposal is a governance proposal on the
-                        provider chain to remove (and stop) a consumer chain.
+                        provider chain to
 
-                        If it passes, all the consumer chain's state is removed
-                        from the provider chain. The outstanding unbonding
+                        remove (and stop) a consumer chain. If it passes, all
+                        the consumer chain's
 
-                        operation funds are released.
+                        state is removed from the provider chain. The
+                        outstanding unbonding operation
+
+                        funds are released.
                     title: proposals waiting for stop_time to pass
                 description: >-
                   ConsumerRemovalProposals holds pending governance proposals on
-                  the provider chain to remove (and stop) a consumer chain.
+                  the provider
+
+                  chain to remove (and stop) a consumer chain.
         default:
           description: An unexpected error response.
           schema:
@@ -33446,7 +34150,7 @@ paths:
                           store.
 
                           This param is a part of the cosmos sdk staking module.
-                          In the case of 
+                          In the case of
 
                           a ccv enabled consumer chain, the ccv module acts as
                           the staking module.
@@ -33464,10 +34168,31 @@ paths:
                           bottom of the set who
 
                           can opt out of running the consumer chain without
-                          being punished. For example, a
+                          being punished. For
 
-                          value of 0.05 means that the validators in the bottom
-                          5% of the set can opt out
+                          example, a value of 0.05 means that the validators in
+                          the bottom 5% of the
+
+                          set can opt out
+                      reward_denoms:
+                        type: array
+                        items:
+                          type: string
+                        description: >-
+                          Reward denoms. These are the denominations which are
+                          allowed to be sent to
+
+                          the provider as rewards.
+                      provider_reward_denoms:
+                        type: array
+                        items:
+                          type: string
+                        title: >-
+                          Provider-originated reward denoms. These are denoms
+                          coming from the
+
+                          provider which are allowed to be used as rewards. e.g.
+                          "uatom"
                     title: Params defines the parameters for CCV consumer module
                   provider_client_id:
                     type: string
@@ -33929,7 +34654,7 @@ paths:
                           format: uint64
                       title: >-
                         HeightValsetUpdateID defines the genesis information for
-                        the mapping 
+                        the mapping
 
                         of each block height to a valset update id
                     description: >-
@@ -34058,9 +34783,7 @@ paths:
                       pools were transmitted to the provider chain
                   preCCV:
                     type: boolean
-                    title: >-
-                      flag indicating whether the consumer CCV module starts in
-                      pre-CCV state
+                    title: flag indicating whether the consumer CCV module starts in
                 title: GenesisState defines the CCV consumer chain genesis state
         default:
           description: An unexpected error response.
@@ -34256,11 +34979,9 @@ paths:
         - Query
   /interchain_security/ccv/provider/pending_consumer_packets:
     get:
-      summary: >-
+      summary: |-
         QueryThrottledConsumerPacketData returns a list of pending packet data
-        instances
-
-        (slash packet and vsc matured) for a single consumer chain
+        instances (slash packet and vsc matured) for a single consumer chain
       operationId: InterchainSecurityCcvProviderV1QueryThrottledConsumerPacketData
       responses:
         '200':
@@ -34338,7 +35059,9 @@ paths:
                         consumer chain.
                   title: >-
                     ThrottledPacketDataWrapper contains either SlashPacketData
-                    or VSCMaturedPacketData
+                    or
+
+                    VSCMaturedPacketData
         default:
           description: An unexpected error response.
           schema:
@@ -34531,9 +35254,212 @@ paths:
           type: string
       tags:
         - Query
+  /interchain_security/ccv/provider/registered_consumer_reward_denoms:
+    get:
+      summary: |-
+        QueryRegisteredConsumerRewardDenoms returns a list of consumer reward
+        denoms that are registered
+      operationId: InterchainSecurityCcvProviderV1QueryRegisteredConsumerRewardDenoms
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              denoms:
+                type: array
+                items:
+                  type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                      description: >-
+                        A URL/resource name that uniquely identifies the type of
+                        the serialized
+
+                        protocol buffer message. This string must contain at
+                        least
+
+                        one "/" character. The last segment of the URL's path
+                        must represent
+
+                        the fully qualified name of the type (as in
+
+                        `path/google.protobuf.Duration`). The name should be in
+                        a canonical form
+
+                        (e.g., leading "." is not accepted).
+
+
+                        In practice, teams usually precompile into the binary
+                        all types that they
+
+                        expect it to use in the context of Any. However, for
+                        URLs which use the
+
+                        scheme `http`, `https`, or no scheme, one can optionally
+                        set up a type
+
+                        server that maps type URLs to message definitions as
+                        follows:
+
+
+                        * If no scheme is provided, `https` is assumed.
+
+                        * An HTTP GET on the URL must yield a
+                        [google.protobuf.Type][]
+                          value in binary format, or produce an error.
+                        * Applications are allowed to cache lookup results based
+                        on the
+                          URL, or have them precompiled into a binary to avoid any
+                          lookup. Therefore, binary compatibility needs to be preserved
+                          on changes to types. (Use versioned type names to manage
+                          breaking changes.)
+
+                        Note: this functionality is not currently available in
+                        the official
+
+                        protobuf release, and it is not used for type URLs
+                        beginning with
+
+                        type.googleapis.com.
+
+
+                        Schemes other than `http`, `https` (or the empty scheme)
+                        might be
+
+                        used with implementation specific semantics.
+                  additionalProperties: {}
+                  description: >-
+                    `Any` contains an arbitrary serialized protocol buffer
+                    message along with a
+
+                    URL that describes the type of the serialized message.
+
+
+                    Protobuf library provides support to pack/unpack Any values
+                    in the form
+
+                    of utility functions or additional generated methods of the
+                    Any type.
+
+
+                    Example 1: Pack and unpack a message in C++.
+
+                        Foo foo = ...;
+                        Any any;
+                        any.PackFrom(foo);
+                        ...
+                        if (any.UnpackTo(&foo)) {
+                          ...
+                        }
+
+                    Example 2: Pack and unpack a message in Java.
+
+                        Foo foo = ...;
+                        Any any = Any.pack(foo);
+                        ...
+                        if (any.is(Foo.class)) {
+                          foo = any.unpack(Foo.class);
+                        }
+
+                     Example 3: Pack and unpack a message in Python.
+
+                        foo = Foo(...)
+                        any = Any()
+                        any.Pack(foo)
+                        ...
+                        if any.Is(Foo.DESCRIPTOR):
+                          any.Unpack(foo)
+                          ...
+
+                     Example 4: Pack and unpack a message in Go
+
+                         foo := &pb.Foo{...}
+                         any, err := anypb.New(foo)
+                         if err != nil {
+                           ...
+                         }
+                         ...
+                         foo := &pb.Foo{}
+                         if err := any.UnmarshalTo(foo); err != nil {
+                           ...
+                         }
+
+                    The pack methods provided by protobuf library will by
+                    default use
+
+                    'type.googleapis.com/full.type.name' as the type URL and the
+                    unpack
+
+                    methods only use the fully qualified type name after the
+                    last '/'
+
+                    in the type URL, for example "foo.bar.com/x/y.z" will yield
+                    type
+
+                    name "y.z".
+
+
+
+                    JSON
+
+                    ====
+
+                    The JSON representation of an `Any` value uses the regular
+
+                    representation of the deserialized, embedded message, with
+                    an
+
+                    additional field `@type` which contains the type URL.
+                    Example:
+
+                        package google.profile;
+                        message Person {
+                          string first_name = 1;
+                          string last_name = 2;
+                        }
+
+                        {
+                          "@type": "type.googleapis.com/google.profile.Person",
+                          "firstName": <string>,
+                          "lastName": <string>
+                        }
+
+                    If the embedded message type is well-known and has a custom
+                    JSON
+
+                    representation, that representation will be embedded adding
+                    a field
+
+                    `value` which holds the custom JSON in addition to the
+                    `@type`
+
+                    field. Example (for message [google.protobuf.Duration][]):
+
+                        {
+                          "@type": "type.googleapis.com/google.protobuf.Duration",
+                          "value": "1.212s"
+                        }
+      tags:
+        - Query
   /interchain_security/ccv/provider/throttle_state:
     get:
-      summary: >-
+      summary: |-
         QueryThrottleState returns the main on-chain state relevant to currently
         throttled slash packets
       operationId: InterchainSecurityCcvProviderV1QueryThrottleState
@@ -34552,15 +35478,18 @@ paths:
                 format: int64
                 description: >-
                   allowance of voting power units (int) that the slash meter is
-                  given per replenish period
+                  given per
 
-                  this also serves as the max value for the meter.
+                  replenish period this also serves as the max value for the
+                  meter.
               next_replenish_candidate:
                 type: string
                 format: date-time
                 title: >-
                   next time the slash meter could potentially be replenished,
-                  iff it's not full
+                  iff it's not
+
+                  full
               packets:
                 type: array
                 items:
@@ -34584,35 +35513,33 @@ paths:
                           type: string
                           format: uint64
                           description: >-
-                            The IBC sequence number of the recv packet.  
+                            The IBC sequence number of the recv packet.
 
                             This field is used in the store key to ensure
                             uniqueness.
                         provider_val_cons_addr:
+                          type: string
+                          format: byte
                           description: >-
                             The provider's consensus address of the validator
-                            being slashed. 
+                            being slashed.
 
                             This field is used to obtain validator power in
                             HandleThrottleQueues.
 
 
                             This field is not used in the store key, but is
-                            persisted in value bytes, see QueueGlobalSlashEntry.
-                          type: object
-                          properties:
-                            address:
-                              type: string
-                              format: byte
-                          title: >-
-                            A validator's consensus address on the provider
-                            chain
+                            persisted in value bytes,
+
+                            see QueueGlobalSlashEntry.
                       description: >-
                         A persisted queue entry indicating that a slash packet
-                        data instance needs to be handled.
+                        data instance needs to
 
-                        This type belongs in the "global" queue, to coordinate
-                        slash packet handling times between consumers.
+                        be handled. This type belongs in the "global" queue, to
+                        coordinate slash
+
+                        packet handling times between consumers.
                     data:
                       type: object
                       properties:
@@ -34660,7 +35587,9 @@ paths:
                         committed on the consumer chain.
                   description: >-
                     A query wrapper type for the global entry and data relevant
-                    to a throttled slash packet.
+                    to a throttled
+
+                    slash packet.
                 title: data relevant to currently throttled slash packets
         default:
           description: An unexpected error response.
@@ -39149,6 +40078,152 @@ paths:
                   additionalProperties: {}
       tags:
         - Query
+  /pob/builder/v1/bid:
+    post:
+      summary: AuctionBid defines a method for sending bids to the x/builder module.
+      operationId: PobBuilderV1AuctionBid
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            description: MsgAuctionBidResponse defines the Msg/AuctionBid response type.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: bidder
+          description: |-
+            bidder is the address of the account that is submitting a bid to the
+            auction.
+          in: query
+          required: false
+          type: string
+        - name: bid.denom
+          in: query
+          required: false
+          type: string
+        - name: bid.amount
+          in: query
+          required: false
+          type: string
+        - name: transactions
+          description: >-
+            transactions are the bytes of the transactions that the bidder wants
+            to
+
+            bundle together.
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+            format: byte
+          collectionFormat: multi
+      tags:
+        - Msg
+  /pob/builder/v1/params:
+    get:
+      summary: Params queries the parameters of the x/builder module.
+      operationId: PobBuilderV1Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  max_bundle_size:
+                    type: integer
+                    format: int64
+                    description: >-
+                      max_bundle_size is the maximum number of transactions that
+                      can be bundled
+
+                      in a single bundle.
+                  escrow_account_address:
+                    type: string
+                    format: byte
+                    description: >-
+                      escrow_account_address is the address of the account that
+                      will receive a
+
+                      portion of the bid proceeds.
+                  reserve_fee:
+                    description: reserve_fee specifies the bid floor for the auction.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                  min_bid_increment:
+                    description: >-
+                      min_bid_increment specifies the minimum amount that the
+                      next bid must be
+
+                      greater than the previous bid.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                  front_running_protection:
+                    type: boolean
+                    description: >-
+                      front_running_protection specifies whether front running
+                      and sandwich
+
+                      attack protection is enabled.
+                  proposer_fee:
+                    type: string
+                    description: >-
+                      proposer_fee defines the portion of the winning bid that
+                      goes to the block
+
+                      proposer that proposed the block.
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Query
   /ibc/apps/router/v1/params:
     get:
       summary: Params queries all parameters of the router module.
@@ -39189,6 +40264,670 @@ paths:
       tags:
         - Query
 definitions:
+  cosmos.adminmodule.adminmodule.MsgAddAdminResponse:
+    type: object
+  cosmos.adminmodule.adminmodule.MsgDeleteAdminResponse:
+    type: object
+  cosmos.adminmodule.adminmodule.MsgSubmitProposalResponse:
+    type: object
+    properties:
+      proposal_id:
+        type: string
+        format: uint64
+    description: MsgSubmitProposalResponse defines the Msg/SubmitProposal response type.
+  cosmos.adminmodule.adminmodule.QueryAdminsResponse:
+    type: object
+    properties:
+      admins:
+        type: array
+        items:
+          type: string
+  cosmos.adminmodule.adminmodule.QueryArchivedProposalsResponse:
+    type: object
+    properties:
+      proposals:
+        type: array
+        items:
+          type: object
+          properties:
+            proposal_id:
+              type: string
+              format: uint64
+              description: proposal_id defines the unique id of the proposal.
+            content:
+              description: content is the proposal's content.
+              type: object
+              properties:
+                '@type':
+                  type: string
+                  description: >-
+                    A URL/resource name that uniquely identifies the type of the
+                    serialized
+
+                    protocol buffer message. This string must contain at least
+
+                    one "/" character. The last segment of the URL's path must
+                    represent
+
+                    the fully qualified name of the type (as in
+
+                    `path/google.protobuf.Duration`). The name should be in a
+                    canonical form
+
+                    (e.g., leading "." is not accepted).
+
+
+                    In practice, teams usually precompile into the binary all
+                    types that they
+
+                    expect it to use in the context of Any. However, for URLs
+                    which use the
+
+                    scheme `http`, `https`, or no scheme, one can optionally set
+                    up a type
+
+                    server that maps type URLs to message definitions as
+                    follows:
+
+
+                    * If no scheme is provided, `https` is assumed.
+
+                    * An HTTP GET on the URL must yield a
+                    [google.protobuf.Type][]
+                      value in binary format, or produce an error.
+                    * Applications are allowed to cache lookup results based on
+                    the
+                      URL, or have them precompiled into a binary to avoid any
+                      lookup. Therefore, binary compatibility needs to be preserved
+                      on changes to types. (Use versioned type names to manage
+                      breaking changes.)
+
+                    Note: this functionality is not currently available in the
+                    official
+
+                    protobuf release, and it is not used for type URLs beginning
+                    with
+
+                    type.googleapis.com.
+
+
+                    Schemes other than `http`, `https` (or the empty scheme)
+                    might be
+
+                    used with implementation specific semantics.
+              additionalProperties: {}
+            status:
+              description: status defines the proposal status.
+              type: string
+              enum:
+                - PROPOSAL_STATUS_UNSPECIFIED
+                - PROPOSAL_STATUS_DEPOSIT_PERIOD
+                - PROPOSAL_STATUS_VOTING_PERIOD
+                - PROPOSAL_STATUS_PASSED
+                - PROPOSAL_STATUS_REJECTED
+                - PROPOSAL_STATUS_FAILED
+              default: PROPOSAL_STATUS_UNSPECIFIED
+            final_tally_result:
+              description: >-
+                final_tally_result is the final tally result of the proposal.
+                When
+
+                querying a proposal via gRPC, this field is not populated until
+                the
+
+                proposal's voting period has ended.
+              type: object
+              properties:
+                'yes':
+                  type: string
+                  description: yes is the number of yes votes on a proposal.
+                abstain:
+                  type: string
+                  description: abstain is the number of abstain votes on a proposal.
+                'no':
+                  type: string
+                  description: no is the number of no votes on a proposal.
+                no_with_veto:
+                  type: string
+                  description: >-
+                    no_with_veto is the number of no with veto votes on a
+                    proposal.
+            submit_time:
+              type: string
+              format: date-time
+              description: submit_time is the time of proposal submission.
+            deposit_end_time:
+              type: string
+              format: date-time
+              description: deposit_end_time is the end time for deposition.
+            total_deposit:
+              type: array
+              items:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              description: total_deposit is the total deposit on the proposal.
+            voting_start_time:
+              type: string
+              format: date-time
+              description: voting_start_time is the starting time to vote on a proposal.
+            voting_end_time:
+              type: string
+              format: date-time
+              description: voting_end_time is the end time of voting on a proposal.
+          description: Proposal defines the core field members of a governance proposal.
+  cosmos.base.v1beta1.Coin:
+    type: object
+    properties:
+      denom:
+        type: string
+      amount:
+        type: string
+    description: |-
+      Coin defines a token with a denomination and an amount.
+
+      NOTE: The amount field is an Int which implements the custom method
+      signatures required by gogoproto.
+  cosmos.gov.v1beta1.Proposal:
+    type: object
+    properties:
+      proposal_id:
+        type: string
+        format: uint64
+        description: proposal_id defines the unique id of the proposal.
+      content:
+        description: content is the proposal's content.
+        type: object
+        properties:
+          '@type':
+            type: string
+            description: >-
+              A URL/resource name that uniquely identifies the type of the
+              serialized
+
+              protocol buffer message. This string must contain at least
+
+              one "/" character. The last segment of the URL's path must
+              represent
+
+              the fully qualified name of the type (as in
+
+              `path/google.protobuf.Duration`). The name should be in a
+              canonical form
+
+              (e.g., leading "." is not accepted).
+
+
+              In practice, teams usually precompile into the binary all types
+              that they
+
+              expect it to use in the context of Any. However, for URLs which
+              use the
+
+              scheme `http`, `https`, or no scheme, one can optionally set up a
+              type
+
+              server that maps type URLs to message definitions as follows:
+
+
+              * If no scheme is provided, `https` is assumed.
+
+              * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+                value in binary format, or produce an error.
+              * Applications are allowed to cache lookup results based on the
+                URL, or have them precompiled into a binary to avoid any
+                lookup. Therefore, binary compatibility needs to be preserved
+                on changes to types. (Use versioned type names to manage
+                breaking changes.)
+
+              Note: this functionality is not currently available in the
+              official
+
+              protobuf release, and it is not used for type URLs beginning with
+
+              type.googleapis.com.
+
+
+              Schemes other than `http`, `https` (or the empty scheme) might be
+
+              used with implementation specific semantics.
+        additionalProperties: {}
+      status:
+        description: status defines the proposal status.
+        type: string
+        enum:
+          - PROPOSAL_STATUS_UNSPECIFIED
+          - PROPOSAL_STATUS_DEPOSIT_PERIOD
+          - PROPOSAL_STATUS_VOTING_PERIOD
+          - PROPOSAL_STATUS_PASSED
+          - PROPOSAL_STATUS_REJECTED
+          - PROPOSAL_STATUS_FAILED
+        default: PROPOSAL_STATUS_UNSPECIFIED
+      final_tally_result:
+        description: |-
+          final_tally_result is the final tally result of the proposal. When
+          querying a proposal via gRPC, this field is not populated until the
+          proposal's voting period has ended.
+        type: object
+        properties:
+          'yes':
+            type: string
+            description: yes is the number of yes votes on a proposal.
+          abstain:
+            type: string
+            description: abstain is the number of abstain votes on a proposal.
+          'no':
+            type: string
+            description: no is the number of no votes on a proposal.
+          no_with_veto:
+            type: string
+            description: no_with_veto is the number of no with veto votes on a proposal.
+      submit_time:
+        type: string
+        format: date-time
+        description: submit_time is the time of proposal submission.
+      deposit_end_time:
+        type: string
+        format: date-time
+        description: deposit_end_time is the end time for deposition.
+      total_deposit:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        description: total_deposit is the total deposit on the proposal.
+      voting_start_time:
+        type: string
+        format: date-time
+        description: voting_start_time is the starting time to vote on a proposal.
+      voting_end_time:
+        type: string
+        format: date-time
+        description: voting_end_time is the end time of voting on a proposal.
+    description: Proposal defines the core field members of a governance proposal.
+  cosmos.gov.v1beta1.ProposalStatus:
+    type: string
+    enum:
+      - PROPOSAL_STATUS_UNSPECIFIED
+      - PROPOSAL_STATUS_DEPOSIT_PERIOD
+      - PROPOSAL_STATUS_VOTING_PERIOD
+      - PROPOSAL_STATUS_PASSED
+      - PROPOSAL_STATUS_REJECTED
+      - PROPOSAL_STATUS_FAILED
+    default: PROPOSAL_STATUS_UNSPECIFIED
+    description: |-
+      ProposalStatus enumerates the valid statuses of a proposal.
+
+       - PROPOSAL_STATUS_UNSPECIFIED: PROPOSAL_STATUS_UNSPECIFIED defines the default proposal status.
+       - PROPOSAL_STATUS_DEPOSIT_PERIOD: PROPOSAL_STATUS_DEPOSIT_PERIOD defines a proposal status during the deposit
+      period.
+       - PROPOSAL_STATUS_VOTING_PERIOD: PROPOSAL_STATUS_VOTING_PERIOD defines a proposal status during the voting
+      period.
+       - PROPOSAL_STATUS_PASSED: PROPOSAL_STATUS_PASSED defines a proposal status of a proposal that has
+      passed.
+       - PROPOSAL_STATUS_REJECTED: PROPOSAL_STATUS_REJECTED defines a proposal status of a proposal that has
+      been rejected.
+       - PROPOSAL_STATUS_FAILED: PROPOSAL_STATUS_FAILED defines a proposal status of a proposal that has
+      failed.
+  cosmos.gov.v1beta1.TallyResult:
+    type: object
+    properties:
+      'yes':
+        type: string
+        description: yes is the number of yes votes on a proposal.
+      abstain:
+        type: string
+        description: abstain is the number of abstain votes on a proposal.
+      'no':
+        type: string
+        description: no is the number of no votes on a proposal.
+      no_with_veto:
+        type: string
+        description: no_with_veto is the number of no with veto votes on a proposal.
+    description: TallyResult defines a standard tally for a governance proposal.
+  google.protobuf.Any:
+    type: object
+    properties:
+      '@type':
+        type: string
+        description: >-
+          A URL/resource name that uniquely identifies the type of the
+          serialized
+
+          protocol buffer message. This string must contain at least
+
+          one "/" character. The last segment of the URL's path must represent
+
+          the fully qualified name of the type (as in
+
+          `path/google.protobuf.Duration`). The name should be in a canonical
+          form
+
+          (e.g., leading "." is not accepted).
+
+
+          In practice, teams usually precompile into the binary all types that
+          they
+
+          expect it to use in the context of Any. However, for URLs which use
+          the
+
+          scheme `http`, `https`, or no scheme, one can optionally set up a type
+
+          server that maps type URLs to message definitions as follows:
+
+
+          * If no scheme is provided, `https` is assumed.
+
+          * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+            value in binary format, or produce an error.
+          * Applications are allowed to cache lookup results based on the
+            URL, or have them precompiled into a binary to avoid any
+            lookup. Therefore, binary compatibility needs to be preserved
+            on changes to types. (Use versioned type names to manage
+            breaking changes.)
+
+          Note: this functionality is not currently available in the official
+
+          protobuf release, and it is not used for type URLs beginning with
+
+          type.googleapis.com.
+
+
+          Schemes other than `http`, `https` (or the empty scheme) might be
+
+          used with implementation specific semantics.
+    additionalProperties: {}
+    description: >-
+      `Any` contains an arbitrary serialized protocol buffer message along with
+      a
+
+      URL that describes the type of the serialized message.
+
+
+      Protobuf library provides support to pack/unpack Any values in the form
+
+      of utility functions or additional generated methods of the Any type.
+
+
+      Example 1: Pack and unpack a message in C++.
+
+          Foo foo = ...;
+          Any any;
+          any.PackFrom(foo);
+          ...
+          if (any.UnpackTo(&foo)) {
+            ...
+          }
+
+      Example 2: Pack and unpack a message in Java.
+
+          Foo foo = ...;
+          Any any = Any.pack(foo);
+          ...
+          if (any.is(Foo.class)) {
+            foo = any.unpack(Foo.class);
+          }
+
+       Example 3: Pack and unpack a message in Python.
+
+          foo = Foo(...)
+          any = Any()
+          any.Pack(foo)
+          ...
+          if any.Is(Foo.DESCRIPTOR):
+            any.Unpack(foo)
+            ...
+
+       Example 4: Pack and unpack a message in Go
+
+           foo := &pb.Foo{...}
+           any, err := anypb.New(foo)
+           if err != nil {
+             ...
+           }
+           ...
+           foo := &pb.Foo{}
+           if err := any.UnmarshalTo(foo); err != nil {
+             ...
+           }
+
+      The pack methods provided by protobuf library will by default use
+
+      'type.googleapis.com/full.type.name' as the type URL and the unpack
+
+      methods only use the fully qualified type name after the last '/'
+
+      in the type URL, for example "foo.bar.com/x/y.z" will yield type
+
+      name "y.z".
+
+
+
+      JSON
+
+      ====
+
+      The JSON representation of an `Any` value uses the regular
+
+      representation of the deserialized, embedded message, with an
+
+      additional field `@type` which contains the type URL. Example:
+
+          package google.profile;
+          message Person {
+            string first_name = 1;
+            string last_name = 2;
+          }
+
+          {
+            "@type": "type.googleapis.com/google.profile.Person",
+            "firstName": <string>,
+            "lastName": <string>
+          }
+
+      If the embedded message type is well-known and has a custom JSON
+
+      representation, that representation will be embedded adding a field
+
+      `value` which holds the custom JSON in addition to the `@type`
+
+      field. Example (for message [google.protobuf.Duration][]):
+
+          {
+            "@type": "type.googleapis.com/google.protobuf.Duration",
+            "value": "1.212s"
+          }
+  google.rpc.Status:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          properties:
+            '@type':
+              type: string
+              description: >-
+                A URL/resource name that uniquely identifies the type of the
+                serialized
+
+                protocol buffer message. This string must contain at least
+
+                one "/" character. The last segment of the URL's path must
+                represent
+
+                the fully qualified name of the type (as in
+
+                `path/google.protobuf.Duration`). The name should be in a
+                canonical form
+
+                (e.g., leading "." is not accepted).
+
+
+                In practice, teams usually precompile into the binary all types
+                that they
+
+                expect it to use in the context of Any. However, for URLs which
+                use the
+
+                scheme `http`, `https`, or no scheme, one can optionally set up
+                a type
+
+                server that maps type URLs to message definitions as follows:
+
+
+                * If no scheme is provided, `https` is assumed.
+
+                * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+                  value in binary format, or produce an error.
+                * Applications are allowed to cache lookup results based on the
+                  URL, or have them precompiled into a binary to avoid any
+                  lookup. Therefore, binary compatibility needs to be preserved
+                  on changes to types. (Use versioned type names to manage
+                  breaking changes.)
+
+                Note: this functionality is not currently available in the
+                official
+
+                protobuf release, and it is not used for type URLs beginning
+                with
+
+                type.googleapis.com.
+
+
+                Schemes other than `http`, `https` (or the empty scheme) might
+                be
+
+                used with implementation specific semantics.
+          additionalProperties: {}
+          description: >-
+            `Any` contains an arbitrary serialized protocol buffer message along
+            with a
+
+            URL that describes the type of the serialized message.
+
+
+            Protobuf library provides support to pack/unpack Any values in the
+            form
+
+            of utility functions or additional generated methods of the Any
+            type.
+
+
+            Example 1: Pack and unpack a message in C++.
+
+                Foo foo = ...;
+                Any any;
+                any.PackFrom(foo);
+                ...
+                if (any.UnpackTo(&foo)) {
+                  ...
+                }
+
+            Example 2: Pack and unpack a message in Java.
+
+                Foo foo = ...;
+                Any any = Any.pack(foo);
+                ...
+                if (any.is(Foo.class)) {
+                  foo = any.unpack(Foo.class);
+                }
+
+             Example 3: Pack and unpack a message in Python.
+
+                foo = Foo(...)
+                any = Any()
+                any.Pack(foo)
+                ...
+                if any.Is(Foo.DESCRIPTOR):
+                  any.Unpack(foo)
+                  ...
+
+             Example 4: Pack and unpack a message in Go
+
+                 foo := &pb.Foo{...}
+                 any, err := anypb.New(foo)
+                 if err != nil {
+                   ...
+                 }
+                 ...
+                 foo := &pb.Foo{}
+                 if err := any.UnmarshalTo(foo); err != nil {
+                   ...
+                 }
+
+            The pack methods provided by protobuf library will by default use
+
+            'type.googleapis.com/full.type.name' as the type URL and the unpack
+
+            methods only use the fully qualified type name after the last '/'
+
+            in the type URL, for example "foo.bar.com/x/y.z" will yield type
+
+            name "y.z".
+
+
+
+            JSON
+
+            ====
+
+            The JSON representation of an `Any` value uses the regular
+
+            representation of the deserialized, embedded message, with an
+
+            additional field `@type` which contains the type URL. Example:
+
+                package google.profile;
+                message Person {
+                  string first_name = 1;
+                  string last_name = 2;
+                }
+
+                {
+                  "@type": "type.googleapis.com/google.profile.Person",
+                  "firstName": <string>,
+                  "lastName": <string>
+                }
+
+            If the embedded message type is well-known and has a custom JSON
+
+            representation, that representation will be embedded adding a field
+
+            `value` which holds the custom JSON in addition to the `@type`
+
+            field. Example (for message [google.protobuf.Duration][]):
+
+                {
+                  "@type": "type.googleapis.com/google.protobuf.Duration",
+                  "value": "1.212s"
+                }
   cosmos.auth.v1beta1.AddressBytesToStringResponse:
     type: object
     properties:
@@ -40402,329 +42141,6 @@ definitions:
                repeated Bar results = 1;
                PageResponse page = 2;
        }
-  google.protobuf.Any:
-    type: object
-    properties:
-      '@type':
-        type: string
-        description: >-
-          A URL/resource name that uniquely identifies the type of the
-          serialized
-
-          protocol buffer message. This string must contain at least
-
-          one "/" character. The last segment of the URL's path must represent
-
-          the fully qualified name of the type (as in
-
-          `path/google.protobuf.Duration`). The name should be in a canonical
-          form
-
-          (e.g., leading "." is not accepted).
-
-
-          In practice, teams usually precompile into the binary all types that
-          they
-
-          expect it to use in the context of Any. However, for URLs which use
-          the
-
-          scheme `http`, `https`, or no scheme, one can optionally set up a type
-
-          server that maps type URLs to message definitions as follows:
-
-
-          * If no scheme is provided, `https` is assumed.
-
-          * An HTTP GET on the URL must yield a [google.protobuf.Type][]
-            value in binary format, or produce an error.
-          * Applications are allowed to cache lookup results based on the
-            URL, or have them precompiled into a binary to avoid any
-            lookup. Therefore, binary compatibility needs to be preserved
-            on changes to types. (Use versioned type names to manage
-            breaking changes.)
-
-          Note: this functionality is not currently available in the official
-
-          protobuf release, and it is not used for type URLs beginning with
-
-          type.googleapis.com.
-
-
-          Schemes other than `http`, `https` (or the empty scheme) might be
-
-          used with implementation specific semantics.
-    additionalProperties: {}
-    description: >-
-      `Any` contains an arbitrary serialized protocol buffer message along with
-      a
-
-      URL that describes the type of the serialized message.
-
-
-      Protobuf library provides support to pack/unpack Any values in the form
-
-      of utility functions or additional generated methods of the Any type.
-
-
-      Example 1: Pack and unpack a message in C++.
-
-          Foo foo = ...;
-          Any any;
-          any.PackFrom(foo);
-          ...
-          if (any.UnpackTo(&foo)) {
-            ...
-          }
-
-      Example 2: Pack and unpack a message in Java.
-
-          Foo foo = ...;
-          Any any = Any.pack(foo);
-          ...
-          if (any.is(Foo.class)) {
-            foo = any.unpack(Foo.class);
-          }
-
-       Example 3: Pack and unpack a message in Python.
-
-          foo = Foo(...)
-          any = Any()
-          any.Pack(foo)
-          ...
-          if any.Is(Foo.DESCRIPTOR):
-            any.Unpack(foo)
-            ...
-
-       Example 4: Pack and unpack a message in Go
-
-           foo := &pb.Foo{...}
-           any, err := anypb.New(foo)
-           if err != nil {
-             ...
-           }
-           ...
-           foo := &pb.Foo{}
-           if err := any.UnmarshalTo(foo); err != nil {
-             ...
-           }
-
-      The pack methods provided by protobuf library will by default use
-
-      'type.googleapis.com/full.type.name' as the type URL and the unpack
-
-      methods only use the fully qualified type name after the last '/'
-
-      in the type URL, for example "foo.bar.com/x/y.z" will yield type
-
-      name "y.z".
-
-
-
-      JSON
-
-      ====
-
-      The JSON representation of an `Any` value uses the regular
-
-      representation of the deserialized, embedded message, with an
-
-      additional field `@type` which contains the type URL. Example:
-
-          package google.profile;
-          message Person {
-            string first_name = 1;
-            string last_name = 2;
-          }
-
-          {
-            "@type": "type.googleapis.com/google.profile.Person",
-            "firstName": <string>,
-            "lastName": <string>
-          }
-
-      If the embedded message type is well-known and has a custom JSON
-
-      representation, that representation will be embedded adding a field
-
-      `value` which holds the custom JSON in addition to the `@type`
-
-      field. Example (for message [google.protobuf.Duration][]):
-
-          {
-            "@type": "type.googleapis.com/google.protobuf.Duration",
-            "value": "1.212s"
-          }
-  google.rpc.Status:
-    type: object
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
-      details:
-        type: array
-        items:
-          type: object
-          properties:
-            '@type':
-              type: string
-              description: >-
-                A URL/resource name that uniquely identifies the type of the
-                serialized
-
-                protocol buffer message. This string must contain at least
-
-                one "/" character. The last segment of the URL's path must
-                represent
-
-                the fully qualified name of the type (as in
-
-                `path/google.protobuf.Duration`). The name should be in a
-                canonical form
-
-                (e.g., leading "." is not accepted).
-
-
-                In practice, teams usually precompile into the binary all types
-                that they
-
-                expect it to use in the context of Any. However, for URLs which
-                use the
-
-                scheme `http`, `https`, or no scheme, one can optionally set up
-                a type
-
-                server that maps type URLs to message definitions as follows:
-
-
-                * If no scheme is provided, `https` is assumed.
-
-                * An HTTP GET on the URL must yield a [google.protobuf.Type][]
-                  value in binary format, or produce an error.
-                * Applications are allowed to cache lookup results based on the
-                  URL, or have them precompiled into a binary to avoid any
-                  lookup. Therefore, binary compatibility needs to be preserved
-                  on changes to types. (Use versioned type names to manage
-                  breaking changes.)
-
-                Note: this functionality is not currently available in the
-                official
-
-                protobuf release, and it is not used for type URLs beginning
-                with
-
-                type.googleapis.com.
-
-
-                Schemes other than `http`, `https` (or the empty scheme) might
-                be
-
-                used with implementation specific semantics.
-          additionalProperties: {}
-          description: >-
-            `Any` contains an arbitrary serialized protocol buffer message along
-            with a
-
-            URL that describes the type of the serialized message.
-
-
-            Protobuf library provides support to pack/unpack Any values in the
-            form
-
-            of utility functions or additional generated methods of the Any
-            type.
-
-
-            Example 1: Pack and unpack a message in C++.
-
-                Foo foo = ...;
-                Any any;
-                any.PackFrom(foo);
-                ...
-                if (any.UnpackTo(&foo)) {
-                  ...
-                }
-
-            Example 2: Pack and unpack a message in Java.
-
-                Foo foo = ...;
-                Any any = Any.pack(foo);
-                ...
-                if (any.is(Foo.class)) {
-                  foo = any.unpack(Foo.class);
-                }
-
-             Example 3: Pack and unpack a message in Python.
-
-                foo = Foo(...)
-                any = Any()
-                any.Pack(foo)
-                ...
-                if any.Is(Foo.DESCRIPTOR):
-                  any.Unpack(foo)
-                  ...
-
-             Example 4: Pack and unpack a message in Go
-
-                 foo := &pb.Foo{...}
-                 any, err := anypb.New(foo)
-                 if err != nil {
-                   ...
-                 }
-                 ...
-                 foo := &pb.Foo{}
-                 if err := any.UnmarshalTo(foo); err != nil {
-                   ...
-                 }
-
-            The pack methods provided by protobuf library will by default use
-
-            'type.googleapis.com/full.type.name' as the type URL and the unpack
-
-            methods only use the fully qualified type name after the last '/'
-
-            in the type URL, for example "foo.bar.com/x/y.z" will yield type
-
-            name "y.z".
-
-
-
-            JSON
-
-            ====
-
-            The JSON representation of an `Any` value uses the regular
-
-            representation of the deserialized, embedded message, with an
-
-            additional field `@type` which contains the type URL. Example:
-
-                package google.profile;
-                message Person {
-                  string first_name = 1;
-                  string last_name = 2;
-                }
-
-                {
-                  "@type": "type.googleapis.com/google.profile.Person",
-                  "firstName": <string>,
-                  "lastName": <string>
-                }
-
-            If the embedded message type is well-known and has a custom JSON
-
-            representation, that representation will be embedded adding a field
-
-            `value` which holds the custom JSON in addition to the `@type`
-
-            field. Example (for message [google.protobuf.Duration][]):
-
-                {
-                  "@type": "type.googleapis.com/google.protobuf.Duration",
-                  "value": "1.212s"
-                }
   cosmos.authz.v1beta1.Grant:
     type: object
     properties:
@@ -42472,18 +43888,6 @@ definitions:
     description: |-
       SendEnabled maps coin denom to a send_enabled status (whether a denom is
       sendable).
-  cosmos.base.v1beta1.Coin:
-    type: object
-    properties:
-      denom:
-        type: string
-      amount:
-        type: string
-    description: |-
-      Coin defines a token with a denomination and an amount.
-
-      NOTE: The amount field is an Int which implements the custom method
-      signatures required by gogoproto.
   cosmos.base.tendermint.v1beta1.ABCIQueryResponse:
     type: object
     properties:
@@ -56355,10 +57759,131 @@ definitions:
     title: |-
       QuerySmartContractStateResponse is the response type for the
       Query/SmartContractState RPC method
+  cosmos.base.v1beta1.DecCoin:
+    type: object
+    properties:
+      denom:
+        type: string
+      amount:
+        type: string
+    description: |-
+      DecCoin defines a token with a denomination and a decimal amount.
+
+      NOTE: The amount field is an Dec which implements the custom method
+      signatures required by gogoproto.
+  gaia.globalfee.v1beta1.Params:
+    type: object
+    properties:
+      minimum_gas_prices:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+        title: >-
+          minimum_gas_prices stores the minimum gas price(s) for all TX on the
+          chain.
+
+          When multiple coins are defined then they are accepted alternatively.
+
+          The list must be sorted by denoms asc. No duplicate denoms or zero
+          amount
+
+          values allowed. For more information see
+
+          https://docs.cosmos.network/main/modules/auth#concepts
+      bypass_min_fee_msg_types:
+        type: array
+        items:
+          type: string
+        description: |-
+          bypass_min_fee_msg_types defines a list of message type urls
+          that are free of fee charge.
+      max_total_bypass_min_fee_msg_gas_usage:
+        type: string
+        format: uint64
+        description: >-
+          max_total_bypass_min_fee_msg_gas_usage defines the total maximum gas
+          usage
+
+          allowed for a transaction containing only messages of types in
+          bypass_min_fee_msg_types
+
+          to bypass fee charge.
+    description: Params defines the set of module parameters.
+  gaia.globalfee.v1beta1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        type: object
+        properties:
+          minimum_gas_prices:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+            title: >-
+              minimum_gas_prices stores the minimum gas price(s) for all TX on
+              the chain.
+
+              When multiple coins are defined then they are accepted
+              alternatively.
+
+              The list must be sorted by denoms asc. No duplicate denoms or zero
+              amount
+
+              values allowed. For more information see
+
+              https://docs.cosmos.network/main/modules/auth#concepts
+          bypass_min_fee_msg_types:
+            type: array
+            items:
+              type: string
+            description: |-
+              bypass_min_fee_msg_types defines a list of message type urls
+              that are free of fee charge.
+          max_total_bypass_min_fee_msg_gas_usage:
+            type: string
+            format: uint64
+            description: >-
+              max_total_bypass_min_fee_msg_gas_usage defines the total maximum
+              gas usage
+
+              allowed for a transaction containing only messages of types in
+              bypass_min_fee_msg_types
+
+              to bypass fee charge.
+        description: Params defines the set of module parameters.
+    description: |-
+      QueryMinimumGasPricesResponse is the response type for the
+      Query/MinimumGasPrices RPC method.
   ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse:
     type: object
     properties:
       channel_id:
+        type: string
+      port_id:
         type: string
     title: >-
       MsgRegisterInterchainAccountResponse defines the response for
@@ -56664,6 +58189,8 @@ definitions:
     type: object
     properties:
       version:
+        type: string
+      channel_id:
         type: string
     description: MsgChannelOpenTryResponse defines the Msg/ChannelOpenTry response type.
   ibc.core.channel.v1.MsgRecvPacketResponse:
@@ -58488,7 +60015,14 @@ definitions:
         type: array
         items:
           type: string
-        description: allowed_clients defines the list of allowed client state types.
+        description: >-
+          allowed_clients defines the list of allowed client state types which
+          can be created
+
+          and interacted with. If a client type is removed from the allowed
+          clients list, usage
+
+          of this client will be disabled until it is added again to the list.
     description: Params defines the set of IBC light client parameters.
   ibc.core.client.v1.QueryClientParamsResponse:
     type: object
@@ -58501,7 +60035,15 @@ definitions:
             type: array
             items:
               type: string
-            description: allowed_clients defines the list of allowed client state types.
+            description: >-
+              allowed_clients defines the list of allowed client state types
+              which can be created
+
+              and interacted with. If a client type is removed from the allowed
+              clients list, usage
+
+              of this client will be disabled until it is added again to the
+              list.
     description: >-
       QueryClientParamsResponse is the response type for the Query/ClientParams
       RPC
@@ -60889,7 +62431,7 @@ definitions:
         description: >-
           The number of historical info entries to persist in store.
 
-          This param is a part of the cosmos sdk staking module. In the case of 
+          This param is a part of the cosmos sdk staking module. In the case of
 
           a ccv enabled consumer chain, the ccv module acts as the staking
           module.
@@ -60905,10 +62447,27 @@ definitions:
           set who
 
           can opt out of running the consumer chain without being punished. For
-          example, a
 
-          value of 0.05 means that the validators in the bottom 5% of the set
-          can opt out
+          example, a value of 0.05 means that the validators in the bottom 5% of
+          the
+
+          set can opt out
+      reward_denoms:
+        type: array
+        items:
+          type: string
+        description: >-
+          Reward denoms. These are the denominations which are allowed to be
+          sent to
+
+          the provider as rewards.
+      provider_reward_denoms:
+        type: array
+        items:
+          type: string
+        title: |-
+          Provider-originated reward denoms. These are denoms coming from the
+          provider which are allowed to be used as rewards. e.g. "uatom"
     title: Params defines the parameters for CCV consumer module
   interchain_security.ccv.consumer.v1.QueryNextFeeDistributionEstimateResponse:
     type: object
@@ -61010,7 +62569,7 @@ definitions:
               The number of historical info entries to persist in store.
 
               This param is a part of the cosmos sdk staking module. In the case
-              of 
+              of
 
               a ccv enabled consumer chain, the ccv module acts as the staking
               module.
@@ -61026,10 +62585,30 @@ definitions:
               the set who
 
               can opt out of running the consumer chain without being punished.
-              For example, a
+              For
 
-              value of 0.05 means that the validators in the bottom 5% of the
+              example, a value of 0.05 means that the validators in the bottom
+              5% of the
+
               set can opt out
+          reward_denoms:
+            type: array
+            items:
+              type: string
+            description: >-
+              Reward denoms. These are the denominations which are allowed to be
+              sent to
+
+              the provider as rewards.
+          provider_reward_denoms:
+            type: array
+            items:
+              type: string
+            title: >-
+              Provider-originated reward denoms. These are denoms coming from
+              the
+
+              provider which are allowed to be used as rewards. e.g. "uatom"
         title: Params defines the parameters for CCV consumer module
     description: QueryParamsResponse is response type for the Query/Params RPC method.
   cosmos.ics23.v1.HashOp:
@@ -61952,7 +63531,7 @@ definitions:
               The number of historical info entries to persist in store.
 
               This param is a part of the cosmos sdk staking module. In the case
-              of 
+              of
 
               a ccv enabled consumer chain, the ccv module acts as the staking
               module.
@@ -61968,10 +63547,30 @@ definitions:
               the set who
 
               can opt out of running the consumer chain without being punished.
-              For example, a
+              For
 
-              value of 0.05 means that the validators in the bottom 5% of the
+              example, a value of 0.05 means that the validators in the bottom
+              5% of the
+
               set can opt out
+          reward_denoms:
+            type: array
+            items:
+              type: string
+            description: >-
+              Reward denoms. These are the denominations which are allowed to be
+              sent to
+
+              the provider as rewards.
+          provider_reward_denoms:
+            type: array
+            items:
+              type: string
+            title: >-
+              Provider-originated reward denoms. These are denoms coming from
+              the
+
+              provider which are allowed to be used as rewards. e.g. "uatom"
         title: Params defines the parameters for CCV consumer module
       provider_client_id:
         type: string
@@ -62407,10 +64006,8 @@ definitions:
             valset_update_id:
               type: string
               format: uint64
-          title: >-
-            HeightValsetUpdateID defines the genesis information for the
-            mapping 
-
+          title: |-
+            HeightValsetUpdateID defines the genesis information for the mapping
             of each block height to a valset update id
         description: HeightToValsetUpdateId nil on new chain, filled in on restart.
       outstanding_downtime_slashing:
@@ -62522,9 +64119,7 @@ definitions:
           pools were transmitted to the provider chain
       preCCV:
         type: boolean
-        title: >-
-          flag indicating whether the consumer CCV module starts in pre-CCV
-          state
+        title: flag indicating whether the consumer CCV module starts in
     title: GenesisState defines the CCV consumer chain genesis state
   interchain_security.ccv.consumer.v1.HeightToValsetUpdateID:
     type: object
@@ -62536,7 +64131,7 @@ definitions:
         type: string
         format: uint64
     title: |-
-      HeightValsetUpdateID defines the genesis information for the mapping 
+      HeightValsetUpdateID defines the genesis information for the mapping
       of each block height to a valset update id
   interchain_security.ccv.consumer.v1.LastTransmissionBlockHeight:
     type: object
@@ -62585,13 +64180,12 @@ definitions:
         type: string
         description: >-
           the proposed chain-id of the new consumer chain, must be different
-          from all other consumer chain ids of the executing
+          from all
 
-          provider chain.
+          other consumer chain ids of the executing provider chain.
       initial_height:
-        description: >-
+        description: |-
           the proposed initial height of new consumer chain.
-
           For a completely new chain, this will be {0,1}. However, it may be
           different if this is a chain that is converting to a consumer chain.
         type: object
@@ -62614,29 +64208,31 @@ definitions:
       genesis_hash:
         type: string
         format: byte
-        description: >-
+        description: |-
           The hash of the consumer chain genesis state without the consumer CCV
-          module genesis params. 
-
-          It is used for off-chain confirmation of genesis.json validity by
-          validators and other parties.
+          module genesis params. It is used for off-chain confirmation of
+          genesis.json validity by validators and other parties.
       binary_hash:
         type: string
         format: byte
         description: >-
           The hash of the consumer chain binary that should be run by validators
-          on chain initialization.
+          on
 
-          It is used for off-chain confirmation of binary validity by validators
-          and other parties.
+          chain initialization. It is used for off-chain confirmation of binary
+
+          validity by validators and other parties.
       spawn_time:
         type: string
         format: date-time
         description: >-
           spawn time is the time on the provider chain at which the consumer
-          chain genesis is finalized and all validators
+          chain
 
-          will be responsible for starting their consumer chain validator node.
+          genesis is finalized and all validators will be responsible for
+          starting
+
+          their consumer chain validator node.
       unbonding_period:
         type: string
         description: |-
@@ -62660,32 +64256,48 @@ definitions:
       blocks_per_distribution_transmission:
         type: string
         format: int64
-        description: >-
+        description: |-
           BlocksPerDistributionTransmission is the number of blocks between
-          ibc-token-transfers from the consumer chain to the provider chain.
-
-          On sending transmission event, `consumer_redistribution_fraction` of
-          the accumulated tokens are sent to the consumer redistribution
-          address.
+          ibc-token-transfers from the consumer chain to the provider chain. On
+          sending transmission event, `consumer_redistribution_fraction` of the
+          accumulated tokens are sent to the consumer redistribution address.
       historical_entries:
         type: string
         format: int64
         description: >-
           The number of historical info entries to persist in store.
 
-          This param is a part of the cosmos sdk staking module. In the case of 
+          This param is a part of the cosmos sdk staking module. In the case of
 
           a ccv enabled consumer chain, the ccv module acts as the staking
           module.
+      distribution_transmission_channel:
+        type: string
+        title: >-
+          The ID of a token transfer channel used for the Reward Distribution
+
+          sub-protocol. If DistributionTransmissionChannel == "", a new transfer
+
+          channel is created on top of the same connection as the CCV channel.
+
+          Note that transfer_channel_id is the ID of the channel end on the
+          consumer
+
+          chain. it is most relevant for chains performing a sovereign to
+          consumer
+
+          changeover in order to maintan the existing ibc transfer channel
     description: >-
       ConsumerAdditionProposal is a governance proposal on the provider chain to
-      spawn a new consumer chain.
 
-      If it passes, then all validators on the provider chain are expected to
-      validate the consumer chain at spawn time
+      spawn a new consumer chain. If it passes, then all validators on the
+      provider
 
-      or get slashed. It is recommended that spawn time occurs after the
-      proposal end time.
+      chain are expected to validate the consumer chain at spawn time or get
+
+      slashed. It is recommended that spawn time occurs after the proposal end
+
+      time.
   interchain_security.ccv.provider.v1.ConsumerAdditionProposals:
     type: object
     properties:
@@ -62704,15 +64316,17 @@ definitions:
               type: string
               description: >-
                 the proposed chain-id of the new consumer chain, must be
-                different from all other consumer chain ids of the executing
+                different from all
 
-                provider chain.
+                other consumer chain ids of the executing provider chain.
             initial_height:
               description: >-
                 the proposed initial height of new consumer chain.
 
                 For a completely new chain, this will be {0,1}. However, it may
-                be different if this is a chain that is converting to a consumer
+                be
+
+                different if this is a chain that is converting to a consumer
                 chain.
               type: object
               properties:
@@ -62736,28 +64350,33 @@ definitions:
               format: byte
               description: >-
                 The hash of the consumer chain genesis state without the
-                consumer CCV module genesis params. 
+                consumer CCV
 
-                It is used for off-chain confirmation of genesis.json validity
-                by validators and other parties.
+                module genesis params. It is used for off-chain confirmation of
+
+                genesis.json validity by validators and other parties.
             binary_hash:
               type: string
               format: byte
               description: >-
                 The hash of the consumer chain binary that should be run by
-                validators on chain initialization.
+                validators on
 
-                It is used for off-chain confirmation of binary validity by
-                validators and other parties.
+                chain initialization. It is used for off-chain confirmation of
+                binary
+
+                validity by validators and other parties.
             spawn_time:
               type: string
               format: date-time
               description: >-
                 spawn time is the time on the provider chain at which the
-                consumer chain genesis is finalized and all validators
+                consumer chain
 
-                will be responsible for starting their consumer chain validator
-                node.
+                genesis is finalized and all validators will be responsible for
+                starting
+
+                their consumer chain validator node.
             unbonding_period:
               type: string
               description: |-
@@ -62786,12 +64405,16 @@ definitions:
               format: int64
               description: >-
                 BlocksPerDistributionTransmission is the number of blocks
-                between ibc-token-transfers from the consumer chain to the
-                provider chain.
+                between
 
-                On sending transmission event,
-                `consumer_redistribution_fraction` of the accumulated tokens are
-                sent to the consumer redistribution address.
+                ibc-token-transfers from the consumer chain to the provider
+                chain. On
+
+                sending transmission event, `consumer_redistribution_fraction`
+                of the
+
+                accumulated tokens are sent to the consumer redistribution
+                address.
             historical_entries:
               type: string
               format: int64
@@ -62799,23 +64422,49 @@ definitions:
                 The number of historical info entries to persist in store.
 
                 This param is a part of the cosmos sdk staking module. In the
-                case of 
+                case of
 
                 a ccv enabled consumer chain, the ccv module acts as the staking
                 module.
+            distribution_transmission_channel:
+              type: string
+              title: >-
+                The ID of a token transfer channel used for the Reward
+                Distribution
+
+                sub-protocol. If DistributionTransmissionChannel == "", a new
+                transfer
+
+                channel is created on top of the same connection as the CCV
+                channel.
+
+                Note that transfer_channel_id is the ID of the channel end on
+                the consumer
+
+                chain. it is most relevant for chains performing a sovereign to
+                consumer
+
+                changeover in order to maintan the existing ibc transfer channel
           description: >-
             ConsumerAdditionProposal is a governance proposal on the provider
-            chain to spawn a new consumer chain.
+            chain to
 
-            If it passes, then all validators on the provider chain are expected
-            to validate the consumer chain at spawn time
+            spawn a new consumer chain. If it passes, then all validators on the
+            provider
 
-            or get slashed. It is recommended that spawn time occurs after the
-            proposal end time.
+            chain are expected to validate the consumer chain at spawn time or
+            get
+
+            slashed. It is recommended that spawn time occurs after the proposal
+            end
+
+            time.
         title: proposals waiting for spawn_time to pass
     description: >-
       ConsumerAdditionProposals holds pending governance proposals on the
-      provider chain to spawn a new chain.
+      provider
+
+      chain to spawn a new chain.
   interchain_security.ccv.provider.v1.ConsumerRemovalProposal:
     type: object
     properties:
@@ -62833,15 +64482,18 @@ definitions:
         format: date-time
         title: >-
           the time on the provider chain at which all validators are responsible
-          to stop their consumer chain validator node
+          to
+
+          stop their consumer chain validator node
     description: >-
       ConsumerRemovalProposal is a governance proposal on the provider chain to
-      remove (and stop) a consumer chain.
 
-      If it passes, all the consumer chain's state is removed from the provider
-      chain. The outstanding unbonding
+      remove (and stop) a consumer chain. If it passes, all the consumer chain's
 
-      operation funds are released.
+      state is removed from the provider chain. The outstanding unbonding
+      operation
+
+      funds are released.
   interchain_security.ccv.provider.v1.ConsumerRemovalProposals:
     type: object
     properties:
@@ -62864,19 +64516,26 @@ definitions:
               format: date-time
               title: >-
                 the time on the provider chain at which all validators are
-                responsible to stop their consumer chain validator node
+                responsible to
+
+                stop their consumer chain validator node
           description: >-
             ConsumerRemovalProposal is a governance proposal on the provider
-            chain to remove (and stop) a consumer chain.
+            chain to
 
-            If it passes, all the consumer chain's state is removed from the
-            provider chain. The outstanding unbonding
+            remove (and stop) a consumer chain. If it passes, all the consumer
+            chain's
 
-            operation funds are released.
+            state is removed from the provider chain. The outstanding unbonding
+            operation
+
+            funds are released.
         title: proposals waiting for stop_time to pass
     description: >-
       ConsumerRemovalProposals holds pending governance proposals on the
-      provider chain to remove (and stop) a consumer chain.
+      provider
+
+      chain to remove (and stop) a consumer chain.
   interchain_security.ccv.provider.v1.GlobalSlashEntry:
     type: object
     properties:
@@ -62893,38 +64552,35 @@ definitions:
         type: string
         format: uint64
         description: |-
-          The IBC sequence number of the recv packet.  
+          The IBC sequence number of the recv packet.
           This field is used in the store key to ensure uniqueness.
       provider_val_cons_addr:
+        type: string
+        format: byte
         description: >-
-          The provider's consensus address of the validator being slashed. 
+          The provider's consensus address of the validator being slashed.
 
           This field is used to obtain validator power in HandleThrottleQueues.
 
 
           This field is not used in the store key, but is persisted in value
-          bytes, see QueueGlobalSlashEntry.
-        type: object
-        properties:
-          address:
-            type: string
-            format: byte
-        title: A validator's consensus address on the provider chain
+          bytes,
+
+          see QueueGlobalSlashEntry.
     description: >-
       A persisted queue entry indicating that a slash packet data instance needs
-      to be handled.
+      to
 
-      This type belongs in the "global" queue, to coordinate slash packet
-      handling times between consumers.
+      be handled. This type belongs in the "global" queue, to coordinate slash
+
+      packet handling times between consumers.
   interchain_security.ccv.provider.v1.MsgAssignConsumerKeyResponse:
     type: object
-  interchain_security.ccv.provider.v1.ProviderConsAddress:
+  interchain_security.ccv.provider.v1.MsgRegisterConsumerRewardDenomResponse:
     type: object
-    properties:
-      address:
-        type: string
-        format: byte
-    title: A validator's consensus address on the provider chain
+    description: |-
+      MsgRegisterConsumerRewardDenomResponse defines the
+      Msg/RegisterConsumerRewardDenom response type.
   interchain_security.ccv.provider.v1.QueryConsumerChainStartProposalsResponse:
     type: object
     properties:
@@ -62946,15 +64602,17 @@ definitions:
                   type: string
                   description: >-
                     the proposed chain-id of the new consumer chain, must be
-                    different from all other consumer chain ids of the executing
+                    different from all
 
-                    provider chain.
+                    other consumer chain ids of the executing provider chain.
                 initial_height:
                   description: >-
                     the proposed initial height of new consumer chain.
 
                     For a completely new chain, this will be {0,1}. However, it
-                    may be different if this is a chain that is converting to a
+                    may be
+
+                    different if this is a chain that is converting to a
                     consumer chain.
                   type: object
                   properties:
@@ -62978,28 +64636,34 @@ definitions:
                   format: byte
                   description: >-
                     The hash of the consumer chain genesis state without the
-                    consumer CCV module genesis params. 
+                    consumer CCV
 
-                    It is used for off-chain confirmation of genesis.json
-                    validity by validators and other parties.
+                    module genesis params. It is used for off-chain confirmation
+                    of
+
+                    genesis.json validity by validators and other parties.
                 binary_hash:
                   type: string
                   format: byte
                   description: >-
                     The hash of the consumer chain binary that should be run by
-                    validators on chain initialization.
+                    validators on
 
-                    It is used for off-chain confirmation of binary validity by
-                    validators and other parties.
+                    chain initialization. It is used for off-chain confirmation
+                    of binary
+
+                    validity by validators and other parties.
                 spawn_time:
                   type: string
                   format: date-time
                   description: >-
                     spawn time is the time on the provider chain at which the
-                    consumer chain genesis is finalized and all validators
+                    consumer chain
 
-                    will be responsible for starting their consumer chain
-                    validator node.
+                    genesis is finalized and all validators will be responsible
+                    for starting
+
+                    their consumer chain validator node.
                 unbonding_period:
                   type: string
                   description: >-
@@ -63032,12 +64696,16 @@ definitions:
                   format: int64
                   description: >-
                     BlocksPerDistributionTransmission is the number of blocks
-                    between ibc-token-transfers from the consumer chain to the
-                    provider chain.
+                    between
 
-                    On sending transmission event,
-                    `consumer_redistribution_fraction` of the accumulated tokens
-                    are sent to the consumer redistribution address.
+                    ibc-token-transfers from the consumer chain to the provider
+                    chain. On
+
+                    sending transmission event,
+                    `consumer_redistribution_fraction` of the
+
+                    accumulated tokens are sent to the consumer redistribution
+                    address.
                 historical_entries:
                   type: string
                   format: int64
@@ -63045,23 +64713,50 @@ definitions:
                     The number of historical info entries to persist in store.
 
                     This param is a part of the cosmos sdk staking module. In
-                    the case of 
+                    the case of
 
                     a ccv enabled consumer chain, the ccv module acts as the
                     staking module.
+                distribution_transmission_channel:
+                  type: string
+                  title: >-
+                    The ID of a token transfer channel used for the Reward
+                    Distribution
+
+                    sub-protocol. If DistributionTransmissionChannel == "", a
+                    new transfer
+
+                    channel is created on top of the same connection as the CCV
+                    channel.
+
+                    Note that transfer_channel_id is the ID of the channel end
+                    on the consumer
+
+                    chain. it is most relevant for chains performing a sovereign
+                    to consumer
+
+                    changeover in order to maintan the existing ibc transfer
+                    channel
               description: >-
                 ConsumerAdditionProposal is a governance proposal on the
-                provider chain to spawn a new consumer chain.
+                provider chain to
 
-                If it passes, then all validators on the provider chain are
-                expected to validate the consumer chain at spawn time
+                spawn a new consumer chain. If it passes, then all validators on
+                the provider
 
-                or get slashed. It is recommended that spawn time occurs after
-                the proposal end time.
+                chain are expected to validate the consumer chain at spawn time
+                or get
+
+                slashed. It is recommended that spawn time occurs after the
+                proposal end
+
+                time.
             title: proposals waiting for spawn_time to pass
         description: >-
           ConsumerAdditionProposals holds pending governance proposals on the
-          provider chain to spawn a new chain.
+          provider
+
+          chain to spawn a new chain.
   interchain_security.ccv.provider.v1.QueryConsumerChainStopProposalsResponse:
     type: object
     properties:
@@ -63087,19 +64782,26 @@ definitions:
                   format: date-time
                   title: >-
                     the time on the provider chain at which all validators are
-                    responsible to stop their consumer chain validator node
+                    responsible to
+
+                    stop their consumer chain validator node
               description: >-
                 ConsumerRemovalProposal is a governance proposal on the provider
-                chain to remove (and stop) a consumer chain.
+                chain to
 
-                If it passes, all the consumer chain's state is removed from the
-                provider chain. The outstanding unbonding
+                remove (and stop) a consumer chain. If it passes, all the
+                consumer chain's
 
-                operation funds are released.
+                state is removed from the provider chain. The outstanding
+                unbonding operation
+
+                funds are released.
             title: proposals waiting for stop_time to pass
         description: >-
           ConsumerRemovalProposals holds pending governance proposals on the
-          provider chain to remove (and stop) a consumer chain.
+          provider
+
+          chain to remove (and stop) a consumer chain.
   interchain_security.ccv.provider.v1.QueryConsumerChainsResponse:
     type: object
     properties:
@@ -63183,7 +64885,7 @@ definitions:
                   The number of historical info entries to persist in store.
 
                   This param is a part of the cosmos sdk staking module. In the
-                  case of 
+                  case of
 
                   a ccv enabled consumer chain, the ccv module acts as the
                   staking module.
@@ -63199,10 +64901,30 @@ definitions:
                   of the set who
 
                   can opt out of running the consumer chain without being
-                  punished. For example, a
+                  punished. For
 
-                  value of 0.05 means that the validators in the bottom 5% of
-                  the set can opt out
+                  example, a value of 0.05 means that the validators in the
+                  bottom 5% of the
+
+                  set can opt out
+              reward_denoms:
+                type: array
+                items:
+                  type: string
+                description: >-
+                  Reward denoms. These are the denominations which are allowed
+                  to be sent to
+
+                  the provider as rewards.
+              provider_reward_denoms:
+                type: array
+                items:
+                  type: string
+                title: >-
+                  Provider-originated reward denoms. These are denoms coming
+                  from the
+
+                  provider which are allowed to be used as rewards. e.g. "uatom"
             title: Params defines the parameters for CCV consumer module
           provider_client_id:
             type: string
@@ -63646,7 +65368,7 @@ definitions:
                   format: uint64
               title: >-
                 HeightValsetUpdateID defines the genesis information for the
-                mapping 
+                mapping
 
                 of each block height to a valset update id
             description: HeightToValsetUpdateId nil on new chain, filled in on restart.
@@ -63761,10 +65483,15 @@ definitions:
               pools were transmitted to the provider chain
           preCCV:
             type: boolean
-            title: >-
-              flag indicating whether the consumer CCV module starts in pre-CCV
-              state
+            title: flag indicating whether the consumer CCV module starts in
         title: GenesisState defines the CCV consumer chain genesis state
+  interchain_security.ccv.provider.v1.QueryRegisteredConsumerRewardDenomsResponse:
+    type: object
+    properties:
+      denoms:
+        type: array
+        items:
+          type: string
   interchain_security.ccv.provider.v1.QueryThrottleStateResponse:
     type: object
     properties:
@@ -63777,15 +65504,17 @@ definitions:
         format: int64
         description: >-
           allowance of voting power units (int) that the slash meter is given
-          per replenish period
+          per
 
-          this also serves as the max value for the meter.
+          replenish period this also serves as the max value for the meter.
       next_replenish_candidate:
         type: string
         format: date-time
         title: >-
           next time the slash meter could potentially be replenished, iff it's
-          not full
+          not
+
+          full
       packets:
         type: array
         items:
@@ -63807,30 +65536,30 @@ definitions:
                   type: string
                   format: uint64
                   description: |-
-                    The IBC sequence number of the recv packet.  
+                    The IBC sequence number of the recv packet.
                     This field is used in the store key to ensure uniqueness.
                 provider_val_cons_addr:
+                  type: string
+                  format: byte
                   description: >-
                     The provider's consensus address of the validator being
-                    slashed. 
+                    slashed.
 
                     This field is used to obtain validator power in
                     HandleThrottleQueues.
 
 
                     This field is not used in the store key, but is persisted in
-                    value bytes, see QueueGlobalSlashEntry.
-                  type: object
-                  properties:
-                    address:
-                      type: string
-                      format: byte
-                  title: A validator's consensus address on the provider chain
+                    value bytes,
+
+                    see QueueGlobalSlashEntry.
               description: >-
                 A persisted queue entry indicating that a slash packet data
-                instance needs to be handled.
+                instance needs to
 
-                This type belongs in the "global" queue, to coordinate slash
+                be handled. This type belongs in the "global" queue, to
+                coordinate slash
+
                 packet handling times between consumers.
             data:
               type: object
@@ -63878,7 +65607,9 @@ definitions:
                 committed on the consumer chain.
           description: >-
             A query wrapper type for the global entry and data relevant to a
-            throttled slash packet.
+            throttled
+
+            slash packet.
         title: data relevant to currently throttled slash packets
   interchain_security.ccv.provider.v1.QueryThrottledConsumerPacketDataResponse:
     type: object
@@ -63950,7 +65681,7 @@ definitions:
 
                 to notify that a VSC packet reached maturity on the consumer
                 chain.
-          title: >-
+          title: |-
             ThrottledPacketDataWrapper contains either SlashPacketData or
             VSCMaturedPacketData
   interchain_security.ccv.provider.v1.QueryValidatorConsumerAddrResponse:
@@ -64018,7 +65749,7 @@ definitions:
         description: |-
           This packet is sent from the consumer chain to the provider chain
           to notify that a VSC packet reached maturity on the consumer chain.
-    title: >-
+    title: |-
       ThrottledPacketDataWrapper contains either SlashPacketData or
       VSCMaturedPacketData
   interchain_security.ccv.provider.v1.ThrottledSlashPacket:
@@ -64040,30 +65771,30 @@ definitions:
             type: string
             format: uint64
             description: |-
-              The IBC sequence number of the recv packet.  
+              The IBC sequence number of the recv packet.
               This field is used in the store key to ensure uniqueness.
           provider_val_cons_addr:
+            type: string
+            format: byte
             description: >-
-              The provider's consensus address of the validator being slashed. 
+              The provider's consensus address of the validator being slashed.
 
               This field is used to obtain validator power in
               HandleThrottleQueues.
 
 
               This field is not used in the store key, but is persisted in value
-              bytes, see QueueGlobalSlashEntry.
-            type: object
-            properties:
-              address:
-                type: string
-                format: byte
-            title: A validator's consensus address on the provider chain
+              bytes,
+
+              see QueueGlobalSlashEntry.
         description: >-
           A persisted queue entry indicating that a slash packet data instance
-          needs to be handled.
+          needs to
 
-          This type belongs in the "global" queue, to coordinate slash packet
-          handling times between consumers.
+          be handled. This type belongs in the "global" queue, to coordinate
+          slash
+
+          packet handling times between consumers.
       data:
         type: object
         properties:
@@ -64104,7 +65835,7 @@ definitions:
           This packet is sent from the consumer chain to the provider chain
           to request the slashing of a validator as a result of an infraction
           committed on the consumer chain.
-    description: >-
+    description: |-
       A query wrapper type for the global entry and data relevant to a throttled
       slash packet.
   interchain_security.ccv.v1.ConsumerPacketData:
@@ -67418,6 +69149,122 @@ definitions:
               FeeCollectorAddress is the address where fees collected from denom
               creation are sent to
         title: Params holds parameters for the tokenfactory module
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  pob.builder.v1.MsgAuctionBidResponse:
+    type: object
+    description: MsgAuctionBidResponse defines the Msg/AuctionBid response type.
+  pob.builder.v1.MsgUpdateParamsResponse:
+    type: object
+    description: MsgUpdateParamsResponse defines the Msg/UpdateParams response type.
+  pob.builder.v1.Params:
+    type: object
+    properties:
+      max_bundle_size:
+        type: integer
+        format: int64
+        description: >-
+          max_bundle_size is the maximum number of transactions that can be
+          bundled
+
+          in a single bundle.
+      escrow_account_address:
+        type: string
+        format: byte
+        description: >-
+          escrow_account_address is the address of the account that will receive
+          a
+
+          portion of the bid proceeds.
+      reserve_fee:
+        description: reserve_fee specifies the bid floor for the auction.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+      min_bid_increment:
+        description: >-
+          min_bid_increment specifies the minimum amount that the next bid must
+          be
+
+          greater than the previous bid.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+      front_running_protection:
+        type: boolean
+        description: |-
+          front_running_protection specifies whether front running and sandwich
+          attack protection is enabled.
+      proposer_fee:
+        type: string
+        description: >-
+          proposer_fee defines the portion of the winning bid that goes to the
+          block
+
+          proposer that proposed the block.
+    description: Params defines the parameters of the x/builder module.
+  pob.builder.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          max_bundle_size:
+            type: integer
+            format: int64
+            description: >-
+              max_bundle_size is the maximum number of transactions that can be
+              bundled
+
+              in a single bundle.
+          escrow_account_address:
+            type: string
+            format: byte
+            description: >-
+              escrow_account_address is the address of the account that will
+              receive a
+
+              portion of the bid proceeds.
+          reserve_fee:
+            description: reserve_fee specifies the bid floor for the auction.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+          min_bid_increment:
+            description: >-
+              min_bid_increment specifies the minimum amount that the next bid
+              must be
+
+              greater than the previous bid.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+          front_running_protection:
+            type: boolean
+            description: >-
+              front_running_protection specifies whether front running and
+              sandwich
+
+              attack protection is enabled.
+          proposer_fee:
+            type: string
+            description: >-
+              proposer_fee defines the portion of the winning bid that goes to
+              the block
+
+              proposer that proposed the block.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   router.v1.Params:
     type: object

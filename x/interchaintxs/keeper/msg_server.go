@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
@@ -38,12 +40,12 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to parse sender address", "from_address", msg.FromAddress)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
 	}
 
 	if !k.contractManagerKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "from_address", msg.FromAddress)
-		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+		return nil, errors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
 	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
@@ -51,7 +53,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 	// FIXME: empty version string doesn't look good
 	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String(), ""); err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "msg", &msg)
-		return nil, sdkerrors.Wrap(err, "failed to RegisterInterchainAccount")
+		return nil, errors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
 
 	return &ictxtypes.MsgRegisterInterchainAccountResponse{}, nil
@@ -61,11 +63,11 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	defer telemetry.ModuleMeasureSince(ictxtypes.ModuleName, time.Now(), LabelSubmitTx)
 
 	if msg == nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "nil msg is prohibited")
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "nil msg is prohibited")
 	}
 
 	if msg.Msgs == nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "empty Msgs field is prohibited")
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "empty Msgs field is prohibited")
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -74,12 +76,12 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	senderAddr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
 		k.Logger(ctx).Debug("SubmitTx: failed to parse sender address", "from_address", msg.FromAddress)
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
 	}
 
 	if !k.contractManagerKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("SubmitTx: contract not found", "from_address", msg.FromAddress)
-		return nil, sdkerrors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+		return nil, errors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
 	params := k.GetParams(ctx)
@@ -101,19 +103,19 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	portID, err := icatypes.NewControllerPortID(icaOwner.String())
 	if err != nil {
 		k.Logger(ctx).Error("SubmitTx: failed to create NewControllerPortID:", "error", err, "owner", icaOwner)
-		return nil, sdkerrors.Wrap(err, "failed to create NewControllerPortID")
+		return nil, errors.Wrap(err, "failed to create NewControllerPortID")
 	}
 
 	channelID, found := k.icaControllerKeeper.GetActiveChannelID(ctx, msg.ConnectionId, portID)
 	if !found {
 		k.Logger(ctx).Debug("SubmitTx: failed to GetActiveChannelID", "connection_id", msg.ConnectionId, "port_id", portID)
-		return nil, sdkerrors.Wrapf(icatypes.ErrActiveChannelNotFound, "failed to GetActiveChannelID for port %s", portID)
+		return nil, errors.Wrapf(icatypes.ErrActiveChannelNotFound, "failed to GetActiveChannelID for port %s", portID)
 	}
 
 	data, err := SerializeCosmosTx(k.Codec, msg.Msgs)
 	if err != nil {
 		k.Logger(ctx).Debug("SubmitTx: failed to SerializeCosmosTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
-		return nil, sdkerrors.Wrap(err, "failed to SerializeCosmosTx")
+		return nil, errors.Wrap(err, "failed to SerializeCosmosTx")
 	}
 
 	packetData := icatypes.InterchainAccountPacketData{
@@ -124,14 +126,14 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, portID, channelID)
 	if !found {
-		return nil, sdkerrors.Wrapf(
+		return nil, errors.Wrapf(
 			channeltypes.ErrSequenceSendNotFound,
 			"source port: %s, source channel: %s", portID, channelID,
 		)
 	}
 
 	if err := k.feeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(portID, channelID, sequence), msg.Fee); err != nil {
-		return nil, sdkerrors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
+		return nil, errors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
 	}
 
 	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(msg.Timeout) * time.Second).UnixNano()
@@ -140,7 +142,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 	if err != nil {
 		// usually we use DEBUG level for such errors, but in this case we have checked full input before running SendTX, so error here may be critical
 		k.Logger(ctx).Error("SubmitTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
-		return nil, sdkerrors.Wrap(err, "failed to SendTx")
+		return nil, errors.Wrap(err, "failed to SendTx")
 	}
 
 	return &ictxtypes.MsgSubmitTxResponse{
@@ -155,7 +157,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 func SerializeCosmosTx(cdc codec.BinaryCodec, msgs []*codectypes.Any) (bz []byte, err error) {
 	// only ProtoCodec is supported
 	if _, ok := cdc.(*codec.ProtoCodec); !ok {
-		return nil, sdkerrors.Wrap(icatypes.ErrInvalidCodec,
+		return nil, errors.Wrap(icatypes.ErrInvalidCodec,
 			"only ProtoCodec is supported for receiving messages on the host chain")
 	}
 
