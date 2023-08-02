@@ -10,7 +10,7 @@ THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 
 # IMPORTANT! minimum_gas_prices should always contain at least one record, otherwise the chain will not start or halt
 # ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2 denom is required by intgration tests (test:tokenomics)
-MIN_GAS_PRICES_DEFAULT='[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}],'
+MIN_GAS_PRICES_DEFAULT='[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]'
 MIN_GAS_PRICES=${MIN_GAS_PRICES:-"$MIN_GAS_PRICES_DEFAULT"}
 
 BYPASS_MIN_FEE_MSG_TYPES_DEFAULT='["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"]'
@@ -639,7 +639,6 @@ set_genesis_param slash_fraction_double_sign             "\"$SLASHING_FRACTION_D
 set_genesis_param slash_fraction_downtime                "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
 set_genesis_param minimum_gas_prices                     "$MIN_GAS_PRICES,"                            # globalfee
 set_genesis_param max_total_bypass_min_fee_msg_gas_usage "\"$MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE\"" # globalfee
-
 set_genesis_param_jq ".app_state.globalfee.params.bypass_min_fee_msg_types" "$BYPASS_MIN_FEE_MSG_TYPES" # globalfee
 
 set_genesis_param proposer_fee                "\"0.25\""                                    # builder(POB)
