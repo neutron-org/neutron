@@ -497,7 +497,7 @@ GRANTS_SUBDAO_TIMELOCK_INIT_MSG='{
 GRANTS_SUBDAO_TIMELOCK_INIT_MSG_BASE64=$(json_to_base64 "$GRANTS_SUBDAO_TIMELOCK_INIT_MSG")
 
 GRANTS_SUBDAO_PRE_PROPOSE_INIT_MSG='{
-  "open_proposal_submission": true,
+  "open_proposal_submission": false,
   "timelock_module_instantiate_info": {
     "admin": {
       "address": {
