@@ -25,7 +25,6 @@ func TestGenesis(t *testing.T) {
 				Id:      2,
 			},
 		},
-		// this line is used by starport scaffolding # genesis/test/state
 	}
 
 	k, ctx := keepertest.ContractManagerKeeper(t, nil)
@@ -37,5 +36,4 @@ func TestGenesis(t *testing.T) {
 	nullify.Fill(got)
 
 	require.ElementsMatch(t, genesisState.FailuresList, got.FailuresList)
-	// this line is used by starport scaffolding # genesis/test/assert
 }
