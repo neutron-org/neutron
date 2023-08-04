@@ -11,8 +11,7 @@ const DefaultIndex uint64 = 1
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		FailuresList: []Failure{},
-		// this line is used by starport scaffolding # genesis/types/default
-		Params: DefaultParams(),
+		Params:       DefaultParams(),
 	}
 }
 
@@ -29,7 +28,6 @@ func (gs GenesisState) Validate() error {
 		}
 		failureIndexMap[index] = struct{}{}
 	}
-	// this line is used by starport scaffolding # genesis/types/validate
 
 	return gs.Params.Validate()
 }
