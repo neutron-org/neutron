@@ -3,13 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	dbm "github.com/cometbft/cometbft-db"
+	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cometbft/cometbft/libs/log"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -35,14 +32,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/app/params"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	"time"
-
-	tmcfg "github.com/cometbft/cometbft/config"
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/app/params"
+	"io"
+	"os"
+	"path/filepath"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -88,29 +85,13 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			customTemplate, customNeutronConfig := initAppConfig()
-			err = server.InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig, tmcfg.DefaultConfig())
-			if err != nil {
-				return err
-			}
-
-			setTimeoutCommit(cmd)
-
-			return nil
+			return InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig, tmcfg.DefaultConfig())
 		},
 	}
 
 	initRootCmd(rootCmd, encodingConfig)
 
 	return rootCmd, encodingConfig
-}
-
-// setTimeoutCommit sets default `Consensus.TimeoutCommit` to 1 second, if it was set to cosmos sdk default of 5 seconds
-func setTimeoutCommit(cmd *cobra.Command) {
-	serverCtxPtr := server.GetServerContextFromCmd(cmd)
-
-	if serverCtxPtr.Config.Consensus.TimeoutCommit == 5*time.Second {
-		serverCtxPtr.Config.Consensus.TimeoutCommit = 1 * time.Second
-	}
 }
 
 func initAppConfig() (string, interface{}) {
