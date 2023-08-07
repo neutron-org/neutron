@@ -20,12 +20,6 @@ import (
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 )
 
-// maxBypassMinFeeMsgGasUsage is the maximum gas usage per message
-// so that a transaction that contains only message types that can
-// bypass the minimum fee can be accepted with a zero fee.
-// For details, see gaiafeeante.NewFeeDecorator()
-const maxBypassMinFeeMsgGasUsage uint64 = 500_000 // Should be high enough because /ibc.core.client.v1.MsgUpdateClient is the most expensive message
-
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
 // channel keeper.
 type HandlerOptions struct {
@@ -78,9 +72,9 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		// We are providing options.GlobalFeeSubspace because we do not have staking module
+		// We are providing nil as a StakingKeeper arg because we do not have staking module
 		// In this case you should be sure that you
-		// implemented upgrade to set default global fee param with at least one record
+		// implemented upgrade to set default `ParamStoreKeyMinGasPrices` global fee param with at least one record
 		// otherwise you will get panic
 		globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
