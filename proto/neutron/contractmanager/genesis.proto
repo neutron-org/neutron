@@ -3,6 +3,7 @@ package neutron.contractmanager;
 
 import "gogoproto/gogo.proto";
 import "neutron/contractmanager/params.proto";
+import "ibc/core/channel/v1/channel.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
@@ -20,6 +21,8 @@ message Failure {
   uint64 ack_id = 4;
   // Acknowledgement type
   string ack_type = 5;
+  // IBC Packet of failure
+  ibc.core.channel.v1.Packet packet = 6;
 }
 
 // GenesisState defines the contractmanager module's genesis state.

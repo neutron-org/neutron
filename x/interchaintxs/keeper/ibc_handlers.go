@@ -103,14 +103,17 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	// Actually we have only one kind of error returned from acknowledgement
 	// maybe later we'll retrieve actual errors from events
 	errorText := ack.GetError()
+	var ackType string
 	if errorText != "" {
+		ackType = "err"
 		_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
 	} else {
+		ackType = "ack"
 		_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
 	}
 
 	if err != nil {
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
+		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), ackType)
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())

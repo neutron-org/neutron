@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"encoding/json"
 	"fmt"
+	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
 
@@ -46,34 +47,37 @@ func CustomMessageDecorator(
 	bankKeeper *bankkeeper.BaseKeeper,
 	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
+	contractmanagerKeeper *contractmanagerkeeper.Keeper,
 ) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
-			Keeper:         *ictx,
-			Wrapped:        old,
-			Ictxmsgserver:  ictxkeeper.NewMsgServerImpl(*ictx),
-			Icqmsgserver:   icqkeeper.NewMsgServerImpl(*icq),
-			transferKeeper: transferKeeper,
-			Adminserver:    adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
-			Bank:           bankKeeper,
-			TokenFactory:   tokenFactoryKeeper,
-			CronKeeper:     cronKeeper,
-			AdminKeeper:    adminKeeper,
+			Keeper:                *ictx,
+			Wrapped:               old,
+			Ictxmsgserver:         ictxkeeper.NewMsgServerImpl(*ictx),
+			Icqmsgserver:          icqkeeper.NewMsgServerImpl(*icq),
+			transferKeeper:        transferKeeper,
+			Adminserver:           adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
+			Bank:                  bankKeeper,
+			TokenFactory:          tokenFactoryKeeper,
+			CronKeeper:            cronKeeper,
+			AdminKeeper:           adminKeeper,
+			ContractmanagerKeeper: contractmanagerKeeper,
 		}
 	}
 }
 
 type CustomMessenger struct {
-	Keeper         ictxkeeper.Keeper
-	Wrapped        wasmkeeper.Messenger
-	Ictxmsgserver  ictxtypes.MsgServer
-	Icqmsgserver   icqtypes.MsgServer
-	transferKeeper transferwrapperkeeper.KeeperTransferWrapper
-	Adminserver    admintypes.MsgServer
-	Bank           *bankkeeper.BaseKeeper
-	TokenFactory   *tokenfactorykeeper.Keeper
-	CronKeeper     *cronkeeper.Keeper
-	AdminKeeper    *adminmodulekeeper.Keeper
+	Keeper                ictxkeeper.Keeper
+	Wrapped               wasmkeeper.Messenger
+	Ictxmsgserver         ictxtypes.MsgServer
+	Icqmsgserver          icqtypes.MsgServer
+	transferKeeper        transferwrapperkeeper.KeeperTransferWrapper
+	Adminserver           admintypes.MsgServer
+	Bank                  *bankkeeper.BaseKeeper
+	TokenFactory          *tokenfactorykeeper.Keeper
+	CronKeeper            *cronkeeper.Keeper
+	AdminKeeper           *adminmodulekeeper.Keeper
+	ContractmanagerKeeper *contractmanagerkeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -860,6 +864,30 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 		"from_address", contractAddr.String(),
 		"name", removeSchedule.Name,
 	)
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, error) {
+	err := m.ContractmanagerKeeper.ResubmitFailure(ctx, contractAddr, resubmitFailure.FailureId)
+
+	if err != nil {
+		ctx.Logger().Error("failed to resubmitFailure",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "failed to resubmitFailure")
+	}
+
+	resp := bindings.ResubmitFailureResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal remove resubmitFailure response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "marshal json failed")
+	}
+
 	return nil, [][]byte{data}, nil
 }
 

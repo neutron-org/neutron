@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
@@ -43,7 +44,6 @@ func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
 func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ContractFailuresKey)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
-
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -53,4 +53,34 @@ func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	}
 
 	return
+}
+
+func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failureId uint64) error {
+	store := ctx.KVStore(k.storeKey)
+	failureKey := types.GetFailureKey(contractAddr.String(), failureId)
+	failureBz := store.Get(failureKey)
+	var failure types.Failure
+	k.cdc.MustUnmarshal(failureBz, &failure)
+
+	if failure.Address != contractAddr.String() {
+		return errors.ErrUnauthorized // TODO: can we return this from keeper?
+	}
+
+	if failure.GetAckType() == "ack" { // response or error
+		//k.SudoResponse()
+	}
+
+	if failure.GetAckType() == "error" {
+		//k.SudoError()
+	}
+
+	if failure.GetAckType() == "timeout" {
+		//k.SudoTimeout()
+	}
+
+	// if success resubmit
+	//
+	store.Delete(failureKey)
+
+	return nil
 }

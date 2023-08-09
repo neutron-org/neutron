@@ -237,3 +237,10 @@ type MsgExecuteContract struct {
 	// Msg json encoded message to be passed to the contract
 	Msg string `json:"msg,omitempty"`
 }
+
+type ResubmitFailure struct {
+	// TODO
+	FailureId uint64 `json:"failure_id"`
+}
+
+type ResubmitFailureResponse struct{}
