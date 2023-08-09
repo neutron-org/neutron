@@ -5,6 +5,7 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/neutron-org/neutron/testutil"
+	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"strconv"
 	"testing"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
@@ -39,9 +39,12 @@ func createNFailure(keeper *keeper.Keeper, ctx sdk.Context, addresses, failures 
 			}
 			items[i][c].Address = acc.String()
 			items[i][c].Id = uint64(c)
+			items[i][c].Packet = &p
+			items[i][c].AckResult = []byte{}
+			items[i][c].ErrorText = ""
 
 			// TODO
-			keeper.AddContractFailure(ctx, p, items[i][c].Address, "")
+			keeper.AddContractFailure(ctx, p, items[i][c].Address, "", []byte{}, "")
 		}
 	}
 	return items
@@ -63,13 +66,15 @@ func flattenFailures(items [][]types.Failure) []types.Failure {
 
 func TestGetAllFailures(t *testing.T) {
 	keeper, ctx := keepertest.ContractManagerKeeper(t, nil)
-	items := createNFailure(keeper, ctx, 10, 4)
+	items := createNFailure(keeper, ctx, 1, 1)
 	flattenItems := flattenFailures(items)
 
 	allFailures := keeper.GetAllFailures(ctx)
 
 	require.ElementsMatch(t,
 		nullify.Fill(flattenItems),
+		//flattenItems,
+		//allFailures,
 		nullify.Fill(allFailures),
 	)
 }

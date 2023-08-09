@@ -3,6 +3,7 @@ package cli_test
 import (
 	"crypto/rand"
 	"fmt"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"strconv"
 	"testing"
 
@@ -39,6 +40,7 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 		acc := sdktypes.AccAddress(pub.Address())
 		failure := types.Failure{
 			Address: acc.String(),
+			Packet:  &channeltypes.Packet{},
 		}
 		nullify.Fill(&failure)
 		state.FailuresList = append(state.FailuresList, failure)

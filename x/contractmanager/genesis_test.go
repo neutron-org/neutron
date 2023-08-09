@@ -1,6 +1,7 @@
 package contractmanager_test
 
 import (
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,10 +20,16 @@ func TestGenesis(t *testing.T) {
 			{
 				Address: "address1",
 				Id:      1,
+				Packet: &channeltypes.Packet{
+					Sequence: 1,
+				},
 			},
 			{
 				Address: "address1",
 				Id:      2,
+				Packet: &channeltypes.Packet{
+					Sequence: 2,
+				},
 			},
 		},
 		// this line is used by starport scaffolding # genesis/test/state
