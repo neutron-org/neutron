@@ -27,6 +27,8 @@ func (k *Keeper) outOfGasRecovery(
 	senderAddress sdk.AccAddress,
 	packet channeltypes.Packet,
 	failureAckType string,
+	ackResult []byte,
+	errorText string,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
@@ -35,7 +37,7 @@ func (k *Keeper) outOfGasRecovery(
 		}
 
 		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureAckType)
+		k.contractManagerKeeper.AddContractFailure(ctx, packet, senderAddress.String(), failureAckType, ackResult, errorText)
 	}
 }
 
@@ -96,24 +98,23 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack")
+	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack", ack.GetResult(), ack.GetError())
 
 	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	// Actually we have only one kind of error returned from acknowledgement
 	// maybe later we'll retrieve actual errors from events
 	errorText := ack.GetError()
-	var ackType string
+	var ackResult []byte
 	if errorText != "" {
-		ackType = "err"
 		_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
 	} else {
-		ackType = "ack"
-		_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
+		ackResult = ack.GetResult()
+		_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ackResult)
 	}
 
 	if err != nil {
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), ackType)
+		k.contractManagerKeeper.AddContractFailure(ctx, packet, icaOwner.GetContract().String(), "ack", ackResult, errorText)
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
@@ -139,13 +140,13 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "timeout")
+	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "timeout", []byte{}, "")
 
 	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
 	if err != nil {
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
+		k.contractManagerKeeper.AddContractFailure(ctx, packet, icaOwner.GetContract().String(), "timeout", []byte{}, "")
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())

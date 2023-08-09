@@ -2,6 +2,9 @@ package keeper_test
 
 import (
 	"crypto/rand"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	"github.com/neutron-org/neutron/testutil"
 	"strconv"
 	"testing"
 
@@ -29,10 +32,16 @@ func createNFailure(keeper *keeper.Keeper, ctx sdk.Context, addresses, failures 
 		acc := sdk.AccAddress(pub.Address())
 
 		for c := range items[i] {
+			p := channeltypes.Packet{
+				Sequence:      0,
+				SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0", // TODO: maybe change
+				SourceChannel: items[i][c].ChannelId,
+			}
 			items[i][c].Address = acc.String()
 			items[i][c].Id = uint64(c)
 
-			keeper.AddContractFailure(ctx, items[i][c].ChannelId, items[i][c].Address, 0, "")
+			// TODO
+			keeper.AddContractFailure(ctx, p, items[i][c].Address, "")
 		}
 	}
 	return items

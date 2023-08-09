@@ -26,6 +26,8 @@ func (im IBCModule) outOfGasRecovery(
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
 	failureType string,
+	ackResult []byte,
+	errorText string,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
@@ -34,7 +36,7 @@ func (im IBCModule) outOfGasRecovery(
 		}
 
 		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
-		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureType)
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet, senderAddress.String(), failureType, ackResult, errorText)
 		// FIXME: add distribution call
 	}
 }
@@ -95,7 +97,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "ack")
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "ack", ack.GetResult(), ack.GetError())
 
 	if ack.Success() {
 		_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
@@ -107,7 +109,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "ack")
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet, senderAddress.String(), "ack", ack.GetResult(), ack.GetError())
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
@@ -140,11 +142,11 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "timeout")
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "timeout", []byte{}, "")
 
 	_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "timeout")
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet, senderAddress.String(), "timeout", []byte{}, "")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())

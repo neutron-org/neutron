@@ -21,8 +21,12 @@ message Failure {
   uint64 ack_id = 4;
   // Acknowledgement type
   string ack_type = 5;
+  // Acknowledgement result
+  bytes ack_result = 6;
+  // Error text (empty if no error)
+  string error_text = 7;
   // IBC Packet of failure
-  ibc.core.channel.v1.Packet packet = 6;
+  ibc.core.channel.v1.Packet packet = 8;
 }
 
 // GenesisState defines the contractmanager module's genesis state.

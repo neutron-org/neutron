@@ -8,5 +8,6 @@ import (
 
 // x/contractmanager module sentinel errors
 var (
-	ErrSample = errors.Register(ModuleName, 1100, "sample error")
+	IncorrectAckType           = errors.Register(ModuleName, 1100, "incorrect acknowledgement type")
+	IncorrectFailureToResubmit = errors.Register(ModuleName, 1101, "incorrect failure to resubmit")
 )

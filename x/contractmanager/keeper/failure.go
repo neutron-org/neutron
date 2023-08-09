@@ -1,20 +1,25 @@
 package keeper
 
 import (
+	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
 // AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, channelID, address string, ackID uint64, ackType string) {
+func (k Keeper) AddContractFailure(ctx sdk.Context, packet ibcchanneltypes.Packet, address string, ackType string, ackResult []byte, errorText string) {
 	failure := types.Failure{
-		ChannelId: channelID,
+		ChannelId: packet.SourceChannel,
 		Address:   address,
-		AckId:     ackID,
+		AckId:     packet.Sequence,
 		AckType:   ackType,
+		AckResult: ackResult,
+		ErrorText: errorText,
+		Packet:    &packet,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 
@@ -55,32 +60,55 @@ func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	return
 }
 
-func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failureId uint64) error {
+func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failureId uint64) (*types.Failure, error) {
 	store := ctx.KVStore(k.storeKey)
 	failureKey := types.GetFailureKey(contractAddr.String(), failureId)
+
 	failureBz := store.Get(failureKey)
+	if failureBz == nil {
+		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), failureId)
+	}
 	var failure types.Failure
 	k.cdc.MustUnmarshal(failureBz, &failure)
 
-	if failure.Address != contractAddr.String() {
-		return errors.ErrUnauthorized // TODO: can we return this from keeper?
+	return &failure, nil
+}
+
+// ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
+func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
+	if failure.Packet == nil {
+		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without packet info failureId = %d", failure.Id)
 	}
 
 	if failure.GetAckType() == "ack" { // response or error
-		//k.SudoResponse()
+		_, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, failure.AckResult)
+		// TODO: handle resp?
+		if err != nil {
+			return err // TODO: wrap
+		}
+	} else if failure.GetAckType() == "timeout" {
+		// TODO
+		_, err := k.SudoTimeout(ctx, contractAddr, *failure.Packet)
+		if err != nil {
+			return err // TODO: wrap
+		}
+	} else {
+		return errors.Wrapf(types.IncorrectAckType, "cannot resubmit failure with incorrect ackType = %s", failure.GetAckType())
 	}
 
-	if failure.GetAckType() == "error" {
-		//k.SudoError()
-	}
+	// TODO: If submitted failure response or timeout successfully, we can cleanup it?
+	// Or maybe mark it as processed
+	// Also maybe cleanup packet and ack data to smaller data to store
+	// Is it bad be able to call resubmitFailure multiple times?
+	k.removeFailure(ctx, contractAddr, failure.Id)
 
-	if failure.GetAckType() == "timeout" {
-		//k.SudoTimeout()
-	}
-
-	// if success resubmit
-	//
-	store.Delete(failureKey)
+	// TODO: maybe return result from sudo call?
 
 	return nil
+}
+
+func (k Keeper) removeFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint64) {
+	store := ctx.KVStore(k.storeKey)
+	failureKey := types.GetFailureKey(contractAddr.String(), id)
+	store.Delete(failureKey)
 }
