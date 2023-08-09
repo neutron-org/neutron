@@ -11,7 +11,7 @@ import (
 )
 
 // AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, packet ibcchanneltypes.Packet, address string, ackType string, ackResult []byte, errorText string) {
+func (k Keeper) AddContractFailure(ctx sdk.Context, packet ibcchanneltypes.Packet, address, ackType string, ackResult []byte, errorText string) {
 	failure := types.Failure{
 		ChannelId: packet.SourceChannel,
 		Address:   address,

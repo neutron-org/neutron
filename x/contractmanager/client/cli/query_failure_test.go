@@ -3,9 +3,10 @@ package cli_test
 import (
 	"crypto/rand"
 	"fmt"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"strconv"
 	"testing"
+
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/neutron-org/neutron/app"
 

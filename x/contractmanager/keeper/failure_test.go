@@ -2,12 +2,13 @@ package keeper_test
 
 import (
 	"crypto/rand"
+	"strconv"
+	"testing"
+
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
-	"strconv"
-	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -73,8 +74,8 @@ func TestGetAllFailures(t *testing.T) {
 
 	require.ElementsMatch(t,
 		nullify.Fill(flattenItems),
-		//flattenItems,
-		//allFailures,
+		// flattenItems,
+		// allFailures,
 		nullify.Fill(allFailures),
 	)
 }

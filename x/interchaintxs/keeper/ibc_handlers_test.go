@@ -144,7 +144,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		cachedCtx.GasMeter().ConsumeGas(1, "Sudo response consumption")
 	}).Return(nil, nil)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, p, contractAddress.String(), "ack", resACK.GetResult(), resACK.GetError()).Do(func(ctx sdk.Context, packet channeltypes.Packet, address string, ackType string, ackResult []byte, errorText string) {
+	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, p, contractAddress.String(), "ack", resACK.GetResult(), resACK.GetError()).Do(func(ctx sdk.Context, packet channeltypes.Packet, address, ackType string, ackResult []byte, errorText string) {
 		ctx.GasMeter().ConsumeGas(keeper.GasReserve, "out of gas")
 	})
 	require.Panics(t, func() { icak.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a panic test

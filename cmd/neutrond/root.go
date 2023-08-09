@@ -3,6 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	dbm "github.com/cometbft/cometbft-db"
@@ -37,9 +41,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	"io"
-	"os"
-	"path/filepath"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the

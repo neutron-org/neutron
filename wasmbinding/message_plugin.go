@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"encoding/json"
 	"fmt"
+
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
@@ -869,7 +870,6 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 
 func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, error) {
 	failure, err := m.ContractmanagerKeeper.GetFailure(ctx, contractAddr, resubmitFailure.FailureId)
-
 	if err != nil {
 		return nil, nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
 	}
