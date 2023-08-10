@@ -5,9 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -35,17 +33,14 @@ func createNFailure(keeper *keeper.Keeper, ctx sdk.Context, addresses, failures 
 		for c := range items[i] {
 			p := channeltypes.Packet{
 				Sequence:      0,
-				SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0", // TODO: maybe change
+				SourcePort:    "port-n",
 				SourceChannel: items[i][c].ChannelId,
 			}
 			items[i][c].Address = acc.String()
 			items[i][c].Id = uint64(c)
 			items[i][c].Packet = &p
-			items[i][c].AckResult = []byte{}
-			items[i][c].ErrorText = ""
-
-			// TODO
-			keeper.AddContractFailure(ctx, p, items[i][c].Address, "", []byte{}, "")
+			items[i][c].Ack = nil
+			keeper.AddContractFailure(ctx, p, items[i][c].Address, "", nil)
 		}
 	}
 	return items

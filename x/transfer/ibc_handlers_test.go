@@ -100,7 +100,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
 	}).Return(nil, fmt.Errorf("SudoResponse error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", resACK.GetResult(), resACK.GetError())
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", &resACK)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
@@ -113,7 +113,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
 	}).Return(nil, fmt.Errorf("SudoResponse error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", resACK.GetResult(), resACK.GetError())
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", &resACK)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
@@ -127,7 +127,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
 	}).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", errACK.GetResult(), errACK.GetError())
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", &errACK)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	// feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = txModule.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
@@ -141,7 +141,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
 	}).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", errACK.GetResult(), errACK.GetError())
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", &errACK)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = txModule.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
@@ -179,7 +179,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", errACK.GetResult(), errACK.GetError())
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", &errACK)
 	// FIXME: fix distribution during outofgas
 	// cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	err = txModule.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
@@ -193,7 +193,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", errACK.GetResult(), errACK.GetError())
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "ack", &errACK)
 	// FIXME: fix distribution during outofgas
 	// cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	// feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
@@ -248,7 +248,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		cachedCtx.GasMeter().ConsumeGas(1, "Sudo response consumption")
 	}).Return(nil, nil)
 	// feeKeeper.EXPECT().DistributeAcknowledgementFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, p, contractAddress.String(), "ack", resACK.GetResult(), resACK.GetError()).Do(func(ctx sdk.Context, packet channeltypes.Packet, address, ackType string, ackResult []byte, errorText string) {
+	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, p, contractAddress.String(), "ack", &resACK).Do(func(ctx sdk.Context, packet channeltypes.Packet, address, ackType string, ack channeltypes.Acknowledgement) {
 		ctx.GasMeter().ConsumeGas(keeper.GasReserve, "out of gas")
 	})
 	require.Panics(t, func() { txModule.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a test
@@ -342,7 +342,7 @@ func TestHandleTimeout(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", []byte{}, "")
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", nil)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
@@ -354,7 +354,7 @@ func TestHandleTimeout(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", []byte{}, "")
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", nil)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
@@ -368,7 +368,7 @@ func TestHandleTimeout(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", []byte{}, "")
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", nil)
 	// cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
@@ -381,7 +381,7 @@ func TestHandleTimeout(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", []byte{}, "")
+	cmKeeper.EXPECT().AddContractFailure(ctx, p, contractAddress.String(), "timeout", nil)
 	// FIXME: make DistributeTimeoutFee during out of gas
 	// cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	// feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))

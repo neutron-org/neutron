@@ -11,23 +11,22 @@ import (
 )
 
 // AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, packet ibcchanneltypes.Packet, address, ackType string, ackResult []byte, errorText string) {
+func (k Keeper) AddContractFailure(ctx sdk.Context, packet ibcchanneltypes.Packet, address, ackType string, ack *ibcchanneltypes.Acknowledgement) {
 	failure := types.Failure{
-		ChannelId: packet.SourceChannel,
-		Address:   address,
-		AckId:     packet.Sequence,
-		AckType:   ackType,
-		AckResult: ackResult,
-		ErrorText: errorText,
-		Packet:    &packet,
+		ChannelId:  packet.SourceChannel,
+		Address:    address,
+		SequenceId: packet.Sequence,
+		AckType:    ackType,
+		Ack:        ack,
+		Packet:     &packet,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 
 	store := ctx.KVStore(k.storeKey)
 
 	failure.Id = nextFailureID
-	b := k.cdc.MustMarshal(&failure)
-	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), b)
+	bz := k.cdc.MustMarshal(&failure)
+	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), bz)
 }
 
 func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
@@ -60,49 +59,57 @@ func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	return
 }
 
-func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failureId uint64) (*types.Failure, error) {
+func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint64) (*types.Failure, error) {
 	store := ctx.KVStore(k.storeKey)
-	failureKey := types.GetFailureKey(contractAddr.String(), failureId)
+	key := types.GetFailureKey(contractAddr.String(), id)
 
-	failureBz := store.Get(failureKey)
-	if failureBz == nil {
-		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), failureId)
+	bz := store.Get(key)
+	if bz == nil {
+		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), id)
 	}
-	var failure types.Failure
-	k.cdc.MustUnmarshal(failureBz, &failure)
+	var res types.Failure
+	k.cdc.MustUnmarshal(bz, &res)
 
-	return &failure, nil
+	return &res, nil
 }
 
 // ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
 func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
 	if failure.Packet == nil {
-		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without packet info failureId = %d", failure.Id)
+		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without packet info; failureId = %d", failure.Id)
 	}
 
-	if failure.GetAckType() == "ack" { // response or error
-		_, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, failure.AckResult)
-		// TODO: handle resp?
-		if err != nil {
-			return err // TODO: wrap
+	if failure.GetAckType() == "ack" {
+		if failure.GetAck() == nil {
+			return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without acknowledgement; failureId = %d", failure.Id)
+		}
+		if failure.GetAck().GetError() == "" {
+			_, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, failure.Ack.GetResult())
+			// TODO: handle resp?
+			if err != nil {
+				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack response; failureId = %d; err = %s", failure.Id, err)
+			}
+		} else {
+			_, err := k.SudoError(ctx, contractAddr, *failure.Packet, failure.Ack.GetError())
+			// TODO: handle resp?
+			if err != nil {
+				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack error; failureId = %d; err = %s", failure.Id, err)
+			}
 		}
 	} else if failure.GetAckType() == "timeout" {
-		// TODO
+		// TODO: handle resp?
 		_, err := k.SudoTimeout(ctx, contractAddr, *failure.Packet)
 		if err != nil {
-			return err // TODO: wrap
+			return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack timeout; failureId = %d; err = %s", failure.Id, err)
 		}
 	} else {
 		return errors.Wrapf(types.IncorrectAckType, "cannot resubmit failure with incorrect ackType = %s", failure.GetAckType())
 	}
 
-	// TODO: If submitted failure response or timeout successfully, we can cleanup it?
-	// Or maybe mark it as processed
-	// Also maybe cleanup packet and ack data to smaller data to store
-	// Is it bad be able to call resubmitFailure multiple times?
+	// Cleanup failure since we resubmitted it successfully
 	k.removeFailure(ctx, contractAddr, failure.Id)
 
-	// TODO: maybe return result from sudo call?
+	// TODO: maybe return some result from sudo call?
 
 	return nil
 }

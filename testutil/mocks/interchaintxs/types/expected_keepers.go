@@ -116,15 +116,15 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 }
 
 // AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, packet types3.Packet, address, ackType string, ackResult []byte, errorText string) {
+func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, packet types3.Packet, address, ackType string, ack *types3.Acknowledgement) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddContractFailure", ctx, packet, address, ackType, ackResult, errorText)
+	m.ctrl.Call(m, "AddContractFailure", ctx, packet, address, ackType, ack)
 }
 
 // AddContractFailure indicates an expected call of AddContractFailure.
-func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, packet, address, ackType, ackResult, errorText interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, packet, address, ackType, ack interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, packet, address, ackType, ackResult, errorText)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, packet, address, ackType, ack)
 }
 
 // HasContractInfo mocks base method.
