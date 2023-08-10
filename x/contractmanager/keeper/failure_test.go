@@ -2,7 +2,10 @@ package keeper_test
 
 import (
 	"crypto/rand"
+	"encoding/json"
+	"github.com/golang/mock/gomock"
 	"github.com/neutron-org/neutron/testutil"
+	mock_types "github.com/neutron-org/neutron/testutil/mocks/contractmanager/types"
 	"strconv"
 	"testing"
 
@@ -95,9 +98,37 @@ func TestAddGetFailure(t *testing.T) {
 }
 
 func TestResubmitFailure(t *testing.T) {
-	// TODO
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	wk := mock_types.NewMockWasmKeeper(ctrl)
+	k, ctx := keepertest.ContractManagerKeeper(t, wk)
+
+	// add failure
+	contractAddr := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	data := []byte("Result")
+	packet := channeltypes.Packet{}
+	ack := channeltypes.Acknowledgement{
+		Response: &channeltypes.Acknowledgement_Result{Result: data},
+	}
+	failureId := k.GetNextFailureIDKey(ctx, contractAddr.String())
+	k.AddContractFailure(ctx, packet, contractAddr.String(), "ack", &ack)
 
 	// successful resubmit with ack and ack = response
+	x := types.MessageResponse{}
+	x.Response.Data = data
+	x.Response.Request = channeltypes.Packet{}
+	msg, err := json.Marshal(x)
+	require.NoError(t, err)
+
+	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
+	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msg)
+
+	failure, err := k.GetFailure(ctx, contractAddr, failureId)
+	require.NoError(t, err)
+	err = k.ResubmitFailure(ctx, contractAddr, failure)
+	require.NoError(t, err)
+
 	// failed resubmit with ack and ack = response
 
 	// successful resubmit with ack and ack = error
