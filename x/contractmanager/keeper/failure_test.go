@@ -96,4 +96,16 @@ func TestAddGetFailure(t *testing.T) {
 
 func TestResubmitFailure(t *testing.T) {
 	// TODO
+
+	// successful resubmit with ack and ack = response
+	// failed resubmit with ack and ack = response
+
+	// successful resubmit with ack and ack = error
+	// failed resubmit with ack and ack = error
+
+	// successful resubmit with timeout
+	// failed resubmit with timeout
+
+	// no Failure.Ack field found for ackType = 'ack'
+	// no Failure.Packet found
 }
