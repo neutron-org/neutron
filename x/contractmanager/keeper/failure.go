@@ -16,9 +16,9 @@ func (k Keeper) AddContractFailure(ctx sdk.Context, packet ibcchanneltypes.Packe
 		ChannelId:  packet.SourceChannel,
 		Address:    address,
 		SequenceId: packet.Sequence,
+		Packet:     &packet,
 		AckType:    ackType,
 		Ack:        ack,
-		Packet:     &packet,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 

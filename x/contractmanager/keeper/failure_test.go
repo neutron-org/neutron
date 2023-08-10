@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"crypto/rand"
+	"github.com/neutron-org/neutron/testutil"
 	"strconv"
 	"testing"
 
@@ -61,16 +62,38 @@ func flattenFailures(items [][]types.Failure) []types.Failure {
 }
 
 func TestGetAllFailures(t *testing.T) {
-	keeper, ctx := keepertest.ContractManagerKeeper(t, nil)
-	items := createNFailure(keeper, ctx, 1, 1)
+	k, ctx := keepertest.ContractManagerKeeper(t, nil)
+	items := createNFailure(k, ctx, 1, 1)
 	flattenItems := flattenFailures(items)
 
-	allFailures := keeper.GetAllFailures(ctx)
+	allFailures := k.GetAllFailures(ctx)
 
 	require.ElementsMatch(t,
 		nullify.Fill(flattenItems),
-		// flattenItems,
-		// allFailures,
 		nullify.Fill(allFailures),
 	)
+}
+
+func TestAddGetFailure(t *testing.T) {
+	// test adding and getting failure
+	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	k, ctx := keepertest.ContractManagerKeeper(t, nil)
+	failureId := k.GetNextFailureIDKey(ctx, contractAddress.String())
+	k.AddContractFailure(ctx, channeltypes.Packet{}, contractAddress.String(), "ack", &channeltypes.Acknowledgement{})
+	failure, err := k.GetFailure(ctx, contractAddress, failureId)
+	require.NoError(t, err)
+	require.Equal(t, failureId, failure.Id)
+	require.Equal(t, "ack", failure.AckType)
+
+	// non-existent id
+	_, err = k.GetFailure(ctx, contractAddress, failureId+1)
+	require.Error(t, err)
+
+	// non-existent contract address
+	_, err = k.GetFailure(ctx, sdk.MustAccAddressFromBech32("neutron1nseacn2aqezhj3ssatfg778ctcfjuknm8ucc0l"), failureId)
+	require.Error(t, err)
+}
+
+func TestResubmitFailure(t *testing.T) {
+	// TODO
 }

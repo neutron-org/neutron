@@ -134,6 +134,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.RemoveSchedule != nil {
 			return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
 		}
+		if contractMsg.ResubmitFailure != nil {
+			return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
+		}
 	}
 
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
