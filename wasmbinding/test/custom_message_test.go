@@ -593,6 +593,14 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	suite.Equal([][]uint8{expected}, data)
 }
 
+func (suite *CustomMessengerTestSuite) TestResubmitFailure() {
+	// TODO
+}
+
+func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract() {
+	// TODO
+}
+
 func (suite *CustomMessengerTestSuite) executeCustomMsg(owner sdk.AccAddress, fullMsg bindings.NeutronMsg) (result [][]byte, msg []byte) {
 	msg, err := json.Marshal(fullMsg)
 	suite.NoError(err)

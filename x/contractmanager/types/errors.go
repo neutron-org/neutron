@@ -1,7 +1,5 @@
 package types
 
-// DONTCOVER
-
 import (
 	"cosmossdk.io/errors"
 )
