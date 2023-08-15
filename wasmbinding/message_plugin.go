@@ -295,6 +295,21 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 }
 
 func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) ([]sdk.Event, [][]byte, error) {
+	var data []byte
+	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil || submitAdminProposal.AdminProposal.UpgradeProposal != nil || submitAdminProposal.AdminProposal.CancelSoftwareUpgradeProposal != nil {
+		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, submitAdminProposal)
+		data, err = json.Marshal(resp)
+		if err != nil {
+			ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposalLegacy response to JSON",
+				"from_address", contractAddr.String(),
+				"creator", contractAddr.String(),
+				"error", err,
+			)
+			return nil, nil, errors.Wrap(err, "marshal json failed")
+		}
+		return nil, [][]byte{data}, nil
+	}
+
 	response, err := m.performSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
 	if err != nil {
 		ctx.Logger().Debug("performSubmitAdminProposal: failed to submitAdminProposal",
@@ -305,7 +320,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 		return nil, nil, errors.Wrap(err, "failed to submit admin proposal")
 	}
 
-	data, err := json.Marshal(response)
+	data, err = json.Marshal(response)
 	if err != nil {
 		ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposal response to JSON",
 			"from_address", contractAddr.String(),
@@ -322,17 +337,17 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
-	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
+func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalLegacyResponse, error) {
 	proposal := submitAdminProposal.AdminProposal
+	msg := admintypes.MsgSubmitProposalLegacy{Proposer: contractAddr.String()}
 
 	err := m.validateProposalQty(&proposal)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate proposal quantity")
 	}
-	if proposal.ParamChangeProposal != nil {
+	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil {
 		p := proposal.ParamChangeProposal
-		err := msg.SetContent(&paramChange.ParameterChangeProposal{
+		err = msg.SetContent(&paramChange.ParameterChangeProposal{
 			Title:       p.Title,
 			Description: p.Description,
 			Changes:     p.ParamChanges,
@@ -340,35 +355,8 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ParameterChangeProposal")
 		}
-	}
 
-	if proposal.SoftwareUpgradeProposal != nil {
-		p := proposal.SoftwareUpgradeProposal
-		err := msg.SetContent(&softwareUpgrade.SoftwareUpgradeProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			Plan: softwareUpgrade.Plan{
-				Name:   p.Plan.Name,
-				Height: p.Plan.Height,
-				Info:   p.Plan.Info,
-			},
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on SoftwareUpgradeProposal")
-		}
 	}
-
-	if proposal.CancelSoftwareUpgradeProposal != nil {
-		p := proposal.CancelSoftwareUpgradeProposal
-		err := msg.SetContent(&softwareUpgrade.CancelSoftwareUpgradeProposal{
-			Title:       p.Title,
-			Description: p.Description,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on CancelSoftwareUpgradeProposal")
-		}
-	}
-
 	if proposal.UpgradeProposal != nil {
 		p := proposal.UpgradeProposal
 		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
@@ -399,13 +387,59 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		}
 	}
 
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
+	}
+
+	response, err := m.Adminserver.SubmitProposalLegacy(sdk.WrapSDKContext(ctx), &msg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to submit proposal")
+	}
+
+	return response, nil
+}
+
+func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+	proposal := submitAdminProposal.AdminProposal
+	var msg *admintypes.MsgSubmitProposal
+	var sdkMsgs []sdk.Msg
+	var sdkMsg sdk.Msg
+
+	err := m.validateProposalQty(&proposal)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate proposal quantity")
+	}
+
+	if proposal.SoftwareUpgradeProposal != nil {
+		p := proposal.SoftwareUpgradeProposal
+		sdkMsg = &softwareUpgrade.MsgSoftwareUpgrade{
+			Plan: softwareUpgrade.Plan{
+				Name:   p.Plan.Name,
+				Height: p.Plan.Height,
+				Info:   p.Plan.Info,
+			},
+		}
+		sdkMsgs = append(sdkMsgs, sdkMsg)
+		msg, err = admintypes.NewMsgSubmitProposal(sdkMsgs, contractAddr)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to set content on SoftwareUpgradeProposal")
+		}
+	}
+
+	if proposal.CancelSoftwareUpgradeProposal != nil {
+		sdkMsg = &softwareUpgrade.MsgCancelUpgrade{}
+		sdkMsgs = append(sdkMsgs, sdkMsg)
+		msg, err = admintypes.NewMsgSubmitProposal(sdkMsgs, contractAddr)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to set content on SoftwareUpgradeProposal")
+		}
+	}
+
 	if proposal.PinCodesProposal != nil {
 		p := proposal.PinCodesProposal
-		err := msg.SetContent(&wasmtypes.PinCodesProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			CodeIDs:     p.CodeIDs,
-		})
+		sdkMsg = &wasmtypes.MsgPinCodes{CodeIDs: p.CodeIDs}
+		sdkMsgs = append(sdkMsgs, sdkMsg)
+		msg, err = admintypes.NewMsgSubmitProposal(sdkMsgs, contractAddr)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on PinCodesProposal")
 		}
@@ -413,11 +447,9 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 
 	if proposal.UnpinCodesProposal != nil {
 		p := proposal.UnpinCodesProposal
-		err := msg.SetContent(&wasmtypes.UnpinCodesProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			CodeIDs:     p.CodeIDs,
-		})
+		sdkMsg = &wasmtypes.MsgUnpinCodes{CodeIDs: p.CodeIDs}
+		sdkMsgs = append(sdkMsgs, sdkMsg)
+		msg, err = admintypes.NewMsgSubmitProposal(sdkMsgs, contractAddr)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on UnpinCodesProposal")
 		}
@@ -425,12 +457,11 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 
 	if proposal.UpdateAdminProposal != nil {
 		p := proposal.UpdateAdminProposal
-		err := msg.SetContent(&wasmtypes.UpdateAdminProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			NewAdmin:    p.NewAdmin,
-			Contract:    p.Contract,
-		})
+		sdkMsg = &wasmtypes.MsgUpdateAdmin{
+
+			NewAdmin: p.NewAdmin,
+			Contract: p.Contract,
+		}
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on UpdateAdminProposal")
 		}
@@ -438,11 +469,9 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 
 	if proposal.ClearAdminProposal != nil {
 		p := proposal.ClearAdminProposal
-		err := msg.SetContent(&wasmtypes.ClearAdminProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			Contract:    p.Contract,
-		})
+		sdkMsg = &wasmtypes.MsgClearAdmin{
+			Contract: p.Contract,
+		}
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ClearAdminProposal")
 		}
@@ -452,7 +481,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit proposal")
 	}

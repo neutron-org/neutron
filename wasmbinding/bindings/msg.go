@@ -107,7 +107,9 @@ type ParamChangeProposal struct {
 }
 
 type SoftwareUpgradeProposal struct {
-	Title       string `json:"title"`
+	// deprecated
+	Title string `json:"title"`
+	// deprecated
 	Description string `json:"description"`
 	Plan        Plan   `json:"plan"`
 }
