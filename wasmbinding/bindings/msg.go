@@ -98,6 +98,7 @@ type AdminProposal struct {
 	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal,omitempty"`
 	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal,omitempty"`
 	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal,omitempty"`
+	ParamChangeNewProposal        *ParamChangeNewProposal        `json:"param_change_new_proposal,omitempty"`
 }
 
 type ParamChangeProposal struct {
@@ -182,6 +183,11 @@ type ClearAdminProposal struct {
 	Title       string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
 	Contract    string `json:"contract,omitempty"`
+}
+
+type ParamChangeNewProposal struct {
+	Module    string `json:"module,omitempty"`
+	NewParams string `json:"new_params,omitempty"`
 }
 
 // CreateDenom creates a new factory denom, of denomination:
