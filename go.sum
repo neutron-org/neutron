@@ -927,8 +927,8 @@ github.com/nats-io/nkeys v0.1.0/go.mod h1:xpnFELMwJABBLVhffcfd1MZx6VsNRFpEugbxzi
 github.com/nats-io/nkeys v0.1.3/go.mod h1:xpnFELMwJABBLVhffcfd1MZx6VsNRFpEugbxziKVo7w=
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/neilotoole/errgroup v0.1.6/go.mod h1:Q2nLGf+594h0CLBs/Mbg6qOr7GtqDK7C2S41udRnToE=
-github.com/neutron-org/admin-module v0.0.0-20230815095050-77591ac62d26 h1:Aycti/vu5GFMOYecB1hPuOU4XqUC6TMOhfWITElp1B4=
-github.com/neutron-org/admin-module v0.0.0-20230815095050-77591ac62d26/go.mod h1:QuxQ7FJlEAFMRssyEYOrR9ORnYQvBFMTlO8BXny6ntw=
+github.com/neutron-org/admin-module v0.0.0-20230815120514-97237f8409d1 h1:beWeivCs5O4uMun+Hc+wM68ZpZTmy5o2Q5JtdbqfhoE=
+github.com/neutron-org/admin-module v0.0.0-20230815120514-97237f8409d1/go.mod h1:QuxQ7FJlEAFMRssyEYOrR9ORnYQvBFMTlO8BXny6ntw=
 github.com/neutron-org/wasmd v0.40.0-rc.0.0.20230705143547-22c391d461d5 h1:2YQaqP5W3F+5VH0IAA7m8OHjkwONxQDqXUwo5tzKdDU=
 github.com/neutron-org/wasmd v0.40.0-rc.0.0.20230705143547-22c391d461d5/go.mod h1:l699csQZeRKYqF8R9JoYoQ6E0j4PfDM3Ln7EawtUwJE=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
