@@ -629,18 +629,21 @@ func New(
 	supportedFeatures := "iterator,stargate,staking,neutron,cosmwasm_1_1,cosmwasm_1_2"
 
 	// register the proposal types
-	adminRouter := govv1beta1.NewRouter()
-	adminRouter.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
+	adminRouterLegacy := govv1beta1.NewRouter()
+	adminRouterLegacy.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
 		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
+	keeperModules := map[string]adminmodulemodulekeeper.RegisteredModuleUpdateParams{"bank": {UpdateParamsMsg: &banktypes.MsgUpdateParams{}}}
 	app.AdminmoduleKeeper = *adminmodulemodulekeeper.NewKeeper(
 		appCodec,
 		keys[adminmodulemoduletypes.StoreKey],
 		keys[adminmodulemoduletypes.MemStoreKey],
-		adminRouter,
+		adminRouterLegacy,
+		app.MsgServiceRouter(),
 		IsConsumerProposalAllowlisted,
+		keeperModules,
 	)
 	adminModule := adminmodulemodule.NewAppModule(appCodec, app.AdminmoduleKeeper)
 
@@ -696,9 +699,10 @@ func New(
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
 
-	if len(enabledProposals) != 0 {
-		app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
-	}
+	// TODO: enabled proposals?
+	//if len(enabledProposals) != 0 {
+	//	app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
+	//}
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
 	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)

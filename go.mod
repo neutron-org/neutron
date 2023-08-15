@@ -182,7 +182,7 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.40.0-rc.0.0.20230705143547-22c391d461d5
-	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v0.0.0-20230815080844-fd586638657d
+	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v0.0.0-20230815095050-77591ac62d26
 	github.com/cosmos/gaia/v11 => github.com/cosmos/gaia/v11 v11.0.0-20230724152830-861ba391c3b4
 	github.com/cosmos/ledger-cosmos-go => github.com/cosmos/ledger-cosmos-go v0.12.1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
