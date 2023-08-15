@@ -421,7 +421,7 @@ func New(
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String())
 	bApp.SetParamStore(&app.ConsensusParamsKeeper)
 
 	// add capability keeper and ScopeToModule for ibc module
@@ -443,7 +443,7 @@ func New(
 		authtypes.ProtoBaseAccount,
 		maccPerms,
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
@@ -455,7 +455,7 @@ func New(
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.BlockedAddrs(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -463,7 +463,7 @@ func New(
 		legacyAmino,
 		keys[slashingtypes.StoreKey],
 		&app.ConsumerKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 	)
 	app.CrisisKeeper = *crisiskeeper.NewKeeper(
 		appCodec,
@@ -471,7 +471,7 @@ func New(
 		invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 	)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
@@ -481,7 +481,7 @@ func New(
 		appCodec,
 		homePath,
 		app.BaseApp,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 	)
 
 	// ... other modules keepers
@@ -612,7 +612,7 @@ func New(
 		app.BankKeeper,
 		// 25% of rewards should be sent to the redistribute address
 		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 	)
 
 	wasmDir := filepath.Join(homePath, "wasm")
@@ -635,7 +635,7 @@ func New(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
 		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
-	keeperModules := map[string]adminmodulemodulekeeper.RegisteredModuleUpdateParams{"bank": {UpdateParamsMsg: &banktypes.MsgUpdateParams{}}}
+	keeperModules := map[string]adminmodulemodulekeeper.RegisteredModuleUpdateParams{wasm.ModuleName: {UpdateParamsMsg: &wasmtypes.MsgUpdateParams{}}}
 	app.AdminmoduleKeeper = *adminmodulemodulekeeper.NewKeeper(
 		appCodec,
 		keys[adminmodulemoduletypes.StoreKey],
@@ -691,7 +691,7 @@ func New(
 		wasmDir,
 		wasmConfig,
 		supportedFeatures,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 		wasmOpts...,
 	)
 	wasmHooks.ContractKeeper = &app.WasmKeeper
