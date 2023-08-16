@@ -128,6 +128,19 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 
+		case contractQuery.Failures != nil:
+			res, err := qp.GetFailures(ctx, contractQuery.Failures.Address, contractQuery.Failures.Pagination)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to get denom admin")
+			}
+
+			bz, err := json.Marshal(res)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to JSON marshal FailuresResponse response")
+			}
+
+			return bz, nil
+
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}

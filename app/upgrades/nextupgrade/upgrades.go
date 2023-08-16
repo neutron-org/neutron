@@ -4,20 +4,60 @@ import (
 	"errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/neutron-org/neutron/app/upgrades"
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 )
+
+func MigrateFailures(ctx sdk.Context, storeKeys upgrades.StoreKeys, cdc codec.Codec) error {
+	ctx.Logger().Info("Migrating failures...")
+
+	// fetch list of all old failures
+	oldFailuresList := make([]contractmanagertypes.OldFailure, 0)
+	iteratorStore := prefix.NewStore(ctx.KVStore(storeKeys.GetKey(contractmanagertypes.StoreKey)), contractmanagertypes.ContractFailuresKey)
+	iterator := sdk.KVStorePrefixIterator(iteratorStore, []byte{})
+
+	for ; iterator.Valid(); iterator.Next() {
+		var val contractmanagertypes.OldFailure
+		cdc.MustUnmarshal(iterator.Value(), &val)
+		oldFailuresList = append(oldFailuresList, val)
+	}
+
+	err := iterator.Close()
+	if err != nil {
+		return err
+	}
+
+	// migrate
+	store := ctx.KVStore(storeKeys.GetKey(contractmanagertypes.StoreKey))
+	for _, oldItem := range oldFailuresList {
+		failure := contractmanagertypes.Failure{
+			ChannelId: oldItem.ChannelId,
+			Address:   oldItem.Address,
+			Id:        oldItem.Id,
+			AckType:   oldItem.AckType,
+			Packet:    nil,
+			Ack:       nil,
+		}
+		bz := cdc.MustMarshal(&failure)
+		store.Set(contractmanagertypes.GetFailureKey(failure.Address, failure.Id), bz)
+	}
+
+	ctx.Logger().Info("Finished migrating failures")
+
+	return nil
+}
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
 	keepers *upgrades.UpgradeKeepers,
-	_ upgrades.StoreKeys,
-	_ codec.Codec,
+	storeKeys upgrades.StoreKeys,
+	cdc codec.Codec,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")
@@ -44,6 +84,11 @@ func CreateUpgradeHandler(
 		keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMinGasPrices, &requiredGlobalFees)
 
 		ctx.Logger().Info("Global fees was set successfully")
+
+		err = MigrateFailures(ctx, storeKeys, cdc)
+		if err != nil {
+			ctx.Logger().Error("failed to migrate failures", "err", err)
+		}
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err

@@ -3,8 +3,9 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"testing"
+
+	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
@@ -606,13 +607,13 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
 	}
-	failureId := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
 	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, packet, suite.contractAddress.String(), "ack", &ack)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		ResubmitFailure: &bindings.ResubmitFailure{
-			FailureId: failureId,
+			FailureId: failureID,
 		},
 	})
 	suite.NoError(err)

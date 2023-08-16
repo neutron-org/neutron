@@ -3,11 +3,12 @@ package keeper_test
 import (
 	"crypto/rand"
 	"encoding/json"
+	"strconv"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/neutron-org/neutron/testutil"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/contractmanager/types"
-	"strconv"
-	"testing"
 
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
@@ -81,19 +82,19 @@ func TestAddGetFailure(t *testing.T) {
 	// test adding and getting failure
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	k, ctx := keepertest.ContractManagerKeeper(t, nil)
-	failureId := k.GetNextFailureIDKey(ctx, contractAddress.String())
+	failureID := k.GetNextFailureIDKey(ctx, contractAddress.String())
 	k.AddContractFailure(ctx, channeltypes.Packet{}, contractAddress.String(), "ack", &channeltypes.Acknowledgement{})
-	failure, err := k.GetFailure(ctx, contractAddress, failureId)
+	failure, err := k.GetFailure(ctx, contractAddress, failureID)
 	require.NoError(t, err)
-	require.Equal(t, failureId, failure.Id)
+	require.Equal(t, failureID, failure.Id)
 	require.Equal(t, "ack", failure.AckType)
 
 	// non-existent id
-	_, err = k.GetFailure(ctx, contractAddress, failureId+1)
+	_, err = k.GetFailure(ctx, contractAddress, failureID+1)
 	require.Error(t, err)
 
 	// non-existent contract address
-	_, err = k.GetFailure(ctx, sdk.MustAccAddressFromBech32("neutron1nseacn2aqezhj3ssatfg778ctcfjuknm8ucc0l"), failureId)
+	_, err = k.GetFailure(ctx, sdk.MustAccAddressFromBech32("neutron1nseacn2aqezhj3ssatfg778ctcfjuknm8ucc0l"), failureID)
 	require.Error(t, err)
 }
 
@@ -111,7 +112,7 @@ func TestResubmitFailure(t *testing.T) {
 	ack := channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Result{Result: data},
 	}
-	failureId := k.GetNextFailureIDKey(ctx, contractAddr.String())
+	failureID := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, packet, contractAddr.String(), "ack", &ack)
 
 	// successful resubmit with ack and ack = response
@@ -124,7 +125,7 @@ func TestResubmitFailure(t *testing.T) {
 	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msg)
 
-	failure, err := k.GetFailure(ctx, contractAddr, failureId)
+	failure, err := k.GetFailure(ctx, contractAddr, failureID)
 	require.NoError(t, err)
 	err = k.ResubmitFailure(ctx, contractAddr, failure)
 	require.NoError(t, err)

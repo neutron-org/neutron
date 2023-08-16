@@ -3,6 +3,8 @@ package bindings
 import (
 	"encoding/json"
 
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
@@ -32,6 +34,9 @@ type NeutronQuery struct {
 	FullDenom *FullDenom `json:"full_denom,omitempty"`
 	/// Returns the admin of a denom, if the denom is a Token Factory denom.
 	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
+	// Contractmanager queries
+	/// Query all failures for address
+	Failures *Failures `json:"failures,omitempty"`
 }
 
 /* Requests */
@@ -108,6 +113,10 @@ type QueryMinIbcFeeResponse struct {
 	MinFee feerefundertypes.Fee `json:"min_fee"`
 }
 
+type FailuresResponse struct {
+	Failures []contractmanagertypes.Failure `json:"failures"`
+}
+
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
 	type AliasRQ RegisteredQuery
 
@@ -176,6 +185,11 @@ type FullDenom struct {
 
 type DenomAdmin struct {
 	Subdenom string `json:"subdenom"`
+}
+
+type Failures struct {
+	Address    string             `json:"address"`
+	Pagination *query.PageRequest `json:"pagination,omitempty"`
 }
 
 type DenomAdminResponse struct {

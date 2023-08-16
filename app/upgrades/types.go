@@ -2,7 +2,7 @@ package upgrades
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-	store "github.com/cosmos/cosmos-sdk/store/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -29,7 +29,7 @@ type Upgrade struct {
 	CreateUpgradeHandler func(*module.Manager, module.Configurator, *UpgradeKeepers, StoreKeys, codec.Codec) upgradetypes.UpgradeHandler
 
 	// Store upgrades, should be used for any new modules introduced, new modules deleted, or store names renamed.
-	StoreUpgrades store.StoreUpgrades
+	StoreUpgrades storetypes.StoreUpgrades
 }
 
 type UpgradeKeepers struct {
@@ -47,5 +47,5 @@ type UpgradeKeepers struct {
 }
 
 type StoreKeys interface {
-	GetKey(string) *store.KVStoreKey
+	GetKey(string) *storetypes.KVStoreKey
 }

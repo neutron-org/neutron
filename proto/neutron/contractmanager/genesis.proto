@@ -18,14 +18,12 @@ message Failure {
   string address = 2;
   // Id of the failure under specific address
   uint64 id = 3;
-  // Packet sequence id to restore
-  uint64 sequence_id = 4; // TODO: is renaming ok?
   // Acknowledgement type
-  string ack_type = 5;
+  string ack_type = 4;
   // IBC Packet
-  ibc.core.channel.v1.Packet packet = 6;
+  ibc.core.channel.v1.Packet packet = 5;
   // Acknowledgement
-  ibc.core.channel.v1.Acknowledgement ack = 7;
+  ibc.core.channel.v1.Acknowledgement ack = 6;
 }
 
 // GenesisState defines the contractmanager module's genesis state.
@@ -34,4 +32,18 @@ message GenesisState {
   // List of the contract failures
   repeated Failure failures_list = 2 [ (gogoproto.nullable) = false ];
   // this line is used by starport scaffolding # genesis/proto/state
+}
+
+// Deprecated. Used only for migration purposes.
+message OldFailure {
+  // ChannelId
+  string channel_id = 1;
+  // Address of the failed contract
+  string address = 2;
+  // id of the failure under specific address
+  uint64 id = 3;
+  // ACK id to restore
+  uint64 ack_id = 4;
+  // Acknowledgement type
+  string ack_type = 5;
 }
