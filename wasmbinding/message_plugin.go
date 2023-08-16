@@ -297,8 +297,16 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 
 func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) ([]sdk.Event, [][]byte, error) {
 	var data []byte
-	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil || submitAdminProposal.AdminProposal.UpgradeProposal != nil || submitAdminProposal.AdminProposal.CancelSoftwareUpgradeProposal != nil {
+	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil || submitAdminProposal.AdminProposal.UpgradeProposal != nil || submitAdminProposal.AdminProposal.ClientUpdateProposal != nil {
 		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, submitAdminProposal)
+		if err != nil {
+			ctx.Logger().Debug("performSubmitAdminProposalLegacy: failed to submitAdminProposal",
+				"from_address", contractAddr.String(),
+				"creator", contractAddr.String(),
+				"error", err,
+			)
+			return nil, nil, errors.Wrap(err, "failed to submit admin proposal legacy")
+		}
 		data, err = json.Marshal(resp)
 		if err != nil {
 			ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposalLegacy response to JSON",
@@ -308,6 +316,11 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 			)
 			return nil, nil, errors.Wrap(err, "marshal json failed")
 		}
+
+		ctx.Logger().Debug("submit proposal legacy submitted",
+			"from_address", contractAddr.String(),
+			"creator", contractAddr.String(),
+		)
 		return nil, [][]byte{data}, nil
 	}
 
@@ -396,6 +409,11 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit proposal")
 	}
+
+	ctx.Logger().Debug("submit proposal legacy processed in msg server",
+		"from_address", contractAddr.String(),
+		"creator", contractAddr.String(),
+	)
 
 	return response, nil
 }
