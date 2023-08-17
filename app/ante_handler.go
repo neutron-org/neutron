@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	gaiaerrors "github.com/cosmos/gaia/v11/types/errors"
+	globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
@@ -18,12 +19,6 @@ import (
 	ante2 "github.com/skip-mev/pob/x/builder/ante"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 )
-
-// maxBypassMinFeeMsgGasUsage is the maximum gas usage per message
-// so that a transaction that contains only message types that can
-// bypass the minimum fee can be accepted with a zero fee.
-// For details, see gaiafeeante.NewFeeDecorator()
-const maxBypassMinFeeMsgGasUsage uint64 = 500_000 // Should be high enough because /ibc.core.client.v1.MsgUpdateClient is the most expensive message
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
 // channel keeper.
@@ -77,10 +72,11 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		// We are providing options.GlobalFeeSubspace because we do not have staking module
-		// In this case you should be sure that you implemented upgrade to set default global fee param and it SHOULD contain at least one record
+		// We are providing nil as a StakingKeeper arg because we do not have staking module
+		// In this case you should be sure that you
+		// implemented upgrade to set default `ParamStoreKeyMinGasPrices` global fee param with at least one record
 		// otherwise you will get panic
-		//globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
+		globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators

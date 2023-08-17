@@ -2,6 +2,7 @@ package bindings
 
 import (
 	"encoding/json"
+
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
