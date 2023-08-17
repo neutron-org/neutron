@@ -38,7 +38,7 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 }
 
 // AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, packet types1.Packet, address, ackType string, ack *types1.Acknowledgement) {
+func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, packet *types1.Packet, address, ackType string, ack *types1.Acknowledgement) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "AddContractFailure", ctx, packet, address, ackType, ack)
 }
