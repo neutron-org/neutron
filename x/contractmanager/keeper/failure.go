@@ -13,17 +13,15 @@ import (
 // AddContractFailure adds a specific failure to the store using address as the key
 func (k Keeper) AddContractFailure(ctx sdk.Context, packet *ibcchanneltypes.Packet, address, ackType string, ack *ibcchanneltypes.Acknowledgement) {
 	failure := types.Failure{
-		ChannelId: packet.SourceChannel,
-		Address:   address,
-		Packet:    packet,
-		AckType:   ackType,
-		Ack:       ack,
+		Address: address,
+		AckType: ackType,
+		Packet:  packet,
+		Ack:     ack,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
+	failure.Id = nextFailureID
 
 	store := ctx.KVStore(k.storeKey)
-
-	failure.Id = nextFailureID
 	bz := k.cdc.MustMarshal(&failure)
 	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), bz)
 }

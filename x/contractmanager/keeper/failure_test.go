@@ -38,9 +38,8 @@ func createNFailure(keeper *keeper.Keeper, ctx sdk.Context, addresses, failures 
 
 		for c := range items[i] {
 			p := channeltypes.Packet{
-				Sequence:      0,
-				SourcePort:    "port-n",
-				SourceChannel: items[i][c].ChannelId,
+				Sequence:   0,
+				SourcePort: "port-n",
 			}
 			items[i][c].Address = acc.String()
 			items[i][c].Id = uint64(c)
@@ -106,13 +105,17 @@ func TestResubmitFailure(t *testing.T) {
 	wk := mock_types.NewMockWasmKeeper(ctrl)
 	k, ctx := keepertest.ContractManagerKeeper(t, wk)
 
-	// add ack failure
 	contractAddr := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	data := []byte("Result")
-	packet := channeltypes.Packet{}
 	ack := channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Result{Result: data},
 	}
+	ackError := channeltypes.Acknowledgement{
+		Response: &channeltypes.Acknowledgement_Error{Error: "not able to do IBC tx"},
+	}
+
+	// add ack failure
+	packet := channeltypes.Packet{}
 	failureID := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, &packet, contractAddr.String(), "ack", &ack)
 
@@ -125,7 +128,7 @@ func TestResubmitFailure(t *testing.T) {
 	// error response
 	xErr := types.MessageError{}
 	xErr.Error.Request = channeltypes.Packet{}
-	xErr.Error.Details = "error details"
+	xErr.Error.Details = "not able to do IBC tx"
 	msgErr, err := json.Marshal(xErr)
 	require.NoError(t, err)
 	// timeout response
@@ -164,11 +167,8 @@ func TestResubmitFailure(t *testing.T) {
 
 	// case: successful resubmit with ack and ack = error
 	// add error failure
-	ack = channeltypes.Acknowledgement{
-		Response: &channeltypes.Acknowledgement_Error{Error: "not able to do IBC tx"},
-	}
 	failureID3 := k.GetNextFailureIDKey(ctx, contractAddr.String())
-	k.AddContractFailure(ctx, &packet, contractAddr.String(), "ack", &ack)
+	k.AddContractFailure(ctx, &packet, contractAddr.String(), "ack", &ackError)
 
 	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return([]byte{}, nil)
@@ -183,7 +183,7 @@ func TestResubmitFailure(t *testing.T) {
 
 	// case: failed resubmit with ack and ack = error
 	failureID4 := k.GetNextFailureIDKey(ctx, contractAddr.String())
-	k.AddContractFailure(ctx, &packet, contractAddr.String(), "ack", &ack)
+	k.AddContractFailure(ctx, &packet, contractAddr.String(), "ack", &ackError)
 
 	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return(nil, fmt.Errorf("failed to Sudo"))
@@ -191,7 +191,7 @@ func TestResubmitFailure(t *testing.T) {
 	failure4, err := k.GetFailure(ctx, contractAddr, failureID4)
 	require.NoError(t, err)
 	err = k.ResubmitFailure(ctx, contractAddr, failure4)
-	require.ErrorContains(t, err, "cannot resubmit failure ack response")
+	require.ErrorContains(t, err, "cannot resubmit failure ack error")
 	// failure is still there
 	failureAfter4, err := k.GetFailure(ctx, contractAddr, failureID4)
 	require.NoError(t, err)
@@ -199,9 +199,6 @@ func TestResubmitFailure(t *testing.T) {
 
 	// case: successful resubmit with timeout
 	// add error failure
-	ack = channeltypes.Acknowledgement{
-		Response: &channeltypes.Acknowledgement_Error{Error: "not able to do IBC tx"},
-	}
 	failureID5 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, &packet, contractAddr.String(), "timeout", nil)
 
@@ -226,7 +223,7 @@ func TestResubmitFailure(t *testing.T) {
 	failure6, err := k.GetFailure(ctx, contractAddr, failureID6)
 	require.NoError(t, err)
 	err = k.ResubmitFailure(ctx, contractAddr, failure6)
-	require.ErrorContains(t, err, "cannot resubmit failure ack response")
+	require.ErrorContains(t, err, "cannot resubmit failure ack timeout")
 	// failure is still there
 	failureAfter6, err := k.GetFailure(ctx, contractAddr, failureID6)
 	require.NoError(t, err)

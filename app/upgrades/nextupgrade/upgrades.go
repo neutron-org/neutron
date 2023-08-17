@@ -36,12 +36,11 @@ func MigrateFailures(ctx sdk.Context, storeKeys upgrades.StoreKeys, cdc codec.Co
 	store := ctx.KVStore(storeKeys.GetKey(contractmanagertypes.StoreKey))
 	for _, oldItem := range oldFailuresList {
 		failure := contractmanagertypes.Failure{
-			ChannelId: oldItem.ChannelId,
-			Address:   oldItem.Address,
-			Id:        oldItem.Id,
-			AckType:   oldItem.AckType,
-			Packet:    nil,
-			Ack:       nil,
+			Address: oldItem.Address,
+			Id:      oldItem.Id,
+			AckType: oldItem.AckType,
+			Packet:  nil,
+			Ack:     nil,
 		}
 		bz := cdc.MustMarshal(&failure)
 		store.Set(contractmanagertypes.GetFailureKey(failure.Address, failure.Id), bz)

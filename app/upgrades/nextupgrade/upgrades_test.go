@@ -1,7 +1,6 @@
 package nextupgrade_test
 
 import (
-	"fmt"
 	"testing"
 
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
@@ -73,7 +72,7 @@ func (suite *UpgradeTestSuite) TestFailuresUpgrade() {
 			addr = addressTwo
 		}
 		failure := contractmanagertypes.OldFailure{
-			ChannelId: fmt.Sprintf("channel-%d", i),
+			ChannelId: "channel-0",
 			Address:   addr,
 			Id:        i % 2,
 			AckType:   "ack",
@@ -92,36 +91,32 @@ func (suite *UpgradeTestSuite) TestFailuresUpgrade() {
 	// check elements migrated properly
 	suite.Require().ElementsMatch(app.ContractManagerKeeper.GetAllFailures(ctx), []contractmanagertypes.Failure{
 		{
-			ChannelId: "channel-0",
-			Address:   addressOne,
-			Id:        0,
-			AckType:   "ack",
-			Packet:    nil,
-			Ack:       nil,
+			Address: addressOne,
+			Id:      0,
+			AckType: "ack",
+			Packet:  nil,
+			Ack:     nil,
 		},
 		{
-			ChannelId: "channel-1",
-			Address:   addressOne,
-			Id:        1,
-			AckType:   "ack",
-			Packet:    nil,
-			Ack:       nil,
+			Address: addressOne,
+			Id:      1,
+			AckType: "ack",
+			Packet:  nil,
+			Ack:     nil,
 		},
 		{
-			ChannelId: "channel-2",
-			Address:   addressTwo,
-			Id:        0,
-			AckType:   "ack",
-			Packet:    nil,
-			Ack:       nil,
+			Address: addressTwo,
+			Id:      0,
+			AckType: "ack",
+			Packet:  nil,
+			Ack:     nil,
 		},
 		{
-			ChannelId: "channel-3",
-			Address:   addressTwo,
-			Id:        1,
-			AckType:   "ack",
-			Packet:    nil,
-			Ack:       nil,
+			Address: addressTwo,
+			Id:      1,
+			AckType: "ack",
+			Packet:  nil,
+			Ack:     nil,
 		},
 	})
 
@@ -129,12 +124,11 @@ func (suite *UpgradeTestSuite) TestFailuresUpgrade() {
 	failure, err := app.ContractManagerKeeper.GetFailure(ctx, sdk.MustAccAddressFromBech32(addressTwo), 1)
 	suite.Require().NoError(err)
 	suite.Require().Equal(failure, &contractmanagertypes.Failure{
-		ChannelId: "channel-3",
-		Address:   addressTwo,
-		Id:        1,
-		AckType:   "ack",
-		Packet:    nil,
-		Ack:       nil,
+		Address: addressTwo,
+		Id:      1,
+		AckType: "ack",
+		Packet:  nil,
+		Ack:     nil,
 	})
 
 	// non-existent returns error

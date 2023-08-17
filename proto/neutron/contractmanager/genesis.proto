@@ -12,18 +12,16 @@ option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
 // replay ACK in case of requirement.
 // Note that Failure means that sudo handler to cosmwasm contract failed for some reason
 message Failure {
-  // ChannelId
-  string channel_id = 1;
   // Address of the failed contract
-  string address = 2;
+  string address = 1;
   // Id of the failure under specific address
-  uint64 id = 3;
+  uint64 id = 2;
   // Acknowledgement type
-  string ack_type = 4;
+  string ack_type = 3;
   // IBC Packet
-  ibc.core.channel.v1.Packet packet = 5;
+  ibc.core.channel.v1.Packet packet = 4;
   // Acknowledgement
-  ibc.core.channel.v1.Acknowledgement ack = 6;
+  ibc.core.channel.v1.Acknowledgement ack = 5;
 }
 
 // GenesisState defines the contractmanager module's genesis state.
