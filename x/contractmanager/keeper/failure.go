@@ -104,8 +104,6 @@ func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, fa
 	// Cleanup failure since we resubmitted it successfully
 	k.removeFailure(ctx, contractAddr, failure.Id)
 
-	// TODO: maybe return some result from sudo call?
-
 	return nil
 }
 
