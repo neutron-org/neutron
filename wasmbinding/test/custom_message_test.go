@@ -640,13 +640,13 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
 	}
-	failureId := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
 	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), "timeout", &ack)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		ResubmitFailure: &bindings.ResubmitFailure{
-			FailureId: failureId,
+			FailureId: failureID,
 		},
 	})
 	suite.NoError(err)
@@ -673,13 +673,13 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
 	}
-	failureId := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
 	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, testutil.TestOwnerAddress, "timeout", &ack)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		ResubmitFailure: &bindings.ResubmitFailure{
-			FailureId: failureId,
+			FailureId: failureID,
 		},
 	})
 	suite.NoError(err)

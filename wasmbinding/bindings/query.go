@@ -29,13 +29,13 @@ type NeutronQuery struct {
 	// MinIbcFee
 	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
 	// Token Factory queries
-	/// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
-	/// returns the full denom as used by `BankMsg::Send`.
+	// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
+	// returns the full denom as used by `BankMsg::Send`.
 	FullDenom *FullDenom `json:"full_denom,omitempty"`
-	/// Returns the admin of a denom, if the denom is a Token Factory denom.
+	// Returns the admin of a denom, if the denom is a Token Factory denom.
 	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
 	// Contractmanager queries
-	/// Query all failures for address
+	// Query all failures for address
 	Failures *Failures `json:"failures,omitempty"`
 }
 

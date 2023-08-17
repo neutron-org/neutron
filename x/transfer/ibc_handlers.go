@@ -63,9 +63,6 @@ func (im *IBCModule) createCachedContext(ctx sdk.Context) (sdk.Context, func(), 
 	// and process failed Sudo call
 	if gasMeterIsLimited {
 		gasLeft := gasMeter.Limit() - gasMeter.GasConsumed()
-		// NOTE: DANGER: remove this. But we will enforce limit, only that it's through param values:
-		//(https://www.notion.so/hadron/Gas-Errors-Interchain-Txs-2b2f1caacdcd4981950641e0996cac27?pvs=4#73af69a69b8249ae9d2222afcc42b968)
-		//gasLeft := uint64(100_000)
 
 		var newLimit uint64
 		if gasLeft < GasReserve {
@@ -97,9 +94,6 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
-
-	// gasMeter := sdk.NewGasMeter(100_000)
-	// ctx = ctx.WithGasMeter(gasMeter)
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
 	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "ack", &ack)

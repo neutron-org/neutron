@@ -243,7 +243,6 @@ type MsgExecuteContract struct {
 }
 
 type ResubmitFailure struct {
-	// TODO
 	FailureId uint64 `json:"failure_id"`
 }
 
