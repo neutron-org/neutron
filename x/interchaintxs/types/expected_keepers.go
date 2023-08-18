@@ -31,6 +31,7 @@ type ContractManagerKeeper interface {
 	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
 	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
 	SudoOnChanOpenAck(ctx sdk.Context, contractAddress sdk.AccAddress, details contractmanagertypes.OpenAckDetails) ([]byte, error)
+	GetParams(ctx sdk.Context) (params contractmanagertypes.Params)
 }
 
 type ICAControllerKeeper interface {

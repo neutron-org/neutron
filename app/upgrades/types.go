@@ -8,6 +8,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
@@ -42,6 +43,7 @@ type UpgradeKeepers struct {
 	ParamsKeeper       paramskeeper.Keeper
 	CapabilityKeeper   *capabilitykeeper.Keeper
 	BuilderKeeper      builderkeeper.Keeper
+	ContractManager    contractmanagerkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace paramtypes.Subspace
 }

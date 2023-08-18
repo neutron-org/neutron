@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
@@ -15,6 +16,7 @@ type ContractManagerKeeper interface {
 	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) ([]byte, error)
 	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
 	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
+	GetParams(ctx sdk.Context) (params contractmanagertypes.Params)
 }
 
 type FeeRefunderKeeper interface {

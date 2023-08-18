@@ -11,7 +11,8 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types1 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
-	types2 "github.com/neutron-org/neutron/x/feerefunder/types"
+	types2 "github.com/neutron-org/neutron/x/contractmanager/types"
+	types3 "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
 // MockContractManagerKeeper is a mock of ContractManagerKeeper interface.
@@ -47,6 +48,20 @@ func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, channe
 func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channelID, address, ackID, ackType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelID, address, ackID, ackType)
+}
+
+// GetParams mocks base method.
+func (m *MockContractManagerKeeper) GetParams(ctx types.Context) types2.Params {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParams", ctx)
+	ret0, _ := ret[0].(types2.Params)
+	return ret0
+}
+
+// GetParams indicates an expected call of GetParams.
+func (mr *MockContractManagerKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockContractManagerKeeper)(nil).GetParams), ctx)
 }
 
 // HasContractInfo mocks base method.
@@ -132,7 +147,7 @@ func (m *MockFeeRefunderKeeper) EXPECT() *MockFeeRefunderKeeperMockRecorder {
 }
 
 // DistributeAcknowledgementFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeAcknowledgementFee(ctx types.Context, receiver types.AccAddress, packetID types2.PacketID) {
+func (m *MockFeeRefunderKeeper) DistributeAcknowledgementFee(ctx types.Context, receiver types.AccAddress, packetID types3.PacketID) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DistributeAcknowledgementFee", ctx, receiver, packetID)
 }
@@ -144,7 +159,7 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeAcknowledgementFee(ctx, r
 }
 
 // DistributeTimeoutFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeTimeoutFee(ctx types.Context, receiver types.AccAddress, packetID types2.PacketID) {
+func (m *MockFeeRefunderKeeper) DistributeTimeoutFee(ctx types.Context, receiver types.AccAddress, packetID types3.PacketID) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DistributeTimeoutFee", ctx, receiver, packetID)
 }
@@ -156,7 +171,7 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeTimeoutFee(ctx, receiver,
 }
 
 // LockFees mocks base method.
-func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types.AccAddress, packetID types2.PacketID, fee types2.Fee) error {
+func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types.AccAddress, packetID types3.PacketID, fee types3.Fee) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LockFees", ctx, payer, packetID, fee)
 	ret0, _ := ret[0].(error)

@@ -18,7 +18,8 @@ service Query {
   rpc DenomAuthorityMetadata(QueryDenomAuthorityMetadataRequest)
       returns (QueryDenomAuthorityMetadataResponse) {
     option (google.api.http).get =
-        "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata";
+        "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/"
+        "authority_metadata";
   }
 
   rpc DenomsFromCreator(QueryDenomsFromCreatorRequest)

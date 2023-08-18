@@ -1,9 +1,8 @@
 package transfer
 
 import (
-	"strings"
-
 	"cosmossdk.io/errors"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -19,67 +18,9 @@ const (
 	GasReserve = 15000
 )
 
-func (im IBCModule) outOfGasRecovery(
-	ctx sdk.Context,
-	gasMeter sdk.GasMeter,
-	senderAddress sdk.AccAddress,
-	packet channeltypes.Packet,
-	data transfertypes.FungibleTokenPacketData,
-	failureType string,
-) {
-	if r := recover(); r != nil {
-		_, ok := r.(sdk.ErrorOutOfGas)
-		if !ok || !gasMeter.IsOutOfGas() {
-			panic(r)
-		}
-
-		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
-		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureType)
-		// FIXME: add distribution call
-	}
-}
-
-// createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
-// If there is an error during Sudo call, we can safely revert changes made in cached context.
-func (im *IBCModule) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
-	gasMeter := ctx.GasMeter()
-	// determines type of gas meter by its prefix:
-	// * BasicGasMeter - basic gas meter which is used for processing tx directly in block;
-	// * InfiniteGasMeter - is used to process txs during simulation calls. We don't need to create a limit for such meter,
-	// since it's infinite.
-	gasMeterIsLimited := strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter")
-
-	cacheCtx, writeFn := ctx.CacheContext()
-
-	// if gas meter is limited:
-	// 1. calculate how much free gas left we have for a Sudo call;
-	// 2. If gasLeft less than reserved gas (GasReserved), we set gas limit for cached context to zero, meaning we can't
-	// 		process Sudo call;
-	// 3. If we have more gas left than reserved gas (GasReserved) for Sudo call, we set gas limit for cached context to
-	// 		difference between gas left and reserved gas: (gasLeft - GasReserve);
-	//
-	// GasReserve is the amount of gas on the context gas meter we need to reserve in order to add contract failure to keeper
-	// and process failed Sudo call
-	if gasMeterIsLimited {
-		gasLeft := gasMeter.Limit() - gasMeter.GasConsumed()
-
-		var newLimit uint64
-		if gasLeft < GasReserve {
-			newLimit = 0
-		} else {
-			newLimit = gasLeft - GasReserve
-		}
-
-		gasMeter = sdk.NewGasMeter(newLimit)
-	}
-
-	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
-
-	return cacheCtx, writeFn, gasMeter
-}
-
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
 func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
+	// TODO: why do ever need whole logic for non contract, why dont exit early
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
@@ -110,16 +51,16 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "ack")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
-		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 
-	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
 	// distribute fees only if the sender is a contract
 	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
 		im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+		// consume all the gas from the cached context
+		ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	}
 
 	return nil
@@ -147,16 +88,61 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "timeout")
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
-		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 
 	// distribute fee only if the sender is a contract
 	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
 		im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+		// consume all the gas from the cached context
+		ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	}
 
-	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
-
 	return nil
+}
+
+func (im IBCModule) outOfGasRecovery(
+	ctx sdk.Context,
+	gasMeter sdk.GasMeter,
+	senderAddress sdk.AccAddress,
+	packet channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+	failureType string,
+) {
+	if r := recover(); r != nil {
+		_, ok := r.(sdk.ErrorOutOfGas)
+		if !ok || !gasMeter.IsOutOfGas() {
+			panic(r)
+		}
+
+		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
+		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureType)
+		// FIXME: add distribution call
+	}
+}
+
+// createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
+// If there is an error during Sudo call, we can safely revert changes made in cached context.
+// panics if there is no enough gas for sudoCall + reserve
+func (im *IBCModule) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
+	cacheCtx, writeFn := ctx.CacheContext()
+
+	sudoLimit := im.ContractManagerKeeper.GetParams(ctx).SudoCallGasLimit
+	if ctx.GasMeter().GasRemaining() < getGasReserve()+sudoLimit {
+		panic(sdk.ErrorOutOfGas{Descriptor: fmt.Sprintf("%dgas - reserve for sudo call", sudoLimit)})
+	}
+
+	gasMeter := sdk.NewGasMeter(sudoLimit)
+
+	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
+
+	return cacheCtx, writeFn, gasMeter
+}
+
+// TODO: calculate gas reserve in according to failure ack + packet size
+// getGasReserve calculates the gas amount required to
+// 1) Save failure ack, in case there is OutOfGas error or a regular error during sudoCall
+// 2) Distribute ack fees
+func getGasReserve() uint64 {
+	return GasReserve
 }

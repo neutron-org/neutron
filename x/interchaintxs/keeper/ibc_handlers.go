@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"strings"
+	"fmt"
 	"time"
 
 	"cosmossdk.io/errors"
@@ -20,63 +20,6 @@ const (
 	// GasReserve is the amount of gas on the context gas meter we need to reserve in order to add contract failure to keeper
 	GasReserve = 15000
 )
-
-func (k *Keeper) outOfGasRecovery(
-	ctx sdk.Context,
-	gasMeter sdk.GasMeter,
-	senderAddress sdk.AccAddress,
-	packet channeltypes.Packet,
-	failureAckType string,
-) {
-	if r := recover(); r != nil {
-		_, ok := r.(sdk.ErrorOutOfGas)
-		if !ok || !gasMeter.IsOutOfGas() {
-			panic(r)
-		}
-
-		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureAckType)
-	}
-}
-
-// createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
-// If there is an error during Sudo call, we can safely revert changes made in cached context.
-func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
-	gasMeter := ctx.GasMeter()
-	// determines type of gas meter by its prefix:
-	// * BasicGasMeter - basic gas meter which is used for processing tx directly in block;
-	// * InfiniteGasMeter - is used to process txs during simulation calls. We don't need to create a limit for such meter,
-	// since it's infinite.
-	gasMeterIsLimited := strings.HasPrefix(ctx.GasMeter().String(), "BasicGasMeter")
-
-	cacheCtx, writeFn := ctx.CacheContext()
-
-	// if gas meter is limited:
-	// 1. calculate how much free gas left we have for a Sudo call;
-	// 2. If gasLeft less than reserved gas (GasReserved), we set gas limit for cached context to zero, meaning we can't
-	// 		process Sudo call;
-	// 3. If we have more gas left than reserved gas (GasReserved) for Sudo call, we set gas limit for cached context to
-	// 		difference between gas left and reserved gas: (gasLeft - GasReserve);
-	//
-	// GasReserve is the amount of gas on the context gas meter we need to reserve in order to add contract failure to keeper
-	// and process failed Sudo call
-	if gasMeterIsLimited {
-		gasLeft := gasMeter.Limit() - gasMeter.GasConsumed()
-
-		var newLimit uint64
-		if gasLeft < GasReserve {
-			newLimit = 0
-		} else {
-			newLimit = gasLeft - GasReserve
-		}
-
-		gasMeter = sdk.NewGasMeter(newLimit)
-	}
-
-	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
-
-	return cacheCtx, writeFn, gasMeter
-}
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
 func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
@@ -113,18 +56,16 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
-		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 
-	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
-
+	// consume all the gas from the cached context
+	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	return nil
 }
 
 // HandleTimeout passes the timeout data to the appropriate contract via a Sudo call.
 // Since all ICA channels are ORDERED, a single timeout shuts down a channel.
-// The affected zone should be paused after a timeout.
 func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleTimeout)
 
@@ -145,12 +86,11 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 	} else {
-		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		writeFn()
 	}
 
-	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume from cached context")
-
+	// consume all the gas from the cached context
+	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	return nil
 }
 
@@ -186,4 +126,48 @@ func (k *Keeper) HandleChanOpenAck(
 	}
 
 	return nil
+}
+
+func (k *Keeper) outOfGasRecovery(
+	ctx sdk.Context,
+	gasMeter sdk.GasMeter,
+	senderAddress sdk.AccAddress,
+	packet channeltypes.Packet,
+	failureAckType string,
+) {
+	if r := recover(); r != nil {
+		_, ok := r.(sdk.ErrorOutOfGas)
+		if !ok || !gasMeter.IsOutOfGas() {
+			panic(r)
+		}
+
+		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
+		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureAckType)
+	}
+}
+
+// createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
+// If there is an error during Sudo call, we can safely revert changes made in cached context.
+// panics if there is no enough gas for sudoCall + reserve
+func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
+	cacheCtx, writeFn := ctx.CacheContext()
+	
+	sudoLimit := k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit
+	if ctx.GasMeter().GasRemaining() < getGasReserve()+sudoLimit {
+		panic(sdk.ErrorOutOfGas{Descriptor: fmt.Sprintf("%dgas - reserve for sudo call", sudoLimit)})
+	}
+
+	gasMeter := sdk.NewGasMeter(sudoLimit)
+
+	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
+
+	return cacheCtx, writeFn, gasMeter
+}
+
+// TODO: calculate gas reserve in according to failure ack + packet size
+// getGasReserve calculates the gas amount required to
+// 1) Save failure ack, in case there is OutOfGas error or a regular error during sudoCall
+// 2) Distribute ack fees
+func getGasReserve() uint64 {
+	return GasReserve
 }

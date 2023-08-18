@@ -12,6 +12,7 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
 	"github.com/neutron-org/neutron/app/upgrades"
+	contractmanagermoduletypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -87,6 +88,15 @@ func CreateUpgradeHandler(
 			ProposerFee:            math.LegacyNewDecWithPrec(25, 2),
 		}
 		err = keepers.BuilderKeeper.SetParams(ctx, builderParams)
+		if err != nil {
+			return nil, err
+		}
+
+		ctx.Logger().Info("Setting sudo callback limit...")
+		cmParams := contractmanagermoduletypes.Params{
+			SudoCallGasLimit: 1_000_000,
+		}
+		err = keepers.ContractManager.SetParams(ctx, cmParams)
 		if err != nil {
 			return nil, err
 		}

@@ -127,6 +127,20 @@ func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channel
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelID, address, ackID, ackType)
 }
 
+// GetParams mocks base method.
+func (m *MockContractManagerKeeper) GetParams(ctx types.Context) types4.Params {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParams", ctx)
+	ret0, _ := ret[0].(types4.Params)
+	return ret0
+}
+
+// GetParams indicates an expected call of GetParams.
+func (mr *MockContractManagerKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockContractManagerKeeper)(nil).GetParams), ctx)
+}
+
 // HasContractInfo mocks base method.
 func (m *MockContractManagerKeeper) HasContractInfo(ctx types.Context, contractAddress types.AccAddress) bool {
 	m.ctrl.T.Helper()
