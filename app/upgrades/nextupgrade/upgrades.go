@@ -3,6 +3,8 @@ package nextupgrade
 import (
 	"errors"
 
+	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
@@ -39,6 +41,12 @@ func CreateUpgradeHandler(
 		err = migrateFailures(ctx, storeKeys, cdc)
 		if err != nil {
 			ctx.Logger().Error("failed to migrate Failures", "err", err)
+			return vm, err
+		}
+
+		err = migrateRewardDenoms(ctx, keepers)
+		if err != nil {
+			ctx.Logger().Error("failed to migrate reward denoms", "err", err)
 			return vm, err
 		}
 
@@ -85,7 +93,7 @@ func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error 
 
 	ctx.Logger().Info("Bypass min fee msg types was set successfully")
 
-	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage, types.DefaultmaxTotalBypassMinFeeMsgGasUsage)
+	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage, &types.DefaultmaxTotalBypassMinFeeMsgGasUsage)
 
 	ctx.Logger().Info("Max total bypass min fee msg gas usage set successfully")
 
@@ -126,6 +134,26 @@ func migrateFailures(ctx sdk.Context, storeKeys upgrades.StoreKeys, cdc codec.Co
 	}
 
 	ctx.Logger().Info("Finished migrating failures")
+
+	return nil
+}
+
+func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+	ctx.Logger().Info("Migrating reword denoms...")
+
+	if !keepers.CcvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms) {
+		return errors.New("key_reward_denoms param not found")
+	}
+
+	var denoms []string
+	keepers.CcvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+
+	// add new denom
+	denoms = append(denoms, "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349")
+
+	keepers.CcvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+
+	ctx.Logger().Info("Finished migrating reward denoms")
 
 	return nil
 }

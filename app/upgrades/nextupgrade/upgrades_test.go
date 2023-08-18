@@ -3,6 +3,8 @@ package nextupgrade_test
 import (
 	"testing"
 
+	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
@@ -159,4 +161,33 @@ func (suite *UpgradeTestSuite) TestFailuresUpgrade() {
 	suite.Require().Equal(oneKey, uint64(2))
 	twoKey := app.ContractManagerKeeper.GetNextFailureIDKey(ctx, addressTwo)
 	suite.Require().Equal(twoKey, uint64(2))
+}
+
+func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
+	var (
+		app                 = suite.GetNeutronZoneApp(suite.ChainA)
+		ccvConsumerSubspace = app.GetSubspace(ccvconsumertypes.ModuleName)
+		ctx                 = suite.ChainA.GetContext()
+	)
+
+	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
+
+	var denomsBefore []string
+	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denomsBefore)
+	var empty []string = nil
+	suite.Require().Equal(denomsBefore, empty)
+
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
+
+	var denoms []string
+	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+	requiredDenoms := []string{"ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"}
+	suite.Require().Equal(requiredDenoms, denoms)
 }
