@@ -286,7 +286,7 @@ func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.
 	wasmCode, err := os.ReadFile(path)
 	suite.Require().NoError(err)
 
-	codeID, _, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
+	codeID, _, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody})
 	suite.Require().NoError(err)
 
 	return codeID
