@@ -71,7 +71,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
 	}).Return(nil, fmt.Errorf("SudoResponse error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), "ack", &resACK)
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Ack, &resACK)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
@@ -84,7 +84,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), "ack", &errACK)
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Ack, &errACK)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), "ack", &errACK)
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Ack, &errACK)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
 	require.NoError(t, err)
@@ -144,7 +144,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		cachedCtx.GasMeter().ConsumeGas(1, "Sudo response consumption")
 	}).Return(nil, nil)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, &p, contractAddress.String(), "ack", &resACK).Do(func(ctx sdk.Context, packet channeltypes.Packet, address, ackType string, ack channeltypes.Acknowledgement) {
+	cmKeeper.EXPECT().AddContractFailure(lowGasCtx, &p, contractAddress.String(), types.Ack, &resACK).Do(func(ctx sdk.Context, packet channeltypes.Packet, address, ackType string, ack channeltypes.Acknowledgement) {
 		ctx.GasMeter().ConsumeGas(keeper.GasReserve, "out of gas")
 	})
 	require.Panics(t, func() { icak.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a panic test
@@ -194,7 +194,7 @@ func TestHandleTimeout(t *testing.T) {
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), "timeout", nil)
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Timeout, nil)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
@@ -207,7 +207,7 @@ func TestHandleTimeout(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(cachedCtx.GasMeter().Limit()+1, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), "timeout", nil)
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Timeout, nil)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)

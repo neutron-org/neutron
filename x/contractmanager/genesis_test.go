@@ -21,7 +21,7 @@ func TestGenesis(t *testing.T) {
 			{
 				Address: "address1",
 				Id:      1,
-				AckType: "ack",
+				AckType: types.Ack,
 				Packet: &channeltypes.Packet{
 					Sequence: 1,
 				},

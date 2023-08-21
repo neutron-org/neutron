@@ -77,24 +77,21 @@ func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, fa
 	}
 
 	switch failure.GetAckType() {
-	case "ack":
+	case types.Ack:
 		if failure.GetAck() == nil {
 			return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without acknowledgement; failureId = %d", failure.Id)
 		}
 		if failure.GetAck().GetError() == "" {
-			_, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, failure.Ack.GetResult())
-			if err != nil {
+			if _, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, failure.Ack.GetResult()); err != nil {
 				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack response; failureId = %d; err = %s", failure.Id, err)
 			}
 		} else {
-			_, err := k.SudoError(ctx, contractAddr, *failure.Packet, failure.Ack.GetError())
-			if err != nil {
+			if _, err := k.SudoError(ctx, contractAddr, *failure.Packet, failure.Ack.GetError()); err != nil {
 				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack error; failureId = %d; err = %s", failure.Id, err)
 			}
 		}
-	case "timeout":
-		_, err := k.SudoTimeout(ctx, contractAddr, *failure.Packet)
-		if err != nil {
+	case types.Timeout:
+		if _, err := k.SudoTimeout(ctx, contractAddr, *failure.Packet); err != nil {
 			return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack timeout; failureId = %d; err = %s", failure.Id, err)
 		}
 	default:

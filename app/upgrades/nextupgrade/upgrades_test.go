@@ -94,7 +94,7 @@ func (suite *UpgradeTestSuite) TestFailuresUpgrade() {
 			ChannelId: "channel-0",
 			Address:   addr,
 			Id:        i % 2,
-			AckType:   "ack",
+			AckType:   contractmanagertypes.Ack,
 		}
 		bz := cdc.MustMarshal(&failure)
 		store.Set(contractmanagertypes.GetFailureKey(failure.Address, failure.Id), bz)
@@ -112,28 +112,28 @@ func (suite *UpgradeTestSuite) TestFailuresUpgrade() {
 		{
 			Address: addressOne,
 			Id:      0,
-			AckType: "ack",
+			AckType: contractmanagertypes.Ack,
 			Packet:  nil,
 			Ack:     nil,
 		},
 		{
 			Address: addressOne,
 			Id:      1,
-			AckType: "ack",
+			AckType: contractmanagertypes.Ack,
 			Packet:  nil,
 			Ack:     nil,
 		},
 		{
 			Address: addressTwo,
 			Id:      0,
-			AckType: "ack",
+			AckType: contractmanagertypes.Ack,
 			Packet:  nil,
 			Ack:     nil,
 		},
 		{
 			Address: addressTwo,
 			Id:      1,
-			AckType: "ack",
+			AckType: contractmanagertypes.Ack,
 			Packet:  nil,
 			Ack:     nil,
 		},
@@ -145,7 +145,7 @@ func (suite *UpgradeTestSuite) TestFailuresUpgrade() {
 	suite.Require().Equal(failure, &contractmanagertypes.Failure{
 		Address: addressTwo,
 		Id:      1,
-		AckType: "ack",
+		AckType: contractmanagertypes.Ack,
 		Packet:  nil,
 		Ack:     nil,
 	})

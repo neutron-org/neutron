@@ -97,7 +97,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack", &ack)
+	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, contractmanagertypes.Ack, &ack)
 
 	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
@@ -110,7 +110,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	if err != nil {
-		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), "ack", &ack)
+		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), contractmanagertypes.Ack, &ack)
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
@@ -136,13 +136,13 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "timeout", nil)
+	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, contractmanagertypes.Timeout, nil)
 
 	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
 	if err != nil {
-		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), "timeout", nil)
+		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), contractmanagertypes.Timeout, nil)
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
