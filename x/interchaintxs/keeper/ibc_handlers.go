@@ -34,21 +34,22 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	// consume all the gas from the cached context
-	// we call the function this place function because we want to consume all the gas even in case of panic in SudoError/SudoResponse
-	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack")
 
 	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
-	// Actually we have only one kind of error returned from acknowledgement
-	// maybe later we'll retrieve actual errors from events
-	errorText := ack.GetError()
-	if errorText != "" {
-		_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
-	} else {
-		_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
-	}
+	func() {
+		// Actually we have only one kind of error returned from acknowledgement
+		// maybe later we'll retrieve actual errors from events
+		errorText := ack.GetError()
+		if errorText != "" {
+			_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
+		} else {
+			_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
+		}
+		defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack")
+	}()
+	// consume the gas from the cached context
+	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumed(), "consume gas from cached context")
 
 	if err != nil {
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
