@@ -16,11 +16,6 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-const (
-	// GasReserve is the amount of gas on the context gas meter we need to reserve in order to add contract failure to keeper
-	GasReserve = 15000
-)
-
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
 func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleAcknowledgment)
@@ -39,6 +34,9 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
+	// consume all the gas from the cached context
+	// we call the function this place function because we want to consume all the gas even in case of panic in SudoError/SudoResponse
+	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack")
 
 	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
@@ -59,8 +57,6 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		writeFn()
 	}
 
-	// consume all the gas from the cached context
-	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	return nil
 }
 
@@ -77,6 +73,9 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
+	// consume all the gas from the cached context
+	// we call the function this place function because we want to consume all the gas even in case of panic in SudoTimeout
+	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "timeout")
 
 	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
@@ -89,8 +88,6 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 		writeFn()
 	}
 
-	// consume all the gas from the cached context
-	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	return nil
 }
 
@@ -148,12 +145,16 @@ func (k *Keeper) outOfGasRecovery(
 
 // createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
 // If there is an error during Sudo call, we can safely revert changes made in cached context.
-// panics if there is no enough gas for sudoCall + reserve
+// panics if there is no enough gas for sudoCall
 func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
 	cacheCtx, writeFn := ctx.CacheContext()
-	
+
 	sudoLimit := k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit
-	if ctx.GasMeter().GasRemaining() < getGasReserve()+sudoLimit {
+	// NOTE: not sure that we really need this special check and panic
+	// with this kind of panic its clear what is going on by error text
+	// with this check, handle flow is not changed, but we get general panic during
+	// call ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
+	if ctx.GasMeter().GasRemaining() < sudoLimit {
 		panic(sdk.ErrorOutOfGas{Descriptor: fmt.Sprintf("%dgas - reserve for sudo call", sudoLimit)})
 	}
 
@@ -162,12 +163,4 @@ func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.
 	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
 
 	return cacheCtx, writeFn, gasMeter
-}
-
-// TODO: calculate gas reserve in according to failure ack + packet size
-// getGasReserve calculates the gas amount required to
-// 1) Save failure ack, in case there is OutOfGas error or a regular error during sudoCall
-// 2) Distribute ack fees
-func getGasReserve() uint64 {
-	return GasReserve
 }

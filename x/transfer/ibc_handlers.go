@@ -13,14 +13,8 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-const (
-	// We need to reserve this amount of gas on the context gas meter in order to add contract failure to keeper
-	GasReserve = 15000
-)
-
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
 func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
-	// TODO: why do ever need whole logic for non contract, why dont exit early
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
@@ -34,10 +28,19 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
+	if !im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+		return nil
+	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
+	// consume all the gas from the cached context
+	// we call the function this place function because we want to consume all the gas even in case of panic in SudoResponse/SudoError
+	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "ack")
 
+	// distribute fee
+	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+	
 	if ack.Success() {
 		_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
 	} else {
@@ -56,13 +59,6 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
-	// distribute fees only if the sender is a contract
-	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
-		im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
-		// consume all the gas from the cached context
-		ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
-	}
-
 	return nil
 }
 
@@ -79,9 +75,18 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
+	if !im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+		return nil
+	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
+	// consume all the gas from the cached context
+	// we call the function this place function because we want to consume all the gas even in case of panic in SudoTimeout
+	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "timeout")
+
+	// distribute fee
+	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	if err != nil {
@@ -89,13 +94,6 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
 		writeFn()
-	}
-
-	// distribute fee only if the sender is a contract
-	if im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
-		im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
-		// consume all the gas from the cached context
-		ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
 	}
 
 	return nil
@@ -117,18 +115,17 @@ func (im IBCModule) outOfGasRecovery(
 
 		im.keeper.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String(), "Packet data", data)
 		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureType)
-		// FIXME: add distribution call
 	}
 }
 
 // createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
 // If there is an error during Sudo call, we can safely revert changes made in cached context.
-// panics if there is no enough gas for sudoCall + reserve
+// panics if there is no enough gas for sudoCall
 func (im *IBCModule) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
 	cacheCtx, writeFn := ctx.CacheContext()
 
 	sudoLimit := im.ContractManagerKeeper.GetParams(ctx).SudoCallGasLimit
-	if ctx.GasMeter().GasRemaining() < getGasReserve()+sudoLimit {
+	if ctx.GasMeter().GasRemaining() < sudoLimit {
 		panic(sdk.ErrorOutOfGas{Descriptor: fmt.Sprintf("%dgas - reserve for sudo call", sudoLimit)})
 	}
 
@@ -137,12 +134,4 @@ func (im *IBCModule) createCachedContext(ctx sdk.Context) (sdk.Context, func(), 
 	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
 
 	return cacheCtx, writeFn, gasMeter
-}
-
-// TODO: calculate gas reserve in according to failure ack + packet size
-// getGasReserve calculates the gas amount required to
-// 1) Save failure ack, in case there is OutOfGas error or a regular error during sudoCall
-// 2) Distribute ack fees
-func getGasReserve() uint64 {
-	return GasReserve
 }
