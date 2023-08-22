@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"time"
 
 	"cosmossdk.io/errors"
@@ -149,19 +148,8 @@ func (k *Keeper) outOfGasRecovery(
 // panics if there is no enough gas for sudoCall
 func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
 	cacheCtx, writeFn := ctx.CacheContext()
-
 	sudoLimit := k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit
-	// NOTE: not sure that we really need this special check and panic
-	// with this kind of panic its clear what is going on by error text
-	// with this check, handle flow is not changed, but we get general panic during
-	// call ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
-	if ctx.GasMeter().GasRemaining() < sudoLimit {
-		panic(sdk.ErrorOutOfGas{Descriptor: fmt.Sprintf("%dgas - reserve for sudo call", sudoLimit)})
-	}
-
 	gasMeter := sdk.NewGasMeter(sudoLimit)
-
 	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
-
 	return cacheCtx, writeFn, gasMeter
 }
