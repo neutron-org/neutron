@@ -3,6 +3,8 @@ package transfer
 import (
 	"strings"
 
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+
 	"cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -96,7 +98,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "ack", &ack)
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, contractmanagertypes.Ack, &ack)
 
 	if ack.Success() {
 		_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
@@ -108,7 +110,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), "ack", &ack)
+		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), contractmanagertypes.Ack, &ack)
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
@@ -141,11 +143,11 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	}
 
 	cacheCtx, writeFn, newGasMeter := im.createCachedContext(ctx)
-	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, "timeout", nil)
+	defer im.outOfGasRecovery(ctx, newGasMeter, senderAddress, packet, data, contractmanagertypes.Timeout, nil)
 
 	_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	if err != nil {
-		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), "timeout", nil)
+		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), contractmanagertypes.Timeout, nil)
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
 		ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())

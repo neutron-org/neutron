@@ -9,13 +9,11 @@ import (
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/neutron-org/neutron/app/upgrades"
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
 func CreateUpgradeHandler(
@@ -35,12 +33,6 @@ func CreateUpgradeHandler(
 		err = migrateGlobalFees(ctx, keepers)
 		if err != nil {
 			ctx.Logger().Error("failed to migrate GlobalFees", "err", err)
-			return vm, err
-		}
-
-		err = migrateFailures(ctx, storeKeys, cdc)
-		if err != nil {
-			ctx.Logger().Error("failed to migrate Failures", "err", err)
 			return vm, err
 		}
 
@@ -96,44 +88,6 @@ func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error 
 	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage, &types.DefaultmaxTotalBypassMinFeeMsgGasUsage)
 
 	ctx.Logger().Info("Max total bypass min fee msg gas usage set successfully")
-
-	return nil
-}
-
-func migrateFailures(ctx sdk.Context, storeKeys upgrades.StoreKeys, cdc codec.Codec) error {
-	ctx.Logger().Info("Migrating failures...")
-
-	// fetch list of all old failures
-	oldFailuresList := make([]contractmanagertypes.OldFailure, 0)
-	iteratorStore := prefix.NewStore(ctx.KVStore(storeKeys.GetKey(contractmanagertypes.StoreKey)), contractmanagertypes.ContractFailuresKey)
-	iterator := sdk.KVStorePrefixIterator(iteratorStore, []byte{})
-
-	for ; iterator.Valid(); iterator.Next() {
-		var val contractmanagertypes.OldFailure
-		cdc.MustUnmarshal(iterator.Value(), &val)
-		oldFailuresList = append(oldFailuresList, val)
-	}
-
-	err := iterator.Close()
-	if err != nil {
-		return err
-	}
-
-	// migrate
-	store := ctx.KVStore(storeKeys.GetKey(contractmanagertypes.StoreKey))
-	for _, oldItem := range oldFailuresList {
-		failure := contractmanagertypes.Failure{
-			Address: oldItem.Address,
-			Id:      oldItem.Id,
-			AckType: oldItem.AckType,
-			Packet:  nil,
-			Ack:     nil,
-		}
-		bz := cdc.MustMarshal(&failure)
-		store.Set(contractmanagertypes.GetFailureKey(failure.Address, failure.Id), bz)
-	}
-
-	ctx.Logger().Info("Finished migrating failures")
 
 	return nil
 }

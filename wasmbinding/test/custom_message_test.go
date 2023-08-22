@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
@@ -608,7 +610,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
 	}
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), "ack", &ack)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), contractmanagertypes.Ack, &ack)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{

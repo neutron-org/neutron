@@ -1,0 +1,18 @@
+syntax = "proto3";
+package neutron.contractmanager.v1;
+
+option go_package = "github.com/neutron-org/neutron/x/contractmanager/types/v1";
+
+// Deprecated. Used only for migration purposes.
+message Failure {
+  // ChannelId
+  string channel_id = 1;
+  // Address of the failed contract
+  string address = 2;
+  // id of the failure under specific address
+  uint64 id = 3;
+  // ACK id to restore
+  uint64 ack_id = 4;
+  // Acknowledgement type
+  string ack_type = 5;
+}
