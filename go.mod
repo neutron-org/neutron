@@ -29,7 +29,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.29.1
-	github.com/rs/zerolog v1.29.1
 	github.com/skip-mev/pob v1.0.3
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.7.0
@@ -191,7 +190,7 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.40.0-rc.0.0.20230808084410-6083b888424e
-	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v0.0.0-20230816141742-5c3c1b7b898e
+	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v0.0.0-20230823081308-b02d1ad105cb
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.47.5-0.20230808152221-a0e301227957
 	github.com/cosmos/gaia/v11 => github.com/cosmos/gaia/v11 v11.0.0-20230724152830-861ba391c3b4
 	github.com/cosmos/ledger-cosmos-go => github.com/cosmos/ledger-cosmos-go v0.12.1

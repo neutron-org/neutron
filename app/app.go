@@ -635,7 +635,6 @@ func New(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
 		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
-	keeperModules := map[string]adminmodulemodulekeeper.RegisteredModuleUpdateParams{wasm.ModuleName: {UpdateParamsMsg: &wasmtypes.MsgUpdateParams{}}}
 	app.AdminmoduleKeeper = *adminmodulemodulekeeper.NewKeeper(
 		appCodec,
 		keys[adminmodulemoduletypes.StoreKey],
@@ -643,7 +642,7 @@ func New(
 		adminRouterLegacy,
 		app.MsgServiceRouter(),
 		IsConsumerProposalAllowlisted,
-		keeperModules,
+		func(string) bool { return true },
 	)
 	adminModule := adminmodulemodule.NewAppModule(appCodec, app.AdminmoduleKeeper)
 

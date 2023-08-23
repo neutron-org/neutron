@@ -9,8 +9,6 @@ import (
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
@@ -420,7 +418,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 
 func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
 	proposal := submitAdminProposal.AdminProposal
-	authority := authtypes.NewModuleAddress(admintypes.ModuleName).String()
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
 
 	err := m.validateProposalQty(&proposal)
 	if err != nil {
@@ -431,63 +429,14 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	var sdkMsgs []sdk.Msg
 	var sdkMsg sdk.Msg
 
-	if proposal.SoftwareUpgradeProposal != nil {
-		p := proposal.SoftwareUpgradeProposal
-		sdkMsg = &softwareUpgrade.MsgSoftwareUpgrade{
-			Authority: authority,
-			Plan: softwareUpgrade.Plan{
-				Name:   p.Plan.Name,
-				Height: p.Plan.Height,
-				Info:   p.Plan.Info,
-			},
-		}
+	cdc := m.AdminKeeper.Codec()
+	err = cdc.UnmarshalInterfaceJSON(proposal.ProposalExecuteMessage.Message, &sdkMsg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
 	}
-
-	if proposal.CancelSoftwareUpgradeProposal != nil {
-		sdkMsg = &softwareUpgrade.MsgCancelUpgrade{Authority: authority}
-	}
-
-	if proposal.PinCodesProposal != nil {
-		p := proposal.PinCodesProposal
-		sdkMsg = &wasmtypes.MsgPinCodes{Authority: authority, CodeIDs: p.CodeIDs}
-	}
-
-	if proposal.UnpinCodesProposal != nil {
-		p := proposal.UnpinCodesProposal
-		sdkMsg = &wasmtypes.MsgUnpinCodes{Authority: authority, CodeIDs: p.CodeIDs}
-	}
-
-	if proposal.UpdateAdminProposal != nil {
-		p := proposal.UpdateAdminProposal
-		sdkMsg = &wasmtypes.MsgUpdateAdmin{
-			Sender:   authority,
-			NewAdmin: p.NewAdmin,
-			Contract: p.Contract,
-		}
-	}
-
-	if proposal.ClearAdminProposal != nil {
-		p := proposal.ClearAdminProposal
-		sdkMsg = &wasmtypes.MsgClearAdmin{
-			Sender:   authority,
-			Contract: p.Contract,
-		}
-	}
-
-	if proposal.ParamChangeNewProposal != nil {
-		p := proposal.ParamChangeNewProposal
-		myJsonString := fmt.Sprintf(`{"authority":"%s", "params": "%s"}`, authority, p.NewParams)
-		module, ok := m.AdminKeeper.RegisteredModulesUpdateParams[p.Module]
-		if ok {
-			sdkMsg = module.UpdateParamsMsg
-			err := json.Unmarshal([]byte(myJsonString), sdkMsg)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to marshal incoming UpdateParams message")
-
-			}
-		} else {
-			return nil, errors.Wrap(err, "module is not registered to update params")
-		}
+	signers := sdkMsg.GetSigners()
+	if signers[0].Equals(authority) && len(signers) != 0 {
+		return nil, errors.Wrap(err, "authority in incoming msg is not equal to admin module")
 	}
 	sdkMsgs = append(sdkMsgs, sdkMsg)
 	msg, err = admintypes.NewMsgSubmitProposal(sdkMsgs, contractAddr)
@@ -806,28 +755,10 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	if proposal.ParamChangeProposal != nil {
 		qty++
 	}
-	if proposal.SoftwareUpgradeProposal != nil {
-		qty++
-	}
-	if proposal.CancelSoftwareUpgradeProposal != nil {
-		qty++
-	}
 	if proposal.ClientUpdateProposal != nil {
 		qty++
 	}
 	if proposal.UpgradeProposal != nil {
-		qty++
-	}
-	if proposal.PinCodesProposal != nil {
-		qty++
-	}
-	if proposal.UnpinCodesProposal != nil {
-		qty++
-	}
-	if proposal.UpdateAdminProposal != nil {
-		qty++
-	}
-	if proposal.ClearAdminProposal != nil {
 		qty++
 	}
 

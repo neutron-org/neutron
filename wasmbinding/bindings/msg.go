@@ -2,6 +2,8 @@
 package bindings
 
 import (
+	"encoding/json"
+
 	"cosmossdk.io/math"
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
@@ -89,35 +91,16 @@ type SubmitAdminProposal struct {
 }
 
 type AdminProposal struct {
-	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
-	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
-	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
-	UpgradeProposal               *UpgradeProposal               `json:"upgrade_proposal,omitempty"`
-	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal,omitempty"`
-	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal,omitempty"`
-	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal,omitempty"`
-	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal,omitempty"`
-	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal,omitempty"`
-	ParamChangeNewProposal        *ParamChangeNewProposal        `json:"param_change_new_proposal,omitempty"`
+	ParamChangeProposal    *ParamChangeProposal    `json:"param_change_proposal,omitempty"`
+	UpgradeProposal        *UpgradeProposal        `json:"upgrade_proposal,omitempty"`
+	ClientUpdateProposal   *ClientUpdateProposal   `json:"client_update_proposal,omitempty"`
+	ProposalExecuteMessage *ProposalExecuteMessage `json:"proposal_execute_message,omitempty"`
 }
 
 type ParamChangeProposal struct {
 	Title        string                    `json:"title"`
 	Description  string                    `json:"description"`
 	ParamChanges []paramChange.ParamChange `json:"param_changes"`
-}
-
-type SoftwareUpgradeProposal struct {
-	// deprecated
-	Title string `json:"title"`
-	// deprecated
-	Description string `json:"description"`
-	Plan        Plan   `json:"plan"`
-}
-
-type CancelSoftwareUpgradeProposal struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
 }
 
 type Plan struct {
@@ -160,34 +143,8 @@ type ClientUpdateProposal struct {
 	SubstituteClientId string `json:"substitute_client_id,omitempty"`
 }
 
-type PinCodesProposal struct {
-	Title       string   `json:"title,omitempty"`
-	Description string   `json:"description,omitempty"`
-	CodeIDs     []uint64 `json:"code_ids,omitempty"`
-}
-
-type UnpinCodesProposal struct {
-	Title       string   `json:"title,omitempty"`
-	Description string   `json:"description,omitempty"`
-	CodeIDs     []uint64 `json:"code_ids,omitempty"`
-}
-
-type UpdateAdminProposal struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	NewAdmin    string `json:"new_admin"`
-	Contract    string `json:"contract,omitempty"`
-}
-
-type ClearAdminProposal struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Contract    string `json:"contract,omitempty"`
-}
-
-type ParamChangeNewProposal struct {
-	Module    string `json:"module,omitempty"`
-	NewParams string `json:"new_params,omitempty"`
+type ProposalExecuteMessage struct {
+	Message json.RawMessage `json:"message,omitempty"`
 }
 
 // CreateDenom creates a new factory denom, of denomination:
