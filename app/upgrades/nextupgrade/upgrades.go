@@ -20,8 +20,8 @@ func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
 	keepers *upgrades.UpgradeKeepers,
-	storeKeys upgrades.StoreKeys,
-	cdc codec.Codec,
+	_ upgrades.StoreKeys,
+	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")

@@ -1,8 +1,9 @@
 package nextupgrade_test
 
 import (
-	"github.com/neutron-org/neutron/app/params"
 	"testing"
+
+	"github.com/neutron-org/neutron/app/params"
 
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 
