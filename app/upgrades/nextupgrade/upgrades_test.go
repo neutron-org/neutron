@@ -1,6 +1,7 @@
 package nextupgrade_test
 
 import (
+	"github.com/neutron-org/neutron/app/params"
 	"testing"
 
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
@@ -79,10 +80,12 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 
 	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
 
+	// emulate mainnet/testnet state
+	ccvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &[]string{params.DefaultDenom})
+
 	var denomsBefore []string
 	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denomsBefore)
-	var empty []string = nil
-	suite.Require().Equal(denomsBefore, empty)
+	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 
 	upgrade := upgradetypes.Plan{
 		Name:   nextupgrade.UpgradeName,
@@ -95,6 +98,6 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 
 	var denoms []string
 	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
-	requiredDenoms := []string{"ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"}
+	requiredDenoms := []string{params.DefaultDenom, "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"}
 	suite.Require().Equal(requiredDenoms, denoms)
 }

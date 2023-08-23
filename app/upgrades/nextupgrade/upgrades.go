@@ -102,8 +102,9 @@ func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	var denoms []string
 	keepers.CcvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
 
-	// add new denom
-	denoms = append(denoms, "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349")
+	// add new axlr usdc denom
+	axlrDenom := "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
+	denoms = append(denoms, axlrDenom)
 
 	keepers.CcvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
 
