@@ -1,40 +1,39 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	"github.com/neutron-org/neutron/app/params"
 )
 
 // Parameter store keys.
 var (
-	KeyDenomCreationFee              = []byte("DenomCreationFee")
-	DefaultNeutronDenom              = params.DefaultDenom
-	DefaultFeeAmount           int64 = 1_000_000
-	KeyFeeCollectorAddress           = []byte("FeeCollectorAddress")
-	DefaultFeeCollectorAddress       = ""
+	KeyDenomCreationFee        = []byte("DenomCreationFee")
+	KeyDenomCreationGasConsume = []byte("DenomCreationGasConsume")
+
+	// chosen as an arbitrary large number, less than the max_gas_wanted_per_tx in config.
+	DefaultCreationGasFee = 1_000_000
 )
 
-// ParamTable for tokenfactory module.
+// ParamTable for gamm module.
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(denomCreationFee sdk.Coins, feeCollectorAddress string) Params {
+func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64) Params {
 	return Params{
-		DenomCreationFee:    denomCreationFee,
-		FeeCollectorAddress: feeCollectorAddress,
+		DenomCreationFee:        denomCreationFee,
+		DenomCreationGasConsume: denomCreationGasConsume,
 	}
 }
 
-// default tokenfactory module parameters.
+// default gamm module parameters.
 func DefaultParams() Params {
 	return Params{
-		DenomCreationFee:    sdk.NewCoins(sdk.NewInt64Coin(DefaultNeutronDenom, DefaultFeeAmount)),
-		FeeCollectorAddress: DefaultFeeCollectorAddress,
+		// For choice, see: https://github.com/osmosis-labs/osmosis/pull/4983
+		DenomCreationFee:        sdk.NewCoins(), // used to be 10 OSMO at launch.
+		DenomCreationGasConsume: uint64(DefaultCreationGasFee),
 	}
 }
 
@@ -44,14 +43,14 @@ func (p Params) Validate() error {
 		return err
 	}
 
-	return validateFeeCollectorAddress(p.FeeCollectorAddress)
+	return nil
 }
 
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDenomCreationFee, &p.DenomCreationFee, validateDenomCreationFee),
-		paramtypes.NewParamSetPair(KeyFeeCollectorAddress, &p.FeeCollectorAddress, validateFeeCollectorAddress),
+		paramtypes.NewParamSetPair(KeyDenomCreationGasConsume, &p.DenomCreationGasConsume, validateDenomCreationGasConsume),
 	}
 }
 
@@ -61,27 +60,17 @@ func validateDenomCreationFee(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if err := v.Validate(); err != nil {
-		return fmt.Errorf("invalid denom creation fee: %+v, %w", i, err)
+	if v.Validate() != nil {
+		return fmt.Errorf("invalid denom creation fee: %+v", i)
 	}
 
 	return nil
 }
 
-func validateFeeCollectorAddress(i interface{}) error {
-	v, ok := i.(string)
+func validateDenomCreationGasConsume(i interface{}) error {
+	_, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	// Fee collector address might be explicitly empty in test environments
-	if len(v) == 0 {
-		return nil
-	}
-
-	_, err := sdk.AccAddressFromBech32(v)
-	if err != nil {
-		return fmt.Errorf("invalid fee collector address: %w", err)
 	}
 
 	return nil

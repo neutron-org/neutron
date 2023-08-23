@@ -22,17 +22,14 @@ const (
 )
 
 // KeySeparator is used to combine parts of the keys in the store
-const (
-	KeySeparator    = "|"
-	prefixParamsKey = iota + 1
-)
+const KeySeparator = "|"
 
 var (
-	DenomAuthorityMetadataKey = "authoritymetadata"
-	DenomsPrefixKey           = "denoms"
-	CreatorPrefixKey          = "creator"
-	AdminPrefixKey            = "admin"
-	ParamsKey                 = []byte{prefixParamsKey}
+	DenomAuthorityMetadataKey      = "authoritymetadata"
+	DenomsPrefixKey                = "denoms"
+	CreatorPrefixKey               = "creator"
+	AdminPrefixKey                 = "admin"
+	BeforeSendHookAddressPrefixKey = "beforesendhook"
 )
 
 // GetDenomPrefixStore returns the store prefix where all the data associated with a specific denom
