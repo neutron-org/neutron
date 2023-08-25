@@ -698,10 +698,6 @@ func New(
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
 
-	// TODO: enabled proposals?
-	//if len(enabledProposals) != 0 {
-	//	app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
-	//}
 	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
 	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
