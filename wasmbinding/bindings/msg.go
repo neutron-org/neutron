@@ -2,8 +2,6 @@
 package bindings
 
 import (
-	"encoding/json"
-
 	"cosmossdk.io/math"
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
@@ -144,7 +142,7 @@ type ClientUpdateProposal struct {
 }
 
 type ProposalExecuteMessage struct {
-	Message json.RawMessage `json:"message,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // CreateDenom creates a new factory denom, of denomination:

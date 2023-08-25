@@ -428,14 +428,17 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	var msg *admintypes.MsgSubmitProposal
 	var sdkMsgs []sdk.Msg
 	var sdkMsg sdk.Msg
-
 	cdc := m.AdminKeeper.Codec()
-	err = cdc.UnmarshalInterfaceJSON(proposal.ProposalExecuteMessage.Message, &sdkMsg)
+	err = cdc.UnmarshalInterfaceJSON([]byte(proposal.ProposalExecuteMessage.Message), &sdkMsg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
 	}
+
 	signers := sdkMsg.GetSigners()
-	if signers[0].Equals(authority) && len(signers) != 0 {
+	if len(signers) != 1 {
+		return nil, errors.Wrap(err, "should be 1 signer")
+	}
+	if !signers[0].Equals(authority) {
 		return nil, errors.Wrap(err, "authority in incoming msg is not equal to admin module")
 	}
 	sdkMsgs = append(sdkMsgs, sdkMsg)
@@ -759,6 +762,10 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 		qty++
 	}
 	if proposal.UpgradeProposal != nil {
+		qty++
+	}
+
+	if proposal.ProposalExecuteMessage != nil {
 		qty++
 	}
 

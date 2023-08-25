@@ -642,7 +642,7 @@ func New(
 		adminRouterLegacy,
 		app.MsgServiceRouter(),
 		IsConsumerProposalAllowlisted,
-		func(string) bool { return true },
+		isSdkMessageWhitelisted,
 	)
 	adminModule := adminmodulemodule.NewAppModule(appCodec, app.AdminmoduleKeeper)
 
