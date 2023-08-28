@@ -659,7 +659,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	})
 	suite.NoError(err)
 	suite.Nil(events)
-	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
+	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
 	suite.NoError(err)
 	suite.Equal([][]uint8{expected}, data)
 }

@@ -877,10 +877,6 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
 	}
 
-	if failure.Address != contractAddr.String() {
-		return nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only contract can resubmitFailure")
-	}
-
 	err = m.ContractmanagerKeeper.ResubmitFailure(ctx, contractAddr, failure)
 
 	if err != nil {
@@ -891,7 +887,7 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, nil, errors.Wrap(err, "failed to resubmitFailure")
 	}
 
-	resp := bindings.ResubmitFailureResponse{}
+	resp := bindings.ResubmitFailureResponse{FailureId: failure.Id}
 	data, err := json.Marshal(&resp)
 	if err != nil {
 		ctx.Logger().Error("json.Marshal: failed to marshal remove resubmitFailure response to JSON",

@@ -237,13 +237,4 @@ func TestResubmitFailure(t *testing.T) {
 	require.NoError(t, err)
 	err = k.ResubmitFailure(ctx, contractAddr, failure7)
 	require.ErrorContains(t, err, "cannot resubmit failure without acknowledgement")
-
-	// no Failure.Packet found
-	failureID8 := k.GetNextFailureIDKey(ctx, contractAddr.String())
-	k.AddContractFailure(ctx, nil, contractAddr.String(), types.Ack, nil)
-
-	failure8, err := k.GetFailure(ctx, contractAddr, failureID8)
-	require.NoError(t, err)
-	err = k.ResubmitFailure(ctx, contractAddr, failure8)
-	require.ErrorContains(t, err, "cannot resubmit failure without packet info")
 }

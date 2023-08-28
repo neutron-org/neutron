@@ -246,4 +246,6 @@ type ResubmitFailure struct {
 	FailureId uint64 `json:"failure_id"`
 }
 
-type ResubmitFailureResponse struct{}
+type ResubmitFailureResponse struct {
+	FailureId uint64 `json:"failure_id"`
+}
