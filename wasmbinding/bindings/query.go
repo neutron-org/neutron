@@ -113,10 +113,6 @@ type QueryMinIbcFeeResponse struct {
 	MinFee feerefundertypes.Fee `json:"min_fee"`
 }
 
-type FailuresResponse struct {
-	Failures []contractmanagertypes.Failure `json:"failures"`
-}
-
 func (rq RegisteredQuery) MarshalJSON() ([]byte, error) {
 	type AliasRQ RegisteredQuery
 
@@ -187,15 +183,19 @@ type DenomAdmin struct {
 	Subdenom string `json:"subdenom"`
 }
 
-type Failures struct {
-	Address    string             `json:"address"`
-	Pagination *query.PageRequest `json:"pagination,omitempty"`
-}
-
 type DenomAdminResponse struct {
 	Admin string `json:"admin"`
 }
 
 type FullDenomResponse struct {
 	Denom string `json:"denom"`
+}
+
+type Failures struct {
+	Address    string             `json:"address"`
+	Pagination *query.PageRequest `json:"pagination,omitempty"`
+}
+
+type FailuresResponse struct {
+	Failures []contractmanagertypes.Failure `json:"failures"`
 }

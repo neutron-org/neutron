@@ -51,58 +51,19 @@ func (suite *V2ContractManagerMigrationTestSuite) TestFailuresUpgrade() {
 	}
 
 	// Run migration
-	suite.NoError(v2.MigrateStore(ctx, storeKey, cdc))
+	suite.NoError(v2.MigrateStore(ctx, storeKey))
 
-	// Check elements migrated properly
-	suite.Require().ElementsMatch(app.ContractManagerKeeper.GetAllFailures(ctx), []types.Failure{
-		{
-			Address: addressOne,
-			Id:      0,
-			AckType: types.Ack,
-			Packet:  nil,
-			Ack:     nil,
-		},
-		{
-			Address: addressOne,
-			Id:      1,
-			AckType: types.Ack,
-			Packet:  nil,
-			Ack:     nil,
-		},
-		{
-			Address: addressTwo,
-			Id:      0,
-			AckType: types.Ack,
-			Packet:  nil,
-			Ack:     nil,
-		},
-		{
-			Address: addressTwo,
-			Id:      1,
-			AckType: types.Ack,
-			Packet:  nil,
-			Ack:     nil,
-		},
-	})
-
-	// Check getting element works
-	failure, err := app.ContractManagerKeeper.GetFailure(ctx, sdk.MustAccAddressFromBech32(addressTwo), 1)
-	suite.Require().NoError(err)
-	suite.Require().Equal(failure, &types.Failure{
-		Address: addressTwo,
-		Id:      1,
-		AckType: types.Ack,
-		Packet:  nil,
-		Ack:     nil,
-	})
+	// Check elements should be empty
+	expected := app.ContractManagerKeeper.GetAllFailures(ctx)
+	suite.Require().ElementsMatch(expected, []types.Failure{})
 
 	// Non-existent returns error
-	_, err = app.ContractManagerKeeper.GetFailure(ctx, sdk.MustAccAddressFromBech32(addressTwo), 2)
+	_, err := app.ContractManagerKeeper.GetFailure(ctx, sdk.MustAccAddressFromBech32(addressTwo), 0)
 	suite.Require().Error(err)
 
-	// Check next id key is correct
+	// Check next id key is reset
 	oneKey := app.ContractManagerKeeper.GetNextFailureIDKey(ctx, addressOne)
-	suite.Require().Equal(oneKey, uint64(2))
+	suite.Require().Equal(oneKey, uint64(0))
 	twoKey := app.ContractManagerKeeper.GetNextFailureIDKey(ctx, addressTwo)
-	suite.Require().Equal(twoKey, uint64(2))
+	suite.Require().Equal(twoKey, uint64(0))
 }

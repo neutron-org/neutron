@@ -676,7 +676,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
 	}
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, testutil.TestOwnerAddress, "timeout", &ack)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, testutil.TestOwnerAddress, contractmanagertypes.Ack, &ack)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
