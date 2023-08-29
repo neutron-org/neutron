@@ -295,7 +295,12 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 
 func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) ([]sdk.Event, [][]byte, error) {
 	var data []byte
-	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil || submitAdminProposal.AdminProposal.UpgradeProposal != nil || submitAdminProposal.AdminProposal.ClientUpdateProposal != nil {
+	err := m.validateProposalQty(&submitAdminProposal.AdminProposal)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to validate proposal quantity")
+	}
+	// here we handle pre-sdk47 style of proposals: param change & upgrade/cancel
+	if m.isLegacyProposal(&submitAdminProposal.AdminProposal) {
 		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, submitAdminProposal)
 		if err != nil {
 			ctx.Logger().Debug("performSubmitAdminProposalLegacy: failed to submitAdminProposal",
@@ -322,7 +327,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 		return nil, [][]byte{data}, nil
 	}
 
-	response, err := m.performSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
+	resp, err := m.performSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
 	if err != nil {
 		ctx.Logger().Debug("performSubmitAdminProposal: failed to submitAdminProposal",
 			"from_address", contractAddr.String(),
@@ -332,7 +337,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 		return nil, nil, errors.Wrap(err, "failed to submit admin proposal")
 	}
 
-	data, err = json.Marshal(response)
+	data, err = json.Marshal(resp)
 	if err != nil {
 		ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposal response to JSON",
 			"from_address", contractAddr.String(),
@@ -353,13 +358,9 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 	proposal := submitAdminProposal.AdminProposal
 	msg := admintypes.MsgSubmitProposalLegacy{Proposer: contractAddr.String()}
 
-	err := m.validateProposalQty(&proposal)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate proposal quantity")
-	}
 	if submitAdminProposal.AdminProposal.ParamChangeProposal != nil {
 		p := proposal.ParamChangeProposal
-		err = msg.SetContent(&paramChange.ParameterChangeProposal{
+		err := msg.SetContent(&paramChange.ParameterChangeProposal{
 			Title:       p.Title,
 			Description: p.Description,
 			Changes:     p.ParamChanges,
@@ -419,20 +420,14 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
 	proposal := submitAdminProposal.AdminProposal
 	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
-
-	err := m.validateProposalQty(&proposal)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate proposal quantity")
-	}
-
 	var (
-	    msg *admintypes.MsgSubmitProposal
-	    sdkMsgs []sdk.Msg
-	    sdkMsg sdk.Msg
+		msg     *admintypes.MsgSubmitProposal
+		sdkMsgs []sdk.Msg
+		sdkMsg  sdk.Msg
 	)
-	
+
 	cdc := m.AdminKeeper.Codec()
-	err = cdc.UnmarshalInterfaceJSON([]byte(proposal.ProposalExecuteMessage.Message), &sdkMsg)
+	err := cdc.UnmarshalInterfaceJSON([]byte(proposal.ProposalExecuteMessage.Message), &sdkMsg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
 	}
@@ -781,6 +776,12 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	}
 
 	return fmt.Errorf("more than one admin proposal type is present in message")
+}
+func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) bool {
+	if proposal.ParamChangeProposal != nil || proposal.UpgradeProposal != nil || proposal.ClientUpdateProposal != nil {
+		return true
+	}
+	return false
 }
 
 func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
