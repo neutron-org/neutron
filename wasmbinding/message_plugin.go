@@ -425,9 +425,12 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		return nil, errors.Wrap(err, "failed to validate proposal quantity")
 	}
 
-	var msg *admintypes.MsgSubmitProposal
-	var sdkMsgs []sdk.Msg
-	var sdkMsg sdk.Msg
+	var (
+	    msg *admintypes.MsgSubmitProposal
+	    sdkMsgs []sdk.Msg
+	    sdkMsg sdk.Msg
+	)
+	
 	cdc := m.AdminKeeper.Codec()
 	err = cdc.UnmarshalInterfaceJSON([]byte(proposal.ProposalExecuteMessage.Message), &sdkMsg)
 	if err != nil {
