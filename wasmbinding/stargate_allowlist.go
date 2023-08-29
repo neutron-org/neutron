@@ -7,7 +7,6 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -38,10 +37,6 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/cosmos.bank.v1beta1.Query/DenomMetadata": &banktypes.QueryDenomsMetadataResponse{},
 		"/cosmos.bank.v1beta1.Query/Params":        &banktypes.QueryParamsResponse{},
 		"/cosmos.bank.v1beta1.Query/SupplyOf":      &banktypes.QuerySupplyOfResponse{},
-
-		// contractmanager
-		"/neutron.contractmanager.Query/AddressFailures": &contractmanagertypes.QueryFailuresResponse{},
-		"/neutron.contractmanager.Query/Failures":        &contractmanagertypes.QueryFailuresResponse{},
 
 		// interchaintxs
 		"/neutron.interchaintxs.Query/Params": &interchaintxstypes.QueryParamsResponse{},

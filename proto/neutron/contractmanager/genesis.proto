@@ -3,24 +3,10 @@ package neutron.contractmanager;
 
 import "gogoproto/gogo.proto";
 import "neutron/contractmanager/params.proto";
+import "neutron/contractmanager/failure.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
-
-// Failure message contains information about ACK failures and can be used to
-// replay ACK in case of requirement.
-message Failure {
-  // ChannelId
-  string channel_id = 1;
-  // Address of the failed contract
-  string address = 2;
-  // id of the failure under specific address
-  uint64 id = 3;
-  // ACK id to restore
-  uint64 ack_id = 4;
-  // Acknowledgement type
-  string ack_type = 5;
-}
 
 // GenesisState defines the contractmanager module's genesis state.
 message GenesisState {
