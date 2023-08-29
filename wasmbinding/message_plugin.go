@@ -436,7 +436,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 
 	signers := sdkMsg.GetSigners()
 	if len(signers) != 1 {
-		return nil, errors.Wrap(err, "should be 1 signer")
+		return nil, errors.Wrap(sdkerrors.ErrorInvalidSigner, "should be 1 signer")
 	}
 	if !signers[0].Equals(authority) {
 		return nil, errors.Wrap(sdkerrors.ErrUnauthorized, "authority in incoming msg is not equal to admin module")
