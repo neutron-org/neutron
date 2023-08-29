@@ -115,7 +115,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
-	require.Equal(t, uint64(5000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
 
 	// error during SudoError non contract
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -138,7 +138,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	err = txModule.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
 	require.NoError(t, err)
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
-	require.Equal(t, uint64(7000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
 
 	// success during SudoError non contract
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -159,7 +159,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	err = txModule.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
 	require.NoError(t, err)
 	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoerror_contract")))
-	require.Equal(t, uint64(9000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3320), ctx.GasMeter().GasConsumed())
 
 	// recoverable out of gas during SudoError non contract
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -209,14 +209,22 @@ func TestHandleAcknowledgement(t *testing.T) {
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 	require.True(t, gasReserved)
-	require.Equal(t, uint64(13000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3650), ctx.GasMeter().GasConsumed())
 	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoresponse_contract_success")))
 
-	// not enough gas to reserve SudoCallGasLimit + not enough to make AddContractFailure failure after panic recover
+	// not enough gas provided by relayer SudoCallGasLimit
 	lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(1000))
+	cmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(lowGasCtx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
+		cachedCtx.GasMeter().ConsumeGas(1001, "out of gas test")
+	}).Return(nil, nil)
 	cmKeeper.EXPECT().GetParams(lowGasCtx).Return(types.Params{SudoCallGasLimit: 14000})
 	cmKeeper.EXPECT().HasContractInfo(lowGasCtx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
-	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "14000gas - reserve for sudo call"}, func() { txModule.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a test
+	feeKeeper.EXPECT().DistributeAcknowledgementFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
+	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "consume gas from cached context"}, func() { txModule.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a test
+	// NOTE: looks its impossible to test store reset after panic, because test `require.PanicsWithValue` recovers the panic
+	// require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 }
 
 func TestHandleTimeout(t *testing.T) {
@@ -289,7 +297,7 @@ func TestHandleTimeout(t *testing.T) {
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
 	require.True(t, gasReserved)
 	require.NoError(t, err)
-	require.Equal(t, uint64(5000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3620), ctx.GasMeter().GasConsumed())
 	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudotimeout_contract_success")))
 
 	// error during SudoTimeOut non contract
@@ -312,7 +320,7 @@ func TestHandleTimeout(t *testing.T) {
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
-	require.Equal(t, uint64(7000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
 
 	// out of gas during SudoTimeOut non contract
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -337,9 +345,17 @@ func TestHandleTimeout(t *testing.T) {
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 	require.Equal(t, uint64(8000), ctx.GasMeter().GasConsumed())
 
-	// not enough gas to reserve SudoCallGasLimit + not enough to make AddContractFailure failure after panic recover
+	// not enough gas provided by relayer for SudoCallGasLimit
 	lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(1000))
+	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(lowGasCtx), contractAddress, p).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
+		cachedCtx.GasMeter().ConsumeGas(1001, "out of gas test")
+	}).Return(nil, nil)
 	cmKeeper.EXPECT().GetParams(lowGasCtx).Return(types.Params{SudoCallGasLimit: 14000})
 	cmKeeper.EXPECT().HasContractInfo(lowGasCtx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
-	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "14000gas - reserve for sudo call"}, func() { txModule.HandleTimeout(lowGasCtx, p, relayerAddress) }) //nolint:errcheck // this is a test
+	feeKeeper.EXPECT().DistributeTimeoutFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
+	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "consume gas from cached context"}, func() { txModule.HandleTimeout(lowGasCtx, p, relayerAddress) }) //nolint:errcheck // this is a test
+	// NOTE: looks its impossible to test store reset after panic, because test `require.PanicsWithValue` recovers the panic
+	// require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 }

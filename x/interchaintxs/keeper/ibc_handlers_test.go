@@ -76,8 +76,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
-	// response spent only 2990, but we consume all 4000 defined by params
-	require.Equal(t, uint64(4000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
 
 	// error during SudoError
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -91,7 +90,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
 	require.NoError(t, err)
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
-	require.Equal(t, uint64(5000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
 
 	//  success during SudoError
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -104,7 +103,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
 	require.NoError(t, err)
 	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoerror")))
-	require.Equal(t, uint64(6000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3050), ctx.GasMeter().GasConsumed())
 
 	// out of gas during SudoError
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -121,15 +120,9 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 	require.Equal(t, uint64(7000), ctx.GasMeter().GasConsumed())
 
-	// check we have SudoCallGasLimit reserved and
-	// check gas consumption from cachedCtx has added to the main ctx
-	// one of the ways to check it - make the check during SudoResponse call
+	// success during SudoResponse
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
-	gasReserved := false
 	cmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(ctx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
-		if cachedCtx.GasMeter().Limit() == 8000 {
-			gasReserved = true
-		}
 		store := cachedCtx.KVStore(storeKey)
 		store.Set(ShouldBeWrittenKey("sudoresponse"), ShouldBeWritten) // consumes 3140 gas, 2000 flat write + 30 every byte of key+value
 	}).Return(nil, nil)
@@ -137,15 +130,20 @@ func TestHandleAcknowledgement(t *testing.T) {
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
-	require.True(t, gasReserved)
-	require.Equal(t, uint64(8000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3140), ctx.GasMeter().GasConsumed())
 	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoresponse")))
 
-	// not enough gas to reserve, tx aborted
+	// not enough gas provided by relayer for SudoCallGasLimit
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
-	lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(9000 - 1))
+	lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(1000))
+	cmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(lowGasCtx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
+		cachedCtx.GasMeter().ConsumeGas(1001, "out of gas test")
+	})
+	feeKeeper.EXPECT().DistributeAcknowledgementFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	cmKeeper.EXPECT().GetParams(lowGasCtx).Return(types.Params{SudoCallGasLimit: 9000})
-	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "9000gas - reserve for sudo call"}, func() { icak.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a panic test
+	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "consume gas from cached context"}, func() { icak.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a panic test
 }
 
 func TestHandleTimeout(t *testing.T) {
@@ -182,7 +180,7 @@ func TestHandleTimeout(t *testing.T) {
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.True(t, gasReserved)
-	require.Equal(t, uint64(4000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(3110), ctx.GasMeter().GasConsumed())
 	require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudotimeout")))
 	require.NoError(t, err)
 
@@ -196,7 +194,7 @@ func TestHandleTimeout(t *testing.T) {
 	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "timeout")
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
-	require.Equal(t, uint64(5000), ctx.GasMeter().GasConsumed())
+	require.Equal(t, uint64(2990), ctx.GasMeter().GasConsumed())
 	require.NoError(t, err)
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 
@@ -215,11 +213,17 @@ func TestHandleTimeout(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, store.Get(ShouldNotBeWrittenKey))
 
-	// not enough gas to reserve, tx aborted
+	// not enough gas provided by relayer for SudoCallGasLimit
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
-	lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(9000 - 1))
+	lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(1000))
+	cmKeeper.EXPECT().SudoTimeout(gomock.AssignableToTypeOf(lowGasCtx), contractAddress, p).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) {
+		store := cachedCtx.KVStore(storeKey)
+		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
+		cachedCtx.GasMeter().ConsumeGas(1001, "out of gas test")
+	}).Return(nil, nil)
 	cmKeeper.EXPECT().GetParams(lowGasCtx).Return(types.Params{SudoCallGasLimit: 9000})
-	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "9000gas - reserve for sudo call"}, func() { icak.HandleTimeout(lowGasCtx, p, relayerAddress) }) //nolint:errcheck // this is a panic test
+	feeKeeper.EXPECT().DistributeTimeoutFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
+	require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "consume gas from cached context"}, func() { icak.HandleTimeout(lowGasCtx, p, relayerAddress) }) //nolint:errcheck // this is a panic test
 }
 
 func TestHandleChanOpenAck(t *testing.T) {

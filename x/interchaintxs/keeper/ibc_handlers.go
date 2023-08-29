@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"time"
 
 	"cosmossdk.io/errors"
@@ -34,28 +33,32 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	// consume all the gas from the cached context
-	// we call the function this place function because we want to consume all the gas even in case of panic in SudoError/SudoResponse
-	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "ack")
 
 	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
-	// Actually we have only one kind of error returned from acknowledgement
-	// maybe later we'll retrieve actual errors from events
-	errorText := ack.GetError()
-	if errorText != "" {
-		_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
-	} else {
-		_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
-	}
+	func() {
+		// early error initialisation, to choose a correct `if` branch right after the closure in case of successfully `out of gas` panic recovered
+		// if SudoError/SudoResponse successful, then `err` is set to `nil`
+		defer k.outOfGasRecovery(newGasMeter, &err)
+		// Actually we have only one kind of error returned from acknowledgement
+		// maybe later we'll retrieve actual errors from events
+		errorText := ack.GetError()
+		if errorText != "" {
+			_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
+		} else {
+			_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
+		}
+	}()
 
 	if err != nil {
+		// the contract either returned an error or panicked with `out of gas`
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
 		writeFn()
 	}
+
+	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumedToLimit(), "consume gas from cached context")
 
 	return nil
 }
@@ -73,20 +76,25 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	}
 
 	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
-	// consume all the gas from the cached context
-	// we call the function this place function because we want to consume all the gas even in case of panic in SudoTimeout
-	ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
-	defer k.outOfGasRecovery(ctx, newGasMeter, icaOwner.GetContract(), packet, "timeout")
 
 	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
-	_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
+	func() {
+		// early error initialisation, to choose a correct `if` branch right after the closure, in case of successfully `out of gas` panic recovered
+		// if SudoTimeout successful, then `err` is set to `nil`
+		defer k.outOfGasRecovery(newGasMeter, &err)
+		_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
+	}()
+
 	if err != nil {
+		// the contract either returned an error or panicked with `out of gas`
 		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 	} else {
 		writeFn()
 	}
+
+	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumedToLimit(), "consume gas from cached context")
 
 	return nil
 }
@@ -125,42 +133,27 @@ func (k *Keeper) HandleChanOpenAck(
 	return nil
 }
 
+// outOfGasRecovery converts `out of gas` panic into an error
+// leave unprocessed any other kinds of panics
 func (k *Keeper) outOfGasRecovery(
-	ctx sdk.Context,
 	gasMeter sdk.GasMeter,
-	senderAddress sdk.AccAddress,
-	packet channeltypes.Packet,
-	failureAckType string,
+	err *error,
 ) {
 	if r := recover(); r != nil {
 		_, ok := r.(sdk.ErrorOutOfGas)
 		if !ok || !gasMeter.IsOutOfGas() {
 			panic(r)
 		}
-
-		k.Logger(ctx).Debug("Out of gas", "Gas meter", gasMeter.String())
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), failureAckType)
+		*err = errors.Wrapf(errors.ErrPanic, "%v", r)
 	}
 }
 
 // createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
 // If there is an error during Sudo call, we can safely revert changes made in cached context.
-// panics if there is no enough gas for sudoCall
 func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
 	cacheCtx, writeFn := ctx.CacheContext()
-
 	sudoLimit := k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit
-	// NOTE: not sure that we really need this special check and panic
-	// with this kind of panic its clear what is going on by error text
-	// with this check, handle flow is not changed, but we get general panic during
-	// call ctx.GasMeter().ConsumeGas(newGasMeter.Limit(), "consume full gas from cached context")
-	if ctx.GasMeter().GasRemaining() < sudoLimit {
-		panic(sdk.ErrorOutOfGas{Descriptor: fmt.Sprintf("%dgas - reserve for sudo call", sudoLimit)})
-	}
-
 	gasMeter := sdk.NewGasMeter(sudoLimit)
-
 	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
-
 	return cacheCtx, writeFn, gasMeter
 }
