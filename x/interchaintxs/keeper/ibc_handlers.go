@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"github.com/neutron-org/neutron/neutronutils"
+	neutronerrors "github.com/neutron-org/neutron/neutronutils/errors"
 	"time"
 
 	"cosmossdk.io/errors"
@@ -32,14 +34,14 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 packet acknowledgement: %v", err)
 	}
 
-	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
+	cacheCtx, writeFn, newGasMeter := neutronutils.CreateCachedContext(ctx, k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
 
 	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	func() {
 		// early error initialisation, to choose a correct `if` branch right after the closure in case of successfully `out of gas` panic recovered
 		// if SudoError/SudoResponse successful, then `err` is set to `nil`
-		defer k.outOfGasRecovery(newGasMeter, &err)
+		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
 		// Actually we have only one kind of error returned from acknowledgement
 		// maybe later we'll retrieve actual errors from events
 		errorText := ack.GetError()
@@ -75,14 +77,14 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 		return errors.Wrap(err, "failed to get ica owner from port")
 	}
 
-	cacheCtx, writeFn, newGasMeter := k.createCachedContext(ctx)
+	cacheCtx, writeFn, newGasMeter := neutronutils.CreateCachedContext(ctx, k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
 
 	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	func() {
 		// early error initialisation, to choose a correct `if` branch right after the closure, in case of successfully `out of gas` panic recovered
 		// if SudoTimeout successful, then `err` is set to `nil`
-		defer k.outOfGasRecovery(newGasMeter, &err)
+		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
 		_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
 	}()
 
@@ -131,29 +133,4 @@ func (k *Keeper) HandleChanOpenAck(
 	}
 
 	return nil
-}
-
-// outOfGasRecovery converts `out of gas` panic into an error
-// leave unprocessed any other kinds of panics
-func (k *Keeper) outOfGasRecovery(
-	gasMeter sdk.GasMeter,
-	err *error,
-) {
-	if r := recover(); r != nil {
-		_, ok := r.(sdk.ErrorOutOfGas)
-		if !ok || !gasMeter.IsOutOfGas() {
-			panic(r)
-		}
-		*err = errors.Wrapf(errors.ErrPanic, "%v", r)
-	}
-}
-
-// createCachedContext creates a cached context for handling Sudo calls to CosmWasm smart-contracts.
-// If there is an error during Sudo call, we can safely revert changes made in cached context.
-func (k *Keeper) createCachedContext(ctx sdk.Context) (sdk.Context, func(), sdk.GasMeter) {
-	cacheCtx, writeFn := ctx.CacheContext()
-	sudoLimit := k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit
-	gasMeter := sdk.NewGasMeter(sudoLimit)
-	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
-	return cacheCtx, writeFn, gasMeter
 }
