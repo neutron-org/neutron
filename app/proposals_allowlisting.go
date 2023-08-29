@@ -36,6 +36,8 @@ func isConsumerParamChangeWhitelisted(paramChanges []proposal.ParamChange) bool 
 	return true
 }
 
+// This function is designed to determine if a given message (of type sdk.Msg) belongs to
+// a predefined whitelist of message types which could be executed via admin module.
 func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 	switch msg.(type) {
 	case *wasmtypes.MsgClearAdmin,
