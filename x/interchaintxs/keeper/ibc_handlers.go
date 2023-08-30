@@ -39,8 +39,6 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	func() {
-		// early error initialisation, to choose a correct `if` branch right after the closure in case of successfully `out of gas` panic recovered
-		// if SudoError/SudoResponse successful, then `err` is set to `nil`
 		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
 		// Actually we have only one kind of error returned from acknowledgement
 		// maybe later we'll retrieve actual errors from events
@@ -82,8 +80,6 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	func() {
-		// early error initialisation, to choose a correct `if` branch right after the closure, in case of successfully `out of gas` panic recovered
-		// if SudoTimeout successful, then `err` is set to `nil`
 		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
 		_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
 	}()

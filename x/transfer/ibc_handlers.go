@@ -38,8 +38,6 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
 	func() {
-		// early error initialisation, to choose a correct `if` branch right after the closure in case of successfully `out of gas` panic recovered
-		// if SudoResponse/SudoError successful, then `err` is set to `nil`
 		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
 		if ack.Success() {
 			_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
@@ -86,8 +84,6 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	// distribute fee
 	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 	func() {
-		// early error initialisation, to choose a correct `if` branch right after the closure, in case of successfully `out of gas` panic recovered
-		// if SudoTimeout successful, then `err` is set to `nil`
 		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
 		_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	}()
