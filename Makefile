@@ -7,7 +7,6 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
-ENABLED_PROPOSALS := MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes
 GO_VERSION=1.20.0
 BUILDDIR ?= $(CURDIR)/build
 
@@ -112,7 +111,6 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
 		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
-		--build-arg ENABLED_PROPOSALS=$(ENABLED_PROPOSALS) \
 		--platform linux/amd64 \
 		-t neutron-amd64 \
 		--load \
