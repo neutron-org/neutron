@@ -405,7 +405,6 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 
 	ctx.Logger().Debug("submit proposal legacy processed in msg server",
 		"from_address", contractAddr.String(),
-		"creator", contractAddr.String(),
 	)
 
 	return response, nil
@@ -756,7 +755,6 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	if proposal.UpgradeProposal != nil {
 		qty++
 	}
-
 	if proposal.ProposalExecuteMessage != nil {
 		qty++
 	}
@@ -770,6 +768,7 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 		return fmt.Errorf("more than one admin proposal type is present in message")
 	}
 }
+
 func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) bool {
 	switch {
 	case proposal.ParamChangeProposal != nil,
