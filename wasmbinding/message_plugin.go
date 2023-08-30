@@ -299,7 +299,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to validate proposal quantity")
 	}
-	// here we handle pre-sdk47 style of proposals: param change & upgrade/cancel
+	// here we handle pre-sdk47 style of proposals: param change, upgrade, client update
 	if m.isLegacyProposal(adminProposal) {
 		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, adminProposal)
 		if err != nil {
@@ -432,8 +432,11 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	if !signers[0].Equals(authority) {
 		return nil, errors.Wrap(sdkerrors.ErrUnauthorized, "authority in incoming msg is not equal to admin module")
 	}
-	sdkMsgs = append(sdkMsgs, sdkMsg)
-	msg, err = admintypes.NewMsgSubmitProposal(sdkMsgs, contractAddr)
+
+	msg, err = admintypes.NewMsgSubmitProposal([]sdk.Msg{sdkMsg}, contractAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create MsgSubmitProposal ")
+	}
 
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
