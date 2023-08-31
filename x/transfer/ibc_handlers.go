@@ -1,8 +1,6 @@
 package transfer
 
 import (
-	"strings"
-
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	"cosmossdk.io/errors"
