@@ -94,7 +94,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 	p.Data = tokenBz
 
-	//// error during SudoResponse non contract
+	// error during SudoResponse non contract
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)

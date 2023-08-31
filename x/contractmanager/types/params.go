@@ -15,15 +15,15 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams() Params {
+func NewParams(sudoCallGasLimit uint64) Params {
 	return Params{
-		SudoCallGasLimit: DefaultSudoCallGasLimit,
+		SudoCallGasLimit: sudoCallGasLimit,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams()
+	return NewParams(DefaultSudoCallGasLimit)
 }
 
 // ParamSetPairs get the params.ParamSet
