@@ -1,6 +1,10 @@
 package transfer
 
 import (
+	"strings"
+
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -51,7 +55,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 
 	if err != nil {
 		// the contract either returned an error or panicked with `out of gas`
-		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "ack")
+		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), contractmanagertypes.Ack, &ack)
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet acknowledgement", err)
 	} else {
 		writeFn()
@@ -90,7 +94,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 
 	if err != nil {
 		// the contract either returned an error or panicked with `out of gas`
-		im.ContractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, senderAddress.String(), packet.GetSequence(), "timeout")
+		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), contractmanagertypes.Timeout, nil)
 		im.keeper.Logger(ctx).Debug("failed to Sudo contract on packet timeout", err)
 	} else {
 		writeFn()

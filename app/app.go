@@ -665,7 +665,7 @@ func New(
 	)
 
 	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper)
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper, &app.ContractManagerKeeper), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
 		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
@@ -1025,14 +1025,15 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
-					FeeBurnerKeeper:    app.FeeBurnerKeeper,
-					CronKeeper:         app.CronKeeper,
-					IcqKeeper:          app.InterchainQueriesKeeper,
-					TokenFactoryKeeper: app.TokenFactoryKeeper,
-					SlashingKeeper:     app.SlashingKeeper,
-					ParamsKeeper:       app.ParamsKeeper,
-					CapabilityKeeper:   app.CapabilityKeeper,
-					GlobalFeeSubspace:  app.GetSubspace(globalfee.ModuleName),
+					FeeBurnerKeeper:     app.FeeBurnerKeeper,
+					CronKeeper:          app.CronKeeper,
+					IcqKeeper:           app.InterchainQueriesKeeper,
+					TokenFactoryKeeper:  app.TokenFactoryKeeper,
+					SlashingKeeper:      app.SlashingKeeper,
+					ParamsKeeper:        app.ParamsKeeper,
+					CapabilityKeeper:    app.CapabilityKeeper,
+					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
+					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,
 				app.AppCodec(),

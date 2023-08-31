@@ -61,7 +61,7 @@ type Verifier struct{}
 
 // VerifyHeaders verify that headers are valid tendermint headers, checks them on validity by trying call ibcClient.UpdateClient(header)
 // to update light client's consensus state and checks that they are sequential (tl;dr header.Height + 1 == nextHeader.Height)
-func (v Verifier) VerifyHeaders(ctx sdk.Context, clientKeeper clientkeeper.Keeper, clientID string, header exported.ClientMessage, nextHeader exported.ClientMessage) error {
+func (v Verifier) VerifyHeaders(ctx sdk.Context, clientKeeper clientkeeper.Keeper, clientID string, header, nextHeader exported.ClientMessage) error {
 	// this IBC handler updates the consensus state and the state root from a provided header.
 	// But more importantly in the current situation, it checks that header is valid.
 	// Honestly we need only to verify headers, but since the check functions are private, and we don't want to duplicate the code,

@@ -42,9 +42,9 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
 		// Actually we have only one kind of error returned from acknowledgement
 		// maybe later we'll retrieve actual errors from events
-		errorText := ack.GetError()
-		if errorText != "" {
-			_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, errorText)
+		if ack.GetError() != "" {
+
+			_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, ack.GetError())
 		} else {
 			_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
 		}
@@ -52,7 +52,7 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 
 	if err != nil {
 		// the contract either returned an error or panicked with `out of gas`
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "ack")
+		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), contractmanagertypes.Ack, &ack)
 		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	} else {
 		writeFn()
@@ -86,7 +86,7 @@ func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, rela
 
 	if err != nil {
 		// the contract either returned an error or panicked with `out of gas`
-		k.contractManagerKeeper.AddContractFailure(ctx, packet.SourceChannel, icaOwner.GetContract().String(), packet.GetSequence(), "timeout")
+		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), contractmanagertypes.Timeout, nil)
 		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
 	} else {
 		writeFn()

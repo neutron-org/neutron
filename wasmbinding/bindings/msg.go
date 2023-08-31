@@ -46,6 +46,10 @@ type NeutronMsg struct {
 	// Cron types
 	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
 	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
+
+	// Contractmanager types
+	/// A contract that has failed acknowledgement can resubmit it
+	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -236,4 +240,12 @@ type MsgExecuteContract struct {
 	Contract string `json:"contract,omitempty"`
 	// Msg json encoded message to be passed to the contract
 	Msg string `json:"msg,omitempty"`
+}
+
+type ResubmitFailure struct {
+	FailureId uint64 `json:"failure_id"`
+}
+
+type ResubmitFailureResponse struct {
+	FailureId uint64 `json:"failure_id"`
 }

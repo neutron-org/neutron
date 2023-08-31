@@ -45,7 +45,8 @@ type UpgradeKeepers struct {
 	BuilderKeeper      builderkeeper.Keeper
 	ContractManager    contractmanagerkeeper.Keeper
 	// subspaces
-	GlobalFeeSubspace paramtypes.Subspace
+	GlobalFeeSubspace   paramtypes.Subspace
+	CcvConsumerSubspace paramtypes.Subspace
 }
 
 type StoreKeys interface {

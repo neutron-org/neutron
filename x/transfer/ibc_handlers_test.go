@@ -5,6 +5,8 @@ import (
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 	"testing"
 
+	"github.com/neutron-org/neutron/x/contractmanager/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
@@ -109,7 +111,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
 	}).Return(nil, fmt.Errorf("SudoResponse error"))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 5000})
-	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "ack")
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Ack, &resACK)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
@@ -132,7 +134,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten) // consumes 2990
 	}).Return(nil, fmt.Errorf("SudoError error"))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 7000})
-	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "ack")
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Ack, &errACK)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = txModule.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
@@ -173,7 +175,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(11001, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoError error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "ack")
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Ack, &errACK)
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 11000})
 	// FIXME: fix distribution during outofgas
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
@@ -314,7 +316,7 @@ func TestHandleTimeout(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 7000})
-	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "timeout")
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Timeout, nil)
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
@@ -336,7 +338,7 @@ func TestHandleTimeout(t *testing.T) {
 		store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(8001, "out of gas test")
 	}).Return(nil, fmt.Errorf("SudoTimeout error"))
-	cmKeeper.EXPECT().AddContractFailure(ctx, "channel-0", contractAddress.String(), p.GetSequence(), "timeout")
+	cmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Timeout, nil)
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 8000})
 	cmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
