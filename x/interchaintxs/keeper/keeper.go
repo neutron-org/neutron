@@ -27,6 +27,7 @@ type (
 		feeKeeper             types.FeeRefunderKeeper
 		icaControllerKeeper   types.ICAControllerKeeper
 		contractManagerKeeper types.ContractManagerKeeper
+		authority             string
 	}
 )
 
@@ -38,6 +39,7 @@ func NewKeeper(
 	icaControllerKeeper types.ICAControllerKeeper,
 	contractManagerKeeper types.ContractManagerKeeper,
 	feeKeeper types.FeeRefunderKeeper,
+	authority string,
 ) *Keeper {
 	return &Keeper{
 		Codec:                 cdc,
@@ -47,9 +49,14 @@ func NewKeeper(
 		icaControllerKeeper:   icaControllerKeeper,
 		contractManagerKeeper: contractManagerKeeper,
 		feeKeeper:             feeKeeper,
+		authority:             authority,
 	}
 }
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }

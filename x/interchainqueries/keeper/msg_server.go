@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
-
 	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -309,6 +308,24 @@ func (k msgServer) validateUpdateInterchainQueryParams(
 		return fmt.Errorf("params to update don't correspond with query type: can't update KV keys for a TX query")
 	}
 	return nil
+}
+
+// UpdateParams updates the module parameters
+func (m msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	//if err := req.ValidateBasic(); err != nil {
+	//	return nil, err
+	//}
+	authority := m.Keeper.GetAuthority()
+	if authority != req.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if err := m.Keeper.SetParams(ctx, req.Params); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdateParamsResponse{}, nil
 }
 
 func getEventsQueryUpdated(query *types.RegisteredQuery) sdk.Events {
