@@ -1,10 +1,10 @@
 package cli
 
 import (
+	// "strings"
+
 	"fmt"
 	"strings"
-
-	// "strings"
 
 	"github.com/spf13/cobra"
 
@@ -84,8 +84,7 @@ func GetCmdDenomAuthorityMetadata() *cobra.Command {
 			}
 
 			res, err := queryClient.DenomAuthorityMetadata(cmd.Context(), &types.QueryDenomAuthorityMetadataRequest{
-				Creator:  denom[1],
-				Subdenom: denom[2],
+				Denom: args[0],
 			})
 			if err != nil {
 				return err
@@ -113,8 +112,8 @@ func GetCmdDenomsFromCreator() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			res, err := queryClient.DenomsFromCreator(cmd.Context(), &types.QueryDenomsFromCreatorRequest{
-				Creator: args[0],
+			res, err := queryClient.BeforeSendHookAddress(cmd.Context(), &types.QueryBeforeSendHookAddressRequest{
+				Denom: args[0],
 			})
 			if err != nil {
 				return err

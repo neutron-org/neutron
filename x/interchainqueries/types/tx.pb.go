@@ -767,7 +767,7 @@ var xxx_messageInfo_MsgUpdateInterchainQueryResponse proto.InternalMessageInfo
 type MsgUpdateParams struct {
 	// Authority is the address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/tokenfactory parameters to update.
+	// params defines the x/interchainqueries parameters to update.
 	//
 	// NOTE: All parameters must be supplied.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
