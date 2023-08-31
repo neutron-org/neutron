@@ -40,8 +40,7 @@ func (suite *KeeperTestSuite) TestGenesis() {
 		}
 	}
 
-	err := app.TokenFactoryKeeper.SetParams(context, types.Params{})
-	suite.Require().NoError(err)
+	app.TokenFactoryKeeper.SetParams(context, types.Params{})
 	app.TokenFactoryKeeper.InitGenesis(context, genesisState)
 	exportedGenesis := app.TokenFactoryKeeper.ExportGenesis(context)
 	suite.Require().NotNil(exportedGenesis)

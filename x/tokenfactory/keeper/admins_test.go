@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"fmt"
-	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -16,10 +15,9 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 	suite.Setup()
 	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 	// Make sure that the admin is set correctly
-	denom := strings.Split(suite.defaultDenom, "/")
+	//denom := strings.Split(suite.defaultDenom, "/")
 	queryRes, err := suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
-		Creator:  denom[1],
-		Subdenom: denom[2],
+		Denom: suite.defaultDenom,
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal(suite.TestAccs[0].String(), queryRes.AuthorityMetadata.Admin)
@@ -40,10 +38,9 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 	// Test Change Admin
 	_, err = suite.msgServer.ChangeAdmin(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgChangeAdmin(suite.TestAccs[0].String(), suite.defaultDenom, suite.TestAccs[1].String()))
 	suite.Require().NoError(err)
-	denom = strings.Split(suite.defaultDenom, "/")
+	//denom = strings.Split(suite.defaultDenom, "/")
 	queryRes, err = suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
-		Creator:  denom[1],
-		Subdenom: denom[2],
+		Denom: suite.defaultDenom,
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal(suite.TestAccs[1].String(), queryRes.AuthorityMetadata.Admin)
@@ -61,10 +58,8 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 	// Try setting admin to empty
 	_, err = suite.msgServer.ChangeAdmin(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgChangeAdmin(suite.TestAccs[1].String(), suite.defaultDenom, ""))
 	suite.Require().NoError(err)
-	denom = strings.Split(suite.defaultDenom, "/")
 	queryRes, err = suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
-		Creator:  denom[1],
-		Subdenom: denom[2],
+		Denom: suite.defaultDenom,
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal("", queryRes.AuthorityMetadata.Admin)
@@ -251,10 +246,8 @@ func (suite *KeeperTestSuite) TestChangeAdminDenom() {
 				suite.Require().Error(err)
 			}
 
-			denom := strings.Split(testDenom, "/")
 			queryRes, err := suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
-				Creator:  denom[1],
-				Subdenom: denom[2],
+				Denom: testDenom,
 			})
 			suite.Require().NoError(err)
 

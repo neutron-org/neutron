@@ -6,15 +6,15 @@ import (
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
-// InitGenesis initializes the tokenfactory module's state from a provided genesis
+// / InitGenesis initializes the tokenfactory module's state from a provided genesis
 // state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.CreateModuleAccount(ctx)
 
-	err := k.SetParams(ctx, genState.Params)
-	if err != nil {
-		panic(err)
+	if genState.Params.DenomCreationFee == nil {
+		genState.Params.DenomCreationFee = sdk.NewCoins()
 	}
+	k.SetParams(ctx, genState.Params)
 
 	for _, genDenom := range genState.GetFactoryDenoms() {
 		creator, _, err := types.DeconstructDenom(genDenom.GetDenom())
