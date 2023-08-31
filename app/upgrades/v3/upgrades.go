@@ -33,11 +33,7 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		err = keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())
-		if err != nil {
-			return vm, err
-		}
-
+		keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())
 		vm, err = mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {
 			return vm, err
