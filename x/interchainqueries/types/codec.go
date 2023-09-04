@@ -14,9 +14,10 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgSubmitQueryResult{},
 		&MsgRegisterInterchainQuery{},
+		&MsgSubmitQueryResult{},
 		&MsgUpdateInterchainQueryRequest{},
+		&MsgRemoveInterchainQueryRequest{},
 		&MsgUpdateParams{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

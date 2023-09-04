@@ -54,7 +54,7 @@ func (suite *KeeperTestSuite) Setup() {
 	tokenFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
 	err := tokenFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
 		sdktypes.NewCoins(sdktypes.NewInt64Coin(suite.defaultDenom, TopUpCoinsAmount)),
-		0, // TODO: what value to set?
+		0,
 	))
 	suite.Require().NoError(err)
 
