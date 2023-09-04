@@ -54,7 +54,7 @@ func (suite *KeeperTestSuite) Setup() {
 	tokeFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
 	tokeFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
 		sdktypes.NewCoins(sdktypes.NewInt64Coin(suite.defaultDenom, TopUpCoinsAmount)),
-		100000,
+		"",
 	))
 
 	suite.msgServer = keeper.NewMsgServerImpl(*tokeFactoryKeeper)

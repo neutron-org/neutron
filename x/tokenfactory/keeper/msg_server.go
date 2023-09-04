@@ -3,7 +3,9 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
@@ -230,4 +232,22 @@ func (server msgServer) SetBeforeSendHook(goCtx context.Context, msg *types.MsgS
 	})
 
 	return &types.MsgSetBeforeSendHookResponse{}, nil
+}
+
+// UpdateParams updates the module parameters
+func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	//if err := req.ValidateBasic(); err != nil {
+	//	return nil, err
+	//}
+	authority := k.GetAuthority()
+	if authority != req.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if err := k.SetParams(ctx, req.Params); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdateParamsResponse{}, nil
 }

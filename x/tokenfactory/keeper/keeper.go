@@ -20,6 +20,7 @@ type (
 		accountKeeper  types.AccountKeeper
 		bankKeeper     types.BankKeeper
 		contractKeeper types.ContractKeeper
+		authority      string
 	}
 )
 
@@ -29,18 +30,25 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	authority string,
 ) Keeper {
 	return Keeper{
 		cdc:           cdc,
 		storeKey:      storeKey,
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
+		authority:     authority,
 	}
 }
 
 // Logger returns a logger for the x/tokenfactory module
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+// Logger returns a logger for the x/tokenfactory module
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // GetDenomPrefixStore returns the substore for a specific denom
