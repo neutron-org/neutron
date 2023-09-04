@@ -1,22 +1,18 @@
 package transfer
 
 import (
-	"fmt"
-
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
-	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 	neutrontypes "github.com/neutron-org/neutron/x/transfer/types"
 )
@@ -128,31 +124,4 @@ func (am AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
 // Name returns the capability module's name.
 func (am AppModule) Name() string {
 	return am.AppModuleBasic.Name()
-}
-
-func NewHandler(k wrapkeeper.KeeperTransferWrapper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
-		ctx = ctx.WithEventManager(sdk.NewEventManager())
-
-		switch msg := msg.(type) {
-		case *types.MsgTransfer:
-			neutronMsg := neutrontypes.MsgTransfer{
-				SourcePort:       msg.SourcePort,
-				SourceChannel:    msg.SourceChannel,
-				Token:            msg.Token,
-				Sender:           msg.Sender,
-				Receiver:         msg.Receiver,
-				TimeoutHeight:    msg.TimeoutHeight,
-				TimeoutTimestamp: msg.TimeoutTimestamp,
-				Fee:              feetypes.Fee{},
-				Memo:             msg.Memo,
-			}
-			res, err := k.Transfer(sdk.WrapSDKContext(ctx), &neutronMsg)
-			return sdk.WrapServiceResult(ctx, res, err)
-
-		default:
-			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
-			return nil, errors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-		}
-	}
 }
