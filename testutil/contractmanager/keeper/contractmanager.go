@@ -35,6 +35,7 @@ func ContractManagerKeeper(t testing.TB, wasmKeeper types.WasmKeeper) (*keeper.K
 		storeKey,
 		memStoreKey,
 		wasmKeeper,
+		"", // TODO
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

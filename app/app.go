@@ -519,6 +519,7 @@ func New(
 		keys[contractmanagermoduletypes.StoreKey],
 		keys[contractmanagermoduletypes.MemStoreKey],
 		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
 	)
 
 	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper)

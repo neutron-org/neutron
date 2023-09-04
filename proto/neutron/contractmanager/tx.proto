@@ -39,4 +39,3 @@ message MsgUpdateParams {
 //
 // Since: 0.47
 message MsgUpdateParamsResponse {}
-
