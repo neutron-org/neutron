@@ -41,7 +41,8 @@ type NeutronMsg struct {
 	/// Contracts can burn native tokens for an existing factory denom
 	/// that they are the admin of.
 	/// Currently, the burn from address must be the admin contract.
-	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
+	BurnTokens    *BurnTokens    `json:"burn_tokens,omitempty"`
+	SetBeforeSend *SetBeforeSend `json:"set_before_send,omitempty"`
 
 	// Cron types
 	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
@@ -210,6 +211,11 @@ type BurnTokens struct {
 	Amount math.Int `json:"amount"`
 	// BurnFromAddress must be set to "" for now.
 	BurnFromAddress string `json:"burn_from_address"`
+}
+
+type SetBeforeSend struct {
+	Denom        string `json:"denom"`
+	CosmWasmAddr string `json:"mint_to_address"`
 }
 
 // AddSchedule adds new schedule to the cron module

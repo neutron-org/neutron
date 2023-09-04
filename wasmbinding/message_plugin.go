@@ -117,6 +117,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.MintTokens != nil {
 			return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
 		}
+		if contractMsg.SetBeforeSend != nil {
+			return m.setBeforeSend(ctx, contractAddr, contractMsg.SetBeforeSend)
+		}
 		if contractMsg.ChangeAdmin != nil {
 			return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
 		}
@@ -499,6 +502,15 @@ func (m *CustomMessenger) mintTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 	return nil, nil, nil
 }
 
+// mintTokens mints tokens of a specified denom to an address.
+func (m *CustomMessenger) setBeforeSend(ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSend) ([]sdk.Event, [][]byte, error) {
+	err := PerformSetBeforeSend(m.TokenFactory, ctx, contractAddr, set)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "perform mint")
+	}
+	return nil, nil, nil
+}
+
 // PerformMint used with mintTokens to validate the mint message and mint through token factory.
 func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
 	rcpt, err := parseAddress(mint.MintToAddress)
@@ -522,6 +534,22 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 	err = b.SendCoins(ctx, contractAddr, rcpt, sdk.NewCoins(coin))
 	if err != nil {
 		return errors.Wrap(err, "sending newly minted coins from message")
+	}
+
+	return nil
+}
+
+func PerformSetBeforeSend(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSend) error {
+	sdkMsg := tokenfactorytypes.NewMsgSetBeforeSendHook(contractAddr.String(), set.Denom, set.CosmWasmAddr)
+	if err := sdkMsg.ValidateBasic(); err != nil {
+		return err
+	}
+
+	// SetBeforeSend through token factory / message server
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+	_, err := msgServer.SetBeforeSendHook(sdk.WrapSDKContext(ctx), sdkMsg)
+	if err != nil {
+		return errors.Wrap(err, "set before send from message")
 	}
 
 	return nil
