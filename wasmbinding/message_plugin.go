@@ -297,7 +297,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	var data []byte
 	err := m.validateProposalQty(adminProposal)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to validate proposal quantity")
+		return nil, nil, errors.Wrap(err, "invalid proposal quantity")
 	}
 	// here we handle pre-sdk47 style of proposals: param change, upgrade, client update
 	if m.isLegacyProposal(adminProposal) {
@@ -352,7 +352,8 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 	proposal := adminProposal
 	msg := admintypes.MsgSubmitProposalLegacy{Proposer: contractAddr.String()}
 
-	if proposal.ParamChangeProposal != nil {
+	switch {
+	case proposal.ParamChangeProposal != nil:
 		p := proposal.ParamChangeProposal
 		err := msg.SetContent(&paramChange.ParameterChangeProposal{
 			Title:       p.Title,
@@ -362,9 +363,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ParameterChangeProposal")
 		}
-
-	}
-	if proposal.UpgradeProposal != nil {
+	case proposal.UpgradeProposal != nil:
 		p := proposal.UpgradeProposal
 		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
 			Title:       p.Title,
@@ -379,9 +378,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on UpgradeProposal")
 		}
-	}
-
-	if proposal.ClientUpdateProposal != nil {
+	case proposal.ClientUpdateProposal != nil:
 		p := proposal.ClientUpdateProposal
 		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{
 			Title:              p.Title,
@@ -392,6 +389,8 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ClientUpdateProposal")
 		}
+	default:
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "unexpected legacy admin proposal structure: %+v", proposal)
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
@@ -414,9 +413,8 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	proposal := adminProposal
 	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
 	var (
-		msg     *admintypes.MsgSubmitProposal
-		sdkMsgs []sdk.Msg
-		sdkMsg  sdk.Msg
+		msg    *admintypes.MsgSubmitProposal
+		sdkMsg sdk.Msg
 	)
 
 	cdc := m.AdminKeeper.Codec()
