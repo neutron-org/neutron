@@ -51,13 +51,14 @@ func (suite *KeeperTestSuite) Setup() {
 
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 
-	tokeFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
-	tokeFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
+	tokenFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
+	err := tokenFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
 		sdktypes.NewCoins(sdktypes.NewInt64Coin(suite.defaultDenom, TopUpCoinsAmount)),
-		"",
+		0, // TODO: what value to set?
 	))
+	suite.Require().NoError(err)
 
-	suite.msgServer = keeper.NewMsgServerImpl(*tokeFactoryKeeper)
+	suite.msgServer = keeper.NewMsgServerImpl(*tokenFactoryKeeper)
 }
 
 func (suite *KeeperTestSuite) SetupTokenFactory() {

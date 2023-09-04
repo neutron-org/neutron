@@ -60,8 +60,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
 	err := suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
-		sdk.NewCoins(sdk.NewInt64Coin(tokenfactorytypes.DefaultNeutronDenom, 10_000_000)),
-		FeeCollectorAddress,
+		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
+		0,
 	))
 	suite.Require().NoError(err)
 }

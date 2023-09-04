@@ -183,6 +183,11 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 }
 
 func (suite *KeeperTestSuite) TestChangeAdminDenom() {
+	//suite.Setup()
+
+	// Create a denom.
+	//suite.CreateDefaultDenom(suite.ChainA.GetContext())
+
 	for _, tc := range []struct {
 		desc                    string
 		msgChangeAdmin          func(denom string) *types.MsgChangeAdmin

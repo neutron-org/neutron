@@ -312,9 +312,9 @@ func (k msgServer) validateUpdateInterchainQueryParams(
 
 // UpdateParams updates the module parameters
 func (m msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	//if err := req.ValidateBasic(); err != nil {
-	//	return nil, err
-	//}
+	if err := req.ValidateBasic(); err != nil {
+		return nil, err
+	}
 	authority := m.Keeper.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)

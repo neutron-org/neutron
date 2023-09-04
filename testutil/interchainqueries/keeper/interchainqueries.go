@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"testing"
 
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
@@ -47,6 +49,7 @@ func InterchainQueriesKeeper(
 		contractManager,
 		headerVerifier,
 		txVerifier,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

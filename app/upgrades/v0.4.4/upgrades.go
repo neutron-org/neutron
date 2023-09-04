@@ -57,7 +57,10 @@ func CreateUpgradeHandler(
 
 		ctx.Logger().Info("Migrating TokenFactory Params...")
 		tokenfactoryDefaultParams := tokenfactorytypes.DefaultParams()
-		keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactoryDefaultParams)
+		err = keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactoryDefaultParams)
+		if err != nil {
+			return vm, err
+		}
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err
