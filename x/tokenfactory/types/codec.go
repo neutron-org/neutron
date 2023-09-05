@@ -16,7 +16,8 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgBurn{}, "osmosis/tokenfactory/burn", nil)
 	//cdc.RegisterConcrete(&MsgForceTransfer{}, "osmosis/tokenfactory/force-transfer", nil)
 	cdc.RegisterConcrete(&MsgChangeAdmin{}, "osmosis/tokenfactory/change-admin", nil)
-	//cdc.RegisterConcrete(&MsgSetBeforeSendHook{}, "osmosis/tokenfactory/set-beforesend-hook", nil)
+	cdc.RegisterConcrete(&MsgSetBeforeSendHook{}, "osmosis/tokenfactory/set-beforesend-hook", nil)
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "osmosis/tokenfactory/update-params", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -27,7 +28,8 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgBurn{},
 		// &MsgForceTransfer{}, // TODO: why commented?
 		&MsgChangeAdmin{},
-		//&MsgSetBeforeSendHook{}, // TODO: why commented?
+		&MsgSetBeforeSendHook{},
+		&MsgUpdateParams{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
