@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"testing"
 
 	tmdb "github.com/cometbft/cometbft-db"
@@ -34,6 +36,7 @@ func CronKeeper(t testing.TB, wasmMsgServer types.WasmMsgServer, accountKeeper t
 		storeKey,
 		memStoreKey,
 		accountKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	k.WasmMsgServer = wasmMsgServer
 

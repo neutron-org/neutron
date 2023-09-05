@@ -250,8 +250,8 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 	)
 
 	err := neutron.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.NewParams(
-		sdk.NewCoins(sdk.NewInt64Coin("untrn", 10_000_000)),
-		FeeCollectorAddress,
+		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
+		0,
 	))
 	suite.Require().NoError(err)
 

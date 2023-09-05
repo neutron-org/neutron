@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"testing"
 
 	tmdb "github.com/cometbft/cometbft-db"
@@ -38,6 +40,7 @@ func InterchainTxsKeeper(t testing.TB, managerKeeper types.ContractManagerKeeper
 		icaControllerKeeper,
 		managerKeeper,
 		refunderKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

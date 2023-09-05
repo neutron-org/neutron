@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"testing"
 
 	tmdb "github.com/cometbft/cometbft-db"
@@ -36,6 +38,7 @@ func FeeKeeper(t testing.TB, channelKeeper types.ChannelKeeper, bankKeeper types
 		memStoreKey,
 		channelKeeper,
 		bankKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

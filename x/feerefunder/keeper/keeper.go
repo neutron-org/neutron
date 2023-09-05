@@ -23,6 +23,7 @@ type (
 		storeKey      storetypes.StoreKey
 		memKey        storetypes.StoreKey
 		channelKeeper types.ChannelKeeper
+		authority     string
 	}
 )
 
@@ -32,6 +33,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
+	authority string,
 ) *Keeper {
 	return &Keeper{
 		cdc:           cdc,
@@ -39,7 +41,12 @@ func NewKeeper(
 		memKey:        memKey,
 		channelKeeper: channelKeeper,
 		bankKeeper:    bankKeeper,
+		authority:     authority,
 	}
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
