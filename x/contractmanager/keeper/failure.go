@@ -1,27 +1,28 @@
 package keeper
 
 import (
+	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
 // AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, channelID, address string, ackID uint64, ackType string) {
+func (k Keeper) AddContractFailure(ctx sdk.Context, packet *ibcchanneltypes.Packet, address, ackType string, ack *ibcchanneltypes.Acknowledgement) {
 	failure := types.Failure{
-		ChannelId: channelID,
-		Address:   address,
-		AckId:     ackID,
-		AckType:   ackType,
+		Address: address,
+		AckType: ackType,
+		Packet:  packet,
+		Ack:     ack,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
+	failure.Id = nextFailureID
 
 	store := ctx.KVStore(k.storeKey)
-
-	failure.Id = nextFailureID
-	b := k.cdc.MustMarshal(&failure)
-	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), b)
+	bz := k.cdc.MustMarshal(&failure)
+	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), bz)
 }
 
 func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
@@ -43,7 +44,6 @@ func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
 func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ContractFailuresKey)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
-
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -53,4 +53,58 @@ func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	}
 
 	return
+}
+
+func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint64) (*types.Failure, error) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetFailureKey(contractAddr.String(), id)
+
+	bz := store.Get(key)
+	if bz == nil {
+		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), id)
+	}
+	var res types.Failure
+	k.cdc.MustUnmarshal(bz, &res)
+
+	return &res, nil
+}
+
+// ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
+func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
+	if failure.Packet == nil {
+		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without packet info; failureId = %d", failure.Id)
+	}
+
+	switch failure.GetAckType() {
+	case types.Ack:
+		if failure.GetAck() == nil {
+			return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without acknowledgement; failureId = %d", failure.Id)
+		}
+		if failure.GetAck().GetError() == "" {
+			if _, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, failure.Ack.GetResult()); err != nil {
+				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack response; failureId = %d; err = %s", failure.Id, err)
+			}
+		} else {
+			if _, err := k.SudoError(ctx, contractAddr, *failure.Packet, failure.Ack.GetError()); err != nil {
+				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack error; failureId = %d; err = %s", failure.Id, err)
+			}
+		}
+	case types.Timeout:
+		if _, err := k.SudoTimeout(ctx, contractAddr, *failure.Packet); err != nil {
+			return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack timeout; failureId = %d; err = %s", failure.Id, err)
+		}
+	default:
+		return errors.Wrapf(types.IncorrectAckType, "cannot resubmit failure with incorrect ackType = %s", failure.GetAckType())
+	}
+
+	// Cleanup failure since we resubmitted it successfully
+	k.removeFailure(ctx, contractAddr, failure.Id)
+
+	return nil
+}
+
+func (k Keeper) removeFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint64) {
+	store := ctx.KVStore(k.storeKey)
+	failureKey := types.GetFailureKey(contractAddr.String(), id)
+	store.Delete(failureKey)
 }

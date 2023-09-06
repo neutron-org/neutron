@@ -1,8 +1,14 @@
 package main
 
 import (
-	"cosmossdk.io/log"
 	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+
+	"cosmossdk.io/log"
+
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	tmlog "github.com/cometbft/cometbft/libs/log"
@@ -14,10 +20,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"os"
-	"path"
-	"path/filepath"
-	"strings"
 )
 
 // NOTE: The functions below are copy-pasted from cosmos-sdk@v0.47.3 (see https://github.com/cosmos/cosmos-sdk/blob/v0.47.3/server/util.go#L122)

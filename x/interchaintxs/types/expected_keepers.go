@@ -26,7 +26,7 @@ type BankKeeper interface {
 
 type ContractManagerKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
-	AddContractFailure(ctx sdk.Context, channelID, address string, ackID uint64, ackType string)
+	AddContractFailure(ctx sdk.Context, packet *channeltypes.Packet, address, ackType string, ack *channeltypes.Acknowledgement)
 	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) ([]byte, error)
 	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
 	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)

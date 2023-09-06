@@ -3,6 +3,8 @@ package bindings
 import (
 	"encoding/json"
 
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
@@ -27,11 +29,14 @@ type NeutronQuery struct {
 	// MinIbcFee
 	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
 	// Token Factory queries
-	/// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
-	/// returns the full denom as used by `BankMsg::Send`.
+	// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
+	// returns the full denom as used by `BankMsg::Send`.
 	FullDenom *FullDenom `json:"full_denom,omitempty"`
-	/// Returns the admin of a denom, if the denom is a Token Factory denom.
+	// Returns the admin of a denom, if the denom is a Token Factory denom.
 	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
+	// Contractmanager queries
+	// Query all failures for address
+	Failures *Failures `json:"failures,omitempty"`
 }
 
 /* Requests */
@@ -184,4 +189,13 @@ type DenomAdminResponse struct {
 
 type FullDenomResponse struct {
 	Denom string `json:"denom"`
+}
+
+type Failures struct {
+	Address    string             `json:"address"`
+	Pagination *query.PageRequest `json:"pagination,omitempty"`
+}
+
+type FailuresResponse struct {
+	Failures []contractmanagertypes.Failure `json:"failures"`
 }
