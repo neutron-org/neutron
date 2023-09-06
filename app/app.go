@@ -116,7 +116,7 @@ import (
 	"github.com/cosmos/admin-module/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/x/adminmodule/client/cli"
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
-	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
@@ -371,7 +371,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, admintypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, buildertypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -392,7 +392,7 @@ func New(
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authtypes.NewModuleAddress(admintypes.ModuleName).String())
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 	bApp.SetParamStore(&app.ConsensusParamsKeeper)
 
 	// add capability keeper and ScopeToModule for ibc module
@@ -414,7 +414,7 @@ func New(
 		authtypes.ProtoBaseAccount,
 		maccPerms,
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
-		authtypes.NewModuleAddress(admintypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
@@ -426,7 +426,7 @@ func New(
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.BlockedAddrs(),
-		authtypes.NewModuleAddress(admintypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -434,7 +434,7 @@ func New(
 		legacyAmino,
 		keys[slashingtypes.StoreKey],
 		&app.ConsumerKeeper,
-		authtypes.NewModuleAddress(admintypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.CrisisKeeper = *crisiskeeper.NewKeeper(
 		appCodec,
@@ -442,7 +442,7 @@ func New(
 		invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(admintypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
@@ -452,7 +452,7 @@ func New(
 		appCodec,
 		homePath,
 		app.BaseApp,
-		authtypes.NewModuleAddress(admintypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	// ... other modules keepers
@@ -583,7 +583,7 @@ func New(
 		app.BankKeeper,
 		// 25% of rewards should be sent to the redistribute address
 		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
-		authtypes.NewModuleAddress(admintypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	wasmDir := filepath.Join(homePath, "wasm")
@@ -608,8 +608,8 @@ func New(
 
 	app.AdminmoduleKeeper = *adminmodulekeeper.NewKeeper(
 		appCodec,
-		keys[admintypes.StoreKey],
-		keys[admintypes.MemStoreKey],
+		keys[adminmoduletypes.StoreKey],
+		keys[adminmoduletypes.MemStoreKey],
 		adminRouterLegacy,
 		app.MsgServiceRouter(),
 		IsConsumerProposalAllowlisted,
@@ -661,7 +661,7 @@ func New(
 		wasmDir,
 		wasmConfig,
 		supportedFeatures,
-		authtypes.NewModuleAddress(admintypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		wasmOpts...,
 	)
 	wasmHooks.ContractKeeper = &app.WasmKeeper
@@ -779,7 +779,7 @@ func New(
 		wasm.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
-		admintypes.ModuleName,
+		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
 		crontypes.ModuleName,
@@ -810,7 +810,7 @@ func New(
 		wasm.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
-		admintypes.ModuleName,
+		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
 		crontypes.ModuleName,
@@ -846,7 +846,7 @@ func New(
 		wasm.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
-		admintypes.ModuleName,
+		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName, // after auth keeper
 		routertypes.ModuleName,
 		crontypes.ModuleName,
