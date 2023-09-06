@@ -34,13 +34,11 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		return nil
 	}
 
-	cacheCtx, writeFn, newGasMeter := neutronutils.CreateCachedContext(ctx, im.ContractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
-
-	// distribute fee
 	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
+	cacheCtx, writeFn := neutronutils.CreateCachedContext(ctx, im.ContractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
 	func() {
-		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
+		defer neutronerrors.OutOfGasRecovery(cacheCtx.GasMeter(), &err)
 		if ack.Success() {
 			_, err = im.ContractManagerKeeper.SudoResponse(cacheCtx, senderAddress, packet, ack.GetResult())
 		} else {
@@ -50,7 +48,6 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 			_, err = im.ContractManagerKeeper.SudoError(cacheCtx, senderAddress, packet, ack.GetError())
 		}
 	}()
-
 	if err != nil {
 		// the contract either returned an error or panicked with `out of gas`
 		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), contractmanagertypes.Ack, &ack)
@@ -59,7 +56,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		writeFn()
 	}
 
-	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumedToLimit(), "consume gas from cached context")
+	ctx.GasMeter().ConsumeGas(cacheCtx.GasMeter().GasConsumedToLimit(), "consume gas from cached context")
 
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
@@ -81,15 +78,13 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 		return nil
 	}
 
-	cacheCtx, writeFn, newGasMeter := neutronutils.CreateCachedContext(ctx, im.ContractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
-
-	// distribute fee
 	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
+
+	cacheCtx, writeFn := neutronutils.CreateCachedContext(ctx, im.ContractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
 	func() {
-		defer neutronerrors.OutOfGasRecovery(newGasMeter, &err)
+		defer neutronerrors.OutOfGasRecovery(cacheCtx.GasMeter(), &err)
 		_, err = im.ContractManagerKeeper.SudoTimeout(cacheCtx, senderAddress, packet)
 	}()
-
 	if err != nil {
 		// the contract either returned an error or panicked with `out of gas`
 		im.ContractManagerKeeper.AddContractFailure(ctx, &packet, senderAddress.String(), contractmanagertypes.Timeout, nil)
@@ -98,7 +93,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 		writeFn()
 	}
 
-	ctx.GasMeter().ConsumeGas(newGasMeter.GasConsumedToLimit(), "consume gas from cached context")
+	ctx.GasMeter().ConsumeGas(cacheCtx.GasMeter().GasConsumedToLimit(), "consume gas from cached context")
 
 	return nil
 }

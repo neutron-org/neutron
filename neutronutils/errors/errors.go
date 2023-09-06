@@ -6,7 +6,7 @@ import (
 )
 
 // OutOfGasRecovery converts `out of gas` panic into an error
-// leave unprocessed any other kinds of panics
+// leaving unprocessed any other kinds of panics
 func OutOfGasRecovery(
 	gasMeter sdk.GasMeter,
 	err *error,

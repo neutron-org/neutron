@@ -3,9 +3,9 @@ package neutronutils
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
 // CreateCachedContext creates a cached context with a limited gas meter.
-func CreateCachedContext(ctx sdk.Context, gasLimit uint64) (sdk.Context, func(), sdk.GasMeter) {
+func CreateCachedContext(ctx sdk.Context, gasLimit uint64) (sdk.Context, func()) {
 	cacheCtx, writeFn := ctx.CacheContext()
 	gasMeter := sdk.NewGasMeter(gasLimit)
 	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
-	return cacheCtx, writeFn, gasMeter
+	return cacheCtx, writeFn
 }
