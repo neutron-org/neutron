@@ -490,7 +490,7 @@ func New(
 		keys[contractmanagermoduletypes.StoreKey],
 		keys[contractmanagermoduletypes.MemStoreKey],
 		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper, authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String())
@@ -502,7 +502,7 @@ func New(
 		keys[feeburnertypes.MemStoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
-		authtypes.NewModuleAddress(adminmodulemoduletypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
