@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -102,6 +103,18 @@ func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings
 func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeRequest) (*bindings.QueryMinIbcFeeResponse, error) {
 	fee := qp.feeRefunderKeeper.GetMinFee(ctx)
 	return &bindings.QueryMinIbcFeeResponse{MinFee: fee}, nil
+}
+
+func (qp *QueryPlugin) GetFailures(ctx sdk.Context, address string, pagination *sdkquery.PageRequest) (*bindings.FailuresResponse, error) {
+	res, err := qp.contractmanagerKeeper.AddressFailures(ctx, &contractmanagertypes.QueryFailuresRequest{
+		Address:    address,
+		Pagination: pagination,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get failures for address: %s", address)
+	}
+
+	return &bindings.FailuresResponse{Failures: res.Failures}, nil
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {

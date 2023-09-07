@@ -2,6 +2,7 @@ package app
 
 import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -16,14 +17,8 @@ func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
 	switch c := content.(type) {
 	case *proposal.ParameterChangeProposal:
 		return isConsumerParamChangeWhitelisted(c.Changes)
-	case *upgradetypes.SoftwareUpgradeProposal,
-		*upgradetypes.CancelSoftwareUpgradeProposal,
-		*ibcclienttypes.ClientUpdateProposal,
-		*ibcclienttypes.UpgradeProposal,
-		*wasmtypes.PinCodesProposal,
-		*wasmtypes.UnpinCodesProposal,
-		*wasmtypes.UpdateAdminProposal,
-		*wasmtypes.ClearAdminProposal:
+	case *ibcclienttypes.ClientUpdateProposal,
+		*ibcclienttypes.UpgradeProposal:
 		return true
 
 	default:
@@ -39,6 +34,22 @@ func isConsumerParamChangeWhitelisted(paramChanges []proposal.ParamChange) bool 
 		}
 	}
 	return true
+}
+
+// This function is designed to determine if a given message (of type sdk.Msg) belongs to
+// a predefined whitelist of message types which could be executed via admin module.
+func isSdkMessageWhitelisted(msg sdk.Msg) bool {
+	switch msg.(type) {
+	case *wasmtypes.MsgClearAdmin,
+		*wasmtypes.MsgUpdateAdmin,
+		*wasmtypes.MsgUpdateParams,
+		*wasmtypes.MsgPinCodes,
+		*wasmtypes.MsgUnpinCodes,
+		*upgradetypes.MsgSoftwareUpgrade,
+		*upgradetypes.MsgCancelUpgrade:
+		return true
+	}
+	return false
 }
 
 type paramChangeKey struct {

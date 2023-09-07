@@ -47,6 +47,10 @@ type NeutronMsg struct {
 	// Cron types
 	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
 	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
+
+	// Contractmanager types
+	/// A contract that has failed acknowledgement can resubmit it
+	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -90,32 +94,16 @@ type SubmitAdminProposal struct {
 }
 
 type AdminProposal struct {
-	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
-	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
-	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
-	UpgradeProposal               *UpgradeProposal               `json:"upgrade_proposal,omitempty"`
-	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal,omitempty"`
-	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal,omitempty"`
-	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal,omitempty"`
-	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal,omitempty"`
-	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal,omitempty"`
+	ParamChangeProposal    *ParamChangeProposal    `json:"param_change_proposal,omitempty"`
+	UpgradeProposal        *UpgradeProposal        `json:"upgrade_proposal,omitempty"`
+	ClientUpdateProposal   *ClientUpdateProposal   `json:"client_update_proposal,omitempty"`
+	ProposalExecuteMessage *ProposalExecuteMessage `json:"proposal_execute_message,omitempty"`
 }
 
 type ParamChangeProposal struct {
 	Title        string                    `json:"title"`
 	Description  string                    `json:"description"`
 	ParamChanges []paramChange.ParamChange `json:"param_changes"`
-}
-
-type SoftwareUpgradeProposal struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Plan        Plan   `json:"plan"`
-}
-
-type CancelSoftwareUpgradeProposal struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
 }
 
 type Plan struct {
@@ -158,29 +146,8 @@ type ClientUpdateProposal struct {
 	SubstituteClientId string `json:"substitute_client_id,omitempty"`
 }
 
-type PinCodesProposal struct {
-	Title       string   `json:"title,omitempty"`
-	Description string   `json:"description,omitempty"`
-	CodeIDs     []uint64 `json:"code_ids,omitempty"`
-}
-
-type UnpinCodesProposal struct {
-	Title       string   `json:"title,omitempty"`
-	Description string   `json:"description,omitempty"`
-	CodeIDs     []uint64 `json:"code_ids,omitempty"`
-}
-
-type UpdateAdminProposal struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	NewAdmin    string `json:"new_admin"`
-	Contract    string `json:"contract,omitempty"`
-}
-
-type ClearAdminProposal struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Contract    string `json:"contract,omitempty"`
+type ProposalExecuteMessage struct {
+	Message string `json:"message,omitempty"`
 }
 
 // CreateDenom creates a new factory denom, of denomination:
@@ -242,4 +209,12 @@ type MsgExecuteContract struct {
 	Contract string `json:"contract,omitempty"`
 	// Msg json encoded message to be passed to the contract
 	Msg string `json:"msg,omitempty"`
+}
+
+type ResubmitFailure struct {
+	FailureId uint64 `json:"failure_id"`
+}
+
+type ResubmitFailureResponse struct {
+	FailureId uint64 `json:"failure_id"`
 }

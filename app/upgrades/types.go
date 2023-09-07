@@ -43,7 +43,8 @@ type UpgradeKeepers struct {
 	CapabilityKeeper   *capabilitykeeper.Keeper
 	BuilderKeeper      builderkeeper.Keeper
 	// subspaces
-	GlobalFeeSubspace paramtypes.Subspace
+	GlobalFeeSubspace   paramtypes.Subspace
+	CcvConsumerSubspace paramtypes.Subspace
 }
 
 type StoreKeys interface {

@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+
+	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+
 	"github.com/stretchr/testify/suite"
 
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -57,6 +61,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
 	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
+	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
 	err := suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
@@ -591,6 +596,101 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
 	suite.NoError(err)
 	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Add failure
+	packet := ibcchanneltypes.Packet{}
+	ack := ibcchanneltypes.Acknowledgement{
+		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
+	}
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), contractmanagertypes.Ack, &ack)
+
+	// Craft message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		ResubmitFailure: &bindings.ResubmitFailure{
+			FailureId: failureID,
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Add failure
+	packet := ibcchanneltypes.Packet{}
+	ack := ibcchanneltypes.Acknowledgement{
+		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
+	}
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), "timeout", &ack)
+
+	// Craft message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		ResubmitFailure: &bindings.ResubmitFailure{
+			FailureId: failureID,
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract() {
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Add failure
+	packet := ibcchanneltypes.Packet{}
+	ack := ibcchanneltypes.Acknowledgement{
+		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
+	}
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, testutil.TestOwnerAddress, contractmanagertypes.Ack, &ack)
+
+	// Craft message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		ResubmitFailure: &bindings.ResubmitFailure{
+			FailureId: failureID,
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.ErrorContains(err, "no failure found to resubmit: not found")
 }
 
 func (suite *CustomMessengerTestSuite) executeCustomMsg(owner sdk.AccAddress, fullMsg bindings.NeutronMsg) (result [][]byte, msg []byte) {
