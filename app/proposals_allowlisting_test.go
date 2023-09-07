@@ -38,7 +38,6 @@ func SetupTestingAppConsumer() (ibctesting.TestingApp, map[string]json.RawMessag
 		app.DefaultNodeHome,
 		0,
 		encoding,
-		app.GetEnabledProposals(),
 		sims.EmptyAppOptions{},
 		nil,
 	)

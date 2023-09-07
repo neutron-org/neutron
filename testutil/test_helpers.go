@@ -387,7 +387,6 @@ func SetupTestingApp(chainID string) func() (ibctesting.TestingApp, map[string]j
 			app.DefaultNodeHome,
 			0,
 			encoding,
-			app.GetEnabledProposals(),
 			sims.EmptyAppOptions{},
 			nil,
 		)
