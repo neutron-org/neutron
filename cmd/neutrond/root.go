@@ -241,14 +241,10 @@ func (ac appCreator) newApp(
 		chainID = appGenesis.ChainID
 	}
 
-	enabledWasmProposals := app.GetEnabledProposals()
-	logger.Info("Enabled wasm proposals", "proposals", enabledWasmProposals)
-
 	return app.New(logger, chainID, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		ac.encCfg,
-		enabledWasmProposals,
 		appOpts,
 		wasmOpts,
 		baseapp.SetPruning(pruningOpts),
@@ -302,7 +298,6 @@ func (ac appCreator) appExport(
 		homePath,
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		ac.encCfg,
-		app.GetEnabledProposals(),
 		appOpts,
 		emptyWasmOpts,
 	)
