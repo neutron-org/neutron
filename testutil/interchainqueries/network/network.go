@@ -75,7 +75,6 @@ func DefaultConfig() network.Config {
 			return app.New(
 				val.GetCtx().Logger, chainID, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
-				app.GetEnabledProposals(),
 				sims.EmptyAppOptions{},
 				nil,
 				baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
