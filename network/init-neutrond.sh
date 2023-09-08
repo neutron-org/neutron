@@ -656,7 +656,7 @@ REGISTER_VESTING_ACCOUNTS_MSG='{
         "schedules": [
           {
             "end_point": {
-              "amount": "133857328006",
+              "amount": "100000000",
               "time": 1814821200
             },
             "start_point": {
@@ -677,7 +677,7 @@ $BINARY add-wasm-message execute "$NEUTRON_VESTING_INVESTORS_CONTRACT_ADDRRES" "
   --run-as "$ADMIN_ADDRESS" --home "$CHAIN_DIR"
 
 $BINARY add-wasm-message execute "$NEUTRON_VESTING_INVESTORS_CONTRACT_ADDRRES" "$REGISTER_VESTING_ACCOUNTS_MSG" \
-  --run-as "$ADMIN_ADDRESS" --home "$CHAIN_DIR"
+  --amount 100000000untrn --run-as "$ADMIN_ADDRESS" --home "$CHAIN_DIR"
 
 function set_genesis_param() {
   param_name=$1
