@@ -46,7 +46,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// Logger returns a logger for the x/tokenfactory module
+// GetAuthority returns an authority for the x/tokenfactory module
 func (k Keeper) GetAuthority() string {
 	return k.authority
 }
