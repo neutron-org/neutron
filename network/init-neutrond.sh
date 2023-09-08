@@ -10,7 +10,7 @@ THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 
 # IMPORTANT! minimum_gas_prices should always contain at least one record, otherwise the chain will not start or halt
 # ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2 denom is required by intgration tests (test:tokenomics)
-MIN_GAS_PRICES_DEFAULT='[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]'
+MIN_GAS_PRICES_DEFAULT='[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}],'
 MIN_GAS_PRICES=${MIN_GAS_PRICES:-"$MIN_GAS_PRICES_DEFAULT"}
 
 
@@ -620,7 +620,7 @@ set_genesis_param treasury_address            "\"$DAO_CONTRACT_ADDRESS\""       
 set_genesis_param fee_collector_address       "\"$DAO_CONTRACT_ADDRESS\""                   # tokenfactory
 set_genesis_param security_address            "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"," # cron
 set_genesis_param limit                       5                                             # cron
-set_genesis_param allow_messages              "[\"*\"]"                                     # interchainaccounts
+set_genesis_param allow_messages              "[\"*\","                                     # interchainaccounts
 set_genesis_param signed_blocks_window        "\"$SLASHING_SIGNED_BLOCKS_WINDOW\","         # slashing
 set_genesis_param min_signed_per_window       "\"$SLASHING_MIN_SIGNED\","                   # slashing
 set_genesis_param slash_fraction_double_sign  "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
