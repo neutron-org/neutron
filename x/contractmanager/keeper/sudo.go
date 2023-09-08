@@ -20,26 +20,25 @@ func (k Keeper) HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress)
 	return k.wasmKeeper.HasContractInfo(ctx, contractAddress)
 }
 
+func prepareSudoCallbackMessage(request channeltypes.Packet, ack *channeltypes.Acknowledgement) types.MessageSudoCallback {
+	m := types.MessageSudoCallback{
+		Response: nil,
+		Error:    nil,
+		Timeout:  nil,
+	}
+	return m
+}
+
 func (k Keeper) SudoResponse(
 	ctx sdk.Context,
 	senderAddress sdk.AccAddress,
 	request channeltypes.Packet,
-	msg []byte,
+	ack channeltypes.Acknowledgement,
 ) ([]byte, error) {
-	k.Logger(ctx).Debug("SudoResponse", "senderAddress", senderAddress, "request", request, "msg", msg)
-
-	if !k.wasmKeeper.HasContractInfo(ctx, senderAddress) {
-		if request.SourcePort == types.TransferPort {
-			// we want to allow non contract account to send the assets via IBC Transfer module
-			// we can determine the originating module by the source port of the request packet
-			return nil, nil
-		}
-		k.Logger(ctx).Debug("SudoResponse: contract not found", "senderAddress", senderAddress)
-		return nil, fmt.Errorf("%s is not a contract address and not the Transfer module", senderAddress)
-	}
+	k.Logger(ctx).Debug("SudoResponse", "senderAddress", senderAddress, "request", request, "msg", ack.GetResult())
 
 	x := types.MessageResponse{}
-	x.Response.Data = msg
+	x.Response.Data = ack.GetResult()
 	x.Response.Request = request
 	m, err := json.Marshal(x)
 	if err != nil {
@@ -50,9 +49,9 @@ func (k Keeper) SudoResponse(
 
 	resp, err := k.wasmKeeper.Sudo(ctx, senderAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoResponse: failed to Sudo",
+		k.Logger(ctx).Debug("SudoResponse: failed to sudo",
 			"error", err, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to Sudo: %v", err)
+		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}
 
 	return resp, nil
@@ -64,16 +63,6 @@ func (k Keeper) SudoTimeout(
 	request channeltypes.Packet,
 ) ([]byte, error) {
 	k.Logger(ctx).Info("SudoTimeout", "senderAddress", senderAddress, "request", request)
-
-	if !k.wasmKeeper.HasContractInfo(ctx, senderAddress) {
-		if request.SourcePort == types.TransferPort {
-			// we want to allow non contract account to send the assets via IBC Transfer module
-			// we can determine the originating module by the source port of the request packet
-			return nil, nil
-		}
-		k.Logger(ctx).Debug("SudoTimeout: contract not found", "senderAddress", senderAddress)
-		return nil, fmt.Errorf("%s is not a contract address and not the Transfer module", senderAddress)
-	}
 
 	x := types.MessageTimeout{}
 	x.Timeout.Request = request
@@ -88,9 +77,9 @@ func (k Keeper) SudoTimeout(
 
 	resp, err := k.wasmKeeper.Sudo(ctx, senderAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoTimeout: failed to Sudo",
+		k.Logger(ctx).Debug("SudoTimeout: failed to sudo",
 			"error", err, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to Sudo: %v", err)
+		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}
 
 	return resp, nil
@@ -100,23 +89,13 @@ func (k Keeper) SudoError(
 	ctx sdk.Context,
 	senderAddress sdk.AccAddress,
 	request channeltypes.Packet,
-	details string,
+	ack channeltypes.Acknowledgement,
 ) ([]byte, error) {
 	k.Logger(ctx).Debug("SudoError", "senderAddress", senderAddress, "request", request)
 
-	if !k.wasmKeeper.HasContractInfo(ctx, senderAddress) {
-		if request.SourcePort == types.TransferPort {
-			// we want to allow non contract account to send the assets via IBC Transfer module
-			// we can determine the originating module by the source port of the request packet
-			return nil, nil
-		}
-		k.Logger(ctx).Debug("SudoError: contract not found", "senderAddress", senderAddress)
-		return nil, fmt.Errorf("%s is not a contract address and not the Transfer module", senderAddress)
-	}
-
 	x := types.MessageError{}
 	x.Error.Request = request
-	x.Error.Details = details
+	x.Error.Details = ack.GetError()
 	m, err := json.Marshal(x)
 	if err != nil {
 		k.Logger(ctx).Error("SudoError: failed to marshal MessageError message",
@@ -126,9 +105,9 @@ func (k Keeper) SudoError(
 
 	resp, err := k.wasmKeeper.Sudo(ctx, senderAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoError: failed to Sudo",
+		k.Logger(ctx).Debug("SudoError: failed to sudo",
 			"error", err, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to Sudo: %v", err)
+		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}
 
 	return resp, nil
@@ -140,11 +119,6 @@ func (k Keeper) SudoOnChanOpenAck(
 	details types.OpenAckDetails,
 ) ([]byte, error) {
 	k.Logger(ctx).Debug("SudoOnChanOpenAck", "contractAddress", contractAddress)
-
-	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
-		k.Logger(ctx).Debug("SudoOnChanOpenAck: contract not found", "contractAddress", contractAddress)
-		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
-	}
 
 	x := types.MessageOnChanOpenAck{}
 	x.OpenAck = details
@@ -158,9 +132,9 @@ func (k Keeper) SudoOnChanOpenAck(
 
 	resp, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoOnChanOpenAck: failed to Sudo",
+		k.Logger(ctx).Debug("SudoOnChanOpenAck: failed to sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, fmt.Errorf("failed to Sudo: %v", err)
+		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}
 
 	return resp, nil
@@ -198,9 +172,9 @@ func (k Keeper) SudoTxQueryResult(
 
 	resp, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoTxQueryResult: failed to Sudo",
+		k.Logger(ctx).Debug("SudoTxQueryResult: failed to sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, fmt.Errorf("failed to Sudo: %v", err)
+		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}
 
 	return resp, nil
@@ -232,9 +206,9 @@ func (k Keeper) SudoKVQueryResult(
 
 	resp, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoKVQueryResult: failed to Sudo",
+		k.Logger(ctx).Debug("SudoKVQueryResult: failed to sudo",
 			"error", err, "contract_address", contractAddress)
-		return nil, fmt.Errorf("failed to Sudo: %v", err)
+		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}
 
 	return resp, nil

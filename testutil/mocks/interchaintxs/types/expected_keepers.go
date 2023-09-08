@@ -156,18 +156,18 @@ func (mr *MockContractManagerKeeperMockRecorder) HasContractInfo(ctx, contractAd
 }
 
 // SudoError mocks base method.
-func (m *MockContractManagerKeeper) SudoError(ctx types.Context, senderAddress types.AccAddress, request types3.Packet, details string) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoError(ctx types.Context, senderAddress types.AccAddress, request types3.Packet, ack types3.Acknowledgement) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SudoError", ctx, senderAddress, request, details)
+	ret := m.ctrl.Call(m, "SudoError", ctx, senderAddress, request, ack)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SudoError indicates an expected call of SudoError.
-func (mr *MockContractManagerKeeperMockRecorder) SudoError(ctx, senderAddress, request, details interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) SudoError(ctx, senderAddress, request, ack interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoError", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoError), ctx, senderAddress, request, details)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoError", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoError), ctx, senderAddress, request, ack)
 }
 
 // SudoOnChanOpenAck mocks base method.
@@ -186,18 +186,18 @@ func (mr *MockContractManagerKeeperMockRecorder) SudoOnChanOpenAck(ctx, contract
 }
 
 // SudoResponse mocks base method.
-func (m *MockContractManagerKeeper) SudoResponse(ctx types.Context, senderAddress types.AccAddress, request types3.Packet, msg []byte) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoResponse(ctx types.Context, senderAddress types.AccAddress, request types3.Packet, ack types3.Acknowledgement) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SudoResponse", ctx, senderAddress, request, msg)
+	ret := m.ctrl.Call(m, "SudoResponse", ctx, senderAddress, request, ack)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SudoResponse indicates an expected call of SudoResponse.
-func (mr *MockContractManagerKeeperMockRecorder) SudoResponse(ctx, senderAddress, request, msg interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) SudoResponse(ctx, senderAddress, request, ack interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoResponse", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoResponse), ctx, senderAddress, request, msg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoResponse", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoResponse), ctx, senderAddress, request, ack)
 }
 
 // SudoTimeout mocks base method.

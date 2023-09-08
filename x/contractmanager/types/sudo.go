@@ -5,8 +5,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 )
 
-const TransferPort = "transfer"
-
 // MessageTxQueryResult is passed to a contract's sudo() entrypoint when a tx was submitted
 // for a transaction query.
 type MessageTxQueryResult struct {
@@ -23,6 +21,26 @@ type MessageKVQueryResult struct {
 	KVQueryResult struct {
 		QueryID uint64 `json:"query_id"`
 	} `json:"kv_query_result"`
+}
+
+type MessageSudoCallback struct {
+	Response *ResponseSudoPayload `json:"response"`
+	Error    *ErrorSudoPayload    `json:"error"`
+	Timeout  *TimeoutPayload      `json:"timeout"`
+}
+
+type ResponseSudoPayload struct {
+	Request channeltypes.Packet `json:"request"`
+	Data    []byte              `json:"data"` // Message data
+}
+
+type ErrorSudoPayload struct {
+	Request channeltypes.Packet `json:"request"`
+	Details string              `json:"details"`
+}
+
+type TimeoutPayload struct {
+	Request channeltypes.Packet `json:"request"`
 }
 
 // MessageTimeout is passed to a contract's sudo() entrypoint when an interchain

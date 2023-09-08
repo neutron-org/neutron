@@ -563,7 +563,7 @@ func New(
 		app.BankKeeper,
 		scopedTransferKeeper,
 		app.FeeKeeper,
-		app.ContractManagerKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper),
 	)
 
 	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
@@ -660,7 +660,7 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.IBCKeeper.ChannelKeeper,
 		app.ICAControllerKeeper,
-		app.ContractManagerKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper),
 		app.FeeKeeper,
 	)
 

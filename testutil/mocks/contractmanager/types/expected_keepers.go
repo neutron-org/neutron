@@ -51,7 +51,7 @@ func (mr *MockWasmKeeperMockRecorder) HasContractInfo(ctx, contractAddress inter
 // Sudo mocks base method.
 func (m *MockWasmKeeper) Sudo(ctx types.Context, contractAddress types.AccAddress, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Sudo", ctx, contractAddress, msg)
+	ret := m.ctrl.Call(m, "sudo", ctx, contractAddress, msg)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
@@ -60,5 +60,5 @@ func (m *MockWasmKeeper) Sudo(ctx types.Context, contractAddress types.AccAddres
 // Sudo indicates an expected call of Sudo.
 func (mr *MockWasmKeeperMockRecorder) Sudo(ctx, contractAddress, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sudo", reflect.TypeOf((*MockWasmKeeper)(nil).Sudo), ctx, contractAddress, msg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "sudo", reflect.TypeOf((*MockWasmKeeper)(nil).Sudo), ctx, contractAddress, msg)
 }

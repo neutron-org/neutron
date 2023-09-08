@@ -81,11 +81,11 @@ func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, fa
 			return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without acknowledgement; failureId = %d", failure.Id)
 		}
 		if failure.GetAck().GetError() == "" {
-			if _, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, failure.Ack.GetResult()); err != nil {
+			if _, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, *failure.Ack); err != nil {
 				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack response; failureId = %d; err = %s", failure.Id, err)
 			}
 		} else {
-			if _, err := k.SudoError(ctx, contractAddr, *failure.Packet, failure.Ack.GetError()); err != nil {
+			if _, err := k.SudoError(ctx, contractAddr, *failure.Packet, *failure.Ack); err != nil {
 				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack error; failureId = %d; err = %s", failure.Id, err)
 			}
 		}

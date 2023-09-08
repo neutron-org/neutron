@@ -640,7 +640,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
 	ack := ibcchanneltypes.Acknowledgement{
-		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
+		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
 	}
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
 	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), "timeout", &ack)
@@ -673,7 +673,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
 	ack := ibcchanneltypes.Acknowledgement{
-		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
+		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
 	}
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
 	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, testutil.TestOwnerAddress, contractmanagertypes.Ack, &ack)

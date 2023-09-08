@@ -11,8 +11,7 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types1 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
-	types2 "github.com/neutron-org/neutron/x/contractmanager/types"
-	types3 "github.com/neutron-org/neutron/x/feerefunder/types"
+	types2 "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
 // MockContractManagerKeeper is a mock of ContractManagerKeeper interface.
@@ -38,32 +37,6 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 	return m.recorder
 }
 
-// AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, packet *types1.Packet, address, ackType string, ack *types1.Acknowledgement) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddContractFailure", ctx, packet, address, ackType, ack)
-}
-
-// AddContractFailure indicates an expected call of AddContractFailure.
-func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, packet, address, ackType, ack interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, packet, address, ackType, ack)
-}
-
-// GetParams mocks base method.
-func (m *MockContractManagerKeeper) GetParams(ctx types.Context) types2.Params {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetParams", ctx)
-	ret0, _ := ret[0].(types2.Params)
-	return ret0
-}
-
-// GetParams indicates an expected call of GetParams.
-func (mr *MockContractManagerKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockContractManagerKeeper)(nil).GetParams), ctx)
-}
-
 // HasContractInfo mocks base method.
 func (m *MockContractManagerKeeper) HasContractInfo(ctx types.Context, contractAddress types.AccAddress) bool {
 	m.ctrl.T.Helper()
@@ -79,33 +52,33 @@ func (mr *MockContractManagerKeeperMockRecorder) HasContractInfo(ctx, contractAd
 }
 
 // SudoError mocks base method.
-func (m *MockContractManagerKeeper) SudoError(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, details string) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoError(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, ack types1.Acknowledgement) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SudoError", ctx, senderAddress, request, details)
+	ret := m.ctrl.Call(m, "SudoError", ctx, senderAddress, request, ack)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SudoError indicates an expected call of SudoError.
-func (mr *MockContractManagerKeeperMockRecorder) SudoError(ctx, senderAddress, request, details interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) SudoError(ctx, senderAddress, request, ack interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoError", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoError), ctx, senderAddress, request, details)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoError", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoError), ctx, senderAddress, request, ack)
 }
 
 // SudoResponse mocks base method.
-func (m *MockContractManagerKeeper) SudoResponse(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, msg []byte) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoResponse(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, ack types1.Acknowledgement) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SudoResponse", ctx, senderAddress, request, msg)
+	ret := m.ctrl.Call(m, "SudoResponse", ctx, senderAddress, request, ack)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SudoResponse indicates an expected call of SudoResponse.
-func (mr *MockContractManagerKeeperMockRecorder) SudoResponse(ctx, senderAddress, request, msg interface{}) *gomock.Call {
+func (mr *MockContractManagerKeeperMockRecorder) SudoResponse(ctx, senderAddress, request, ack interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoResponse", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoResponse), ctx, senderAddress, request, msg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoResponse", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoResponse), ctx, senderAddress, request, ack)
 }
 
 // SudoTimeout mocks base method.
@@ -147,7 +120,7 @@ func (m *MockFeeRefunderKeeper) EXPECT() *MockFeeRefunderKeeperMockRecorder {
 }
 
 // DistributeAcknowledgementFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeAcknowledgementFee(ctx types.Context, receiver types.AccAddress, packetID types3.PacketID) {
+func (m *MockFeeRefunderKeeper) DistributeAcknowledgementFee(ctx types.Context, receiver types.AccAddress, packetID types2.PacketID) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DistributeAcknowledgementFee", ctx, receiver, packetID)
 }
@@ -159,7 +132,7 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeAcknowledgementFee(ctx, r
 }
 
 // DistributeTimeoutFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeTimeoutFee(ctx types.Context, receiver types.AccAddress, packetID types3.PacketID) {
+func (m *MockFeeRefunderKeeper) DistributeTimeoutFee(ctx types.Context, receiver types.AccAddress, packetID types2.PacketID) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DistributeTimeoutFee", ctx, receiver, packetID)
 }
@@ -171,7 +144,7 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeTimeoutFee(ctx, receiver,
 }
 
 // LockFees mocks base method.
-func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types.AccAddress, packetID types3.PacketID, fee types3.Fee) error {
+func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types.AccAddress, packetID types2.PacketID, fee types2.Fee) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LockFees", ctx, payer, packetID, fee)
 	ret0, _ := ret[0].(error)

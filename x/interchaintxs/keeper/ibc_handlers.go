@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"github.com/neutron-org/neutron/neutronutils"
-	neutronerrors "github.com/neutron-org/neutron/neutronutils/errors"
 	"time"
 
 	"cosmossdk.io/errors"
@@ -17,7 +15,7 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
-// HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a Sudo call.
+// HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a sudo call.
 func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleAcknowledgment)
 
@@ -34,63 +32,48 @@ func (k *Keeper) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.Pack
 		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 packet acknowledgement: %v", err)
 	}
 
-	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
-
-	cacheCtx, writeFn := neutronutils.CreateCachedContext(ctx, k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
-	func() {
-		defer neutronerrors.OutOfGasRecovery(cacheCtx.GasMeter(), &err)
-		// Actually we have only one kind of error returned from acknowledgement
-		// maybe later we'll retrieve actual errors from events
-		if ack.GetError() != "" {
-
-			_, err = k.contractManagerKeeper.SudoError(cacheCtx, icaOwner.GetContract(), packet, ack.GetError())
-		} else {
-			_, err = k.contractManagerKeeper.SudoResponse(cacheCtx, icaOwner.GetContract(), packet, ack.GetResult())
-		}
-	}()
-	if err != nil {
-		// the contract either returned an error or panicked with `out of gas`
-		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), contractmanagertypes.Ack, &ack)
-		k.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
-	} else {
-		writeFn()
+	if !k.contractManagerKeeper.HasContractInfo(ctx, icaOwner.GetContract()) {
+		//return fmt.Errorf("%s is not a contract address", icaOwner.GetContract())
+		return nil
 	}
 
-	ctx.GasMeter().ConsumeGas(cacheCtx.GasMeter().GasConsumedToLimit(), "consume gas from cached context")
+	k.feeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
-	return nil
+	// Actually we have only one kind of error returned from acknowledgement
+	// maybe later we'll retrieve actual errors from events
+	// `err` value from `SudoError/SudoResponse` should always be nil, since we contractmanager wrapped by `SudoLimitWrapper`
+	if ack.GetError() != "" {
+		_, err = k.contractManagerKeeper.SudoError(ctx, icaOwner.GetContract(), packet, ack)
+	} else {
+		_, err = k.contractManagerKeeper.SudoResponse(ctx, icaOwner.GetContract(), packet, ack)
+	}
+
+	return err
 }
 
-// HandleTimeout passes the timeout data to the appropriate contract via a Sudo call.
+// HandleTimeout passes the timeout data to the appropriate contract via a sudo call.
 // Since all ICA channels are ORDERED, a single timeout shuts down a channel.
 func (k *Keeper) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelHandleTimeout)
+	k.Logger(ctx).Debug("HandleTimeout")
 
 	icaOwner, err := types.ICAOwnerFromPort(packet.SourcePort)
-	k.Logger(ctx).Debug("HandleTimeout")
 	if err != nil {
 		k.Logger(ctx).Error("HandleTimeout: failed to get ica owner from source port", "error", err)
 		return errors.Wrap(err, "failed to get ica owner from port")
 	}
 
-	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
-
-	cacheCtx, writeFn := neutronutils.CreateCachedContext(ctx, k.contractManagerKeeper.GetParams(ctx).SudoCallGasLimit)
-	func() {
-		defer neutronerrors.OutOfGasRecovery(cacheCtx.GasMeter(), &err)
-		_, err = k.contractManagerKeeper.SudoTimeout(cacheCtx, icaOwner.GetContract(), packet)
-	}()
-	if err != nil {
-		// the contract either returned an error or panicked with `out of gas`
-		k.contractManagerKeeper.AddContractFailure(ctx, &packet, icaOwner.GetContract().String(), contractmanagertypes.Timeout, nil)
-		k.Logger(ctx).Error("HandleTimeout: failed to Sudo contract on packet timeout", "error", err)
-	} else {
-		writeFn()
+	if !k.contractManagerKeeper.HasContractInfo(ctx, icaOwner.GetContract()) {
+		//return fmt.Errorf("%s is not a contract address", icaOwner.GetContract())
+		return nil
 	}
 
-	ctx.GasMeter().ConsumeGas(cacheCtx.GasMeter().GasConsumedToLimit(), "consume gas from cached context")
+	k.feeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
-	return nil
+	// `err` value from `SudoTimeout` should always be nil, since we contractmanager wrapped by `SudoLimitWrapper`
+	_, err = k.contractManagerKeeper.SudoTimeout(ctx, icaOwner.GetContract(), packet)
+
+	return err
 }
 
 // HandleChanOpenAck passes the data about a successfully created channel to the appropriate contract
@@ -113,6 +96,11 @@ func (k *Keeper) HandleChanOpenAck(
 		return errors.Wrap(err, "failed to get ica owner from port")
 	}
 
+	if !k.contractManagerKeeper.HasContractInfo(ctx, icaOwner.GetContract()) {
+		//return fmt.Errorf("%s is not a contract address", icaOwner.GetContract())
+		return nil
+	}
+
 	_, err = k.contractManagerKeeper.SudoOnChanOpenAck(ctx, icaOwner.GetContract(), contractmanagertypes.OpenAckDetails{
 		PortID:                portID,
 		ChannelID:             channelID,
@@ -120,8 +108,8 @@ func (k *Keeper) HandleChanOpenAck(
 		CounterpartyVersion:   counterpartyVersion,
 	})
 	if err != nil {
-		k.Logger(ctx).Debug("HandleChanOpenAck: failed to Sudo contract on packet timeout", "error", err)
-		return errors.Wrap(err, "failed to Sudo the contract OnChanOpenAck")
+		k.Logger(ctx).Debug("HandleChanOpenAck: failed to sudo contract on packet timeout", "error", err)
+		return errors.Wrap(err, "failed to sudo the contract OnChanOpenAck")
 	}
 
 	return nil

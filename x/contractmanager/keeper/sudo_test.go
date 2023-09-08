@@ -48,34 +48,18 @@ func TestSudoResponse(t *testing.T) {
 
 	sudoErrorMsg := types.MessageResponse{}
 	p := channeltypes.Packet{}
-	sudoErrorMsg.Response.Data = []byte("data")
+	a := channeltypes.Acknowledgement{Response: &channeltypes.Acknowledgement_Result{Result: []byte("data")}}
+	sudoErrorMsg.Response.Data = a.GetResult()
 	sudoErrorMsg.Response.Request = p
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return([]byte("success"), nil)
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
-	resp, err := k.SudoResponse(ctx, address, sudoErrorMsg.Response.Request, sudoErrorMsg.Response.Data)
+	resp, err := k.SudoResponse(ctx, address, sudoErrorMsg.Response.Request, a)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return(nil, fmt.Errorf("internal contract error"))
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
-	resp, err = k.SudoResponse(ctx, address, sudoErrorMsg.Response.Request, sudoErrorMsg.Response.Data)
+	resp, err = k.SudoResponse(ctx, address, sudoErrorMsg.Response.Request, a)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "internal contract error")
-
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	resp, err = k.SudoResponse(ctx, address, channeltypes.Packet{}, nil)
-	require.Nil(t, resp)
-	require.ErrorContains(t, err, "is not a contract address and not the Transfer module")
-
-	sudoResponseTransport := types.MessageResponse{}
-	p = channeltypes.Packet{SourcePort: types.TransferPort}
-	sudoResponseTransport.Response.Data = []byte("data")
-	sudoResponseTransport.Response.Request = p
-
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	_, err = k.SudoResponse(ctx, address, sudoResponseTransport.Response.Request, sudoResponseTransport.Response.Data)
-	require.Nil(t, err)
-	require.NoError(t, err)
 }
 
 func TestSudoError(t *testing.T) {
@@ -88,34 +72,20 @@ func TestSudoError(t *testing.T) {
 
 	sudoErrorMsg := types.MessageError{}
 	p := channeltypes.Packet{}
-	sudoErrorMsg.Error.Details = "details"
+	a := channeltypes.Acknowledgement{Response: &channeltypes.Acknowledgement_Error{
+		Error: "details",
+	}}
+	sudoErrorMsg.Error.Details = a.GetError()
 	sudoErrorMsg.Error.Request = p
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return([]byte("success"), nil)
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
-	resp, err := k.SudoError(ctx, address, sudoErrorMsg.Error.Request, sudoErrorMsg.Error.Details)
+	resp, err := k.SudoError(ctx, address, sudoErrorMsg.Error.Request, a)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoErrorMsg)).Return(nil, fmt.Errorf("internal contract error"))
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
-	resp, err = k.SudoError(ctx, address, sudoErrorMsg.Error.Request, sudoErrorMsg.Error.Details)
+	resp, err = k.SudoError(ctx, address, sudoErrorMsg.Error.Request, a)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "internal contract error")
-
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	resp, err = k.SudoError(ctx, address, channeltypes.Packet{}, "")
-	require.Nil(t, resp)
-	require.ErrorContains(t, err, "is not a contract address and not the Transfer module")
-
-	sudoErrorTransport := types.MessageError{}
-	p = channeltypes.Packet{SourcePort: types.TransferPort}
-	sudoErrorTransport.Error.Details = "details"
-	sudoErrorTransport.Error.Request = p
-
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	resp, err = k.SudoError(ctx, address, sudoErrorTransport.Error.Request, sudoErrorTransport.Error.Details)
-	require.Nil(t, resp)
-	require.NoError(t, err)
 }
 
 func TestSudoTimeout(t *testing.T) {
@@ -130,30 +100,14 @@ func TestSudoTimeout(t *testing.T) {
 	p := channeltypes.Packet{}
 	sudoTimeoutMsg.Timeout.Request = p
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTimeoutMsg)).Return([]byte("success"), nil)
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoTimeout(ctx, address, sudoTimeoutMsg.Timeout.Request)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoTimeoutMsg)).Return(nil, fmt.Errorf("internal contract error"))
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoTimeout(ctx, address, sudoTimeoutMsg.Timeout.Request)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "internal contract error")
-
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	resp, err = k.SudoTimeout(ctx, address, channeltypes.Packet{})
-	require.Nil(t, resp)
-	require.ErrorContains(t, err, "is not a contract address and not the Transfer module")
-
-	sudoTimeoutTransport := types.MessageTimeout{}
-	p = channeltypes.Packet{SourcePort: types.TransferPort}
-	sudoTimeoutTransport.Timeout.Request = p
-
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	resp, err = k.SudoTimeout(ctx, address, sudoTimeoutTransport.Timeout.Request)
-	require.Nil(t, resp)
-	require.NoError(t, err)
 }
 
 func TestSudoOnChanOpen(t *testing.T) {
@@ -166,21 +120,14 @@ func TestSudoOnChanOpen(t *testing.T) {
 
 	sudoOpenAckMsg := types.MessageOnChanOpenAck{}
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoOpenAckMsg)).Return([]byte("success"), nil)
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err := k.SudoOnChanOpenAck(ctx, address, sudoOpenAckMsg.OpenAck)
 	require.NoError(t, err)
 	require.Equal(t, []byte("success"), resp)
 
 	wk.EXPECT().Sudo(gomock.Any(), address, mustJSON(sudoOpenAckMsg)).Return(nil, fmt.Errorf("internal contract error"))
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(true)
 	resp, err = k.SudoOnChanOpenAck(ctx, address, sudoOpenAckMsg.OpenAck)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "internal contract error")
-
-	wk.EXPECT().HasContractInfo(gomock.Any(), address).Return(false)
-	resp, err = k.SudoOnChanOpenAck(ctx, address, sudoOpenAckMsg.OpenAck)
-	require.Nil(t, resp)
-	require.ErrorContains(t, err, "is not a contract address")
 }
 
 func TestSudoTxQueryResult(t *testing.T) {

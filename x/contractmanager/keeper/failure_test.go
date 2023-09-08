@@ -138,7 +138,6 @@ func TestResubmitFailure(t *testing.T) {
 	require.NoError(t, err)
 
 	// case: successful resubmit with ack and ack = response
-	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgSuc).Return([]byte{}, nil)
 
 	failure, err := k.GetFailure(ctx, contractAddr, failureID)
@@ -153,8 +152,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID2 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, &packet, contractAddr.String(), types.Ack, &ack)
 
-	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
-	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgSuc).Return(nil, fmt.Errorf("failed to Sudo"))
+	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgSuc).Return(nil, fmt.Errorf("failed to sudo"))
 
 	failure2, err := k.GetFailure(ctx, contractAddr, failureID2)
 	require.NoError(t, err)
@@ -170,7 +168,6 @@ func TestResubmitFailure(t *testing.T) {
 	failureID3 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, &packet, contractAddr.String(), types.Ack, &ackError)
 
-	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return([]byte{}, nil)
 
 	failure3, err := k.GetFailure(ctx, contractAddr, failureID3)
@@ -185,8 +182,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID4 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, &packet, contractAddr.String(), types.Ack, &ackError)
 
-	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
-	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return(nil, fmt.Errorf("failed to Sudo"))
+	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return(nil, fmt.Errorf("failed to sudo"))
 
 	failure4, err := k.GetFailure(ctx, contractAddr, failureID4)
 	require.NoError(t, err)
@@ -202,7 +198,6 @@ func TestResubmitFailure(t *testing.T) {
 	failureID5 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, &packet, contractAddr.String(), "timeout", nil)
 
-	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgTimeout).Return([]byte{}, nil)
 
 	failure5, err := k.GetFailure(ctx, contractAddr, failureID5)
@@ -217,8 +212,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID6 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	k.AddContractFailure(ctx, &packet, contractAddr.String(), "timeout", nil)
 
-	wk.EXPECT().HasContractInfo(gomock.AssignableToTypeOf(ctx), contractAddr).Return(true)
-	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgTimeout).Return(nil, fmt.Errorf("failed to Sudo"))
+	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgTimeout).Return(nil, fmt.Errorf("failed to sudo"))
 
 	failure6, err := k.GetFailure(ctx, contractAddr, failureID6)
 	require.NoError(t, err)
