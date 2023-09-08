@@ -95,6 +95,13 @@ func (qp QueryPlugin) GetDenomAdmin(ctx sdk.Context, denom string) (*bindings.De
 	return &bindings.DenomAdminResponse{Admin: metadata.Admin}, nil
 }
 
+// GetBeforeSendHook is a query to get denom before send hook.
+func (qp QueryPlugin) GetBeforeSendHook(ctx sdk.Context, denom string) (*bindings.BeforeSendHookResponse, error) {
+	cosmWasmAddr := qp.tokenFactoryKeeper.GetBeforeSendHook(ctx, denom)
+
+	return &bindings.BeforeSendHookResponse{CosmWasmAddr: cosmWasmAddr}, nil
+}
+
 func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {
 	grpcResp := qp.feeBurnerKeeper.GetTotalBurnedNeutronsAmount(ctx)
 	return &bindings.QueryTotalBurnedNeutronsAmountResponse{Coin: grpcResp.Coin}, nil

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -20,7 +21,8 @@ func (k Keeper) Params(ctx context.Context, req *types.QueryParamsRequest) (*typ
 func (k Keeper) DenomAuthorityMetadata(ctx context.Context, req *types.QueryDenomAuthorityMetadataRequest) (*types.QueryDenomAuthorityMetadataResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	authorityMetadata, err := k.GetAuthorityMetadata(sdkCtx, req.GetDenom())
+	denom := fmt.Sprintf("factory/%s/%s", req.GetCreator(), req.GetSubdenom())
+	authorityMetadata, err := k.GetAuthorityMetadata(sdkCtx, denom)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +39,8 @@ func (k Keeper) DenomsFromCreator(ctx context.Context, req *types.QueryDenomsFro
 func (k Keeper) BeforeSendHookAddress(ctx context.Context, req *types.QueryBeforeSendHookAddressRequest) (*types.QueryBeforeSendHookAddressResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	cosmwasmAddress := k.GetBeforeSendHook(sdkCtx, req.GetDenom())
+	denom := fmt.Sprintf("factory/%s/%s", req.GetCreator(), req.GetSubdenom())
+	cosmwasmAddress := k.GetBeforeSendHook(sdkCtx, denom)
 
 	return &types.QueryBeforeSendHookAddressResponse{CosmwasmAddress: cosmwasmAddress}, nil
 }

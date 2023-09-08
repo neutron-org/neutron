@@ -629,7 +629,7 @@ func New(
 		app.ContractManagerKeeper,
 		interchainqueriesmodulekeeper.Verifier{},
 		interchainqueriesmodulekeeper.TransactionVerifier{},
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
@@ -639,7 +639,7 @@ func New(
 		app.ICAControllerKeeper,
 		app.ContractManagerKeeper,
 		app.FeeKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())

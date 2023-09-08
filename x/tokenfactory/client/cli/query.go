@@ -84,7 +84,7 @@ func GetCmdDenomAuthorityMetadata() *cobra.Command {
 			}
 
 			res, err := queryClient.DenomAuthorityMetadata(cmd.Context(), &types.QueryDenomAuthorityMetadataRequest{
-				Denom: args[0],
+				Subdenom: args[0],
 			})
 			if err != nil {
 				return err
@@ -113,7 +113,7 @@ func GetCmdDenomsFromCreator() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			res, err := queryClient.BeforeSendHookAddress(cmd.Context(), &types.QueryBeforeSendHookAddressRequest{
-				Denom: args[0],
+				Subdenom: args[0],
 			})
 			if err != nil {
 				return err

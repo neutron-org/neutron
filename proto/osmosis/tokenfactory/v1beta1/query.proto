@@ -21,7 +21,7 @@ service Query {
   rpc DenomAuthorityMetadata(QueryDenomAuthorityMetadataRequest)
           returns (QueryDenomAuthorityMetadataResponse) {
     option (google.api.http).get =
-      "/osmosis/tokenfactory/v1beta1/denoms/{denom}/authority_metadata";
+      "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata";
   }
 
   // DenomsFromCreator defines a gRPC query method for fetching all
@@ -37,7 +37,7 @@ service Query {
   rpc BeforeSendHookAddress(QueryBeforeSendHookAddressRequest)
           returns (QueryBeforeSendHookAddressResponse) {
     option (google.api.http).get =
-      "/osmosis/tokenfactory/v1beta1/denoms/{denom}/before_send_hook";
+      "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/before_send_hook";
   }
 }
 
@@ -53,7 +53,8 @@ message QueryParamsResponse {
 // QueryDenomAuthorityMetadataRequest defines the request structure for the
 // DenomAuthorityMetadata gRPC query.
 message QueryDenomAuthorityMetadataRequest {
-  string denom = 1 [ (gogoproto.moretags) = "yaml:\"denom\"" ];
+  string creator = 1 [ (gogoproto.moretags) = "yaml:\"creator\"" ];
+  string subdenom = 2 [ (gogoproto.moretags) = "yaml:\"subdenom\"" ];
 }
 
 // QueryDenomAuthorityMetadataResponse defines the response structure for the
@@ -78,7 +79,8 @@ message QueryDenomsFromCreatorResponse {
 }
 
 message QueryBeforeSendHookAddressRequest {
-  string denom = 1 [ (gogoproto.moretags) = "yaml:\"denom\"" ];
+  string creator = 1 [ (gogoproto.moretags) = "yaml:\"creator\"" ];
+  string subdenom = 2 [ (gogoproto.moretags) = "yaml:\"subdenom\"" ];
 }
 
 // QueryBeforeSendHookAddressResponse defines the response structure for the
