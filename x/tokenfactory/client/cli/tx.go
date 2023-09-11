@@ -30,6 +30,7 @@ func GetTxCmd() *cobra.Command {
 		NewBurnCmd(),
 		// NewForceTransferCmd(),
 		NewChangeAdminCmd(),
+		NewSetBeforeSendHook(),
 	)
 
 	return cmd
@@ -187,6 +188,37 @@ func NewChangeAdminCmd() *cobra.Command {
 			}
 
 			msg := types.NewMsgChangeAdmin(
+				clientCtx.GetFromAddress().String(),
+				args[0],
+				args[1],
+			)
+
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf.WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// NewChangeAdminCmd broadcast MsgChangeAdmin
+func NewSetBeforeSendHook() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-before-send-hook [denom] [cosm-wasm-addr] [flags]",
+		Short: "Sets the before send hook for a factory-created denom. Must have admin authority to do so.",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			txf, err := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSetBeforeSendHook(
 				clientCtx.GetFromAddress().String(),
 				args[0],
 				args[1],
