@@ -17,7 +17,7 @@ var (
 	DefaultFeeAmount      int64 = 1_000_000
 )
 
-// ParamTable for gamm module.
+// ParamTable for tokenfactory module.
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }

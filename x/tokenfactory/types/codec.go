@@ -26,7 +26,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgCreateDenom{},
 		&MsgMint{},
 		&MsgBurn{},
-		// &MsgForceTransfer{}, // TODO: why commented?
+		// &MsgForceTransfer{},
 		&MsgChangeAdmin{},
 		&MsgSetBeforeSendHook{},
 		&MsgUpdateParams{},

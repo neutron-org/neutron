@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -36,10 +37,11 @@ func (suite *KeeperTestSuite) TestMsgCreateDenom() {
 	suite.Require().Equal(sdk.NewInt(TopUpCoinsAmount), feeCollectorBalance)
 
 	// Make sure that the admin is set correctly
-	//denom := strings.Split(res.GetNewTokenDenom(), "/")
+	denom := strings.Split(res.GetNewTokenDenom(), "/")
 
 	queryRes, err := suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
-		Denom: res.GetNewTokenDenom(),
+		Creator:  denom[1],
+		Subdenom: denom[2],
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal(suite.TestAccs[0].String(), queryRes.AuthorityMetadata.Admin)
@@ -124,11 +126,12 @@ func (suite *KeeperTestSuite) TestCreateDenom() {
 			if tc.valid {
 				suite.Require().NoError(err)
 
-				//denom := strings.Split(res.GetNewTokenDenom(), "/")
+				denom := strings.Split(res.GetNewTokenDenom(), "/")
 
 				// Make sure that the admin is set correctly
 				queryRes, err := suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
-					Denom: res.GetNewTokenDenom(),
+					Creator:  denom[1],
+					Subdenom: denom[2],
 				})
 
 				suite.Require().NoError(err)
