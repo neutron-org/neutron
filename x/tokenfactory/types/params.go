@@ -29,7 +29,7 @@ func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64) Param
 	}
 }
 
-// default gamm module parameters.
+// default tokenfactory module parameters.
 func DefaultParams() Params {
 	return Params{
 		// For choice, see: https://github.com/osmosis-labs/osmosis/pull/4983
