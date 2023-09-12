@@ -41,7 +41,10 @@ type NeutronMsg struct {
 	/// Contracts can burn native tokens for an existing factory denom
 	/// that they are the admin of.
 	/// Currently, the burn from address must be the admin contract.
-	BurnTokens        *BurnTokens        `json:"burn_tokens,omitempty"`
+	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
+	/// Contracts can set before send hook for an existing factory denom
+	//	that they are the admin of.
+	//	Currently, the set before hook call should be performed from address that must be the admin contract.
 	SetBeforeSendHook *SetBeforeSendHook `json:"set_before_send_hook,omitempty"`
 
 	// Cron types

@@ -30,14 +30,16 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	contractKeeper types.ContractKeeper,
 	authority string,
 ) Keeper {
 	return Keeper{
-		cdc:           cdc,
-		storeKey:      storeKey,
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
-		authority:     authority,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		accountKeeper:  accountKeeper,
+		bankKeeper:     bankKeeper,
+		contractKeeper: contractKeeper,
+		authority:      authority,
 	}
 }
 

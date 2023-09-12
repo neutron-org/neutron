@@ -498,11 +498,11 @@ func (m *CustomMessenger) mintTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 	return nil, nil, nil
 }
 
-// mintTokens mints tokens of a specified denom to an address.
+// setBeforeSendHook sets before send hook for a specified denom.
 func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSendHook) ([]sdk.Event, [][]byte, error) {
 	err := PerformSetBeforeSendHook(m.TokenFactory, ctx, contractAddr, set)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "perform set before send hook")
+		return nil, nil, errors.Wrap(err, "failed to perform set before send hook")
 	}
 	return nil, nil, nil
 }

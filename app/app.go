@@ -575,6 +575,7 @@ func New(
 		app.keys[tokenfactorytypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+		app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
@@ -1161,7 +1162,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 
 	paramsKeeper.Subspace(authtypes.ModuleName)
-	paramsKeeper.Subspace(banktypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
@@ -1172,16 +1172,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
-	//paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
-
-	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
-	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
-	paramsKeeper.Subspace(wasm.ModuleName)
-	paramsKeeper.Subspace(feetypes.ModuleName)
-	paramsKeeper.Subspace(feeburnertypes.ModuleName)
-	paramsKeeper.Subspace(crontypes.ModuleName)
-	paramsKeeper.Subspace(globalfee.ModuleName)
-
 	return paramsKeeper
 }
 

@@ -1,8 +1,6 @@
 package cli
 
 import (
-	// "strings"
-
 	"fmt"
 	"strings"
 
@@ -10,9 +8,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-
-	// "github.com/cosmos/cosmos-sdk/client/flags"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
@@ -84,7 +79,8 @@ func GetCmdDenomAuthorityMetadata() *cobra.Command {
 			}
 
 			res, err := queryClient.DenomAuthorityMetadata(cmd.Context(), &types.QueryDenomAuthorityMetadataRequest{
-				Subdenom: args[0],
+				Creator:  args[1],
+				Subdenom: args[2],
 			})
 			if err != nil {
 				return err
@@ -112,8 +108,44 @@ func GetCmdDenomsFromCreator() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
+			res, err := queryClient.DenomsFromCreator(cmd.Context(), &types.QueryDenomsFromCreatorRequest{
+				Creator: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdDenomAuthorityMetadata returns the authority metadata for a queried denom
+func GetCmdBeforeSendHook() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "before-send-hiik [denom] [flags]",
+		Short: "Get the before send hook for a specific denom",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			denom := strings.Split(args[0], "/")
+
+			if len(denom) != 3 {
+				return fmt.Errorf("invalid denom format, expected format: factory/[creator]/[subdenom]")
+			}
+
 			res, err := queryClient.BeforeSendHookAddress(cmd.Context(), &types.QueryBeforeSendHookAddressRequest{
-				Subdenom: args[0],
+				Creator:  denom[1],
+				Subdenom: denom[2],
 			})
 			if err != nil {
 				return err
