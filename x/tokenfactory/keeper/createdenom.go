@@ -76,20 +76,20 @@ func (k Keeper) validateCreateDenom(ctx sdk.Context, creatorAddr string, subdeno
 func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err error) {
 	params := k.GetParams(ctx)
 
+	// NEUTRON IMPORTANT:  We commented this section because we removed community pool keeper from the modules section
+
 	// if DenomCreationFee is non-zero, transfer the tokens from the creator
 	// account to community pool
-	if params.DenomCreationFee != nil {
-		// NEUTRON IMPORTANT:  We commented this section because we removed community pool keeper from the module
-
-		//accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//if err := k.communityPoolKeeper.FundCommunityPool(ctx, params.DenomCreationFee, accAddr); err != nil {
-		//	return err
-		//}
-	}
+	//if params.DenomCreationFee != nil {
+	//	accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	if err := k.communityPoolKeeper.FundCommunityPool(ctx, params.DenomCreationFee, accAddr); err != nil {
+	//		return err
+	//	}
+	//}
 
 	// if DenomCreationGasConsume is non-zero, consume the gas
 	if params.DenomCreationGasConsume != 0 {

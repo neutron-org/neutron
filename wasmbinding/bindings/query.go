@@ -190,7 +190,7 @@ type BeforeSendHook struct {
 }
 
 type BeforeSendHookResponse struct {
-	CosmWasmAddr string `json:"cosm_wasm_addr"`
+	ContractAddr string `json:"contract_addr"`
 }
 
 type DenomAdminResponse struct {

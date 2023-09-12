@@ -99,7 +99,7 @@ func (qp QueryPlugin) GetDenomAdmin(ctx sdk.Context, denom string) (*bindings.De
 func (qp QueryPlugin) GetBeforeSendHook(ctx sdk.Context, denom string) (*bindings.BeforeSendHookResponse, error) {
 	cosmWasmAddr := qp.tokenFactoryKeeper.GetBeforeSendHook(ctx, denom)
 
-	return &bindings.BeforeSendHookResponse{CosmWasmAddr: cosmWasmAddr}, nil
+	return &bindings.BeforeSendHookResponse{ContractAddr: cosmWasmAddr}, nil
 }
 
 func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {

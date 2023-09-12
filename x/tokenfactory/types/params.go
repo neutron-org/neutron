@@ -32,9 +32,9 @@ func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64) Param
 // default tokenfactory module parameters.
 func DefaultParams() Params {
 	return Params{
-		// For choice, see: https://github.com/osmosis-labs/osmosis/pull/4983
-		DenomCreationFee:        sdk.NewCoins(sdk.NewInt64Coin(DefaultNeutronDenom, DefaultFeeAmount)),
-		DenomCreationGasConsume: uint64(DefaultCreationGasFee),
+		// We don't want to charge users for denom creation
+		DenomCreationFee:        nil,
+		DenomCreationGasConsume: 0,
 	}
 }
 
