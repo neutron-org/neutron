@@ -201,7 +201,7 @@ func NewChangeAdminCmd() *cobra.Command {
 	return cmd
 }
 
-// NewChangeAdminCmd broadcast MsgChangeAdmin
+// NewSetBeforeSendHook broadcast MsgSetBeforeSendHook
 func NewSetBeforeSendHook() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-before-send-hook [denom] [cosm-wasm-addr] [flags]",
