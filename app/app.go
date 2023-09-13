@@ -1171,6 +1171,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
 
+	paramsKeeper.Subspace(globalfee.ModuleName)
+
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
 	return paramsKeeper
 }
