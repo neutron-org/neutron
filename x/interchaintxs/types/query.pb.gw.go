@@ -286,9 +286,9 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"neutron", "interchaintxs", "v1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "interchaintxs", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_InterchainAccountAddress_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"neutron", "interchaintxs", "v1", "owner_address", "interchain_account_id", "connection_id", "interchain_account_address"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_InterchainAccountAddress_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"neutron", "interchaintxs", "owner_address", "interchain_account_id", "connection_id", "interchain_account_address"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (
