@@ -12,6 +12,7 @@ import (
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgRegisterInterchainAccount{}, "/neutron.interchaintxs.v1.MsgRegisterInterchainAccount", nil)
 	cdc.RegisterConcrete(&MsgSubmitTx{}, "/neutron.interchaintxs.v1.MsgSubmitTx", nil)
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "/neutron.interchaintxs.v1.MsgUpdateParams", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

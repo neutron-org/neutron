@@ -9,6 +9,7 @@ import (
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgRegisterInterchainQuery{}, "interchainqueries/RegisterQuery", nil)
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "interchainqueries/MsgUpdateParams", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
