@@ -52,7 +52,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Migrating tokenfactory module parameters...")
-		if err := migrateTokenFactoryParams(ctx, storeKeys.GetKey(tokenfactorytypes.StoreKey), codec); err != nil {
+		if err := migrateTokenFactoryParams(ctx, keepers.ParamsKeeper, storeKeys.GetKey(tokenfactorytypes.StoreKey), codec); err != nil {
 			return nil, err
 		}
 
@@ -126,15 +126,18 @@ func migrateFeeRefunderParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper
 	return nil
 }
 
-func migrateTokenFactoryParams(ctx sdk.Context, storeKey storetypes.StoreKey, codec codec.Codec) error {
+func migrateTokenFactoryParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, codec codec.Codec) error {
 	store := ctx.KVStore(storeKey)
-	newParams := tokenfactorytypes.Params{DenomCreationFee: nil, DenomCreationGasConsume: 0}
+	var currParams tokenfactorytypes.Params
+	subspace, _ := paramsKeepers.GetSubspace(tokenfactorytypes.StoreKey)
+	subspace.GetParamSet(ctx, &currParams)
+	currParams.DenomCreationGasConsume = 0
 
-	if err := newParams.Validate(); err != nil {
+	if err := currParams.Validate(); err != nil {
 		return err
 	}
 
-	bz := codec.MustMarshal(&newParams)
+	bz := codec.MustMarshal(&currParams)
 	store.Set(tokenfactorytypes.ParamsKey, bz)
 	return nil
 }
