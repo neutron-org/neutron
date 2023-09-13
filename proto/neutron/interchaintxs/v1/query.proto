@@ -11,9 +11,13 @@ option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {}
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/neutron/interchaintxs/v1/params";
+  }
   rpc InterchainAccountAddress(QueryInterchainAccountAddressRequest)
-      returns (QueryInterchainAccountAddressResponse) {}
+      returns (QueryInterchainAccountAddressResponse) {
+    option (google.api.http).get = "/neutron/interchaintxs/v1/{owner_address}/{interchain_account_id}/{connection_id}/interchain_account_address";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
