@@ -24,7 +24,9 @@ func TestHandleAcknowledgement(t *testing.T) {
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
-	icak, infCtx, _ := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, feeburnerKeeper)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 
 	resACK := channeltypes.Acknowledgement{
@@ -124,7 +126,9 @@ func TestHandleTimeout(t *testing.T) {
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
-	icak, infCtx, _ := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, feeburnerKeeper)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
@@ -161,7 +165,9 @@ func TestHandleChanOpenAck(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, feeburnerKeeper)
 	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0"
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	channelID := "channel-0"

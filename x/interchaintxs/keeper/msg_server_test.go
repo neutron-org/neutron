@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/app/params"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"testing"
 	"time"
 
@@ -21,12 +23,16 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
+const TestTreasury = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"
+
 func TestRegisterInterchainAccount(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
-	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, icaKeeper, nil)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, icaKeeper, nil, bankKeeper, feeburnerKeeper)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	msgRegAcc := types.MsgRegisterInterchainAccount{
@@ -47,12 +53,38 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.Nil(t, resp)
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
+	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
+	require.Nil(t, resp)
+
+	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)))
+
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	feeburnerKeeper.EXPECT().GetParams(ctx).Return(feeburnertypes.Params{
+		TreasuryAddress: TestTreasury,
+	})
+	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestTreasury), msgRegAcc.RegisterFee)
 	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(fmt.Errorf("failed to register ica"))
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.ErrorContains(t, err, "failed to RegisterInterchainAccount")
 	require.Nil(t, resp)
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	feeburnerKeeper.EXPECT().GetParams(ctx).Return(feeburnertypes.Params{
+		TreasuryAddress: TestTreasury,
+	})
+	bankKeeper.EXPECT().
+		SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestTreasury), msgRegAcc.RegisterFee).
+		Return(fmt.Errorf("failed to send coins"))
+	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
+	require.ErrorContains(t, err, "failed to send coins")
+	require.Nil(t, resp)
+
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	feeburnerKeeper.EXPECT().GetParams(ctx).Return(feeburnertypes.Params{
+		TreasuryAddress: TestTreasury,
+	})
+	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestTreasury), msgRegAcc.RegisterFee)
 	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(nil)
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.NoError(t, err)
@@ -66,7 +98,9 @@ func TestSubmitTx(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	refundKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
-	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, wmKeeper, refundKeeper, icaKeeper, channelKeeper)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, refundKeeper, icaKeeper, channelKeeper, bankKeeper, feeburnerKeeper)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	cosmosMsg := codectypes.Any{

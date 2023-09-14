@@ -135,7 +135,7 @@ func migrateCronParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, store
 func migrateFeeRefunderParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, codec codec.Codec) error {
 	store := ctx.KVStore(storeKey)
 	var currParams feerefundertypes.Params
-	subspace, _ := paramsKeepers.GetSubspace(crontypes.StoreKey)
+	subspace, _ := paramsKeepers.GetSubspace(feerefundertypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
 
 	if err := currParams.Validate(); err != nil {
@@ -197,6 +197,7 @@ func migrateInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keep
 	var currParams interchaintxstypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(interchaintxstypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
+	currParams.RegisterFee = interchaintxstypes.DefaultRegisterFee
 
 	if err := currParams.Validate(); err != nil {
 		return err

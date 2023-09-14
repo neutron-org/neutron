@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"cosmossdk.io/errors"
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -27,6 +29,8 @@ type (
 		feeKeeper           types.FeeRefunderKeeper
 		icaControllerKeeper types.ICAControllerKeeper
 		sudoKeeper          types.WasmKeeper
+		bankKeeper          types.BankKeeper
+		feeBurnerKeeper     types.FeeBurnerKeeper
 	}
 )
 
@@ -38,6 +42,8 @@ func NewKeeper(
 	icaControllerKeeper types.ICAControllerKeeper,
 	contractManagerKeeper types.WasmKeeper,
 	feeKeeper types.FeeRefunderKeeper,
+	bankKeeper types.BankKeeper,
+	feeBurnerKeeper types.FeeBurnerKeeper,
 ) *Keeper {
 	return &Keeper{
 		Codec:               cdc,
@@ -47,9 +53,33 @@ func NewKeeper(
 		icaControllerKeeper: icaControllerKeeper,
 		sudoKeeper:          contractManagerKeeper,
 		feeKeeper:           feeKeeper,
+		bankKeeper:          bankKeeper,
+		feeBurnerKeeper:     feeBurnerKeeper,
 	}
 }
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) error {
+	k.Logger(ctx).Debug("Trying to change fees", "payer", payer, "fee", fee)
+
+	params := k.GetParams(ctx)
+
+	if !fee.IsAnyGTE(params.RegisterFee) {
+		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided fee is less than min governance set ack fee: %v < %v", fee, params.RegisterFee)
+	}
+
+	treasury := k.feeBurnerKeeper.GetParams(ctx).TreasuryAddress
+	treasuryAddress, err := sdk.AccAddressFromBech32(treasury)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert treasury, bech32 to AccAddress: %v: %v", treasury, err)
+	}
+
+	err = k.bankKeeper.SendCoins(ctx, payer, treasuryAddress, fee)
+	if err != nil {
+		return errors.Wrapf(err, "failed send fee(%v) from %v to %v", fee, payer, treasury)
+	}
+	return nil
 }
