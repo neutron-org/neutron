@@ -6,6 +6,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
@@ -25,24 +26,25 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
-	if !im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+	if !im.sudoKeeper.HasContractInfo(ctx, senderAddress) {
 		return nil
 	}
 
 	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
-	if ack.Success() {
-		_, err = im.ContractManagerKeeper.SudoResponse(ctx, senderAddress, packet, ack)
-	} else {
-		// Actually we have only one kind of error returned from acknowledgement
-		// maybe later we'll retrieve actual errors from events
-		im.keeper.Logger(ctx).Debug(ack.GetError(), "CheckTx", ctx.IsCheckTx())
-		_, err = im.ContractManagerKeeper.SudoError(ctx, senderAddress, packet, ack)
+	msg, err := keeper.PrepareSudoCallbackMessage(packet, &ack)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrJSONMarshal, "failed to marshal Packet/Acknowledgment: %v", err)
+	}
+
+	_, err = im.sudoKeeper.Sudo(ctx, senderAddress, msg)
+	if err != nil {
+		im.keeper.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
 	}
 
 	im.keeper.Logger(ctx).Debug("acknowledgement received", "Packet data", data, "CheckTx", ctx.IsCheckTx())
 
-	return err
+	return nil
 }
 
 // HandleTimeout passes the timeout data to the appropriate contract via a sudo call.
@@ -56,13 +58,21 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
-	if !im.ContractManagerKeeper.HasContractInfo(ctx, senderAddress) {
+	if !im.sudoKeeper.HasContractInfo(ctx, senderAddress) {
 		return nil
+	}
+
+	msg, err := keeper.PrepareSudoCallbackMessage(packet, nil)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrJSONMarshal, "failed to marshal Packet: %v", err)
 	}
 
 	im.wrappedKeeper.FeeKeeper.DistributeTimeoutFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
 
-	_, err = im.ContractManagerKeeper.SudoTimeout(ctx, senderAddress, packet)
+	_, err = im.sudoKeeper.Sudo(ctx, senderAddress, msg)
+	if err != nil {
+		im.keeper.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
+	}
 
-	return err
+	return nil
 }

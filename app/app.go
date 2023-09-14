@@ -563,7 +563,7 @@ func New(
 		app.BankKeeper,
 		scopedTransferKeeper,
 		app.FeeKeeper,
-		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper),
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 	)
 
 	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
@@ -660,7 +660,7 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.IBCKeeper.ChannelKeeper,
 		app.ICAControllerKeeper,
-		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper),
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		app.FeeKeeper,
 	)
 
@@ -699,7 +699,10 @@ func New(
 	if len(enabledProposals) != 0 {
 		app.AdminmoduleKeeper.Router().AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
-	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
+	transferIBCModule := transferSudo.NewIBCModule(
+		app.TransferKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+	)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
 	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
 	app.HooksTransferIBCModule = &ibcHooksMiddleware

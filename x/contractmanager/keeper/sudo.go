@@ -20,97 +20,37 @@ func (k Keeper) HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress)
 	return k.wasmKeeper.HasContractInfo(ctx, contractAddress)
 }
 
-func prepareSudoCallbackMessage(request channeltypes.Packet, ack *channeltypes.Acknowledgement) types.MessageSudoCallback {
-	m := types.MessageSudoCallback{
-		Response: nil,
-		Error:    nil,
-		Timeout:  nil,
+func PrepareSudoCallbackMessage(request channeltypes.Packet, ack *channeltypes.Acknowledgement) ([]byte, error) {
+	m := types.MessageSudoCallback{}
+	if ack != nil && ack.GetError() == "" {
+		m.Response = &types.ResponseSudoPayload{
+			Data:    ack.GetResult(),
+			Request: request,
+		}
+	} else if ack != nil {
+		m.Error = &types.ErrorSudoPayload{
+			Request: request,
+			Details: ack.GetError(),
+		}
+	} else {
+		m.Timeout = &types.TimeoutPayload{Request: request}
 	}
-	return m
+	data, err := json.Marshal(m)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal MessageSudoCallback: %v", err)
+	}
+	return data, nil
 }
 
-func (k Keeper) SudoResponse(
-	ctx sdk.Context,
-	senderAddress sdk.AccAddress,
-	request channeltypes.Packet,
-	ack channeltypes.Acknowledgement,
-) ([]byte, error) {
-	k.Logger(ctx).Debug("SudoResponse", "senderAddress", senderAddress, "request", request, "msg", ack.GetResult())
-
-	x := types.MessageResponse{}
-	x.Response.Data = ack.GetResult()
-	x.Response.Request = request
+func PrepareOpenAckCallbackMessage(details types.OpenAckDetails) ([]byte, error) {
+	x := types.MessageOnChanOpenAck{
+		OpenAck: details,
+	}
 	m, err := json.Marshal(x)
 	if err != nil {
-		k.Logger(ctx).Error("SudoResponse: failed to marshal MessageResponse message",
-			"error", err, "request", request, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to marshal MessageResponse: %v", err)
+		return nil, fmt.Errorf("failed to marshal MessageOnChanOpenAck: %v", err)
 	}
-
-	resp, err := k.wasmKeeper.Sudo(ctx, senderAddress, m)
-	if err != nil {
-		k.Logger(ctx).Debug("SudoResponse: failed to sudo",
-			"error", err, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to sudo: %v", err)
-	}
-
-	return resp, nil
-}
-
-func (k Keeper) SudoTimeout(
-	ctx sdk.Context,
-	senderAddress sdk.AccAddress,
-	request channeltypes.Packet,
-) ([]byte, error) {
-	k.Logger(ctx).Info("SudoTimeout", "senderAddress", senderAddress, "request", request)
-
-	x := types.MessageTimeout{}
-	x.Timeout.Request = request
-	m, err := json.Marshal(x)
-	if err != nil {
-		k.Logger(ctx).Error("failed to marshal MessageTimeout message",
-			"error", err, "request", request, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to marshal MessageTimeout: %v", err)
-	}
-
-	k.Logger(ctx).Info("SudoTimeout sending request", "data", string(m))
-
-	resp, err := k.wasmKeeper.Sudo(ctx, senderAddress, m)
-	if err != nil {
-		k.Logger(ctx).Debug("SudoTimeout: failed to sudo",
-			"error", err, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to sudo: %v", err)
-	}
-
-	return resp, nil
-}
-
-func (k Keeper) SudoError(
-	ctx sdk.Context,
-	senderAddress sdk.AccAddress,
-	request channeltypes.Packet,
-	ack channeltypes.Acknowledgement,
-) ([]byte, error) {
-	k.Logger(ctx).Debug("SudoError", "senderAddress", senderAddress, "request", request)
-
-	x := types.MessageError{}
-	x.Error.Request = request
-	x.Error.Details = ack.GetError()
-	m, err := json.Marshal(x)
-	if err != nil {
-		k.Logger(ctx).Error("SudoError: failed to marshal MessageError message",
-			"error", err, "contract_address", senderAddress, "request", request)
-		return nil, fmt.Errorf("failed to marshal MessageError: %v", err)
-	}
-
-	resp, err := k.wasmKeeper.Sudo(ctx, senderAddress, m)
-	if err != nil {
-		k.Logger(ctx).Debug("SudoError: failed to sudo",
-			"error", err, "contract_address", senderAddress)
-		return nil, fmt.Errorf("failed to sudo: %v", err)
-	}
-
-	return resp, nil
+	return m, nil
 }
 
 func (k Keeper) SudoOnChanOpenAck(

@@ -3,9 +3,8 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	keeper2 "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"testing"
-
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
@@ -609,8 +608,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
 	}
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	require.NoError(suite.T(), err)
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), contractmanagertypes.Ack, &ack)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
@@ -639,11 +640,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
-	ack := ibcchanneltypes.Acknowledgement{
-		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
-	}
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, nil)
+	require.NoError(suite.T(), err)
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), "timeout", &ack)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
@@ -676,7 +676,9 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
 	}
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, testutil.TestOwnerAddress, contractmanagertypes.Ack, &ack)
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	require.NoError(suite.T(), err)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{

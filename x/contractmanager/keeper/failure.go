@@ -5,17 +5,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
 // AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, packet *ibcchanneltypes.Packet, address, ackType string, ack *ibcchanneltypes.Acknowledgement) {
+func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte) {
 	failure := types.Failure{
-		Address: address,
-		AckType: ackType,
-		Packet:  packet,
-		Ack:     ack,
+		Address:     address,
+		SudoPayload: sudoPayload,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 	failure.Id = nextFailureID
@@ -40,7 +37,7 @@ func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
 	return 0
 }
 
-// GetAllFailure returns all failures
+// GetAllFailures returns all failures
 func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ContractFailuresKey)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
@@ -71,30 +68,12 @@ func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint
 
 // ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
 func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
-	if failure.Packet == nil {
-		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without packet info; failureId = %d", failure.Id)
+	if failure.SudoPayload == nil {
+		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
 	}
 
-	switch failure.GetAckType() {
-	case types.Ack:
-		if failure.GetAck() == nil {
-			return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without acknowledgement; failureId = %d", failure.Id)
-		}
-		if failure.GetAck().GetError() == "" {
-			if _, err := k.SudoResponse(ctx, contractAddr, *failure.Packet, *failure.Ack); err != nil {
-				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack response; failureId = %d; err = %s", failure.Id, err)
-			}
-		} else {
-			if _, err := k.SudoError(ctx, contractAddr, *failure.Packet, *failure.Ack); err != nil {
-				return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack error; failureId = %d; err = %s", failure.Id, err)
-			}
-		}
-	case types.Timeout:
-		if _, err := k.SudoTimeout(ctx, contractAddr, *failure.Packet); err != nil {
-			return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack timeout; failureId = %d; err = %s", failure.Id, err)
-		}
-	default:
-		return errors.Wrapf(types.IncorrectAckType, "cannot resubmit failure with incorrect ackType = %s", failure.GetAckType())
+	if _, err := k.wasmKeeper.Sudo(ctx, contractAddr, failure.SudoPayload); err != nil {
+		return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack; failureId = %d; err = %s", failure.Id, err)
 	}
 
 	// Cleanup failure since we resubmitted it successfully

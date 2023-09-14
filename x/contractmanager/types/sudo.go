@@ -23,10 +23,12 @@ type MessageKVQueryResult struct {
 	} `json:"kv_query_result"`
 }
 
+// MessageSudoCallback is passed to a contract's sudo() entrypoint when an interchain
+// transaction failed with a timeout.
 type MessageSudoCallback struct {
-	Response *ResponseSudoPayload `json:"response"`
-	Error    *ErrorSudoPayload    `json:"error"`
-	Timeout  *TimeoutPayload      `json:"timeout"`
+	Response *ResponseSudoPayload `json:"response,omitempty"`
+	Error    *ErrorSudoPayload    `json:"error,omitempty"`
+	Timeout  *TimeoutPayload      `json:"timeout,omitempty"`
 }
 
 type ResponseSudoPayload struct {
@@ -41,32 +43,6 @@ type ErrorSudoPayload struct {
 
 type TimeoutPayload struct {
 	Request channeltypes.Packet `json:"request"`
-}
-
-// MessageTimeout is passed to a contract's sudo() entrypoint when an interchain
-// transaction failed with a timeout.
-type MessageTimeout struct {
-	Timeout struct {
-		Request channeltypes.Packet `json:"request"`
-	} `json:"timeout"`
-}
-
-// MessageResponse is passed to a contract's sudo() entrypoint when an interchain
-// transaction was executed successfully.
-type MessageResponse struct {
-	Response struct {
-		Request channeltypes.Packet `json:"request"`
-		Data    []byte              `json:"data"` // Message data
-	} `json:"response"`
-}
-
-// MessageError is passed to a contract's sudo() entrypoint when an interchain
-// transaction was executed with an error.
-type MessageError struct {
-	Error struct {
-		Request channeltypes.Packet `json:"request"`
-		Details string              `json:"details"`
-	} `json:"error"`
 }
 
 // MessageOnChanOpenAck is passed to a contract's sudo() entrypoint when an interchain

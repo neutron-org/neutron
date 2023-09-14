@@ -8,7 +8,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
@@ -24,14 +23,9 @@ type BankKeeper interface {
 	// Methods imported from bank should be defined here
 }
 
-type ContractManagerKeeper interface {
+type WasmKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
-	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, ack channeltypes.Acknowledgement) ([]byte, error)
-	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, ack channeltypes.Acknowledgement) ([]byte, error)
-	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
-	SudoOnChanOpenAck(ctx sdk.Context, contractAddress sdk.AccAddress, details contractmanagertypes.OpenAckDetails) ([]byte, error)
-	AddContractFailure(ctx sdk.Context, packet *channeltypes.Packet, address, ackType string, ack *channeltypes.Acknowledgement)
-	GetParams(ctx sdk.Context) (params contractmanagertypes.Params)
+	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
 
 type ICAControllerKeeper interface {

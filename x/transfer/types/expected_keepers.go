@@ -7,12 +7,9 @@ import (
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
-// ContractManagerKeeper defines the expected interface needed to add ack information about sudo failure.
-type ContractManagerKeeper interface {
+type WasmKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
-	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, ack channeltypes.Acknowledgement) ([]byte, error)
-	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, ack channeltypes.Acknowledgement) ([]byte, error)
-	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
+	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
 
 type FeeRefunderKeeper interface {
