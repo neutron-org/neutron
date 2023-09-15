@@ -65,59 +65,6 @@ func TestHandleAcknowledgement(t *testing.T) {
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("error sudoResponse"))
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
-
-	////  success during SudoError
-	//ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
-	//wmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, err string) {
-	//	store := cachedCtx.KVStore(storeKey)
-	//	store.Set(ShouldBeWrittenKey("sudoerror"), ShouldBeWritten)
-	//}).Return(nil, nil)
-	//wmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 6000})
-	//feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	//err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
-	//require.NoError(t, err)
-	//require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoerror")))
-	//require.Equal(t, uint64(3050), ctx.GasMeter().GasConsumed())
-	//
-	//// out of gas during SudoError
-	//ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
-	//wmKeeper.EXPECT().SudoError(gomock.AssignableToTypeOf(ctx), contractAddress, p, errACK.GetError()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, error string) {
-	//	store := cachedCtx.KVStore(storeKey)
-	//	store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
-	//	cachedCtx.GasMeter().ConsumeGas(7001, "out of gas test")
-	//})
-	//wmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 7000})
-	//wmKeeper.EXPECT().AddContractFailure(ctx, &p, contractAddress.String(), types.Ack, &errACK)
-	//feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	//err = icak.HandleAcknowledgement(ctx, p, errAckData, relayerAddress)
-	//require.NoError(t, err)
-	//require.Empty(t, store.Get(ShouldNotBeWrittenKey))
-	//require.Equal(t, uint64(7000), ctx.GasMeter().GasConsumed())
-	//
-	//// success during SudoResponse
-	//ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
-	//wmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(ctx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
-	//	store := cachedCtx.KVStore(storeKey)
-	//	store.Set(ShouldBeWrittenKey("sudoresponse"), ShouldBeWritten) // consumes 3140 gas, 2000 flat write + 30 every byte of key+value
-	//}).Return(nil, nil)
-	//wmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 8000})
-	//feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	//err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
-	//require.NoError(t, err)
-	//require.Equal(t, uint64(3140), ctx.GasMeter().GasConsumed())
-	//require.Equal(t, ShouldBeWritten, store.Get(ShouldBeWrittenKey("sudoresponse")))
-	//
-	//// not enough gas provided by relayer for SudoCallGasLimit
-	//ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
-	//lowGasCtx := infCtx.WithGasMeter(sdk.NewGasMeter(1000))
-	//wmKeeper.EXPECT().SudoResponse(gomock.AssignableToTypeOf(lowGasCtx), contractAddress, p, resACK.GetResult()).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) {
-	//	store := cachedCtx.KVStore(storeKey)
-	//	store.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
-	//	cachedCtx.GasMeter().ConsumeGas(1001, "out of gas test")
-	//})
-	//feeKeeper.EXPECT().DistributeAcknowledgementFee(lowGasCtx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
-	//wmKeeper.EXPECT().GetParams(lowGasCtx).Return(types.Params{SudoCallGasLimit: 9000})
-	//require.PanicsWithValue(t, sdk.ErrorOutOfGas{Descriptor: "consume gas from cached context"}, func() { icak.HandleAcknowledgement(lowGasCtx, p, resAckData, relayerAddress) }) //nolint:errcheck // this is a panic test
 }
 
 func TestHandleTimeout(t *testing.T) {

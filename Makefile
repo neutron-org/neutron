@@ -123,7 +123,7 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
 
-install-test-binary: go.sum
+install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
 
 ########################################

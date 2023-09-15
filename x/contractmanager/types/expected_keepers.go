@@ -9,3 +9,8 @@ type WasmKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
 	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
+
+type ContractManagerKeeper interface {
+	AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte)
+	GetParams(ctx sdk.Context) (params Params)
+}
