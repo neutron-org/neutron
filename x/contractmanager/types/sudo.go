@@ -24,7 +24,7 @@ type MessageKVQueryResult struct {
 }
 
 // MessageSudoCallback is passed to a contract's sudo() entrypoint when an interchain
-// transaction failed with a timeout.
+// transaction failed.
 type MessageSudoCallback struct {
 	Response *ResponseSudoPayload `json:"response,omitempty"`
 	Error    *ErrorSudoPayload    `json:"error,omitempty"`
