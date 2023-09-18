@@ -81,13 +81,13 @@ func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err e
 	// account to community pool
 	// MODIFIED: if DenomCreationFee is non-zero, transfer the tokens from the creator
 	// account to feeCollectorAddr
-	if params.DenomCreationFee != nil {
+	if len(params.DenomCreationFee) != 0 {
 		accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
 		if err != nil {
 			return err
 		}
 		// Instead of funding community pool we send funds to fee collector addr
-		//if err := k.communityPoolKeeper.FundCommunityPool(ctx, params.DenomCreationFee, accAddr); err != nil {
+		// if err := k.communityPoolKeeper.FundCommunityPool(ctx, params.DenomCreationFee, accAddr); err != nil {
 		//	return err
 		//}
 
