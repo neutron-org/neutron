@@ -204,7 +204,7 @@ func NewChangeAdminCmd() *cobra.Command {
 // NewSetBeforeSendHook broadcast MsgSetBeforeSendHook
 func NewSetBeforeSendHook() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-before-send-hook [denom] [cosm-wasm-addr] [flags]",
+		Use:   "set-before-send-hook [denom] [contract-addr] [flags]",
 		Short: "Sets the before send hook for a factory-created denom. Must have admin authority to do so.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {

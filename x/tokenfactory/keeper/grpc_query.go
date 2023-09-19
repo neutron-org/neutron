@@ -40,7 +40,7 @@ func (k Keeper) BeforeSendHookAddress(ctx context.Context, req *types.QueryBefor
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	denom := fmt.Sprintf("factory/%s/%s", req.GetCreator(), req.GetSubdenom())
-	cosmwasmAddress := k.GetBeforeSendHook(sdkCtx, denom)
+	contractAddr := k.GetBeforeSendHook(sdkCtx, denom)
 
-	return &types.QueryBeforeSendHookAddressResponse{CosmwasmAddress: cosmwasmAddress}, nil
+	return &types.QueryBeforeSendHookAddressResponse{ContractAddr: contractAddr}, nil
 }

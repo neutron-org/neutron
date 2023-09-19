@@ -266,11 +266,11 @@ func (m MsgSetDenomMetadata) GetSigners() []sdk.AccAddress {
 var _ sdk.Msg = &MsgSetBeforeSendHook{}
 
 // NewMsgSetBeforeSendHook creates a message to set a new before send hook
-func NewMsgSetBeforeSendHook(sender string, denom string, cosmwasmAddress string) *MsgSetBeforeSendHook {
+func NewMsgSetBeforeSendHook(sender, denom, contractAddr string) *MsgSetBeforeSendHook {
 	return &MsgSetBeforeSendHook{
-		Sender:          sender,
-		Denom:           denom,
-		CosmwasmAddress: cosmwasmAddress,
+		Sender:       sender,
+		Denom:        denom,
+		ContractAddr: contractAddr,
 	}
 }
 
@@ -282,8 +282,8 @@ func (m MsgSetBeforeSendHook) ValidateBasic() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
 	}
 
-	if m.CosmwasmAddress != "" {
-		_, err = sdk.AccAddressFromBech32(m.CosmwasmAddress)
+	if m.ContractAddr != "" {
+		_, err = sdk.AccAddressFromBech32(m.ContractAddr)
 		if err != nil {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid cosmwasm contract address (%s)", err)
 		}

@@ -103,8 +103,8 @@ message MsgSetBeforeSendHook {
 
   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
   string denom = 2 [ (gogoproto.moretags) = "yaml:\"denom\"" ];
-  string cosmwasm_address = 3
-  [ (gogoproto.moretags) = "yaml:\"cosmwasm_address\"" ];
+  string contract_addr = 3
+  [ (gogoproto.moretags) = "yaml:\"contract_addr\"" ];
 }
 
 // MsgSetBeforeSendHookResponse defines the response structure for an executed

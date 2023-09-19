@@ -81,5 +81,6 @@ func (k *Keeper) SetContractKeeper(contractKeeper types.ContractKeeper) {
 // it purely mints and burns them on behalf of the admin of respective denoms,
 // and sends to the relevant address.
 func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
+	// GetModuleAccount creates new module account if not present under the hood
 	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 }

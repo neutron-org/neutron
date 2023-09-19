@@ -37,7 +37,7 @@ func (k Keeper) setAuthorityMetadata(ctx sdk.Context, denom string, metadata typ
 	return nil
 }
 
-func (k Keeper) setAdmin(ctx sdk.Context, denom string, admin string) error {
+func (k Keeper) setAdmin(ctx sdk.Context, denom, admin string) error {
 	metadata, err := k.GetAuthorityMetadata(ctx, denom)
 	if err != nil {
 		return err

@@ -218,7 +218,7 @@ func (server msgServer) SetBeforeSendHook(goCtx context.Context, msg *types.MsgS
 		return nil, types.ErrUnauthorized
 	}
 
-	err = server.Keeper.setBeforeSendHook(ctx, msg.Denom, msg.CosmwasmAddress)
+	err = server.Keeper.setBeforeSendHook(ctx, msg.Denom, msg.ContractAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +227,7 @@ func (server msgServer) SetBeforeSendHook(goCtx context.Context, msg *types.MsgS
 		sdk.NewEvent(
 			types.TypeMsgSetBeforeSendHook,
 			sdk.NewAttribute(types.AttributeDenom, msg.GetDenom()),
-			sdk.NewAttribute(types.AttributeBeforeSendHookAddress, msg.GetCosmwasmAddress()),
+			sdk.NewAttribute(types.AttributeBeforeSendHookAddress, msg.GetContractAddr()),
 		),
 	})
 
@@ -236,9 +236,9 @@ func (server msgServer) SetBeforeSendHook(goCtx context.Context, msg *types.MsgS
 
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	//if err := req.ValidateBasic(); err != nil {
-	//	return nil, err
-	//}
+	if err := req.ValidateBasic(); err != nil {
+		return nil, err
+	}
 	authority := k.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)

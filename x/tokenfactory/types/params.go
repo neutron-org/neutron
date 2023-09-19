@@ -11,47 +11,58 @@ import (
 var (
 	KeyDenomCreationFee        = []byte("DenomCreationFee")
 	KeyDenomCreationGasConsume = []byte("DenomCreationGasConsume")
-	DefaultNeutronDenom        = "untrn"
-	// chosen as an arbitrary large number, less than the max_gas_wanted_per_tx in config.
-	DefaultCreationGasFee       = 1_000
-	DefaultFeeAmount      int64 = 1_000_000
+	KeyFeeCollectorAddress     = []byte("FeeCollectorAddress")
+	// We don't want to charge users for denom creation
+	DefaultDenomCreationFee        sdk.Coins = nil
+	DefaultDenomCreationGasConsume uint64    = 0
+	DefaultFeeCollectorAddress               = ""
 )
 
-// ParamTable for tokenfactory module.
+// ParamKeyTable the param key table for tokenfactory module.
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64) Params {
+func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64, feeCollectorAddress string) Params {
 	return Params{
 		DenomCreationFee:        denomCreationFee,
 		DenomCreationGasConsume: denomCreationGasConsume,
+		FeeCollectorAddress:     feeCollectorAddress,
 	}
 }
 
-// default tokenfactory module parameters.
+// DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return Params{
-		// We don't want to charge users for denom creation
-		DenomCreationFee:        nil,
-		DenomCreationGasConsume: 0,
-	}
+	return NewParams(DefaultDenomCreationFee, DefaultDenomCreationGasConsume, DefaultFeeCollectorAddress)
 }
 
-// validate params.
+// Validate validates params
 func (p Params) Validate() error {
+	// DenomCreationFee and FeeCollectorAddress must be both set, or both unset
+	hasDenomCreationFee := len(p.DenomCreationFee) > 0
+	hasFeeCollectorAddress := p.FeeCollectorAddress != ""
+
+	if hasDenomCreationFee != hasFeeCollectorAddress {
+		return fmt.Errorf("DenomCreationFee and FeeCollectorAddr must be both set or both unset")
+	}
+
 	if err := validateDenomCreationFee(p.DenomCreationFee); err != nil {
+		return err
+	}
+
+	if err := validateAddress(p.FeeCollectorAddress); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Implements params.ParamSet.
+// ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDenomCreationFee, &p.DenomCreationFee, validateDenomCreationFee),
 		paramtypes.NewParamSetPair(KeyDenomCreationGasConsume, &p.DenomCreationGasConsume, validateDenomCreationGasConsume),
+		paramtypes.NewParamSetPair(KeyFeeCollectorAddress, &p.FeeCollectorAddress, validateAddress),
 	}
 }
 
@@ -72,6 +83,24 @@ func validateDenomCreationGasConsume(i interface{}) error {
 	_, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	return nil
+}
+
+func validateAddress(i interface{}) error {
+	v, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if len(v) == 0 {
+		return nil
+	}
+
+	_, err := sdk.AccAddressFromBech32(v)
+	if err != nil {
+		return fmt.Errorf("invalid address: %w", err)
 	}
 
 	return nil

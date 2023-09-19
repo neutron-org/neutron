@@ -79,8 +79,8 @@ func GetCmdDenomAuthorityMetadata() *cobra.Command {
 			}
 
 			res, err := queryClient.DenomAuthorityMetadata(cmd.Context(), &types.QueryDenomAuthorityMetadataRequest{
-				Creator:  args[1],
-				Subdenom: args[2],
+				Creator:  denom[1],
+				Subdenom: denom[2],
 			})
 			if err != nil {
 				return err

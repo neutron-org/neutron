@@ -185,7 +185,7 @@ type BurnTokens struct {
 
 type SetBeforeSendHook struct {
 	Denom        string `json:"denom"`
-	CosmWasmAddr string `json:"cosm_wasm_addr"`
+	ContractAddr string `json:"contract_addr"`
 }
 
 // AddSchedule adds new schedule to the cron module

@@ -86,6 +86,6 @@ message QueryBeforeSendHookAddressRequest {
 // QueryBeforeSendHookAddressResponse defines the response structure for the
 // DenomBeforeSendHook gRPC query.
 message QueryBeforeSendHookAddressResponse {
-  string cosmwasm_address = 1
-  [ (gogoproto.moretags) = "yaml:\"cosmwasm_address\"" ];
+  string contract_addr = 1
+  [ (gogoproto.moretags) = "yaml:\"contract_addr\"" ];
 }

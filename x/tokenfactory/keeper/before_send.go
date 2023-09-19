@@ -11,7 +11,7 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 )
 
-func (k Keeper) setBeforeSendHook(ctx sdk.Context, denom string, cosmwasmAddress string) error {
+func (k Keeper) setBeforeSendHook(ctx sdk.Context, denom, contractAddr string) error {
 	// verify that denom is an x/tokenfactory denom
 	_, _, err := types.DeconstructDenom(denom)
 	if err != nil {
@@ -21,17 +21,17 @@ func (k Keeper) setBeforeSendHook(ctx sdk.Context, denom string, cosmwasmAddress
 	store := k.GetDenomPrefixStore(ctx, denom)
 
 	// delete the store for denom prefix store when cosmwasm address is nil
-	if cosmwasmAddress == "" {
+	if contractAddr == "" {
 		store.Delete([]byte(types.BeforeSendHookAddressPrefixKey))
 		return nil
 	}
 
-	_, err = sdk.AccAddressFromBech32(cosmwasmAddress)
+	_, err = sdk.AccAddressFromBech32(contractAddr)
 	if err != nil {
 		return err
 	}
 
-	store.Set([]byte(types.BeforeSendHookAddressPrefixKey), []byte(cosmwasmAddress))
+	store.Set([]byte(types.BeforeSendHookAddressPrefixKey), []byte(contractAddr))
 
 	return nil
 }
@@ -96,9 +96,9 @@ func (k Keeper) callBeforeSendListener(ctx sdk.Context, from, to sdk.AccAddress,
 	}()
 
 	for _, coin := range amount {
-		cosmwasmAddress := k.GetBeforeSendHook(ctx, coin.Denom)
-		if cosmwasmAddress != "" {
-			cwAddr, err := sdk.AccAddressFromBech32(cosmwasmAddress)
+		contractAddr := k.GetBeforeSendHook(ctx, coin.Denom)
+		if contractAddr != "" {
+			cwAddr, err := sdk.AccAddressFromBech32(contractAddr)
 			if err != nil {
 				return err
 			}
