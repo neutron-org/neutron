@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
@@ -14,7 +15,7 @@ func (suite *KeeperTestSuite) TestMsgCreateDenom() {
 
 	// Create denom without enough funds
 	_, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
-	suite.Require().ErrorContains(err, "unable to charge for denom creation")
+	suite.Require().ErrorIs(err, errors.ErrInsufficientFunds)
 
 	// Creating a denom should work
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
