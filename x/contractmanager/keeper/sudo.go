@@ -53,33 +53,6 @@ func PrepareOpenAckCallbackMessage(details types.OpenAckDetails) ([]byte, error)
 	return m, nil
 }
 
-func (k Keeper) SudoOnChanOpenAck(
-	ctx sdk.Context,
-	contractAddress sdk.AccAddress,
-	details types.OpenAckDetails,
-) ([]byte, error) {
-	k.Logger(ctx).Debug("SudoOnChanOpenAck", "contractAddress", contractAddress)
-
-	x := types.MessageOnChanOpenAck{}
-	x.OpenAck = details
-	m, err := json.Marshal(x)
-	if err != nil {
-		k.Logger(ctx).Error("SudoOnChanOpenAck: failed to marshal MessageOnChanOpenAck message",
-			"error", err, "contract_address", contractAddress)
-		return nil, fmt.Errorf("failed to marshal MessageOnChanOpenAck: %v", err)
-	}
-	k.Logger(ctx).Info("SudoOnChanOpenAck sending request", "data", string(m))
-
-	resp, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
-	if err != nil {
-		k.Logger(ctx).Debug("SudoOnChanOpenAck: failed to sudo",
-			"error", err, "contract_address", contractAddress)
-		return nil, fmt.Errorf("failed to sudo: %v", err)
-	}
-
-	return resp, nil
-}
-
 // SudoTxQueryResult is used to pass a tx query result to the contract that registered the query
 // to:
 //  1. check whether the transaction actually satisfies the initial query arguments;
