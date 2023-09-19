@@ -3,9 +3,9 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	keeper2 "github.com/neutron-org/neutron/x/contractmanager/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"testing"
-
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
@@ -77,13 +77,25 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
+	err := suite.neutron.FeeBurnerKeeper.SetParams(suite.ctx, feeburnertypes.Params{
+		NeutronDenom:    "untrn",
+		TreasuryAddress: "neutron13jrwrtsyjjuynlug65r76r2zvfw5xjcq6532h2",
+	})
+	suite.Require().NoError(err)
+
 	// Craft RegisterInterchainAccount message
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 			InterchainAccountId: testutil.TestInterchainID,
+			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
 		},
 	})
+	suite.NoError(err)
+
+	bankKeeper := suite.neutron.BankKeeper
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
@@ -609,8 +621,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
 	}
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	require.NoError(suite.T(), err)
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), contractmanagertypes.Ack, &ack)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
@@ -639,11 +653,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
-	ack := ibcchanneltypes.Acknowledgement{
-		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
-	}
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, nil)
+	require.NoError(suite.T(), err)
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, suite.contractAddress.String(), "timeout", &ack)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
@@ -673,10 +686,12 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
 	ack := ibcchanneltypes.Acknowledgement{
-		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "Error"},
+		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
 	}
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, &packet, testutil.TestOwnerAddress, contractmanagertypes.Ack, &ack)
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	require.NoError(suite.T(), err)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload)
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
