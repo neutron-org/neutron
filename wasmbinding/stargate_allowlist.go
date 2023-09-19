@@ -18,15 +18,17 @@ import (
 func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 	return wasmkeeper.AcceptedStargateQueries{
 		// ibc
-		"/ibc.core.client.v1.Query/ClientState":                                       &ibcclienttypes.QueryClientStateResponse{},
-		"/ibc.core.client.v1.Query/ConsensusState":                                    &ibcclienttypes.QueryConsensusStateResponse{},
-		"/ibc.core.connection.v1.Query/Connection":                                    &ibcconnectiontypes.QueryConnectionResponse{},
-		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &types.QueryInterchainAccountResponse{},
+		"/ibc.core.client.v1.Query/ClientState":    &ibcclienttypes.QueryClientStateResponse{},
+		"/ibc.core.client.v1.Query/ConsensusState": &ibcclienttypes.QueryConsensusStateResponse{},
+		"/ibc.core.connection.v1.Query/Connection": &ibcconnectiontypes.QueryConnectionResponse{},
 
 		// token factory
 		"/osmosis.tokenfactory.v1beta1.Query/Params":                 &tokenfactorytypes.QueryParamsResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata": &tokenfactorytypes.QueryDenomAuthorityMetadataResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator":      &tokenfactorytypes.QueryDenomsFromCreatorResponse{},
+
+		// interchain accounts
+		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &types.QueryInterchainAccountResponse{},
 
 		// transfer
 		"/ibc.applications.transfer.v1.Query/DenomTrace": &ibctransfertypes.QueryDenomTraceResponse{},
