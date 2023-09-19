@@ -74,7 +74,7 @@ func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) 
 	treasury := k.feeBurnerKeeper.GetParams(ctx).TreasuryAddress
 	treasuryAddress, err := sdk.AccAddressFromBech32(treasury)
 	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert treasury, bech32 to AccAddress: %s: %w", treasury, err)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert treasury, bech32 to AccAddress: %s: %v", treasury, err)
 	}
 
 	err = k.bankKeeper.SendCoins(ctx, payer, treasuryAddress, fee)
