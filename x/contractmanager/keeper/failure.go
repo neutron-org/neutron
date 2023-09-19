@@ -73,7 +73,7 @@ func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, fa
 	}
 
 	if _, err := k.wasmKeeper.Sudo(ctx, contractAddr, failure.SudoPayload); err != nil {
-		return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure ack; failureId = %d; err = %s", failure.Id, err)
+		return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure; failureId = %d; err = %s", failure.Id, err)
 	}
 
 	// Cleanup failure since we resubmitted it successfully
