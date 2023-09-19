@@ -7,10 +7,9 @@ import (
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
-
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 
@@ -114,7 +113,7 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
 		}
 		if contractMsg.SubmitAdminProposal != nil {
-			return m.submitAdminProposal(ctx, contractAddr, contractMsg.SubmitAdminProposal)
+			return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
 		}
 		if contractMsg.CreateDenom != nil {
 			return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
@@ -302,22 +301,50 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) ([]sdk.Event, [][]byte, error) {
-	response, err := m.performSubmitAdminProposal(ctx, contractAddr, submitAdminProposal)
+func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) ([]sdk.Event, [][]byte, error) {
+	var data []byte
+	err := m.validateProposalQty(adminProposal)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "invalid proposal quantity")
+	}
+	// here we handle pre-sdk47 style of proposals: param change, upgrade, client update
+	if m.isLegacyProposal(adminProposal) {
+		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, adminProposal)
+		if err != nil {
+			ctx.Logger().Debug("performSubmitAdminProposalLegacy: failed to submitAdminProposal",
+				"from_address", contractAddr.String(),
+				"error", err,
+			)
+			return nil, nil, errors.Wrap(err, "failed to submit admin proposal legacy")
+		}
+		data, err = json.Marshal(resp)
+		if err != nil {
+			ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposalLegacy response to JSON",
+				"from_address", contractAddr.String(),
+				"error", err,
+			)
+			return nil, nil, errors.Wrap(err, "marshal json failed")
+		}
+
+		ctx.Logger().Debug("submit proposal legacy submitted",
+			"from_address", contractAddr.String(),
+		)
+		return nil, [][]byte{data}, nil
+	}
+
+	resp, err := m.performSubmitAdminProposal(ctx, contractAddr, adminProposal)
 	if err != nil {
 		ctx.Logger().Debug("performSubmitAdminProposal: failed to submitAdminProposal",
 			"from_address", contractAddr.String(),
-			"creator", contractAddr.String(),
 			"error", err,
 		)
 		return nil, nil, errors.Wrap(err, "failed to submit admin proposal")
 	}
 
-	data, err := json.Marshal(response)
+	data, err = json.Marshal(resp)
 	if err != nil {
 		ctx.Logger().Error("json.Marshal: failed to marshal submitAdminProposal response to JSON",
 			"from_address", contractAddr.String(),
-			"creator", contractAddr.String(),
 			"error", err,
 		)
 		return nil, nil, errors.Wrap(err, "marshal json failed")
@@ -325,20 +352,16 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 
 	ctx.Logger().Debug("submit proposal message submitted",
 		"from_address", contractAddr.String(),
-		"creator", contractAddr.String(),
 	)
 	return nil, [][]byte{data}, nil
 }
 
-func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, submitAdminProposal *bindings.SubmitAdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
-	msg := admintypes.MsgSubmitProposal{Proposer: contractAddr.String()}
-	proposal := submitAdminProposal.AdminProposal
+func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) (*admintypes.MsgSubmitProposalLegacyResponse, error) {
+	proposal := adminProposal
+	msg := admintypes.MsgSubmitProposalLegacy{Proposer: contractAddr.String()}
 
-	err := m.validateProposalQty(&proposal)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate proposal quantity")
-	}
-	if proposal.ParamChangeProposal != nil {
+	switch {
+	case proposal.ParamChangeProposal != nil:
 		p := proposal.ParamChangeProposal
 		err := msg.SetContent(&paramChange.ParameterChangeProposal{
 			Title:       p.Title,
@@ -348,36 +371,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ParameterChangeProposal")
 		}
-	}
-
-	if proposal.SoftwareUpgradeProposal != nil {
-		p := proposal.SoftwareUpgradeProposal
-		err := msg.SetContent(&softwareUpgrade.SoftwareUpgradeProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			Plan: softwareUpgrade.Plan{
-				Name:   p.Plan.Name,
-				Height: p.Plan.Height,
-				Info:   p.Plan.Info,
-			},
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on SoftwareUpgradeProposal")
-		}
-	}
-
-	if proposal.CancelSoftwareUpgradeProposal != nil {
-		p := proposal.CancelSoftwareUpgradeProposal
-		err := msg.SetContent(&softwareUpgrade.CancelSoftwareUpgradeProposal{
-			Title:       p.Title,
-			Description: p.Description,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on CancelSoftwareUpgradeProposal")
-		}
-	}
-
-	if proposal.UpgradeProposal != nil {
+	case proposal.UpgradeProposal != nil:
 		p := proposal.UpgradeProposal
 		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
 			Title:       p.Title,
@@ -392,9 +386,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on UpgradeProposal")
 		}
-	}
-
-	if proposal.ClientUpdateProposal != nil {
+	case proposal.ClientUpdateProposal != nil:
 		p := proposal.ClientUpdateProposal
 		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{
 			Title:              p.Title,
@@ -405,62 +397,58 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ClientUpdateProposal")
 		}
-	}
-
-	if proposal.PinCodesProposal != nil {
-		p := proposal.PinCodesProposal
-		err := msg.SetContent(&wasmtypes.PinCodesProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			CodeIDs:     p.CodeIDs,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on PinCodesProposal")
-		}
-	}
-
-	if proposal.UnpinCodesProposal != nil {
-		p := proposal.UnpinCodesProposal
-		err := msg.SetContent(&wasmtypes.UnpinCodesProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			CodeIDs:     p.CodeIDs,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on UnpinCodesProposal")
-		}
-	}
-
-	if proposal.UpdateAdminProposal != nil {
-		p := proposal.UpdateAdminProposal
-		err := msg.SetContent(&wasmtypes.UpdateAdminProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			NewAdmin:    p.NewAdmin,
-			Contract:    p.Contract,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on UpdateAdminProposal")
-		}
-	}
-
-	if proposal.ClearAdminProposal != nil {
-		p := proposal.ClearAdminProposal
-		err := msg.SetContent(&wasmtypes.ClearAdminProposal{
-			Title:       p.Title,
-			Description: p.Description,
-			Contract:    p.Contract,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on ClearAdminProposal")
-		}
+	default:
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "unexpected legacy admin proposal structure: %+v", proposal)
 	}
 
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Adminserver.SubmitProposalLegacy(sdk.WrapSDKContext(ctx), &msg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to submit proposal")
+	}
+
+	ctx.Logger().Debug("submit proposal legacy processed in msg server",
+		"from_address", contractAddr.String(),
+	)
+
+	return response, nil
+}
+
+func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) (*admintypes.MsgSubmitProposalResponse, error) {
+	proposal := adminProposal
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+	var (
+		msg    *admintypes.MsgSubmitProposal
+		sdkMsg sdk.Msg
+	)
+
+	cdc := m.AdminKeeper.Codec()
+	err := cdc.UnmarshalInterfaceJSON([]byte(proposal.ProposalExecuteMessage.Message), &sdkMsg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
+	}
+
+	signers := sdkMsg.GetSigners()
+	if len(signers) != 1 {
+		return nil, errors.Wrap(sdkerrors.ErrorInvalidSigner, "should be 1 signer")
+	}
+	if !signers[0].Equals(authority) {
+		return nil, errors.Wrap(sdkerrors.ErrUnauthorized, "authority in incoming msg is not equal to admin module")
+	}
+
+	msg, err = admintypes.NewMsgSubmitProposal([]sdk.Msg{sdkMsg}, contractAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create MsgSubmitProposal ")
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
+	}
+
+	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit proposal")
 	}
@@ -771,40 +759,35 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	if proposal.ParamChangeProposal != nil {
 		qty++
 	}
-	if proposal.SoftwareUpgradeProposal != nil {
-		qty++
-	}
-	if proposal.CancelSoftwareUpgradeProposal != nil {
-		qty++
-	}
 	if proposal.ClientUpdateProposal != nil {
 		qty++
 	}
 	if proposal.UpgradeProposal != nil {
 		qty++
 	}
-	if proposal.PinCodesProposal != nil {
-		qty++
-	}
-	if proposal.UnpinCodesProposal != nil {
-		qty++
-	}
-	if proposal.UpdateAdminProposal != nil {
-		qty++
-	}
-	if proposal.ClearAdminProposal != nil {
+	if proposal.ProposalExecuteMessage != nil {
 		qty++
 	}
 
-	if qty == 0 {
-		return fmt.Errorf("no admin proposal type is present in message")
-	}
-
-	if qty == 1 {
+	switch qty {
+	case 1:
 		return nil
+	case 0:
+		return fmt.Errorf("no admin proposal type is present in message")
+	default:
+		return fmt.Errorf("more than one admin proposal type is present in message")
 	}
+}
 
-	return fmt.Errorf("more than one admin proposal type is present in message")
+func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) bool {
+	switch {
+	case proposal.ParamChangeProposal != nil,
+		proposal.UpgradeProposal != nil,
+		proposal.ClientUpdateProposal != nil:
+		return true
+	default:
+		return false
+	}
 }
 
 func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {

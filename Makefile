@@ -7,7 +7,6 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
-ENABLED_PROPOSALS := MigrateContract,SudoContract,UpdateAdmin,ClearAdmin,PinCodes,UnpinCodes
 GO_VERSION=1.20.0
 BUILDDIR ?= $(CURDIR)/build
 
@@ -68,8 +67,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=neutron \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=neutrond \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
-		  -X "github.com/neutron-org/neutron/app.EnableSpecificProposals=$(ENABLED_PROPOSALS)"
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
@@ -113,7 +111,6 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
 		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
-		--build-arg ENABLED_PROPOSALS=$(ENABLED_PROPOSALS) \
 		--platform linux/amd64 \
 		-t neutron-amd64 \
 		--load \
