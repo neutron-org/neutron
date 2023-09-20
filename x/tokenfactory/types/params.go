@@ -50,7 +50,7 @@ func (p Params) Validate() error {
 		return err
 	}
 
-	if err := validateAddress(p.FeeCollectorAddress); err != nil {
+	if err := validateFeeCollectorAddress(p.FeeCollectorAddress); err != nil {
 		return err
 	}
 
@@ -62,7 +62,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDenomCreationFee, &p.DenomCreationFee, validateDenomCreationFee),
 		paramtypes.NewParamSetPair(KeyDenomCreationGasConsume, &p.DenomCreationGasConsume, validateDenomCreationGasConsume),
-		paramtypes.NewParamSetPair(KeyFeeCollectorAddress, &p.FeeCollectorAddress, validateAddress),
+		paramtypes.NewParamSetPair(KeyFeeCollectorAddress, &p.FeeCollectorAddress, validateFeeCollectorAddress),
 	}
 }
 
@@ -88,7 +88,7 @@ func validateDenomCreationGasConsume(i interface{}) error {
 	return nil
 }
 
-func validateAddress(i interface{}) error {
+func validateFeeCollectorAddress(i interface{}) error {
 	v, ok := i.(string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -100,7 +100,7 @@ func validateAddress(i interface{}) error {
 
 	_, err := sdk.AccAddressFromBech32(v)
 	if err != nil {
-		return fmt.Errorf("invalid address: %w", err)
+		return fmt.Errorf("invalid fee collector address: %w", err)
 	}
 
 	return nil
