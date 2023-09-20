@@ -1018,6 +1018,8 @@ func (app *App) setupUpgradeHandlers() {
 					SlashingKeeper:      app.SlashingKeeper,
 					ParamsKeeper:        app.ParamsKeeper,
 					CapabilityKeeper:    app.CapabilityKeeper,
+					BuilderKeeper:       app.BuilderKeeper,
+					ContractManager:     app.ContractManagerKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1184,6 +1186,15 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(globalfee.ModuleName)
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
+
+	// MOTE: legacy subspaces for migration sdk47 only
+	paramsKeeper.Subspace(crontypes.StoreKey).WithKeyTable(crontypes.ParamKeyTable())
+	paramsKeeper.Subspace(feeburnertypes.StoreKey).WithKeyTable(feeburnertypes.ParamKeyTable())
+	paramsKeeper.Subspace(feetypes.StoreKey).WithKeyTable(feetypes.ParamKeyTable())
+	paramsKeeper.Subspace(tokenfactorytypes.StoreKey).WithKeyTable(tokenfactorytypes.ParamKeyTable())
+	paramsKeeper.Subspace(interchainqueriesmoduletypes.StoreKey).WithKeyTable(interchainqueriesmoduletypes.ParamKeyTable())
+	paramsKeeper.Subspace(interchaintxstypes.StoreKey).WithKeyTable(interchaintxstypes.ParamKeyTable())
+
 	return paramsKeeper
 }
 

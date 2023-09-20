@@ -1,9 +1,6 @@
 package nextupgrade
 
 import (
-	store "github.com/cosmos/cosmos-sdk/store/types"
-
-	"github.com/cosmos/gaia/v11/x/globalfee"
 	"github.com/neutron-org/neutron/app/upgrades"
 )
 
@@ -15,9 +12,4 @@ const (
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
-	StoreUpgrades: store.StoreUpgrades{
-		Added: []string{
-			globalfee.ModuleName,
-		},
-	},
 }

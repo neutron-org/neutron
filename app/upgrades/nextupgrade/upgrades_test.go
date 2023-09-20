@@ -1,6 +1,12 @@
 package nextupgrade_test
 
 import (
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 	"testing"
 
 	"github.com/neutron-org/neutron/app/params"
@@ -20,10 +26,40 @@ import (
 
 type UpgradeTestSuite struct {
 	testutil.IBCConnectionTestSuite
+	ctx sdk.Context
 }
 
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(UpgradeTestSuite))
+}
+
+func (suite *UpgradeTestSuite) SetupTest() {
+	suite.IBCConnectionTestSuite.SetupTest()
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := suite.ChainA.GetContext()
+	subspace, _ := app.ParamsKeeper.GetSubspace(crontypes.StoreKey)
+	pcron := crontypes.DefaultParams()
+	subspace.SetParamSet(ctx, &pcron)
+
+	subspace, _ = app.ParamsKeeper.GetSubspace(feeburnertypes.StoreKey)
+	p := feeburnertypes.NewParams(feeburnertypes.DefaultNeutronDenom, "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh")
+	subspace.SetParamSet(ctx, &p)
+
+	subspace, _ = app.ParamsKeeper.GetSubspace(feerefundertypes.StoreKey)
+	pFeeRefunder := feerefundertypes.DefaultParams()
+	subspace.SetParamSet(ctx, &pFeeRefunder)
+
+	subspace, _ = app.ParamsKeeper.GetSubspace(tokenfactorytypes.StoreKey)
+	pTokenfactory := tokenfactorytypes.DefaultParams()
+	subspace.SetParamSet(ctx, &pTokenfactory)
+
+	subspace, _ = app.ParamsKeeper.GetSubspace(icqtypes.StoreKey)
+	pICQTypes := icqtypes.DefaultParams()
+	subspace.SetParamSet(ctx, &pICQTypes)
+
+	subspace, _ = app.ParamsKeeper.GetSubspace(interchaintxstypes.StoreKey)
+	pICAtx := interchaintxstypes.DefaultParams()
+	subspace.SetParamSet(ctx, &pICAtx)
 }
 
 func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {

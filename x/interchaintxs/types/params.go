@@ -17,6 +17,16 @@ var (
 	DefaultRegisterFee            = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)))
 )
 
+func ParamKeyTable() paramtypes.KeyTable {
+	return paramtypes.NewKeyTable(
+		paramtypes.NewParamSetPair(
+			KeyMsgSubmitTxMaxMessages,
+			DefaultMsgSubmitTxMaxMessages,
+			validateMsgSubmitTxMaxMessages,
+		),
+	)
+}
+
 // NewParams creates a new Params instance
 func NewParams(msgSubmitTxMaxMessages uint64, registerFee sdk.Coins) Params {
 	return Params{
