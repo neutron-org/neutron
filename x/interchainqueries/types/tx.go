@@ -15,8 +15,10 @@ const (
 	MaxKVQueryKeysCount = 32
 )
 
-var _ sdk.Msg = &MsgSubmitQueryResult{}
-var _ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
+var (
+	_ sdk.Msg                            = &MsgSubmitQueryResult{}
+	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
+)
 
 func (msg MsgSubmitQueryResult) Route() string {
 	return RouterKey

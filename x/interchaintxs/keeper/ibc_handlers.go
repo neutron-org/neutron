@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"time"
+
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
 
@@ -100,6 +101,9 @@ func (k *Keeper) HandleChanOpenAck(
 		CounterpartyChannelID: counterpartyChannelID,
 		CounterpartyVersion:   counterpartyVersion,
 	})
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrJSONMarshal, "failed to marshal OpenAckDetails: %v", err)
+	}
 
 	_, err = k.sudoKeeper.Sudo(ctx, icaOwner.GetContract(), payload)
 	if err != nil {

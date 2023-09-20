@@ -1,13 +1,14 @@
 package nextupgrade_test
 
 import (
+	"testing"
+
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
-	"testing"
 
 	"github.com/neutron-org/neutron/app/params"
 
@@ -26,7 +27,6 @@ import (
 
 type UpgradeTestSuite struct {
 	testutil.IBCConnectionTestSuite
-	ctx sdk.Context
 }
 
 func TestKeeperTestSuite(t *testing.T) {

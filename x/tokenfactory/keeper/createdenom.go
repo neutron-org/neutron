@@ -3,8 +3,9 @@ package keeper
 import (
 	"fmt"
 
+	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
@@ -93,7 +94,7 @@ func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err e
 
 		feeCollectorAddr, err := sdk.AccAddressFromBech32(params.FeeCollectorAddress)
 		if err != nil {
-			return sdkerrors.Wrapf(err, "wrong fee collector address: %v", err)
+			return errors.Wrapf(err, "wrong fee collector address: %v", err)
 		}
 
 		err = k.bankKeeper.SendCoins(
@@ -103,7 +104,7 @@ func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err e
 		)
 
 		if err != nil {
-			return sdkerrors.Wrap(err, "unable to send coins to fee collector")
+			return errors.Wrap(err, "unable to send coins to fee collector")
 		}
 	}
 

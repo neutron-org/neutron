@@ -2,8 +2,9 @@ package transfer_test
 
 import (
 	"fmt"
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"testing"
+
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"

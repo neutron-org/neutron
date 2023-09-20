@@ -2,8 +2,9 @@ package keeper_test
 
 import (
 	"fmt"
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"testing"
+
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -105,7 +106,6 @@ func TestHandleTimeout(t *testing.T) {
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("SudoTimeout error"))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
-
 }
 
 func TestHandleChanOpenAck(t *testing.T) {

@@ -3,9 +3,10 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	keeper2 "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
-	"testing"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
@@ -486,7 +487,8 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	// Craft CancelSubmitAdminProposal message
 	msg, err = json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
-			AdminProposal: bindings.AdminProposal{ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg}}},
+			AdminProposal: bindings.AdminProposal{ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg}},
+		},
 	})
 	suite.NoError(err)
 
