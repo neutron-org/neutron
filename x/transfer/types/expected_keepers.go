@@ -4,17 +4,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
-// ContractManagerKeeper defines the expected interface needed to add ack information about sudo failure.
-type ContractManagerKeeper interface {
+type WasmKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
-	AddContractFailure(ctx sdk.Context, packet *channeltypes.Packet, address, ackType string, ack *channeltypes.Acknowledgement)
-	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) ([]byte, error)
-	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
-	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
+	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
 
 type FeeRefunderKeeper interface {

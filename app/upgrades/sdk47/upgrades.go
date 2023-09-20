@@ -12,12 +12,16 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
 	"github.com/neutron-org/neutron/app/upgrades"
+	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
+	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 
@@ -72,21 +76,13 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Setting pob params...")
-		treasury := keepers.FeeBurnerKeeper.GetParams(ctx).TreasuryAddress
-		_, data, err := bech32.DecodeAndConvert(treasury)
+		err = setPobParams(ctx, keepers.FeeBurnerKeeper, keepers.BuilderKeeper)
 		if err != nil {
 			return nil, err
 		}
 
-		builderParams := buildertypes.Params{
-			MaxBundleSize:          2,
-			EscrowAccountAddress:   data,
-			ReserveFee:             sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-			MinBidIncrement:        sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-			FrontRunningProtection: true,
-			ProposerFee:            math.LegacyNewDecWithPrec(25, 2),
-		}
-		err = keepers.BuilderKeeper.SetParams(ctx, builderParams)
+		ctx.Logger().Info("Setting sudo callback limit...")
+		err = setContractManagerParams(ctx, keepers.ContractManager)
 		if err != nil {
 			return nil, err
 		}
@@ -94,6 +90,31 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info("Upgrade complete")
 		return vm, nil
 	}
+}
+
+func setPobParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, builderKeeper builderkeeper.Keeper) error {
+	treasury := feeBurnerKeeper.GetParams(ctx).TreasuryAddress
+	_, data, err := bech32.DecodeAndConvert(treasury)
+	if err != nil {
+		return err
+	}
+
+	builderParams := buildertypes.Params{
+		MaxBundleSize:          2,
+		EscrowAccountAddress:   data,
+		ReserveFee:             sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
+		MinBidIncrement:        sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
+		FrontRunningProtection: true,
+		ProposerFee:            math.LegacyNewDecWithPrec(25, 2),
+	}
+	return builderKeeper.SetParams(ctx, builderParams)
+}
+
+func setContractManagerParams(ctx sdk.Context, keeper contractmanagerkeeper.Keeper) error {
+	cmParams := contractmanagertypes.Params{
+		SudoCallGasLimit: contractmanagertypes.DefaultSudoCallGasLimit,
+	}
+	return keeper.SetParams(ctx, cmParams)
 }
 
 func migrateCronParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, codec codec.Codec) error {
@@ -114,7 +135,7 @@ func migrateCronParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, store
 func migrateFeeRefunderParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, codec codec.Codec) error {
 	store := ctx.KVStore(storeKey)
 	var currParams feerefundertypes.Params
-	subspace, _ := paramsKeepers.GetSubspace(crontypes.StoreKey)
+	subspace, _ := paramsKeepers.GetSubspace(feerefundertypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
 
 	if err := currParams.Validate(); err != nil {
@@ -177,6 +198,7 @@ func migrateInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keep
 	var currParams interchaintxstypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(interchaintxstypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
+	currParams.RegisterFee = interchaintxstypes.DefaultRegisterFee
 
 	if err := currParams.Validate(); err != nil {
 		return err

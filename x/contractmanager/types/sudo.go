@@ -5,8 +5,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 )
 
-const TransferPort = "transfer"
-
 // MessageTxQueryResult is passed to a contract's sudo() entrypoint when a tx was submitted
 // for a transaction query.
 type MessageTxQueryResult struct {
@@ -25,30 +23,26 @@ type MessageKVQueryResult struct {
 	} `json:"kv_query_result"`
 }
 
-// MessageTimeout is passed to a contract's sudo() entrypoint when an interchain
-// transaction failed with a timeout.
-type MessageTimeout struct {
-	Timeout struct {
-		Request channeltypes.Packet `json:"request"`
-	} `json:"timeout"`
+// MessageSudoCallback is passed to a contract's sudo() entrypoint when an interchain
+// transaction ended up with Success/Error or timed out.
+type MessageSudoCallback struct {
+	Response *ResponseSudoPayload `json:"response,omitempty"`
+	Error    *ErrorSudoPayload    `json:"error,omitempty"`
+	Timeout  *TimeoutPayload      `json:"timeout,omitempty"`
 }
 
-// MessageResponse is passed to a contract's sudo() entrypoint when an interchain
-// transaction was executed successfully.
-type MessageResponse struct {
-	Response struct {
-		Request channeltypes.Packet `json:"request"`
-		Data    []byte              `json:"data"` // Message data
-	} `json:"response"`
+type ResponseSudoPayload struct {
+	Request channeltypes.Packet `json:"request"`
+	Data    []byte              `json:"data"` // Message data
 }
 
-// MessageError is passed to a contract's sudo() entrypoint when an interchain
-// transaction was executed with an error.
-type MessageError struct {
-	Error struct {
-		Request channeltypes.Packet `json:"request"`
-		Details string              `json:"details"`
-	} `json:"error"`
+type ErrorSudoPayload struct {
+	Request channeltypes.Packet `json:"request"`
+	Details string              `json:"details"`
+}
+
+type TimeoutPayload struct {
+	Request channeltypes.Packet `json:"request"`
 }
 
 // MessageOnChanOpenAck is passed to a contract's sudo() entrypoint when an interchain

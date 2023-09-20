@@ -17,6 +17,8 @@ service Msg {
     // this line is used by starport scaffolding # proto/tx/rpc
 }
 
+// this line is used by starport scaffolding # proto/tx/message
+
 // MsgUpdateParams is the MsgUpdateParams request type.
 //
 // Since: 0.47

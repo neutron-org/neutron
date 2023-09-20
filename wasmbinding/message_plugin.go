@@ -707,6 +707,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
+		RegisterFee:         reg.RegisterFee,
 	}
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")
