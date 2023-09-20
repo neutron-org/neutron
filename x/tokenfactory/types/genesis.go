@@ -1,7 +1,7 @@
 package types
 
 import (
-	"cosmossdk.io/errors"
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -30,7 +30,7 @@ func (gs GenesisState) Validate() error {
 
 	for _, denom := range gs.GetFactoryDenoms() {
 		if seenDenoms[denom.GetDenom()] {
-			return errors.Wrapf(ErrInvalidGenesis, "duplicate denom: %s", denom.GetDenom())
+			return errorsmod.Wrapf(ErrInvalidGenesis, "duplicate denom: %s", denom.GetDenom())
 		}
 		seenDenoms[denom.GetDenom()] = true
 
@@ -42,7 +42,7 @@ func (gs GenesisState) Validate() error {
 		if denom.AuthorityMetadata.Admin != "" {
 			_, err = sdk.AccAddressFromBech32(denom.AuthorityMetadata.Admin)
 			if err != nil {
-				return errors.Wrapf(ErrInvalidAuthorityMetadata, "Invalid admin address (%s)", err)
+				return errorsmod.Wrapf(ErrInvalidAuthorityMetadata, "Invalid admin address (%s)", err)
 			}
 		}
 	}

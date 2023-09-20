@@ -166,7 +166,7 @@ func TestResubmitFailure(t *testing.T) {
 	failure2, err := k.GetFailure(ctx, contractAddr, failureID2)
 	require.NoError(t, err)
 	err = k.ResubmitFailure(ctx, contractAddr, failure2)
-	require.ErrorContains(t, err, "cannot resubmit failure ack")
+	require.ErrorContains(t, err, "cannot resubmit failure")
 	// failure is still there
 	failureAfter2, err := k.GetFailure(ctx, contractAddr, failureID2)
 	require.NoError(t, err)
@@ -200,7 +200,7 @@ func TestResubmitFailure(t *testing.T) {
 	failure4, err := k.GetFailure(ctx, contractAddr, failureID4)
 	require.NoError(t, err)
 	err = k.ResubmitFailure(ctx, contractAddr, failure4)
-	require.ErrorContains(t, err, "cannot resubmit failure ack")
+	require.ErrorContains(t, err, "cannot resubmit failure")
 	// failure is still there
 	failureAfter4, err := k.GetFailure(ctx, contractAddr, failureID4)
 	require.NoError(t, err)
@@ -234,7 +234,7 @@ func TestResubmitFailure(t *testing.T) {
 	failure6, err := k.GetFailure(ctx, contractAddr, failureID6)
 	require.NoError(t, err)
 	err = k.ResubmitFailure(ctx, contractAddr, failure6)
-	require.ErrorContains(t, err, "cannot resubmit failure ack")
+	require.ErrorContains(t, err, "cannot resubmit failure")
 	// failure is still there
 	failureAfter6, err := k.GetFailure(ctx, contractAddr, failureID6)
 	require.NoError(t, err)

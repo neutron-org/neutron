@@ -440,7 +440,7 @@ func New(
 		appCodec,
 		keys[crisistypes.StoreKey],
 		invCheckPeriod,
-		app.BankKeeper,
+		&app.BankKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -490,9 +490,10 @@ func New(
 		keys[contractmanagermoduletypes.StoreKey],
 		keys[contractmanagermoduletypes.MemStoreKey],
 		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper)
+	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
@@ -500,7 +501,8 @@ func New(
 		keys[feeburnertypes.StoreKey],
 		keys[feeburnertypes.MemStoreKey],
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
@@ -512,7 +514,7 @@ func New(
 		app.TransferKeeper.Keeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 	)
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
@@ -531,7 +533,7 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		scopedTransferKeeper,
 		app.FeeKeeper,
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
@@ -558,7 +560,7 @@ func New(
 		app.IBCKeeper.ConnectionKeeper,
 		app.IBCKeeper.ClientKeeper,
 		app.SlashingKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		app.AccountKeeper,
 		app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
 		// Since the keeper is only used to send reward to provider chain
@@ -573,14 +575,21 @@ func New(
 		app.keys[tokenfactorytypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
+
+	app.BankKeeper.BaseSendKeeper = *app.BankKeeper.BaseSendKeeper.SetHooks(
+		banktypes.NewMultiBankHooks(
+			app.TokenFactoryKeeper.Hooks(),
+		))
 
 	app.BuilderKeeper = builderkeeper.NewKeeperWithRewardsAddressProvider(
 		appCodec,
 		keys[buildertypes.StoreKey],
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		// 25% of rewards should be sent to the redistribute address
 		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -622,10 +631,11 @@ func New(
 		keys[interchainqueriesmoduletypes.StoreKey],
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.IBCKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		app.ContractManagerKeeper,
 		interchainqueriesmodulekeeper.Verifier{},
 		interchainqueriesmodulekeeper.TransactionVerifier{},
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
@@ -637,9 +647,10 @@ func New(
 		app.FeeKeeper,
 		app.BankKeeper,
 		app.FeeBurnerKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper)
+	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper, &app.ContractManagerKeeper), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
@@ -650,7 +661,7 @@ func New(
 		appCodec,
 		keys[wasm.StoreKey],
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		nil,
 		nil,
 		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
@@ -669,7 +680,7 @@ func New(
 	wasmHooks.ContractKeeper = &app.WasmKeeper
 
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
-	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
+	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(
 		app.TransferKeeper,
@@ -1161,7 +1172,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 
 	paramsKeeper.Subspace(authtypes.ModuleName)
-	paramsKeeper.Subspace(banktypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
@@ -1171,17 +1181,9 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
-	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
-
-	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
-	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
-	paramsKeeper.Subspace(wasm.ModuleName)
-	paramsKeeper.Subspace(feetypes.ModuleName)
-	paramsKeeper.Subspace(feeburnertypes.ModuleName)
-	paramsKeeper.Subspace(crontypes.ModuleName)
 	paramsKeeper.Subspace(globalfee.ModuleName)
 
+	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
 	return paramsKeeper
 }
 

@@ -32,6 +32,9 @@ type (
 		contractManagerKeeper types.ContractManagerKeeper
 		headerVerifier        types.HeaderVerifier
 		transactionVerifier   types.TransactionVerifier
+		// the address capable of executing a MsgUpdateParams message. Typically, this
+		// should be the x/adminmodule module account.
+		authority string
 	}
 )
 
@@ -44,6 +47,7 @@ func NewKeeper(
 	contractManagerKeeper types.ContractManagerKeeper,
 	headerVerifier types.HeaderVerifier,
 	transactionVerifier types.TransactionVerifier,
+	authority string,
 ) *Keeper {
 	return &Keeper{
 		cdc:                   cdc,
@@ -54,6 +58,7 @@ func NewKeeper(
 		contractManagerKeeper: contractManagerKeeper,
 		headerVerifier:        headerVerifier,
 		transactionVerifier:   transactionVerifier,
+		authority:             authority,
 	}
 }
 
@@ -408,6 +413,10 @@ func (k Keeper) calculateTxQueryRemoval(ctx sdk.Context, queryID, limit uint64) 
 	}
 	result.CompleteRemoval = true
 	return result
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // TxQueryToRemove contains data related to a single query listed for removal and needed in the

@@ -31,6 +31,7 @@ type (
 		sudoKeeper          types.WasmKeeper
 		bankKeeper          types.BankKeeper
 		feeBurnerKeeper     types.FeeBurnerKeeper
+		authority           string
 	}
 )
 
@@ -44,6 +45,7 @@ func NewKeeper(
 	feeKeeper types.FeeRefunderKeeper,
 	bankKeeper types.BankKeeper,
 	feeBurnerKeeper types.FeeBurnerKeeper,
+	authority string,
 ) *Keeper {
 	return &Keeper{
 		Codec:               cdc,
@@ -55,6 +57,7 @@ func NewKeeper(
 		feeKeeper:           feeKeeper,
 		bankKeeper:          bankKeeper,
 		feeBurnerKeeper:     feeBurnerKeeper,
+		authority:           authority,
 	}
 }
 
@@ -74,7 +77,7 @@ func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) 
 	treasury := k.feeBurnerKeeper.GetParams(ctx).TreasuryAddress
 	treasuryAddress, err := sdk.AccAddressFromBech32(treasury)
 	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert treasury, bech32 to AccAddress: %s: %w", treasury, err)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert treasury, bech32 to AccAddress: %s: %s", treasury, err.Error())
 	}
 
 	err = k.bankKeeper.SendCoins(ctx, payer, treasuryAddress, fee)
@@ -82,4 +85,8 @@ func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) 
 		return errors.Wrapf(err, "failed send fee(%s) from %s to %s", fee, payer, treasury)
 	}
 	return nil
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }

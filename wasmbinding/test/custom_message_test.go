@@ -65,7 +65,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
 	err := suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
-		sdk.NewCoins(sdk.NewInt64Coin(tokenfactorytypes.DefaultNeutronDenom, 10_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
+		0,
 		FeeCollectorAddress,
 	))
 	suite.Require().NoError(err)
@@ -430,18 +431,23 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	// Set admin so that we can execute this proposal without permission error
 	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
 
+	executeMsg := fmt.Sprintf(`
+{
+  "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+  "authority": "%s",
+  "plan": {
+    "name": "TestPlane",
+    "height": "150",
+    "info": "TestInfo"
+  }
+}
+`, suite.neutron.BankKeeper.GetAuthority())
 	// Craft SubmitAdminProposal message
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
 			AdminProposal: bindings.AdminProposal{
-				SoftwareUpgradeProposal: &bindings.SoftwareUpgradeProposal{
-					Title:       "Test",
-					Description: "Test",
-					Plan: bindings.Plan{
-						Name:   "TestPlan",
-						Height: 150,
-						Info:   "TestInfo",
-					},
+				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{
+					Message: executeMsg,
 				},
 			},
 		},
@@ -471,16 +477,16 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 
 	// Check CancelSubmitAdminProposal
 
+	executeMsg = fmt.Sprintf(`
+				{
+                "@type": "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
+                "authority": "%s"
+}
+`, suite.neutron.BankKeeper.GetAuthority())
 	// Craft CancelSubmitAdminProposal message
 	msg, err = json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
-			AdminProposal: bindings.AdminProposal{
-				CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
-					Title:       "Test",
-					Description: "Test",
-				},
-			},
-		},
+			AdminProposal: bindings.AdminProposal{ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg}}},
 	})
 	suite.NoError(err)
 
@@ -506,19 +512,24 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
+	executeMsg := fmt.Sprintf(`
+				{
+                "@type": "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
+                "authority": "%s"
+}
+`, suite.neutron.BankKeeper.GetAuthority())
+
 	// Craft  message with 2 proposals
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
 			AdminProposal: bindings.AdminProposal{
-				CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
-					Title:       "Test",
-					Description: "Test",
+				ClientUpdateProposal: &bindings.ClientUpdateProposal{
+					Title:              "aaa",
+					Description:        "ddafds",
+					SubjectClientId:    "sdfsdf",
+					SubstituteClientId: "sdfsd",
 				},
-				ClearAdminProposal: &bindings.ClearAdminProposal{
-					Title:       "Test",
-					Description: "Test",
-					Contract:    "Test",
-				},
+				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg},
 			},
 		},
 	})

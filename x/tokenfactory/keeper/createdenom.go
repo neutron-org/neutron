@@ -3,54 +3,51 @@ package keeper
 import (
 	"fmt"
 
-	"cosmossdk.io/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
-// CreateDenom creates new denom with `factory/{creatorAddr}/{subdenom}` name.
-// Charges creatorAddr fee for creation
+// ConvertToBaseToken converts a fee amount in a whitelisted fee token to the base fee token amount
 func (k Keeper) CreateDenom(ctx sdk.Context, creatorAddr, subdenom string) (newTokenDenom string, err error) {
-	err = k.chargeFeeForDenomCreation(ctx, creatorAddr)
-	if err != nil {
-		return "", errors.Wrapf(types.ErrUnableToCharge, "denom fee collection error: %v", err)
-	}
-
 	denom, err := k.validateCreateDenom(ctx, creatorAddr, subdenom)
 	if err != nil {
-		return "", errors.Wrapf(types.ErrInvalidDenom, "denom validation error: %v", err)
+		return "", err
+	}
+
+	err = k.chargeForCreateDenom(ctx, creatorAddr)
+	if err != nil {
+		return "", err
 	}
 
 	err = k.createDenomAfterValidation(ctx, creatorAddr, denom)
-	if err != nil {
-		return "", errors.Wrap(err, "create denom after validation error")
-	}
-
-	return denom, nil
+	return denom, err
 }
 
 // Runs CreateDenom logic after the charge and all denom validation has been handled.
 // Made into a second function for genesis initialization.
 func (k Keeper) createDenomAfterValidation(ctx sdk.Context, creatorAddr, denom string) (err error) {
-	denomMetaData := banktypes.Metadata{
-		DenomUnits: []*banktypes.DenomUnit{{
-			Denom:    denom,
-			Exponent: 0,
-		}},
-		Base: denom,
-	}
+	_, exists := k.bankKeeper.GetDenomMetaData(ctx, denom)
+	if !exists {
+		denomMetaData := banktypes.Metadata{
+			DenomUnits: []*banktypes.DenomUnit{{
+				Denom:    denom,
+				Exponent: 0,
+			}},
+			Base: denom,
+		}
 
-	k.bankKeeper.SetDenomMetaData(ctx, denomMetaData)
+		k.bankKeeper.SetDenomMetaData(ctx, denomMetaData)
+	}
 
 	authorityMetadata := types.DenomAuthorityMetadata{
 		Admin: creatorAddr,
 	}
 	err = k.setAuthorityMetadata(ctx, denom, authorityMetadata)
 	if err != nil {
-		return errors.Wrapf(types.ErrInvalidAuthorityMetadata, "unable to set authority metadata: %v", err)
+		return err
 	}
 
 	k.addDenomFromCreator(ctx, creatorAddr, denom)
@@ -66,7 +63,7 @@ func (k Keeper) validateCreateDenom(ctx sdk.Context, creatorAddr, subdenom strin
 
 	denom, err := types.GetTokenDenom(creatorAddr, subdenom)
 	if err != nil {
-		return "", errors.Wrapf(types.ErrTokenDenom, "wrong denom token: %v", err)
+		return "", err
 	}
 
 	_, found := k.bankKeeper.GetDenomMetaData(ctx, denom)
@@ -77,31 +74,42 @@ func (k Keeper) validateCreateDenom(ctx sdk.Context, creatorAddr, subdenom strin
 	return denom, nil
 }
 
-func (k Keeper) chargeFeeForDenomCreation(ctx sdk.Context, creatorAddr string) (err error) {
-	// Send creation fee to community pool
-	creationFee := k.GetParams(ctx).DenomCreationFee
-	accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
-	if err != nil {
-		return errors.Wrapf(types.ErrUnableToCharge, "wrong creator address: %v", err)
-	}
-
+func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err error) {
 	params := k.GetParams(ctx)
 
-	if len(creationFee) > 0 {
+	// ORIGINAL: if DenomCreationFee is non-zero, transfer the tokens from the creator
+	// account to community pool
+	// MODIFIED: if DenomCreationFee is non-zero, transfer the tokens from the creator
+	// account to feeCollectorAddr
+	if len(params.DenomCreationFee) != 0 {
+		accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
+		if err != nil {
+			return err
+		}
+		// Instead of funding community pool we send funds to fee collector addr
+		// if err := k.communityPoolKeeper.FundCommunityPool(ctx, params.DenomCreationFee, accAddr); err != nil {
+		//	return err
+		//}
+
 		feeCollectorAddr, err := sdk.AccAddressFromBech32(params.FeeCollectorAddress)
 		if err != nil {
-			return errors.Wrapf(types.ErrUnableToCharge, "wrong fee collector address: %v", err)
+			return sdkerrors.Wrapf(err, "wrong fee collector address: %v", err)
 		}
 
 		err = k.bankKeeper.SendCoins(
 			ctx,
 			accAddr, feeCollectorAddr,
-			creationFee,
+			params.DenomCreationFee,
 		)
 
 		if err != nil {
-			return errors.Wrap(err, "unable to send coins to fee collector")
+			return sdkerrors.Wrap(err, "unable to send coins to fee collector")
 		}
+	}
+
+	// if DenomCreationGasConsume is non-zero, consume the gas
+	if params.DenomCreationGasConsume != 0 {
+		ctx.GasMeter().ConsumeGas(params.DenomCreationGasConsume, "consume denom creation gas")
 	}
 
 	return nil

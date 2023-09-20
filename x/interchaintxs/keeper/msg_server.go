@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
@@ -175,4 +174,22 @@ func SerializeCosmosTx(cdc codec.BinaryCodec, msgs []*codectypes.Any) (bz []byte
 	}
 
 	return bz, nil
+}
+
+// UpdateParams updates the module parameters
+func (k Keeper) UpdateParams(goCtx context.Context, req *ictxtypes.MsgUpdateParams) (*ictxtypes.MsgUpdateParamsResponse, error) {
+	if err := req.ValidateBasic(); err != nil {
+		return nil, err
+	}
+	authority := k.GetAuthority()
+	if authority != req.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if err := k.SetParams(ctx, req.Params); err != nil {
+		return nil, err
+	}
+
+	return &ictxtypes.MsgUpdateParamsResponse{}, nil
 }

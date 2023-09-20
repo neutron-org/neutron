@@ -152,6 +152,7 @@ func migrateTokenFactoryParams(ctx sdk.Context, paramsKeepers paramskeeper.Keepe
 	var currParams tokenfactorytypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(tokenfactorytypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
+	currParams.DenomCreationGasConsume = 0
 
 	if err := currParams.Validate(); err != nil {
 		return err

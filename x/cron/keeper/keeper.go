@@ -35,6 +35,7 @@ type (
 		memKey        storetypes.StoreKey
 		accountKeeper types.AccountKeeper
 		WasmMsgServer types.WasmMsgServer
+		authority     string
 	}
 )
 
@@ -43,13 +44,19 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	accountKeeper types.AccountKeeper,
+	authority string,
 ) *Keeper {
 	return &Keeper{
 		cdc:           cdc,
 		storeKey:      storeKey,
 		memKey:        memKey,
 		accountKeeper: accountKeeper,
+		authority:     authority,
 	}
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
