@@ -4,7 +4,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -23,9 +22,6 @@ type BankKeeper interface {
 
 type ContractManagerKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
-	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) ([]byte, error)
-	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
-	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
 	SudoKVQueryResult(ctx sdk.Context, contractAddress sdk.AccAddress, queryID uint64) ([]byte, error)
 	SudoTxQueryResult(ctx sdk.Context, contractAddress sdk.AccAddress, queryID uint64, height ibcclienttypes.Height, data []byte) ([]byte, error)
 }

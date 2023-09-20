@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/app/params"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"testing"
 	"time"
 
@@ -21,12 +23,16 @@ import (
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
 
+const TestTreasury = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"
+
 func TestRegisterInterchainAccount(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
-	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
-	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, cmKeeper, nil, icaKeeper, nil)
+	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, icaKeeper, nil, bankKeeper, feeburnerKeeper)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	msgRegAcc := types.MsgRegisterInterchainAccount{
@@ -41,18 +47,44 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.ErrorContains(t, err, "failed to parse address")
 	require.Nil(t, resp)
 
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.ErrorContains(t, err, "is not a contract address")
 	require.Nil(t, resp)
 
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
+	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
+	require.Nil(t, resp)
+
+	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)))
+
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	feeburnerKeeper.EXPECT().GetParams(ctx).Return(feeburnertypes.Params{
+		TreasuryAddress: TestTreasury,
+	})
+	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestTreasury), msgRegAcc.RegisterFee)
 	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(fmt.Errorf("failed to register ica"))
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.ErrorContains(t, err, "failed to RegisterInterchainAccount")
 	require.Nil(t, resp)
 
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	feeburnerKeeper.EXPECT().GetParams(ctx).Return(feeburnertypes.Params{
+		TreasuryAddress: TestTreasury,
+	})
+	bankKeeper.EXPECT().
+		SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestTreasury), msgRegAcc.RegisterFee).
+		Return(fmt.Errorf("failed to send coins"))
+	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
+	require.ErrorContains(t, err, "failed to send coins")
+	require.Nil(t, resp)
+
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	feeburnerKeeper.EXPECT().GetParams(ctx).Return(feeburnertypes.Params{
+		TreasuryAddress: TestTreasury,
+	})
+	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestTreasury), msgRegAcc.RegisterFee)
 	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(nil)
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.NoError(t, err)
@@ -63,10 +95,12 @@ func TestSubmitTx(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
-	cmKeeper := mock_types.NewMockContractManagerKeeper(ctrl)
+	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	refundKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
-	icak, ctx, _ := testkeeper.InterchainTxsKeeper(t, cmKeeper, refundKeeper, icaKeeper, channelKeeper)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, refundKeeper, icaKeeper, channelKeeper, bankKeeper, feeburnerKeeper)
 	goCtx := sdk.WrapSDKContext(ctx)
 
 	cosmosMsg := codectypes.Any{
@@ -97,7 +131,7 @@ func TestSubmitTx(t *testing.T) {
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "failed to parse address")
 
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "is not a contract address")
@@ -105,21 +139,21 @@ func TestSubmitTx(t *testing.T) {
 	params := icak.GetParams(ctx)
 	maxMsgs := params.GetMsgSubmitTxMaxMessages()
 	submitMsg.Msgs = make([]*codectypes.Any, maxMsgs+1)
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "MsgSubmitTx contains more messages than allowed")
 	submitMsg.Msgs = []*codectypes.Any{&cosmosMsg}
 
 	portID := "icacontroller-" + testutil.TestOwnerAddress + ".ica0"
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return("", false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "failed to GetActiveChannelID for port")
 
 	activeChannel := "channel-0"
-	// cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	// wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	// icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	// currCodec := icak.Codec
 	// icak.Codec = &codec.AminoCodec{}
@@ -128,7 +162,7 @@ func TestSubmitTx(t *testing.T) {
 	// require.Nil(t, resp)
 	// require.ErrorContains(t, err, "only ProtoCodec is supported for receiving messages on the host chain")
 
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(uint64(0), false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
@@ -136,7 +170,7 @@ func TestSubmitTx(t *testing.T) {
 	require.ErrorContains(t, err, "sequence send not found")
 
 	sequence := uint64(100)
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(fmt.Errorf("failed to lock fees"))
@@ -153,7 +187,7 @@ func TestSubmitTx(t *testing.T) {
 	}
 
 	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(submitMsg.Timeout) * time.Second).UnixNano()
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)
@@ -162,7 +196,7 @@ func TestSubmitTx(t *testing.T) {
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "failed to SendTx")
 
-	cmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return(activeChannel, true)
 	channelKeeper.EXPECT().GetNextSequenceSend(ctx, portID, activeChannel).Return(sequence, true)
 	refundKeeper.EXPECT().LockFees(ctx, contractAddress, feerefundertypes.NewPacketID(portID, activeChannel, sequence), submitMsg.Fee).Return(nil)

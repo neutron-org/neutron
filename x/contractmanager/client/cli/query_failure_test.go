@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"testing"
 
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-
 	"github.com/neutron-org/neutron/app"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
@@ -40,8 +38,8 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 		require.NoError(t, err)
 		acc := sdktypes.AccAddress(pub.Address())
 		failure := types.Failure{
-			Address: acc.String(),
-			Packet:  &channeltypes.Packet{},
+			Address:     acc.String(),
+			SudoPayload: []byte("&channeltypes.Packet{}"),
 		}
 		nullify.Fill(&failure)
 		state.FailuresList = append(state.FailuresList, failure)

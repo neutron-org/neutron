@@ -534,7 +534,7 @@ func New(
 		app.BankKeeper,
 		scopedTransferKeeper,
 		app.FeeKeeper,
-		app.ContractManagerKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 	)
 
 	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
@@ -633,8 +633,10 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.IBCKeeper.ChannelKeeper,
 		app.ICAControllerKeeper,
-		app.ContractManagerKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		app.FeeKeeper,
+		app.BankKeeper,
+		app.FeeBurnerKeeper,
 	)
 
 	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper)
@@ -669,7 +671,10 @@ func New(
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
 
-	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
+	transferIBCModule := transferSudo.NewIBCModule(
+		app.TransferKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+	)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
 	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
 	app.HooksTransferIBCModule = &ibcHooksMiddleware

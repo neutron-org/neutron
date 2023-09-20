@@ -4,6 +4,7 @@ package bindings
 import (
 	"cosmossdk.io/math"
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -72,8 +73,9 @@ type SubmitTxResponse struct {
 
 // RegisterInterchainAccount creates account on remote chain.
 type RegisterInterchainAccount struct {
-	ConnectionId        string `json:"connection_id"`
-	InterchainAccountId string `json:"interchain_account_id"`
+	ConnectionId        string    `json:"connection_id"`
+	InterchainAccountId string    `json:"interchain_account_id"`
+	RegisterFee         sdk.Coins `json:"register_fee"`
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.

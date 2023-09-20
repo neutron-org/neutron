@@ -4,6 +4,7 @@ package neutron.interchaintxs.v1;
 option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
 import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 import "google/api/http.proto";
 import "google/api/annotations.proto";
@@ -26,6 +27,10 @@ message MsgRegisterInterchainAccount {
   string connection_id = 2 [ (gogoproto.moretags) = "yaml:\"connection_id\"" ];
   string interchain_account_id = 3
       [ (gogoproto.moretags) = "yaml:\"interchain_account_id\"" ];
+  repeated cosmos.base.v1beta1.Coin register_fee = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
 }
 
 // MsgRegisterInterchainAccountResponse is the response type for
