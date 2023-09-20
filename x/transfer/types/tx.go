@@ -26,6 +26,8 @@ func (msg *MsgTransfer) GetSigners() []sdk.AccAddress {
 
 // MsgOrigTransferHandler - 1) helps to bind `/neutron.transfer.Msg/Transfer` as a handler for `ibc.applications.transfer.v1.MsgTransfer`
 // 2) converts `ibc.applications.transfer.v1.MsgTransfer` into neutron.transfer.MsgTransfer` before processing.
+//
+//nolint:revive // we cant rearrange arguments since we need to meet the type requirement
 func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(types.MsgTransfer)
 	if err := dec(in); err != nil {
