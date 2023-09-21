@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"io"
 	"io/fs"
 	"net/http"
@@ -1184,7 +1185,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(globalfee.ModuleName)
+	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccvconsumertypes.ParamKeyTable())
 

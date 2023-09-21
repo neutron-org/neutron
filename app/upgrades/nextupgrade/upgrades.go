@@ -1,11 +1,8 @@
 package nextupgrade
 
 import (
-	"fmt"
-	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
-
 	"cosmossdk.io/math"
-
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,15 +38,9 @@ func CreateUpgradeHandler(
 	codec codec.Codec,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-		ctx.Logger().Info("Starting module migrations...")
-		vm, err := mm.RunMigrations(ctx, configurator, vm)
-		if err != nil {
-			return vm, err
-		}
-
 		ctx.Logger().Info("Migrating channel capability...")
 		// https://github.com/cosmos/ibc-go/blob/v7.0.1/docs/migrations/v5-to-v6.md#upgrade-proposal
-		if err := v6.MigrateICS27ChannelCapability(ctx, codec, storeKeys.GetKey(capabilitytypes.StoreKey), keepers.CapabilityKeeper, icacontrollertypes.SubModuleName); err != nil {
+		if err := v6.MigrateICS27ChannelCapability(ctx, codec, storeKeys.GetKey(capabilitytypes.StoreKey), keepers.CapabilityKeeper, interchaintxstypes.ModuleName); err != nil {
 			return nil, err
 		}
 
@@ -84,7 +75,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Setting pob params...")
-		err = setPobParams(ctx, keepers.FeeBurnerKeeper, keepers.BuilderKeeper)
+		err := setPobParams(ctx, keepers.FeeBurnerKeeper, keepers.BuilderKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -106,6 +97,12 @@ func CreateUpgradeHandler(
 		err = migrateRewardDenoms(ctx, keepers)
 		if err != nil {
 			ctx.Logger().Error("failed to update reward denoms", "err", err)
+			return vm, err
+		}
+
+		ctx.Logger().Info("Starting module migrations...")
+		vm, err = mm.RunMigrations(ctx, configurator, vm)
+		if err != nil {
 			return vm, err
 		}
 
@@ -173,8 +170,8 @@ func migrateTokenFactoryParams(ctx sdk.Context, paramsKeepers paramskeeper.Keepe
 	store := ctx.KVStore(storeKey)
 	var currParams tokenfactorytypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(tokenfactorytypes.StoreKey)
+	subspace.Set(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, uint64(0))
 	subspace.GetParamSet(ctx, &currParams)
-	currParams.DenomCreationGasConsume = 0
 
 	if err := currParams.Validate(); err != nil {
 		return err
@@ -233,18 +230,6 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 
 func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Implementing GlobalFee Params...")
-
-	if !keepers.GlobalFeeSubspace.Has(ctx, types.ParamStoreKeyMinGasPrices) {
-		return fmt.Errorf("minimum_gas_prices param not found")
-	}
-
-	if !keepers.GlobalFeeSubspace.Has(ctx, types.ParamStoreKeyBypassMinFeeMsgTypes) {
-		return fmt.Errorf("bypass_min_fee_msg_types param not found")
-	}
-
-	if !keepers.GlobalFeeSubspace.Has(ctx, types.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage) {
-		return fmt.Errorf("max_total_bypass_min_fee_msg_gas_usage param not found")
-	}
 
 	// global fee is empty set, set global fee to equal to 0.05 USD (for 200k of gas) in appropriate coin
 	// As of June 22nd, 2023 this is

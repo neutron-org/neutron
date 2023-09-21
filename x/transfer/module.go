@@ -3,6 +3,7 @@ package transfer
 import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -96,6 +97,15 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 
 	cfg.MsgServer().RegisterService(&neutrontypes.MsgServiceDescOrig, am.keeper)
+
+	m := keeper.NewMigrator(am.keeper.Keeper)
+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateTraces); err != nil {
+		panic(fmt.Sprintf("failed to migrate transfer app from version 1 to 2: %v", err))
+	}
+
+	if err := cfg.RegisterMigration(types.ModuleName, 2, m.MigrateTotalEscrowForDenom); err != nil {
+		panic(fmt.Sprintf("failed to migrate transfer app from version 2 to 3: %v", err))
+	}
 }
 
 type AppModuleBasic struct {
