@@ -2,6 +2,7 @@ package nextupgrade
 
 import (
 	"fmt"
+	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 
 	"cosmossdk.io/math"
 
@@ -48,7 +49,7 @@ func CreateUpgradeHandler(
 
 		ctx.Logger().Info("Migrating channel capability...")
 		// https://github.com/cosmos/ibc-go/blob/v7.0.1/docs/migrations/v5-to-v6.md#upgrade-proposal
-		if err := v6.MigrateICS27ChannelCapability(ctx, codec, storeKeys.GetKey(capabilitytypes.StoreKey), keepers.CapabilityKeeper, interchaintxstypes.ModuleName); err != nil {
+		if err := v6.MigrateICS27ChannelCapability(ctx, codec, storeKeys.GetKey(capabilitytypes.StoreKey), keepers.CapabilityKeeper, icacontrollertypes.SubModuleName); err != nil {
 			return nil, err
 		}
 
