@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"testing"
+
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"testing"
 
 	tmdb "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
@@ -26,7 +27,8 @@ func InterchainTxsKeeper(
 	icaControllerKeeper types.ICAControllerKeeper,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
-	feeburnerKeeper types.FeeBurnerKeeper) (*keeper.Keeper, sdk.Context) {
+	feeburnerKeeper types.FeeBurnerKeeper,
+) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 

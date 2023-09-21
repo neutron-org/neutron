@@ -26,7 +26,7 @@ package app_test
 //	simapp.GetSimulatorFlags()
 // }
 //
-//type SimApp interface {
+// type SimApp interface {
 //	GetBaseApp() *baseapp.BaseApp
 //	AppCodec() codec.Codec
 //	SimulationManager() *module.SimulationManager
@@ -51,7 +51,7 @@ package app_test
 //// `starport chain simulate -v --numBlocks 200 --blockSize 50`
 //// Running as go benchmark test:
 //// `go test -benchmem -run=^$ -bench ^BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true`
-//func BenchmarkSimulation(b *testing.B) {
+// func BenchmarkSimulation(b *testing.B) {
 //	simapp.FlagEnabledValue = true
 //	simapp.FlagCommitValue = true
 //

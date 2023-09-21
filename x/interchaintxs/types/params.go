@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/neutron-org/neutron/app/params"
@@ -16,6 +17,16 @@ var (
 	DefaultMsgSubmitTxMaxMessages = uint64(16)
 	DefaultRegisterFee            = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)))
 )
+
+func ParamKeyTable() paramtypes.KeyTable {
+	return paramtypes.NewKeyTable(
+		paramtypes.NewParamSetPair(
+			KeyMsgSubmitTxMaxMessages,
+			DefaultMsgSubmitTxMaxMessages,
+			validateMsgSubmitTxMaxMessages,
+		),
+	)
+}
 
 // NewParams creates a new Params instance
 func NewParams(msgSubmitTxMaxMessages uint64, registerFee sdk.Coins) Params {

@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"testing"
+
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"testing"
 
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 

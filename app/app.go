@@ -217,7 +217,7 @@ var (
 		buildertypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasm.ModuleName:                               {authtypes.Burner},
+		wasmtypes.ModuleName:                          {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
@@ -307,7 +307,7 @@ type App struct {
 
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	WasmKeeper wasm.Keeper
+	WasmKeeper wasmkeeper.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -347,30 +347,30 @@ func New(
 	invCheckPeriod uint,
 	encodingConfig appparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
-	wasmOpts []wasm.Option,
+	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	config := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
+	cfg := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
 	// 0 - unlimited amount of txs
 	maxTx := 0
-	mempool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), maxTx, config)
+	memPool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), maxTx, cfg)
 
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
-	bApp.SetMempool(mempool)
+	bApp.SetMempool(memPool)
 
 	keys := sdk.NewKVStoreKeys(
 		authzkeeper.StoreKey, authtypes.StoreKey, banktypes.StoreKey, slashingtypes.StoreKey,
 		paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
-		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
+		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, buildertypes.StoreKey,
 	)
@@ -403,7 +403,7 @@ func New(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedInterTxKeeper := app.CapabilityKeeper.ScopeToModule(interchaintxstypes.ModuleName)
 	scopedCCVConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ccvconsumertypes.ModuleName)
 
@@ -598,7 +598,7 @@ func New(
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
-		panic(fmt.Sprintf("error while reading wasm config: %s", err))
+		panic(fmt.Sprintf("error while reading wasm cfg: %s", err))
 	}
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
@@ -657,9 +657,9 @@ func New(
 		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
 	wasmOpts = append(wasmOpts, queryPlugins)
 
-	app.WasmKeeper = wasm.NewKeeper(
+	app.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
-		keys[wasm.StoreKey],
+		keys[wasmtypes.StoreKey],
 		app.AccountKeeper,
 		&app.BankKeeper,
 		nil,
@@ -721,7 +721,7 @@ func New(
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, ibcStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
-		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
+		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -792,7 +792,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasm.ModuleName,
+		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
@@ -823,7 +823,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasm.ModuleName,
+		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
@@ -859,7 +859,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasm.ModuleName,
+		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
@@ -918,10 +918,10 @@ func New(
 			},
 			IBCKeeper:         app.IBCKeeper,
 			WasmConfig:        &wasmConfig,
-			TXCounterStoreKey: keys[wasm.StoreKey],
+			TXCounterStoreKey: keys[wasmtypes.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
 			buildKeeper:       app.BuilderKeeper,
-			mempool:           mempool,
+			mempool:           memPool,
 			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
 		},
 		app.Logger(),
@@ -934,7 +934,7 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	handler := proposalhandler.NewProposalHandler(
-		mempool,
+		memPool,
 		bApp.Logger(),
 		anteHandler,
 		encodingConfig.TxConfig.TxEncoder(),
@@ -946,7 +946,7 @@ func New(
 	checkTxHandler := proposalhandler.NewCheckTxHandler(
 		app.BaseApp,
 		encodingConfig.TxConfig.TxDecoder(),
-		mempool,
+		memPool,
 		anteHandler,
 		chainID,
 	)
@@ -989,25 +989,25 @@ func New(
 func (app *App) setupUpgradeStoreLoaders() {
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
-		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+		panic(fmt.Sprintf("failed to read upgrd info from disk %s", err))
 	}
 
 	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		return
 	}
 
-	for _, upgrade := range Upgrades {
-		if upgradeInfo.Name == upgrade.UpgradeName {
-			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrade.StoreUpgrades))
+	for _, upgrd := range Upgrades {
+		if upgradeInfo.Name == upgrd.UpgradeName {
+			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrd.StoreUpgrades))
 		}
 	}
 }
 
 func (app *App) setupUpgradeHandlers() {
-	for _, upgrade := range Upgrades {
+	for _, upgrd := range Upgrades {
 		app.UpgradeKeeper.SetUpgradeHandler(
-			upgrade.UpgradeName,
-			upgrade.CreateUpgradeHandler(
+			upgrd.UpgradeName,
+			upgrd.CreateUpgradeHandler(
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
@@ -1018,6 +1018,8 @@ func (app *App) setupUpgradeHandlers() {
 					SlashingKeeper:      app.SlashingKeeper,
 					ParamsKeeper:        app.ParamsKeeper,
 					CapabilityKeeper:    app.CapabilityKeeper,
+					BuilderKeeper:       app.BuilderKeeper,
+					ContractManager:     app.ContractManagerKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1184,6 +1186,15 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(globalfee.ModuleName)
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
+
+	// MOTE: legacy subspaces for migration sdk47 only
+	paramsKeeper.Subspace(crontypes.StoreKey).WithKeyTable(crontypes.ParamKeyTable())
+	paramsKeeper.Subspace(feeburnertypes.StoreKey).WithKeyTable(feeburnertypes.ParamKeyTable())
+	paramsKeeper.Subspace(feetypes.StoreKey).WithKeyTable(feetypes.ParamKeyTable())
+	paramsKeeper.Subspace(tokenfactorytypes.StoreKey).WithKeyTable(tokenfactorytypes.ParamKeyTable())
+	paramsKeeper.Subspace(interchainqueriesmoduletypes.StoreKey).WithKeyTable(interchainqueriesmoduletypes.ParamKeyTable())
+	paramsKeeper.Subspace(interchaintxstypes.StoreKey).WithKeyTable(interchaintxstypes.ParamKeyTable())
+
 	return paramsKeeper
 }
 

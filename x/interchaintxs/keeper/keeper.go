@@ -1,8 +1,10 @@
 package keeper
 
 import (
-	"cosmossdk.io/errors"
 	"fmt"
+
+	"cosmossdk.io/errors"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/cometbft/cometbft/libs/log"

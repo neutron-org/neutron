@@ -1,8 +1,9 @@
 package contractmanager_test
 
 import (
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"testing"
+
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
 
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
@@ -29,6 +30,7 @@ func TestGenesis(t *testing.T) {
 		channeltypes.Packet{
 			Sequence: 2,
 		}, nil)
+	require.NoError(t, err)
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
 

@@ -13,9 +13,9 @@ var (
 	KeyDenomCreationGasConsume = []byte("DenomCreationGasConsume")
 	KeyFeeCollectorAddress     = []byte("FeeCollectorAddress")
 	// We don't want to charge users for denom creation
-	DefaultDenomCreationFee        sdk.Coins = nil
-	DefaultDenomCreationGasConsume uint64    = 0
-	DefaultFeeCollectorAddress               = ""
+	DefaultDenomCreationFee        sdk.Coins
+	DefaultDenomCreationGasConsume uint64
+	DefaultFeeCollectorAddress     = ""
 )
 
 // ParamKeyTable the param key table for tokenfactory module.
@@ -47,11 +47,11 @@ func (p Params) Validate() error {
 	}
 
 	if err := validateDenomCreationFee(p.DenomCreationFee); err != nil {
-		return err
+		return fmt.Errorf("failed to validate params: %w", err)
 	}
 
 	if err := validateFeeCollectorAddress(p.FeeCollectorAddress); err != nil {
-		return err
+		return fmt.Errorf("failed to validate params: %w", err)
 	}
 
 	return nil

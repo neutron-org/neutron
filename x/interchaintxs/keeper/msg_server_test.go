@@ -2,10 +2,11 @@ package keeper_test
 
 import (
 	"fmt"
-	"github.com/neutron-org/neutron/app/params"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	"testing"
 	"time"
+
+	"github.com/neutron-org/neutron/app/params"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"

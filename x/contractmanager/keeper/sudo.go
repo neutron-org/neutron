@@ -22,7 +22,7 @@ func (k Keeper) HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress)
 
 func PrepareSudoCallbackMessage(request channeltypes.Packet, ack *channeltypes.Acknowledgement) ([]byte, error) {
 	m := types.MessageSudoCallback{}
-	if ack != nil && ack.GetError() == "" {
+	if ack != nil && ack.GetError() == "" { //nolint:gocritic //
 		m.Response = &types.ResponseSudoPayload{
 			Data:    ack.GetResult(),
 			Request: request,
