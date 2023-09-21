@@ -3,6 +3,8 @@ package nextupgrade_test
 import (
 	"testing"
 
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -20,9 +22,10 @@ import (
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/testutil"
-	"github.com/stretchr/testify/suite"
 )
 
 type UpgradeTestSuite struct {
@@ -137,4 +140,29 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
 	requiredDenoms := []string{params.DefaultDenom, "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"}
 	suite.Require().Equal(requiredDenoms, denoms)
+}
+
+func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
+	var (
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext()
+	)
+
+	//emulate lack of ProposalIDKey like on a real mainnet
+	store := ctx.KVStore(app.GetKey(adminmoduletypes.StoreKey))
+	store.Delete(adminmoduletypes.ProposalIDKey)
+
+	_, err := app.AdminmoduleKeeper.GetProposalID(ctx)
+	suite.Require().Error(err)
+
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	id, err := app.AdminmoduleKeeper.GetProposalID(ctx)
+	suite.Require().NoError(err)
+	suite.Require().Equal(uint64(1), id)
 }

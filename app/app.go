@@ -2,12 +2,13 @@ package app
 
 import (
 	"fmt"
-	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
 
@@ -1021,6 +1022,7 @@ func (app *App) setupUpgradeHandlers() {
 					CapabilityKeeper:    app.CapabilityKeeper,
 					BuilderKeeper:       app.BuilderKeeper,
 					ContractManager:     app.ContractManagerKeeper,
+					AdminModule:         app.AdminmoduleKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},

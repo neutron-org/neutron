@@ -1,8 +1,9 @@
 package nextupgrade
 
 import (
-	"cosmossdk.io/math"
 	"fmt"
+
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,6 +17,9 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
+
 	"github.com/neutron-org/neutron/app/upgrades"
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
@@ -26,8 +30,6 @@ import (
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 
 func CreateUpgradeHandler(
@@ -103,6 +105,12 @@ func CreateUpgradeHandler(
 		err = migrateRewardDenoms(ctx, keepers)
 		if err != nil {
 			ctx.Logger().Error("failed to update reward denoms", "err", err)
+			return vm, err
+		}
+
+		err = migrateAdminModule(ctx, keepers)
+		if err != nil {
+			ctx.Logger().Error("failed to migrate admin module", "err", err)
 			return vm, err
 		}
 
@@ -278,6 +286,16 @@ func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	keepers.CcvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
 
 	ctx.Logger().Info("Finished migrating reward denoms")
+
+	return nil
+}
+
+func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+	ctx.Logger().Info("Migrating admin module...")
+
+	keepers.AdminModule.SetProposalID(ctx, 1)
+
+	ctx.Logger().Info("Finished migrating admin module")
 
 	return nil
 }
