@@ -44,6 +44,12 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
+		ctx.Logger().Info("Starting module migrations...")
+		vm, err := mm.RunMigrations(ctx, configurator, vm)
+		if err != nil {
+			return vm, err
+		}
+
 		ctx.Logger().Info("Migrating cron module parameters...")
 		if err := migrateCronParams(ctx, keepers.ParamsKeeper, storeKeys.GetKey(crontypes.StoreKey), codec); err != nil {
 			return nil, err
@@ -75,7 +81,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Setting pob params...")
-		err := setPobParams(ctx, keepers.FeeBurnerKeeper, keepers.BuilderKeeper)
+		err = setPobParams(ctx, keepers.FeeBurnerKeeper, keepers.BuilderKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -97,12 +103,6 @@ func CreateUpgradeHandler(
 		err = migrateRewardDenoms(ctx, keepers)
 		if err != nil {
 			ctx.Logger().Error("failed to update reward denoms", "err", err)
-			return vm, err
-		}
-
-		ctx.Logger().Info("Starting module migrations...")
-		vm, err = mm.RunMigrations(ctx, configurator, vm)
-		if err != nil {
 			return vm, err
 		}
 
