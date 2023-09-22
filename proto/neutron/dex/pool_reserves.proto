@@ -1,0 +1,35 @@
+syntax = "proto3";
+package duality.dex;
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+import "gogoproto/gogo.proto";
+import "duality/dex/trade_pair_id.proto";
+
+message PoolReservesKey {
+	TradePairID tradePairID = 1;           
+	int64 TickIndexTakerToMaker = 2;
+	uint64 Fee = 3;
+}
+
+message PoolReserves {
+  PoolReservesKey key = 1;
+  string reservesMakerDenom = 2 [
+                 (gogoproto.moretags)   = "yaml:\"reservesMakerDenom\"",
+                 (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+                 (gogoproto.jsontag) = "reservesMakerDenom",
+                 (gogoproto.nullable)   = false
+                 ];
+  string priceTakerToMaker = 3 [
+                (gogoproto.moretags)   = "yaml:\"priceTakerToMaker\"",
+                (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
+                (gogoproto.nullable)   = false,
+                (gogoproto.jsontag) = "priceTakerToMaker"
+                ];
+  string priceOppositeTakerToMaker = 4 [
+                (gogoproto.moretags)   = "yaml:\"priceOppositeTakerToMaker\"",
+                (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
+                (gogoproto.nullable)   = false,
+                (gogoproto.jsontag) = "priceOppositeTakerToMaker"
+                ];
+}
+

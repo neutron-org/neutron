@@ -7,7 +7,10 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	epochstypes "github.com/neutron-org/neutron/x/epochs/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
+	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
@@ -47,5 +50,30 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 
 		// feeburner
 		"/neutron.feeburner.Query/Params": &feeburnertypes.QueryParamsResponse{},
+
+		// dex
+		"/dualitylabs.duality.dex.Query/Params":                    &dextypes.QueryParamsResponse{},
+		"/dualitylabs.duality.dex.Query/LimitOrderTrancheUser":     &dextypes.QueryGetLimitOrderTrancheUserResponse{},
+		"/dualitylabs.duality.dex.Query/LimitOrderTranche":         &dextypes.QueryGetLimitOrderTrancheResponse{},
+		"/dualitylabs.duality.dex.Query/UserDepositsAll":           &dextypes.QueryAllUserDepositsResponse{},
+		"/dualitylabs.duality.dex.Query/UserLimitOrdersAll":        &dextypes.QueryAllUserLimitOrdersResponse{},
+		"/dualitylabs.duality.dex.Query/InactiveLimitOrderTranche": &dextypes.QueryGetInactiveLimitOrderTrancheResponse{},
+		"/dualitylabs.duality.dex.Query/PoolReserves":              &dextypes.QueryGetPoolReservesResponse{},
+		"/dualitylabs.duality.dex.Query/EstimateMultiHopSwap":      &dextypes.QueryEstimateMultiHopSwapResponse{},
+		"/dualitylabs.duality.dex.Query/EstimatePlaceLimitOrder":   &dextypes.QueryEstimatePlaceLimitOrderResponse{},
+
+		// incentives
+		"/dualitylabs.duality.incentives.Query/GetModuleStatus":         &incentivestypes.GetModuleStatusResponse{},
+		"/dualitylabs.duality.incentives.Query/GetGaugeByID":            &incentivestypes.GetGaugeByIDResponse{},
+		"/dualitylabs.duality.incentives.Query/GetGauges":               &incentivestypes.GetGaugesResponse{},
+		"/dualitylabs.duality.incentives.Query/GetStakeByID":            &incentivestypes.GetStakeByIDResponse{},
+		"/dualitylabs.duality.incentives.Query/GetStakes":               &incentivestypes.GetStakesResponse{},
+		"/dualitylabs.duality.incentives.Query/GetFutureRewardEstimate": &incentivestypes.GetFutureRewardEstimateResponse{},
+		"/dualitylabs.duality.incentives.Query/GetAccountHistory":       &incentivestypes.GetAccountHistoryResponse{},
+		"/dualitylabs.duality.incentives.Query/GetGaugeQualifyingValue": &incentivestypes.GetGaugeQualifyingValueResponse{},
+
+		// epochs
+		"/dualitylabs.duality.epochs.Query/EpochInfos":   &epochstypes.QueryEpochsInfoResponse{},
+		"/dualitylabs.duality.epochs.Query/CurrentEpoch": &epochstypes.QueryCurrentEpochResponse{},
 	}
 }

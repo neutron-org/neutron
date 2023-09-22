@@ -1,0 +1,34 @@
+syntax = "proto3";
+package duality.dex;
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+import "gogoproto/gogo.proto";
+import "duality/dex/trade_pair_id.proto";
+import "duality/dex/tx.proto";
+
+message LimitOrderTrancheUser {
+  TradePairID tradePairID = 1;
+  int64 tickIndexTakerToMaker = 2;
+  string trancheKey = 3;
+  string address = 4; 
+  string sharesOwned = 5  [
+      (gogoproto.moretags)   = "yaml:\"sharesOwned\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable)   = false,
+      (gogoproto.jsontag) = "sharesOwned"
+  ];  
+  string sharesWithdrawn = 6  [
+      (gogoproto.moretags)   = "yaml:\"sharesWithdrawn\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable)   = false,
+      (gogoproto.jsontag) = "sharesWithdrawn"
+  ]; 
+  string sharesCancelled = 7  [
+      (gogoproto.moretags)   = "yaml:\"sharesCancelled\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable)   = false,
+      (gogoproto.jsontag) = "sharesCancelled"
+  ];
+  LimitOrderType orderType = 8;
+}
+

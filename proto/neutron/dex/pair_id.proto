@@ -1,0 +1,9 @@
+syntax = "proto3";
+package duality.dex;
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+
+message PairID {
+  string token0 = 1; 
+  string token1 = 2; 
+}

@@ -1,0 +1,19 @@
+syntax = "proto3";
+package duality.incentives;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/neutron-org/neutron/x/incentives/types";
+
+// Describes the total distributions to an account over time
+message AccountHistory {
+  // the address of this account
+  string account = 1;
+
+  // coins describes the total amount of coins that have been distributed to this user over time
+  repeated cosmos.base.v1beta1.Coin coins = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}

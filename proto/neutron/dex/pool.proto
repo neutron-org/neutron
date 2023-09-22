@@ -1,0 +1,14 @@
+syntax = "proto3";
+package duality.dex;
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+import "gogoproto/gogo.proto";
+import "duality/dex/pool_reserves.proto";
+
+// NOTE: This struct is never actually stored in the KV store. It is merely a convenience wrapper for holding both sides of a pool.
+
+message Pool {
+    uint64 ID = 1;
+    PoolReserves lower_tick0 = 2;
+    PoolReserves upper_tick1 = 3;
+}
