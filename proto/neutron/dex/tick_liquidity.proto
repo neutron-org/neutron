@@ -1,0 +1,17 @@
+syntax = "proto3";
+package duality.dex;
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+import "gogoproto/gogo.proto";
+import "duality/dex/limit_order_tranche.proto";
+import "duality/dex/pool_reserves.proto";
+
+
+message TickLiquidity {
+  oneof liquidity {
+    PoolReserves poolReserves = 1;
+    LimitOrderTranche limitOrderTranche = 2;
+  }
+
+}
+

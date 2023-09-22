@@ -1,0 +1,12 @@
+syntax = "proto3";
+package duality.dex;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  repeated uint64 fee_tiers = 1; 
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package duality.dex;
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+import "google/protobuf/timestamp.proto";
+
+import "gogoproto/gogo.proto";
+
+message LimitOrderExpiration {
+  // see limitOrderTranche.proto for details on goodTilDate
+  google.protobuf.Timestamp expirationTime = 1 [
+                                               (gogoproto.stdtime) = true,
+                                               (gogoproto.nullable) = false
+                                               ];
+  bytes trancheRef = 2;
+
+}
+

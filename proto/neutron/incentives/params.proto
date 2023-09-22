@@ -1,0 +1,17 @@
+syntax = "proto3";
+package duality.incentives;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/x/incentives/types";
+
+// Params holds parameters for the incentives module
+message Params {
+  // distr_epoch_identifier is what epoch type distribution will be triggered by
+  // (day, week, etc.)
+  string distr_epoch_identifier = 1
+      [ (gogoproto.moretags) = "yaml:\"distr_epoch_identifier\"" ];
+  
+  uint64 max_gauges = 2
+      [ (gogoproto.moretags) = "yaml:\"max_gauges\"" ];
+}
