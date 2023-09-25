@@ -1,7 +1,6 @@
 package upgrades
 
 import (
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
@@ -48,7 +47,7 @@ type UpgradeKeepers struct {
 	BuilderKeeper         builderkeeper.Keeper
 	ContractManagerKeeper contractmanagerkeeper.Keeper
 	AdminModuleKeeper     adminmodulekeeper.Keeper
-	WasmMsgServer         wasmtypes.MsgServer
+	WasmMsgServer         WasmMsgServer
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace

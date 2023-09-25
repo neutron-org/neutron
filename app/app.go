@@ -291,7 +291,7 @@ type App struct {
 	CronKeeper          cronkeeper.Keeper
 	RouterKeeper        *routerkeeper.Keeper
 
-	WasmMsgServer wasmtypes.MsgServer
+	WasmMsgServer *wasmtypes.MsgServer
 
 	RouterModule router.AppModule
 
@@ -683,8 +683,9 @@ func New(
 	)
 	wasmHooks.ContractKeeper = &app.WasmKeeper
 
-	app.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper) // to use in upgrade
-	app.CronKeeper.WasmMsgServer = app.WasmMsgServer
+	wasmMsgServer := wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
+	app.WasmMsgServer = &wasmMsgServer // to use in upgrade
+	app.CronKeeper.WasmMsgServer = *app.WasmMsgServer
 	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(
@@ -1026,7 +1027,7 @@ func (app *App) setupUpgradeHandlers() {
 					BuilderKeeper:         app.BuilderKeeper,
 					ContractManagerKeeper: app.ContractManagerKeeper,
 					AdminModuleKeeper:     app.AdminmoduleKeeper,
-					WasmMsgServer:         app.WasmMsgServer,
+					WasmMsgServer:         *app.WasmMsgServer,
 					GlobalFeeSubspace:     app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace:   app.GetSubspace(ccvconsumertypes.ModuleName),
 				},

@@ -115,10 +115,12 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		err = migrateDaoContracts(ctx, keepers)
-		if err != nil {
-			ctx.Logger().Error("failed to migrate DAO contracts", "err", err)
-			return vm, err
+		if plan.Info != "testing_turn_off_contract_migrations" {
+			err = migrateDaoContracts(ctx, keepers)
+			if err != nil {
+				ctx.Logger().Error("failed to migrate DAO contracts", "err", err)
+				return vm, err
+			}
 		}
 
 		ctx.Logger().Info("Upgrade complete")
@@ -429,8 +431,8 @@ func migrateDaoContracts(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 }
 
 func migrateContract(ctx sdk.Context, keepers *upgrades.UpgradeKeepers, contractAddress string, codeId uint64, msg string) error {
-	_, err := keepers.WasmMsgServer.MigrateContract(ctx.Context(), &wasmtypes.MsgMigrateContract{
-		Sender:   "maindao",
+	_, err := keepers.WasmMsgServer.MigrateContract(sdk.WrapSDKContext(ctx), &wasmtypes.MsgMigrateContract{
+		Sender:   "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff", // main dao
 		Contract: contractAddress,
 		CodeID:   codeId,
 		Msg:      []byte(msg),

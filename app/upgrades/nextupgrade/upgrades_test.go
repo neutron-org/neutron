@@ -1,6 +1,7 @@
 package nextupgrade_test
 
 import (
+	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
 	"testing"
 
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
@@ -24,7 +25,6 @@ import (
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/testutil"
 )
 
@@ -66,11 +66,16 @@ func (suite *UpgradeTestSuite) SetupTest() {
 }
 
 func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
+	//ctrl := gomock.NewController(suite.T())
+	//defer ctrl.Finish()
+
 	var (
 		app               = suite.GetNeutronZoneApp(suite.ChainA)
 		globalFeeSubspace = app.GetSubspace(globalfee.ModuleName)
 		ctx               = suite.ChainA.GetContext()
 	)
+	//app.WasmMsgServer = mock_upgrades.NewMockWasmMsgServer(ctrl)
+	//feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 
 	suite.Require().True(globalFeeSubspace.Has(ctx, globalfeetypes.ParamStoreKeyMinGasPrices))
 	suite.Require().True(globalFeeSubspace.Has(ctx, globalfeetypes.ParamStoreKeyBypassMinFeeMsgTypes))
@@ -78,7 +83,7 @@ func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
 
 	upgrade := upgradetypes.Plan{
 		Name:   nextupgrade.UpgradeName,
-		Info:   "some text here",
+		Info:   "testing_turn_off_contract_migrations",
 		Height: 100,
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
@@ -129,7 +134,7 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 
 	upgrade := upgradetypes.Plan{
 		Name:   nextupgrade.UpgradeName,
-		Info:   "some text here",
+		Info:   "testing_turn_off_contract_migrations",
 		Height: 100,
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
@@ -157,7 +162,7 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 
 	upgrade := upgradetypes.Plan{
 		Name:   nextupgrade.UpgradeName,
-		Info:   "some text here",
+		Info:   "testing_turn_off_contract_migrations",
 		Height: 100,
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
