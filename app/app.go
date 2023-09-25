@@ -291,6 +291,8 @@ type App struct {
 	CronKeeper          cronkeeper.Keeper
 	RouterKeeper        *routerkeeper.Keeper
 
+	WasmMsgServer wasmtypes.MsgServer
+
 	RouterModule router.AppModule
 
 	HooksTransferIBCModule *ibchooks.IBCMiddleware
@@ -681,7 +683,8 @@ func New(
 	)
 	wasmHooks.ContractKeeper = &app.WasmKeeper
 
-	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
+	app.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper) // to use in upgrade
+	app.CronKeeper.WasmMsgServer = app.WasmMsgServer
 	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
 
 	transferIBCModule := transferSudo.NewIBCModule(
@@ -1013,18 +1016,19 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
-					FeeBurnerKeeper:     app.FeeBurnerKeeper,
-					CronKeeper:          app.CronKeeper,
-					IcqKeeper:           app.InterchainQueriesKeeper,
-					TokenFactoryKeeper:  app.TokenFactoryKeeper,
-					SlashingKeeper:      app.SlashingKeeper,
-					ParamsKeeper:        app.ParamsKeeper,
-					CapabilityKeeper:    app.CapabilityKeeper,
-					BuilderKeeper:       app.BuilderKeeper,
-					ContractManager:     app.ContractManagerKeeper,
-					AdminModule:         app.AdminmoduleKeeper,
-					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
-					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
+					FeeBurnerKeeper:       app.FeeBurnerKeeper,
+					CronKeeper:            app.CronKeeper,
+					IcqKeeper:             app.InterchainQueriesKeeper,
+					TokenFactoryKeeper:    app.TokenFactoryKeeper,
+					SlashingKeeper:        app.SlashingKeeper,
+					ParamsKeeper:          app.ParamsKeeper,
+					CapabilityKeeper:      app.CapabilityKeeper,
+					BuilderKeeper:         app.BuilderKeeper,
+					ContractManagerKeeper: app.ContractManagerKeeper,
+					AdminModuleKeeper:     app.AdminmoduleKeeper,
+					WasmMsgServer:         app.WasmMsgServer,
+					GlobalFeeSubspace:     app.GetSubspace(globalfee.ModuleName),
+					CcvConsumerSubspace:   app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,
 				app.AppCodec(),
