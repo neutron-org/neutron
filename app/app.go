@@ -352,6 +352,8 @@ func New(
 	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
+	overrideWasmVariables()
+
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -1248,4 +1250,12 @@ func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
 
 func (app *App) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+}
+
+// overrideWasmVariables overrides the wasm variables to:
+//   - allow for larger wasm files
+func overrideWasmVariables() {
+	// Override Wasm size limitation from WASMD.
+	wasmtypes.MaxWasmSize = 3 * 1024 * 1024
+	wasmtypes.MaxProposalWasmSize = wasmtypes.MaxWasmSize
 }
