@@ -148,7 +148,7 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 		ctx = suite.ChainA.GetContext()
 	)
 
-	//emulate lack of ProposalIDKey like on a real mainnet
+	// emulate lack of ProposalIDKey like on a real mainnet
 	store := ctx.KVStore(app.GetKey(adminmoduletypes.StoreKey))
 	store.Delete(adminmoduletypes.ProposalIDKey)
 

@@ -95,11 +95,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Migrating globalminfees module parameters...")
-		err = migrateGlobalFees(ctx, keepers)
-		if err != nil {
-			ctx.Logger().Error("failed to migrate GlobalFees", "err", err)
-			return vm, err
-		}
+		migrateGlobalFees(ctx, keepers)
 
 		ctx.Logger().Info("Updating ccv reward denoms...")
 		err = migrateRewardDenoms(ctx, keepers)
@@ -108,11 +104,7 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		err = migrateAdminModule(ctx, keepers)
-		if err != nil {
-			ctx.Logger().Error("failed to migrate admin module", "err", err)
-			return vm, err
-		}
+		migrateAdminModule(ctx, keepers)
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, nil
@@ -236,7 +228,7 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 	return nil
 }
 
-func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) {
 	ctx.Logger().Info("Implementing GlobalFee Params...")
 
 	// global fee is empty set, set global fee to equal to 0.05 USD (for 200k of gas) in appropriate coin
@@ -265,8 +257,6 @@ func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error 
 	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage, &types.DefaultmaxTotalBypassMinFeeMsgGasUsage)
 
 	ctx.Logger().Info("Max total bypass min fee msg gas usage set successfully")
-
-	return nil
 }
 
 func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
@@ -290,12 +280,10 @@ func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	return nil
 }
 
-func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) {
 	ctx.Logger().Info("Migrating admin module...")
 
 	keepers.AdminModule.SetProposalID(ctx, 1)
 
 	ctx.Logger().Info("Finished migrating admin module")
-
-	return nil
 }
