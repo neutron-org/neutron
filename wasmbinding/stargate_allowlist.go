@@ -26,6 +26,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/osmosis.tokenfactory.v1beta1.Query/Params":                 &tokenfactorytypes.QueryParamsResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata": &tokenfactorytypes.QueryDenomAuthorityMetadataResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator":      &tokenfactorytypes.QueryDenomsFromCreatorResponse{},
+		"/osmosis.tokenfactory.v1beta1.Query/BeforeSendHookAddress":  &tokenfactorytypes.QueryBeforeSendHookAddressResponse{},
 
 		// interchain accounts
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &types.QueryInterchainAccountResponse{},

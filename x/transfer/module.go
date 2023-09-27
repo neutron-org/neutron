@@ -1,22 +1,19 @@
 package transfer
 
 import (
-	"fmt"
-
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
-	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	wrapkeeper "github.com/neutron-org/neutron/x/transfer/keeper"
 	neutrontypes "github.com/neutron-org/neutron/x/transfer/types"
 )
@@ -27,19 +24,19 @@ import (
 */
 
 type IBCModule struct {
-	wrappedKeeper         wrapkeeper.KeeperTransferWrapper
-	keeper                keeper.Keeper
-	ContractManagerKeeper neutrontypes.ContractManagerKeeper
+	wrappedKeeper wrapkeeper.KeeperTransferWrapper
+	keeper        keeper.Keeper
+	sudoKeeper    neutrontypes.WasmKeeper
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper) IBCModule {
 	return IBCModule{
-		wrappedKeeper:         k,
-		keeper:                k.Keeper,
-		ContractManagerKeeper: k.ContractManagerKeeper,
-		IBCModule:             transfer.NewIBCModule(k.Keeper),
+		wrappedKeeper: k,
+		keeper:        k.Keeper,
+		sudoKeeper:    sudoKeeper,
+		IBCModule:     transfer.NewIBCModule(k.Keeper),
 	}
 }
 
@@ -96,10 +93,19 @@ func (am AppModule) IsAppModule() { // marker
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 
 	cfg.MsgServer().RegisterService(&neutrontypes.MsgServiceDescOrig, am.keeper)
+
+	m := keeper.NewMigrator(am.keeper.Keeper)
+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateTraces); err != nil {
+		panic(fmt.Sprintf("failed to migrate transfer app from version 1 to 2: %v", err))
+	}
+
+	if err := cfg.RegisterMigration(types.ModuleName, 2, m.MigrateTotalEscrowForDenom); err != nil {
+		panic(fmt.Sprintf("failed to migrate transfer app from version 2 to 3: %v", err))
+	}
 }
 
 type AppModuleBasic struct {
@@ -128,31 +134,4 @@ func (am AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
 // Name returns the capability module's name.
 func (am AppModule) Name() string {
 	return am.AppModuleBasic.Name()
-}
-
-func NewHandler(k wrapkeeper.KeeperTransferWrapper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
-		ctx = ctx.WithEventManager(sdk.NewEventManager())
-
-		switch msg := msg.(type) {
-		case *types.MsgTransfer:
-			neutronMsg := neutrontypes.MsgTransfer{
-				SourcePort:       msg.SourcePort,
-				SourceChannel:    msg.SourceChannel,
-				Token:            msg.Token,
-				Sender:           msg.Sender,
-				Receiver:         msg.Receiver,
-				TimeoutHeight:    msg.TimeoutHeight,
-				TimeoutTimestamp: msg.TimeoutTimestamp,
-				Fee:              feetypes.Fee{},
-				Memo:             msg.Memo,
-			}
-			res, err := k.Transfer(sdk.WrapSDKContext(ctx), &neutronMsg)
-			return sdk.WrapServiceResult(ctx, res, err)
-
-		default:
-			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
-			return nil, errors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-		}
-	}
 }

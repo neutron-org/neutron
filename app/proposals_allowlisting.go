@@ -11,6 +11,13 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/x/cron/types"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
@@ -46,7 +53,14 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*wasmtypes.MsgPinCodes,
 		*wasmtypes.MsgUnpinCodes,
 		*upgradetypes.MsgSoftwareUpgrade,
-		*upgradetypes.MsgCancelUpgrade:
+		*upgradetypes.MsgCancelUpgrade,
+		*tokenfactorytypes.MsgUpdateParams,
+		*interchainqueriestypes.MsgUpdateParams,
+		*interchaintxstypes.MsgUpdateParams,
+		*feeburnertypes.MsgUpdateParams,
+		*feerefundertypes.MsgUpdateParams,
+		*crontypes.MsgUpdateParams,
+		*contractmanagertypes.MsgUpdateParams:
 		return true
 	}
 	return false

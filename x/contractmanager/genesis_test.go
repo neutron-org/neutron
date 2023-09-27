@@ -3,6 +3,8 @@ package contractmanager_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/x/contractmanager/keeper"
+
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/require"
@@ -14,25 +16,34 @@ import (
 )
 
 func TestGenesis(t *testing.T) {
+	payload1, err := keeper.PrepareSudoCallbackMessage(
+		channeltypes.Packet{
+			Sequence: 1,
+		},
+		&channeltypes.Acknowledgement{
+			Response: &channeltypes.Acknowledgement_Result{
+				Result: []byte("Result"),
+			},
+		})
+	require.NoError(t, err)
+	payload2, err := keeper.PrepareSudoCallbackMessage(
+		channeltypes.Packet{
+			Sequence: 2,
+		}, nil)
+	require.NoError(t, err)
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
 
 		FailuresList: []types.Failure{
 			{
-				Address: "address1",
-				Id:      1,
-				AckType: types.Ack,
-				Packet: &channeltypes.Packet{
-					Sequence: 1,
-				},
+				Address:     "address1",
+				Id:          1,
+				SudoPayload: payload1,
 			},
 			{
-				Address: "address1",
-				Id:      2,
-				AckType: "timeout",
-				Packet: &channeltypes.Packet{
-					Sequence: 2,
-				},
+				Address:     "address1",
+				Id:          2,
+				SudoPayload: payload2,
 			},
 		},
 		// this line is used by starport scaffolding # genesis/test/state

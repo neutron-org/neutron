@@ -7,8 +7,8 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
@@ -21,16 +21,12 @@ type AccountKeeper interface {
 // BankKeeper defines the expected interface needed to retrieve account balances.
 type BankKeeper interface {
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
-	// Methods imported from bank should be defined here
+	SendCoins(ctx sdk.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error
 }
 
-type ContractManagerKeeper interface {
+type WasmKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
-	AddContractFailure(ctx sdk.Context, packet *channeltypes.Packet, address, ackType string, ack *channeltypes.Acknowledgement)
-	SudoResponse(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, msg []byte) ([]byte, error)
-	SudoError(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet, details string) ([]byte, error)
-	SudoTimeout(ctx sdk.Context, senderAddress sdk.AccAddress, request channeltypes.Packet) ([]byte, error)
-	SudoOnChanOpenAck(ctx sdk.Context, contractAddress sdk.AccAddress, details contractmanagertypes.OpenAckDetails) ([]byte, error)
+	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
 
 type ICAControllerKeeper interface {
@@ -51,4 +47,8 @@ type ChannelKeeper interface {
 	GetChannel(ctx sdk.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
 	GetNextSequenceSend(ctx sdk.Context, portID, channelID string) (uint64, bool)
 	GetConnection(ctx sdk.Context, connectionID string) (ibcexported.ConnectionI, error)
+}
+
+type FeeBurnerKeeper interface {
+	GetParams(ctx sdk.Context) feeburnertypes.Params
 }

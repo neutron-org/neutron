@@ -1,6 +1,7 @@
 package upgrades
 
 import (
+	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -8,11 +9,13 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
@@ -42,6 +45,8 @@ type UpgradeKeepers struct {
 	ParamsKeeper       paramskeeper.Keeper
 	CapabilityKeeper   *capabilitykeeper.Keeper
 	BuilderKeeper      builderkeeper.Keeper
+	ContractManager    contractmanagerkeeper.Keeper
+	AdminModule        adminmodulekeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace

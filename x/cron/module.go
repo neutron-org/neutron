@@ -102,12 +102,12 @@ var _ appmodule.AppModule = AppModule{}
 type AppModule struct {
 	AppModuleBasic
 
-	keeper *keeper.Keeper
+	keeper keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
-	keeper *keeper.Keeper,
+	keeper keeper.Keeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
@@ -129,6 +129,7 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 }
 
 // RegisterInvariants registers the invariants of the module. If an invariant deviates from its predicted value, the InvariantRegistry triggers appropriate logic (most often the chain will be halted)
@@ -140,14 +141,14 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.Ra
 	// Initialize global index to index in genesis state
 	cdc.MustUnmarshalJSON(gs, &genState)
 
-	InitGenesis(ctx, *am.keeper, genState)
+	InitGenesis(ctx, am.keeper, genState)
 
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	genState := ExportGenesis(ctx, *am.keeper)
+	genState := ExportGenesis(ctx, am.keeper)
 	return cdc.MustMarshalJSON(genState)
 }
 

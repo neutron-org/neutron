@@ -15,7 +15,10 @@ const (
 	MaxKVQueryKeysCount = 32
 )
 
-var _ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
+var (
+	_ sdk.Msg                            = &MsgSubmitQueryResult{}
+	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
+)
 
 func (msg MsgSubmitQueryResult) Route() string {
 	return RouterKey
@@ -64,6 +67,20 @@ func (msg MsgSubmitQueryResult) GetSigners() []sdk.AccAddress {
 	}
 	return []sdk.AccAddress{senderAddr}
 }
+
+// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
+func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	var header exported.ClientMessage
+	if err := unpacker.UnpackAny(msg.Result.GetBlock().GetHeader(), &header); err != nil {
+		return err
+	}
+
+	return unpacker.UnpackAny(msg.Result.GetBlock().GetNextBlockHeader(), &header)
+}
+
+//----------------------------------------------------------------
+
+var _ sdk.Msg = &MsgRegisterInterchainQuery{}
 
 func (msg MsgRegisterInterchainQuery) Route() string {
 	return RouterKey
@@ -123,15 +140,9 @@ func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{senderAddr}
 }
 
-// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	var header exported.ClientMessage
-	if err := unpacker.UnpackAny(msg.Result.GetBlock().GetHeader(), &header); err != nil {
-		return err
-	}
+//----------------------------------------------------------------
 
-	return unpacker.UnpackAny(msg.Result.GetBlock().GetNextBlockHeader(), &header)
-}
+var _ sdk.Msg = &MsgUpdateInterchainQueryRequest{}
 
 func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 	if msg.GetQueryId() == 0 {
@@ -186,6 +197,37 @@ func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 		panic(err.Error())
 	}
 	return []sdk.AccAddress{senderAddr}
+}
+
+//----------------------------------------------------------------
+
+var _ sdk.Msg = &MsgUpdateParams{}
+
+func (msg *MsgUpdateParams) Route() string {
+	return RouterKey
+}
+
+func (msg *MsgUpdateParams) Type() string {
+	return "update-params"
+}
+
+func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	authority, err := sdk.AccAddressFromBech32(msg.Authority)
+	if err != nil { // should never happen as valid basic rejects invalid addresses
+		panic(err.Error())
+	}
+	return []sdk.AccAddress{authority}
+}
+
+func (msg *MsgUpdateParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+func (msg *MsgUpdateParams) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
+		return errors.Wrap(err, "authority is invalid")
+	}
+	return nil
 }
 
 func validateKeys(keys []*KVKey) error {

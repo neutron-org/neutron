@@ -637,12 +637,12 @@ set_genesis_param signed_blocks_window                   "\"$SLASHING_SIGNED_BLO
 set_genesis_param min_signed_per_window                  "\"$SLASHING_MIN_SIGNED\","                   # slashing
 set_genesis_param slash_fraction_double_sign             "\"$SLASHING_FRACTION_DOUBLE_SIGN\","         # slashing
 set_genesis_param slash_fraction_downtime                "\"$SLASHING_FRACTION_DOWNTIME\""             # slashing
-set_genesis_param minimum_gas_prices                     "$MIN_GAS_PRICES,"                            # globalfee
+set_genesis_param minimum_gas_prices                     "$MIN_GAS_PRICES,"                             # globalfee
 set_genesis_param max_total_bypass_min_fee_msg_gas_usage "\"$MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE\"" # globalfee
 set_genesis_param_jq ".app_state.globalfee.params.bypass_min_fee_msg_types" "$BYPASS_MIN_FEE_MSG_TYPES" # globalfee
-
 set_genesis_param proposer_fee                "\"0.25\""                                    # builder(POB)
 set_genesis_param escrow_account_address      "\"$DAO_CONTRACT_ADDRESS_B64\","              # builder(POB)
+set_genesis_param sudo_call_gas_limit                "\"1000000\""                          # contractmanager
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2

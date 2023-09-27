@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
+
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -217,7 +219,7 @@ var (
 		buildertypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasm.ModuleName:                               {authtypes.Burner},
+		wasmtypes.ModuleName:                          {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
@@ -307,7 +309,7 @@ type App struct {
 
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	WasmKeeper wasm.Keeper
+	WasmKeeper wasmkeeper.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -347,30 +349,30 @@ func New(
 	invCheckPeriod uint,
 	encodingConfig appparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
-	wasmOpts []wasm.Option,
+	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	config := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
+	cfg := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
 	// 0 - unlimited amount of txs
 	maxTx := 0
-	mempool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), maxTx, config)
+	memPool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), maxTx, cfg)
 
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
-	bApp.SetMempool(mempool)
+	bApp.SetMempool(memPool)
 
 	keys := sdk.NewKVStoreKeys(
 		authzkeeper.StoreKey, authtypes.StoreKey, banktypes.StoreKey, slashingtypes.StoreKey,
 		paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
-		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasm.StoreKey, feetypes.StoreKey,
+		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, buildertypes.StoreKey,
 	)
@@ -403,7 +405,7 @@ func New(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedInterTxKeeper := app.CapabilityKeeper.ScopeToModule(interchaintxstypes.ModuleName)
 	scopedCCVConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ccvconsumertypes.ModuleName)
 
@@ -440,7 +442,7 @@ func New(
 		appCodec,
 		keys[crisistypes.StoreKey],
 		invCheckPeriod,
-		app.BankKeeper,
+		&app.BankKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -490,9 +492,10 @@ func New(
 		keys[contractmanagermoduletypes.StoreKey],
 		keys[contractmanagermoduletypes.MemStoreKey],
 		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper)
+	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
@@ -500,7 +503,8 @@ func New(
 		keys[feeburnertypes.StoreKey],
 		keys[feeburnertypes.MemStoreKey],
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
@@ -512,7 +516,7 @@ func New(
 		app.TransferKeeper.Keeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 	)
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
@@ -531,10 +535,10 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		scopedTransferKeeper,
 		app.FeeKeeper,
-		app.ContractManagerKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 	)
 
 	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
@@ -558,7 +562,7 @@ func New(
 		app.IBCKeeper.ConnectionKeeper,
 		app.IBCKeeper.ClientKeeper,
 		app.SlashingKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		app.AccountKeeper,
 		app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
 		// Since the keeper is only used to send reward to provider chain
@@ -573,14 +577,21 @@ func New(
 		app.keys[tokenfactorytypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
+
+	app.BankKeeper.BaseSendKeeper = *app.BankKeeper.BaseSendKeeper.SetHooks(
+		banktypes.NewMultiBankHooks(
+			app.TokenFactoryKeeper.Hooks(),
+		))
 
 	app.BuilderKeeper = builderkeeper.NewKeeperWithRewardsAddressProvider(
 		appCodec,
 		keys[buildertypes.StoreKey],
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		// 25% of rewards should be sent to the redistribute address
 		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -589,7 +600,7 @@ func New(
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
-		panic(fmt.Sprintf("error while reading wasm config: %s", err))
+		panic(fmt.Sprintf("error while reading wasm cfg: %s", err))
 	}
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
@@ -622,10 +633,11 @@ func New(
 		keys[interchainqueriesmoduletypes.StoreKey],
 		keys[interchainqueriesmoduletypes.MemStoreKey],
 		app.IBCKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		app.ContractManagerKeeper,
 		interchainqueriesmodulekeeper.Verifier{},
 		interchainqueriesmodulekeeper.TransactionVerifier{},
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.InterchainTxsKeeper = *interchaintxskeeper.NewKeeper(
 		appCodec,
@@ -633,22 +645,25 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.IBCKeeper.ChannelKeeper,
 		app.ICAControllerKeeper,
-		app.ContractManagerKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		app.FeeKeeper,
+		app.BankKeeper,
+		app.FeeBurnerKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper)
+	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper, &app.ContractManagerKeeper), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
 		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
 	wasmOpts = append(wasmOpts, queryPlugins)
 
-	app.WasmKeeper = wasm.NewKeeper(
+	app.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
-		keys[wasm.StoreKey],
+		keys[wasmtypes.StoreKey],
 		app.AccountKeeper,
-		app.BankKeeper,
+		&app.BankKeeper,
 		nil,
 		nil,
 		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
@@ -667,9 +682,12 @@ func New(
 	wasmHooks.ContractKeeper = &app.WasmKeeper
 
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
-	cronModule := cron.NewAppModule(appCodec, &app.CronKeeper)
+	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
 
-	transferIBCModule := transferSudo.NewIBCModule(app.TransferKeeper)
+	transferIBCModule := transferSudo.NewIBCModule(
+		app.TransferKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+	)
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
 	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
 	app.HooksTransferIBCModule = &ibcHooksMiddleware
@@ -705,7 +723,7 @@ func New(
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, ibcStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
-		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
+		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -776,7 +794,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasm.ModuleName,
+		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
@@ -807,7 +825,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasm.ModuleName,
+		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
@@ -843,7 +861,7 @@ func New(
 		interchainqueriesmoduletypes.ModuleName,
 		interchaintxstypes.ModuleName,
 		contractmanagermoduletypes.ModuleName,
-		wasm.ModuleName,
+		wasmtypes.ModuleName,
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
@@ -902,10 +920,10 @@ func New(
 			},
 			IBCKeeper:         app.IBCKeeper,
 			WasmConfig:        &wasmConfig,
-			TXCounterStoreKey: keys[wasm.StoreKey],
+			TXCounterStoreKey: keys[wasmtypes.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
 			buildKeeper:       app.BuilderKeeper,
-			mempool:           mempool,
+			mempool:           memPool,
 			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
 		},
 		app.Logger(),
@@ -918,7 +936,7 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	handler := proposalhandler.NewProposalHandler(
-		mempool,
+		memPool,
 		bApp.Logger(),
 		anteHandler,
 		encodingConfig.TxConfig.TxEncoder(),
@@ -930,7 +948,7 @@ func New(
 	checkTxHandler := proposalhandler.NewCheckTxHandler(
 		app.BaseApp,
 		encodingConfig.TxConfig.TxDecoder(),
-		mempool,
+		memPool,
 		anteHandler,
 		chainID,
 	)
@@ -973,25 +991,25 @@ func New(
 func (app *App) setupUpgradeStoreLoaders() {
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
-		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+		panic(fmt.Sprintf("failed to read upgrd info from disk %s", err))
 	}
 
 	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		return
 	}
 
-	for _, upgrade := range Upgrades {
-		if upgradeInfo.Name == upgrade.UpgradeName {
-			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrade.StoreUpgrades))
+	for _, upgrd := range Upgrades {
+		if upgradeInfo.Name == upgrd.UpgradeName {
+			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrd.StoreUpgrades))
 		}
 	}
 }
 
 func (app *App) setupUpgradeHandlers() {
-	for _, upgrade := range Upgrades {
+	for _, upgrd := range Upgrades {
 		app.UpgradeKeeper.SetUpgradeHandler(
-			upgrade.UpgradeName,
-			upgrade.CreateUpgradeHandler(
+			upgrd.UpgradeName,
+			upgrd.CreateUpgradeHandler(
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
@@ -1002,6 +1020,9 @@ func (app *App) setupUpgradeHandlers() {
 					SlashingKeeper:      app.SlashingKeeper,
 					ParamsKeeper:        app.ParamsKeeper,
 					CapabilityKeeper:    app.CapabilityKeeper,
+					BuilderKeeper:       app.BuilderKeeper,
+					ContractManager:     app.ContractManagerKeeper,
+					AdminModule:         app.AdminmoduleKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1155,27 +1176,29 @@ func (app *App) RegisterTendermintService(clientCtx client.Context) {
 func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 
-	paramsKeeper.Subspace(authtypes.ModuleName)
-	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(slashingtypes.ModuleName)
-	paramsKeeper.Subspace(crisistypes.ModuleName)
-	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
+	paramsKeeper.Subspace(authtypes.ModuleName).WithKeyTable(authtypes.ParamKeyTable())
+	paramsKeeper.Subspace(banktypes.ModuleName).WithKeyTable(banktypes.ParamKeyTable())
+	paramsKeeper.Subspace(slashingtypes.ModuleName).WithKeyTable(slashingtypes.ParamKeyTable())
+	paramsKeeper.Subspace(crisistypes.ModuleName).WithKeyTable(crisistypes.ParamKeyTable())
+	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
-	paramsKeeper.Subspace(icahosttypes.SubModuleName)
+	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
+	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
-	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
+	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(interchainqueriesmoduletypes.ModuleName)
-	paramsKeeper.Subspace(interchaintxstypes.ModuleName)
-	paramsKeeper.Subspace(wasm.ModuleName)
-	paramsKeeper.Subspace(feetypes.ModuleName)
-	paramsKeeper.Subspace(feeburnertypes.ModuleName)
-	paramsKeeper.Subspace(crontypes.ModuleName)
-	paramsKeeper.Subspace(globalfee.ModuleName)
+	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccvconsumertypes.ParamKeyTable())
+
+	// MOTE: legacy subspaces for migration sdk47 only
+	paramsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable())
+	paramsKeeper.Subspace(crontypes.StoreKey).WithKeyTable(crontypes.ParamKeyTable())
+	paramsKeeper.Subspace(feeburnertypes.StoreKey).WithKeyTable(feeburnertypes.ParamKeyTable())
+	paramsKeeper.Subspace(feetypes.StoreKey).WithKeyTable(feetypes.ParamKeyTable())
+	paramsKeeper.Subspace(tokenfactorytypes.StoreKey).WithKeyTable(tokenfactorytypes.ParamKeyTable())
+	paramsKeeper.Subspace(interchainqueriesmoduletypes.StoreKey).WithKeyTable(interchainqueriesmoduletypes.ParamKeyTable())
+	paramsKeeper.Subspace(interchaintxstypes.StoreKey).WithKeyTable(interchaintxstypes.ParamKeyTable())
 
 	return paramsKeeper
 }

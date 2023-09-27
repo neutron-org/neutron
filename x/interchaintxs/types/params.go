@@ -3,7 +3,10 @@ package types
 import (
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/neutron-org/neutron/app/params"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -12,9 +15,9 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 var (
 	KeyMsgSubmitTxMaxMessages     = []byte("MsgSubmitTxMaxMessages")
 	DefaultMsgSubmitTxMaxMessages = uint64(16)
+	DefaultRegisterFee            = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)))
 )
 
-// ParamKeyTable the param key table for launch module
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable(
 		paramtypes.NewParamSetPair(
@@ -26,15 +29,16 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(msgSubmitTxMaxMessages uint64) Params {
+func NewParams(msgSubmitTxMaxMessages uint64, registerFee sdk.Coins) Params {
 	return Params{
 		MsgSubmitTxMaxMessages: msgSubmitTxMaxMessages,
+		RegisterFee:            registerFee,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultMsgSubmitTxMaxMessages)
+	return NewParams(DefaultMsgSubmitTxMaxMessages, DefaultRegisterFee)
 }
 
 // ParamSetPairs get the params.ParamSet

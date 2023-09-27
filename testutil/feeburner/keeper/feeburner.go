@@ -3,6 +3,9 @@ package keeper
 import (
 	"testing"
 
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	tmdb "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -39,6 +42,7 @@ func FeeburnerKeeperWithDeps(t testing.TB, accountKeeper types.AccountKeeper, ba
 		memStoreKey,
 		accountKeeper,
 		bankkeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

@@ -128,6 +128,19 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 
+		case contractQuery.BeforeSendHook != nil:
+			res, err := qp.GetBeforeSendHook(ctx, contractQuery.BeforeSendHook.Denom)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to get denom before_send_hook")
+			}
+
+			bz, err := json.Marshal(res)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to JSON marshal BeforeSendHookResponse response")
+			}
+
+			return bz, nil
+
 		case contractQuery.Failures != nil:
 			res, err := qp.GetFailures(ctx, contractQuery.Failures.Address, contractQuery.Failures.Pagination)
 			if err != nil {

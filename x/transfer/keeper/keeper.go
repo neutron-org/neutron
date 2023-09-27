@@ -22,9 +22,9 @@ import (
 // KeeperTransferWrapper is a wrapper for original ibc keeper to override response for "Transfer" method
 type KeeperTransferWrapper struct {
 	keeper.Keeper
-	channelKeeper         wrappedtypes.ChannelKeeper
-	FeeKeeper             wrappedtypes.FeeRefunderKeeper
-	ContractManagerKeeper wrappedtypes.ContractManagerKeeper
+	channelKeeper wrappedtypes.ChannelKeeper
+	FeeKeeper     wrappedtypes.FeeRefunderKeeper
+	SudoKeeper    wrappedtypes.WasmKeeper
 }
 
 func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes.MsgTransfer) (*wrappedtypes.MsgTransferResponse, error) {
@@ -46,7 +46,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 
 	// if the sender is a contract, lock fees.
 	// Because contracts are required to pay fees for the acknowledgements
-	if k.ContractManagerKeeper.HasContractInfo(ctx, senderAddr) {
+	if k.SudoKeeper.HasContractInfo(ctx, senderAddr) {
 		if err := k.FeeKeeper.LockFees(ctx, senderAddr, feetypes.NewPacketID(msg.SourcePort, msg.SourceChannel, sequence), msg.Fee); err != nil {
 			return nil, errors.Wrapf(err, "failed to lock fees to pay for transfer msg: %v", msg)
 		}
@@ -70,13 +70,13 @@ func NewKeeper(
 	ics4Wrapper porttypes.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
 	feeKeeper wrappedtypes.FeeRefunderKeeper,
-	contractManagerKeeper wrappedtypes.ContractManagerKeeper,
+	sudoKeeper wrappedtypes.WasmKeeper,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		channelKeeper: channelKeeper,
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
 			authKeeper, bankKeeper, scopedKeeper),
-		FeeKeeper:             feeKeeper,
-		ContractManagerKeeper: contractManagerKeeper,
+		FeeKeeper:  feeKeeper,
+		SudoKeeper: sudoKeeper,
 	}
 }

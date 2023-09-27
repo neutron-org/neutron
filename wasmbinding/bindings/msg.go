@@ -4,6 +4,7 @@ package bindings
 import (
 	"cosmossdk.io/math"
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -42,6 +43,10 @@ type NeutronMsg struct {
 	/// that they are the admin of.
 	/// Currently, the burn from address must be the admin contract.
 	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
+	/// Contracts can set before send hook for an existing factory denom
+	//	that they are the admin of.
+	//	Currently, the set before hook call should be performed from address that must be the admin contract.
+	SetBeforeSendHook *SetBeforeSendHook `json:"set_before_send_hook,omitempty"`
 
 	// Cron types
 	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
@@ -72,8 +77,9 @@ type SubmitTxResponse struct {
 
 // RegisterInterchainAccount creates account on remote chain.
 type RegisterInterchainAccount struct {
-	ConnectionId        string `json:"connection_id"`
-	InterchainAccountId string `json:"interchain_account_id"`
+	ConnectionId        string    `json:"connection_id"`
+	InterchainAccountId string    `json:"interchain_account_id"`
+	RegisterFee         sdk.Coins `json:"register_fee"`
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
@@ -177,6 +183,11 @@ type BurnTokens struct {
 	Amount math.Int `json:"amount"`
 	// BurnFromAddress must be set to "" for now.
 	BurnFromAddress string `json:"burn_from_address"`
+}
+
+type SetBeforeSendHook struct {
+	Denom        string `json:"denom"`
+	ContractAddr string `json:"contract_addr"`
 }
 
 // AddSchedule adds new schedule to the cron module

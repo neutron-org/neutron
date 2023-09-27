@@ -34,6 +34,8 @@ type NeutronQuery struct {
 	FullDenom *FullDenom `json:"full_denom,omitempty"`
 	// Returns the admin of a denom, if the denom is a Token Factory denom.
 	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
+	// Returns the before send hook if it was set before
+	BeforeSendHook *BeforeSendHook `json:"before_send_hook,omitempty"`
 	// Contractmanager queries
 	// Query all failures for address
 	Failures *Failures `json:"failures,omitempty"`
@@ -181,6 +183,14 @@ type FullDenom struct {
 
 type DenomAdmin struct {
 	Subdenom string `json:"subdenom"`
+}
+
+type BeforeSendHook struct {
+	Denom string `json:"denom"`
+}
+
+type BeforeSendHookResponse struct {
+	ContractAddr string `json:"contract_addr"`
 }
 
 type DenomAdminResponse struct {

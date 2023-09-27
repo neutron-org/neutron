@@ -121,6 +121,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		if contractMsg.MintTokens != nil {
 			return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
 		}
+		if contractMsg.SetBeforeSendHook != nil {
+			return m.setBeforeSendHook(ctx, contractAddr, contractMsg.SetBeforeSendHook)
+		}
 		if contractMsg.ChangeAdmin != nil {
 			return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
 		}
@@ -307,7 +310,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "invalid proposal quantity")
 	}
-	// here we handle pre-sdk47 style of proposals: param change, upgrade, client update
+	// here we handle pre-nextupgrade style of proposals: param change, upgrade, client update
 	if m.isLegacyProposal(adminProposal) {
 		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, adminProposal)
 		if err != nil {
@@ -495,6 +498,15 @@ func (m *CustomMessenger) mintTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 	return nil, nil, nil
 }
 
+// setBeforeSendHook sets before send hook for a specified denom.
+func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSendHook) ([]sdk.Event, [][]byte, error) {
+	err := PerformSetBeforeSendHook(m.TokenFactory, ctx, contractAddr, set)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to perform set before send hook")
+	}
+	return nil, nil, nil
+}
+
 // PerformMint used with mintTokens to validate the mint message and mint through token factory.
 func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
 	rcpt, err := parseAddress(mint.MintToAddress)
@@ -518,6 +530,22 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 	err = b.SendCoins(ctx, contractAddr, rcpt, sdk.NewCoins(coin))
 	if err != nil {
 		return errors.Wrap(err, "sending newly minted coins from message")
+	}
+
+	return nil
+}
+
+func PerformSetBeforeSendHook(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSendHook) error {
+	sdkMsg := tokenfactorytypes.NewMsgSetBeforeSendHook(contractAddr.String(), set.Denom, set.ContractAddr)
+	if err := sdkMsg.ValidateBasic(); err != nil {
+		return err
+	}
+
+	// SetBeforeSendHook through token factory / message server
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+	_, err := msgServer.SetBeforeSendHook(sdk.WrapSDKContext(ctx), sdkMsg)
+	if err != nil {
+		return errors.Wrap(err, "set before send from message")
 	}
 
 	return nil
@@ -679,6 +707,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
+		RegisterFee:         reg.RegisterFee,
 	}
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")

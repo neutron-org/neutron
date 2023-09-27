@@ -940,8 +940,8 @@ github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OS
 github.com/neilotoole/errgroup v0.1.6/go.mod h1:Q2nLGf+594h0CLBs/Mbg6qOr7GtqDK7C2S41udRnToE=
 github.com/neutron-org/admin-module v0.0.0-20230906150724-9ccb75c61fc5 h1:96ZjLWoN4nCIcFdxrz51Xu2Y8aqpcScy3eva3S5hM60=
 github.com/neutron-org/admin-module v0.0.0-20230906150724-9ccb75c61fc5/go.mod h1:INknneN2W3Fr9Eld7SpfLRdjyHR1muzFbbqXln1ixic=
-github.com/neutron-org/cosmos-sdk v0.47.5-0.20230808152221-a0e301227957 h1:cl6UqD18qV/QXgT6Yjo2TelfbaOqQGuvL1yX0cWguSs=
-github.com/neutron-org/cosmos-sdk v0.47.5-0.20230808152221-a0e301227957/go.mod h1:4xMyIVekAs2OEUz/yh9JwzhLBMk+olM2sxgKuQdlhLg=
+github.com/neutron-org/cosmos-sdk v0.47.5-0.20230921074823-5d5ff8b93265 h1:CIyjGN+/WTIgGyUEAiL7HcxQ2/XYX3r2Nv4RWBbhl8o=
+github.com/neutron-org/cosmos-sdk v0.47.5-0.20230921074823-5d5ff8b93265/go.mod h1:4xMyIVekAs2OEUz/yh9JwzhLBMk+olM2sxgKuQdlhLg=
 github.com/neutron-org/wasmd v0.40.0-rc.0.0.20230808084410-6083b888424e h1:uVJCBWf1vcCYY0pzOA2SCPIZT8WsR8fsOxs57mnJbM4=
 github.com/neutron-org/wasmd v0.40.0-rc.0.0.20230808084410-6083b888424e/go.mod h1:Oagy36cU49438NzxKG/gmGTG903tiAI7LIUdH7x2qNY=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=

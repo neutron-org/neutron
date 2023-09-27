@@ -3,14 +3,20 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
-func RegisterCodec(_ *codec.LegacyAmino) {
-	// this line is used by starport scaffolding # 2
+func RegisterCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "neutron.feerefunder.MsgUpdateParams", nil)
 }
 
-func RegisterInterfaces(_ cdctypes.InterfaceRegistry) {
-	// this line is used by starport scaffolding # 3
+func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgUpdateParams{},
+	)
+	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
 var (

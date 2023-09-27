@@ -28,11 +28,12 @@ const (
 )
 
 var (
-	DenomAuthorityMetadataKey = "authoritymetadata"
-	DenomsPrefixKey           = "denoms"
-	CreatorPrefixKey          = "creator"
-	AdminPrefixKey            = "admin"
-	ParamsKey                 = []byte{prefixParamsKey}
+	DenomAuthorityMetadataKey      = "authoritymetadata"
+	DenomsPrefixKey                = "denoms"
+	CreatorPrefixKey               = "creator"
+	AdminPrefixKey                 = "admin"
+	BeforeSendHookAddressPrefixKey = "beforesendhook"
+	ParamsKey                      = []byte{prefixParamsKey}
 )
 
 // GetDenomPrefixStore returns the store prefix where all the data associated with a specific denom

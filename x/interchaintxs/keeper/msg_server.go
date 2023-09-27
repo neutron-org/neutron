@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
@@ -43,9 +42,13 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
 	}
 
-	if !k.contractManagerKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.sudoKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: contract not found", "from_address", msg.FromAddress)
 		return nil, errors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
+	}
+
+	if err := k.ChargeFee(ctx, senderAddr, msg.RegisterFee); err != nil {
+		return nil, errors.Wrapf(err, "failed to charge fees to pay for RegisterInterchainAccount msg: %s", msg)
 	}
 
 	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
@@ -79,7 +82,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.FromAddress)
 	}
 
-	if !k.contractManagerKeeper.HasContractInfo(ctx, senderAddr) {
+	if !k.sudoKeeper.HasContractInfo(ctx, senderAddr) {
 		k.Logger(ctx).Debug("SubmitTx: contract not found", "from_address", msg.FromAddress)
 		return nil, errors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
@@ -171,4 +174,22 @@ func SerializeCosmosTx(cdc codec.BinaryCodec, msgs []*codectypes.Any) (bz []byte
 	}
 
 	return bz, nil
+}
+
+// UpdateParams updates the module parameters
+func (k Keeper) UpdateParams(goCtx context.Context, req *ictxtypes.MsgUpdateParams) (*ictxtypes.MsgUpdateParamsResponse, error) {
+	if err := req.ValidateBasic(); err != nil {
+		return nil, err
+	}
+	authority := k.GetAuthority()
+	if authority != req.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if err := k.SetParams(ctx, req.Params); err != nil {
+		return nil, err
+	}
+
+	return &ictxtypes.MsgUpdateParamsResponse{}, nil
 }

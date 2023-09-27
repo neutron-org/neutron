@@ -1,10 +1,11 @@
 package nextupgrade
 
 import (
-	store "github.com/cosmos/cosmos-sdk/store/types"
-
-	"github.com/cosmos/gaia/v11/x/globalfee"
+	"github.com/cosmos/cosmos-sdk/store/types"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/neutron-org/neutron/app/upgrades"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 
 const (
@@ -15,9 +16,11 @@ const (
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
-	StoreUpgrades: store.StoreUpgrades{
+	StoreUpgrades: types.StoreUpgrades{
 		Added: []string{
-			globalfee.ModuleName,
+			consensusparamtypes.ModuleName,
+			crisistypes.ModuleName,
+			buildertypes.ModuleName,
 		},
 	},
 }

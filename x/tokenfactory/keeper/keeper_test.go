@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/tokenfactory/keeper"
@@ -51,14 +52,15 @@ func (suite *KeeperTestSuite) Setup() {
 
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 
-	tokeFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
-	err := tokeFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
-		sdktypes.NewCoins(sdktypes.NewInt64Coin(types.DefaultNeutronDenom, TopUpCoinsAmount)),
+	tokenFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
+	err := tokenFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
+		sdktypes.NewCoins(sdktypes.NewInt64Coin(params.DefaultDenom, TopUpCoinsAmount)),
+		0,
 		FeeCollectorAddress,
 	))
 	suite.Require().NoError(err)
 
-	suite.msgServer = keeper.NewMsgServerImpl(*tokeFactoryKeeper)
+	suite.msgServer = keeper.NewMsgServerImpl(*tokenFactoryKeeper)
 }
 
 func (suite *KeeperTestSuite) SetupTokenFactory() {

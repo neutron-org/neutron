@@ -24,6 +24,7 @@ type (
 
 		accountKeeper types.AccountKeeper
 		bankKeeper    types.BankKeeper
+		authority     string
 	}
 )
 
@@ -35,6 +36,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	authority string,
 ) *Keeper {
 	return &Keeper{
 		cdc:           cdc,
@@ -42,7 +44,12 @@ func NewKeeper(
 		memKey:        memKey,
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
+		authority:     authority,
 	}
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // RecordBurnedFees adds `amount` to the total amount of burned NTRN tokens
