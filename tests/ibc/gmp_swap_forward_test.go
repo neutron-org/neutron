@@ -7,9 +7,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	"github.com/duality-labs/duality/x/dex/types"
-	"github.com/duality-labs/duality/x/gmp"
-	swaptypes "github.com/duality-labs/duality/x/ibcswap/types"
+	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/x/gmp"
+	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
 )
 
 // TestSwapAndForward_Success asserts that the swap and forward middleware stack works as intended with Duality running as a

@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	dualityapp "github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil"
 	keepertest "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/require"
@@ -26,7 +27,7 @@ func simulateDeposit(ctx sdk.Context, app *dualityapp.App, addr sdk.AccAddress, 
 }
 
 func TestUserDepositsAllQueryPaginated(t *testing.T) {
-	app := dualityapp.Setup(t, false)
+	app := testutil.Setup(t, false)
 	keeper := app.DexKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	wctx := sdk.WrapSDKContext(ctx)

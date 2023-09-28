@@ -2,7 +2,6 @@ package types
 
 import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/neutron-org/neutron/x/dex/types"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	epochstypes "github.com/neutron-org/neutron/x/epochs/types"
 
@@ -29,6 +28,6 @@ type AccountKeeper interface {
 }
 
 type DexKeeper interface {
-	GetOrInitPool(ctx sdk.Context, pairID *types.PairID, centerTickIndex int64, fee uint64) (*dextypes.Pool, error)
-	GetPoolMetadataByDenom(ctx sdk.Context, id string) (types.PoolMetadata, error)
+	GetOrInitPool(ctx sdk.Context, pairID *dextypes.PairID, centerTickIndex int64, fee uint64) (*dextypes.Pool, error)
+	GetPoolMetadataByDenom(ctx sdk.Context, id string) (dextypes.PoolMetadata, error)
 }

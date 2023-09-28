@@ -14,9 +14,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
+	dexmoduletypes "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -34,7 +34,7 @@ type KeeperTestHelper struct {
 
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *KeeperTestHelper) Setup() {
-	s.App, _ = testutil.SetupTestingApp("neutron-1")()
+	s.App = testutil.Setup(s.T(), false)
 	s.Ctx = s.App.BaseApp.NewContext(
 		false,
 		tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()},
@@ -47,12 +47,6 @@ func (s *KeeperTestHelper) Setup() {
 
 	s.SetEpochStartTime()
 }
-
-// func (s *KeeperTestHelper) SetupTestForInitGenesis() {
-// 	// Setting to True, leads to init genesis not running
-// 	s.App = app.Setup(true)
-// 	s.Ctx = s.App.BaseApp.NewContext(true, tmtypes.Header{})
-// }
 
 func (s *KeeperTestHelper) SetEpochStartTime() {
 	epochsKeeper := s.App.EpochsKeeper
@@ -137,17 +131,9 @@ func (s *KeeperTestHelper) Commit() {
 
 // FundAcc funds target address with specified amount.
 func (s *KeeperTestHelper) FundAcc(acc sdk.AccAddress, amounts sdk.Coins) {
-	err := s.App.BankKeeper.MintCoins(s.Ctx, banktypes.ModuleName, amounts)
+	err := s.App.BankKeeper.MintCoins(s.Ctx, dexmoduletypes.ModuleName, amounts)
 	s.Require().NoError(err)
 
-	err = s.App.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, banktypes.ModuleName, acc, amounts)
+	err = s.App.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, dexmoduletypes.ModuleName, acc, amounts)
 	s.Require().NoError(err)
-}
-
-// StateNotAltered validates that app state is not altered. Fails if it is.
-func (s *KeeperTestHelper) StateNotAltered() {
-	oldState := s.App.ExportState(s.Ctx)
-	s.App.Commit()
-	newState := s.App.ExportState(s.Ctx)
-	s.Require().Equal(oldState, newState)
 }

@@ -8,12 +8,12 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	dualityapp "github.com/neutron-org/neutron/app"
 	math_utils "github.com/neutron-org/neutron/utils/math"
+	"github.com/neutron-org/neutron/testutil"
 	. "github.com/neutron-org/neutron/x/dex/keeper"
 	. "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -23,15 +23,14 @@ import (
 // / Test suite
 type MsgServerTestSuite struct {
 	suite.Suite
-	app         *dualityapp.App
-	msgServer   types.MsgServer
-	ctx         sdk.Context
-	queryClient types.QueryClient
-	alice       sdk.AccAddress
-	bob         sdk.AccAddress
-	carol       sdk.AccAddress
-	dan         sdk.AccAddress
-	goCtx       context.Context
+	app       *dualityapp.App
+	msgServer types.MsgServer
+	ctx       sdk.Context
+	alice     sdk.AccAddress
+	bob       sdk.AccAddress
+	carol     sdk.AccAddress
+	dan       sdk.AccAddress
+	goCtx     context.Context
 }
 
 var defaultPairID *types.PairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
@@ -51,16 +50,12 @@ func TestMsgServerTestSuite(t *testing.T) {
 }
 
 func (s *MsgServerTestSuite) SetupTest() {
-	app := dualityapp.Setup(s.T(), false)
+	app := testutil.Setup(s.T(), false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	app.BankKeeper.SetParams(ctx, banktypes.DefaultParams())
-
-	queryHelper := baseapp.NewQueryServerTestHelper(ctx, app.InterfaceRegistry())
-	types.RegisterQueryServer(queryHelper, app.DexKeeper)
-	queryClient := types.NewQueryClient(queryHelper)
 
 	accAlice := app.AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.AccountKeeper.SetAccount(ctx, accAlice)
@@ -75,7 +70,6 @@ func (s *MsgServerTestSuite) SetupTest() {
 	s.msgServer = NewMsgServerImpl(app.DexKeeper)
 	s.ctx = ctx
 	s.goCtx = sdk.WrapSDKContext(ctx)
-	s.queryClient = queryClient
 	s.alice = sdk.AccAddress([]byte("alice"))
 	s.bob = sdk.AccAddress([]byte("bob"))
 	s.carol = sdk.AccAddress([]byte("carol"))
@@ -916,7 +910,7 @@ func (s *MsgServerTestSuite) aliceEstimatesMultiHopSwap(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	res, err := s.queryClient.EstimateMultiHopSwap(s.goCtx, msg)
+	res, err := s.app.DexKeeper.EstimateMultiHopSwap(s.goCtx, msg)
 	s.Require().Nil(err)
 	return res.CoinOut
 }
@@ -940,7 +934,7 @@ func (s *MsgServerTestSuite) aliceEstimatesMultiHopSwapFails(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	_, err := s.queryClient.EstimateMultiHopSwap(s.goCtx, msg)
+	_, err := s.app.DexKeeper.EstimateMultiHopSwap(s.goCtx, msg)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 

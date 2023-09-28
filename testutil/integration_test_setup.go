@@ -59,10 +59,6 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	pubKey, err := privVal.GetPubKey()
 	require.NoError(t, err)
 
-	// JCP TODO: need?
-	// // Give bank module minter permissions for testing (ie. KeeperTestHelper.FundAcc)
-	// maccPerms[banktypes.ModuleName] = []string{authtypes.Minter}
-
 	// create validator set with single validator
 	validator := tmtypes.NewValidator(pubKey, 1)
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})

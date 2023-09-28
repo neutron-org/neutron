@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	"github.com/duality-labs/duality/x/dex/types"
-	swaptypes "github.com/duality-labs/duality/x/ibcswap/types"
+	"github.com/neutron-org/neutron/x/dex/types"
+	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
 	"github.com/iancoleman/orderedmap"
 	"golang.org/x/exp/maps"
 )

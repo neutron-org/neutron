@@ -7,7 +7,7 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/epochs/types"
 
 	"golang.org/x/exp/maps"
@@ -239,7 +239,7 @@ func initializeBlankEpochInfoFields(
 }
 
 func TestEpochStartingOneMonthAfterInitGenesis(t *testing.T) {
-	app := app.Setup(t, false)
+	app := testutil.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	// On init genesis, default epochs information is set

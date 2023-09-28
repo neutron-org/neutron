@@ -1,4 +1,4 @@
-package types
+package types_test
 
 import (
 	"encoding/json"
@@ -6,14 +6,17 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
-	appparams "github.com/neutron-org/neutron/app/params"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/iancoleman/orderedmap"
+	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil/common/sample"
+	"github.com/neutron-org/neutron/x/dex/types"
+	. "github.com/neutron-org/neutron/x/ibcswap/types"
 	"github.com/stretchr/testify/require"
 )
 
-// Load appparams so that we correctly init acc prefixes
-var _ appparams.EncodingConfig
+func init() {
+	_ = app.GetDefaultConfig()
+}
 
 // TestPacketMetadata_Marshal asserts that the marshaling of the swap metadata works as intended.
 func TestPacketMetadata_Marshal(t *testing.T) {
@@ -97,8 +100,8 @@ func TestSwapMetadata_ValidatePass(t *testing.T) {
 	pm := PacketMetadata{
 		&SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
-				Creator:          "dual1lyaz7emmzreenas4fpz49a49958kye7wxuvsdr",
-				Receiver:         "dual1lyaz7emmzreenas4fpz49a49958kye7wxuvsdr",
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
 				TokenIn:          "token-a",
 				TokenOut:         "token-b",
 				AmountIn:         sdk.NewInt(123),

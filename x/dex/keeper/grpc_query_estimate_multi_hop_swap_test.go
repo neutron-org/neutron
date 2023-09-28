@@ -2,7 +2,7 @@ package keeper_test
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keepertest "github.com/neutron-org/neutron/testutil/keeper"
+	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
