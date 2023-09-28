@@ -73,6 +73,10 @@ func DefaultConfig() network.Config {
 			if err != nil {
 				panic(err)
 			}
+			err = consumer.ModifyGenesisBlockGas(val.(network.Validator))
+			if err != nil {
+				panic(err)
+			}
 
 			return app.New(
 				val.GetCtx().Logger, chainID, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,

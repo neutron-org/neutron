@@ -6,7 +6,7 @@ import (
 
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	. "github.com/neutron-org/neutron/x/incentives/keeper"
 	"github.com/neutron-org/neutron/x/incentives/types"
@@ -44,7 +44,7 @@ func (k MockKeeper) StakeCoinsPassingQueryCondition(ctx sdk.Context, stake *type
 }
 
 func TestDistributor(t *testing.T) {
-	app := app.Setup(t, false)
+	app := testutil.Setup(t, false)
 	ctx := app.BaseApp.NewContext(
 		false,
 		tmtypes.Header{Height: 1, ChainID: "duality-1", Time: time.Now().UTC()},

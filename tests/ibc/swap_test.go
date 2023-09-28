@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	dextypes "github.com/duality-labs/duality/x/dex/types"
-	swaptypes "github.com/duality-labs/duality/x/ibcswap/types"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
 )
 
 // TestIBCSwapMiddleware_Success asserts that the IBC swap middleware works as intended with Duality running as a

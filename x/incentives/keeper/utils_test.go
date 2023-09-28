@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	. "github.com/neutron-org/neutron/x/incentives/keeper"
 	"github.com/neutron-org/neutron/x/incentives/types"
@@ -68,7 +68,7 @@ func TestRemoveValue(t *testing.T) {
 
 func TestStakeRefKeys(t *testing.T) {
 	addr1 := sdk.AccAddress([]byte("addr1---------------"))
-	app := app.Setup(t, false)
+	app := testutil.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	pool1, err := app.DexKeeper.InitPool(ctx, &dextypes.PairID{Token0: "TokenA", Token1: "TokenB"}, 0, 1)

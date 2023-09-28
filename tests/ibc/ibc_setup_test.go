@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	dbm "github.com/cometbft/cometbft-db"
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -13,14 +15,13 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	icsibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
 
-	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 	icstestingutils "github.com/cosmos/interchain-security/v3/testutil/ibc_testing"
 	testutil "github.com/cosmos/interchain-security/v3/testutil/integration"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 	ccv "github.com/cosmos/interchain-security/v3/x/ccv/types"
-	appduality "github.com/duality-labs/duality/app"
-	dextypes "github.com/duality-labs/duality/x/dex/types"
+	app "github.com/neutron-org/neutron/app"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -224,21 +225,23 @@ func (s *IBCTestSuite) setupTransferChannel(
 }
 
 func dualityAppIniter() (icsibctesting.TestingApp, map[string]json.RawMessage) {
-	encoding := appduality.MakeEncodingConfig()
-	testApp := appduality.NewApp(
+	encoding := app.MakeEncodingConfig()
+	db := dbm.NewMemDB()
+	testApp := app.New(
 		log.NewNopLogger(),
-		dbm.NewMemDB(),
+		"neutron-1",
+		db,
 		nil,
 		true,
 		map[int64]bool{},
-		appduality.DefaultNodeHome,
-		5,
-		appduality.EmptyAppOptions{},
+		app.DefaultNodeHome,
+		0,
 		encoding,
+		sims.EmptyAppOptions{},
 		nil,
 	)
 
-	return testApp, appduality.NewDefaultGenesisState(testApp.AppCodec())
+	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
 }
 
 func (s *IBCTestSuite) providerCtx() sdk.Context {

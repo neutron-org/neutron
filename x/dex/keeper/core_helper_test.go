@@ -4,12 +4,11 @@ import (
 	"testing"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	dualityapp "github.com/neutron-org/neutron/app"
-	. "github.com/neutron-org/neutron/x/dex/keeper"
+	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/suite"
 )
@@ -17,14 +16,12 @@ import (
 // Test Suite ///////////////////////////////////////////////////////////////
 type CoreHelpersTestSuite struct {
 	suite.Suite
-	app         *dualityapp.App
-	msgServer   types.MsgServer
-	ctx         sdk.Context
-	queryClient types.QueryClient
-	alice       sdk.AccAddress
-	bob         sdk.AccAddress
-	carol       sdk.AccAddress
-	dan         sdk.AccAddress
+	app   *dualityapp.App
+	ctx   sdk.Context
+	alice sdk.AccAddress
+	bob   sdk.AccAddress
+	carol sdk.AccAddress
+	dan   sdk.AccAddress
 }
 
 func TestCoreHelpersTestSuite(t *testing.T) {
@@ -32,15 +29,11 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 }
 
 func (s *CoreHelpersTestSuite) SetupTest() {
-	app := dualityapp.Setup(s.T(), false)
+	app := testutil.Setup(s.T(), false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	app.BankKeeper.SetParams(ctx, banktypes.DefaultParams())
-
-	queryHelper := baseapp.NewQueryServerTestHelper(ctx, app.InterfaceRegistry())
-	types.RegisterQueryServer(queryHelper, app.DexKeeper)
-	queryClient := types.NewQueryClient(queryHelper)
 
 	accAlice := app.AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.AccountKeeper.SetAccount(ctx, accAlice)
@@ -52,9 +45,7 @@ func (s *CoreHelpersTestSuite) SetupTest() {
 	app.AccountKeeper.SetAccount(ctx, accDan)
 
 	s.app = app
-	s.msgServer = NewMsgServerImpl(app.DexKeeper)
 	s.ctx = ctx
-	s.queryClient = queryClient
 	s.alice = sdk.AccAddress([]byte("alice"))
 	s.bob = sdk.AccAddress([]byte("bob"))
 	s.carol = sdk.AccAddress([]byte("carol"))
