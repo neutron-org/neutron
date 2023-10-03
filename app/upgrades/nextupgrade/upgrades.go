@@ -17,8 +17,8 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
+	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
 	"github.com/neutron-org/neutron/app/upgrades"
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
@@ -83,7 +83,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Setting pob params...")
-		err = setPobParams(ctx, keepers.FeeBurnerKeeper, keepers.BuilderKeeper)
+		err = setAuctionParams(ctx, keepers.FeeBurnerKeeper, keepers.AuctionKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -119,14 +119,14 @@ func CreateUpgradeHandler(
 	}
 }
 
-func setPobParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, builderKeeper builderkeeper.Keeper) error {
+func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, auctionKeeper auctionkeeper.Keeper) error {
 	treasury := feeBurnerKeeper.GetParams(ctx).TreasuryAddress
 	_, data, err := bech32.DecodeAndConvert(treasury)
 	if err != nil {
 		return err
 	}
 
-	builderParams := buildertypes.Params{
+	auctionParams := auctiontypes.Params{
 		MaxBundleSize:          2,
 		EscrowAccountAddress:   data,
 		ReserveFee:             sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
@@ -134,7 +134,7 @@ func setPobParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, buil
 		FrontRunningProtection: true,
 		ProposerFee:            math.LegacyNewDecWithPrec(25, 2),
 	}
-	return builderKeeper.SetParams(ctx, builderParams)
+	return auctionKeeper.SetParams(ctx, auctionParams)
 }
 
 func setContractManagerParams(ctx sdk.Context, keeper contractmanagerkeeper.Keeper) error {

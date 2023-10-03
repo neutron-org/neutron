@@ -15,9 +15,9 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
-	"github.com/skip-mev/pob/mempool"
-	ante2 "github.com/skip-mev/pob/x/builder/ante"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	blocksdkanteignore "github.com/skip-mev/block-sdk/block/utils"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -29,9 +29,14 @@ type HandlerOptions struct {
 	ConsumerKeeper    ibcconsumerkeeper.Keeper
 	WasmConfig        *wasmTypes.WasmConfig
 	TXCounterStoreKey storetypes.StoreKey
-	buildKeeper       builderkeeper.Keeper
-	txEncoder         sdk.TxEncoder
-	mempool           *mempool.AuctionMempool
+
+	// block-sdk deps
+	// Auction deps
+	AuctionKeeper auctionkeeper.Keeper
+	TxEncoder sdk.TxEncoder
+	MEVLane auctionante.MEVLane
+	FreeLanes []blocksdkanteignore.Lane
+	Mempool auctionante.Mempool
 
 	// globalFee
 	GlobalFeeSubspace paramtypes.Subspace
@@ -57,6 +62,13 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		return nil, errors.Wrap(gaiaerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
 	}
 
+	if options.Mempool == nil {
+		return nil, errors.Wrap(gaiaerrors.ErrLogic, "mempool is required for AnteHandler")
+	}
+	if options.MEVLane == nil {
+		return nil, errors.Wrap(gaiaerrors.ErrLogic, "mev lane is required for AnteHandler")
+	}
+
 	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
@@ -78,7 +90,11 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// otherwise you will get panic
 		globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
-		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		// we ignore the fee-deductor for any transactions that match the given free lanes
+		blocksdkanteignore.NewIgnoreDecorator(
+			ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+			options.FreeLanes...
+		),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
@@ -86,10 +102,11 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
-		ante2.NewBuilderDecorator(
-			options.buildKeeper,
-			options.txEncoder,
-			options.mempool,
+		auctionante.NewAuctionDecorator(
+			options.AuctionKeeper,
+			options.TxEncoder,
+			options.MEVLane,
+			options.Mempool,
 		),
 	}
 

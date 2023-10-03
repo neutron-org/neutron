@@ -17,12 +17,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	proposalhandler "github.com/skip-mev/pob/abci"
-	"github.com/skip-mev/pob/mempool"
-	"github.com/skip-mev/pob/x/builder"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	rewardsaddressprovider "github.com/skip-mev/pob/x/builder/rewards_address_provider"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
 	"github.com/neutron-org/neutron/docs"
 
@@ -155,6 +149,23 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
 	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+
+	// Block-sdk imports
+	blocksdkabci "github.com/skip-mev/block-sdk/abci"
+	blocksdk "github.com/skip-mev/block-sdk/block"
+	"github.com/skip-mev/block-sdk/block/base"
+	blocksdkbase "github.com/skip-mev/block-sdk/block/base"
+	blocksdkanteignore "github.com/skip-mev/block-sdk/block/utils"
+	base_lane "github.com/skip-mev/block-sdk/lanes/base"
+	"github.com/skip-mev/block-sdk/lanes/free"
+	free_lane "github.com/skip-mev/block-sdk/lanes/free"
+	mev_lane "github.com/skip-mev/block-sdk/lanes/mev"
+	"github.com/skip-mev/block-sdk/x/auction"
+	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	rewardsaddressprovider "github.com/skip-mev/block-sdk/x/auction/rewards"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	signer_extraction_adapter "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 )
 
 const (
@@ -209,14 +220,14 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		router.AppModuleBasic{},
-		builder.AppModuleBasic{},
+		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:                    nil,
-		buildertypes.ModuleName:                       nil,
+		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
 		wasmtypes.ModuleName:                          {authtypes.Burner},
@@ -271,8 +282,8 @@ type App struct {
 	AdminmoduleKeeper adminmodulekeeper.Keeper
 	AuthzKeeper       authzkeeper.Keeper
 	BankKeeper        bankkeeper.BaseKeeper
-	// BuilderKeeper is the keeper that handles processing auction transactions
-	BuilderKeeper       builderkeeper.Keeper
+	// AuctionKeeper is the keeper that handles processing auction transactions
+	AuctionKeeper       auctionkeeper.Keeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
@@ -318,7 +329,12 @@ type App struct {
 	sm *module.SimulationManager
 
 	// Custom checkTx handler
-	checkTxHandler proposalhandler.CheckTx
+	checkTxHandler mev_lane.CheckTx
+
+	// Lanes
+	Mempool   auctionante.Mempool
+	MEVLane   auctionante.MEVLane
+	FreeLanes []blocksdkanteignore.Lane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -356,16 +372,10 @@ func New(
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	cfg := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
-	// 0 - unlimited amount of txs
-	maxTx := 0
-	memPool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), maxTx, cfg)
-
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
-	bApp.SetMempool(memPool)
 
 	keys := sdk.NewKVStoreKeys(
 		authzkeeper.StoreKey, authtypes.StoreKey, banktypes.StoreKey, slashingtypes.StoreKey,
@@ -374,7 +384,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, buildertypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctiontypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -587,9 +597,9 @@ func New(
 			app.TokenFactoryKeeper.Hooks(),
 		))
 
-	app.BuilderKeeper = builderkeeper.NewKeeperWithRewardsAddressProvider(
+	app.AuctionKeeper = auctionkeeper.NewKeeperWithRewardsAddressProvider(
 		appCodec,
-		keys[buildertypes.StoreKey],
+		keys[auctiontypes.StoreKey],
 		app.AccountKeeper,
 		&app.BankKeeper,
 		// 25% of rewards should be sent to the redistribute address
@@ -765,7 +775,7 @@ func New(
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
 		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
-		builder.NewAppModule(appCodec, app.BuilderKeeper),
+		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	)
 
@@ -774,7 +784,7 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
-		buildertypes.ModuleName,
+		auctiontypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -805,7 +815,7 @@ func New(
 	)
 
 	app.mm.SetOrderEndBlockers(
-		buildertypes.ModuleName,
+		auctiontypes.ModuleName,
 		crisistypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -841,7 +851,7 @@ func New(
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
 	app.mm.SetOrderInitGenesis(
-		buildertypes.ModuleName,
+		auctiontypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -909,6 +919,46 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
+	// initialize block-sdk Mempool
+	maxTxs := 0 // no limit
+	cfg := blocksdkbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxDecoder:       app.GetTxConfig().TxDecoder(),
+		TxEncoder:       app.GetTxConfig().TxEncoder(),
+		SignerExtractor: signer_extraction_adapter.NewDefaultAdapter(),
+		MaxBlockSpace:   sdk.ZeroDec(),
+		MaxTxs:          maxTxs,
+	}
+
+	baseLane := base_lane.NewDefaultLane(cfg)
+
+	freeLane := free_lane.NewFreeLane(
+		cfg,
+		base.DefaultTxPriority(),
+		free.DefaultMatchHandler(), // modify this match-handler to determine any other transactions that the chain would like to be free
+	)
+	app.FreeLanes = []blocksdkanteignore.Lane{freeLane}
+
+	mevLane := mev_lane.NewMEVLane(
+		cfg,
+		mev_lane.NewDefaultAuctionFactory(app.GetTxConfig().TxDecoder(), signer_extraction_adapter.NewDefaultAdapter()),
+	)
+	app.MEVLane = mevLane
+	// initialize mempool
+	mempool := blocksdk.NewLanedMempool(
+		app.Logger(),
+		true,
+		[]blocksdk.Lane{
+			mevLane,  // mev-lane is first to prioritize bids being placed at the TOB
+			freeLane, // free-lane is second to prioritize free txs
+			baseLane, // finally, all the rest of txs...
+		}...,
+	)
+
+	// set the mempool first
+	app.SetMempool(mempool)
+	app.Mempool = mempool
+
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -922,9 +972,12 @@ func New(
 			WasmConfig:        &wasmConfig,
 			TXCounterStoreKey: keys[wasmtypes.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
-			buildKeeper:       app.BuilderKeeper,
-			mempool:           memPool,
 			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
+			AuctionKeeper:          app.AuctionKeeper,
+			TxEncoder:              app.GetTxConfig().TxEncoder(),
+			Mempool:                app.Mempool,
+			MEVLane:                app.MEVLane,
+			FreeLanes:              app.FreeLanes,
 		},
 		app.Logger(),
 	)
@@ -935,20 +988,18 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
 
-	handler := proposalhandler.NewProposalHandler(
-		memPool,
-		bApp.Logger(),
-		anteHandler,
-		encodingConfig.TxConfig.TxEncoder(),
-		encodingConfig.TxConfig.TxDecoder(),
+	handler := blocksdkabci.NewProposalHandler(
+		app.Logger(), 
+		app.GetTxConfig().TxDecoder(),
+		mempool,
 	)
 	app.SetPrepareProposal(handler.PrepareProposalHandler())
 	app.SetProcessProposal(handler.ProcessProposalHandler())
 
-	checkTxHandler := proposalhandler.NewCheckTxHandler(
+	checkTxHandler := mev_lane.NewCheckTxHandler(
 		app.BaseApp,
 		encodingConfig.TxConfig.TxDecoder(),
-		memPool,
+		mevLane,
 		anteHandler,
 		chainID,
 	)
@@ -1020,7 +1071,7 @@ func (app *App) setupUpgradeHandlers() {
 					SlashingKeeper:      app.SlashingKeeper,
 					ParamsKeeper:        app.ParamsKeeper,
 					CapabilityKeeper:    app.CapabilityKeeper,
-					BuilderKeeper:       app.BuilderKeeper,
+					AuctionKeeper:       app.AuctionKeeper,
 					ContractManager:     app.ContractManagerKeeper,
 					AdminModule:         app.AdminmoduleKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
@@ -1042,7 +1093,7 @@ func (app *App) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *App) SetCheckTx(handler proposalhandler.CheckTx) {
+func (app *App) SetCheckTx(handler mev_lane.CheckTx) {
 	app.checkTxHandler = handler
 }
 
