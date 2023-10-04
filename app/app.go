@@ -152,6 +152,7 @@ import (
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/abci"
+	signer_extraction_adapter "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	blocksdk "github.com/skip-mev/block-sdk/block"
 	"github.com/skip-mev/block-sdk/block/base"
 	blocksdkbase "github.com/skip-mev/block-sdk/block/base"
@@ -165,7 +166,6 @@ import (
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 	rewardsaddressprovider "github.com/skip-mev/block-sdk/x/auction/rewards"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
-	signer_extraction_adapter "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 )
 
 const (
@@ -973,11 +973,11 @@ func New(
 			TXCounterStoreKey: keys[wasmtypes.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
 			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
-			AuctionKeeper:          app.AuctionKeeper,
-			TxEncoder:              app.GetTxConfig().TxEncoder(),
-			Mempool:                app.Mempool,
-			MEVLane:                app.MEVLane,
-			FreeLanes:              app.FreeLanes,
+			AuctionKeeper:     app.AuctionKeeper,
+			TxEncoder:         app.GetTxConfig().TxEncoder(),
+			Mempool:           app.Mempool,
+			MEVLane:           app.MEVLane,
+			FreeLanes:         app.FreeLanes,
 		},
 		app.Logger(),
 	)
@@ -986,10 +986,15 @@ func New(
 	}
 
 	app.SetAnteHandler(anteHandler)
+	mevLane.SetAnteHandler(anteHandler)
+	freeLane.SetAnteHandler(anteHandler)
+	baseLane.SetAnteHandler(anteHandler)
+	
+
 	app.SetEndBlocker(app.EndBlocker)
 
 	handler := blocksdkabci.NewProposalHandler(
-		app.Logger(), 
+		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
 		mempool,
 	)
