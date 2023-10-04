@@ -2,6 +2,9 @@ package nextupgrade
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -108,11 +111,15 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
+		ctx.Logger().Info("migrating adminmodule...")
 		err = migrateAdminModule(ctx, keepers)
 		if err != nil {
 			ctx.Logger().Error("failed to migrate admin module", "err", err)
 			return vm, err
 		}
+
+		ctx.Logger().Info("Migrating consensus params...")
+		migrateConsensusParams(ctx, keepers.ParamsKeeper, keepers.ConsensusKeeper)
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, nil
@@ -298,4 +305,9 @@ func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error
 	ctx.Logger().Info("Finished migrating admin module")
 
 	return nil
+}
+
+func migrateConsensusParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, keeper *consensuskeeper.Keeper) {
+	baseAppLegacySS := paramsKeepers.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
+	baseapp.MigrateParams(ctx, baseAppLegacySS, keeper)
 }

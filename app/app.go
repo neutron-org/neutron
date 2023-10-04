@@ -1023,6 +1023,7 @@ func (app *App) setupUpgradeHandlers() {
 					BuilderKeeper:       app.BuilderKeeper,
 					ContractManager:     app.ContractManagerKeeper,
 					AdminModule:         app.AdminmoduleKeeper,
+					ConsensusKeeper:     &app.ConsensusParamsKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
