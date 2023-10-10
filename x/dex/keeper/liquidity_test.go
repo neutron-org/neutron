@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	sdkmath "cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	dualityapp "github.com/neutron-org/neutron/app"
@@ -602,7 +603,7 @@ func (s *LiquidityTestSuite) placeGTCLimitOrder(
 		types.LimitOrderType_GOOD_TIL_CANCELLED,
 	)
 	s.Assert().NoError(err)
-	tranche.PlaceMakerLimitOrder(sdk.NewInt(amountIn))
+	tranche.PlaceMakerLimitOrder(sdkmath.NewInt(amountIn))
 	s.app.DexKeeper.SaveTranche(s.ctx, tranche)
 }
 
@@ -616,7 +617,7 @@ func (s *LiquidityTestSuite) swap(
 	coinIn, coinOut, _, err = s.app.DexKeeper.Swap(
 		s.ctx,
 		tradePairID,
-		sdk.NewInt(maxAmountIn),
+		sdkmath.NewInt(maxAmountIn),
 		nil,
 		nil,
 	)
@@ -631,11 +632,11 @@ func (s *LiquidityTestSuite) swapWithMaxOut(
 	maxAmountOut int64,
 ) (coinIn, coinOut sdk.Coin) {
 	tradePairID := types.MustNewTradePairID(tokenIn, tokenOut)
-	maxAmountOutInt := sdk.NewInt(maxAmountOut)
+	maxAmountOutInt := sdkmath.NewInt(maxAmountOut)
 	coinIn, coinOut, _, err := s.app.DexKeeper.Swap(
 		s.ctx,
 		tradePairID,
-		sdk.NewInt(maxAmountIn),
+		sdkmath.NewInt(maxAmountIn),
 		&maxAmountOutInt,
 		nil,
 	)
@@ -654,17 +655,17 @@ func (s *LiquidityTestSuite) assertSwapOutput(
 	amtOut := actualOut.Amount
 
 	s.Assert().
-		True(amtIn.Equal(sdk.NewInt(expectedIn)), "Expected amountIn %d != %s", expectedIn, amtIn)
+		True(amtIn.Equal(sdkmath.NewInt(expectedIn)), "Expected amountIn %d != %s", expectedIn, amtIn)
 	s.Assert().
-		True(amtOut.Equal(sdk.NewInt(expectedOut)), "Expected amountOut %d != %s", expectedOut, amtOut)
+		True(amtOut.Equal(sdkmath.NewInt(expectedOut)), "Expected amountOut %d != %s", expectedOut, amtOut)
 }
 
 func (s *LiquidityTestSuite) assertDexBalances(expectedABalance int64, expectedBBalance int64) {
 	// NOTE: We can't just check the actual DEX bank balances since we are testing swap
 	// before any transfers take place. Instead we have to sum up the total amount of coins
 	// at each tick
-	expectedAInt := sdk.NewInt(expectedABalance)
-	expectedBInt := sdk.NewInt(expectedBBalance)
+	expectedAInt := sdkmath.NewInt(expectedABalance)
+	expectedBInt := sdkmath.NewInt(expectedBBalance)
 	allCoins := sdk.Coins{}
 	ticks := s.app.DexKeeper.GetAllTickLiquidity(s.ctx)
 	inactiveLOs := s.app.DexKeeper.GetAllInactiveLimitOrderTranche(s.ctx)

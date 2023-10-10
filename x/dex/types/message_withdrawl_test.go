@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
@@ -23,7 +23,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdk.Int{sdk.OneInt()},
+				SharesToRemove:  []math.Int{math.OneInt()},
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		},
@@ -34,7 +34,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        "invalid_address",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdk.Int{sdk.OneInt()},
+				SharesToRemove:  []math.Int{math.OneInt()},
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		},
@@ -45,7 +45,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdk.Int{sdk.OneInt()},
+				SharesToRemove:  []math.Int{math.OneInt()},
 			},
 			err: ErrUnbalancedTxArray,
 		},
@@ -56,7 +56,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{},
-				SharesToRemove:  []sdk.Int{sdk.OneInt()},
+				SharesToRemove:  []math.Int{math.OneInt()},
 			},
 			err: ErrUnbalancedTxArray,
 		},
@@ -67,7 +67,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdk.Int{},
+				SharesToRemove:  []math.Int{},
 			},
 			err: ErrUnbalancedTxArray,
 		},
@@ -78,7 +78,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
-				SharesToRemove:  []sdk.Int{},
+				SharesToRemove:  []math.Int{},
 			},
 			err: ErrZeroWithdraw,
 		},
@@ -89,7 +89,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdk.Int{sdk.ZeroInt()},
+				SharesToRemove:  []math.Int{math.ZeroInt()},
 			},
 			err: ErrZeroWithdraw,
 		},
@@ -100,7 +100,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
-				SharesToRemove:  []sdk.Int{sdk.OneInt()},
+				SharesToRemove:  []math.Int{math.OneInt()},
 			},
 		},
 	}

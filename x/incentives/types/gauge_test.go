@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/neutron-org/neutron/x/incentives/types"
 	"github.com/stretchr/testify/assert"
@@ -48,18 +49,18 @@ func TestGaugeEpochsRemaining(t *testing.T) {
 }
 
 func TestGaugeCoinsRemaining(t *testing.T) {
-	coins := sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(100))}
-	distCoins := sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(50))}
+	coins := sdk.Coins{sdk.NewCoin("coin1", math.NewInt(100))}
+	distCoins := sdk.Coins{sdk.NewCoin("coin1", math.NewInt(50))}
 	gauge := NewGauge(1, false, QueryCondition{}, coins, time.Time{}, 10, 5, distCoins, 0)
-	assert.Equal(t, sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(50))}, gauge.CoinsRemaining())
+	assert.Equal(t, sdk.Coins{sdk.NewCoin("coin1", math.NewInt(50))}, gauge.CoinsRemaining())
 }
 
 func TestGaugeGetTotal(t *testing.T) {
 	distSpec := DistributionSpec{
-		"addr1": sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(10))},
-		"addr2": sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(20))},
-		"addr3": sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(30))},
+		"addr1": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(10))},
+		"addr2": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(20))},
+		"addr3": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(30))},
 	}
 
-	assert.Equal(t, sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(60))}, distSpec.GetTotal())
+	assert.Equal(t, sdk.Coins{sdk.NewCoin("coin1", math.NewInt(60))}, distSpec.GetTotal())
 }

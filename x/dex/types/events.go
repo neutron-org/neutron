@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -14,9 +15,9 @@ func CreateDepositEvent(
 	token1 string,
 	tickIndex int64,
 	fee uint64,
-	depositAmountReserve0 sdk.Int,
-	depositAmountReserve1 sdk.Int,
-	sharesMinted sdk.Int,
+	depositAmountReserve0 math.Int,
+	depositAmountReserve1 math.Int,
+	sharesMinted math.Int,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
@@ -42,9 +43,9 @@ func CreateWithdrawEvent(
 	token1 string,
 	tickIndex int64,
 	fee uint64,
-	withdrawAmountReserve0 sdk.Int,
-	withdrawAmountReserve1 sdk.Int,
-	sharesRemoved sdk.Int,
+	withdrawAmountReserve0 math.Int,
+	withdrawAmountReserve1 math.Int,
+	sharesRemoved math.Int,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
@@ -68,8 +69,8 @@ func CreateMultihopSwapEvent(
 	receiver sdk.AccAddress,
 	makerDenom string,
 	tokenOut string,
-	amountIn sdk.Int,
-	amountOut sdk.Int,
+	amountIn math.Int,
+	amountOut math.Int,
 	route []string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -94,10 +95,10 @@ func CreatePlaceLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountIn sdk.Int,
+	amountIn math.Int,
 	limitTick int64,
 	orderType string,
-	shares sdk.Int,
+	shares math.Int,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -125,7 +126,7 @@ func WithdrawFilledLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOut sdk.Int,
+	amountOut math.Int,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -149,7 +150,7 @@ func CancelLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOut sdk.Int,
+	amountOut math.Int,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -172,7 +173,7 @@ func TickUpdateEvent(
 	token1 string,
 	makerDenom string,
 	tickIndex int64,
-	reserves sdk.Int,
+	reserves math.Int,
 	otherAttrs ...sdk.Attribute,
 ) sdk.Event {
 	attrs := []sdk.Attribute{

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -35,7 +36,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	msgs := []*types.DepositRecord{
 		{
 			PairID:          defaultPairID,
-			SharesOwned:     sdk.NewInt(10),
+			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 2,
 			LowerTickIndex:  1,
 			UpperTickIndex:  3,
@@ -43,7 +44,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 		},
 		{
 			PairID:          defaultPairID,
-			SharesOwned:     sdk.NewInt(10),
+			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 3,
 			LowerTickIndex:  2,
 			UpperTickIndex:  4,
@@ -51,7 +52,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 		},
 		{
 			PairID:          defaultPairID,
-			SharesOwned:     sdk.NewInt(10),
+			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 4,
 			LowerTickIndex:  3,
 			UpperTickIndex:  5,
@@ -59,7 +60,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 		},
 		{
 			PairID:          defaultPairID,
-			SharesOwned:     sdk.NewInt(10),
+			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 5,
 			LowerTickIndex:  4,
 			UpperTickIndex:  6,
@@ -67,7 +68,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 		},
 		{
 			PairID:          defaultPairID,
-			SharesOwned:     sdk.NewInt(10),
+			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 6,
 			LowerTickIndex:  5,
 			UpperTickIndex:  7,

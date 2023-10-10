@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -11,7 +11,7 @@ func (s *MsgServerTestSuite) TestWithdrawMultiFailure() {
 	// alice deposits 5 A, 5 B in tick 0 fee 0
 	s.aliceDeposits(NewDeposit(5, 5, 0, 1))
 	s.assertAliceShares(0, 1, 10)
-	s.assertLiquidityAtTick(sdk.NewInt(5), sdk.NewInt(5), 0, 1)
+	s.assertLiquidityAtTick(math.NewInt(5), math.NewInt(5), 0, 1)
 	s.assertAliceBalances(45, 45)
 	s.assertDexBalances(5, 5)
 
@@ -33,7 +33,7 @@ func (s *MsgServerTestSuite) TestWithdrawMultiSuccess() {
 	// alice deposits 5 A, 5 B in tick 0 fee 1
 	s.aliceDeposits(NewDeposit(5, 5, 0, 1))
 	s.assertAliceShares(0, 1, 10)
-	s.assertLiquidityAtTick(sdk.NewInt(5), sdk.NewInt(5), 0, 1)
+	s.assertLiquidityAtTick(math.NewInt(5), math.NewInt(5), 0, 1)
 	s.assertAliceBalances(45, 45)
 	s.assertDexBalances(5, 5)
 
@@ -48,7 +48,7 @@ func (s *MsgServerTestSuite) TestWithdrawMultiSuccess() {
 	// both withdraws should work
 	// i.e. no shares remaining and entire balance transferred out
 	s.assertAliceShares(0, 1, 0)
-	s.assertLiquidityAtTick(sdk.ZeroInt(), sdk.ZeroInt(), 0, 1)
+	s.assertLiquidityAtTick(math.ZeroInt(), math.ZeroInt(), 0, 1)
 	s.assertAliceBalances(50, 50)
 	s.assertDexBalances(0, 0)
 }

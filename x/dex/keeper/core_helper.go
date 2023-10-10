@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	math_utils "github.com/neutron-org/neutron/utils/math"
@@ -91,7 +92,7 @@ func (k Keeper) MintShares(ctx sdk.Context, addr sdk.AccAddress, shareCoin sdk.C
 func (k Keeper) BurnShares(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
-	amount sdk.Int,
+	amount math.Int,
 	sharesID string,
 ) error {
 	sharesCoins := sdk.Coins{sdk.NewCoin(sharesID, amount)}

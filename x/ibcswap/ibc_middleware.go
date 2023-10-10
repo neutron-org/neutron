@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -303,7 +304,7 @@ func (im IBCMiddleware) handleNoRefund(
 		return channeltypes.NewResultAcknowledgement([]byte(swapErr.Error()))
 	}
 
-	amount, ok := sdk.NewIntFromString(data.Amount)
+	amount, ok := math.NewIntFromString(data.Amount)
 	if !ok {
 		wrappedErr := sdkerrors.Wrapf(
 			transfertypes.ErrInvalidAmount,

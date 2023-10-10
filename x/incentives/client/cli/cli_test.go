@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/utils"
 	"github.com/neutron-org/neutron/utils/dcli"
@@ -149,8 +150,8 @@ func TestNewCreateGaugeCmd(t *testing.T) {
 					EndTick:   100,
 				},
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("TokenA", sdk.NewInt(100)),
-					sdk.NewCoin("TokenB", sdk.NewInt(100)),
+					sdk.NewCoin("TokenA", math.NewInt(100)),
+					sdk.NewCoin("TokenB", math.NewInt(100)),
 				),
 				StartTime:         time.Unix(0, 0).UTC(),
 				NumEpochsPaidOver: 50,
@@ -172,8 +173,8 @@ func TestNewCreateGaugeCmd(t *testing.T) {
 					EndTick:   20,
 				},
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("TokenA", sdk.NewInt(100)),
-					sdk.NewCoin("TokenB", sdk.NewInt(100)),
+					sdk.NewCoin("TokenA", math.NewInt(100)),
+					sdk.NewCoin("TokenB", math.NewInt(100)),
 				),
 				StartTime:         testTime,
 				NumEpochsPaidOver: 50,
@@ -195,8 +196,8 @@ func TestNewCreateGaugeCmd(t *testing.T) {
 					EndTick:   20,
 				},
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("TokenA", sdk.NewInt(100)),
-					sdk.NewCoin("TokenB", sdk.NewInt(100)),
+					sdk.NewCoin("TokenA", math.NewInt(100)),
+					sdk.NewCoin("TokenB", math.NewInt(100)),
 				),
 				StartTime:         testTime,
 				NumEpochsPaidOver: 50,
@@ -217,8 +218,8 @@ func TestNewCreateGaugeCmd(t *testing.T) {
 					EndTick:   20,
 				},
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("TokenA", sdk.NewInt(100)),
-					sdk.NewCoin("TokenB", sdk.NewInt(100)),
+					sdk.NewCoin("TokenA", math.NewInt(100)),
+					sdk.NewCoin("TokenB", math.NewInt(100)),
 				),
 				StartTime:         time.Unix(0, 0).UTC(),
 				NumEpochsPaidOver: 1,
@@ -237,7 +238,7 @@ func TestNewAddToGaugeCmd(t *testing.T) {
 			ExpectedMsg: &types.MsgAddToGauge{
 				Owner:   testAddresses[0].String(),
 				GaugeId: 1,
-				Rewards: sdk.NewCoins(sdk.NewCoin("TokenA", sdk.NewInt(1000))),
+				Rewards: sdk.NewCoins(sdk.NewCoin("TokenA", math.NewInt(1000))),
 			},
 		},
 		"multiple tokens": {
@@ -246,8 +247,8 @@ func TestNewAddToGaugeCmd(t *testing.T) {
 				Owner:   testAddresses[0].String(),
 				GaugeId: 1,
 				Rewards: sdk.NewCoins(
-					sdk.NewCoin("TokenA", sdk.NewInt(1000)),
-					sdk.NewCoin("TokenZ", sdk.NewInt(1)),
+					sdk.NewCoin("TokenA", math.NewInt(1000)),
+					sdk.NewCoin("TokenZ", math.NewInt(1)),
 				),
 			},
 		},
@@ -262,7 +263,7 @@ func TestNewStakeCmd(t *testing.T) {
 			Cmd: fmt.Sprintf("1000TokenA --from %s", testAddresses[0]),
 			ExpectedMsg: &types.MsgStake{
 				Owner: testAddresses[0].String(),
-				Coins: sdk.NewCoins(sdk.NewCoin("TokenA", sdk.NewInt(1000))),
+				Coins: sdk.NewCoins(sdk.NewCoin("TokenA", math.NewInt(1000))),
 			},
 		},
 		"multiple tokens": {
@@ -270,8 +271,8 @@ func TestNewStakeCmd(t *testing.T) {
 			ExpectedMsg: &types.MsgStake{
 				Owner: testAddresses[0].String(),
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("TokenA", sdk.NewInt(1000)),
-					sdk.NewCoin("TokenZ", sdk.NewInt(1)),
+					sdk.NewCoin("TokenA", math.NewInt(1000)),
+					sdk.NewCoin("TokenZ", math.NewInt(1)),
 				),
 			},
 		},
@@ -283,7 +284,7 @@ func TestNewStakeCmd(t *testing.T) {
 			ExpectedMsg: &types.MsgStake{
 				Owner: testAddresses[0].String(),
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t123-f30", sdk.NewInt(1000)),
+					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t123-f30", math.NewInt(1000)),
 				),
 			},
 		},
@@ -295,7 +296,7 @@ func TestNewStakeCmd(t *testing.T) {
 			ExpectedMsg: &types.MsgStake{
 				Owner: testAddresses[0].String(),
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t-123-f30", sdk.NewInt(1000)),
+					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t-123-f30", math.NewInt(1000)),
 				),
 			},
 		},
@@ -307,8 +308,8 @@ func TestNewStakeCmd(t *testing.T) {
 			ExpectedMsg: &types.MsgStake{
 				Owner: testAddresses[0].String(),
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t-123-f30", sdk.NewInt(1000)),
-					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t-124-f30", sdk.NewInt(1)),
+					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t-123-f30", math.NewInt(1000)),
+					sdk.NewCoin("DualityPoolShares-tokenA-tokenB-t-124-f30", math.NewInt(1)),
 				),
 			},
 		},
@@ -334,13 +335,13 @@ func TestNewUnstakeCmd(t *testing.T) {
 					{
 						ID: 1,
 						Coins: sdk.NewCoins(
-							sdk.NewCoin("TokenA", sdk.NewInt(10)),
+							sdk.NewCoin("TokenA", math.NewInt(10)),
 						),
 					}, {
 						ID: 10,
 						Coins: sdk.NewCoins(
-							sdk.NewCoin("TokenA", sdk.NewInt(10)),
-							sdk.NewCoin("TokenC", sdk.NewInt(10)),
+							sdk.NewCoin("TokenA", math.NewInt(10)),
+							sdk.NewCoin("TokenC", math.NewInt(10)),
 						),
 					},
 				},

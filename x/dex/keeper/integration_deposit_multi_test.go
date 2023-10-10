@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -40,6 +40,6 @@ func (s *MsgServerTestSuite) TestDepositMultiSuccess() {
 	// THEN
 	// both deposits should go through
 	s.assertAliceBalances(35, 35)
-	s.assertLiquidityAtTick(sdk.NewInt(15), sdk.NewInt(15), 0, 1)
+	s.assertLiquidityAtTick(math.NewInt(15), math.NewInt(15), 0, 1)
 	s.assertDexBalances(15, 15)
 }

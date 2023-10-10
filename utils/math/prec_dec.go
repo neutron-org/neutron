@@ -10,8 +10,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // NOTE: This file is nearly direct copy from cosmossdk.io/math/dec.go @v1.01
@@ -131,13 +129,13 @@ func NewPrecDecFromBigIntWithPrec(i *big.Int, prec int64) PrecDec {
 
 // create a new PrecDec from big integer assuming whole numbers
 // CONTRACT: prec <= Precision
-func NewPrecDecFromInt(i sdk.Int) PrecDec {
+func NewPrecDecFromInt(i math.Int) PrecDec {
 	return NewPrecDecFromIntWithPrec(i, 0)
 }
 
 // create a new PrecDec from big integer with decimal place at prec
 // CONTRACT: prec <= Precision
-func NewPrecDecFromIntWithPrec(i sdk.Int, prec int64) PrecDec {
+func NewPrecDecFromIntWithPrec(i math.Int, prec int64) PrecDec {
 	return PrecDec{
 		new(big.Int).Mul(i.BigInt(), precisionMultiplier(prec)),
 	}
@@ -247,7 +245,7 @@ func (d PrecDec) ImmutOp(op func(PrecDec, PrecDec) PrecDec, d2 PrecDec) PrecDec 
 	return op(d.Clone(), d2)
 }
 
-func (d PrecDec) ImmutOpInt(op func(PrecDec, sdk.Int) PrecDec, d2 sdk.Int) PrecDec {
+func (d PrecDec) ImmutOpInt(op func(PrecDec, math.Int) PrecDec, d2 math.Int) PrecDec {
 	return op(d.Clone(), d2)
 }
 
@@ -328,11 +326,11 @@ func (d PrecDec) MulTruncateMut(d2 PrecDec) PrecDec {
 }
 
 // multiplication
-func (d PrecDec) MulInt(i sdk.Int) PrecDec {
+func (d PrecDec) MulInt(i math.Int) PrecDec {
 	return d.ImmutOpInt(PrecDec.MulIntMut, i)
 }
 
-func (d PrecDec) MulIntMut(i sdk.Int) PrecDec {
+func (d PrecDec) MulIntMut(i math.Int) PrecDec {
 	d.i.Mul(d.i, i.BigInt())
 	if d.i.BitLen() > maxPrecDecBitLen {
 		panic("Int overflow")
@@ -411,11 +409,11 @@ func (d PrecDec) QuoRoundupMut(d2 PrecDec) PrecDec {
 }
 
 // quotient
-func (d PrecDec) QuoInt(i sdk.Int) PrecDec {
+func (d PrecDec) QuoInt(i math.Int) PrecDec {
 	return d.ImmutOpInt(PrecDec.QuoIntMut, i)
 }
 
-func (d PrecDec) QuoIntMut(i sdk.Int) PrecDec {
+func (d PrecDec) QuoIntMut(i math.Int) PrecDec {
 	d.i.Quo(d.i, i.BigInt())
 	return d
 }
@@ -684,8 +682,8 @@ func (d PrecDec) RoundInt64() int64 {
 }
 
 // RoundInt round the decimal using bankers rounding
-func (d PrecDec) RoundInt() sdk.Int {
-	return sdk.NewIntFromBigInt(chopPrecisionAndRoundNonMutative(d.i))
+func (d PrecDec) RoundInt() math.Int {
+	return math.NewIntFromBigInt(chopPrecisionAndRoundNonMutative(d.i))
 }
 
 // chopPrecisionAndTruncate is similar to chopPrecisionAndRound,
@@ -710,8 +708,8 @@ func (d PrecDec) TruncateInt64() int64 {
 }
 
 // TruncateInt truncates the decimals from the number and returns an Int
-func (d PrecDec) TruncateInt() sdk.Int {
-	return sdk.NewIntFromBigInt(chopPrecisionAndTruncateNonMutative(d.i))
+func (d PrecDec) TruncateInt() math.Int {
+	return math.NewIntFromBigInt(chopPrecisionAndTruncateNonMutative(d.i))
 }
 
 // TruncatePrecDec truncates the decimals from the number and returns a PrecDec

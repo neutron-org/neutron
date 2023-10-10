@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -117,7 +118,7 @@ func (k Keeper) RefundPacketToken(
 	trace := transfertypes.ParseDenomTrace(data.Denom)
 
 	// parse the transfer amount
-	transferAmount, ok := sdk.NewIntFromString(data.Amount)
+	transferAmount, ok := math.NewIntFromString(data.Amount)
 	if !ok {
 		return sdkerrors.Wrapf(
 			transfertypes.ErrInvalidAmount,

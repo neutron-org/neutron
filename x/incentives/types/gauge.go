@@ -3,6 +3,7 @@ package types
 import (
 	time "time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -62,7 +63,7 @@ func (gauge Gauge) RewardsNextEpoch() sdk.Coins {
 	}
 
 	for _, rewardRemainingCoin := range gauge.CoinsRemaining() {
-		amount := rewardRemainingCoin.Amount.Quo(sdk.NewInt(int64(epochsRemaining)))
+		amount := rewardRemainingCoin.Amount.Quo(math.NewInt(int64(epochsRemaining)))
 		result = result.Add(sdk.Coin{Denom: rewardRemainingCoin.Denom, Amount: amount})
 	}
 

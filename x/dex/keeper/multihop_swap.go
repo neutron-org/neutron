@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	math_utils "github.com/neutron-org/neutron/utils/math"
@@ -51,10 +52,10 @@ type StepResult struct {
 type multihopCacheKey struct {
 	TokenIn  string
 	TokenOut string
-	InAmount sdk.Int
+	InAmount math.Int
 }
 
-func newCacheKey(tokenIn, tokenOut string, inAmount sdk.Int) multihopCacheKey {
+func newCacheKey(tokenIn, tokenOut string, inAmount math.Int) multihopCacheKey {
 	return multihopCacheKey{
 		TokenIn:  tokenIn,
 		TokenOut: tokenOut,
@@ -147,7 +148,7 @@ func (k Keeper) RunMultihopRoute(
 
 func (k Keeper) SwapExactAmountIn(ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	amountIn sdk.Int,
+	amountIn math.Int,
 ) (totalOut sdk.Coin, err error) {
 	_, swapAmountMakerDenom, orderFilled, err := k.Swap(
 		ctx,

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -15,7 +16,7 @@ func NewMsgDeposit(
 	tokenA,
 	tokenB string,
 	amountsA,
-	amountsB []sdk.Int,
+	amountsB []math.Int,
 	tickIndexes []int64,
 	fees []uint64,
 	depositOptions []*DepositOptions,
@@ -78,10 +79,10 @@ func (msg *MsgDeposit) ValidateBasic() error {
 	}
 
 	for i := 0; i < numDeposits; i++ {
-		if msg.AmountsA[i].LT(sdk.ZeroInt()) || msg.AmountsB[i].LT(sdk.ZeroInt()) {
+		if msg.AmountsA[i].LT(math.ZeroInt()) || msg.AmountsB[i].LT(math.ZeroInt()) {
 			return ErrZeroDeposit
 		}
-		if msg.AmountsA[i].Equal(sdk.ZeroInt()) && msg.AmountsB[i].Equal(sdk.ZeroInt()) {
+		if msg.AmountsA[i].Equal(math.ZeroInt()) && msg.AmountsB[i].Equal(math.ZeroInt()) {
 			return ErrZeroDeposit
 		}
 	}

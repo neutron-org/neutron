@@ -1,10 +1,10 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 )
 
-func SortAmounts(tokenA, token0 string, amountsA, amountsB []sdk.Int) ([]sdk.Int, []sdk.Int) {
+func SortAmounts(tokenA, token0 string, amountsA, amountsB []math.Int) ([]math.Int, []math.Int) {
 	if tokenA == token0 {
 		return amountsA, amountsB
 	}

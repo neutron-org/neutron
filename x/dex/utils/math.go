@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 )
 
@@ -22,7 +22,7 @@ func Abs(x int64) uint64 {
 	return uint64(x)
 }
 
-func MinIntArr(vals []sdk.Int) sdk.Int {
+func MinIntArr(vals []sdkmath.Int) sdkmath.Int {
 	min := vals[0]
 	for _, val := range vals {
 		if val.LT(min) {
@@ -33,7 +33,7 @@ func MinIntArr(vals []sdk.Int) sdk.Int {
 	return min
 }
 
-func MaxIntArr(vals []sdk.Int) sdk.Int {
+func MaxIntArr(vals []sdkmath.Int) sdkmath.Int {
 	max := vals[0]
 	for _, val := range vals {
 		if val.GT(max) {

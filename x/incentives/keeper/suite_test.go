@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"time"
 
+	"cosmossdk.io/math"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/incentives/types"
 
@@ -50,8 +51,8 @@ func (suite *KeeperTestSuite) SetupDeposit(ss []depositSpec) sdk.Coins {
 			dextypes.MustNewPairID(s.token0.Denom, s.token1.Denom),
 			s.addr,
 			s.addr,
-			[]sdk.Int{s.token0.Amount},
-			[]sdk.Int{s.token1.Amount},
+			[]math.Int{s.token0.Amount},
+			[]math.Int{s.token1.Amount},
 			[]int64{s.tick},
 			[]uint64{s.fee},
 			[]*dextypes.DepositOptions{{}},

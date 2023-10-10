@@ -1,6 +1,7 @@
 package types
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	math_utils "github.com/neutron-org/neutron/utils/math"
@@ -14,7 +15,7 @@ func NewMsgMultiHopSwap(
 	creator string,
 	receiever string,
 	routesArr [][]string,
-	amountIn sdk.Int,
+	amountIn math.Int,
 	exitLimitPrice math_utils.PrecDec,
 	pickBestRoute bool,
 ) *MsgMultiHopSwap {
@@ -77,7 +78,7 @@ func (msg *MsgMultiHopSwap) ValidateBasic() error {
 		}
 	}
 
-	if msg.AmountIn.LTE(sdk.ZeroInt()) {
+	if msg.AmountIn.LTE(math.ZeroInt()) {
 		return ErrZeroSwap
 	}
 

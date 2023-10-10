@@ -156,7 +156,7 @@ package cli
 // 		fmt.Sprintf(
 // 			"--%s=%s",
 // 			flags.FlagFees,
-// 			sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))).String(),
+// 			sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(10))).String(),
 // 		),
 // 	}
 // 	out, err := clitestutil.MsgSendExec(
@@ -180,7 +180,7 @@ package cli
 // 		fmt.Sprintf(
 // 			"--%s=%s",
 // 			flags.FlagFees,
-// 			sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))).String(),
+// 			sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(10))).String(),
 // 		),
 // 		fmt.Sprintf("--%s=%s", flags.FlagGas, "200000000"),
 // 		fmt.Sprintf("--%s=%s", flags.FlagFrom, val[0].Address.String()),
@@ -283,7 +283,7 @@ package cli
 // 		fmt.Sprintf(
 // 			"--%s=%s",
 // 			flags.FlagFees,
-// 			sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))).String(),
+// 			sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(10))).String(),
 // 		),
 // 		fmt.Sprintf("--%s=%s", flags.FlagGas, "200000000"),
 // 		fmt.Sprintf("--%s=%s", flags.FlagFrom, val[0].Address.String()),
@@ -396,7 +396,7 @@ package cli
 // 		fmt.Sprintf(
 // 			"--%s=%s",
 // 			flags.FlagFees,
-// 			sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))).String(),
+// 			sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(10))).String(),
 // 		),
 // 		fmt.Sprintf("--%s=%s", flags.FlagGas, "200000000"),
 // 		fmt.Sprintf("--%s=%s", flags.FlagFrom, val[0].Address.String()),
@@ -521,7 +521,7 @@ package cli
 // 		fmt.Sprintf(
 // 			"--%s=%s",
 // 			flags.FlagFees,
-// 			sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))).String(),
+// 			sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(10))).String(),
 // 		),
 // 		fmt.Sprintf("--%s=%s", flags.FlagGas, "200000000"),
 // 		fmt.Sprintf("--%s=%s", flags.FlagFrom, val[0].Address.String()),
@@ -585,7 +585,7 @@ package cli
 // 		fmt.Sprintf(
 // 			"--%s=%s",
 // 			flags.FlagFees,
-// 			sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(10))).String(),
+// 			sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(10))).String(),
 // 		),
 // 		fmt.Sprintf("--%s=%s", flags.FlagGas, "200000000"),
 // 		fmt.Sprintf("--%s=%s", flags.FlagFrom, val[0].Address.String()),

@@ -4,8 +4,8 @@ import (
 	"math"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
@@ -763,7 +763,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 		TokenIn:          "TokenA",
 		TokenOut:         "TokenB",
 		TickIndexInToOut: 0,
-		AmountIn:         sdk.NewInt(50),
+		AmountIn:         sdkmath.NewInt(50),
 		OrderType:        types.LimitOrderType_GOOD_TIL_TIME,
 		ExpirationTime:   &yesterday,
 	})

@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	math_utils "github.com/neutron-org/neutron/utils/math"
@@ -22,7 +23,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapSingleRoute() {
 	coinOut := s.aliceEstimatesMultiHopSwap(route, 100, math_utils.MustNewPrecDecFromStr("0.9"), false)
 
 	// THEN alice would get out 99 TokenD
-	s.Assert().Equal(sdk.NewInt(97), coinOut.Amount)
+	s.Assert().Equal(math.NewInt(97), coinOut.Amount)
 	s.assertAccountBalanceWithDenom(s.alice, "TokenA", 100)
 	s.assertAccountBalanceWithDenom(s.alice, "TokenD", 0)
 
@@ -99,8 +100,8 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteOneGood() {
 
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
@@ -110,27 +111,27 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteOneGood() {
 
 	// THEN swap estimation succeeds through route A<>B, B<>E, E<>X
 
-	s.Assert().Equal(sdk.NewInt(97), coinOut.Amount)
+	s.Assert().Equal(math.NewInt(97), coinOut.Amount)
 	s.assertAccountBalanceWithDenom(s.alice, "TokenA", 100)
 	s.assertAccountBalanceWithDenom(s.alice, "TokenX", 0)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenB", Token1: "TokenE"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenE", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
@@ -138,43 +139,43 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteOneGood() {
 	// Other pools are unaffected
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenB", Token1: "TokenC"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenC", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(50),
+		math.NewInt(0),
+		math.NewInt(50),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenC", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(50),
+		math.NewInt(0),
+		math.NewInt(50),
 		2200,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenB", Token1: "TokenD"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenD", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(50),
+		math.NewInt(0),
+		math.NewInt(50),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenD", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(50),
+		math.NewInt(0),
+		math.NewInt(50),
 		2200,
 		1,
 	)
@@ -247,25 +248,25 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteFindBestRoute() {
 
 	// THEN swap succeeds through route A<>B, B<>E, E<>X
 
-	s.Assert().Equal(sdk.NewCoin("TokenX", sdk.NewInt(132)), coinOut)
+	s.Assert().Equal(sdk.NewCoin("TokenX", math.NewInt(132)), coinOut)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenB", Token1: "TokenE"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenE", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(1000),
+		math.NewInt(0),
+		math.NewInt(1000),
 		-3000,
 		1,
 	)
@@ -273,29 +274,29 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteFindBestRoute() {
 	// Other pools are unaffected
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenB", Token1: "TokenC"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenC", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(1000),
+		math.NewInt(0),
+		math.NewInt(1000),
 		-1000,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenB", Token1: "TokenD"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenD", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(1000),
+		math.NewInt(0),
+		math.NewInt(1000),
 		-2000,
 		1,
 	)
@@ -338,12 +339,12 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapLongRouteWithCache() {
 	coinOut := s.aliceEstimatesMultiHopSwap(routes, 100, math_utils.MustNewPrecDecFromStr("0.8"), true)
 
 	// THEN swap succeeds with second route
-	s.Assert().Equal(coinOut, sdk.NewCoin("TokenX", sdk.NewInt(88)))
+	s.Assert().Equal(coinOut, sdk.NewCoin("TokenX", math.NewInt(88)))
 	s.assertAccountBalanceWithDenom(s.alice, "TokenA", 100)
 	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenM", Token1: "TokenX"},
-		sdk.NewInt(0),
-		sdk.NewInt(100),
+		math.NewInt(0),
+		math.NewInt(100),
 		0,
 		1,
 	)

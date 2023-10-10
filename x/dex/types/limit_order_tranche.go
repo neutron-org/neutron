@@ -1,6 +1,7 @@
 package types
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/utils"
@@ -11,10 +12,10 @@ func NewLimitOrderTranche(
 	takerDenom string,
 	trancheKey string,
 	tickIndex int64,
-	reservesMakerDenom sdk.Int,
-	reservesTakerDenom sdk.Int,
-	totalMakerDenom sdk.Int,
-	totalTakerDenom sdk.Int,
+	reservesMakerDenom math.Int,
+	reservesTakerDenom math.Int,
+	totalMakerDenom math.Int,
+	totalTakerDenom math.Int,
 ) (*LimitOrderTranche, error) {
 	tradePairID, err := NewTradePairID(takerDenom, makerDenom)
 	if err != nil {
@@ -44,10 +45,10 @@ func MustNewLimitOrderTranche(
 	takerDenom string,
 	trancheKey string,
 	tickIndex int64,
-	reservesMakerDenom sdk.Int,
-	reservesTakerDenom sdk.Int,
-	totalMakerDenom sdk.Int,
-	totalTakerDenom sdk.Int,
+	reservesMakerDenom math.Int,
+	reservesTakerDenom math.Int,
+	totalMakerDenom math.Int,
+	totalTakerDenom math.Int,
 ) *LimitOrderTranche {
 	limitOrderTranche, err := NewLimitOrderTranche(
 		makerDenom,
@@ -82,11 +83,11 @@ func (t LimitOrderTranche) IsExpired(ctx sdk.Context) bool {
 }
 
 func (t LimitOrderTranche) HasTokenIn() bool {
-	return t.ReservesMakerDenom.GT(sdk.ZeroInt())
+	return t.ReservesMakerDenom.GT(math.ZeroInt())
 }
 
 func (t LimitOrderTranche) HasTokenOut() bool {
-	return t.ReservesTakerDenom.GT(sdk.ZeroInt())
+	return t.ReservesTakerDenom.GT(math.ZeroInt())
 }
 
 func (t LimitOrderTranche) Price() math_utils.PrecDec {
@@ -105,12 +106,12 @@ func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
 }
 
 func (t LimitOrderTranche) HasLiquidity() bool {
-	return t.ReservesMakerDenom.GT(sdk.ZeroInt())
+	return t.ReservesMakerDenom.GT(math.ZeroInt())
 }
 
 func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
-) (amountToRemove sdk.Int) {
+) (amountToRemove math.Int) {
 	amountUnfilled := t.AmountUnfilled()
 	maxAmountToRemove := amountUnfilled.MulInt(trancheUser.SharesOwned).
 		QuoInt(t.TotalMakerDenom).
@@ -121,7 +122,7 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	return amountToRemove
 }
 
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sdk.Int, math_utils.PrecDec) {
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
 	reservesTokenOutDec := math_utils.NewPrecDecFromInt(t.ReservesTakerDenom)
 
 	ratioFilled := t.RatioFilled()
@@ -133,15 +134,15 @@ func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sdk.In
 	return amountOutTokenIn, amountOutTokenOut
 }
 
-func (t *LimitOrderTranche) Swap(maxAmountTakerIn sdk.Int, maxAmountMakerOut *sdk.Int) (
-	inAmount sdk.Int,
-	outAmount sdk.Int,
+func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *math.Int) (
+	inAmount math.Int,
+	outAmount math.Int,
 ) {
 	reservesTokenOut := &t.ReservesMakerDenom
 	fillTokenIn := &t.ReservesTakerDenom
 	totalTokenIn := &t.TotalTakerDenom
 	maxOutGivenIn := t.PriceTakerToMaker.MulInt(maxAmountTakerIn).TruncateInt()
-	possibleOutAmounts := []sdk.Int{*reservesTokenOut, maxOutGivenIn}
+	possibleOutAmounts := []math.Int{*reservesTokenOut, maxOutGivenIn}
 	if maxAmountMakerOut != nil {
 		possibleOutAmounts = append(possibleOutAmounts, *maxAmountMakerOut)
 	}
@@ -156,7 +157,7 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn sdk.Int, maxAmountMakerOut *sd
 	return inAmount, outAmount
 }
 
-func (t *LimitOrderTranche) PlaceMakerLimitOrder(amountIn sdk.Int) {
+func (t *LimitOrderTranche) PlaceMakerLimitOrder(amountIn math.Int) {
 	t.ReservesMakerDenom = t.ReservesMakerDenom.Add(amountIn)
 	t.TotalMakerDenom = t.TotalMakerDenom.Add(amountIn)
 }

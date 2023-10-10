@@ -1,11 +1,11 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 )
 
 func (p PoolReserves) HasToken() bool {
-	return p.ReservesMakerDenom.GT(sdk.ZeroInt())
+	return p.ReservesMakerDenom.GT(math.ZeroInt())
 }
 
 func NewPoolReservesFromCounterpart(
@@ -14,7 +14,7 @@ func NewPoolReservesFromCounterpart(
 	thisID := counterpart.Key.Counterpart()
 	return &PoolReserves{
 		Key:                       thisID,
-		ReservesMakerDenom:        sdk.ZeroInt(),
+		ReservesMakerDenom:        math.ZeroInt(),
 		PriceTakerToMaker:         counterpart.PriceOppositeTakerToMaker,
 		PriceOppositeTakerToMaker: counterpart.PriceTakerToMaker,
 	}
@@ -35,7 +35,7 @@ func NewPoolReserves(
 
 	return &PoolReserves{
 		Key:                       poolReservesID,
-		ReservesMakerDenom:        sdk.ZeroInt(),
+		ReservesMakerDenom:        math.ZeroInt(),
 		PriceTakerToMaker:         priceTakerToMaker,
 		PriceOppositeTakerToMaker: priceOppositeTakerToMaker,
 	}, nil

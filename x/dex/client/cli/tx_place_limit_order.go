@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cobra"
@@ -36,7 +36,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 			}
 			argAmountIn := args[4]
 
-			amountInInt, ok := sdk.NewIntFromString(argAmountIn)
+			amountInInt, ok := math.NewIntFromString(argAmountIn)
 			if !ok {
 				return sdkerrors.Wrapf(types.ErrIntOverflowTx, "Integer overflow for amount-in")
 			}
@@ -64,9 +64,9 @@ func CmdPlaceLimitOrder() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			var maxAmountOutIntP *sdk.Int = nil
+			var maxAmountOutIntP *math.Int = nil
 			if maxAmountOutArg != "" {
-				maxAmountOutInt, ok := sdk.NewIntFromString(maxAmountOutArg)
+				maxAmountOutInt, ok := math.NewIntFromString(maxAmountOutArg)
 				if !ok {
 					return sdkerrors.Wrapf(
 						types.ErrIntOverflowTx,

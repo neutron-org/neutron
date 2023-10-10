@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"math"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -251,7 +251,7 @@ func (s *MsgServerTestSuite) TestWithdrawalFailsWithNonExistentPair() {
 		Receiver:        s.alice.String(),
 		TokenA:          "TokenX",
 		TokenB:          "TokenZ",
-		SharesToRemove:  []sdk.Int{sdk.NewInt(10)},
+		SharesToRemove:  []sdkmath.Int{sdkmath.NewInt(10)},
 		TickIndexesAToB: []int64{0},
 		Fees:            []uint64{0},
 	})

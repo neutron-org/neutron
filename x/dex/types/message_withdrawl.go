@@ -1,6 +1,7 @@
 package types
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -13,7 +14,7 @@ func NewMsgWithdrawal(creator,
 	receiver,
 	tokenA,
 	tokenB string,
-	sharesToRemove []sdk.Int,
+	sharesToRemove []math.Int,
 	tickIndexes []int64,
 	fees []uint64,
 ) *MsgWithdrawal {
@@ -72,7 +73,7 @@ func (msg *MsgWithdrawal) ValidateBasic() error {
 	}
 
 	for i := 0; i < len(msg.Fees); i++ {
-		if msg.SharesToRemove[i].LTE(sdk.ZeroInt()) {
+		if msg.SharesToRemove[i].LTE(math.ZeroInt()) {
 			return ErrZeroWithdraw
 		}
 	}

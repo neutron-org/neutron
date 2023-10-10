@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/testutil/apptesting"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
@@ -28,7 +29,7 @@ func (suite *KeeperTestSuite) TestValueForShares() {
 		deposits    []depositSpec
 		coin        sdk.Coin
 		tick        int64
-		expectation sdk.Int
+		expectation math.Int
 		err         error
 	}{
 		// gauge 1 gives 3k coins. three stakes, all eligible. 1k coins per stake.
@@ -46,7 +47,7 @@ func (suite *KeeperTestSuite) TestValueForShares() {
 			},
 			coin:        sdk.NewInt64Coin(dextypes.NewPoolDenom(0), 20),
 			tick:        1000,
-			expectation: sdk.NewInt(21),
+			expectation: math.NewInt(21),
 		},
 		{
 			name: "one deposit: no adjustment",
@@ -61,7 +62,7 @@ func (suite *KeeperTestSuite) TestValueForShares() {
 			},
 			coin:        sdk.NewInt64Coin(dextypes.NewPoolDenom(0), 20),
 			tick:        0,
-			expectation: sdk.NewInt(20),
+			expectation: math.NewInt(20),
 		},
 		{
 			name: "two deposits: one extraneous",
@@ -83,7 +84,7 @@ func (suite *KeeperTestSuite) TestValueForShares() {
 			},
 			coin:        sdk.NewInt64Coin(dextypes.NewPoolDenom(0), 20),
 			tick:        1000,
-			expectation: sdk.NewInt(21),
+			expectation: math.NewInt(21),
 		},
 		{
 			name: "two deposits: both relevant",
@@ -105,7 +106,7 @@ func (suite *KeeperTestSuite) TestValueForShares() {
 			},
 			coin:        sdk.NewInt64Coin(dextypes.NewPoolDenom(0), 20),
 			tick:        1000,
-			expectation: sdk.NewInt(21),
+			expectation: math.NewInt(21),
 		},
 	}
 	for _, tc := range tests {

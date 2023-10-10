@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/testutil/dex/nullify"
@@ -20,9 +21,9 @@ func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int)
 			Address:               strconv.Itoa(i),
 			TradePairID:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
 			TickIndexTakerToMaker: 0,
-			SharesOwned:           sdk.ZeroInt(),
-			SharesWithdrawn:       sdk.ZeroInt(),
-			SharesCancelled:       sdk.ZeroInt(),
+			SharesOwned:           math.ZeroInt(),
+			SharesWithdrawn:       math.ZeroInt(),
+			SharesCancelled:       math.ZeroInt(),
 		}
 		items[i] = val
 		keeper.SetLimitOrderTrancheUser(ctx, items[i])
@@ -39,9 +40,9 @@ func createNLimitOrderTrancheUserWithAddress(keeper *keeper.Keeper, ctx sdk.Cont
 			Address:               address,
 			TradePairID:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
 			TickIndexTakerToMaker: 0,
-			SharesOwned:           sdk.ZeroInt(),
-			SharesWithdrawn:       sdk.ZeroInt(),
-			SharesCancelled:       sdk.ZeroInt(),
+			SharesOwned:           math.ZeroInt(),
+			SharesWithdrawn:       math.ZeroInt(),
+			SharesCancelled:       math.ZeroInt(),
 		}
 		items[i] = val
 		keeper.SetLimitOrderTrancheUser(ctx, items[i])
@@ -89,9 +90,9 @@ func (s *MsgServerTestSuite) TestGetAllLimitOrders() {
 		TickIndexTakerToMaker: 1,
 		TrancheKey:            trancheKeyA,
 		Address:               s.alice.String(),
-		SharesOwned:           sdk.NewInt(10),
-		SharesWithdrawn:       sdk.NewInt(0),
-		SharesCancelled:       sdk.NewInt(0),
+		SharesOwned:           math.NewInt(10),
+		SharesWithdrawn:       math.NewInt(0),
+		SharesCancelled:       math.NewInt(0),
 	},
 		LOList[0],
 	)
@@ -100,9 +101,9 @@ func (s *MsgServerTestSuite) TestGetAllLimitOrders() {
 		TickIndexTakerToMaker: 0,
 		TrancheKey:            trancheKeyB,
 		Address:               s.alice.String(),
-		SharesOwned:           sdk.NewInt(10),
-		SharesWithdrawn:       sdk.NewInt(0),
-		SharesCancelled:       sdk.NewInt(0),
+		SharesOwned:           math.NewInt(10),
+		SharesWithdrawn:       math.NewInt(0),
+		SharesCancelled:       math.NewInt(0),
 	},
 		LOList[1],
 	)

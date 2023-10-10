@@ -4,10 +4,10 @@ import (
 	"strconv"
 	"strings"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -33,7 +33,7 @@ func CmdMultiHopSwap() *cobra.Command {
 				routesArr[i] = strings.Split(route, ",")
 			}
 
-			amountInInt, ok := sdk.NewIntFromString(argAmountIn)
+			amountInInt, ok := math.NewIntFromString(argAmountIn)
 			if !ok {
 				return sdkerrors.Wrapf(types.ErrIntOverflowTx, "Invalid value for amount-in")
 			}

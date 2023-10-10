@@ -3,7 +3,7 @@ package dex_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/testutil/dex/nullify"
 	"github.com/neutron-org/neutron/x/dex"
@@ -23,9 +23,9 @@ func TestGenesis(t *testing.T) {
 				TickIndexTakerToMaker: 1,
 				TrancheKey:            "0",
 				Address:               "fakeAddr",
-				SharesOwned:           sdk.NewInt(10),
-				SharesWithdrawn:       sdk.NewInt(0),
-				SharesCancelled:       sdk.NewInt(0),
+				SharesOwned:           math.NewInt(10),
+				SharesWithdrawn:       math.NewInt(0),
+				SharesCancelled:       math.NewInt(0),
 			},
 			{
 				TradePairID: &types.TradePairID{
@@ -35,9 +35,9 @@ func TestGenesis(t *testing.T) {
 				TickIndexTakerToMaker: 20,
 				TrancheKey:            "0",
 				Address:               "fakeAddr",
-				SharesOwned:           sdk.NewInt(10),
-				SharesWithdrawn:       sdk.NewInt(0),
-				SharesCancelled:       sdk.NewInt(0),
+				SharesOwned:           math.NewInt(10),
+				SharesWithdrawn:       math.NewInt(0),
+				SharesCancelled:       math.NewInt(0),
 			},
 		},
 		TickLiquidityList: []*types.TickLiquidity{
@@ -48,10 +48,10 @@ func TestGenesis(t *testing.T) {
 						"TokenA",
 						"0",
 						0,
-						sdk.ZeroInt(),
-						sdk.ZeroInt(),
-						sdk.ZeroInt(),
-						sdk.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
 					),
 				},
 			},
@@ -62,10 +62,10 @@ func TestGenesis(t *testing.T) {
 						"TokenA",
 						"0",
 						0,
-						sdk.ZeroInt(),
-						sdk.ZeroInt(),
-						sdk.ZeroInt(),
-						sdk.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
 					),
 				},
 			},

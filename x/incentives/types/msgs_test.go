@@ -7,6 +7,7 @@ import (
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/testutil/apptesting"
@@ -197,7 +198,7 @@ func TestMsgSetupStake(t *testing.T) {
 			name: "proper msg",
 			msg: MsgStake{
 				Owner: addr1,
-				Coins: sdk.NewCoins(sdk.NewCoin("test", sdk.NewInt(100))),
+				Coins: sdk.NewCoins(sdk.NewCoin("test", math.NewInt(100))),
 			},
 			expectPass: true,
 		},
@@ -205,14 +206,14 @@ func TestMsgSetupStake(t *testing.T) {
 			name: "invalid owner",
 			msg: MsgStake{
 				Owner: invalidAddr,
-				Coins: sdk.NewCoins(sdk.NewCoin("test", sdk.NewInt(100))),
+				Coins: sdk.NewCoins(sdk.NewCoin("test", math.NewInt(100))),
 			},
 		},
 		{
 			name: "zero token amount",
 			msg: MsgStake{
 				Owner: addr1,
-				Coins: sdk.NewCoins(sdk.NewCoin("test", sdk.NewInt(0))),
+				Coins: sdk.NewCoins(sdk.NewCoin("test", math.NewInt(0))),
 			},
 		},
 	}
@@ -248,7 +249,7 @@ func TestMsgUnstake(t *testing.T) {
 				Unstakes: []*MsgUnstake_UnstakeDescriptor{
 					{
 						ID:    1,
-						Coins: sdk.NewCoins(sdk.NewCoin("test", sdk.NewInt(100))),
+						Coins: sdk.NewCoins(sdk.NewCoin("test", math.NewInt(100))),
 					},
 				},
 			},
@@ -261,7 +262,7 @@ func TestMsgUnstake(t *testing.T) {
 				Unstakes: []*MsgUnstake_UnstakeDescriptor{
 					{
 						ID:    1,
-						Coins: sdk.NewCoins(sdk.NewCoin("test", sdk.NewInt(100))),
+						Coins: sdk.NewCoins(sdk.NewCoin("test", math.NewInt(100))),
 					},
 				},
 			},
@@ -273,7 +274,7 @@ func TestMsgUnstake(t *testing.T) {
 				Unstakes: []*MsgUnstake_UnstakeDescriptor{
 					{
 						ID:    0,
-						Coins: sdk.NewCoins(sdk.NewCoin("test", sdk.NewInt(100))),
+						Coins: sdk.NewCoins(sdk.NewCoin("test", math.NewInt(100))),
 					},
 				},
 			},
@@ -285,7 +286,7 @@ func TestMsgUnstake(t *testing.T) {
 				Unstakes: []*MsgUnstake_UnstakeDescriptor{
 					{
 						ID:    1,
-						Coins: sdk.NewCoins(sdk.NewCoin("test1", sdk.NewInt(0))),
+						Coins: sdk.NewCoins(sdk.NewCoin("test1", math.NewInt(0))),
 					},
 				},
 			},
