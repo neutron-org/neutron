@@ -9,13 +9,11 @@ import (
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Keeper provides a way to manage incentives module storage.
 type Keeper struct {
 	storeKey    storetypes.StoreKey
-	paramSpace  paramtypes.Subspace
 	hooks       types.IncentiveHooks
 	ak          types.AccountKeeper
 	bk          types.BankKeeper
@@ -28,25 +26,19 @@ type Keeper struct {
 // NewKeeper returns a new instance of the incentive module keeper struct.
 func NewKeeper(
 	storeKey storetypes.StoreKey,
-	paramSpace paramtypes.Subspace,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	ek types.EpochKeeper,
 	dk types.DexKeeper,
 	authority string,
 ) *Keeper {
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
-
 	keeper := &Keeper{
-		storeKey:   storeKey,
-		paramSpace: paramSpace,
-		ak:         ak,
-		bk:         bk,
-		ek:         ek,
-		dk:         dk,
-		authority:  authority,
+		storeKey:  storeKey,
+		ak:        ak,
+		bk:        bk,
+		ek:        ek,
+		dk:        dk,
+		authority: authority,
 	}
 	keeper.distributor = NewDistributor(keeper)
 	return keeper
@@ -78,4 +70,8 @@ func (k Keeper) GetModuleBalance(ctx sdk.Context) sdk.Coins {
 func (k Keeper) GetModuleStakedCoins(ctx sdk.Context) sdk.Coins {
 	// all not unstaking + not finished unstaking
 	return k.GetStakes(ctx).GetCoins()
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
