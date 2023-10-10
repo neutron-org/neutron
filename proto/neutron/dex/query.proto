@@ -1,21 +1,21 @@
 syntax = "proto3";
 
-package duality.dex;
+package neutron.dex;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "duality/dex/params.proto";
-import "duality/dex/limit_order_tranche_user.proto";
-import "duality/dex/limit_order_tranche.proto";
-import "duality/dex/deposit_record.proto";
-import "duality/dex/tick_liquidity.proto";
-import "duality/dex/pool_reserves.proto";
-import "duality/dex/tx.proto";
+import "neutron/dex/params.proto";
+import "neutron/dex/limit_order_tranche_user.proto";
+import "neutron/dex/limit_order_tranche.proto";
+import "neutron/dex/deposit_record.proto";
+import "neutron/dex/tick_liquidity.proto";
+import "neutron/dex/pool_reserves.proto";
+import "neutron/dex/tx.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "google/protobuf/timestamp.proto";
-import "duality/dex/pool.proto";
-import "duality/dex/pool_metadata.proto";
+import "neutron/dex/pool.proto";
+import "neutron/dex/pool_metadata.proto";
 
 // this line is used by starport scaffolding # 1
 
@@ -25,98 +25,98 @@ option go_package = "github.com/neutron-org/neutron/x/dex/types";
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/duality/dex/params";
+    option (google.api.http).get = "/neutron/dex/params";
   
   }
   
   // Queries a LimitOrderTrancheUser by index.
   rpc LimitOrderTrancheUser (QueryGetLimitOrderTrancheUserRequest) returns (QueryGetLimitOrderTrancheUserResponse) {
-    option (google.api.http).get = "/duality/dex/limit_order_tranche_user/{address}/{trancheKey}";
+    option (google.api.http).get = "/neutron/dex/limit_order_tranche_user/{address}/{trancheKey}";
   
   }
   
   // Queries a list of LimitOrderTrancheMap items.
   rpc LimitOrderTrancheUserAll (QueryAllLimitOrderTrancheUserRequest) returns (QueryAllLimitOrderTrancheUserResponse) {
-    option (google.api.http).get = "/duality/dex/limit_order_tranche_user";
+    option (google.api.http).get = "/neutron/dex/limit_order_tranche_user";
   
   }
 
   // Queries a list of LimitOrderTrancheUser items for a given address.
 	rpc LimitOrderTrancheUserAllByAddress(QueryAllUserLimitOrdersRequest) returns (QueryAllUserLimitOrdersResponse) {
-		option (google.api.http).get = "/duality/dex/user/limit_orders/{address}";
+		option (google.api.http).get = "/neutron/dex/user/limit_orders/{address}";
 	}
   
   // Queries a LimitOrderTranche by index.
   rpc LimitOrderTranche (QueryGetLimitOrderTrancheRequest) returns (QueryGetLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/duality/dex/limit_order_tranche/{pairID}/{tokenIn}/{tickIndex}/{trancheKey}";
+    option (google.api.http).get = "/neutron/dex/limit_order_tranche/{pairID}/{tokenIn}/{tickIndex}/{trancheKey}";
   }
   
   // Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination.
   rpc LimitOrderTrancheAll (QueryAllLimitOrderTrancheRequest) returns (QueryAllLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/duality/dex/limit_order_tranche/{pairID}/{tokenIn}";
+    option (google.api.http).get = "/neutron/dex/limit_order_tranche/{pairID}/{tokenIn}";
   }
   
   // Queries a list of UserDeposits items.
   rpc UserDepositsAll (QueryAllUserDepositsRequest) returns (QueryAllUserDepositsResponse) {
-    option (google.api.http).get = "/duality/dex/user/deposits/{address}";
+    option (google.api.http).get = "/neutron/dex/user/deposits/{address}";
   }
   
   // Queries a list of TickLiquidity items.
   rpc TickLiquidityAll (QueryAllTickLiquidityRequest) returns (QueryAllTickLiquidityResponse) {
-    option (google.api.http).get = "/duality/dex/tick_liquidity/{pairID}/{tokenIn}";
+    option (google.api.http).get = "/neutron/dex/tick_liquidity/{pairID}/{tokenIn}";
   }
   
   // Queries a InactiveLimitOrderTranche by index.
   rpc InactiveLimitOrderTranche (QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/duality/dex/filled_limit_order_tranche/{pairID}/{tokenIn}/{tickIndex}/{trancheKey}";
+    option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche/{pairID}/{tokenIn}/{tickIndex}/{trancheKey}";
   }
   
   // Queries a list of InactiveLimitOrderTranche items.
   rpc InactiveLimitOrderTrancheAll (QueryAllInactiveLimitOrderTrancheRequest) returns (QueryAllInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/duality/dex/filled_limit_order_tranche";
+    option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche";
   }
   
   // Queries a list of PoolReserves items.
   rpc PoolReservesAll (QueryAllPoolReservesRequest) returns (QueryAllPoolReservesResponse) {
-    option (google.api.http).get = "/duality/dex/pool_reserves/{pairID}/{tokenIn}";
+    option (google.api.http).get = "/neutron/dex/pool_reserves/{pairID}/{tokenIn}";
   }
   
   // Queries a PoolReserve by index
   rpc PoolReserves (QueryGetPoolReservesRequest) returns (QueryGetPoolReservesResponse) {
-    option (google.api.http).get = "/duality/dex/pool_reserves/{pairID}/{tokenIn}/{tickIndex}/{fee}";
+    option (google.api.http).get = "/neutron/dex/pool_reserves/{pairID}/{tokenIn}/{tickIndex}/{fee}";
   }
   
   // Queries the simulated result of a multihop swap 
   rpc EstimateMultiHopSwap (QueryEstimateMultiHopSwapRequest) returns (QueryEstimateMultiHopSwapResponse) {
-    option (google.api.http).get = "/duality/dex/estimate_multi_hop_swap";
+    option (google.api.http).get = "/neutron/dex/estimate_multi_hop_swap";
   }
   
   // Queries the simulated result of a multihop swap 
   rpc EstimatePlaceLimitOrder (QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
-    option (google.api.http).get = "/duality/dex/estimate_place_limit_order";
+    option (google.api.http).get = "/neutron/dex/estimate_place_limit_order";
   }
   
   // Queries a pool by pair, tick and fee
   rpc Pool (QueryPoolRequest) returns (QueryPoolResponse) {
-    option (google.api.http).get = "/duality/dex/pool/{pairID}/{tickIndex}/{fee}";
+    option (google.api.http).get = "/neutron/dex/pool/{pairID}/{tickIndex}/{fee}";
   
   }
   
   // Queries a pool by ID
   rpc PoolByID (QueryPoolByIDRequest) returns (QueryPoolResponse) {
-    option (google.api.http).get = "/duality/dex/pool/{poolID}";
+    option (google.api.http).get = "/neutron/dex/pool/{poolID}";
   
   }
 
   // Queries a PoolMetadata by ID
   rpc PoolMetadata    (QueryGetPoolMetadataRequest) returns (QueryGetPoolMetadataResponse) {
-    option (google.api.http).get = "/duality/dex/pool_metadata/{id}";
+    option (google.api.http).get = "/neutron/dex/pool_metadata/{id}";
   
   }
 
   // Queries a list of PoolMetadata items.
   rpc PoolMetadataAll (QueryAllPoolMetadataRequest) returns (QueryAllPoolMetadataResponse) {
-    option (google.api.http).get = "/duality/dex/pool_metadata";
+    option (google.api.http).get = "/neutron/dex/pool_metadata";
   
   }
 

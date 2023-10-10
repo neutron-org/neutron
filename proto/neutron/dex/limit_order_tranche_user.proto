@@ -1,10 +1,10 @@
 syntax = "proto3";
-package duality.dex;
+package neutron.dex;
 
 option go_package = "github.com/neutron-org/neutron/x/dex/types";
 import "gogoproto/gogo.proto";
-import "duality/dex/trade_pair_id.proto";
-import "duality/dex/tx.proto";
+import "neutron/dex/trade_pair_id.proto";
+import "neutron/dex/tx.proto";
 
 message LimitOrderTrancheUser {
   TradePairID tradePairID = 1;

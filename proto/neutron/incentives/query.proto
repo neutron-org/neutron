@@ -1,13 +1,13 @@
 syntax = "proto3";
-package duality.incentives;
+package neutron.incentives;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "duality/incentives/gauge.proto";
-import "duality/incentives/stake.proto";
-import "duality/incentives/params.proto";
+import "neutron/incentives/gauge.proto";
+import "neutron/incentives/stake.proto";
+import "neutron/incentives/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/incentives/types";
 
@@ -17,30 +17,30 @@ service Query {
   rpc GetModuleStatus(GetModuleStatusRequest)
       returns (GetModuleStatusResponse) {
     option (google.api.http).get =
-        "/duality/incentives/v1beta1/module_status";
+        "/neutron/incentives/v1beta1/module_status";
   }
 
   // GetGaugeByID returns a gauge by its ID
   rpc GetGaugeByID(GetGaugeByIDRequest) returns (GetGaugeByIDResponse) {
     option (google.api.http).get =
-        "/duality/incentives/v1beta1/gauges/{id}";
+        "/neutron/incentives/v1beta1/gauges/{id}";
   }
 
   // GetGauges returns gauges according to the filter provided
   rpc GetGauges(GetGaugesRequest) returns (GetGaugesResponse) {
-    option (google.api.http).get = "/duality/incentives/v1beta1/gauges";
+    option (google.api.http).get = "/neutron/incentives/v1beta1/gauges";
   }
 
   // GetStakeByID returns a stake by its ID
   rpc GetStakeByID(GetStakeByIDRequest) returns (GetStakeByIDResponse) {
     option (google.api.http).get =
-        "/duality/incentives/stakes/{stake_id}";
+        "/neutron/incentives/stakes/{stake_id}";
   }
 
   // GetStakes returns stakes by the filter provided. At least one filter must be provided.
   rpc GetStakes(GetStakesRequest) returns (GetStakesResponse) {
     option (google.api.http).get =
-        "/duality/incentives/stakes";
+        "/neutron/incentives/stakes";
   }
 
   // GetFutureRewardsEstimate returns an estimate of the rewards from now until a specified
@@ -48,20 +48,20 @@ service Query {
   // for which they want to find the associated rewards.
   rpc GetFutureRewardEstimate(GetFutureRewardEstimateRequest) returns (GetFutureRewardEstimateResponse) {
     option (google.api.http).get =
-        "/duality/incentives/v1beta1/future_rewards_estimate/{owner}";
+        "/neutron/incentives/v1beta1/future_rewards_estimate/{owner}";
   }
 
   // GetAccountHistory returns the total accumulated rewards per denom for a given user.
   rpc GetAccountHistory(GetAccountHistoryRequest) returns (GetAccountHistoryResponse) {
     option (google.api.http).get =
-        "/duality/incentives/v1beta1/account_history/{account}";
+        "/neutron/incentives/v1beta1/account_history/{account}";
   }
 
   // Returns the total amount of value currently qualifying for the gauge. This is useful for calculating
   // the prospective future rewards of staking.
   rpc GetGaugeQualifyingValue(GetGaugeQualifyingValueRequest) returns (GetGaugeQualifyingValueResponse) {
     option (google.api.http).get =
-        "/duality/incentives/v1beta1/get_gauge_qualifying_value/{id}";
+        "/neutron/incentives/v1beta1/get_gauge_qualifying_value/{id}";
   }
 }
 

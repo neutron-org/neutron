@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package duality.dex;
+package neutron.dex;
 
 import "gogoproto/gogo.proto";
-import "duality/dex/params.proto";
-import "duality/dex/limit_order_tranche_user.proto";
-import "duality/dex/limit_order_tranche.proto";
-import "duality/dex/tick_liquidity.proto";
-import "duality/dex/pool_metadata.proto";
+import "neutron/dex/params.proto";
+import "neutron/dex/limit_order_tranche_user.proto";
+import "neutron/dex/limit_order_tranche.proto";
+import "neutron/dex/tick_liquidity.proto";
+import "neutron/dex/pool_metadata.proto";
 
 // this line is used by starport scaffolding # genesis/proto/import
 

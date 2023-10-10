@@ -1,10 +1,10 @@
 syntax = "proto3";
-package duality.epochs;
+package neutron.epochs;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "duality/epochs/genesis.proto";
+import "neutron/epochs/genesis.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/epochs/types";
 
@@ -12,12 +12,12 @@ option go_package = "github.com/neutron-org/neutron/x/epochs/types";
 service Query {
   // EpochInfos provide running epochInfos
   rpc EpochInfos(QueryEpochsInfoRequest) returns (QueryEpochsInfoResponse) {
-    option (google.api.http).get = "/duality/epochs/epochs";
+    option (google.api.http).get = "/neutron/epochs/epochs";
   }
   // CurrentEpoch provide current epoch of specified identifier
   rpc CurrentEpoch(QueryCurrentEpochRequest)
       returns (QueryCurrentEpochResponse) {
-    option (google.api.http).get = "/duality/epochs/current_epoch";
+    option (google.api.http).get = "/neutron/epochs/current_epoch";
   }
 }
 

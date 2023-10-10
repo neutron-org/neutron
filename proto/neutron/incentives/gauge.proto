@@ -1,11 +1,11 @@
 syntax = "proto3";
-package duality.incentives;
+package neutron.incentives;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "cosmos/base/v1beta1/coin.proto";
-import "duality/dex/pair_id.proto";
+import "neutron/dex/pair_id.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/incentives/types";
 
@@ -103,7 +103,7 @@ message Gauge {
 message QueryCondition {
 
   // pairID is the token pair which should be distributed to.
-  duality.dex.PairID pairID = 1;
+  neutron.dex.PairID pairID = 1;
 
   // start_tick is the inclusive lower bound on the location of LP tokens that
   // qualify for a gauge's distribution.
