@@ -74,6 +74,7 @@ var (
 	// KeyPrefixAccountHistory defines the prefix for storing account histories.
 	KeyPrefixAccountHistory = []byte{0x10}
 
+	KeyParams = []byte{0x11}
 	// KeyndexSeparator defines separator between keys when combine, it should be one that is not used in denom expression.
 	KeyIndexSeparator = []byte{0xFF}
 )

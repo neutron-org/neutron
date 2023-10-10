@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
@@ -14,6 +15,7 @@ const (
 	TypeMsgAddToGauge     = "add_to_gauge"
 	TypeMsgStakeTokens    = "stake_tokens"
 	TypeMsgBeginUnstaking = "begin_unstaking"
+	TypeMsgUpdateParams   = "update-params"
 )
 
 var _ sdk.Msg = &MsgCreateGauge{}
@@ -227,4 +229,33 @@ func (m MsgUnstake) GetSignBytes() []byte {
 func (m MsgUnstake) GetSigners() []sdk.AccAddress {
 	owner, _ := sdk.AccAddressFromBech32(m.Owner)
 	return []sdk.AccAddress{owner}
+}
+
+var _ sdk.Msg = &MsgUpdateParams{}
+
+func (msg *MsgUpdateParams) Route() string { return RouterKey }
+
+func (msg *MsgUpdateParams) Type() string { return TypeMsgUpdateParams }
+
+func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	authority, err := sdk.AccAddressFromBech32(msg.Authority)
+	if err != nil { // should never happen as valid basic rejects invalid addresses
+		panic(err.Error())
+	}
+	return []sdk.AccAddress{authority}
+}
+
+func (msg *MsgUpdateParams) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+func (msg *MsgUpdateParams) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
+		return errorsmod.Wrap(err, "authority is invalid")
+	}
+	if err := msg.Params.Validate(); err != nil {
+		return err
+	}
+	return nil
 }
