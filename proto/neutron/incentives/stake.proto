@@ -1,5 +1,5 @@
 syntax = "proto3";
-package duality.incentives;
+package neutron.incentives;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";

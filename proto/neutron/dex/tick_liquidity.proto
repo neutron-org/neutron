@@ -1,10 +1,10 @@
 syntax = "proto3";
-package duality.dex;
+package neutron.dex;
 
 option go_package = "github.com/neutron-org/neutron/x/dex/types";
 import "gogoproto/gogo.proto";
-import "duality/dex/limit_order_tranche.proto";
-import "duality/dex/pool_reserves.proto";
+import "neutron/dex/limit_order_tranche.proto";
+import "neutron/dex/pool_reserves.proto";
 
 
 message TickLiquidity {

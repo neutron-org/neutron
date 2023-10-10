@@ -1,5 +1,5 @@
 syntax = "proto3";
-package duality.dex;
+package neutron.dex;
 
 option go_package = "github.com/neutron-org/neutron/x/dex/types";
 import "google/protobuf/timestamp.proto";

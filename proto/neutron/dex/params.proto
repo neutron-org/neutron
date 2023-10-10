@@ -1,5 +1,5 @@
 syntax = "proto3";
-package duality.dex;
+package neutron.dex;
 
 import "gogoproto/gogo.proto";
 

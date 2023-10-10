@@ -1,11 +1,11 @@
 syntax = "proto3";
-package duality.incentives;
+package neutron.incentives;
 
 import "gogoproto/gogo.proto";
-import "duality/incentives/params.proto";
-import "duality/incentives/gauge.proto";
-import "duality/incentives/stake.proto";
-import "duality/incentives/account_history.proto";
+import "neutron/incentives/params.proto";
+import "neutron/incentives/gauge.proto";
+import "neutron/incentives/stake.proto";
+import "neutron/incentives/account_history.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/incentives/types";
 

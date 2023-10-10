@@ -1,11 +1,11 @@
 syntax = "proto3";
-package duality.incentives;
+package neutron.incentives;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 import "cosmos/base/v1beta1/coin.proto";
-import "duality/incentives/gauge.proto";
-import "duality/incentives/stake.proto";
+import "neutron/incentives/gauge.proto";
+import "neutron/incentives/stake.proto";
 import "google/protobuf/duration.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/incentives/types";

@@ -1,9 +1,9 @@
 syntax = "proto3";
-package duality.dex;
+package neutron.dex;
 
 option go_package = "github.com/neutron-org/neutron/x/dex/types";
 import "gogoproto/gogo.proto";
-import "duality/dex/trade_pair_id.proto";
+import "neutron/dex/trade_pair_id.proto";
 
 message PoolReservesKey {
 	TradePairID tradePairID = 1;           
