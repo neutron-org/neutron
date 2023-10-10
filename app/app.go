@@ -154,12 +154,8 @@ import (
 	blocksdkabci "github.com/skip-mev/block-sdk/abci"
 	signer_extraction_adapter "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	blocksdk "github.com/skip-mev/block-sdk/block"
-	"github.com/skip-mev/block-sdk/block/base"
 	blocksdkbase "github.com/skip-mev/block-sdk/block/base"
-	blocksdkanteignore "github.com/skip-mev/block-sdk/block/utils"
 	base_lane "github.com/skip-mev/block-sdk/lanes/base"
-	"github.com/skip-mev/block-sdk/lanes/free"
-	free_lane "github.com/skip-mev/block-sdk/lanes/free"
 	mev_lane "github.com/skip-mev/block-sdk/lanes/mev"
 	"github.com/skip-mev/block-sdk/x/auction"
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
@@ -334,7 +330,6 @@ type App struct {
 	// Lanes
 	Mempool   auctionante.Mempool
 	MEVLane   auctionante.MEVLane
-	FreeLanes []blocksdkanteignore.Lane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -932,13 +927,6 @@ func New(
 
 	baseLane := base_lane.NewDefaultLane(cfg)
 
-	freeLane := free_lane.NewFreeLane(
-		cfg,
-		base.DefaultTxPriority(),
-		free.DefaultMatchHandler(), // modify this match-handler to determine any other transactions that the chain would like to be free
-	)
-	app.FreeLanes = []blocksdkanteignore.Lane{freeLane}
-
 	mevLane := mev_lane.NewMEVLane(
 		cfg,
 		mev_lane.NewDefaultAuctionFactory(app.GetTxConfig().TxDecoder(), signer_extraction_adapter.NewDefaultAdapter()),
@@ -950,7 +938,6 @@ func New(
 		true,
 		[]blocksdk.Lane{
 			mevLane,  // mev-lane is first to prioritize bids being placed at the TOB
-			freeLane, // free-lane is second to prioritize free txs
 			baseLane, // finally, all the rest of txs...
 		}...,
 	)
@@ -977,7 +964,6 @@ func New(
 			TxEncoder:         app.GetTxConfig().TxEncoder(),
 			Mempool:           app.Mempool,
 			MEVLane:           app.MEVLane,
-			FreeLanes:         app.FreeLanes,
 		},
 		app.Logger(),
 	)
@@ -987,9 +973,8 @@ func New(
 
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
-	freeLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-	
+
 
 	app.SetEndBlocker(app.EndBlocker)
 

@@ -15,7 +15,6 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
-	blocksdkanteignore "github.com/skip-mev/block-sdk/block/utils"
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 )
@@ -35,7 +34,6 @@ type HandlerOptions struct {
 	AuctionKeeper auctionkeeper.Keeper
 	TxEncoder     sdk.TxEncoder
 	MEVLane       auctionante.MEVLane
-	FreeLanes     []blocksdkanteignore.Lane
 	Mempool       auctionante.Mempool
 
 	// globalFee
@@ -90,11 +88,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// otherwise you will get panic
 		globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
 
-		// we ignore the fee-deductor for any transactions that match the given free lanes
-		blocksdkanteignore.NewIgnoreDecorator(
-			ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
-			options.FreeLanes...,
-		),
+		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
