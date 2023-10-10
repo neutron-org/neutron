@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -20,9 +21,9 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 		return &types.LimitOrderTrancheUser{
 			TrancheKey:            trancheKey,
 			Address:               receiver,
-			SharesOwned:           sdk.ZeroInt(),
-			SharesWithdrawn:       sdk.ZeroInt(),
-			SharesCancelled:       sdk.ZeroInt(),
+			SharesOwned:           math.ZeroInt(),
+			SharesWithdrawn:       math.ZeroInt(),
+			SharesCancelled:       math.ZeroInt(),
 			TickIndexTakerToMaker: tickIndex,
 			TradePairID:           tradePairID,
 			OrderType:             orderType,

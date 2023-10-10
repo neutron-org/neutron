@@ -3,7 +3,7 @@ package ibc_test
 import (
 	"encoding/json"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
 )
@@ -27,7 +27,7 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
 
 	// deposit stake<>ibcTransferToken to initialize the pool on Duality
-	depositAmount := sdk.NewInt(100_000)
+	depositAmount := math.NewInt(100_000)
 	s.dualityDeposit(
 		nativeDenom,
 		s.providerToDualityDenom,
@@ -38,13 +38,13 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 		s.dualityAddr)
 
 	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
 
 	// Send an IBC transfer from providerChain to Duality with packet memo containing the swap metadata
-	swapAmount := sdk.NewInt(100000)
-	expectedOut := sdk.NewInt(99_990)
+	swapAmount := math.NewInt(100000)
+	expectedOut := math.NewInt(99_990)
 
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
@@ -83,14 +83,14 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative.Add(expectedOut))
 
 	// Check that all of the IBC transfer denom have been used up
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 }
 
 // TestIBCSwapMiddleware_FailRefund asserts that the IBC swap middleware works as intended with Duality running as a
 // consumer chain connected to the Cosmos Hub. The swap should fail and a refund to the src chain should take place.
 func (s *IBCTestSuite) TestIBCSwapMiddleware_FailRefund() {
 	// Compose the swap metadata, this swap will fail because there is no pool initialized for this pair
-	swapAmount := sdk.NewInt(100000)
+	swapAmount := math.NewInt(100000)
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &dextypes.MsgPlaceLimitOrder{
@@ -121,7 +121,7 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailRefund() {
 
 	// Check that the funds are not present in the account on Duality
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount)
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 
 	// Check that the refund takes place and the funds are moved back to the account on Gaia
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount)
@@ -131,7 +131,7 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailRefund() {
 // consumer chain connected to the Cosmos Hub. The swap should fail and funds should remain on Duality.
 func (s *IBCTestSuite) TestIBCSwapMiddleware_FailNoRefund() {
 	// Compose the swap metadata, this swap will fail because there is no pool initialized for this pair
-	swapAmount := sdk.NewInt(100000)
+	swapAmount := math.NewInt(100000)
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &dextypes.MsgPlaceLimitOrder{
@@ -175,7 +175,7 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailNoRefund() {
 func (s *IBCTestSuite) TestIBCSwapMiddleware_FailWithRefundAddr() {
 	// Compose the swap metadata, this swap will fail because there is no pool initialized for this pair
 	refundAddr := s.dualityChain.SenderAccounts[1].SenderAccount.GetAddress()
-	swapAmount := sdk.NewInt(100000)
+	swapAmount := math.NewInt(100000)
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &dextypes.MsgPlaceLimitOrder{

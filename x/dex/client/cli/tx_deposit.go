@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cobra"
@@ -41,14 +41,14 @@ func CmdDeposit() *cobra.Command {
 			argFees := strings.Split(args[6], ",")
 			argDepositOptions := strings.Split(args[7], ",")
 
-			var AmountsA []sdk.Int
-			var AmountsB []sdk.Int
+			var AmountsA []math.Int
+			var AmountsB []math.Int
 			var TicksIndexesInt []int64
 			var FeesUint []uint64
 			var DepositOptions []*types.DepositOptions
 
 			for _, s := range argAmountsA {
-				amountA, ok := sdk.NewIntFromString(s)
+				amountA, ok := math.NewIntFromString(s)
 				if !ok {
 					return sdkerrors.Wrapf(types.ErrIntOverflowTx, "Integer overflow for amountsA")
 				}
@@ -57,7 +57,7 @@ func CmdDeposit() *cobra.Command {
 			}
 
 			for _, s := range argAmountsB {
-				amountB, ok := sdk.NewIntFromString(s)
+				amountB, ok := math.NewIntFromString(s)
 				if !ok {
 					return sdkerrors.Wrapf(types.ErrIntOverflowTx, "Integer overflow for amountsB")
 				}

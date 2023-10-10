@@ -46,7 +46,7 @@ func (s *QueryTestSuite) SetupSuite() {
 
 	// set up stake with id = 1
 	addr := apptesting.SetupAddr(0)
-	s.SetupStake(addr, sdk.Coins{sdk.NewCoin(denom, sdk.NewInt(1000000))}, time.Hour*24)
+	s.SetupStake(addr, sdk.Coins{sdk.NewCoin(denom, math.NewInt(1000000))}, time.Hour*24)
 
 	s.Commit()
 }

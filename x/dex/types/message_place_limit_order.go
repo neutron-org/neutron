@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -17,10 +18,10 @@ func NewMsgPlaceLimitOrder(
 	tokenIn,
 	tokenOut string,
 	tickIndex int64,
-	amountIn sdk.Int,
+	amountIn math.Int,
 	orderType LimitOrderType,
 	goodTil *time.Time,
-	maxAmountOut *sdk.Int,
+	maxAmountOut *math.Int,
 ) *MsgPlaceLimitOrder {
 	return &MsgPlaceLimitOrder{
 		Creator:          creator,
@@ -68,7 +69,7 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid receiver address (%s)", err)
 	}
 
-	if msg.AmountIn.LTE(sdk.ZeroInt()) {
+	if msg.AmountIn.LTE(math.ZeroInt()) {
 		return ErrZeroLimitOrder
 	}
 

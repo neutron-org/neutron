@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
@@ -11,8 +11,8 @@ import (
 )
 
 func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
-	ZEROINT := sdk.ZeroInt()
-	ONEINT := sdk.OneInt()
+	ZEROINT := math.ZeroInt()
+	ONEINT := math.OneInt()
 	tests := []struct {
 		name string
 		msg  MsgPlaceLimitOrder
@@ -26,7 +26,7 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 0,
-				AmountIn:         sdk.OneInt(),
+				AmountIn:         math.OneInt(),
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		},
@@ -38,7 +38,7 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 0,
-				AmountIn:         sdk.OneInt(),
+				AmountIn:         math.OneInt(),
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		},
@@ -50,7 +50,7 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 0,
-				AmountIn:         sdk.ZeroInt(),
+				AmountIn:         math.ZeroInt(),
 			},
 			err: ErrZeroLimitOrder,
 		},
@@ -62,7 +62,7 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 0,
-				AmountIn:         sdk.OneInt(),
+				AmountIn:         math.OneInt(),
 				MaxAmountOut:     &ZEROINT,
 				OrderType:        LimitOrderType_FILL_OR_KILL,
 			},
@@ -76,7 +76,7 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 0,
-				AmountIn:         sdk.OneInt(),
+				AmountIn:         math.OneInt(),
 				MaxAmountOut:     &ONEINT,
 				OrderType:        LimitOrderType_GOOD_TIL_CANCELLED,
 			},
@@ -90,7 +90,7 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 0,
-				AmountIn:         sdk.OneInt(),
+				AmountIn:         math.OneInt(),
 			},
 		},
 	}

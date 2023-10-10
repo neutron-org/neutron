@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -20,10 +21,10 @@ func NewLimitOrderTranche(
 	}
 	return &types.LimitOrderTranche{
 		Key:                limitOrderTrancheKey,
-		ReservesMakerDenom: sdk.ZeroInt(),
-		ReservesTakerDenom: sdk.ZeroInt(),
-		TotalMakerDenom:    sdk.ZeroInt(),
-		TotalTakerDenom:    sdk.ZeroInt(),
+		ReservesMakerDenom: math.ZeroInt(),
+		ReservesTakerDenom: math.ZeroInt(),
+		TotalMakerDenom:    math.ZeroInt(),
+		TotalTakerDenom:    math.ZeroInt(),
 		ExpirationTime:     goodTil,
 		PriceTakerToMaker:  priceTakerToMaker,
 	}, nil

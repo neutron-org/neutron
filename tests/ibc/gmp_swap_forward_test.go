@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -25,7 +25,7 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
 
 	// deposit stake<>ibcTransferToken to initialize the pool on Duality
-	depositAmount := sdk.NewInt(100_000)
+	depositAmount := math.NewInt(100_000)
 	s.dualityDeposit(
 		nativeDenom,
 		s.providerToDualityDenom,
@@ -36,8 +36,8 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 		s.dualityAddr)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
-	swapAmount := sdk.NewInt(100000)
-	expectedAmountOut := sdk.NewInt(99990)
+	swapAmount := math.NewInt(100000)
+	expectedAmountOut := math.NewInt(99990)
 	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
@@ -99,7 +99,7 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative.Sub(ibcTransferAmount))
 
 	// Check that the amountIn is deduced from the duality account
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	// Check that duality account did not keep any of the transfer denom
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	math_utils "github.com/neutron-org/neutron/utils/math"
@@ -11,7 +12,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/utils"
 )
 
-// NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into sdk.Ints.
+// NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into math.Ints.
 // This may create some accounting anomalies but seems preferable to other alternatives.
 // See full ADR here: https://www.notion.so/dualityxyz/A-Modest-Proposal-For-Truncating-696a919d59254876a617f82fb9567895
 
@@ -22,23 +23,23 @@ func (k Keeper) DepositCore(
 	pairID *types.PairID,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-	amounts0 []sdk.Int,
-	amounts1 []sdk.Int,
+	amounts0 []math.Int,
+	amounts1 []math.Int,
 	tickIndices []int64,
 	fees []uint64,
 	options []*types.DepositOptions,
-) (amounts0Deposit, amounts1Deposit []sdk.Int, sharesIssued sdk.Coins, err error) {
+) (amounts0Deposit, amounts1Deposit []math.Int, sharesIssued sdk.Coins, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	totalAmountReserve0 := sdk.ZeroInt()
-	totalAmountReserve1 := sdk.ZeroInt()
-	amounts0Deposited := make([]sdk.Int, len(amounts0))
-	amounts1Deposited := make([]sdk.Int, len(amounts1))
+	totalAmountReserve0 := math.ZeroInt()
+	totalAmountReserve1 := math.ZeroInt()
+	amounts0Deposited := make([]math.Int, len(amounts0))
+	amounts1Deposited := make([]math.Int, len(amounts1))
 	sharesIssued = sdk.Coins{}
 
 	for i := 0; i < len(amounts0); i++ {
-		amounts0Deposited[i] = sdk.ZeroInt()
-		amounts1Deposited[i] = sdk.ZeroInt()
+		amounts0Deposited[i] = math.ZeroInt()
+		amounts1Deposited[i] = math.ZeroInt()
 	}
 
 	for i, amount0 := range amounts0 {
@@ -124,13 +125,13 @@ func (k Keeper) WithdrawCore(
 	pairID *types.PairID,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-	sharesToRemoveList []sdk.Int,
+	sharesToRemoveList []math.Int,
 	tickIndicesNormalized []int64,
 	fees []uint64,
 ) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	totalReserve0ToRemove := sdk.ZeroInt()
-	totalReserve1ToRemove := sdk.ZeroInt()
+	totalReserve0ToRemove := math.ZeroInt()
+	totalReserve1ToRemove := math.ZeroInt()
 
 	for i, fee := range fees {
 		sharesToRemove := sharesToRemoveList[i]
@@ -212,7 +213,7 @@ func (k Keeper) WithdrawCore(
 
 func (k Keeper) MultiHopSwapCore(
 	goCtx context.Context,
-	amountIn sdk.Int,
+	amountIn math.Int,
 	routes []*types.MultiHopRoute,
 	exitLimitPrice math_utils.PrecDec,
 	pickBestRoute bool,
@@ -228,7 +229,7 @@ func (k Keeper) MultiHopSwapCore(
 		coinOut sdk.Coin
 		route   []string
 	}
-	bestRoute.coinOut = sdk.Coin{Amount: sdk.ZeroInt()}
+	bestRoute.coinOut = sdk.Coin{Amount: math.ZeroInt()}
 
 	for _, route := range routes {
 		routeCoinOut, writeRoute, err := k.RunMultihopRoute(
@@ -300,11 +301,11 @@ func (k Keeper) PlaceLimitOrderCore(
 	goCtx context.Context,
 	tokenIn string,
 	tokenOut string,
-	amountIn sdk.Int,
+	amountIn math.Int,
 	tickIndexInToOut int64,
 	orderType types.LimitOrderType,
 	goodTil *time.Time,
-	maxAmountOut *sdk.Int,
+	maxAmountOut *math.Int,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
 ) (trancheKey string, totalInCoin sdk.Coin, swapInCoin sdk.Coin, swapOutCoin sdk.Coin, err error) {
@@ -316,7 +317,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		return
 	}
 
-	amountLeft, totalIn := amountIn, sdk.ZeroInt()
+	amountLeft, totalIn := amountIn, math.ZeroInt()
 
 	// For everything except just-in-time (JIT) orders try to execute as a swap first
 	if !orderType.IsJIT() {
@@ -387,7 +388,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		receiverAddr.String(),
 	)
 
-	sharesIssued := sdk.ZeroInt()
+	sharesIssued := math.ZeroInt()
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
 	if amountLeft.IsPositive() &&
 		(orderType.IsGTC() || orderType.IsJIT() || orderType.IsGoodTil()) {
@@ -537,10 +538,10 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	)
 
 	amountOutTokenOut := math_utils.ZeroPrecDec()
-	remainingTokenIn := sdk.ZeroInt()
+	remainingTokenIn := math.ZeroInt()
 	// It's possible that a TrancheUser exists but tranche does not if LO was filled entirely through a swap
 	if found {
-		var amountOutTokenIn sdk.Int
+		var amountOutTokenIn math.Int
 		amountOutTokenIn, amountOutTokenOut = tranche.Withdraw(trancheUser)
 
 		if wasFilled {

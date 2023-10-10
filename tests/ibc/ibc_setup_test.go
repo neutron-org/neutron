@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,8 +28,8 @@ import (
 
 var (
 	nativeDenom            = sdk.DefaultBondDenom
-	ibcTransferAmount      = sdk.NewInt(100_000)
-	genesisWalletAmount, _ = sdk.NewIntFromString("10000000000000000000")
+	ibcTransferAmount      = math.NewInt(100_000)
+	genesisWalletAmount, _ = math.NewIntFromString("10000000000000000000")
 )
 
 type IBCTestSuite struct {
@@ -260,7 +261,7 @@ func (s *IBCTestSuite) IBCTransfer(
 	fromAddr sdk.AccAddress,
 	toAddr sdk.AccAddress,
 	transferDenom string,
-	transferAmount sdk.Int,
+	transferAmount math.Int,
 	memo string,
 ) {
 	timeoutHeight := clienttypes.NewHeight(1, 110)
@@ -292,7 +293,7 @@ func (s *IBCTestSuite) IBCTransferProviderToDuality(
 	providerAddr sdk.AccAddress,
 	dualityAddr sdk.AccAddress,
 	transferDenom string,
-	transferAmount sdk.Int,
+	transferAmount math.Int,
 	memo string,
 ) {
 	s.IBCTransfer(
@@ -321,7 +322,7 @@ func (s *IBCTestSuite) assertBalance(
 	chain *icsibctesting.TestChain,
 	addr sdk.AccAddress,
 	denom string,
-	expectedAmt sdk.Int,
+	expectedAmt math.Int,
 ) {
 	actualAmt := s.getBalance(bk, chain, addr, denom).Amount
 	s.Assert().
@@ -331,7 +332,7 @@ func (s *IBCTestSuite) assertBalance(
 func (s *IBCTestSuite) assertDualityBalance(
 	addr sdk.AccAddress,
 	denom string,
-	expectedAmt sdk.Int,
+	expectedAmt math.Int,
 ) {
 	s.assertBalance(s.dualityApp.GetTestBankKeeper(), s.dualityChain, addr, denom, expectedAmt)
 }
@@ -339,24 +340,24 @@ func (s *IBCTestSuite) assertDualityBalance(
 func (s *IBCTestSuite) assertProviderBalance(
 	addr sdk.AccAddress,
 	denom string,
-	expectedAmt sdk.Int,
+	expectedAmt math.Int,
 ) {
 	s.assertBalance(s.providerApp.GetTestBankKeeper(), s.providerChain, addr, denom, expectedAmt)
 }
 
-func (s *IBCTestSuite) assertChainBBalance(addr sdk.AccAddress, denom string, expectedAmt sdk.Int) {
+func (s *IBCTestSuite) assertChainBBalance(addr sdk.AccAddress, denom string, expectedAmt math.Int) {
 	s.assertBalance(s.bundleB.App.GetTestBankKeeper(), s.bundleB.Chain, addr, denom, expectedAmt)
 }
 
-func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, expectedAmt sdk.Int) {
+func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, expectedAmt math.Int) {
 	s.assertBalance(s.bundleC.App.GetTestBankKeeper(), s.bundleC.Chain, addr, denom, expectedAmt)
 }
 
 func (s *IBCTestSuite) dualityDeposit(
 	token0 string,
 	token1 string,
-	depositAmount0 sdk.Int,
-	depositAmount1 sdk.Int,
+	depositAmount0 math.Int,
+	depositAmount1 math.Int,
 	tickIndex int64,
 	fee uint64,
 	creator sdk.AccAddress,
@@ -367,8 +368,8 @@ func (s *IBCTestSuite) dualityDeposit(
 		creator.String(),
 		token0,
 		token1,
-		[]sdk.Int{depositAmount0},
-		[]sdk.Int{depositAmount1},
+		[]math.Int{depositAmount0},
+		[]math.Int{depositAmount1},
 		[]int64{tickIndex},
 		[]uint64{fee},
 		[]*dextypes.DepositOptions{{false}},

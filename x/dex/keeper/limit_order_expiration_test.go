@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/keeper"
@@ -47,10 +48,10 @@ func createLimitOrderExpirationAndTranches(
 				TickIndexTakerToMaker: 0,
 				TrancheKey:            strconv.Itoa(i),
 			},
-			ReservesMakerDenom: sdk.NewInt(10),
-			ReservesTakerDenom: sdk.NewInt(10),
-			TotalMakerDenom:    sdk.NewInt(10),
-			TotalTakerDenom:    sdk.NewInt(10),
+			ReservesMakerDenom: math.NewInt(10),
+			ReservesTakerDenom: math.NewInt(10),
+			TotalMakerDenom:    math.NewInt(10),
+			TotalTakerDenom:    math.NewInt(10),
 			ExpirationTime:     &expTimes[i],
 		}
 		items[i].ExpirationTime = expTimes[i]

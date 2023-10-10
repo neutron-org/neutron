@@ -1,16 +1,17 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	dexmoduletypes "github.com/neutron-org/neutron/x/dex/types"
 )
 
-func NewACoin(amt sdk.Int) sdk.Coin {
+func NewACoin(amt math.Int) sdk.Coin {
 	return sdk.NewCoin("TokenA", amt)
 }
 
-func NewBCoin(amt sdk.Int) sdk.Coin {
+func NewBCoin(amt math.Int) sdk.Coin {
 	return sdk.NewCoin("TokenB", amt)
 }
 

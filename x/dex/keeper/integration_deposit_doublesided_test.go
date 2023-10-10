@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -221,7 +221,7 @@ func (s *MsgServerTestSuite) TestDepositValueAccural() {
 	// Alice deposits 100TokenA @ tick0 => 100 shares
 	s.aliceDeposits(NewDeposit(100, 0, 0, 10))
 	s.assertAliceShares(0, 10, 100)
-	s.assertLiquidityAtTick(sdk.NewInt(100), sdk.ZeroInt(), 0, 10)
+	s.assertLiquidityAtTick(math.NewInt(100), math.ZeroInt(), 0, 10)
 
 	// Lots of trade activity => ~200 ExistingValueToken0
 
@@ -233,7 +233,7 @@ func (s *MsgServerTestSuite) TestDepositValueAccural() {
 			s.bobLimitSells("TokenA", 10, int(liquidityB.Int64())+10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		}
 	}
-	s.assertLiquidityAtTick(sdk.NewInt(200), sdk.NewInt(0), 0, 10)
+	s.assertLiquidityAtTick(math.NewInt(200), math.NewInt(0), 0, 10)
 	s.assertDexBalances(200, 0)
 
 	// Carol deposits 100TokenA @tick0

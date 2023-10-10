@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/keeper"
@@ -17,7 +18,7 @@ func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {
 		if err != nil {
 			panic("failed to create pool")
 		}
-		pool.Deposit(sdk.NewInt(10), sdk.NewInt(0), sdk.ZeroInt(), true)
+		pool.Deposit(math.NewInt(10), math.NewInt(0), math.ZeroInt(), true)
 		k.SetPool(ctx, pool)
 		items[i] = pool
 	}
@@ -30,7 +31,7 @@ func TestPoolInit(t *testing.T) {
 
 	pool, err := keeper.InitPool(ctx, defaultPairID, 0, 1)
 	require.NoError(t, err)
-	pool.Deposit(sdk.NewInt(100), sdk.NewInt(100), sdk.NewInt(0), true)
+	pool.Deposit(math.NewInt(100), math.NewInt(100), math.NewInt(0), true)
 	keeper.SetPool(ctx, pool)
 
 	dbPool, found := keeper.GetPool(ctx, defaultPairID, 0, 1)

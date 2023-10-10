@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/incentives/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ DistributorKeeper = Keeper{}
 
-func (k Keeper) ValueForShares(ctx sdk.Context, coin sdk.Coin, tick int64) (sdk.Int, error) {
+func (k Keeper) ValueForShares(ctx sdk.Context, coin sdk.Coin, tick int64) (math.Int, error) {
 	totalShares := k.bk.GetSupply(ctx, coin.Denom).Amount
 	poolMetadata, err := k.dk.GetPoolMetadataByDenom(ctx, coin.Denom)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	pool, err := k.dk.GetOrInitPool(
@@ -27,12 +27,12 @@ func (k Keeper) ValueForShares(ctx sdk.Context, coin sdk.Coin, tick int64) (sdk.
 		poolMetadata.Fee,
 	)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 	amount0, amount1 := pool.RedeemValue(coin.Amount, totalShares)
 	price1To0Center, err := dextypes.CalcPrice(-1 * tick)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 	return math_utils.NewPrecDecFromInt(amount0).Add(price1To0Center.MulInt(amount1)).TruncateInt(), nil
 }

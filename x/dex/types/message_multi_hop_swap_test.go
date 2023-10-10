@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
@@ -58,7 +58,7 @@ func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),
 				Routes:   []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
-				AmountIn: sdk.NewInt(-1),
+				AmountIn: math.NewInt(-1),
 			},
 			err: ErrZeroSwap,
 		},
@@ -68,7 +68,7 @@ func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {
 				Routes:   []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),
-				AmountIn: sdk.OneInt(),
+				AmountIn: math.OneInt(),
 			},
 		},
 	}

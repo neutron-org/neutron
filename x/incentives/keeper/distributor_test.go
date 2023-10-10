@@ -4,6 +4,7 @@ import (
 	"testing"
 	time "time"
 
+	"cosmossdk.io/math"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/testutil"
@@ -28,8 +29,8 @@ func NewMockKeeper(keeper DistributorKeeper, stakes types.Stakes) MockKeeper {
 	}
 }
 
-func (k MockKeeper) ValueForShares(_ sdk.Context, coin sdk.Coin, tick int64) (sdk.Int, error) {
-	return coin.Amount.Mul(sdk.NewInt(2)), nil
+func (k MockKeeper) ValueForShares(_ sdk.Context, coin sdk.Coin, tick int64) (math.Int, error) {
+	return coin.Amount.Mul(math.NewInt(2)), nil
 }
 
 func (k MockKeeper) GetStakesByQueryCondition(
@@ -61,7 +62,7 @@ func TestDistributor(t *testing.T) {
 			StartTick: -10,
 			EndTick:   10,
 		},
-		sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(100))},
+		sdk.Coins{sdk.NewCoin("coin1", math.NewInt(100))},
 		ctx.BlockTime(),
 		10,
 		0,
@@ -73,10 +74,10 @@ func TestDistributor(t *testing.T) {
 	nonRewardPool, _ := app.DexKeeper.GetOrInitPool(ctx, &dextypes.PairID{Token0: "TokenA", Token1: "TokenB"}, 12, 1)
 	nonRewardedDenom := nonRewardPool.GetPoolDenom()
 	allStakes := types.Stakes{
-		{1, "addr1", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, sdk.NewInt(50))}, 0},
-		{2, "addr2", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, sdk.NewInt(25))}, 0},
-		{3, "addr2", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, sdk.NewInt(25))}, 0},
-		{4, "addr3", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(nonRewardedDenom, sdk.NewInt(50))}, 0},
+		{1, "addr1", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(50))}, 0},
+		{2, "addr2", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(25))}, 0},
+		{3, "addr2", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(25))}, 0},
+		{4, "addr3", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(nonRewardedDenom, math.NewInt(50))}, 0},
 	}
 
 	distributor := NewDistributor(NewMockKeeper(app.IncentivesKeeper, allStakes))
@@ -100,8 +101,8 @@ func TestDistributor(t *testing.T) {
 			timeOffset:   0,
 			filterStakes: allStakes,
 			expected: types.DistributionSpec{
-				"addr1": sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(5))},
-				"addr2": sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(4))},
+				"addr1": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(5))},
+				"addr2": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(4))},
 			},
 			expectedErr: nil,
 		},
@@ -110,7 +111,7 @@ func TestDistributor(t *testing.T) {
 			timeOffset:   0,
 			filterStakes: types.Stakes{allStakes[0]},
 			expected: types.DistributionSpec{
-				"addr1": sdk.Coins{sdk.NewCoin("coin1", sdk.NewInt(5))},
+				"addr1": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(5))},
 			},
 			expectedErr: nil,
 		},

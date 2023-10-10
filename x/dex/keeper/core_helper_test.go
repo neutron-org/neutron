@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -59,8 +60,8 @@ func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA int, amo
 		panic(err)
 	}
 	lowerTick, upperTick := pool.LowerTick0, pool.UpperTick1
-	amountAInt := sdk.NewInt(int64(amountA))
-	amountBInt := sdk.NewInt(int64(amountB))
+	amountAInt := math.NewInt(int64(amountA))
+	amountBInt := math.NewInt(int64(amountB))
 
 	existingShares := s.app.BankKeeper.GetSupply(s.ctx, pool.GetPoolDenom()).Amount
 

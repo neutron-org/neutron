@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	"github.com/iancoleman/orderedmap"
 	"github.com/neutron-org/neutron/x/dex/types"
 	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
-	"github.com/iancoleman/orderedmap"
 	"golang.org/x/exp/maps"
 )
 
@@ -30,7 +30,7 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
 
 	// deposit stake<>ibcTransferToken to initialize the pool on Duality
-	depositAmount := sdk.NewInt(100_000)
+	depositAmount := math.NewInt(100_000)
 	s.dualityDeposit(
 		nativeDenom,
 		s.providerToDualityDenom,
@@ -41,13 +41,13 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 		s.dualityAddr)
 
 	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
-	swapAmount := sdk.NewInt(100000)
-	expectedAmountOut := sdk.NewInt(99990)
+	swapAmount := math.NewInt(100000)
+	expectedAmountOut := math.NewInt(99990)
 	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
@@ -109,7 +109,7 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 	)
 
 	// Check that the amountIn is deduced from the duality account
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	// Check that duality account did not keep any of the transfer denom
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
 
@@ -143,7 +143,7 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
 
 	// deposit stake<>ibcTransferToken to initialize the pool on Duality
-	depositAmount := sdk.NewInt(100_000)
+	depositAmount := math.NewInt(100_000)
 	s.dualityDeposit(
 		nativeDenom,
 		s.providerToDualityDenom,
@@ -154,14 +154,14 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 		s.dualityAddr)
 
 	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
-	swapAmount := sdk.NewInt(100000)
+	swapAmount := math.NewInt(100000)
 
-	expectedOut := sdk.NewInt(99_990)
+	expectedOut := math.NewInt(99_990)
 
 	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
 	chainCAddr := s.bundleC.Chain.SenderAccount.GetAddress()
@@ -253,7 +253,7 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 	// Check that chain B balance is unchanged
-	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, sdk.ZeroInt())
+	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, math.ZeroInt())
 
 	// Check that funds made it to chainC
 	s.assertChainCBalance(chainCAddr, transferDenomB_C, expectedOut)
@@ -279,7 +279,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
 
 	// deposit stake<>ibcTransferToken to initialize the pool on Duality
-	depositAmount := sdk.NewInt(100_000)
+	depositAmount := math.NewInt(100_000)
 	s.dualityDeposit(
 		nativeDenom,
 		s.providerToDualityDenom,
@@ -290,12 +290,12 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 		s.dualityAddr)
 
 	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
 
-	swapAmount := sdk.NewInt(100000)
-	expectedAmountOut := sdk.NewInt(99990)
+	swapAmount := math.NewInt(100000)
+	expectedAmountOut := math.NewInt(99990)
 
 	retries := uint8(0)
 
@@ -381,7 +381,7 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
 
 	// deposit stake<>ibcTransferToken to initialize the pool on Duality
-	depositAmount := sdk.NewInt(100_000)
+	depositAmount := math.NewInt(100_000)
 	s.dualityDeposit(
 		nativeDenom,
 		s.providerToDualityDenom,
@@ -392,13 +392,13 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 		s.dualityAddr)
 
 	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
 	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
-	swapAmount := sdk.NewInt(100000)
-	expectedAmountOut := sdk.NewInt(99990)
+	swapAmount := math.NewInt(100000)
+	expectedAmountOut := math.NewInt(99990)
 	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
@@ -461,7 +461,7 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	)
 
 	// Check that the amountIn is deduced from the duality account
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, sdk.ZeroInt())
+	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
 	// Check that the amountOut stays on the dualitychain
 	s.assertDualityBalance(
 		s.dualityAddr,
@@ -477,5 +477,5 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	)
 	transferDenomDuality_B := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
-	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, sdk.ZeroInt())
+	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, math.ZeroInt())
 }

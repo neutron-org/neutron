@@ -1,12 +1,13 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/x/incentives/types"
 )
 
 type DistributorKeeper interface {
-	ValueForShares(ctx sdk.Context, coin sdk.Coin, tick int64) (sdk.Int, error)
+	ValueForShares(ctx sdk.Context, coin sdk.Coin, tick int64) (math.Int, error)
 	GetStakesByQueryCondition(ctx sdk.Context, distrTo *types.QueryCondition) types.Stakes
 	StakeCoinsPassingQueryCondition(ctx sdk.Context, stake *types.Stake, distrTo types.QueryCondition) sdk.Coins
 }
@@ -34,17 +35,17 @@ func (d Distributor) Distribute(
 
 	rewardsNextEpoch := gauge.RewardsNextEpoch()
 
-	adjustedGaugeTotal := sdk.ZeroInt()
+	adjustedGaugeTotal := math.ZeroInt()
 
 	gaugeStakes := d.keeper.GetStakesByQueryCondition(ctx, &gauge.DistributeTo)
 	if filterStakes == nil {
 		filterStakes = gaugeStakes
 	}
 
-	stakeSumCache := make(map[uint64]sdk.Int, len(gaugeStakes))
+	stakeSumCache := make(map[uint64]math.Int, len(gaugeStakes))
 	for _, stake := range gaugeStakes {
 		stakeCoins := d.keeper.StakeCoinsPassingQueryCondition(ctx, stake, gauge.DistributeTo)
-		stakeTotal := sdk.ZeroInt()
+		stakeTotal := math.ZeroInt()
 		for _, stakeCoin := range stakeCoins {
 			adjustedPositionValue, err := d.keeper.ValueForShares(ctx, stakeCoin, gauge.PricingTick)
 			if err != nil {

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -9,19 +10,19 @@ import (
 func (k Keeper) Swap(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	maxAmountTakerDenom sdk.Int,
-	maxAmountMakerDenom *sdk.Int,
+	maxAmountTakerDenom math.Int,
+	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
 	useMaxOut := maxAmountMakerDenom != nil
-	var remainingMakerDenom *sdk.Int
+	var remainingMakerDenom *math.Int
 	if useMaxOut {
 		copy := *maxAmountMakerDenom
 		remainingMakerDenom = &copy
 	}
 
 	remainingTakerDenom := maxAmountTakerDenom
-	totalMakerDenom := sdk.ZeroInt()
+	totalMakerDenom := math.ZeroInt()
 	orderFilled = false
 
 	// verify that amount left is not zero and that there are additional valid ticks to check
@@ -57,7 +58,7 @@ func (k Keeper) Swap(
 			remainingMakerDenom = &copy
 
 			// if maxAmountOut has been used up then exit
-			if remainingMakerDenom.LTE(sdk.ZeroInt()) {
+			if remainingMakerDenom.LTE(math.ZeroInt()) {
 				orderFilled = true
 				break
 			}
@@ -77,8 +78,8 @@ func (k Keeper) Swap(
 func (k Keeper) SwapWithCache(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
-	maxAmountIn sdk.Int,
-	maxAmountOut *sdk.Int,
+	maxAmountIn math.Int,
+	maxAmountOut *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalIn, totalOut sdk.Coin, orderFilled bool, err error) {
 	cacheCtx, writeCache := ctx.CacheContext()
