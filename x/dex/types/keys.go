@@ -46,6 +46,9 @@ const (
 
 	// PoolCountKeyPrefix is the prefix to retrieve the Pool count
 	PoolCountKeyPrefix = "Pool/count/"
+
+	// ParamsKey is the prefix to retrieve params
+	ParamsKey = "Params/value/"
 )
 
 func KeyPrefix(p string) []byte {
