@@ -636,8 +636,8 @@ func New(
 		appCodec,
 		keys[dextypes.StoreKey],
 		keys[dextypes.MemStoreKey],
-		app.GetSubspace(dextypes.ModuleName),
 		app.BankKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
@@ -655,12 +655,10 @@ func New(
 
 	app.IncentivesKeeper = incentiveskeeper.NewKeeper(
 		keys[incentivestypes.StoreKey],
-		app.GetSubspace(incentivestypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.EpochsKeeper,
 		app.DexKeeper,
-		// JCP TODO: confirm this is correct
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
