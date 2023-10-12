@@ -17,8 +17,6 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
@@ -260,12 +258,7 @@ func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error 
 
 	ctx.Logger().Info("Global fees was set successfully")
 
-	defaultBypassFeeMessages := []string{
-		sdk.MsgTypeURL(&ibcchanneltypes.MsgRecvPacket{}),
-		sdk.MsgTypeURL(&ibcchanneltypes.MsgAcknowledgement{}),
-		sdk.MsgTypeURL(&ibcclienttypes.MsgUpdateClient{}),
-	}
-	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyBypassMinFeeMsgTypes, &defaultBypassFeeMessages)
+	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyBypassMinFeeMsgTypes, &[]string{})
 
 	ctx.Logger().Info("Bypass min fee msg types was set successfully")
 

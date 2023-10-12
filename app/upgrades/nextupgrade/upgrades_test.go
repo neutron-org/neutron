@@ -20,8 +20,6 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/gaia/v11/x/globalfee"
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
@@ -98,12 +96,7 @@ func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
 
 	var actualBypassFeeMessages []string
 	globalFeeSubspace.Get(ctx, globalfeetypes.ParamStoreKeyBypassMinFeeMsgTypes, &actualBypassFeeMessages)
-	requiredBypassMinFeeMsgTypes := []string{
-		sdk.MsgTypeURL(&ibcchanneltypes.MsgRecvPacket{}),
-		sdk.MsgTypeURL(&ibcchanneltypes.MsgAcknowledgement{}),
-		sdk.MsgTypeURL(&ibcclienttypes.MsgUpdateClient{}),
-	}
-	suite.Require().Equal(requiredBypassMinFeeMsgTypes, actualBypassFeeMessages)
+	suite.Require().Equal(0, len(actualBypassFeeMessages))
 
 	var actualTotalBypassMinFeeMsgGasUsage uint64
 	globalFeeSubspace.Get(ctx, globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage, &actualTotalBypassMinFeeMsgGasUsage)
