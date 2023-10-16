@@ -74,9 +74,9 @@ func (k Keeper) PoolReserves(
 	tradePairID := types.NewTradePairIDFromMaker(pairID, req.TokenIn)
 
 	poolReservesID := &types.PoolReservesKey{
-		tradePairID,
-		req.TickIndex,
-		req.Fee,
+		TradePairID:           tradePairID,
+		TickIndexTakerToMaker: req.TickIndex,
+		Fee:                   req.Fee,
 	}
 	val, found := k.GetPoolReserves(ctx, poolReservesID)
 	if !found {

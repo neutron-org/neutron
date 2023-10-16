@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "cosmossdk.io/errors"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/dex/utils"
@@ -308,7 +308,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	maxAmountOut *math.Int,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-) (trancheKey string, totalInCoin sdk.Coin, swapInCoin sdk.Coin, swapOutCoin sdk.Coin, err error) {
+) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin sdk.Coin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	var pairID *types.PairID

@@ -660,7 +660,7 @@ func (s *LiquidityTestSuite) assertSwapOutput(
 		True(amtOut.Equal(sdkmath.NewInt(expectedOut)), "Expected amountOut %d != %s", expectedOut, amtOut)
 }
 
-func (s *LiquidityTestSuite) assertDexBalances(expectedABalance int64, expectedBBalance int64) {
+func (s *LiquidityTestSuite) assertDexBalances(expectedABalance, expectedBBalance int64) {
 	// NOTE: We can't just check the actual DEX bank balances since we are testing swap
 	// before any transfers take place. Instead we have to sum up the total amount of coins
 	// at each tick

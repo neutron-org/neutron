@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"strings"
 
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	sdkerrors "cosmossdk.io/errors"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cobra"
 )

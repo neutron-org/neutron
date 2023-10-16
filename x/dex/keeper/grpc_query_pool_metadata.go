@@ -22,7 +22,7 @@ func (k Keeper) PoolMetadataAll(goCtx context.Context, req *types.QueryAllPoolMe
 	store := ctx.KVStore(k.storeKey)
 	poolMetadataStore := prefix.NewStore(store, types.KeyPrefix(types.PoolMetadataKeyPrefix))
 
-	pageRes, err := query.Paginate(poolMetadataStore, req.Pagination, func(key []byte, value []byte) error {
+	pageRes, err := query.Paginate(poolMetadataStore, req.Pagination, func(key, value []byte) error {
 		var poolMetadata types.PoolMetadata
 		if err := k.cdc.Unmarshal(value, &poolMetadata); err != nil {
 			return err
