@@ -5,8 +5,8 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -50,27 +50,27 @@ func (m MsgCreateGauge) Type() string { return TypeMsgCreateGauge }
 // ValidateBasic checks that the create gauge message is valid.
 func (m MsgCreateGauge) ValidateBasic() error {
 	if m.Owner == "" {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "owner should be set")
+		return sdkerrors.Wrapf(ErrInvalidRequest, "owner should be set")
 	}
 	// TODO: If this is not set, infer start time as "now"
 	if m.StartTime.Equal(time.Time{}) {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "distribution start time should be set")
+		return sdkerrors.Wrapf(ErrInvalidRequest, "distribution start time should be set")
 	}
 	if m.NumEpochsPaidOver == 0 {
 		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidRequest,
+			ErrInvalidRequest,
 			"distribution period should be at least 1 epoch",
 		)
 	}
 	if m.IsPerpetual && m.NumEpochsPaidOver != 1 {
 		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidRequest,
+			ErrInvalidRequest,
 			"distribution period should be 1 epoch for perpetual gauge",
 		)
 	}
 	if dextypes.IsTickOutOfRange(m.PricingTick) {
 		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidRequest,
+			ErrInvalidRequest,
 			"pricing tick is out of range, must be between %d and %d",
 			int64(dextypes.MaxTickExp)*-1,
 			dextypes.MaxTickExp,
@@ -78,7 +78,7 @@ func (m MsgCreateGauge) ValidateBasic() error {
 	}
 	if dextypes.IsTickOutOfRange(m.DistributeTo.StartTick) {
 		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidRequest,
+			ErrInvalidRequest,
 			"start tick is out of range, must be between %d and %d",
 			int64(dextypes.MaxTickExp)*-1,
 			dextypes.MaxTickExp,
@@ -86,7 +86,7 @@ func (m MsgCreateGauge) ValidateBasic() error {
 	}
 	if dextypes.IsTickOutOfRange(m.DistributeTo.EndTick) {
 		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidRequest,
+			ErrInvalidRequest,
 			"start tick is out of range, must be between %d and %d",
 			int64(dextypes.MaxTickExp)*-1,
 			dextypes.MaxTickExp,
@@ -127,11 +127,11 @@ func (m MsgAddToGauge) Type() string { return TypeMsgAddToGauge }
 // ValidateBasic checks that the add to gauge message is valid.
 func (m MsgAddToGauge) ValidateBasic() error {
 	if m.Owner == "" {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "owner should be set")
+		return sdkerrors.Wrapf(ErrInvalidRequest, "owner should be set")
 	}
 	if m.Rewards.Empty() {
 		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidRequest,
+			ErrInvalidRequest,
 			"additional rewards should not be empty",
 		)
 	}
@@ -165,7 +165,7 @@ func (m MsgStake) Type() string  { return TypeMsgStakeTokens }
 func (m MsgStake) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.Owner)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid owner address (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidAddress, "Invalid owner address (%s)", err)
 	}
 
 	if !m.Coins.IsAllPositive() {
@@ -206,7 +206,7 @@ func (m MsgUnstake) Type() string  { return TypeMsgBeginUnstaking }
 func (m MsgUnstake) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.Owner)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid owner address (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidAddress, "Invalid owner address (%s)", err)
 	}
 
 	for _, unstake := range m.Unstakes {

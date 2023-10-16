@@ -7,8 +7,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/incentives/types"
@@ -88,7 +88,7 @@ func (q QueryServer) GetGauges(
 	case types.GaugeStatus_FINISHED:
 		prefix = types.KeyPrefixGaugeIndexFinished
 	default:
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invalid status filter value")
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, "invalid status filter value")
 	}
 
 	var lowerTick, upperTick int64
@@ -191,11 +191,11 @@ func (q QueryServer) GetFutureRewardEstimate(
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 	if len(req.Owner) == 0 && len(req.StakeIds) == 0 {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty owner")
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, "empty owner")
 	}
 
 	if req.NumEpochs > 365 {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "end epoch out of ranges")
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, "end epoch out of ranges")
 	}
 
 	var ownerAddress sdk.AccAddress

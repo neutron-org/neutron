@@ -1,6 +1,6 @@
 package types
 
-import sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+import sdkerrors "cosmossdk.io/errors"
 
 var (
 	ErrInvalidSwapMetadata = sdkerrors.Register(ModuleName, 2, "invalid swap metadata")

@@ -3,7 +3,6 @@ package types_test
 import (
 	"testing"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/require"
@@ -21,7 +20,7 @@ func TestMsgCancelLimitOrder_ValidateBasic(t *testing.T) {
 				Creator:    "invalid_address",
 				TrancheKey: "ORDER123",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: ErrInvalidAddress,
 		}, {
 			name: "valid msg",
 			msg: MsgCancelLimitOrder{

@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"golang.org/x/exp/slices"
@@ -67,7 +67,7 @@ func (k Keeper) GetValidFees(ctx sdk.Context) []uint64 {
 func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 	validFees := k.GetValidFees(ctx)
 	if !slices.Contains(validFees, fee) {
-		return sdkerrors.Wrapf(types.ErrInvalidFee, "%s", validFees)
+		return sdkerrors.Wrapf(types.ErrInvalidFee, "%d", validFees)
 	}
 
 	return nil

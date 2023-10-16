@@ -8,8 +8,8 @@ import (
 	"cosmossdk.io/errors"
 	"github.com/neutron-org/neutron/x/incentives/types"
 
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 var _ types.MsgServer = msgServer{}
@@ -58,7 +58,7 @@ func (server msgServer) CreateGauge(
 		msg.PricingTick,
 	)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -85,7 +85,7 @@ func (server msgServer) AddToGauge(
 
 	err = server.keeper.AddToGaugeRewards(ctx, owner, msg.Rewards, msg.GaugeId)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -158,7 +158,7 @@ func (server msgServer) Unstake(
 	for _, unstake := range unstakes {
 		stake, err := server.keeper.GetStakeByID(ctx, unstake.ID)
 		if err != nil {
-			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+			return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 		}
 
 		if msg.Owner != stake.Owner {
@@ -174,7 +174,7 @@ func (server msgServer) Unstake(
 
 		_, err = server.keeper.Unstake(ctx, stake, unstake.Coins)
 		if err != nil {
-			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+			return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 		}
 	}
 
@@ -188,7 +188,7 @@ func (server msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdate
 	}
 	authority := server.keeper.GetAuthority()
 	if authority != req.Authority {
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
+		return nil, errors.Wrapf(types.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)

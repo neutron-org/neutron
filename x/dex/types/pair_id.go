@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 )
 
 func NewPairID(token0, token1 string) (*PairID, error) {

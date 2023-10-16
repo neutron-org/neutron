@@ -3,10 +3,10 @@ package types
 import (
 	"encoding/json"
 
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/iancoleman/orderedmap"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
 )
 
 // PacketMetadata wraps the SwapMetadata. The root key in the incoming ICS20 transfer packet's memo needs to be set to the same
@@ -42,7 +42,7 @@ func (sm SwapMetadata) Validate() error {
 	if sm.RefundAddress != "" {
 		_, err := sdk.AccAddressFromBech32(sm.RefundAddress)
 		if err != nil {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "%s is not a valid Duality address", sm.RefundAddress)
+			return sdkerrors.Wrapf(dextypes.ErrInvalidAddress, "%s is not a valid Duality address", sm.RefundAddress)
 		}
 	}
 

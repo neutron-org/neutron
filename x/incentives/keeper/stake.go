@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/gogoproto/proto"
 
 	"github.com/neutron-org/neutron/x/incentives/types"
@@ -198,22 +198,22 @@ func (k Keeper) CreateStake(
 
 	owner, err := sdk.AccAddressFromBech32(stake.Owner)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 	}
 
 	err = stake.ValidateBasic()
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 	}
 
 	if err := k.bk.SendCoinsFromAccountToModule(ctx, owner, types.ModuleName, stake.Coins); err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 	}
 
 	// store stake object into the store
 	err = k.setStake(ctx, stake)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 	}
 
 	k.hooks.OnTokenStaked(ctx, owner, stake.ID, stake.Coins, ctx.BlockTime())
@@ -222,7 +222,7 @@ func (k Keeper) CreateStake(
 	// add stake refs into not unlocking queue
 	err = k.addStakeRefs(ctx, stake)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
 	}
 
 	return stake, nil

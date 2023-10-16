@@ -3,7 +3,7 @@ package types
 // DONTCOVER
 
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 )
 
 // x/incentives module sentinel errors.
@@ -39,5 +39,15 @@ var (
 		ModuleName,
 		8,
 		"owner must be module authority",
+	)
+	ErrInvalidRequest = sdkerrors.Register(
+		ModuleName,
+		9,
+		"invalid request",
+	)
+	ErrInvalidAddress = sdkerrors.Register(
+		ModuleName,
+		10,
+		"Invalid Address",
 	)
 )
