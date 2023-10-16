@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/testutil/apptesting"
