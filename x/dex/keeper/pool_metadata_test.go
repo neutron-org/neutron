@@ -28,8 +28,8 @@ func TestPoolMetadataGet(t *testing.T) {
 		got, found := keeper.GetPoolMetadata(ctx, item.ID)
 		require.True(t, found)
 		require.Equal(t,
-			nullify.Fill(&item),
-			nullify.Fill(&got),
+			nullify.Fill(item),
+			nullify.Fill(got),
 		)
 	}
 }

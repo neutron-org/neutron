@@ -24,7 +24,7 @@ type LiquidityTestSuite struct {
 // don't need to test both LO and LP. At the level of swap testing these should be indistinguishable.
 
 func (s *LiquidityTestSuite) SetupTest() {
-	s.app = testutil.Setup(s.T(), false)
+	s.app = testutil.Setup(s.T())
 	ctx := s.app.BaseApp.NewContext(false, tmproto.Header{})
 	ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 	s.ctx = ctx
@@ -725,24 +725,4 @@ func (s *LiquidityTestSuite) assertCurr1To0(curr1To0Expected int64) {
 	} else {
 		s.Assert().Equal(curr1To0Expected, curr1to0Actual)
 	}
-}
-
-func (s *LiquidityTestSuite) assertFillAndPlaceTrancheKeys(
-	selling string,
-	tickIndex int64,
-	expectedFill, expectedPlace string,
-) {
-	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
-	placeTranche := s.app.DexKeeper.GetPlaceTranche(s.ctx, tradePairID, tickIndex)
-	fillTranche, foundFill := s.app.DexKeeper.GetFillTranche(s.ctx, tradePairID, tickIndex)
-	placeKey, fillKey := "", ""
-	if placeTranche != nil {
-		placeKey = placeTranche.Key.TrancheKey
-	}
-
-	if foundFill {
-		fillKey = fillTranche.Key.TrancheKey
-	}
-	s.Assert().Equal(expectedFill, fillKey)
-	s.Assert().Equal(expectedPlace, placeKey)
 }

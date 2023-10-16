@@ -68,7 +68,7 @@ func TestRemoveValue(t *testing.T) {
 
 func TestStakeRefKeys(t *testing.T) {
 	addr1 := sdk.AccAddress([]byte("addr1---------------"))
-	app := testutil.Setup(t, false)
+	app := testutil.Setup(t)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	pool1, err := app.DexKeeper.InitPool(ctx, &dextypes.PairID{Token0: "TokenA", Token1: "TokenB"}, 0, 1)
@@ -106,11 +106,13 @@ func TestStakeRefKeys(t *testing.T) {
 	// not empty address and 1 coin
 	stake3 := types.NewStake(1, addr1, sdk.Coins{sdk.NewInt64Coin(denom1, 10)}, time.Now(), 10)
 	keys3, err := app.IncentivesKeeper.GetStakeRefKeys(ctx, stake3)
+	require.NoError(t, err)
 	require.Len(t, keys3, 6)
 
 	// not empty address and empty coin
 	stake4 := types.NewStake(1, addr1, sdk.Coins{sdk.NewInt64Coin(denom1, 10)}, time.Now(), 10)
 	keys4, err := app.IncentivesKeeper.GetStakeRefKeys(ctx, stake4)
+	require.NoError(t, err)
 	require.Len(t, keys4, 6)
 
 	// not empty address and 2 coins
@@ -122,5 +124,6 @@ func TestStakeRefKeys(t *testing.T) {
 		10,
 	)
 	keys5, err := app.IncentivesKeeper.GetStakeRefKeys(ctx, stake5)
+	require.NoError(t, err)
 	require.Len(t, keys5, 10)
 }

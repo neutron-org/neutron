@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"cosmossdk.io/errors"
 	"github.com/neutron-org/neutron/x/incentives/types"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -33,7 +32,7 @@ func (server msgServer) CreateGauge(
 	msg *types.MsgCreateGauge,
 ) (*types.MsgCreateGaugeResponse, error) {
 	if server.keeper.authority != msg.Owner {
-		return nil, errors.Wrapf(
+		return nil, sdkerrors.Wrapf(
 			types.ErrInvalidSigner,
 			"invalid authority; expected %s, got %s",
 			server.keeper.authority,
@@ -188,7 +187,7 @@ func (server msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdate
 	}
 	authority := server.keeper.GetAuthority()
 	if authority != req.Authority {
-		return nil, errors.Wrapf(types.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
+		return nil, sdkerrors.Wrapf(types.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)

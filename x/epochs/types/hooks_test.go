@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"strconv"
 	"testing"
 
 	"cosmossdk.io/errors"
@@ -28,19 +27,17 @@ func (s *KeeperTestSuite) SetupTest() {
 	)
 }
 
-func dummyAfterEpochEndEvent(epochIdentifier string, epochNumber int64) sdk.Event {
+func dummyAfterEpochEndEvent(epochIdentifier string) sdk.Event {
 	return sdk.NewEvent(
 		"afterEpochEnd",
 		sdk.NewAttribute("epochIdentifier", epochIdentifier),
-		sdk.NewAttribute("epochNumber", strconv.FormatInt(epochNumber, 10)),
 	)
 }
 
-func dummyBeforeEpochStartEvent(epochIdentifier string, epochNumber int64) sdk.Event {
+func dummyBeforeEpochStartEvent(epochIdentifier string) sdk.Event {
 	return sdk.NewEvent(
 		"beforeEpochStart",
 		sdk.NewAttribute("epochIdentifier", epochIdentifier),
-		sdk.NewAttribute("epochNumber", strconv.FormatInt(epochNumber, 10)),
 	)
 }
 
@@ -58,7 +55,6 @@ type dummyEpochHook struct {
 func (hook *dummyEpochHook) AfterEpochEnd(
 	ctx sdk.Context,
 	epochIdentifier string,
-	epochNumber int64,
 ) error {
 	if hook.shouldPanic {
 		panic("dummyEpochHook is panicking")
@@ -67,7 +63,7 @@ func (hook *dummyEpochHook) AfterEpochEnd(
 		return errDummy
 	}
 	hook.successCounter++
-	ctx.EventManager().EmitEvent(dummyAfterEpochEndEvent(epochIdentifier, epochNumber))
+	ctx.EventManager().EmitEvent(dummyAfterEpochEndEvent(epochIdentifier))
 
 	return nil
 }
@@ -75,7 +71,6 @@ func (hook *dummyEpochHook) AfterEpochEnd(
 func (hook *dummyEpochHook) BeforeEpochStart(
 	ctx sdk.Context,
 	epochIdentifier string,
-	epochNumber int64,
 ) error {
 	if hook.shouldPanic {
 		panic("dummyEpochHook is panicking")
@@ -84,7 +79,7 @@ func (hook *dummyEpochHook) BeforeEpochStart(
 		return errDummy
 	}
 	hook.successCounter++
-	ctx.EventManager().EmitEvent(dummyBeforeEpochStartEvent(epochIdentifier, epochNumber))
+	ctx.EventManager().EmitEvent(dummyBeforeEpochStartEvent(epochIdentifier))
 
 	return nil
 }
@@ -100,7 +95,7 @@ func (hook *dummyEpochHook) Clone() *dummyEpochHook {
 
 var _ types.EpochHooks = &dummyEpochHook{}
 
-func (suite *KeeperTestSuite) TestHooksPanicRecovery() {
+func (s *KeeperTestSuite) TestHooksPanicRecovery() {
 	// panicHook := dummyEpochHook{shouldPanic: true}
 	noPanicHook := dummyEpochHook{shouldPanic: false}
 	// errorHook := dummyEpochHook{shouldError: true}
@@ -120,7 +115,7 @@ func (suite *KeeperTestSuite) TestHooksPanicRecovery() {
 
 	for tcIndex, tc := range tests {
 		for epochActionSelector := 0; epochActionSelector < 2; epochActionSelector++ {
-			suite.SetupTest()
+			s.SetupTest()
 			hookRefs := []types.EpochHooks{}
 
 			for _, hook := range tc.hooks {
@@ -129,37 +124,38 @@ func (suite *KeeperTestSuite) TestHooksPanicRecovery() {
 
 			hooks := types.NewMultiEpochHooks(hookRefs...)
 
-			events := func(epochID string, epochNumber int64, dummyEvent func(id string, number int64) sdk.Event) sdk.Events {
+			events := func(epochID string, dummyEvent func(id string) sdk.Event) sdk.Events {
 				evts := make(sdk.Events, tc.lenEvents)
 				for i := 0; i < tc.lenEvents; i++ {
-					evts[i] = dummyEvent(epochID, epochNumber)
+					evts[i] = dummyEvent(epochID)
 				}
 
 				return evts
 			}
 
-			suite.NotPanics(func() {
+			s.NotPanics(func() {
 				if epochActionSelector == 0 {
-					hooks.BeforeEpochStart(suite.Ctx, "id", 0)
-					suite.Require().Equal(
+					err := hooks.BeforeEpochStart(s.Ctx, "id")
+					s.Require().NoError(err)
+					s.Require().Equal(
 						events(
 							"id",
-							0,
 							dummyBeforeEpochStartEvent,
 						),
-						suite.Ctx.EventManager().Events(),
+						s.Ctx.EventManager().Events(),
 						"test case index %d, before epoch event check", tcIndex,
 					)
 				} else if epochActionSelector == 1 {
-					hooks.AfterEpochEnd(suite.Ctx, "id", 0)
-					suite.Require().Equal(events("id", 0, dummyAfterEpochEndEvent), suite.Ctx.EventManager().Events(),
+					err := hooks.AfterEpochEnd(s.Ctx, "id")
+					s.Require().NoError(err)
+					s.Require().Equal(events("id", dummyAfterEpochEndEvent), s.Ctx.EventManager().Events(),
 						"test case index %d, after epoch event check", tcIndex)
 				}
 			})
 
 			for i := 0; i < len(hooks); i++ {
 				epochHook := hookRefs[i].(*dummyEpochHook)
-				suite.Require().
+				s.Require().
 					Equal(tc.expectedCounterValues[i], epochHook.successCounter, "test case index %d", tcIndex)
 			}
 		}

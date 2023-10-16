@@ -10,7 +10,9 @@ import (
 
 // InitGenesis initializes the incentives module's state from a provided genesis state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
-	k.SetParams(ctx, genState.Params)
+	if err := k.SetParams(ctx, genState.Params); err != nil {
+		panic(err)
+	}
 	if err := k.InitializeAllStakes(ctx, genState.Stakes); err != nil {
 		panic(err)
 	}

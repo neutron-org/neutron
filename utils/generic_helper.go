@@ -11,7 +11,7 @@ func MakeNew[T any]() T {
 		elem := typ.Elem()
 		//nolint:forcetypeassert
 		return reflect.New(elem).Interface().(T) // must use reflect
-	} else {
-		return *new(T) // v is not ptr, alloc with new
 	}
+
+	return *new(T) // v is not ptr, alloc with new
 }

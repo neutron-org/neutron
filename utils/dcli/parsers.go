@@ -249,15 +249,17 @@ func ParseFieldFromArg(fVal reflect.Value, fType reflect.StructField, arg string
 		typeStr := fType.Type.String()
 		var v any
 		var err error
-		if typeStr == "types.Coin" {
+
+		switch {
+		case typeStr == "types.Coin":
 			v, err = ParseCoin(arg, fType.Name)
-		} else if typeStr == "types.Int" {
+		case typeStr == "types.Int":
 			v, err = ParseSdkInt(arg, fType.Name)
-		} else if typeStr == "time.Time" {
+		case typeStr == "time.Time":
 			v, err = ParseUnixTime(arg, fType.Name)
-		} else if typeStr == "math.LegacyDec" {
+		case typeStr == "math.LegacyDec":
 			v, err = ParseSdkDec(arg, fType.Name)
-		} else {
+		default:
 			return fmt.Errorf("struct field type not recognized. Got type %v", fType)
 		}
 
@@ -317,7 +319,7 @@ func ParseUnixTime(arg, fieldName string) (time.Time, error) {
 	return startTime, nil
 }
 
-func ParseDenom(arg, fieldName string) (string, error) {
+func ParseDenom(arg, _ string) (string, error) {
 	return strings.TrimSpace(arg), nil
 }
 

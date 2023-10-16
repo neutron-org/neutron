@@ -17,8 +17,8 @@ func (k Keeper) Swap(
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math.Int
 	if useMaxOut {
-		copy := *maxAmountMakerDenom
-		remainingMakerDenom = &copy
+		temp := *maxAmountMakerDenom
+		remainingMakerDenom = &temp
 	}
 
 	remainingTakerDenom := maxAmountTakerDenom
@@ -54,8 +54,8 @@ func (k Keeper) Swap(
 		}
 
 		if useMaxOut {
-			copy := remainingMakerDenom.Sub(outAmount)
-			remainingMakerDenom = &copy
+			temp := remainingMakerDenom.Sub(outAmount)
+			remainingMakerDenom = &temp
 
 			// if maxAmountOut has been used up then exit
 			if remainingMakerDenom.LTE(math.ZeroInt()) {

@@ -8,7 +8,6 @@ import (
 
 // x/dex module sentinel errors
 
-//nolint:all
 var (
 	ErrInvalidTradingPair = sdkerrors.Register(
 		ModuleName,

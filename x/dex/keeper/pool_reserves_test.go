@@ -27,8 +27,8 @@ func TestGetPoolReserves(t *testing.T) {
 		rst, found := keeper.GetPoolReserves(ctx, item.Key)
 		require.True(t, found)
 		require.Equal(t,
-			nullify.Fill(&item),
-			nullify.Fill(&rst),
+			nullify.Fill(item),
+			nullify.Fill(rst),
 		)
 	}
 }

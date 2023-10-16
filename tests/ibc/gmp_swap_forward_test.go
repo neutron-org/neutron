@@ -108,10 +108,10 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 		s.dualityChainBPath.EndpointA.ChannelID,
 		nativeDenom,
 	)
-	transferDenomDuality_B := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
+	transferDenomChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
 	// Check that the funds are now present in the acc on chainB
-	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, expectedAmountOut)
+	s.assertChainBBalance(chainBAddr, transferDenomChainB, expectedAmountOut)
 
 	s.Assert().NoError(err)
 }

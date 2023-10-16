@@ -79,7 +79,9 @@ func (suite *KeeperTestSuite) TestEpochLifeCycle() {
 	suite.SetupTest()
 
 	epochInfo := types.NewGenesisEpochInfo("monthly", time.Hour*24*30)
-	suite.App.EpochsKeeper.AddEpochInfo(suite.Ctx, epochInfo)
+	err := suite.App.EpochsKeeper.AddEpochInfo(suite.Ctx, epochInfo)
+	suite.Require().NoError(err)
+
 	epochInfoSaved := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, "monthly")
 
 	// setup expected epoch info

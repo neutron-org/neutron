@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	errorsmod "cosmossdk.io/errors"
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
@@ -153,7 +152,7 @@ func (m MsgAddToGauge) GetSigners() []sdk.AccAddress {
 var _ sdk.Msg = &MsgStake{}
 
 // NewMsgStakeTokens creates a message to stake tokens.
-func NewMsgSetupStake(owner sdk.AccAddress, duration time.Duration, coins sdk.Coins) *MsgStake {
+func NewMsgSetupStake(owner sdk.AccAddress, coins sdk.Coins) *MsgStake {
 	return &MsgStake{
 		Owner: owner.String(),
 		Coins: coins,
@@ -252,10 +251,9 @@ func (msg *MsgUpdateParams) GetSignBytes() []byte {
 
 func (msg *MsgUpdateParams) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
-		return errorsmod.Wrap(err, "authority is invalid")
+		return sdkerrors.Wrap(err, "authority is invalid")
 	}
-	if err := msg.Params.Validate(); err != nil {
-		return err
-	}
-	return nil
+
+	err := msg.Params.Validate()
+	return err
 }

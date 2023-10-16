@@ -58,8 +58,8 @@ func TestLimitOrderTrancheUserGet(t *testing.T) {
 		rst, found := keeper.GetLimitOrderTrancheUser(ctx, item.Address, item.TrancheKey)
 		require.True(t, found)
 		require.Equal(t,
-			nullify.Fill(&item),
-			nullify.Fill(&rst),
+			nullify.Fill(item),
+			nullify.Fill(rst),
 		)
 	}
 }

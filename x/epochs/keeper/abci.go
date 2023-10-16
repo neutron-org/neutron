@@ -53,7 +53,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 					sdk.NewAttribute(types.AttributeEpochNumber, fmt.Sprintf("%d", epochInfo.CurrentEpoch)),
 				),
 			)
-			k.AfterEpochEnd(ctx, epochInfo.Identifier, epochInfo.CurrentEpoch)
+			k.AfterEpochEnd(ctx, epochInfo.Identifier)
 			epochInfo.CurrentEpoch++
 			epochInfo.CurrentEpochStartTime = epochInfo.CurrentEpochStartTime.Add(epochInfo.Duration)
 			logger.Info("Starting epoch", "Identifier", epochInfo.Identifier, "CurEpoch", epochInfo.CurrentEpoch)
@@ -74,7 +74,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 			),
 		)
 		k.setEpochInfo(ctx, epochInfo)
-		k.BeforeEpochStart(ctx, epochInfo.Identifier, epochInfo.CurrentEpoch)
+		k.BeforeEpochStart(ctx, epochInfo.Identifier)
 
 		return false
 	})

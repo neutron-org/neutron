@@ -65,27 +65,29 @@ func NewPairIDFromCanonicalString(pairIDStr string) (*PairID, error) {
 func SortTokens(tokenA, tokenB string) (string, string) {
 	if tokenA < tokenB {
 		return tokenA, tokenB
-	} else {
-		return tokenB, tokenA
 	}
+	// else
+	return tokenB, tokenA
 }
 
 func (p *PairID) MustTradePairIDFromMaker(maker string) *TradePairID {
-	if p.Token0 == maker {
+	switch {
+	case p.Token0 == maker:
 		return MustNewTradePairID(p.Token1, p.Token0)
-	} else if p.Token1 == maker {
+	case p.Token1 == maker:
 		return MustNewTradePairID(p.Token0, p.Token1)
-	} else {
+	default:
 		panic(fmt.Errorf("pair.TradePairIDFromMaker(maker string) called where maker does not equal either pair.Token0 or pair.Token1"))
 	}
 }
 
 func (p *PairID) MustTradePairIDFromTaker(taker string) *TradePairID {
-	if p.Token0 == taker {
+	switch {
+	case p.Token0 == taker:
 		return MustNewTradePairID(p.Token0, p.Token1)
-	} else if p.Token1 == taker {
+	case p.Token1 == taker:
 		return MustNewTradePairID(p.Token1, p.Token0)
-	} else {
+	default:
 		panic(fmt.Errorf("pair.TradePairIDFromMaker(maker string) called where maker does not equal either pair.Token0 or pair.Token1"))
 	}
 }

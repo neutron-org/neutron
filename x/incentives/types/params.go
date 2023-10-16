@@ -35,10 +35,7 @@ func DefaultParams() Params {
 
 // Validate checks that the incentives module parameters are valid.
 func (p Params) Validate() error {
-	if err := epochtypes.ValidateEpochIdentifierInterface(p.DistrEpochIdentifier); err != nil {
-		return err
-	}
-	return nil
+	return epochtypes.ValidateEpochIdentifierInterface(p.DistrEpochIdentifier)
 }
 
 // ParamSetPairs takes the parameter struct and associates the paramsubspace key and field of the parameters as a KVStore.

@@ -226,7 +226,7 @@ func (im IBCMiddleware) SendPacket(
 	return im.keeper.SendPacket(
 		ctx,
 		chanCap,
-		sourceChannel,
+		sourcePort,
 		sourceChannel,
 		timeoutHeight,
 		timeoutTimestamp,

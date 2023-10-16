@@ -32,30 +32,30 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterLegacyAminoCodec implements AppModuleBasic interface.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
+func (AppModuleBasic) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {}
 
 // RegisterInterfaces registers module concrete types into protobuf Any.
-func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {}
+func (AppModuleBasic) RegisterInterfaces(_ codectypes.InterfaceRegistry) {}
 
 // DefaultGenesis returns default genesis state as raw bytes for the swap module.
-func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+func (AppModuleBasic) DefaultGenesis(_ codec.JSONCodec) json.RawMessage {
 	return nil
 }
 
 // ValidateGenesis performs genesis state validation for the swap module.
 func (AppModuleBasic) ValidateGenesis(
-	cdc codec.JSONCodec,
-	config client.TxEncodingConfig,
-	bz json.RawMessage,
+	_ codec.JSONCodec,
+	_ client.TxEncodingConfig,
+	_ json.RawMessage,
 ) error {
 	return nil
 }
 
 // RegisterRESTRoutes implements AppModuleBasic interface.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {}
+func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {}
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the swap module.
-func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {}
+func (AppModuleBasic) RegisterGRPCGatewayRoutes(_ client.Context, _ *runtime.ServeMux) {}
 
 // GetTxCmd implements AppModuleBasic interface.
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
@@ -80,7 +80,7 @@ func NewAppModule(keeper keeper.Keeper) *AppModule {
 }
 
 // RegisterInvariants implements the AppModule interface.
-func (AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
+func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // QuerierRoute implements the AppModule interface.
 func (AppModule) QuerierRoute() string {
@@ -88,20 +88,20 @@ func (AppModule) QuerierRoute() string {
 }
 
 // RegisterServices registers module services.
-func (am AppModule) RegisterServices(cfg module.Configurator) {}
+func (am AppModule) RegisterServices(_ module.Configurator) {}
 
 // InitGenesis performs genesis initialization for the ibc-router module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(
-	ctx sdk.Context,
-	cdc codec.JSONCodec,
-	data json.RawMessage,
+	_ sdk.Context,
+	_ codec.JSONCodec,
+	_ json.RawMessage,
 ) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the swap module.
-func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
+func (am AppModule) ExportGenesis(_ sdk.Context, _ codec.JSONCodec) json.RawMessage {
 	return nil
 }
 
@@ -109,23 +109,23 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock implements the AppModule interface.
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock implements the AppModule interface.
-func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
 // GenerateGenesisState implements the AppModuleSimulation interface.
-func (AppModule) GenerateGenesisState(simState *module.SimulationState) {}
+func (AppModule) GenerateGenesisState(_ *module.SimulationState) {}
 
 // ProposalContents implements the AppModuleSimulation interface.
-func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalContent {
+func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalMsg {
 	return nil
 }
 
 // RegisterStoreDecoder implements the AppModuleSimulation interface.
-func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {}
+func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
 
 // WeightedOperations implements the AppModuleSimulation interface.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {

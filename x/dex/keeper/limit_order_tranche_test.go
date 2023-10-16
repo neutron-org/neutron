@@ -43,8 +43,8 @@ func TestGetLimitOrderTranche(t *testing.T) {
 		rst := keeper.GetLimitOrderTranche(ctx, item.Key)
 		require.NotNil(t, rst)
 		require.Equal(t,
-			nullify.Fill(&item),
-			nullify.Fill(&rst),
+			nullify.Fill(item),
+			nullify.Fill(rst),
 		)
 	}
 }

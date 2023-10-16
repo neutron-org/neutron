@@ -21,6 +21,7 @@ var (
 	_ = baseapp.Paramspace
 )
 
+//nolint:gosec // false positive
 const (
 	opWeightMsgDeposit = "op_weight_msg_deposit"
 	// TODO: Determine the simulation weight value
@@ -63,7 +64,7 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 }
 
 // ProposalContents doesn't return any content functions for governance proposals
-func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalContent {
+func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalMsg {
 	return nil
 }
 

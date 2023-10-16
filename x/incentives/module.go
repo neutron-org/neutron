@@ -22,8 +22,6 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/cosmos/cosmos-sdk/x/gov/simulation"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/neutron-org/neutron/x/incentives/client/cli"
@@ -71,7 +69,7 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 // ValidateGenesis performs genesis state validation for the module.
 func (AppModuleBasic) ValidateGenesis(
 	cdc codec.JSONCodec,
-	config client.TxEncodingConfig,
+	_ client.TxEncodingConfig,
 	bz json.RawMessage,
 ) error {
 	var genState types.GenesisState
@@ -82,7 +80,7 @@ func (AppModuleBasic) ValidateGenesis(
 }
 
 // RegisterRESTRoutes registers the module's REST service handlers.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -177,36 +175,6 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
-
-// AppModuleSimulation functions
-
-// GenerateGenesisState creates a randomized GenState of the incentives module.
-func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	simulation.RandomizedGenState(simState)
-}
-
-// ProposalContents returns nil for governance proposals contents.
-// Should eventually be deleted in a future update.
-func (AppModule) ProposalContents(
-	simState module.SimulationState,
-) []simtypes.WeightedProposalContent {
-	return nil
-}
-
-// RegisterStoreDecoder has an unknown purpose. Should eventually be deleted in a future update.
-func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
-}
-
-// WeightedOperations returns the all the module's operations with their respective weights.
-// func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
-// 	// return simulation.WeightedOperations(
-// 	// 	simState.AppParams, simState.Cdc,
-// 	// 	am.accountKeeper, am.bankKeeper, am.epochKeeper, am.keeper,
-// 	// )
-// 	// simtypes.NewMsgBasedAction("stake tokens", am.keeper, simulation.RandomMsgStakeTokens),
-// 	// simtypes.NewMsgBasedAction("unstake all tokens", am.keeper, simulation.RandomMsgBeginUnstakingAll),
-// 	// simtypes.NewMsgBasedAction("unstake stake", am.keeper, simulation.RandomMsgBeginUnstaking),
-// }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 1 }

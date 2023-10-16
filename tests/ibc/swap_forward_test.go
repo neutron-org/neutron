@@ -118,10 +118,10 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 		s.dualityChainBPath.EndpointA.ChannelID,
 		nativeDenom,
 	)
-	transferDenomDuality_B := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
+	transferDenomDualityChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
 	// Check that the funds are now present in the acc on chainB
-	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, expectedAmountOut)
+	s.assertChainBBalance(chainBAddr, transferDenomDualityChainB, expectedAmountOut)
 
 	s.Assert().NoError(err)
 }
@@ -233,18 +233,18 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 	err = s.RelayAllPacketsAToB(s.chainBChainCPath)
 	s.Require().NoError(err)
 
-	transferDenomPathDuality_B := transfertypes.GetPrefixedDenom(
+	transferDenomPathDualityChainB := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
 		s.dualityChainBPath.EndpointB.ChannelID,
 		nativeDenom,
 	)
-	transferDenomDuality_B := transfertypes.ParseDenomTrace(transferDenomPathDuality_B).IBCDenom()
-	transferDenomPathB_C := transfertypes.GetPrefixedDenom(
+	transferDenomDualityChainB := transfertypes.ParseDenomTrace(transferDenomPathDualityChainB).IBCDenom()
+	transferDenomPathChainC := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
 		s.chainBChainCPath.EndpointB.ChannelID,
-		transferDenomPathDuality_B,
+		transferDenomPathDualityChainB,
 	)
-	transferDenomB_C := transfertypes.ParseDenomTrace(transferDenomPathB_C).IBCDenom()
+	transferDenomChainC := transfertypes.ParseDenomTrace(transferDenomPathChainC).IBCDenom()
 
 	// Check that the funds are moved out of the acc on chainA
 	s.assertProviderBalance(
@@ -253,10 +253,10 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 	// Check that chain B balance is unchanged
-	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, math.ZeroInt())
+	s.assertChainBBalance(chainBAddr, transferDenomDualityChainB, math.ZeroInt())
 
 	// Check that funds made it to chainC
-	s.assertChainCBalance(chainCAddr, transferDenomB_C, expectedOut)
+	s.assertChainCBalance(chainCAddr, transferDenomChainC, expectedOut)
 }
 
 // TestSwapAndForward_UnwindIBCDenomSuccess asserts that the swap and forward middleware stack works as intended in the
@@ -345,7 +345,8 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	)
 
 	// Relay the packets
-	s.RelayAllPacketsAToB(s.dualityTransferPath)
+	err = s.RelayAllPacketsAToB(s.dualityTransferPath)
+	s.Assert().NoError(err)
 	s.coordinator.CommitBlock(s.dualityChain)
 
 	// Check that the amountIn is deduced from the duality account
@@ -475,7 +476,7 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 		s.dualityChainBPath.EndpointA.ChannelID,
 		nativeDenom,
 	)
-	transferDenomDuality_B := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
+	transferDenomDualityChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
-	s.assertChainBBalance(chainBAddr, transferDenomDuality_B, math.ZeroInt())
+	s.assertChainBBalance(chainBAddr, transferDenomDualityChainB, math.ZeroInt())
 }

@@ -17,7 +17,7 @@ func IndexCmd(moduleName string) *cobra.Command {
 	}
 }
 
-func indexRunCmd(cmd *cobra.Command, args []string) error {
+func indexRunCmd(cmd *cobra.Command, _ []string) error {
 	usageTemplate := `Usage:{{if .HasAvailableSubCommands}}
   {{.CommandPath}} [command]{{end}}
   

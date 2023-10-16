@@ -28,7 +28,7 @@ func NewQueryServer(k *Keeper) QueryServer {
 
 func (q QueryServer) GetModuleStatus(
 	goCtx context.Context,
-	req *types.GetModuleStatusRequest,
+	_ *types.GetModuleStatusRequest,
 ) (*types.GetModuleStatusResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	return &types.GetModuleStatusResponse{

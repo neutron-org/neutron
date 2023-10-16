@@ -1,9 +1,6 @@
 package types
 
 import (
-	"errors"
-	"strings"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/utils"
@@ -35,34 +32,6 @@ func (p PoolReservesKey) KeyMarshal() []byte {
 	key = append(key, []byte("/")...)
 
 	return key
-}
-
-func (p PoolReservesKey) KeyUnmarshal(bz []byte) error {
-	split := strings.Split(string(bz), "/")
-
-	if len(split) != 5 {
-		return errors.New("invalid input length")
-	}
-
-	pairKey, err := NewPairIDFromCanonicalString(split[0])
-	if err != nil {
-		return err
-	}
-	p.TradePairID = pairKey.MustTradePairIDFromMaker(split[1])
-
-	tickIndex, err := BytesToTickIndex([]byte(split[2]))
-	if err != nil {
-		return err
-	}
-	p.TickIndexTakerToMaker = tickIndex
-
-	if split[3] != LiquidityTypePoolReserves {
-		return errors.New("unexpected liquidity type")
-	}
-
-	p.Fee = sdk.BigEndianToUint64([]byte(split[4]))
-
-	return nil
 }
 
 func (p PoolReservesKey) Counterpart() *PoolReservesKey {

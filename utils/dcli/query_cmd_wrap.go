@@ -72,7 +72,7 @@ func prepareDescriptor[reqP proto.Message](desc *QueryDescriptor) {
 
 	desc.numArgs = ParseNumFields[reqP]() - len(desc.CustomFlagOverrides)
 	if desc.HasPagination {
-		desc.numArgs = desc.numArgs - 1
+		desc.numArgs--
 	}
 }
 
@@ -135,7 +135,7 @@ func callQueryClientFn(ctx context.Context, fnName string, req proto.Message, q 
 	qVal := reflect.ValueOf(q)
 	method := qVal.MethodByName(fnName)
 	if (method == reflect.Value{}) {
-		return nil, fmt.Errorf("Method %s does not exist on the querier."+
+		return nil, fmt.Errorf("method %s does not exist on the querier."+
 			" You likely need to override QueryFnName in your Query descriptor", fnName)
 	}
 	args := []reflect.Value{

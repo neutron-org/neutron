@@ -19,9 +19,9 @@ func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 	}
 	if relativeTickIndex < 0 {
 		return utils.BasePrice().Power(uint64(-1 * relativeTickIndex)), nil
-	} else {
-		return math_utils.OnePrecDec().Quo(utils.BasePrice().Power(uint64(relativeTickIndex))), nil
 	}
+	// else
+	return math_utils.OnePrecDec().Quo(utils.BasePrice().Power(uint64(relativeTickIndex))), nil
 }
 
 func MustCalcPrice(relativeTickIndex int64) math_utils.PrecDec {

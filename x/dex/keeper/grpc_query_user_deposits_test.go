@@ -28,7 +28,7 @@ func simulateDeposit(ctx sdk.Context, app *dualityapp.App, addr sdk.AccAddress, 
 }
 
 func TestUserDepositsAllQueryPaginated(t *testing.T) {
-	app := testutil.Setup(t, false)
+	app := testutil.Setup(t)
 	keeper := app.DexKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	wctx := sdk.WrapSDKContext(ctx)
