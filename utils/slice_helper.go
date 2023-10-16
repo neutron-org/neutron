@@ -43,9 +43,8 @@ func ContainsDuplicate[T any](arr []T) bool {
 	for i := 0; i < len(arr); i++ {
 		if visited[arr[i]] {
 			return true
-		} else {
-			visited[arr[i]] = true
 		}
+		visited[arr[i]] = true
 	}
 	return false
 }

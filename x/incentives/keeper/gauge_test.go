@@ -44,7 +44,8 @@ func (suite *KeeperTestSuite) TestGaugeLifecycle() {
 	})
 
 	// assert that the gauge is not in effect yet by triggering an epoch end before gauge start
-	suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day", 1)
+	err := suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day")
+	require.NoError(suite.T(), err)
 	// no distribution yet
 	require.Equal(
 		suite.T(),
@@ -58,7 +59,8 @@ func (suite *KeeperTestSuite) TestGaugeLifecycle() {
 
 	// advance time to epoch at or after the gauge starts, triggering distribution
 	suite.Ctx = suite.Ctx.WithBlockTime(suite.Ctx.BlockTime().Add(24 * time.Hour))
-	suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day", 2)
+	err = suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day")
+	require.NoError(suite.T(), err)
 
 	// assert that the gauge distributed
 	require.Equal(
@@ -73,7 +75,8 @@ func (suite *KeeperTestSuite) TestGaugeLifecycle() {
 
 	// advance to next epoch
 	suite.Ctx = suite.Ctx.WithBlockTime(suite.Ctx.BlockTime().Add(24 * time.Hour))
-	suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day", 3)
+	err = suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day")
+	require.NoError(suite.T(), err)
 
 	// assert new distribution
 	require.Equal(
@@ -88,7 +91,8 @@ func (suite *KeeperTestSuite) TestGaugeLifecycle() {
 
 	// repeat advancing to next epoch until gauge should be finished
 	suite.Ctx = suite.Ctx.WithBlockTime(suite.Ctx.BlockTime().Add(24 * time.Hour))
-	suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day", 4)
+	err = suite.App.IncentivesKeeper.AfterEpochEnd(suite.Ctx, "day")
+	require.NoError(suite.T(), err)
 
 	// assert no additional distribution from finished gauge
 	require.Equal(
@@ -107,7 +111,8 @@ func (suite *KeeperTestSuite) TestGaugeLimit() {
 	// We set the gauge limit to 20. On the 21st gauge, we should encounter an error.
 	params := suite.App.IncentivesKeeper.GetParams(suite.Ctx)
 	params.MaxGauges = 20
-	suite.App.IncentivesKeeper.SetParams(suite.Ctx, params)
+	err := suite.App.IncentivesKeeper.SetParams(suite.Ctx, params)
+	suite.Require().NoError(err)
 
 	addr0 := suite.SetupAddr(0)
 
@@ -144,7 +149,7 @@ func (suite *KeeperTestSuite) TestGaugeLimit() {
 	suite.FundAcc(addr, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 10)))
 
 	// create gauge
-	_, err := suite.App.IncentivesKeeper.CreateGauge(
+	_, err = suite.App.IncentivesKeeper.CreateGauge(
 		suite.Ctx,
 		false,
 		addr,

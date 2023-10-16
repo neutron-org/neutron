@@ -64,7 +64,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			var maxAmountOutIntP *math.Int = nil
+			var maxAmountOutIntP *math.Int
 			if maxAmountOutArg != "" {
 				maxAmountOutInt, ok := math.NewIntFromString(maxAmountOutArg)
 				if !ok {

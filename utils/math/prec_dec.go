@@ -1,4 +1,4 @@
-package math_utils
+package math
 
 import (
 	"encoding/json"
@@ -525,7 +525,7 @@ func (d PrecDec) IsInteger() bool {
 }
 
 // format decimal state
-func (d PrecDec) Format(s fmt.State, verb rune) {
+func (d PrecDec) Format(s fmt.State) {
 	_, err := s.Write([]byte(d.String()))
 	if err != nil {
 		panic(err)

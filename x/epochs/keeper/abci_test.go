@@ -17,7 +17,8 @@ import (
 
 // This test is responsible for testing how epochs increment based off
 // of their initial conditions, and subsequent block height / times.
-func (suite KeeperTestSuite) TestEpochInfoBeginBlockChanges() {
+
+func (suite *KeeperTestSuite) TestEpochInfoBeginBlockChanges() {
 	block1Time := time.Unix(1656907200, 0).UTC()
 	const defaultIdentifier = "hourly"
 	const defaultDuration = time.Hour
@@ -198,7 +199,8 @@ func (suite KeeperTestSuite) TestEpochInfoBeginBlockChanges() {
 				defaultIdentifier,
 				defaultDuration,
 			)
-			suite.App.EpochsKeeper.AddEpochInfo(suite.Ctx, initialEpoch)
+			err := suite.App.EpochsKeeper.AddEpochInfo(suite.Ctx, initialEpoch)
+			suite.Require().NoError(err)
 			suite.App.EpochsKeeper.BeginBlocker(suite.Ctx)
 
 			// get sorted heights
@@ -239,7 +241,7 @@ func initializeBlankEpochInfoFields(
 }
 
 func TestEpochStartingOneMonthAfterInitGenesis(t *testing.T) {
-	app := testutil.Setup(t, false)
+	app := testutil.Setup(t)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	// On init genesis, default epochs information is set

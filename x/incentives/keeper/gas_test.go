@@ -1,13 +1,13 @@
 package keeper_test
 
-import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
+// import (
+// 	sdk "github.com/cosmos/cosmos-sdk/types"
+// )
 
-var (
-	defaultAddr  sdk.AccAddress = sdk.AccAddress([]byte("addr1---------------"))
-	defaultCoins sdk.Coins      = sdk.Coins{sdk.NewInt64Coin("stake", 10)}
-)
+// var (
+// 	defaultAddr  sdk.AccAddress = sdk.AccAddress([]byte("addr1---------------"))
+// 	defaultCoins sdk.Coins      = sdk.Coins{sdk.NewInt64Coin("stake", 10)}
+// )
 
 // func (suite *KeeperTestSuite) measureStakeGas(addr sdk.AccAddress, coins sdk.Coins, dur time.Duration) uint64 {
 // 	// fundAccount outside of gas measurement

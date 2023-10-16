@@ -1,3 +1,4 @@
+//nolint:unused,unparam // Lots of useful test helper fns that we don't want to delete, also extra params we need to keep
 package keeper_test
 
 import (
@@ -10,8 +11,6 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	dualityapp "github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	math_utils "github.com/neutron-org/neutron/utils/math"
@@ -51,12 +50,9 @@ func TestMsgServerTestSuite(t *testing.T) {
 }
 
 func (s *MsgServerTestSuite) SetupTest() {
-	app := testutil.Setup(s.T(), false)
+	app := testutil.Setup(s.T())
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
-
-	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	app.BankKeeper.SetParams(ctx, banktypes.DefaultParams())
 
 	accAlice := app.AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.AccountKeeper.SetAccount(ctx, accAlice)
@@ -83,20 +79,21 @@ func (s *MsgServerTestSuite) fundAccountBalances(account sdk.AccAddress, aBalanc
 	aBalanceInt := sdkmath.NewInt(aBalance)
 	bBalanceInt := sdkmath.NewInt(bBalance)
 	balances := sdk.NewCoins(NewACoin(aBalanceInt), NewBCoin(bBalanceInt))
-	err := FundAccount(s.app.BankKeeper, s.ctx, account, balances)
-	s.Assert().NoError(err)
+	FundAccount(s.app.BankKeeper, s.ctx, account, balances)
 	s.assertAccountBalances(account, aBalance, bBalance)
 }
 
 func (s *MsgServerTestSuite) fundAccountBalancesWithDenom(
 	addr sdk.AccAddress,
 	amounts sdk.Coins,
-) error {
+) {
 	if err := s.app.BankKeeper.MintCoins(s.ctx, types.ModuleName, amounts); err != nil {
-		return err
+		panic(err)
 	}
 
-	return s.app.BankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.ModuleName, addr, amounts)
+	if err := s.app.BankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.ModuleName, addr, amounts); err != nil {
+		panic(err)
+	}
 }
 
 func (s *MsgServerTestSuite) fundAliceBalances(a, b int64) {
@@ -1420,9 +1417,9 @@ func (s *MsgServerTestSuite) getLimitFilledLiquidityAtTickAtIndex(
 	// grab fill tranche reserves and shares
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tranche, _, found := s.app.DexKeeper.FindLimitOrderTranche(s.ctx, &types.LimitOrderTrancheKey{
-		tradePairID,
-		tickIndex,
-		trancheKey,
+		TradePairID:           tradePairID,
+		TickIndexTakerToMaker: tickIndex,
+		TrancheKey:            trancheKey,
 	})
 	s.Assert().True(found, "Failed to get limit order filled reserves for index %s", trancheKey)
 
@@ -1437,7 +1434,9 @@ func (s *MsgServerTestSuite) getLimitReservesAtTickAtKey(
 	// grab fill tranche reserves and shares
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tranche, _, found := s.app.DexKeeper.FindLimitOrderTranche(s.ctx, &types.LimitOrderTrancheKey{
-		tradePairID, tickIndex, trancheKey,
+		TradePairID:           tradePairID,
+		TickIndexTakerToMaker: tickIndex,
+		TrancheKey:            trancheKey,
 	})
 	s.Assert().True(found, "Failed to get limit order reserves for index %s", trancheKey)
 

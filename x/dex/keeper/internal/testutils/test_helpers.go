@@ -15,10 +15,12 @@ func NewBCoin(amt math.Int) sdk.Coin {
 	return sdk.NewCoin("TokenB", amt)
 }
 
-func FundAccount(bankKeeper bankkeeper.Keeper, ctx sdk.Context, addr sdk.AccAddress, amounts sdk.Coins) error {
+func FundAccount(bankKeeper bankkeeper.Keeper, ctx sdk.Context, addr sdk.AccAddress, amounts sdk.Coins) {
 	if err := bankKeeper.MintCoins(ctx, dexmoduletypes.ModuleName, amounts); err != nil {
-		return err
+		panic(err)
 	}
 
-	return bankKeeper.SendCoinsFromModuleToAccount(ctx, dexmoduletypes.ModuleName, addr, amounts)
+	if err := bankKeeper.SendCoinsFromModuleToAccount(ctx, dexmoduletypes.ModuleName, addr, amounts); err != nil {
+		panic(err)
+	}
 }

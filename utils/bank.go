@@ -69,42 +69,39 @@ func FilteredPaginateAccountBalances(
 		return &query.PageResponse{
 			NextKey: nextKey,
 		}, nil
-	} else {
-		// default pagination (with offset)
+	}
+	// else  default pagination (with offset)
+	end := offset + limit
+	var (
+		numHits uint64
+		nextKey []byte
+	)
 
-		end := offset + limit
+	bankKeeper.IterateAccountBalances(ctx, address, func(coin sdk.Coin) bool {
+		accumulate := numHits >= offset && numHits < end
+		hit := onResult(coin, accumulate)
 
-		var (
-			numHits uint64
-			nextKey []byte
-		)
-
-		bankKeeper.IterateAccountBalances(ctx, address, func(coin sdk.Coin) bool {
-			accumulate := numHits >= offset && numHits < end
-			hit := onResult(coin, accumulate)
-
-			if hit {
-				numHits++
-			}
-
-			if numHits == end+1 {
-				if nextKey == nil {
-					nextKey = []byte(coin.Denom)
-				}
-
-				if !countTotal {
-					return true
-				}
-			}
-
-			return false
-		})
-
-		res := &query.PageResponse{NextKey: nextKey}
-		if countTotal {
-			res.Total = numHits
+		if hit {
+			numHits++
 		}
 
-		return res, nil
+		if numHits == end+1 {
+			if nextKey == nil {
+				nextKey = []byte(coin.Denom)
+			}
+
+			if !countTotal {
+				return true
+			}
+		}
+
+		return false
+	})
+
+	res := &query.PageResponse{NextKey: nextKey}
+	if countTotal {
+		res.Total = numHits
 	}
+
+	return res, nil
 }

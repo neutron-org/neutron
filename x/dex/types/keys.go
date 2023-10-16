@@ -79,9 +79,9 @@ func BytesToTickIndex(bz []byte) (int64, error) {
 
 	if isNegative {
 		return int64(-tickTakerToMaker), nil
-	} else {
-		return int64(tickTakerToMaker), nil
 	}
+	// else
+	return int64(tickTakerToMaker), nil
 }
 
 // LimitOrderTrancheUserKey returns the store key to retrieve a LimitOrderTrancheUser from the index fields

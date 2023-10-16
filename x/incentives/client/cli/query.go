@@ -43,6 +43,7 @@ func GetCmdGetGaugeByID() (*dcli.QueryDescriptor, *types.GetGaugeByIDRequest) {
 	}, &types.GetGaugeByIDRequest{}
 }
 
+//nolint:unparam // we can't change return values since we need to match interface
 func parseGaugeStatus(arg string, _ *pflag.FlagSet) (any, dcli.FieldReadLocation, error) {
 	gaugeStatusInt, ok := types.GaugeStatus_value[arg]
 	if !ok {

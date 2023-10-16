@@ -28,11 +28,8 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 }
 
 func (s *CoreHelpersTestSuite) SetupTest() {
-	app := testutil.Setup(s.T(), false)
+	app := testutil.Setup(s.T())
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
-	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	app.BankKeeper.SetParams(ctx, banktypes.DefaultParams())
 
 	accAlice := app.AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.AccountKeeper.SetAccount(ctx, accAlice)
@@ -65,7 +62,8 @@ func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB
 
 	totalShares := pool.CalcSharesMinted(amountAInt, amountBInt, existingShares)
 
-	s.app.DexKeeper.MintShares(s.ctx, s.alice, totalShares)
+	err = s.app.DexKeeper.MintShares(s.ctx, s.alice, totalShares)
+	s.Require().NoError(err)
 
 	lowerTick.ReservesMakerDenom = amountAInt
 	upperTick.ReservesMakerDenom = amountBInt
@@ -100,7 +98,6 @@ func (s *CoreHelpersTestSuite) TestGetCurrTick1To0WithLiq() {
 func (s *CoreHelpersTestSuite) TestGetCurrTick1To0WithMinLiq() {
 	// GIVEN tick with token0 @ index -1
 	s.setLPAtFee1Pool(-1, 10, 0)
-	s.setLPAtFee1Pool(1, 0, 0)
 
 	// THEN GetCurrTick1To0 finds the tick at -2
 
@@ -138,7 +135,6 @@ func (s *CoreHelpersTestSuite) TestGetCurrTick0To1WithLiq() {
 
 func (s *CoreHelpersTestSuite) TestGetCurrTick0To1WithMinLiq() {
 	// WHEN tick with token1 @ index 1
-	s.setLPAtFee1Pool(-1, 0, 0)
 	s.setLPAtFee1Pool(1, 0, 10)
 
 	// THEN GetCurrTick0To1 finds the tick at 2

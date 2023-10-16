@@ -30,7 +30,8 @@ func (suite *KeeperTestSuite) TestStakeLifecycle() {
 	suite.Require().NotNil(retrievedStake)
 
 	// unstake the full amount
-	suite.App.IncentivesKeeper.Unstake(suite.Ctx, stake, sdk.Coins{})
+	_, err = suite.App.IncentivesKeeper.Unstake(suite.Ctx, stake, sdk.Coins{})
+	suite.Require().NoError(err)
 	balances := suite.App.BankKeeper.GetAllBalances(suite.Ctx, addr0)
 	suite.Require().Equal(sdk.NewCoins(sdk.NewInt64Coin(suite.LPDenom0, 20)), balances)
 	_, err = suite.App.IncentivesKeeper.GetStakeByID(suite.Ctx, stake.ID)
@@ -67,7 +68,8 @@ func (suite *KeeperTestSuite) TestMultipleStakeLifecycle() {
 	suite.Require().NotNil(retrievedStake)
 
 	// unstake the full amount
-	suite.App.IncentivesKeeper.Unstake(suite.Ctx, stake, sdk.Coins{})
+	_, err = suite.App.IncentivesKeeper.Unstake(suite.Ctx, stake, sdk.Coins{})
+	suite.Require().NoError(err)
 	balances := suite.App.BankKeeper.GetAllBalances(suite.Ctx, addr0)
 	suite.Require().Equal(
 		sdk.NewCoins(

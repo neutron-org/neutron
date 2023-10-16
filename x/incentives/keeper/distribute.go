@@ -80,7 +80,9 @@ func (k Keeper) Distribute(ctx sdk.Context, gauges types.Gauges) (types.Distribu
 		} else {
 			accHistory = NewAccountHistory(addr, rewards)
 		}
-		k.SetAccountHistory(ctx, accHistory)
+		if err := k.SetAccountHistory(ctx, accHistory); err != nil {
+			return nil, err
+		}
 
 		// Emit events
 		ctx.EventManager().EmitEvents(sdk.Events{

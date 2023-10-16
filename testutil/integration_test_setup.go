@@ -29,7 +29,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
+func setup(withGenesis bool) (*app.App, app.GenesisState) {
 	encoding := app.MakeEncodingConfig()
 	db := dbm.NewMemDB()
 	testApp := app.New(
@@ -52,7 +52,7 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
 	return testApp, app.GenesisState{}
 }
 
-func Setup(t *testing.T, isCheckTx bool) *app.App {
+func Setup(t *testing.T) *app.App {
 	t.Helper()
 
 	privVal := mock.NewPV()
@@ -93,7 +93,7 @@ func SetupWithGenesisValSet(
 ) *app.App {
 	t.Helper()
 
-	app, genesisState := setup(true, 5)
+	app, genesisState := setup(true)
 	genesisState, err := GenesisStateWithValSet(
 		app.AppCodec(),
 		genesisState,

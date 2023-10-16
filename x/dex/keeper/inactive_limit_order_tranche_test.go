@@ -43,8 +43,8 @@ func TestInactiveLimitOrderTrancheGet(t *testing.T) {
 		rst, found := keeper.GetInactiveLimitOrderTranche(ctx, item.Key)
 		require.True(t, found)
 		require.Equal(t,
-			nullify.Fill(&item),
-			nullify.Fill(&rst),
+			nullify.Fill(item),
+			nullify.Fill(rst),
 		)
 	}
 }
@@ -62,12 +62,9 @@ func TestInactiveLimitOrderTrancheRemove(t *testing.T) {
 func TestInactiveLimitOrderTrancheGetAll(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
 	items := createNInactiveLimitOrderTranche(keeper, ctx, 10)
-	pointerItems := make([]*types.LimitOrderTranche, len(items))
-	for i := range items {
-		pointerItems[i] = items[i]
-	}
+
 	require.ElementsMatch(t,
-		pointerItems,
+		items,
 		keeper.GetAllInactiveLimitOrderTranche(ctx),
 	)
 }

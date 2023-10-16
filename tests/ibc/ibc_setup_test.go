@@ -249,10 +249,6 @@ func (s *IBCTestSuite) providerCtx() sdk.Context {
 	return s.providerChain.GetContext()
 }
 
-func (s *IBCTestSuite) dualityCtx() sdk.Context {
-	return s.dualityChain.GetContext()
-}
-
 // Helper Methods /////////////////////////////////////////////////////////////
 
 func (s *IBCTestSuite) IBCTransfer(
@@ -285,8 +281,8 @@ func (s *IBCTestSuite) IBCTransfer(
 	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
 	s.Require().NoError(err)
 
+	//nolint:errcheck // this will return an error for multi-hop routes; that's expected
 	path.RelayPacket(packet)
-	s.Assert().NoError(err)
 }
 
 func (s *IBCTestSuite) IBCTransferProviderToDuality(
@@ -353,6 +349,7 @@ func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, ex
 	s.assertBalance(s.bundleC.App.GetTestBankKeeper(), s.bundleC.Chain, addr, denom, expectedAmt)
 }
 
+//nolint:unparam // keep this flexible even if we aren't currently using all the params
 func (s *IBCTestSuite) dualityDeposit(
 	token0 string,
 	token1 string,
@@ -372,7 +369,7 @@ func (s *IBCTestSuite) dualityDeposit(
 		[]math.Int{depositAmount1},
 		[]int64{tickIndex},
 		[]uint64{fee},
-		[]*dextypes.DepositOptions{{false}},
+		[]*dextypes.DepositOptions{{DisableAutoswap: false}},
 	)
 
 	// execute deposit msg

@@ -7,10 +7,10 @@ import (
 )
 
 type IncentiveHooks interface {
-	AfterCreateGauge(ctx sdk.Context, gaugeId uint64)
-	AfterAddToGauge(ctx sdk.Context, gaugeId uint64)
-	AfterStartDistribution(ctx sdk.Context, gaugeId uint64)
-	AfterFinishDistribution(ctx sdk.Context, gaugeId uint64)
+	AfterCreateGauge(ctx sdk.Context, gaugeID uint64)
+	AfterAddToGauge(ctx sdk.Context, gaugeID uint64)
+	AfterStartDistribution(ctx sdk.Context, gaugeID uint64)
+	AfterFinishDistribution(ctx sdk.Context, gaugeID uint64)
 	AfterEpochDistribution(ctx sdk.Context)
 	AfterAddTokensToStake(ctx sdk.Context, address sdk.AccAddress, stakeID uint64, amount sdk.Coins)
 	OnTokenStaked(ctx sdk.Context, address sdk.AccAddress, stakeID uint64, amount sdk.Coins, unstakeTime time.Time)

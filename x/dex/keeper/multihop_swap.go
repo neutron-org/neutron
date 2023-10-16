@@ -16,7 +16,6 @@ type MultihopStep struct {
 func (k Keeper) HopsToRouteData(
 	ctx sdk.Context,
 	hops []string,
-	exitLimitPrice math_utils.PrecDec,
 ) ([]MultihopStep, error) {
 	nPairs := len(hops) - 1
 	routeArr := make([]MultihopStep, nPairs)
@@ -67,9 +66,6 @@ func (k Keeper) MultihopStep(
 	bctx *types.BranchableCache,
 	step MultihopStep,
 	inCoin sdk.Coin,
-	exitLimitPrice math_utils.PrecDec,
-	currentPrice math_utils.PrecDec,
-	remainingSteps []MultihopStep,
 	stepCache map[multihopCacheKey]StepResult,
 ) (sdk.Coin, *types.BranchableCache, error) {
 	cacheKey := newCacheKey(step.tradePairID.TakerDenom, step.tradePairID.MakerDenom, inCoin.Amount)
@@ -100,7 +96,7 @@ func (k Keeper) RunMultihopRoute(
 	exitLimitPrice math_utils.PrecDec,
 	stepCache map[multihopCacheKey]StepResult,
 ) (sdk.Coin, func(), error) {
-	routeData, err := k.HopsToRouteData(ctx, route.Hops, exitLimitPrice)
+	routeData, err := k.HopsToRouteData(ctx, route.Hops)
 	if err != nil {
 		return sdk.Coin{}, nil, err
 	}
@@ -110,7 +106,7 @@ func (k Keeper) RunMultihopRoute(
 	inCoin := initialInCoin
 	bCacheCtx := types.NewBranchableCache(ctx)
 
-	for i, step := range routeData {
+	for _, step := range routeData {
 		// If we can't hit the best possible price we can greedily abort
 		priceUpperbound := currentPrice.Mul(step.RemainingBestPrice)
 		if exitLimitPrice.GT(priceUpperbound) {
@@ -121,9 +117,6 @@ func (k Keeper) RunMultihopRoute(
 			bCacheCtx,
 			step,
 			inCoin,
-			exitLimitPrice,
-			currentPrice,
-			routeData[i:],
 			stepCache,
 		)
 		inCoin = currentOutCoin

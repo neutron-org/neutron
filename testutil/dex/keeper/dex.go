@@ -53,7 +53,7 @@ func AssertEventEmitted(t *testing.T, ctx sdk.Context, eventValue, message strin
 	allEvents := ctx.EventManager().Events()
 	for _, event := range allEvents {
 		for _, attr := range event.Attributes {
-			if string(attr.Value) == eventValue {
+			if attr.Value == eventValue {
 				return
 			}
 		}
@@ -66,7 +66,7 @@ func AssertNEventsEmitted(t *testing.T, ctx sdk.Context, eventValue string, nEve
 	allEvents := ctx.EventManager().Events()
 	for _, event := range allEvents {
 		for _, attr := range event.Attributes {
-			if string(attr.Value) == eventValue {
+			if attr.Value == eventValue {
 				emissions++
 			}
 		}
@@ -78,7 +78,7 @@ func AssertEventNotEmitted(t *testing.T, ctx sdk.Context, eventValue, message st
 	allEvents := ctx.EventManager().Events()
 	if len(allEvents) != 0 {
 		for _, attr := range allEvents[len(allEvents)-1].Attributes {
-			if string(attr.Value) == eventValue {
+			if attr.Value == eventValue {
 				require.Fail(t, message)
 			}
 		}

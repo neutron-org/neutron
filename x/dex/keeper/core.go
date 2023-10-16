@@ -325,7 +325,6 @@ func (k Keeper) PlaceLimitOrderCore(
 		takerTradePairID := pairID.MustTradePairIDFromMaker(tokenOut)
 		var limitPrice math_utils.PrecDec
 		limitPrice, err = types.CalcPrice(tickIndexInToOut)
-		err = err
 		if err != nil {
 			return
 		}
@@ -437,7 +436,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		trancheKey,
 	))
 
-	return
+	return trancheKey, totalInCoin, swapInCoin, swapOutCoin, nil
 }
 
 // Handles MsgCancelLimitOrder, removing a specified number of shares from a limit order

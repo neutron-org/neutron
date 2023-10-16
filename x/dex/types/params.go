@@ -10,8 +10,8 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyFeeTiers              = []byte("FeeTiers")
-	DefaultFeeTiers []uint64 = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
+	KeyFeeTiers     = []byte("FeeTiers")
+	DefaultFeeTiers = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
 )
 
 // ParamKeyTable the param key table for launch module
@@ -44,10 +44,7 @@ func (p Params) String() string {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	if err := validateFeeTiers(p.FeeTiers); err != nil {
-		return err
-	}
-	return nil
+	return validateFeeTiers(p.FeeTiers)
 }
 
 func validateFeeTiers(v interface{}) error {

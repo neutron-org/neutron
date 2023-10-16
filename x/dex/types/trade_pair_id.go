@@ -81,9 +81,9 @@ func (p TradePairID) TickIndexTakerToMaker(tickIndexNormalized int64) int64 {
 	pairID := p.MustPairID()
 	if pairID.Token1 == p.MakerDenom {
 		return tickIndexNormalized
-	} else {
-		return -1 * tickIndexNormalized
 	}
+	// else
+	return -1 * tickIndexNormalized
 }
 
 func (p TradePairID) TickIndexNormalized(tickIndexTakerToMaker int64) int64 {

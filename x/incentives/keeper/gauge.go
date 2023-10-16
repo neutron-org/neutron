@@ -56,7 +56,8 @@ func (k Keeper) getGaugesFromIterator(ctx sdk.Context, iterator db.Iterator) typ
 }
 
 func (k Keeper) setGaugeRefs(ctx sdk.Context, gauge *types.Gauge) error {
-	if gauge.IsUpcomingGauge(ctx.BlockTime()) {
+	switch {
+	case gauge.IsUpcomingGauge(ctx.BlockTime()):
 		if err := k.addRefByKey(ctx, types.CombineKeys(types.KeyPrefixGaugeIndexUpcoming, types.GetTimeKey(gauge.StartTime)), gauge.Id); err != nil {
 			return err
 		}
@@ -68,7 +69,7 @@ func (k Keeper) setGaugeRefs(ctx sdk.Context, gauge *types.Gauge) error {
 		if err != nil {
 			return err
 		}
-	} else if gauge.IsActiveGauge(ctx.BlockTime()) {
+	case gauge.IsActiveGauge(ctx.BlockTime()):
 		err := k.addRefByKey(ctx, types.CombineKeys(types.KeyPrefixGaugeIndexActive, types.GetTimeKey(gauge.StartTime)), gauge.Id)
 		if err != nil {
 			return err
@@ -77,7 +78,7 @@ func (k Keeper) setGaugeRefs(ctx sdk.Context, gauge *types.Gauge) error {
 		if err != nil {
 			return err
 		}
-	} else { // finished gauge
+	default: // finished gauge
 		err := k.addRefByKey(ctx, types.CombineKeys(types.KeyPrefixGaugeIndexFinished, types.GetTimeKey(gauge.StartTime)), gauge.Id)
 		if err != nil {
 			return err
@@ -213,7 +214,7 @@ func (k Keeper) GetGaugeQualifyingValue(ctx sdk.Context, gaugeID uint64) (uint64
 	if err := proto.Unmarshal(bz, &gauge); err != nil {
 		return 0, err
 	}
-	var value uint64 = 0
+	var value uint64
 	stakes := k.GetStakesByQueryCondition(ctx, &gauge.DistributeTo)
 	for _, stake := range stakes {
 		stakeCoins := k.StakeCoinsPassingQueryCondition(ctx, stake, gauge.DistributeTo)
@@ -259,10 +260,9 @@ func (k Keeper) moveUpcomingGaugeToActiveGauge(ctx sdk.Context, gauge *types.Gau
 	if err := k.deleteRefByKey(ctx, types.CombineKeys(types.KeyPrefixGaugeIndexUpcoming, timeKey), gauge.Id); err != nil {
 		return err
 	}
-	if err := k.addRefByKey(ctx, types.CombineKeys(types.KeyPrefixGaugeIndexActive, timeKey), gauge.Id); err != nil {
-		return err
-	}
-	return nil
+
+	err := k.addRefByKey(ctx, types.CombineKeys(types.KeyPrefixGaugeIndexActive, timeKey), gauge.Id)
+	return err
 }
 
 // moveActiveGaugeToFinishedGauge moves a gauge that has completed its distribution from an active to a finished status.

@@ -29,13 +29,13 @@ func NewMockKeeper(keeper DistributorKeeper, stakes types.Stakes) MockKeeper {
 	}
 }
 
-func (k MockKeeper) ValueForShares(_ sdk.Context, coin sdk.Coin, tick int64) (math.Int, error) {
+func (k MockKeeper) ValueForShares(_ sdk.Context, coin sdk.Coin, _ int64) (math.Int, error) {
 	return coin.Amount.Mul(math.NewInt(2)), nil
 }
 
 func (k MockKeeper) GetStakesByQueryCondition(
 	_ sdk.Context,
-	distrTo *types.QueryCondition,
+	_ *types.QueryCondition,
 ) types.Stakes {
 	return k.stakes
 }
@@ -45,7 +45,7 @@ func (k MockKeeper) StakeCoinsPassingQueryCondition(ctx sdk.Context, stake *type
 }
 
 func TestDistributor(t *testing.T) {
-	app := testutil.Setup(t, false)
+	app := testutil.Setup(t)
 	ctx := app.BaseApp.NewContext(
 		false,
 		tmtypes.Header{Height: 1, ChainID: "duality-1", Time: time.Now().UTC()},
@@ -73,11 +73,14 @@ func TestDistributor(t *testing.T) {
 	rewardedDenom := rewardPool.GetPoolDenom()
 	nonRewardPool, _ := app.DexKeeper.GetOrInitPool(ctx, &dextypes.PairID{Token0: "TokenA", Token1: "TokenB"}, 12, 1)
 	nonRewardedDenom := nonRewardPool.GetPoolDenom()
+	addr1 := sdk.AccAddress("addr1")
+	addr2 := sdk.AccAddress("addr2")
+	addr3 := sdk.AccAddress("addr3")
 	allStakes := types.Stakes{
-		{1, "addr1", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(50))}, 0},
-		{2, "addr2", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(25))}, 0},
-		{3, "addr2", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(25))}, 0},
-		{4, "addr3", ctx.BlockTime(), sdk.Coins{sdk.NewCoin(nonRewardedDenom, math.NewInt(50))}, 0},
+		types.NewStake(1, addr1, sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(50))}, ctx.BlockTime(), 0),
+		types.NewStake(2, addr2, sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(25))}, ctx.BlockTime(), 0),
+		types.NewStake(3, addr2, sdk.Coins{sdk.NewCoin(rewardedDenom, math.NewInt(25))}, ctx.BlockTime(), 0),
+		types.NewStake(4, addr3, sdk.Coins{sdk.NewCoin(nonRewardedDenom, math.NewInt(50))}, ctx.BlockTime(), 0),
 	}
 
 	distributor := NewDistributor(NewMockKeeper(app.IncentivesKeeper, allStakes))
@@ -101,8 +104,8 @@ func TestDistributor(t *testing.T) {
 			timeOffset:   0,
 			filterStakes: allStakes,
 			expected: types.DistributionSpec{
-				"addr1": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(5))},
-				"addr2": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(4))},
+				addr1.String(): sdk.Coins{sdk.NewCoin("coin1", math.NewInt(5))},
+				addr2.String(): sdk.Coins{sdk.NewCoin("coin1", math.NewInt(4))},
 			},
 			expectedErr: nil,
 		},
@@ -111,7 +114,7 @@ func TestDistributor(t *testing.T) {
 			timeOffset:   0,
 			filterStakes: types.Stakes{allStakes[0]},
 			expected: types.DistributionSpec{
-				"addr1": sdk.Coins{sdk.NewCoin("coin1", math.NewInt(5))},
+				addr1.String(): sdk.Coins{sdk.NewCoin("coin1", math.NewInt(5))},
 			},
 			expectedErr: nil,
 		},
