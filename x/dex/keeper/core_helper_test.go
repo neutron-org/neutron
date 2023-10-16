@@ -6,8 +6,6 @@ import (
 	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	dualityapp "github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -53,7 +51,7 @@ func (s *CoreHelpersTestSuite) SetupTest() {
 	s.dan = sdk.AccAddress([]byte("dan"))
 }
 
-func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA int, amountB int) {
+func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB int) {
 	pairID := &types.PairID{Token0: "TokenA", Token1: "TokenB"}
 	pool, err := s.app.DexKeeper.GetOrInitPool(s.ctx, pairID, tickIndex, 1)
 	if err != nil {

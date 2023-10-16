@@ -3,12 +3,12 @@ package keeper
 import (
 	"fmt"
 
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "cosmossdk.io/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/gogoproto/proto"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
@@ -170,7 +170,7 @@ func (k Keeper) RefundPacketToken(
 }
 
 // SendCoins wraps the BankKeepers SendCoins function so it can be invoked from the middleware.
-func (k Keeper) SendCoins(ctx sdk.Context, fromAddr string, toAddr string, amt sdk.Coins) error {
+func (k Keeper) SendCoins(ctx sdk.Context, fromAddr, toAddr string, amt sdk.Coins) error {
 	from, err := sdk.AccAddressFromBech32(fromAddr)
 	if err != nil {
 		return err
@@ -184,6 +184,6 @@ func (k Keeper) SendCoins(ctx sdk.Context, fromAddr string, toAddr string, amt s
 	return k.bankKeeper.SendCoins(ctx, from, to, amt)
 }
 
-func (k Keeper) GetAppVersion(ctx sdk.Context, portID string, channelID string) (string, bool) {
+func (k Keeper) GetAppVersion(ctx sdk.Context, portID, channelID string) (string, bool) {
 	return k.ics4Wrapper.GetAppVersion(ctx, portID, channelID)
 }

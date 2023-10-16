@@ -16,7 +16,7 @@ func (k Keeper) iterator(ctx sdk.Context, prefix []byte) sdk.Iterator {
 }
 
 // iterator returns an iterator over all gauges in the {prefix} space of state.
-func (k Keeper) iteratorStartEnd(ctx sdk.Context, start []byte, end []byte) sdk.Iterator {
+func (k Keeper) iteratorStartEnd(ctx sdk.Context, start, end []byte) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
 	return store.Iterator(start, end)
 }

@@ -10,10 +10,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/neutron-org/neutron/x/ibcswap/keeper"
-	"github.com/neutron-org/neutron/x/ibcswap/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/neutron-org/neutron/x/ibcswap/keeper"
+	"github.com/neutron-org/neutron/x/ibcswap/types"
 	"github.com/spf13/cobra"
 )
 
