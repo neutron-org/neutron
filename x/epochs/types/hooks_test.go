@@ -6,7 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
+	"cosmossdk.io/errors"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/x/epochs/types"

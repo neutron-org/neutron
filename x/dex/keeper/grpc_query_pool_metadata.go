@@ -5,7 +5,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"google.golang.org/grpc/codes"
@@ -47,7 +46,7 @@ func (k Keeper) PoolMetadata(goCtx context.Context, req *types.QueryGetPoolMetad
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	poolMetadata, found := k.GetPoolMetadata(ctx, req.Id)
 	if !found {
-		return nil, sdkerrors.ErrKeyNotFound
+		return nil, status.Error(codes.NotFound, "PoolMetadata not found for key")
 	}
 
 	return &types.QueryGetPoolMetadataResponse{PoolMetadata: poolMetadata}, nil

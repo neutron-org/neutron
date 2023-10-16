@@ -3,10 +3,10 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/x/dex/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type MsgServer struct {
@@ -190,7 +190,7 @@ func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 	}
 	authority := k.GetAuthority()
 	if authority != req.Authority {
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
+		return nil, status.Errorf(codes.PermissionDenied, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)

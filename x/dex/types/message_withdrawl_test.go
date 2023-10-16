@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/require"
@@ -25,7 +24,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: ErrInvalidAddress,
 		},
 		{
 			name: "invalid receiver",
@@ -36,7 +35,7 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: ErrInvalidAddress,
 		},
 		{
 			name: "invalid fee indexes length",

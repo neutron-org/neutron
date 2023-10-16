@@ -3,9 +3,9 @@ package types
 import (
 	"time"
 
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const TypeMsgPlaceLimitOrder = "place_limit_order"
@@ -61,12 +61,12 @@ func (msg *MsgPlaceLimitOrder) GetSignBytes() []byte {
 func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	_, err = sdk.AccAddressFromBech32(msg.Receiver)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid receiver address (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid receiver address (%s)", err)
 	}
 
 	if msg.AmountIn.LTE(math.ZeroInt()) {

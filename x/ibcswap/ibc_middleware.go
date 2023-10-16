@@ -7,7 +7,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"

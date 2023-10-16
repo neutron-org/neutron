@@ -1,8 +1,9 @@
 package utils
 
 import (
+	"errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func GetBlockGasUsed(ctx sdk.Context) (gasUsed uint64, err error) {
@@ -14,7 +15,7 @@ func GetBlockGasUsed(ctx sdk.Context) (gasUsed uint64, err error) {
 		return 0, nil
 	default:
 		// Otherwise, BlockGasMeter should probably be initialized
-		return 0, sdkerrors.Wrap(sdkerrors.ErrAppConfig, "Block Gas Meter is not initialized")
+		return 0, errors.New("block Gas Meter is not initialized")
 	}
 }
 
