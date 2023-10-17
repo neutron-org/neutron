@@ -48,39 +48,3 @@ func DexKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 
 	return k, ctx
 }
-
-func AssertEventEmitted(t *testing.T, ctx sdk.Context, eventValue, message string) {
-	allEvents := ctx.EventManager().Events()
-	for _, event := range allEvents {
-		for _, attr := range event.Attributes {
-			if attr.Value == eventValue {
-				return
-			}
-		}
-	}
-	require.Fail(t, message)
-}
-
-func AssertNEventsEmitted(t *testing.T, ctx sdk.Context, eventValue string, nEvents int) {
-	emissions := 0
-	allEvents := ctx.EventManager().Events()
-	for _, event := range allEvents {
-		for _, attr := range event.Attributes {
-			if attr.Value == eventValue {
-				emissions++
-			}
-		}
-	}
-	require.Equal(t, nEvents, emissions, "Expected %v events, got %v", nEvents, emissions)
-}
-
-func AssertEventNotEmitted(t *testing.T, ctx sdk.Context, eventValue, message string) {
-	allEvents := ctx.EventManager().Events()
-	if len(allEvents) != 0 {
-		for _, attr := range allEvents[len(allEvents)-1].Attributes {
-			if attr.Value == eventValue {
-				require.Fail(t, message)
-			}
-		}
-	}
-}

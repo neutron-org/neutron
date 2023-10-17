@@ -12,7 +12,7 @@ import (
 )
 
 // TestIncentivesExportGenesis tests export genesis command for the incentives module.
-func (suite *KeeperTestSuite) TestGenesis() {
+func (suite *IncentivesTestSuite) TestGenesis() {
 	validAddr, _ := apptesting.GenerateTestAddrs()
 	genesisState := types.GenesisState{
 		Params:      types.DefaultParams(),

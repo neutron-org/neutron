@@ -5,7 +5,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedInSpreadCurrTickAdjusted() {
+func (s *DexTestSuite) TestDepositDoubleSidedInSpreadCurrTickAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -28,7 +28,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedInSpreadCurrTickAdjusted() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedAroundSpreadCurrTickNotAdjusted() {
+func (s *DexTestSuite) TestDepositDoubleSidedAroundSpreadCurrTickNotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -51,7 +51,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedAroundSpreadCurrTickNotAdjust
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick0To1Adjusted() {
+func (s *DexTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick0To1Adjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -74,7 +74,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick0To1Adjus
 	s.assertCurr0To1(5)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick1To0Adjusted() {
+func (s *DexTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick1To0Adjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -97,7 +97,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick1To0Adjus
 	s.assertCurr0To1(4)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedCreatingArbBelow() {
+func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbBelow() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -119,7 +119,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedCreatingArbBelow() {
 	s.bobLimitSells("TokenA", 0, 10, types.LimitOrderType_FILL_OR_KILL)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedCreatingArbAbove() {
+func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbAbove() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -141,7 +141,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedCreatingArbAbove() {
 	s.bobLimitSells("TokenB", 0, 10, types.LimitOrderType_FILL_OR_KILL)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedFirstSharesMintedTotal() {
+func (s *DexTestSuite) TestDepositDoubleSidedFirstSharesMintedTotal() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -158,7 +158,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedFirstSharesMintedTotal() {
 	s.assertPoolShares(0, 1, 15)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedFirstSharesMintedUser() {
+func (s *DexTestSuite) TestDepositDoubleSidedFirstSharesMintedUser() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -176,7 +176,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedFirstSharesMintedUser() {
 	s.assertAliceShares(0, 1, 15)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedExistingSharesMintedTotal() {
+func (s *DexTestSuite) TestDepositDoubleSidedExistingSharesMintedTotal() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -194,7 +194,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedExistingSharesMintedTotal() {
 	s.assertPoolShares(0, 1, 30)
 }
 
-func (s *MsgServerTestSuite) TestDepositDoubleSidedExistingSharesMintedUser() {
+func (s *DexTestSuite) TestDepositDoubleSidedExistingSharesMintedUser() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -213,7 +213,7 @@ func (s *MsgServerTestSuite) TestDepositDoubleSidedExistingSharesMintedUser() {
 	s.assertAliceShares(0, 1, 24)
 }
 
-func (s *MsgServerTestSuite) TestDepositValueAccural() {
+func (s *DexTestSuite) TestDepositValueAccural() {
 	s.fundAliceBalances(100, 0)
 	s.fundBobBalances(1000, 1000)
 	s.fundCarolBalances(100, 1)

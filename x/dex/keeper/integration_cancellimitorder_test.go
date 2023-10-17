@@ -8,7 +8,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestCancelEntireLimitOrderAOneExists() {
+func (s *DexTestSuite) TestCancelEntireLimitOrderAOneExists() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice adds a limit order of A for B and cancels it right away
@@ -28,11 +28,11 @@ func (s *MsgServerTestSuite) TestCancelEntireLimitOrderAOneExists() {
 	s.assertCurr0To1(math.MaxInt64)
 
 	// Assert that the LimitOrderTrancheUser has been deleted
-	_, found := s.app.DexKeeper.GetLimitOrderTrancheUser(s.ctx, s.alice.String(), trancheKey)
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
 	s.Assert().False(found)
 }
 
-func (s *MsgServerTestSuite) TestCancelEntireLimitOrderBOneExists() {
+func (s *DexTestSuite) TestCancelEntireLimitOrderBOneExists() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice adds a limit order of B for A and cancels it right away
@@ -52,7 +52,7 @@ func (s *MsgServerTestSuite) TestCancelEntireLimitOrderBOneExists() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestCancelHigherEntireLimitOrderATwoExistDiffTicksSameDirection() {
+func (s *DexTestSuite) TestCancelHigherEntireLimitOrderATwoExistDiffTicksSameDirection() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice adds two limit orders from A to B and removes the one at the higher tick (0)
@@ -73,7 +73,7 @@ func (s *MsgServerTestSuite) TestCancelHigherEntireLimitOrderATwoExistDiffTicksS
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestCancelLowerEntireLimitOrderATwoExistDiffTicksSameDirection() {
+func (s *DexTestSuite) TestCancelLowerEntireLimitOrderATwoExistDiffTicksSameDirection() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice adds two limit orders from A to B and removes the one at the lower tick (-1)
@@ -94,7 +94,7 @@ func (s *MsgServerTestSuite) TestCancelLowerEntireLimitOrderATwoExistDiffTicksSa
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestCancelLowerEntireLimitOrderATwoExistDiffTicksDiffDirection() {
+func (s *DexTestSuite) TestCancelLowerEntireLimitOrderATwoExistDiffTicksDiffDirection() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice adds one limit orders from A to B and one from B to A and removes the one from A to B
@@ -115,7 +115,7 @@ func (s *MsgServerTestSuite) TestCancelLowerEntireLimitOrderATwoExistDiffTicksDi
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestCancelHigherEntireLimitOrderBTwoExistDiffTicksSameDirection() {
+func (s *DexTestSuite) TestCancelHigherEntireLimitOrderBTwoExistDiffTicksSameDirection() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice adds two limit orders from B to A and removes the one at tick 0
@@ -136,7 +136,7 @@ func (s *MsgServerTestSuite) TestCancelHigherEntireLimitOrderBTwoExistDiffTicksS
 	s.assertCurr0To1(-1)
 }
 
-func (s *MsgServerTestSuite) TestCancelLowerEntireLimitOrderBTwoExistDiffTicksSameDirection() {
+func (s *DexTestSuite) TestCancelLowerEntireLimitOrderBTwoExistDiffTicksSameDirection() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice adds two limit orders from B to A and removes the one at tick 0
@@ -157,7 +157,7 @@ func (s *MsgServerTestSuite) TestCancelLowerEntireLimitOrderBTwoExistDiffTicksSa
 	s.assertCurr0To1(0)
 }
 
-func (s *MsgServerTestSuite) TestCancelTwiceFails() {
+func (s *DexTestSuite) TestCancelTwiceFails() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice tries to cancel the same limit order twice
@@ -175,7 +175,7 @@ func (s *MsgServerTestSuite) TestCancelTwiceFails() {
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
 }
 
-func (s *MsgServerTestSuite) TestCancelPartiallyFilled() {
+func (s *DexTestSuite) TestCancelPartiallyFilled() {
 	s.fundAliceBalances(50, 0)
 	s.fundBobBalances(0, 50)
 
@@ -195,7 +195,7 @@ func (s *MsgServerTestSuite) TestCancelPartiallyFilled() {
 	s.assertDexBalances(0, 25)
 }
 
-func (s *MsgServerTestSuite) TestCancelPartiallyFilledMultiUser() {
+func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
 	s.fundAliceBalances(50, 0)
 	s.fundBobBalances(0, 50)
 	s.fundCarolBalances(100, 0)
@@ -222,7 +222,7 @@ func (s *MsgServerTestSuite) TestCancelPartiallyFilledMultiUser() {
 	s.assertDexBalances(1, 25)
 }
 
-func (s *MsgServerTestSuite) TestCancelGoodTil() {
+func (s *DexTestSuite) TestCancelGoodTil() {
 	s.fundAliceBalances(50, 0)
 	tomorrow := time.Now().AddDate(0, 0, 1)
 	// GIVEN alice limit sells 50 TokenA with goodTil date of tommrow
@@ -238,7 +238,7 @@ func (s *MsgServerTestSuite) TestCancelGoodTil() {
 	s.assertNLimitOrderExpiration(0)
 }
 
-func (s *MsgServerTestSuite) TestCancelGoodTilAfterExpirationFails() {
+func (s *DexTestSuite) TestCancelGoodTilAfterExpirationFails() {
 	s.fundAliceBalances(50, 0)
 	tomorrow := time.Now().AddDate(0, 0, 1)
 	// GIVEN alice limit sells 50 TokenA with goodTil date of tommrow
@@ -248,13 +248,13 @@ func (s *MsgServerTestSuite) TestCancelGoodTilAfterExpirationFails() {
 
 	// WHEN expiration date has passed
 	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
-	s.app.EndBlock(abci.RequestEndBlock{Height: 0})
+	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
 }
 
-func (s *MsgServerTestSuite) TestCancelJITSameBlock() {
+func (s *DexTestSuite) TestCancelJITSameBlock() {
 	s.fundAliceBalances(50, 0)
 	// GIVEN alice limit sells 50 TokenA as JIT
 	trancheKey := s.aliceLimitSells("TokenA", 0, 50, types.LimitOrderType_JUST_IN_TIME)
@@ -269,7 +269,7 @@ func (s *MsgServerTestSuite) TestCancelJITSameBlock() {
 	s.assertNLimitOrderExpiration(0)
 }
 
-func (s *MsgServerTestSuite) TestCancelJITNextBlock() {
+func (s *DexTestSuite) TestCancelJITNextBlock() {
 	s.fundAliceBalances(50, 0)
 	// GIVEN alice limit sells 50 TokenA as JIT
 	trancheKey := s.aliceLimitSells("TokenA", 0, 50, types.LimitOrderType_JUST_IN_TIME)
@@ -278,7 +278,7 @@ func (s *MsgServerTestSuite) TestCancelJITNextBlock() {
 
 	// WHEN we move to block N+1
 	s.nextBlockWithTime(time.Now())
-	s.app.EndBlock(abci.RequestEndBlock{Height: 0})
+	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)

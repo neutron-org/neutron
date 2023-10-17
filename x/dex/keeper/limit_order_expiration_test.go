@@ -2,19 +2,13 @@ package keeper_test
 
 import (
 	"strconv"
-	"testing"
 	"time"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
-
-// Prevent strconv unused error
-var _ = strconv.IntSize
 
 func createNLimitOrderExpiration(
 	keeper *keeper.Keeper,
@@ -62,55 +56,51 @@ func createLimitOrderExpirationAndTranches(
 	}
 }
 
-func TestLimitOrderExpirationGet(t *testing.T) {
-	keeper, ctx := keepertest.DexKeeper(t)
-	items := createNLimitOrderExpiration(keeper, ctx, 10)
+func (s *DexTestSuite) TestLimitOrderExpirationGet() {
+	keeper := s.App.DexKeeper
+	items := createNLimitOrderExpiration(&keeper, s.Ctx, 10)
 	for _, item := range items {
-		rst, found := keeper.GetLimitOrderExpiration(ctx,
+		rst, found := keeper.GetLimitOrderExpiration(s.Ctx,
 			item.ExpirationTime,
 			item.TrancheRef,
 		)
-		require.True(t, found)
-		require.Equal(t,
-			item,
-			*rst,
-		)
+		s.True(found)
+		s.Equal(item, *rst)
 	}
 }
 
-func TestLimitOrderExpirationRemove(t *testing.T) {
-	keeper, ctx := keepertest.DexKeeper(t)
-	items := createNLimitOrderExpiration(keeper, ctx, 10)
+func (s *DexTestSuite) TestLimitOrderExpirationRemove() {
+	keeper := s.App.DexKeeper
+	items := createNLimitOrderExpiration(&keeper, s.Ctx, 10)
 	for _, item := range items {
-		keeper.RemoveLimitOrderExpiration(ctx,
+		keeper.RemoveLimitOrderExpiration(s.Ctx,
 			item.ExpirationTime,
 			item.TrancheRef,
 		)
-		_, found := keeper.GetLimitOrderExpiration(ctx,
+		_, found := keeper.GetLimitOrderExpiration(s.Ctx,
 			item.ExpirationTime,
 			item.TrancheRef,
 		)
-		require.False(t, found)
+		s.False(found)
 	}
 }
 
-func TestLimitOrderExpirationGetAll(t *testing.T) {
-	keeper, ctx := keepertest.DexKeeper(t)
-	items := createNLimitOrderExpiration(keeper, ctx, 10)
+func (s *DexTestSuite) TestLimitOrderExpirationGetAll() {
+	items := createNLimitOrderExpiration(&s.App.DexKeeper, s.Ctx, 10)
 	pointerItems := make([]*types.LimitOrderExpiration, len(items))
 	for i := range items {
 		pointerItems[i] = &items[i]
 	}
-	require.ElementsMatch(t,
+	s.ElementsMatch(
 		pointerItems,
-		keeper.GetAllLimitOrderExpiration(ctx),
+		s.App.DexKeeper.GetAllLimitOrderExpiration(s.Ctx),
 	)
 }
 
-func TestPurgeExpiredLimitOrders(t *testing.T) {
-	keeper, ctx := keepertest.DexKeeper(t)
+func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
+	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
-	ctx = ctx.WithBlockTime(now)
+	ctx := s.Ctx.WithBlockTime(now)
 	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(1000000))
 
 	yesterday := now.AddDate(0, 0, -1)
@@ -125,33 +115,33 @@ func TestPurgeExpiredLimitOrders(t *testing.T) {
 		nextWeek,
 	}
 
-	createLimitOrderExpirationAndTranches(keeper, ctx, expTimes)
-	keeper.PurgeExpiredLimitOrders(ctx, now)
+	createLimitOrderExpirationAndTranches(&keeper, s.Ctx, expTimes)
+	keeper.PurgeExpiredLimitOrders(s.Ctx, now)
 
 	// Only future LimitOrderExpiration items still exist
-	expList := keeper.GetAllLimitOrderExpiration(ctx)
-	require.Equal(t, 2, len(expList))
-	require.Equal(t, tomorrow, expList[0].ExpirationTime)
-	require.Equal(t, nextWeek, expList[1].ExpirationTime)
+	expList := keeper.GetAllLimitOrderExpiration(s.Ctx)
+	s.Equal(2, len(expList))
+	s.Equal(tomorrow, expList[0].ExpirationTime)
+	s.Equal(nextWeek, expList[1].ExpirationTime)
 
 	// Only future LimitOrderTranches Exist
-	trancheList := keeper.GetAllLimitOrderTrancheAtIndex(ctx, defaultTradePairID1To0, 0)
-	require.Equal(t, 2, len(trancheList))
-	require.Equal(t, tomorrow, *trancheList[0].ExpirationTime)
-	require.Equal(t, nextWeek, *trancheList[1].ExpirationTime)
+	trancheList := keeper.GetAllLimitOrderTrancheAtIndex(s.Ctx, defaultTradePairID1To0, 0)
+	s.Equal(2, len(trancheList))
+	s.Equal(tomorrow, *trancheList[0].ExpirationTime)
+	s.Equal(nextWeek, *trancheList[1].ExpirationTime)
 
 	// InactiveLimitOrderTranches have been created for the expired tranched
 	inactiveTrancheList := keeper.GetAllInactiveLimitOrderTranche(ctx)
-	require.Equal(t, 3, len(inactiveTrancheList))
-	require.Equal(t, yesterday, *inactiveTrancheList[0].ExpirationTime)
-	require.Equal(t, yesterday, *inactiveTrancheList[1].ExpirationTime)
-	require.Equal(t, now, *inactiveTrancheList[2].ExpirationTime)
+	s.Equal(3, len(inactiveTrancheList))
+	s.Equal(yesterday, *inactiveTrancheList[0].ExpirationTime)
+	s.Equal(yesterday, *inactiveTrancheList[1].ExpirationTime)
+	s.Equal(now, *inactiveTrancheList[2].ExpirationTime)
 }
 
-func TestPurgeExpiredLimitOrdersAtBlockGasLimit(t *testing.T) {
-	keeper, ctx := keepertest.DexKeeper(t)
+func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
+	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
-	ctx = ctx.WithBlockTime(now)
+	ctx := s.Ctx.WithBlockTime(now)
 	gasLimit := 1000000
 	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimit)))
 	timeRequiredToPurgeOneNonJIT := 35000
@@ -166,7 +156,7 @@ func TestPurgeExpiredLimitOrdersAtBlockGasLimit(t *testing.T) {
 		yesterday,
 		yesterday,
 	}
-	createLimitOrderExpirationAndTranches(keeper, ctx, expTimes)
+	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 
 	// IF blockGasMeter is nearing the GoodTilPurgeBuffer
 	ctx = ctx.WithGasMeter(sdk.NewGasMeter(uint64(gasLimit)))
@@ -176,25 +166,20 @@ func TestPurgeExpiredLimitOrdersAtBlockGasLimit(t *testing.T) {
 	keeper.PurgeExpiredLimitOrders(ctx, now)
 
 	// THEN GoodTilPurgeHitGasLimit event is emitted
-	keepertest.AssertEventEmitted(
-		t,
-		ctx,
-		types.GoodTilPurgeHitGasLimitEventKey,
-		"Gas Limit Event not emitted",
-	)
+	s.AssertEventValueEmitted(types.GoodTilPurgeHitGasLimitEventKey, "Gas Limit Event not emitted")
 
 	// All JIT expirations are purged but other expirations remain
 	expList := keeper.GetAllLimitOrderExpiration(ctx)
 	// NOTE: this test is very brittle because it relies on an estimated cost
 	// for deleting expirations. If this cost changes the number of remaining
 	// expirations may change
-	require.Equal(t, 1, len(expList))
+	s.Equal(1, len(expList))
 }
 
-func TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT(t *testing.T) {
-	keeper, ctx := keepertest.DexKeeper(t)
+func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
+	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
-	ctx = ctx.WithBlockTime(now)
+	ctx := s.Ctx.WithBlockTime(now)
 	gasLimt := 1000000
 	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimt)))
 	gasUsed := gasLimt - types.GoodTilPurgeGasBuffer - 30000
@@ -209,20 +194,15 @@ func TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT(t *testing.T) {
 		types.JITGoodTilTime(),
 	}
 
-	createLimitOrderExpirationAndTranches(keeper, ctx, expTimes)
+	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 	ctx = ctx.WithGasMeter(sdk.NewGasMeter(100000))
 	ctx.BlockGasMeter().ConsumeGas(uint64(gasUsed), "stub block gas usage")
 	keeper.PurgeExpiredLimitOrders(ctx, now)
 
 	// GoodTilPurgeHitGasLimit event is not been emitted
-	keepertest.AssertEventNotEmitted(
-		t,
-		ctx,
-		types.GoodTilPurgeHitGasLimitEventGas,
-		"Hit gas limit purging JIT expirations",
-	)
+	s.AssertEventValueNotEmitted(types.GoodTilPurgeHitGasLimitEventGas, "Hit gas limit purging JIT expirations")
 
 	// All JIT expirations are purged
 	expList := keeper.GetAllLimitOrderExpiration(ctx)
-	require.Equal(t, 0, len(expList))
+	s.Equal(0, len(expList))
 }

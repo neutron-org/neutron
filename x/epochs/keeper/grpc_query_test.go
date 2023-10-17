@@ -6,7 +6,7 @@ import (
 	"github.com/neutron-org/neutron/x/epochs/types"
 )
 
-func (suite *KeeperTestSuite) TestQueryEpochInfos() {
+func (suite *EpochsTestSuite) TestQueryEpochInfos() {
 	suite.SetupTest()
 	queryClient := suite.queryClient
 

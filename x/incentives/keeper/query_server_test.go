@@ -10,7 +10,7 @@ import (
 
 var _ = suite.TestingSuite(nil)
 
-func (suite *KeeperTestSuite) TestGetFutureRewardEstimate() {
+func (suite *IncentivesTestSuite) TestGetFutureRewardEstimate() {
 	addr1 := suite.SetupAddr(0)
 	suite.SetupDepositAndStake(depositStakeSpec{
 		depositSpecs: []depositSpec{
@@ -67,7 +67,7 @@ func (suite *KeeperTestSuite) TestGetFutureRewardEstimate() {
 	suite.Require().Equal(sdk.NewCoins(sdk.NewInt64Coin("foocoin", 750)), estimate.Coins)
 }
 
-func (suite *KeeperTestSuite) TestGetGauges() {
+func (suite *IncentivesTestSuite) TestGetGauges() {
 	addr1 := suite.SetupAddr(0)
 	suite.SetupDepositAndStake(depositStakeSpec{
 		depositSpecs: []depositSpec{

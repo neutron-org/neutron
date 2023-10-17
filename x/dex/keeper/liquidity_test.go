@@ -2,39 +2,15 @@ package keeper_test
 
 import (
 	"math"
-	"testing"
 
 	sdkmath "cosmossdk.io/math"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	dualityapp "github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil"
-	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/suite"
 )
-
-type LiquidityTestSuite struct {
-	suite.Suite
-	app *dualityapp.App
-	ctx sdk.Context
-}
 
 // TODO: In an ideal world, there should be enough lower level testing that the swap tests
 // don't need to test both LO and LP. At the level of swap testing these should be indistinguishable.
-
-func (s *LiquidityTestSuite) SetupTest() {
-	s.app = testutil.Setup(s.T())
-	ctx := s.app.BaseApp.NewContext(false, tmproto.Header{})
-	ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
-	s.ctx = ctx
-}
-
-func TestLiquidityTestSuite(t *testing.T) {
-	suite.Run(t, new(LiquidityTestSuite))
-}
-
-func (s *LiquidityTestSuite) TestSwap0To1NoLiquidity() {
+func (s *DexTestSuite) TestSwap0To1NoLiquidity() {
 	// GIVEN no liqudity of token B (deposit only token A and LO of token A)
 	s.addDeposit(NewDeposit(10, 0, 0, 1))
 	s.placeGTCLimitOrder("TokenA", 1000, 10)
@@ -44,12 +20,12 @@ func (s *LiquidityTestSuite) TestSwap0To1NoLiquidity() {
 
 	// THEN swap should do nothing
 	s.assertSwapOutput(tokenIn, 0, tokenOut, 0)
-	s.assertDexBalances(1010, 0)
+	s.assertTickBalances(1010, 0)
 
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0NoLiquidity() {
+func (s *DexTestSuite) TestSwap1To0NoLiquidity() {
 	// GIVEN no liqudity of token A (deposit only token B and LO of token B)
 	s.addDeposit(NewDeposit(0, 10, 0, 1))
 	s.placeGTCLimitOrder("TokenB", 1000, 10)
@@ -59,14 +35,14 @@ func (s *LiquidityTestSuite) TestSwap1To0NoLiquidity() {
 
 	// THEN swap should do nothing
 	s.assertSwapOutput(tokenIn, 0, tokenOut, 0)
-	s.assertDexBalances(0, 1010)
+	s.assertTickBalances(0, 1010)
 
 	s.assertCurr1To0(math.MinInt64)
 }
 
 // swaps against LPs only /////////////////////////////////////////////////////
 
-func (s *LiquidityTestSuite) TestSwap0To1PartialFillLP() {
+func (s *DexTestSuite) TestSwap0To1PartialFillLP() {
 	// GIVEN 10 tokenB LP @ tick 0 fee 1
 	s.addDeposit(NewDeposit(0, 10, 0, 1))
 
@@ -77,13 +53,13 @@ func (s *LiquidityTestSuite) TestSwap0To1PartialFillLP() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 11, tokenOut, 10)
-	s.assertDexBalances(11, 0)
+	s.assertTickBalances(11, 0)
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-1)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0PartialFillLP() {
+func (s *DexTestSuite) TestSwap1To0PartialFillLP() {
 	// GIVEN 10 tokenA LP @ tick 0 fee 1
 	s.addDeposit(NewDeposit(10, 0, 0, 1))
 
@@ -94,13 +70,13 @@ func (s *LiquidityTestSuite) TestSwap1To0PartialFillLP() {
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 11, tokenOut, 10)
-	s.assertDexBalances(0, 11)
+	s.assertTickBalances(0, 11)
 
 	s.assertCurr0To1(1)
 	s.assertCurr1To0(math.MinInt64)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1FillLP() {
+func (s *DexTestSuite) TestSwap0To1FillLP() {
 	// GIVEN 100 tokenB LP @ tick 200 fee 5
 	s.addDeposit(NewDeposit(0, 100, 200, 5))
 
@@ -111,13 +87,13 @@ func (s *LiquidityTestSuite) TestSwap0To1FillLP() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 100, tokenOut, 97)
-	s.assertDexBalances(100, 3)
+	s.assertTickBalances(100, 3)
 
 	s.assertCurr0To1(205)
 	s.assertCurr1To0(195)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0FillLP() {
+func (s *DexTestSuite) TestSwap1To0FillLP() {
 	// GIVEN 100 tokenA LP @ tick -20,000 fee 1
 	s.addDeposit(NewDeposit(100, 0, -20_000, 1))
 
@@ -129,13 +105,13 @@ func (s *LiquidityTestSuite) TestSwap1To0FillLP() {
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	// NOTE: Given rounding for amountOut, amountIn does not use the full maxAmount
 	s.assertSwapOutput(tokenIn, 97, tokenOut, 13)
-	s.assertDexBalances(87, 97)
+	s.assertTickBalances(87, 97)
 
 	s.assertCurr0To1(-19_999)
 	s.assertCurr1To0(-20_001)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1FillLPHighFee() {
+func (s *DexTestSuite) TestSwap0To1FillLPHighFee() {
 	// GIVEN 100 tokenB LP @ tick 20,000 fee 1,000
 	s.addDeposit(NewDeposit(0, 100, 20_000, 1_000))
 
@@ -146,13 +122,13 @@ func (s *LiquidityTestSuite) TestSwap0To1FillLPHighFee() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 98, tokenOut, 12)
-	s.assertDexBalances(98, 88)
+	s.assertTickBalances(98, 88)
 
 	s.assertCurr0To1(21_000)
 	s.assertCurr1To0(19_000)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0FillLPHighFee() {
+func (s *DexTestSuite) TestSwap1To0FillLPHighFee() {
 	// GIVEN 1000 tokenA LP @ tick 20,000 fee 1000
 	s.addDeposit(NewDeposit(1000, 0, 20_000, 1000))
 
@@ -163,13 +139,13 @@ func (s *LiquidityTestSuite) TestSwap1To0FillLPHighFee() {
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 100, tokenOut, 668)
-	s.assertDexBalances(332, 100)
+	s.assertTickBalances(332, 100)
 
 	s.assertCurr0To1(21_000)
 	s.assertCurr1To0(19_000)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1PartialFillMultipleLP() {
+func (s *DexTestSuite) TestSwap0To1PartialFillMultipleLP() {
 	// GIVEN 300 worth of tokenB LPs
 	s.addDeposits(
 		NewDeposit(0, 100, -20_000, 1),
@@ -184,13 +160,13 @@ func (s *LiquidityTestSuite) TestSwap0To1PartialFillMultipleLP() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 42, tokenOut, 300)
-	s.assertDexBalances(42, 0)
+	s.assertTickBalances(42, 0)
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-20_001)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0PartialFillMultipleLP() {
+func (s *DexTestSuite) TestSwap1To0PartialFillMultipleLP() {
 	// GIVEN 300 worth of tokenA LPs
 	s.addDeposits(
 		NewDeposit(100, 0, 20_000, 1),
@@ -205,13 +181,13 @@ func (s *LiquidityTestSuite) TestSwap1To0PartialFillMultipleLP() {
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 42, tokenOut, 300)
-	s.assertDexBalances(0, 42)
+	s.assertTickBalances(0, 42)
 
 	s.assertCurr0To1(20_001)
 	s.assertCurr1To0(math.MinInt64)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1FillMultipleLP() {
+func (s *DexTestSuite) TestSwap0To1FillMultipleLP() {
 	// GIVEN 400 worth of tokenB LPs
 	s.addDeposits(
 		NewDeposit(0, 100, -20, 1),
@@ -227,13 +203,13 @@ func (s *LiquidityTestSuite) TestSwap0To1FillMultipleLP() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 400, tokenOut, 400)
-	s.assertDexBalances(400, 0)
+	s.assertTickBalances(400, 0)
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-21)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0FillMultipleLP() {
+func (s *DexTestSuite) TestSwap1To0FillMultipleLP() {
 	// GIVEN 400 worth of tokenA LPs
 	s.addDeposits(
 		NewDeposit(100, 0, 20, 1),
@@ -249,13 +225,13 @@ func (s *LiquidityTestSuite) TestSwap1To0FillMultipleLP() {
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 400, tokenOut, 400)
-	s.assertDexBalances(0, 400)
+	s.assertTickBalances(0, 400)
 
 	s.assertCurr0To1(21)
 	s.assertCurr1To0(math.MinInt64)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountUsed() {
+func (s *DexTestSuite) TestSwap0To1LPMaxAmountUsed() {
 	// GIVEN 10 TokenB available
 	s.addDeposits(NewDeposit(0, 10, 0, 1))
 
@@ -264,10 +240,10 @@ func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountUsed() {
 
 	// THEN swap should return 6 TokenA in and 5 TokenB out
 	s.assertSwapOutput(tokenIn, 6, tokenOut, 5)
-	s.assertDexBalances(6, 5)
+	s.assertTickBalances(6, 5)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0LPMaxAmountUsed() {
+func (s *DexTestSuite) TestSwap1To0LPMaxAmountUsed() {
 	// GIVEN 10 TokenA available
 	s.addDeposits(NewDeposit(10, 0, 0, 1))
 
@@ -276,10 +252,10 @@ func (s *LiquidityTestSuite) TestSwap1To0LPMaxAmountUsed() {
 
 	// THEN swap should return 6 TokenB in and 5 TokenA out
 	s.assertSwapOutput(tokenIn, 6, tokenOut, 5)
-	s.assertDexBalances(5, 6)
+	s.assertTickBalances(5, 6)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountNotUsed() {
+func (s *DexTestSuite) TestSwap0To1LPMaxAmountNotUsed() {
 	// GIVEN 10 TokenB available
 	s.addDeposits(NewDeposit(0, 10, 0, 1))
 
@@ -288,10 +264,10 @@ func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountNotUsed() {
 
 	// THEN swap should return 8 TokenA in and 7 TokenB out
 	s.assertSwapOutput(tokenIn, 8, tokenOut, 7)
-	s.assertDexBalances(8, 3)
+	s.assertTickBalances(8, 3)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0LPMaxAmountNotUsed() {
+func (s *DexTestSuite) TestSwap1To0LPMaxAmountNotUsed() {
 	// GIVEN 10 TokenA available
 	s.addDeposits(NewDeposit(10, 0, 0, 1))
 
@@ -300,10 +276,10 @@ func (s *LiquidityTestSuite) TestSwap1To0LPMaxAmountNotUsed() {
 
 	// THEN swap should return 8 TokenB in and 7 TokenA out
 	s.assertSwapOutput(tokenIn, 8, tokenOut, 7)
-	s.assertDexBalances(3, 8)
+	s.assertTickBalances(3, 8)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountUsedMultiTick() {
+func (s *DexTestSuite) TestSwap0To1LPMaxAmountUsedMultiTick() {
 	// GIVEN 50 TokenB available
 	s.addDeposits(
 		NewDeposit(0, 5, 0, 1),
@@ -318,10 +294,10 @@ func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountUsedMultiTick() {
 
 	// THEN swap should return 24 TokenA in and 20 TokenB out
 	s.assertSwapOutput(tokenIn, 24, tokenOut, 20)
-	s.assertDexBalances(24, 30)
+	s.assertTickBalances(24, 30)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0LPMaxAmountUsedMultiTick() {
+func (s *DexTestSuite) TestSwap1To0LPMaxAmountUsedMultiTick() {
 	// GIVEN 50 TokenA available
 	s.addDeposits(
 		NewDeposit(5, 0, 0, 1),
@@ -336,10 +312,10 @@ func (s *LiquidityTestSuite) TestSwap1To0LPMaxAmountUsedMultiTick() {
 
 	// THEN swap should return 20 TokenB in and 20 TokenA out
 	s.assertSwapOutput(tokenIn, 20, tokenOut, 20)
-	s.assertDexBalances(30, 20)
+	s.assertTickBalances(30, 20)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountNotUsedMultiTick() {
+func (s *DexTestSuite) TestSwap0To1LPMaxAmountNotUsedMultiTick() {
 	// GIVEN 50 TokenB available
 	s.addDeposits(
 		NewDeposit(0, 5, 0, 1),
@@ -354,12 +330,12 @@ func (s *LiquidityTestSuite) TestSwap0To1LPMaxAmountNotUsedMultiTick() {
 
 	// THEN swap should return 19 TokenA in and 15 TokenB out
 	s.assertSwapOutput(tokenIn, 18, tokenOut, 15)
-	s.assertDexBalances(18, 35)
+	s.assertTickBalances(18, 35)
 }
 
 // swaps against LOs only /////////////////////////////////////////////////////
 
-func (s *LiquidityTestSuite) TestSwap0To1PartialFillLO() {
+func (s *DexTestSuite) TestSwap0To1PartialFillLO() {
 	// GIVEN 10 tokenB LO @ tick 1,000
 	s.placeGTCLimitOrder("TokenB", 10, 1_000)
 
@@ -370,10 +346,10 @@ func (s *LiquidityTestSuite) TestSwap0To1PartialFillLO() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 12, tokenOut, 10)
-	s.assertDexBalances(12, 0)
+	s.assertTickBalances(12, 0)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0PartialFillLO() {
+func (s *DexTestSuite) TestSwap1To0PartialFillLO() {
 	// GIVEN 10 tokenA LO @ tick -1,000
 	s.placeGTCLimitOrder("TokenA", 10, -1_000)
 
@@ -384,13 +360,13 @@ func (s *LiquidityTestSuite) TestSwap1To0PartialFillLO() {
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 12, tokenOut, 10)
-	s.assertDexBalances(0, 12)
+	s.assertTickBalances(0, 12)
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(math.MinInt64)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1FillLO() {
+func (s *DexTestSuite) TestSwap0To1FillLO() {
 	// GIVEN 100 tokenB LO @ tick 10,000
 	s.placeGTCLimitOrder("TokenB", 100, 10_000)
 
@@ -401,13 +377,13 @@ func (s *LiquidityTestSuite) TestSwap0To1FillLO() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 98, tokenOut, 36)
-	s.assertDexBalances(98, 64)
+	s.assertTickBalances(98, 64)
 
 	s.assertCurr0To1(10_000)
 	s.assertCurr1To0(math.MinInt64)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0FillLO() {
+func (s *DexTestSuite) TestSwap1To0FillLO() {
 	// GIVEN 100 tokenA LO @ tick 10,000
 	s.placeGTCLimitOrder("TokenA", 100, -10_000)
 
@@ -418,13 +394,13 @@ func (s *LiquidityTestSuite) TestSwap1To0FillLO() {
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 9, tokenOut, 3)
-	s.assertDexBalances(97, 9)
+	s.assertTickBalances(97, 9)
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-10_000)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1FillMultipleLO() {
+func (s *DexTestSuite) TestSwap0To1FillMultipleLO() {
 	// GIVEN 300 tokenB across multiple LOs
 	s.placeGTCLimitOrder("TokenB", 100, 1_000)
 	s.placeGTCLimitOrder("TokenB", 100, 1_001)
@@ -437,13 +413,13 @@ func (s *LiquidityTestSuite) TestSwap0To1FillMultipleLO() {
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 300, tokenOut, 270)
-	s.assertDexBalances(300, 30)
+	s.assertTickBalances(300, 30)
 
 	s.assertCurr0To1(1_002)
 	s.assertCurr1To0(math.MinInt64)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0FillMultipleLO() {
+func (s *DexTestSuite) TestSwap1To0FillMultipleLO() {
 	// GIVEN 300 tokenA across multiple LOs
 	s.placeGTCLimitOrder("TokenA", 100, -1_000)
 	s.placeGTCLimitOrder("TokenA", 100, -1_001)
@@ -456,13 +432,13 @@ func (s *LiquidityTestSuite) TestSwap1To0FillMultipleLO() {
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	s.assertSwapOutput(tokenIn, 300, tokenOut, 270)
-	s.assertDexBalances(30, 300)
+	s.assertTickBalances(30, 300)
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-1_002)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountUsed() {
+func (s *DexTestSuite) TestSwap0To1LOMaxAmountUsed() {
 	// GIVEN 10 TokenB available
 	s.placeGTCLimitOrder("TokenB", 10, 1)
 
@@ -471,10 +447,10 @@ func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountUsed() {
 
 	// THEN swap should return 6 TokenA in and 5 TokenB out
 	s.assertSwapOutput(tokenIn, 6, tokenOut, 5)
-	s.assertDexBalances(6, 5)
+	s.assertTickBalances(6, 5)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0LOMaxAmountUsed() {
+func (s *DexTestSuite) TestSwap1To0LOMaxAmountUsed() {
 	// GIVEN 10 TokenA available
 	s.placeGTCLimitOrder("TokenA", 10, 0)
 
@@ -483,10 +459,10 @@ func (s *LiquidityTestSuite) TestSwap1To0LOMaxAmountUsed() {
 
 	// THEN swap should return 5 TokenB in and 5 TokenA out
 	s.assertSwapOutput(tokenIn, 5, tokenOut, 5)
-	s.assertDexBalances(5, 5)
+	s.assertTickBalances(5, 5)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountNotUsed() {
+func (s *DexTestSuite) TestSwap0To1LOMaxAmountNotUsed() {
 	// GIVEN 10 TokenB available
 	s.placeGTCLimitOrder("TokenB", 10, 1)
 
@@ -495,10 +471,10 @@ func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountNotUsed() {
 
 	// THEN swap should return 8 TokenA in and 7 TokenB out
 	s.assertSwapOutput(tokenIn, 8, tokenOut, 7)
-	s.assertDexBalances(8, 3)
+	s.assertTickBalances(8, 3)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0LOMaxAmountNotUsed() {
+func (s *DexTestSuite) TestSwap1To0LOMaxAmountNotUsed() {
 	// GIVEN 10 TokenA available
 	s.placeGTCLimitOrder("TokenA", 10, 1)
 
@@ -507,10 +483,10 @@ func (s *LiquidityTestSuite) TestSwap1To0LOMaxAmountNotUsed() {
 
 	// THEN swap should return 8 TokenB in and 8 TokenA out
 	s.assertSwapOutput(tokenIn, 8, tokenOut, 8)
-	s.assertDexBalances(2, 8)
+	s.assertTickBalances(2, 8)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountUsedMultiTick() {
+func (s *DexTestSuite) TestSwap0To1LOMaxAmountUsedMultiTick() {
 	// GIVEN 50 TokenB available
 	s.placeGTCLimitOrder("TokenB", 5, 0)
 	s.placeGTCLimitOrder("TokenB", 5, 1)
@@ -523,10 +499,10 @@ func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountUsedMultiTick() {
 
 	// THEN swap should return 23 TokenA in and 20 TokenB out
 	s.assertSwapOutput(tokenIn, 23, tokenOut, 20)
-	s.assertDexBalances(23, 30)
+	s.assertTickBalances(23, 30)
 }
 
-func (s *LiquidityTestSuite) TestSwap1To0LOMaxAmountUsedMultiTick() {
+func (s *DexTestSuite) TestSwap1To0LOMaxAmountUsedMultiTick() {
 	// GIVEN 50 TokenA available
 	s.placeGTCLimitOrder("TokenA", 5, 0)
 	s.placeGTCLimitOrder("TokenA", 5, 1)
@@ -539,10 +515,10 @@ func (s *LiquidityTestSuite) TestSwap1To0LOMaxAmountUsedMultiTick() {
 
 	// THEN swap should return 20 TokenB in and 20 TokenA out
 	s.assertSwapOutput(tokenIn, 20, tokenOut, 20)
-	s.assertDexBalances(30, 20)
+	s.assertTickBalances(30, 20)
 }
 
-func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountNotUsedMultiTick() {
+func (s *DexTestSuite) TestSwap0To1LOMaxAmountNotUsedMultiTick() {
 	// GIVEN 50 TokenB available
 	s.placeGTCLimitOrder("TokenB", 5, 0)
 	s.placeGTCLimitOrder("TokenB", 5, 1)
@@ -555,12 +531,12 @@ func (s *LiquidityTestSuite) TestSwap0To1LOMaxAmountNotUsedMultiTick() {
 
 	// THEN swap should return 19 TokenA in and 16 TokenB out
 	s.assertSwapOutput(tokenIn, 19, tokenOut, 16)
-	s.assertDexBalances(19, 34)
+	s.assertTickBalances(19, 34)
 }
 
 // Swap LO and LP  ////////////////////////////////////////////////////////////
 
-func (s *LiquidityTestSuite) TestSwapExhaustsLOAndLP() {
+func (s *DexTestSuite) TestSwapExhaustsLOAndLP() {
 	s.placeGTCLimitOrder("TokenB", 10, 0)
 
 	s.addDeposits(NewDeposit(0, 10, 0, 1))
@@ -569,34 +545,34 @@ func (s *LiquidityTestSuite) TestSwapExhaustsLOAndLP() {
 
 	// There should be total of 6 tick updates
 	// (limitOrder, 2x deposit,  2x swap LP, swap LO)
-	keepertest.AssertNEventsEmitted(s.T(), s.ctx, types.TickUpdateEventKey, 6)
+	s.AssertNEventValuesEmitted(types.TickUpdateEventKey, 6)
 }
 
 // Test helpers ///////////////////////////////////////////////////////////////
 
-func (s *LiquidityTestSuite) addDeposit(deposit *Deposit) {
-	pool, err := s.app.DexKeeper.GetOrInitPool(s.ctx, defaultPairID, deposit.TickIndex, deposit.Fee)
+func (s *DexTestSuite) addDeposit(deposit *Deposit) {
+	pool, err := s.App.DexKeeper.GetOrInitPool(s.Ctx, defaultPairID, deposit.TickIndex, deposit.Fee)
 	s.Assert().NoError(err)
 	pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(deposit.AmountA)
 	pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(deposit.AmountB)
-	s.app.DexKeeper.SetPool(s.ctx, pool)
+	s.App.DexKeeper.SetPool(s.Ctx, pool)
 }
 
-func (s *LiquidityTestSuite) addDeposits(deposits ...*Deposit) {
+func (s *DexTestSuite) addDeposits(deposits ...*Deposit) {
 	for _, deposit := range deposits {
 		s.addDeposit(deposit)
 	}
 }
 
-func (s *LiquidityTestSuite) placeGTCLimitOrder(
+func (s *DexTestSuite) placeGTCLimitOrder(
 	makerDenom string,
 	amountIn int64,
 	tickIndex int64,
 ) {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(makerDenom)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndex)
-	tranche, err := s.app.DexKeeper.GetOrInitPlaceTranche(
-		s.ctx,
+	tranche, err := s.App.DexKeeper.GetOrInitPlaceTranche(
+		s.Ctx,
 		tradePairID,
 		tickIndexTakerToMaker,
 		nil,
@@ -604,18 +580,18 @@ func (s *LiquidityTestSuite) placeGTCLimitOrder(
 	)
 	s.Assert().NoError(err)
 	tranche.PlaceMakerLimitOrder(sdkmath.NewInt(amountIn))
-	s.app.DexKeeper.SaveTranche(s.ctx, tranche)
+	s.App.DexKeeper.SaveTranche(s.Ctx, tranche)
 }
 
-func (s *LiquidityTestSuite) swap(
+func (s *DexTestSuite) swap(
 	tokenIn string,
 	tokenOut string,
 	maxAmountIn int64,
 ) (coinIn, coinOut sdk.Coin) {
 	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
 	s.Assert().NoError(err)
-	coinIn, coinOut, _, err = s.app.DexKeeper.Swap(
-		s.ctx,
+	coinIn, coinOut, _, err = s.App.DexKeeper.Swap(
+		s.Ctx,
 		tradePairID,
 		sdkmath.NewInt(maxAmountIn),
 		nil,
@@ -625,7 +601,7 @@ func (s *LiquidityTestSuite) swap(
 	return coinIn, coinOut
 }
 
-func (s *LiquidityTestSuite) swapWithMaxOut(
+func (s *DexTestSuite) swapWithMaxOut(
 	tokenIn string,
 	tokenOut string,
 	maxAmountIn int64,
@@ -633,8 +609,8 @@ func (s *LiquidityTestSuite) swapWithMaxOut(
 ) (coinIn, coinOut sdk.Coin) {
 	tradePairID := types.MustNewTradePairID(tokenIn, tokenOut)
 	maxAmountOutInt := sdkmath.NewInt(maxAmountOut)
-	coinIn, coinOut, _, err := s.app.DexKeeper.Swap(
-		s.ctx,
+	coinIn, coinOut, _, err := s.App.DexKeeper.Swap(
+		s.Ctx,
 		tradePairID,
 		sdkmath.NewInt(maxAmountIn),
 		&maxAmountOutInt,
@@ -645,7 +621,7 @@ func (s *LiquidityTestSuite) swapWithMaxOut(
 	return coinIn, coinOut
 }
 
-func (s *LiquidityTestSuite) assertSwapOutput(
+func (s *DexTestSuite) assertSwapOutput(
 	actualIn sdk.Coin,
 	expectedIn int64,
 	actualOut sdk.Coin,
@@ -660,15 +636,15 @@ func (s *LiquidityTestSuite) assertSwapOutput(
 		True(amtOut.Equal(sdkmath.NewInt(expectedOut)), "Expected amountOut %d != %s", expectedOut, amtOut)
 }
 
-func (s *LiquidityTestSuite) assertDexBalances(expectedABalance, expectedBBalance int64) {
+func (s *DexTestSuite) assertTickBalances(expectedABalance, expectedBBalance int64) {
 	// NOTE: We can't just check the actual DEX bank balances since we are testing swap
 	// before any transfers take place. Instead we have to sum up the total amount of coins
 	// at each tick
 	expectedAInt := sdkmath.NewInt(expectedABalance)
 	expectedBInt := sdkmath.NewInt(expectedBBalance)
 	allCoins := sdk.Coins{}
-	ticks := s.app.DexKeeper.GetAllTickLiquidity(s.ctx)
-	inactiveLOs := s.app.DexKeeper.GetAllInactiveLimitOrderTranche(s.ctx)
+	ticks := s.App.DexKeeper.GetAllTickLiquidity(s.Ctx)
+	inactiveLOs := s.App.DexKeeper.GetAllInactiveLimitOrderTranche(s.Ctx)
 
 	for _, tick := range ticks {
 		switch liquidity := tick.Liquidity.(type) {
@@ -701,28 +677,4 @@ func (s *LiquidityTestSuite) assertDexBalances(expectedABalance, expectedBBalanc
 		True(actualA.Equal(expectedAInt), "TokenA: expected %s != actual %s", expectedAInt, actualA)
 	s.Assert().
 		True(actualB.Equal(expectedBInt), "TokenB: expected %s != actual %s", expectedBInt, actualB)
-}
-
-func (s *LiquidityTestSuite) assertCurr0To1(curr0To1Expected int64) {
-	curr0To1Actual, found := s.app.DexKeeper.GetCurrTickIndexTakerToMakerNormalized(
-		s.ctx,
-		defaultTradePairID0To1,
-	)
-	if curr0To1Expected == math.MaxInt64 {
-		s.Assert().False(found)
-	} else {
-		s.Assert().Equal(curr0To1Expected, curr0To1Actual)
-	}
-}
-
-func (s *LiquidityTestSuite) assertCurr1To0(curr1To0Expected int64) {
-	curr1to0Actual, found := s.app.DexKeeper.GetCurrTickIndexTakerToMakerNormalized(
-		s.ctx,
-		defaultTradePairID1To0,
-	)
-	if curr1To0Expected == math.MinInt64 {
-		s.Assert().False(found)
-	} else {
-		s.Assert().Equal(curr1To0Expected, curr1to0Actual)
-	}
 }

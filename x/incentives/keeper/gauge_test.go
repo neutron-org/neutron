@@ -15,7 +15,7 @@ import (
 
 var _ = suite.TestingSuite(nil)
 
-func (suite *KeeperTestSuite) TestGaugeLifecycle() {
+func (suite *IncentivesTestSuite) TestGaugeLifecycle() {
 	addr0 := suite.SetupAddr(0)
 
 	// setup dex deposit and stake of those shares
@@ -107,7 +107,7 @@ func (suite *KeeperTestSuite) TestGaugeLifecycle() {
 	// fin.
 }
 
-func (suite *KeeperTestSuite) TestGaugeLimit() {
+func (suite *IncentivesTestSuite) TestGaugeLimit() {
 	// We set the gauge limit to 20. On the 21st gauge, we should encounter an error.
 	params := suite.App.IncentivesKeeper.GetParams(suite.Ctx)
 	params.MaxGauges = 20
@@ -171,7 +171,7 @@ func (suite *KeeperTestSuite) TestGaugeLimit() {
 
 // TestGaugeCreateFails tests that when the distribute command is executed on a provided bad gauge
 // that the step fails gracefully.
-func (suite *KeeperTestSuite) TestGaugeCreateFails() {
+func (suite *IncentivesTestSuite) TestGaugeCreateFails() {
 	addrs := apptesting.SetupAddrs(3)
 	tests := []struct {
 		name              string

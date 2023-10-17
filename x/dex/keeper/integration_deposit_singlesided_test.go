@@ -6,7 +6,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedInSpread1To0() {
+func (s *DexTestSuite) TestDepositSingleSidedInSpread1To0() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -28,7 +28,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedInSpread1To0() {
 	s.assertCurr1To0(-1)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedInSpread0To1() {
+func (s *DexTestSuite) TestDepositSingleSidedInSpread0To1() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -50,7 +50,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedInSpread0To1() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedInSpreadMinMaxNotAdjusted() {
+func (s *DexTestSuite) TestDepositSingleSidedInSpreadMinMaxNotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -69,7 +69,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedInSpreadMinMaxNotAdjusted() {
 	// assert min, max not moved
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpread0To1NotAdjusted() {
+func (s *DexTestSuite) TestDepositSingleSidedOutOfSpread0To1NotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -91,7 +91,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpread0To1NotAdjusted() 
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpread1To0NotAdjusted() {
+func (s *DexTestSuite) TestDepositSingleSidedOutOfSpread1To0NotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -113,7 +113,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpread1To0NotAdjusted() 
 	s.assertCurr1To0(-1)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMinAdjusted() {
+func (s *DexTestSuite) TestDepositSingleSidedOutOfSpreadMinAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -134,7 +134,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMinAdjusted() {
 	// assert min moved
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMaxAdjusted() {
+func (s *DexTestSuite) TestDepositSingleSidedOutOfSpreadMaxAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -155,7 +155,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMaxAdjusted() {
 	// assert max moved
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMinNotAdjusted() {
+func (s *DexTestSuite) TestDepositSingleSidedOutOfSpreadMinNotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -180,7 +180,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMinNotAdjusted() {
 	// assert min not moved
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMaxNotAdjusted() {
+func (s *DexTestSuite) TestDepositSingleSidedOutOfSpreadMaxNotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -205,7 +205,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedOutOfSpreadMaxNotAdjusted() {
 	// assert max not moved
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedExistingLiquidityA() {
+func (s *DexTestSuite) TestDepositSingleSidedExistingLiquidityA() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -230,7 +230,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedExistingLiquidityA() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedExistingLiquidityB() {
+func (s *DexTestSuite) TestDepositSingleSidedExistingLiquidityB() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -255,7 +255,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedExistingLiquidityB() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedCreatingArbToken0() {
+func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken0() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -279,7 +279,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedCreatingArbToken0() {
 	s.assertBobBalances(50, 52)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedCreatingArbToken1() {
+func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -304,7 +304,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedCreatingArbToken1() {
 	s.assertBobBalances(52, 50)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedMultiA() {
+func (s *DexTestSuite) TestDepositSingleSidedMultiA() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -333,7 +333,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedMultiA() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedMultiB() {
+func (s *DexTestSuite) TestDepositSingleSidedMultiB() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -362,7 +362,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedMultiB() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedLowerTickOutsideRange() {
+func (s *DexTestSuite) TestDepositSingleSidedLowerTickOutsideRange() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -378,7 +378,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedLowerTickOutsideRange() {
 	s.assertAliceDepositFails(err, NewDeposit(10, 0, tickIndex, 1))
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedUpperTickOutsideRange() {
+func (s *DexTestSuite) TestDepositSingleSidedUpperTickOutsideRange() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -394,7 +394,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedUpperTickOutsideRange() {
 	s.assertAliceDepositFails(err, NewDeposit(0, 10, tickIndex, 1))
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
+func (s *DexTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -410,7 +410,7 @@ func (s *MsgServerTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
 	s.assertAliceDepositFails(err, NewDeposit(0, 5, 0, 1))
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleLowTickUnderflowFails() {
+func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
 	s.fundAliceBalances(0, 50)
 
 	// GIVEN
@@ -422,7 +422,7 @@ func (s *MsgServerTestSuite) TestDepositSingleLowTickUnderflowFails() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestDepositSingleInvalidFeeFails() {
+func (s *DexTestSuite) TestDepositSingleInvalidFeeFails() {
 	s.fundAliceBalances(0, 50)
 
 	// GIVEN

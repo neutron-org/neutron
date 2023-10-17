@@ -3,12 +3,11 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapSingleRoute() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapSingleRoute() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN liquidity in pools A<>B, B<>C, C<>D,
@@ -33,7 +32,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapSingleRoute() {
 	s.assertDexBalanceWithDenom("TokenD", 100)
 }
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapInsufficientLiquiditySingleRoute() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapInsufficientLiquiditySingleRoute() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN liquidity in pools A<>B, B<>C, C<>D with insufficient liquidity in C<>D
@@ -54,7 +53,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapInsufficientLiquiditySingle
 	)
 }
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapLimitPriceNotMetSingleRoute() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapLimitPriceNotMetSingleRoute() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN liquidity in pools A<>B, B<>C, C<>D with insufficient liquidity in C<>D
@@ -75,7 +74,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapLimitPriceNotMetSingleRoute
 	)
 }
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteOneGood() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteOneGood() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN viable liquidity in pools A<>B, B<>E, E<>X
@@ -181,7 +180,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteOneGood() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteAllFail() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteAllFail() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN liquidity in sufficient liquidity but inadequate prices
@@ -224,7 +223,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteAllFail() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteFindBestRoute() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteFindBestRoute() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN viable liquidity in pools but with a best route through E<>X
@@ -302,7 +301,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapMultiRouteFindBestRoute() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapLongRouteWithCache() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapLongRouteWithCache() {
 	s.fundAliceBalances(100, 0)
 
 	// GIVEN viable route from A->B->C...->L but last leg to X only possible through K->M->X
@@ -350,7 +349,7 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapLongRouteWithCache() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestEstimateMultiHopSwapEventsEmitted() {
+func (s *DexTestSuite) TestEstimateMultiHopSwapEventsEmitted() {
 	s.fundAliceBalances(100, 0)
 
 	s.SetupMultiplePools(
@@ -362,5 +361,5 @@ func (s *MsgServerTestSuite) TestEstimateMultiHopSwapEventsEmitted() {
 	_ = s.aliceEstimatesMultiHopSwap(route, 100, math_utils.MustNewPrecDecFromStr("0.9"), false)
 
 	// 8 tickUpdateEvents are emitted 4x for pool setup 4x for two swaps
-	keepertest.AssertEventNotEmitted(s.T(), s.ctx, types.TickUpdateEventKey, "Expected no events")
+	s.AssertEventValueNotEmitted(types.TickUpdateEventKey, "Expected no events")
 }

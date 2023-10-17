@@ -5,7 +5,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestDepositMultiCompleteFailure() {
+func (s *DexTestSuite) TestDepositMultiCompleteFailure() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -24,7 +24,7 @@ func (s *MsgServerTestSuite) TestDepositMultiCompleteFailure() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestDepositMultiSuccess() {
+func (s *DexTestSuite) TestDepositMultiSuccess() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN

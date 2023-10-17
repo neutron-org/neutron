@@ -6,7 +6,7 @@ import (
 	"github.com/neutron-org/neutron/x/epochs/types"
 )
 
-func (suite *KeeperTestSuite) TestAddEpochInfo() {
+func (suite *EpochsTestSuite) TestAddEpochInfo() {
 	defaultIdentifier := "default_add_epoch_info_id"
 	defaultDuration := time.Hour
 	startBlockHeight := int64(100)
@@ -66,7 +66,7 @@ func (suite *KeeperTestSuite) TestAddEpochInfo() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestDuplicateAddEpochInfo() {
+func (suite *EpochsTestSuite) TestDuplicateAddEpochInfo() {
 	identifier := "duplicate_add_epoch_info"
 	epochInfo := types.NewGenesisEpochInfo(identifier, time.Hour*24*30)
 	err := suite.App.EpochsKeeper.AddEpochInfo(suite.Ctx, epochInfo)
@@ -75,7 +75,7 @@ func (suite *KeeperTestSuite) TestDuplicateAddEpochInfo() {
 	suite.Require().Error(err)
 }
 
-func (suite *KeeperTestSuite) TestEpochLifeCycle() {
+func (suite *EpochsTestSuite) TestEpochLifeCycle() {
 	suite.SetupTest()
 
 	epochInfo := types.NewGenesisEpochInfo("monthly", time.Hour*24*30)
