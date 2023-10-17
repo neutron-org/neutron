@@ -5,7 +5,7 @@ import (
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/neutron-org/neutron/app/upgrades"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 )
 
 const (
@@ -20,7 +20,7 @@ var Upgrade = upgrades.Upgrade{
 		Added: []string{
 			consensusparamtypes.ModuleName,
 			crisistypes.ModuleName,
-			buildertypes.ModuleName,
+			auctiontypes.ModuleName,
 		},
 	},
 }
