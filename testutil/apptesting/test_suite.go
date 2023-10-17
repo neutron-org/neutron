@@ -35,10 +35,12 @@ type KeeperTestHelper struct {
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *KeeperTestHelper) Setup() {
 	s.App = testutil.Setup(s.T())
-	s.Ctx = s.App.BaseApp.NewContext(
+	ctx := s.App.BaseApp.NewContext(
 		false,
 		tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()},
 	)
+	s.Ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+
 	s.GoCtx = sdk.WrapSDKContext(s.Ctx)
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),

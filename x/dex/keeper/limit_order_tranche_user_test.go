@@ -74,7 +74,7 @@ func TestLimitOrderTrancheUserRemove(t *testing.T) {
 	}
 }
 
-func (s *MsgServerTestSuite) TestGetAllLimitOrders() {
+func (s *DexTestSuite) TestGetAllLimitOrders() {
 	// WHEN Alice places 2 limit orders
 	s.fundAliceBalances(20, 20)
 	s.fundBobBalances(20, 20)
@@ -83,7 +83,7 @@ func (s *MsgServerTestSuite) TestGetAllLimitOrders() {
 	s.bobLimitSells("TokenA", -1, 10)
 
 	// THEN GetAllLimitOrders returns alice's same two orders
-	LOList := s.app.DexKeeper.GetAllLimitOrderTrancheUserForAddress(s.ctx, s.alice)
+	LOList := s.App.DexKeeper.GetAllLimitOrderTrancheUserForAddress(s.Ctx, s.alice)
 	s.Assert().Equal(2, len(LOList))
 	s.Assert().Equal(&types.LimitOrderTrancheUser{
 		TradePairID:           defaultTradePairID1To0,

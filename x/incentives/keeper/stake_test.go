@@ -8,7 +8,7 @@ import (
 
 var _ = suite.TestingSuite(nil)
 
-func (suite *KeeperTestSuite) TestStakeLifecycle() {
+func (suite *IncentivesTestSuite) TestStakeLifecycle() {
 	addr0 := suite.SetupAddr(0)
 
 	// setup dex deposit and stake of those shares
@@ -39,7 +39,7 @@ func (suite *KeeperTestSuite) TestStakeLifecycle() {
 	suite.Require().Error(err)
 }
 
-func (suite *KeeperTestSuite) TestMultipleStakeLifecycle() {
+func (suite *IncentivesTestSuite) TestMultipleStakeLifecycle() {
 	addr0 := suite.SetupAddr(0)
 
 	// setup dex deposit and stake of those shares
@@ -81,7 +81,7 @@ func (suite *KeeperTestSuite) TestMultipleStakeLifecycle() {
 	suite.Require().Error(err)
 }
 
-func (suite *KeeperTestSuite) TestStakeUnstakePartial() {
+func (suite *IncentivesTestSuite) TestStakeUnstakePartial() {
 	addr0 := suite.SetupAddr(0)
 
 	// setup dex deposit and stake of those shares

@@ -7,7 +7,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestPartialWithdrawOnlyA() {
+func (s *DexTestSuite) TestPartialWithdrawOnlyA() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice deposits 10 of A at tick 0, fee tier 0
@@ -32,7 +32,7 @@ func (s *MsgServerTestSuite) TestPartialWithdrawOnlyA() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestPartialWithdrawOnlyB() {
+func (s *DexTestSuite) TestPartialWithdrawOnlyB() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice deposits 10 of B at tick 0, fee tier 0
@@ -57,7 +57,7 @@ func (s *MsgServerTestSuite) TestPartialWithdrawOnlyB() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestFullWithdrawOnlyB() {
+func (s *DexTestSuite) TestFullWithdrawOnlyB() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice deposits 10 of B at tick 0, fee tier 0
@@ -82,7 +82,7 @@ func (s *MsgServerTestSuite) TestFullWithdrawOnlyB() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestCurrentTickUpdatesAfterDoubleSidedThenSingleSidedDepositAndPartialWithdrawal() {
+func (s *DexTestSuite) TestCurrentTickUpdatesAfterDoubleSidedThenSingleSidedDepositAndPartialWithdrawal() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice deposits 10 of A and B with a spread (fee) of +- 3 ticks
@@ -112,7 +112,7 @@ func (s *MsgServerTestSuite) TestCurrentTickUpdatesAfterDoubleSidedThenSingleSid
 	s.assertCurr0To1(3)
 }
 
-func (s *MsgServerTestSuite) TestCurrentTickUpdatesAfterDoubleSidedThenSingleSidedDepositAndFulllWithdrawal() {
+func (s *DexTestSuite) TestCurrentTickUpdatesAfterDoubleSidedThenSingleSidedDepositAndFulllWithdrawal() {
 	s.fundAliceBalances(50, 50)
 	// CASE
 	// Alice deposits 10 of A and B with a spread (fee) of +- 3 ticks
@@ -141,7 +141,7 @@ func (s *MsgServerTestSuite) TestCurrentTickUpdatesAfterDoubleSidedThenSingleSid
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestTwoFullDoubleSidedRebalancedAtooMuchTick0() {
+func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedAtooMuchTick0() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 	// CASE
@@ -184,7 +184,7 @@ func (s *MsgServerTestSuite) TestTwoFullDoubleSidedRebalancedAtooMuchTick0() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestTwoFullDoubleSidedRebalancedBtooMuchTick0() {
+func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedBtooMuchTick0() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 	// CASE
@@ -227,7 +227,7 @@ func (s *MsgServerTestSuite) TestTwoFullDoubleSidedRebalancedBtooMuchTick0() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawalFailsWhenNotEnoughShares() {
+func (s *DexTestSuite) TestWithdrawalFailsWhenNotEnoughShares() {
 	s.fundAliceBalances(100, 0)
 
 	// IF  Alice deposits 100
@@ -239,14 +239,14 @@ func (s *MsgServerTestSuite) TestWithdrawalFailsWhenNotEnoughShares() {
 	s.aliceWithdrawFails(err, NewWithdrawal(200, 0, 1))
 }
 
-func (s *MsgServerTestSuite) TestWithdrawalFailsWithNonExistentPair() {
+func (s *DexTestSuite) TestWithdrawalFailsWithNonExistentPair() {
 	s.fundAliceBalances(100, 0)
 
 	// IF Alice Deposists 100
 	s.aliceDeposits(NewDeposit(100, 0, 0, 1))
 
 	// WHEN Alice tries to withdraw from a nonexistent tokenPair
-	_, err := s.msgServer.Withdrawal(s.goCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
 		Creator:         s.alice.String(),
 		Receiver:        s.alice.String(),
 		TokenA:          "TokenX",

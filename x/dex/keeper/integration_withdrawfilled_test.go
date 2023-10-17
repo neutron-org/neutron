@@ -6,7 +6,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestWithdrawFilledSimpleFull() {
+func (s *DexTestSuite) TestWithdrawFilledSimpleFull() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 	// CASE
@@ -39,11 +39,11 @@ func (s *MsgServerTestSuite) TestWithdrawFilledSimpleFull() {
 	s.assertCurr0To1(math.MaxInt64)
 
 	// Assert that the LimitOrderTrancheUser has been deleted
-	_, found := s.app.DexKeeper.GetLimitOrderTrancheUser(s.ctx, s.alice.String(), trancheKey)
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
 	s.Assert().False(found)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawFilledPartial() {
+func (s *DexTestSuite) TestWithdrawFilledPartial() {
 	s.fundAliceBalances(100, 100)
 	s.fundBobBalances(100, 100)
 
@@ -73,11 +73,11 @@ func (s *MsgServerTestSuite) TestWithdrawFilledPartial() {
 	s.assertBobBalances(90, 110)
 
 	// the LimitOrderTrancheUser still exists
-	_, found := s.app.DexKeeper.GetLimitOrderTrancheUser(s.ctx, s.alice.String(), trancheKey)
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
 	s.Assert().True(found)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawFilledTwiceFullSameDirection() {
+func (s *DexTestSuite) TestWithdrawFilledTwiceFullSameDirection() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 	// CASE
@@ -129,7 +129,7 @@ func (s *MsgServerTestSuite) TestWithdrawFilledTwiceFullSameDirection() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawFilledTwiceFullDifferentDirection() {
+func (s *DexTestSuite) TestWithdrawFilledTwiceFullDifferentDirection() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 	// CASE
@@ -181,7 +181,7 @@ func (s *MsgServerTestSuite) TestWithdrawFilledTwiceFullDifferentDirection() {
 	s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawFilledEmptyFilled() {
+func (s *DexTestSuite) TestWithdrawFilledEmptyFilled() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -196,7 +196,7 @@ func (s *MsgServerTestSuite) TestWithdrawFilledEmptyFilled() {
 	s.aliceWithdrawLimitSellFails(err, trancheKey)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawFilledNoExistingOrderByUser() {
+func (s *DexTestSuite) TestWithdrawFilledNoExistingOrderByUser() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -212,7 +212,7 @@ func (s *MsgServerTestSuite) TestWithdrawFilledNoExistingOrderByUser() {
 	s.bobWithdrawLimitSellFails(err, trancheKey)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawFilledOtherUserOrder() {
+func (s *DexTestSuite) TestWithdrawFilledOtherUserOrder() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 

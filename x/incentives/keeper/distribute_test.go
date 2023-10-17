@@ -21,7 +21,7 @@ type balanceAssertion struct {
 	balances sdk.Coins
 }
 
-func (suite *KeeperTestSuite) TestValueForShares() {
+func (suite *IncentivesTestSuite) TestValueForShares() {
 	addrs := apptesting.SetupAddrs(3)
 
 	tests := []struct {
@@ -126,7 +126,7 @@ func (suite *KeeperTestSuite) TestValueForShares() {
 
 // TestDistribute tests that when the distribute command is executed on a provided gauge
 // that the correct amount of rewards is sent to the correct stake owners.
-func (suite *KeeperTestSuite) TestDistribute() {
+func (suite *IncentivesTestSuite) TestDistribute() {
 	addrs := apptesting.SetupAddrs(3)
 	tests := []struct {
 		name              string

@@ -18,7 +18,7 @@ import (
 // This test is responsible for testing how epochs increment based off
 // of their initial conditions, and subsequent block height / times.
 
-func (suite *KeeperTestSuite) TestEpochInfoBeginBlockChanges() {
+func (suite *EpochsTestSuite) TestEpochInfoBeginBlockChanges() {
 	block1Time := time.Unix(1656907200, 0).UTC()
 	const defaultIdentifier = "hourly"
 	const defaultDuration = time.Hour

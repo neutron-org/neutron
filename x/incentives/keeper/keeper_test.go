@@ -11,7 +11,7 @@ import (
 	"github.com/neutron-org/neutron/x/incentives/types"
 )
 
-type KeeperTestSuite struct {
+type IncentivesTestSuite struct {
 	apptesting.KeeperTestHelper
 
 	QueryServer keeper.QueryServer
@@ -21,7 +21,7 @@ type KeeperTestSuite struct {
 }
 
 // SetupTest sets incentives parameters from the suite's context
-func (suite *KeeperTestSuite) SetupTest() {
+func (suite *IncentivesTestSuite) SetupTest() {
 	suite.Setup()
 	suite.QueryServer = keeper.NewQueryServer(suite.App.IncentivesKeeper)
 	suite.MsgServer = keeper.NewMsgServerImpl(suite.App.IncentivesKeeper)
@@ -47,6 +47,6 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.SetEpochStartTime()
 }
 
-func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
+func TestIncentivesTestSuite(t *testing.T) {
+	suite.Run(t, new(IncentivesTestSuite))
 }

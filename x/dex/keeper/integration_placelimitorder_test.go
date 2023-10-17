@@ -11,7 +11,7 @@ import (
 )
 
 // Core tests w/ GTC limitOrders //////////////////////////////////////////////
-func (s *MsgServerTestSuite) TestPlaceLimitOrderInSpread1To0() {
+func (s *DexTestSuite) TestPlaceLimitOrderInSpread1To0() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -33,7 +33,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderInSpread1To0() {
 	s.assertCurr1To0(-1)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderInSpread0To1() {
+func (s *DexTestSuite) TestPlaceLimitOrderInSpread0To1() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -55,7 +55,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderInSpread0To1() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderInSpreadMinMaxNotAdjusted() {
+func (s *DexTestSuite) TestPlaceLimitOrderInSpreadMinMaxNotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -74,7 +74,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderInSpreadMinMaxNotAdjusted() {
 	// assert min, max not moved
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpread0To1NotAdjusted() {
+func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpread0To1NotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -96,7 +96,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpread0To1NotAdjusted() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpread1To0NotAdjusted() {
+func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpread1To0NotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -118,7 +118,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpread1To0NotAdjusted() {
 	s.assertCurr1To0(-1)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMinAdjusted() {
+func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMinAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -139,7 +139,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMinAdjusted() {
 	// assert min moved
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMaxAdjusted() {
+func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMaxAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -160,7 +160,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMaxAdjusted() {
 	// assert max moved
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMinNotAdjusted() {
+func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMinNotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -185,7 +185,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMinNotAdjusted() {
 	// assert min not moved
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMaxNotAdjusted() {
+func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMaxNotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -210,7 +210,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderOutOfSpreadMaxNotAdjusted() {
 	// assert max not moved
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderExistingLiquidityA() {
+func (s *DexTestSuite) TestPlaceLimitOrderExistingLiquidityA() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -237,7 +237,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderExistingLiquidityA() {
 	// s.assertCurr0To1(math.MaxInt64)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderExistingLiquidityB() {
+func (s *DexTestSuite) TestPlaceLimitOrderExistingLiquidityB() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -264,7 +264,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderExistingLiquidityB() {
 	s.assertCurr0To1(1)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderNoLOPlaceLODoesntIncrementPlaceTrancheKey() {
+func (s *DexTestSuite) TestPlaceLimitOrderNoLOPlaceLODoesntIncrementPlaceTrancheKey() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -282,7 +282,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderNoLOPlaceLODoesntIncrementPlaceT
 	s.assertFillAndPlaceTrancheKeys("TokenA", -1, trancheKey, trancheKey)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderUnfilledLOPlaceLODoesntIncrementPlaceTrancheKey() {
+func (s *DexTestSuite) TestPlaceLimitOrderUnfilledLOPlaceLODoesntIncrementPlaceTrancheKey() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
@@ -300,7 +300,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderUnfilledLOPlaceLODoesntIncrement
 	s.assertFillAndPlaceTrancheKeys("TokenA", -1, trancheKey, trancheKey)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderPartiallyFilledLOPlaceLOIncrementsPlaceTrancheKey() {
+func (s *DexTestSuite) TestPlaceLimitOrderPartiallyFilledLOPlaceLOIncrementsPlaceTrancheKey() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -319,7 +319,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderPartiallyFilledLOPlaceLOIncremen
 	s.assertFillAndPlaceTrancheKeys("TokenA", -1, trancheKey0, trancheKey1)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFilledLOPlaceLODoesntIncrementsPlaceTrancheKey() {
+func (s *DexTestSuite) TestPlaceLimitOrderFilledLOPlaceLODoesntIncrementsPlaceTrancheKey() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -339,7 +339,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFilledLOPlaceLODoesntIncrementsP
 	s.assertFillAndPlaceTrancheKeys("TokenA", -1, trancheKey0, trancheKey1)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderInsufficientFunds() {
+func (s *DexTestSuite) TestPlaceLimitOrderInsufficientFunds() {
 	// GIVEN
 	// alice has no funds
 	s.assertAliceBalances(0, 0)
@@ -353,7 +353,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderInsufficientFunds() {
 	s.assertAliceLimitSellFails(err, "TokenA", 0, 10)
 }
 
-func (s *MsgServerTestSuite) TestLimitOrderPartialFillDepositCancel() {
+func (s *DexTestSuite) TestLimitOrderPartialFillDepositCancel() {
 	s.fundAliceBalances(100, 100)
 	s.fundBobBalances(100, 100)
 	s.assertDexBalances(0, 0)
@@ -412,7 +412,7 @@ func (s *MsgServerTestSuite) TestLimitOrderPartialFillDepositCancel() {
 }
 
 // Fill Or Kill limit orders ///////////////////////////////////////////////////////////
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKNoLiq() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoKNoLiq() {
 	s.fundAliceBalances(10, 0)
 	// GIVEN no liquidity
 	// THEN alice's LimitOrder fails
@@ -428,7 +428,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKNoLiq() {
 	s.assertAliceBalances(10, 0)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKWithLPFills() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoKWithLPFills() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	// GIVEN LP liq at tick -1
@@ -444,7 +444,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKWithLPFills() {
 	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKFailsWithInsufficientLiq() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoKFailsWithInsufficientLiq() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	// GIVEN LP liq at tick -1 of 9 tokenB
@@ -459,7 +459,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKFailsWithInsufficientLiq() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrder0FoKFailsWithLowLimit() {
+func (s *DexTestSuite) TestPlaceLimitOrder0FoKFailsWithLowLimit() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	// GIVEN LP liq at tick -1 of 20 tokenB
@@ -474,7 +474,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrder0FoKFailsWithLowLimit() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrder1FoKFailsWithHighLimit() {
+func (s *DexTestSuite) TestPlaceLimitOrder1FoKFailsWithHighLimit() {
 	s.fundAliceBalances(0, 10)
 	s.fundBobBalances(20, 0)
 	// GIVEN LP liq at tick 20 of 20 tokenA
@@ -489,7 +489,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrder1FoKFailsWithHighLimit() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFoK0TotalAmountInNotUsed() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoK0TotalAmountInNotUsed() {
 	s.fundAliceBalances(9998, 0)
 	s.fundBobBalances(0, 5000)
 	// GIVEN LP liq at tick 20,000 & 20,001 of 1000 TokenB
@@ -503,7 +503,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFoK0TotalAmountInNotUsed() {
 	s.assertAliceBalances(6, 1352)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
 	s.fundAliceBalances(0, 9998)
 	s.fundBobBalances(5000, 0)
 	// GIVEN LP liq at tick -20,000 & -20,001 of 1000 tokenA
@@ -517,7 +517,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
 	s.assertAliceBalances(1352, 6)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
 	s.fundAliceBalances(0, 50)
 	s.fundBobBalances(50, 0)
 	// GIVEN LP 50 TokenA at tick 600
@@ -531,7 +531,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
 	s.assertAliceBalances(20, 31)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 	s.fundAliceBalances(0, 50)
 	s.fundBobBalances(50, 0)
 	// GIVEN LP 30 TokenA at tick 600-602
@@ -549,7 +549,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 
 // Immediate Or Cancel LimitOrders ////////////////////////////////////////////////////////////////////
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCNoLiq() {
+func (s *DexTestSuite) TestPlaceLimitOrderIoCNoLiq() {
 	s.fundAliceBalances(10, 0)
 	// GIVEN no liquidity
 	// WHEN alice submits IoC limitOrder
@@ -564,7 +564,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCNoLiq() {
 	s.assertFillAndPlaceTrancheKeys("TokenA", 1, "", "")
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCWithLPFills() {
+func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPFills() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	// GIVEN LP liq at tick -1
@@ -581,7 +581,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCWithLPFills() {
 	s.assertFillAndPlaceTrancheKeys("TokenA", 1, "", "")
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCWithLPPartialFill() {
+func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPPartialFill() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	// GIVEN LP of 5 tokenB at tick -1
@@ -598,7 +598,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCWithLPPartialFill() {
 	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
+func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	// GIVEN LP of 5 tokenB at tick -1
@@ -616,7 +616,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 
 // Just In Time Limit Orders //////////////////////////////////////////////////
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderJITFills() {
+func (s *DexTestSuite) TestPlaceLimitOrderJITFills() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 
@@ -635,7 +635,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderJITFills() {
 	s.assertAliceBalances(0, 10)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderJITBehindEnemyLines() {
+func (s *DexTestSuite) TestPlaceLimitOrderJITBehindEnemyLines() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 
@@ -656,7 +656,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderJITBehindEnemyLines() {
 	s.assertAliceBalances(0, 9)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderJITNextBlock() {
+func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 
@@ -667,7 +667,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderJITNextBlock() {
 
 	// WHEN we move to block N+1
 	s.nextBlockWithTime(time.Now())
-	s.app.EndBlock(abci.RequestEndBlock{Height: 0})
+	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
@@ -678,7 +678,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderJITNextBlock() {
 
 // GoodTilLimitOrders //////////////////////////////////////////////////
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilFills() {
+func (s *DexTestSuite) TestPlaceLimitOrderGoodTilFills() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	tomorrow := time.Now().AddDate(0, 0, 1)
@@ -697,7 +697,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilFills() {
 	s.assertAliceBalances(0, 10)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilExpires() {
+func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpires() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 	tomorrow := time.Now().AddDate(0, 0, 1)
@@ -708,7 +708,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilExpires() {
 
 	// When two days go by and multiple blocks are created (ie. purge is run)
 	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
-	s.app.EndBlock(abci.RequestEndBlock{Height: 0})
+	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
 	// Alice can withdraw the entirety of the unfilled limitOrder
@@ -716,7 +716,7 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilExpires() {
 	s.assertAliceBalances(10, 0)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilExpiresNotPurged() {
+func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpiresNotPurged() {
 	// This is testing the case where the limitOrder has expired but has not yet been purged
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
@@ -737,11 +737,11 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilExpiresNotPurged() {
 	s.assertAliceBalances(10, 0)
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilHandlesTimezoneCorrectly() {
+func (s *DexTestSuite) TestPlaceLimitOrderGoodTilHandlesTimezoneCorrectly() {
 	s.fundAliceBalances(10, 0)
 	timeInPST, _ := time.Parse(time.RFC3339, "2050-01-02T15:04:05-08:00")
 	trancheKey := s.aliceLimitSellsGoodTil("TokenA", 0, 10, timeInPST)
-	tranche := s.app.DexKeeper.GetLimitOrderTranche(s.ctx, &types.LimitOrderTrancheKey{
+	tranche := s.App.DexKeeper.GetLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
 		TradePairID:           defaultTradePairID1To0,
 		TickIndexTakerToMaker: 0,
 		TrancheKey:            trancheKey,
@@ -750,14 +750,14 @@ func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilHandlesTimezoneCorrectly(
 	s.Assert().Equal(tranche.ExpirationTime.Unix(), timeInPST.Unix())
 }
 
-func (s *MsgServerTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
+func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 	s.fundAliceBalances(10, 0)
 
 	now := time.Now()
 	yesterday := time.Now().AddDate(0, 0, -1)
 	s.nextBlockWithTime(now)
 
-	_, err := s.msgServer.PlaceLimitOrder(s.goCtx, &types.MsgPlaceLimitOrder{
+	_, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          s.alice.String(),
 		Receiver:         s.alice.String(),
 		TokenIn:          "TokenA",

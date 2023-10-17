@@ -1,6 +1,6 @@
 package keeper_test
 
-func (s *MsgServerTestSuite) TestAutoswapperWithdraws() {
+func (s *DexTestSuite) TestAutoswapperWithdraws() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -34,7 +34,7 @@ func (s *MsgServerTestSuite) TestAutoswapperWithdraws() {
 	s.assertDexBalances(dexExpectedBalance0.Int64(), dexExpectedBalance1.Int64())
 }
 
-func (s *MsgServerTestSuite) TestAutoswapOtherDepositorWithdraws() {
+func (s *DexTestSuite) TestAutoswapOtherDepositorWithdraws() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 
@@ -66,7 +66,7 @@ func (s *MsgServerTestSuite) TestAutoswapOtherDepositorWithdraws() {
 	s.assertDexBalances(dexExpectedBalance0.Int64(), dexExpectedBalance1.Int64())
 }
 
-func (s *MsgServerTestSuite) TestAutoswapBothWithdraws() {
+func (s *DexTestSuite) TestAutoswapBothWithdraws() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
 

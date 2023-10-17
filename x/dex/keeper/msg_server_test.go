@@ -2,7 +2,6 @@
 package keeper_test
 
 import (
-	"context"
 	"math"
 	"testing"
 	"time"
@@ -11,8 +10,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	dualityapp "github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil"
+	"github.com/neutron-org/neutron/testutil/apptesting"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	. "github.com/neutron-org/neutron/x/dex/keeper"
 	. "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
@@ -21,16 +19,13 @@ import (
 )
 
 // / Test suite
-type MsgServerTestSuite struct {
-	suite.Suite
-	app       *dualityapp.App
+type DexTestSuite struct {
+	apptesting.KeeperTestHelper
 	msgServer types.MsgServer
-	ctx       sdk.Context
 	alice     sdk.AccAddress
 	bob       sdk.AccAddress
 	carol     sdk.AccAddress
 	dan       sdk.AccAddress
-	goCtx     context.Context
 }
 
 var defaultPairID *types.PairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
@@ -45,88 +40,76 @@ var defaultTradePairID1To0 *types.TradePairID = &types.TradePairID{
 	MakerDenom: "TokenA",
 }
 
-func TestMsgServerTestSuite(t *testing.T) {
-	suite.Run(t, new(MsgServerTestSuite))
+func TestDexTestSuite(t *testing.T) {
+	suite.Run(t, new(DexTestSuite))
 }
 
-func (s *MsgServerTestSuite) SetupTest() {
-	app := testutil.Setup(s.T())
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-	ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+func (s *DexTestSuite) SetupTest() {
+	s.Setup()
 
-	accAlice := app.AccountKeeper.NewAccountWithAddress(ctx, s.alice)
-	app.AccountKeeper.SetAccount(ctx, accAlice)
-	accBob := app.AccountKeeper.NewAccountWithAddress(ctx, s.bob)
-	app.AccountKeeper.SetAccount(ctx, accBob)
-	accCarol := app.AccountKeeper.NewAccountWithAddress(ctx, s.carol)
-	app.AccountKeeper.SetAccount(ctx, accCarol)
-	accDan := app.AccountKeeper.NewAccountWithAddress(ctx, s.dan)
-	app.AccountKeeper.SetAccount(ctx, accDan)
-
-	s.app = app
-	s.msgServer = NewMsgServerImpl(app.DexKeeper)
-	s.ctx = ctx
-	s.goCtx = sdk.WrapSDKContext(ctx)
 	s.alice = sdk.AccAddress([]byte("alice"))
 	s.bob = sdk.AccAddress([]byte("bob"))
 	s.carol = sdk.AccAddress([]byte("carol"))
 	s.dan = sdk.AccAddress([]byte("dan"))
+
+	s.msgServer = NewMsgServerImpl(s.App.DexKeeper)
 }
 
 /// Fund accounts
 
-func (s *MsgServerTestSuite) fundAccountBalances(account sdk.AccAddress, aBalance, bBalance int64) {
+func (s *DexTestSuite) fundAccountBalances(account sdk.AccAddress, aBalance, bBalance int64) {
 	aBalanceInt := sdkmath.NewInt(aBalance)
 	bBalanceInt := sdkmath.NewInt(bBalance)
 	balances := sdk.NewCoins(NewACoin(aBalanceInt), NewBCoin(bBalanceInt))
-	FundAccount(s.app.BankKeeper, s.ctx, account, balances)
+
+	FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
 	s.assertAccountBalances(account, aBalance, bBalance)
 }
 
-func (s *MsgServerTestSuite) fundAccountBalancesWithDenom(
+func (s *DexTestSuite) fundAccountBalancesWithDenom(
 	addr sdk.AccAddress,
 	amounts sdk.Coins,
 ) {
-	if err := s.app.BankKeeper.MintCoins(s.ctx, types.ModuleName, amounts); err != nil {
+	if err := s.App.BankKeeper.MintCoins(s.Ctx, types.ModuleName, amounts); err != nil {
 		panic(err)
 	}
 
-	if err := s.app.BankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.ModuleName, addr, amounts); err != nil {
+	if err := s.App.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, types.ModuleName, addr, amounts); err != nil {
 		panic(err)
 	}
 }
 
-func (s *MsgServerTestSuite) fundAliceBalances(a, b int64) {
+func (s *DexTestSuite) fundAliceBalances(a, b int64) {
 	s.fundAccountBalances(s.alice, a, b)
 }
 
-func (s *MsgServerTestSuite) fundBobBalances(a, b int64) {
+func (s *DexTestSuite) fundBobBalances(a, b int64) {
 	s.fundAccountBalances(s.bob, a, b)
 }
 
-func (s *MsgServerTestSuite) fundCarolBalances(a, b int64) {
+func (s *DexTestSuite) fundCarolBalances(a, b int64) {
 	s.fundAccountBalances(s.carol, a, b)
 }
 
-func (s *MsgServerTestSuite) fundDanBalances(a, b int64) {
+func (s *DexTestSuite) fundDanBalances(a, b int64) {
 	s.fundAccountBalances(s.dan, a, b)
 }
 
 /// Assert balances
 
-func (s *MsgServerTestSuite) assertAccountBalancesInt(
+func (s *DexTestSuite) assertAccountBalancesInt(
 	account sdk.AccAddress,
 	aBalance sdkmath.Int,
 	bBalance sdkmath.Int,
 ) {
-	aActual := s.app.BankKeeper.GetBalance(s.ctx, account, "TokenA").Amount
+	aActual := s.App.BankKeeper.GetBalance(s.Ctx, account, "TokenA").Amount
 	s.Assert().True(aBalance.Equal(aActual), "expected %s != actual %s", aBalance, aActual)
 
-	bActual := s.app.BankKeeper.GetBalance(s.ctx, account, "TokenB").Amount
+	bActual := s.App.BankKeeper.GetBalance(s.Ctx, account, "TokenB").Amount
 	s.Assert().True(bBalance.Equal(bActual), "expected %s != actual %s", bBalance, bActual)
 }
 
-func (s *MsgServerTestSuite) assertAccountBalances(
+func (s *DexTestSuite) assertAccountBalances(
 	account sdk.AccAddress,
 	aBalance int64,
 	bBalance int64,
@@ -134,74 +117,74 @@ func (s *MsgServerTestSuite) assertAccountBalances(
 	s.assertAccountBalancesInt(account, sdkmath.NewInt(aBalance), sdkmath.NewInt(bBalance))
 }
 
-func (s *MsgServerTestSuite) assertAccountBalanceWithDenom(
+func (s *DexTestSuite) assertAccountBalanceWithDenom(
 	account sdk.AccAddress,
 	denom string,
 	expBalance int64,
 ) {
-	actualBalance := s.app.BankKeeper.GetBalance(s.ctx, account, denom).Amount
+	actualBalance := s.App.BankKeeper.GetBalance(s.Ctx, account, denom).Amount
 	expBalanceInt := sdkmath.NewInt(expBalance)
 	s.Assert().
 		True(expBalanceInt.Equal(actualBalance), "expected %s != actual %s", expBalance, actualBalance)
 }
 
-func (s *MsgServerTestSuite) assertAliceBalances(a, b int64) {
+func (s *DexTestSuite) assertAliceBalances(a, b int64) {
 	s.assertAccountBalances(s.alice, a, b)
 }
 
-func (s *MsgServerTestSuite) assertAliceBalancesInt(a, b sdkmath.Int) {
+func (s *DexTestSuite) assertAliceBalancesInt(a, b sdkmath.Int) {
 	s.assertAccountBalancesInt(s.alice, a, b)
 }
 
-func (s *MsgServerTestSuite) assertBobBalances(a, b int64) {
+func (s *DexTestSuite) assertBobBalances(a, b int64) {
 	s.assertAccountBalances(s.bob, a, b)
 }
 
-func (s *MsgServerTestSuite) assertBobBalancesInt(a, b sdkmath.Int) {
+func (s *DexTestSuite) assertBobBalancesInt(a, b sdkmath.Int) {
 	s.assertAccountBalancesInt(s.bob, a, b)
 }
 
-func (s *MsgServerTestSuite) assertCarolBalances(a, b int64) {
+func (s *DexTestSuite) assertCarolBalances(a, b int64) {
 	s.assertAccountBalances(s.carol, a, b)
 }
 
-func (s *MsgServerTestSuite) assertCarolBalancesInt(a, b sdkmath.Int) {
+func (s *DexTestSuite) assertCarolBalancesInt(a, b sdkmath.Int) {
 	s.assertAccountBalancesInt(s.carol, a, b)
 }
 
-func (s *MsgServerTestSuite) assertDanBalances(a, b int64) {
+func (s *DexTestSuite) assertDanBalances(a, b int64) {
 	s.assertAccountBalances(s.dan, a, b)
 }
 
-func (s *MsgServerTestSuite) assertDanBalancesInt(a, b sdkmath.Int) {
+func (s *DexTestSuite) assertDanBalancesInt(a, b sdkmath.Int) {
 	s.assertAccountBalancesInt(s.dan, a, b)
 }
 
-func (s *MsgServerTestSuite) assertDexBalances(a, b int64) {
-	s.assertAccountBalances(s.app.AccountKeeper.GetModuleAddress("dex"), a, b)
+func (s *DexTestSuite) assertDexBalances(a, b int64) {
+	s.assertAccountBalances(s.App.AccountKeeper.GetModuleAddress("dex"), a, b)
 }
 
-func (s *MsgServerTestSuite) assertDexBalanceWithDenom(denom string, expectedAmount int64) {
+func (s *DexTestSuite) assertDexBalanceWithDenom(denom string, expectedAmount int64) {
 	s.assertAccountBalanceWithDenom(
-		s.app.AccountKeeper.GetModuleAddress("dex"),
+		s.App.AccountKeeper.GetModuleAddress("dex"),
 		denom,
 		expectedAmount,
 	)
 }
 
-func (s *MsgServerTestSuite) assertDexBalancesInt(a, b sdkmath.Int) {
-	s.assertAccountBalancesInt(s.app.AccountKeeper.GetModuleAddress("dex"), a, b)
+func (s *DexTestSuite) assertDexBalancesInt(a, b sdkmath.Int) {
+	s.assertAccountBalancesInt(s.App.AccountKeeper.GetModuleAddress("dex"), a, b)
 }
 
-func (s *MsgServerTestSuite) traceBalances() {
-	aliceA := s.app.BankKeeper.GetBalance(s.ctx, s.alice, "TokenA")
-	aliceB := s.app.BankKeeper.GetBalance(s.ctx, s.alice, "TokenB")
-	bobA := s.app.BankKeeper.GetBalance(s.ctx, s.bob, "TokenA")
-	bobB := s.app.BankKeeper.GetBalance(s.ctx, s.bob, "TokenB")
-	carolA := s.app.BankKeeper.GetBalance(s.ctx, s.carol, "TokenA")
-	carolB := s.app.BankKeeper.GetBalance(s.ctx, s.carol, "TokenB")
-	danA := s.app.BankKeeper.GetBalance(s.ctx, s.dan, "TokenA")
-	danB := s.app.BankKeeper.GetBalance(s.ctx, s.dan, "TokenB")
+func (s *DexTestSuite) traceBalances() {
+	aliceA := s.App.BankKeeper.GetBalance(s.Ctx, s.alice, "TokenA")
+	aliceB := s.App.BankKeeper.GetBalance(s.Ctx, s.alice, "TokenB")
+	bobA := s.App.BankKeeper.GetBalance(s.Ctx, s.bob, "TokenA")
+	bobB := s.App.BankKeeper.GetBalance(s.Ctx, s.bob, "TokenB")
+	carolA := s.App.BankKeeper.GetBalance(s.Ctx, s.carol, "TokenA")
+	carolB := s.App.BankKeeper.GetBalance(s.Ctx, s.carol, "TokenB")
+	danA := s.App.BankKeeper.GetBalance(s.Ctx, s.dan, "TokenA")
+	danB := s.App.BankKeeper.GetBalance(s.Ctx, s.dan, "TokenB")
 	s.T().Logf(
 		"Alice: %+v %+v\nBob: %+v %+v\nCarol: %+v %+v\nDan: %+v %+v",
 		aliceA, aliceB,
@@ -213,7 +196,7 @@ func (s *MsgServerTestSuite) traceBalances() {
 
 /// Place limit order
 
-func (s *MsgServerTestSuite) aliceLimitSells(
+func (s *DexTestSuite) aliceLimitSells(
 	selling string,
 	tick, amountIn int,
 	orderTypeOpt ...types.LimitOrderType,
@@ -221,7 +204,7 @@ func (s *MsgServerTestSuite) aliceLimitSells(
 	return s.limitSellsSuccess(s.alice, selling, tick, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) bobLimitSells(
+func (s *DexTestSuite) bobLimitSells(
 	selling string,
 	tick, amountIn int,
 	orderTypeOpt ...types.LimitOrderType,
@@ -229,7 +212,7 @@ func (s *MsgServerTestSuite) bobLimitSells(
 	return s.limitSellsSuccess(s.bob, selling, tick, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) carolLimitSells(
+func (s *DexTestSuite) carolLimitSells(
 	selling string,
 	tick, amountIn int,
 	orderTypeOpt ...types.LimitOrderType,
@@ -237,7 +220,7 @@ func (s *MsgServerTestSuite) carolLimitSells(
 	return s.limitSellsSuccess(s.carol, selling, tick, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) danLimitSells(
+func (s *DexTestSuite) danLimitSells(
 	selling string,
 	tick, amountIn int,
 	orderTypeOpt ...types.LimitOrderType,
@@ -245,7 +228,7 @@ func (s *MsgServerTestSuite) danLimitSells(
 	return s.limitSellsSuccess(s.dan, selling, tick, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) limitSellsSuccess(
+func (s *DexTestSuite) limitSellsSuccess(
 	account sdk.AccAddress,
 	tokenIn string,
 	tick, amountIn int,
@@ -256,7 +239,7 @@ func (s *MsgServerTestSuite) limitSellsSuccess(
 	return trancheKey
 }
 
-func (s *MsgServerTestSuite) aliceLimitSellsGoodTil(
+func (s *DexTestSuite) aliceLimitSellsGoodTil(
 	selling string,
 	tick, amountIn int,
 	goodTil time.Time,
@@ -264,7 +247,7 @@ func (s *MsgServerTestSuite) aliceLimitSellsGoodTil(
 	return s.limitSellsGoodTil(s.alice, selling, tick, amountIn, goodTil)
 }
 
-func (s *MsgServerTestSuite) bobLimitSellsGoodTil(
+func (s *DexTestSuite) bobLimitSellsGoodTil(
 	selling string,
 	tick, amountIn int,
 	goodTil time.Time,
@@ -272,7 +255,7 @@ func (s *MsgServerTestSuite) bobLimitSellsGoodTil(
 	return s.limitSellsGoodTil(s.bob, selling, tick, amountIn, goodTil)
 }
 
-func (s *MsgServerTestSuite) carolLimitSellsGoodTil(
+func (s *DexTestSuite) carolLimitSellsGoodTil(
 	selling string,
 	tick, amountIn int,
 	goodTil time.Time,
@@ -280,7 +263,7 @@ func (s *MsgServerTestSuite) carolLimitSellsGoodTil(
 	return s.limitSellsGoodTil(s.carol, selling, tick, amountIn, goodTil)
 }
 
-func (s *MsgServerTestSuite) danLimitSellsGoodTil(
+func (s *DexTestSuite) danLimitSellsGoodTil(
 	selling string,
 	tick, amountIn int,
 	goodTil time.Time,
@@ -288,7 +271,7 @@ func (s *MsgServerTestSuite) danLimitSellsGoodTil(
 	return s.limitSellsGoodTil(s.dan, selling, tick, amountIn, goodTil)
 }
 
-func (s *MsgServerTestSuite) assertAliceLimitSellFails(
+func (s *DexTestSuite) assertAliceLimitSellFails(
 	err error,
 	selling string,
 	tickIndexNormalized, amountIn int,
@@ -297,7 +280,7 @@ func (s *MsgServerTestSuite) assertAliceLimitSellFails(
 	s.assertLimitSellFails(s.alice, err, selling, tickIndexNormalized, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) assertBobLimitSellFails(
+func (s *DexTestSuite) assertBobLimitSellFails(
 	err error,
 	selling string,
 	tickIndexNormalized, amountIn int,
@@ -306,7 +289,7 @@ func (s *MsgServerTestSuite) assertBobLimitSellFails(
 	s.assertLimitSellFails(s.bob, err, selling, tickIndexNormalized, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) assertCarolLimitSellFails(
+func (s *DexTestSuite) assertCarolLimitSellFails(
 	err error,
 	selling string,
 	tickIndexNormalized, amountIn int,
@@ -315,7 +298,7 @@ func (s *MsgServerTestSuite) assertCarolLimitSellFails(
 	s.assertLimitSellFails(s.carol, err, selling, tickIndexNormalized, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) assertDanLimitSellFails(
+func (s *DexTestSuite) assertDanLimitSellFails(
 	err error,
 	selling string,
 	tickIndexNormalized, amountIn int,
@@ -324,7 +307,7 @@ func (s *MsgServerTestSuite) assertDanLimitSellFails(
 	s.assertLimitSellFails(s.dan, err, selling, tickIndexNormalized, amountIn, orderTypeOpt...)
 }
 
-func (s *MsgServerTestSuite) assertLimitSellFails(
+func (s *DexTestSuite) assertLimitSellFails(
 	account sdk.AccAddress,
 	expectedErr error,
 	tokenIn string,
@@ -335,35 +318,35 @@ func (s *MsgServerTestSuite) assertLimitSellFails(
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
-func (s *MsgServerTestSuite) aliceLimitSellsWithMaxOut(
+func (s *DexTestSuite) aliceLimitSellsWithMaxOut(
 	selling string,
 	tick, amountIn, maxAmountOut int,
 ) string {
 	return s.limitSellsWithMaxOut(s.alice, selling, tick, amountIn, maxAmountOut)
 }
 
-func (s *MsgServerTestSuite) bobLimitSellsWithMaxOut(
+func (s *DexTestSuite) bobLimitSellsWithMaxOut(
 	selling string,
 	tick, amountIn, maxAmountOut int,
 ) string {
 	return s.limitSellsWithMaxOut(s.bob, selling, tick, amountIn, maxAmountOut)
 }
 
-func (s *MsgServerTestSuite) carolLimitSellsWithMaxOut(
+func (s *DexTestSuite) carolLimitSellsWithMaxOut(
 	selling string,
 	tick, amountIn, maxAmountOut int,
 ) string {
 	return s.limitSellsWithMaxOut(s.carol, selling, tick, amountIn, maxAmountOut)
 }
 
-func (s *MsgServerTestSuite) danLimitSellsWithMaxOut(
+func (s *DexTestSuite) danLimitSellsWithMaxOut(
 	selling string,
 	tick, amountIn, maxAmountOut int,
 ) string {
 	return s.limitSellsWithMaxOut(s.dan, selling, tick, amountIn, maxAmountOut)
 }
 
-func (s *MsgServerTestSuite) limitSellsWithMaxOut(
+func (s *DexTestSuite) limitSellsWithMaxOut(
 	account sdk.AccAddress,
 	tokenIn string,
 	tick, amountIn int,
@@ -372,7 +355,7 @@ func (s *MsgServerTestSuite) limitSellsWithMaxOut(
 	tokenIn, tokenOut := GetInOutTokens(tokenIn, "TokenA", "TokenB")
 	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut))
 
-	msg, err := s.msgServer.PlaceLimitOrder(s.goCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tokenIn,
@@ -388,7 +371,7 @@ func (s *MsgServerTestSuite) limitSellsWithMaxOut(
 	return msg.TrancheKey
 }
 
-func (s *MsgServerTestSuite) limitSells(
+func (s *DexTestSuite) limitSells(
 	account sdk.AccAddress,
 	tokenIn string,
 	tickIndexNormalized, amountIn int,
@@ -403,7 +386,7 @@ func (s *MsgServerTestSuite) limitSells(
 
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, tokenIn)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(int64(tickIndexNormalized))
-	msg, err := s.msgServer.PlaceLimitOrder(s.goCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tradePairID.TakerDenom,
@@ -416,7 +399,7 @@ func (s *MsgServerTestSuite) limitSells(
 	return msg.TrancheKey, err
 }
 
-func (s *MsgServerTestSuite) limitSellsGoodTil(
+func (s *DexTestSuite) limitSellsGoodTil(
 	account sdk.AccAddress,
 	tokenIn string,
 	tick, amountIn int,
@@ -425,7 +408,7 @@ func (s *MsgServerTestSuite) limitSellsGoodTil(
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, tokenIn)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(int64(tick))
 
-	msg, err := s.msgServer.PlaceLimitOrder(s.goCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tradePairID.TakerDenom,
@@ -483,31 +466,31 @@ func NewDepositWithOptions(
 	}
 }
 
-func (s *MsgServerTestSuite) aliceDeposits(deposits ...*Deposit) {
+func (s *DexTestSuite) aliceDeposits(deposits ...*Deposit) {
 	s.deposits(s.alice, deposits)
 }
 
-func (s *MsgServerTestSuite) aliceDepositsWithOptions(deposits ...*DepositWithOptions) {
+func (s *DexTestSuite) aliceDepositsWithOptions(deposits ...*DepositWithOptions) {
 	s.depositsWithOptions(s.alice, deposits...)
 }
 
-func (s *MsgServerTestSuite) bobDeposits(deposits ...*Deposit) {
+func (s *DexTestSuite) bobDeposits(deposits ...*Deposit) {
 	s.deposits(s.bob, deposits)
 }
 
-func (s *MsgServerTestSuite) bobDepositsWithOptions(deposits ...*DepositWithOptions) {
+func (s *DexTestSuite) bobDepositsWithOptions(deposits ...*DepositWithOptions) {
 	s.depositsWithOptions(s.bob, deposits...)
 }
 
-func (s *MsgServerTestSuite) carolDeposits(deposits ...*Deposit) {
+func (s *DexTestSuite) carolDeposits(deposits ...*Deposit) {
 	s.deposits(s.carol, deposits)
 }
 
-func (s *MsgServerTestSuite) danDeposits(deposits ...*Deposit) {
+func (s *DexTestSuite) danDeposits(deposits ...*Deposit) {
 	s.deposits(s.dan, deposits)
 }
 
-func (s *MsgServerTestSuite) deposits(
+func (s *DexTestSuite) deposits(
 	account sdk.AccAddress,
 	deposits []*Deposit,
 	pairID ...types.PairID,
@@ -537,7 +520,7 @@ func (s *MsgServerTestSuite) deposits(
 		s.Assert().Fail("Only 1 pairID can be provided")
 	}
 
-	_, err := s.msgServer.Deposit(s.goCtx, &types.MsgDeposit{
+	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          tokenA,
@@ -551,7 +534,7 @@ func (s *MsgServerTestSuite) deposits(
 	s.Assert().Nil(err)
 }
 
-func (s *MsgServerTestSuite) depositsWithOptions(
+func (s *DexTestSuite) depositsWithOptions(
 	account sdk.AccAddress,
 	deposits ...*DepositWithOptions,
 ) {
@@ -570,7 +553,7 @@ func (s *MsgServerTestSuite) depositsWithOptions(
 		}
 	}
 
-	_, err := s.msgServer.Deposit(s.goCtx, &types.MsgDeposit{
+	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -584,8 +567,8 @@ func (s *MsgServerTestSuite) depositsWithOptions(
 	s.Assert().Nil(err)
 }
 
-func (s *MsgServerTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (sdkmath.Int, sdkmath.Int) {
-	pool, err := s.app.DexKeeper.GetOrInitPool(s.ctx, defaultPairID, tickIndex, fee)
+func (s *DexTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (sdkmath.Int, sdkmath.Int) {
+	pool, err := s.App.DexKeeper.GetOrInitPool(s.Ctx, defaultPairID, tickIndex, fee)
 	s.Assert().NoError(err)
 
 	liquidityA := pool.LowerTick0.ReservesMakerDenom
@@ -594,12 +577,12 @@ func (s *MsgServerTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (sd
 	return liquidityA, liquidityB
 }
 
-func (s *MsgServerTestSuite) getLiquidityAtTickWithDenom(
+func (s *DexTestSuite) getLiquidityAtTickWithDenom(
 	pairID *types.PairID,
 	tickIndex int64,
 	fee uint64,
 ) (sdkmath.Int, sdkmath.Int) {
-	pool, err := s.app.DexKeeper.GetOrInitPool(s.ctx, pairID, tickIndex, fee)
+	pool, err := s.App.DexKeeper.GetOrInitPool(s.Ctx, pairID, tickIndex, fee)
 	s.Assert().NoError(err)
 
 	liquidityA := pool.LowerTick0.ReservesMakerDenom
@@ -608,23 +591,23 @@ func (s *MsgServerTestSuite) getLiquidityAtTickWithDenom(
 	return liquidityA, liquidityB
 }
 
-func (s *MsgServerTestSuite) assertAliceDepositFails(err error, deposits ...*Deposit) {
+func (s *DexTestSuite) assertAliceDepositFails(err error, deposits ...*Deposit) {
 	s.assertDepositFails(s.alice, err, deposits...)
 }
 
-func (s *MsgServerTestSuite) assertBobDepositFails(err error, deposits ...*Deposit) {
+func (s *DexTestSuite) assertBobDepositFails(err error, deposits ...*Deposit) {
 	s.assertDepositFails(s.bob, err, deposits...)
 }
 
-func (s *MsgServerTestSuite) assertCarolDepositFails(err error, deposits ...*Deposit) {
+func (s *DexTestSuite) assertCarolDepositFails(err error, deposits ...*Deposit) {
 	s.assertDepositFails(s.carol, err, deposits...)
 }
 
-func (s *MsgServerTestSuite) assertDanDepositFails(err error, deposits ...*Deposit) {
+func (s *DexTestSuite) assertDanDepositFails(err error, deposits ...*Deposit) {
 	s.assertDepositFails(s.dan, err, deposits...)
 }
 
-func (s *MsgServerTestSuite) assertDepositFails(
+func (s *DexTestSuite) assertDepositFails(
 	account sdk.AccAddress,
 	expectedErr error,
 	deposits ...*Deposit,
@@ -642,7 +625,7 @@ func (s *MsgServerTestSuite) assertDepositFails(
 		options[i] = &types.DepositOptions{DisableAutoswap: true}
 	}
 
-	_, err := s.msgServer.Deposit(s.goCtx, &types.MsgDeposit{
+	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -657,7 +640,7 @@ func (s *MsgServerTestSuite) assertDepositFails(
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
-func (s *MsgServerTestSuite) assertDepositReponse(
+func (s *DexTestSuite) assertDepositReponse(
 	depositResponse, expectedDepositResponse DepositReponse,
 ) {
 	for i := range expectedDepositResponse.amountsA {
@@ -698,23 +681,23 @@ func NewWithdrawal(shares, tick int64, fee uint64) *Withdrawal {
 	return NewWithdrawalInt(sdkmath.NewInt(shares), tick, fee)
 }
 
-func (s *MsgServerTestSuite) aliceWithdraws(withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) aliceWithdraws(withdrawals ...*Withdrawal) {
 	s.withdraws(s.alice, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) bobWithdraws(withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) bobWithdraws(withdrawals ...*Withdrawal) {
 	s.withdraws(s.bob, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) carolWithdraws(withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) carolWithdraws(withdrawals ...*Withdrawal) {
 	s.withdraws(s.carol, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) danWithdraws(withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) danWithdraws(withdrawals ...*Withdrawal) {
 	s.withdraws(s.dan, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*Withdrawal) {
 	tickIndexes := make([]int64, len(withdrawals))
 	fee := make([]uint64, len(withdrawals))
 	sharesToRemove := make([]sdkmath.Int, len(withdrawals))
@@ -724,7 +707,7 @@ func (s *MsgServerTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*W
 		sharesToRemove[i] = e.Shares
 	}
 
-	_, err := s.msgServer.Withdrawal(s.goCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -736,23 +719,23 @@ func (s *MsgServerTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*W
 	s.Assert().Nil(err)
 }
 
-func (s *MsgServerTestSuite) aliceWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) aliceWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
 	s.withdrawFails(s.alice, expectedErr, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) bobWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) bobWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
 	s.withdrawFails(s.bob, expectedErr, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) carolWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) carolWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
 	s.withdrawFails(s.carol, expectedErr, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) danWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
+func (s *DexTestSuite) danWithdrawFails(expectedErr error, withdrawals ...*Withdrawal) {
 	s.withdrawFails(s.dan, expectedErr, withdrawals...)
 }
 
-func (s *MsgServerTestSuite) withdrawFails(
+func (s *DexTestSuite) withdrawFails(
 	account sdk.AccAddress,
 	expectedErr error,
 	withdrawals ...*Withdrawal,
@@ -766,7 +749,7 @@ func (s *MsgServerTestSuite) withdrawFails(
 		sharesToRemove[i] = e.Shares
 	}
 
-	_, err := s.msgServer.Withdrawal(s.goCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -781,52 +764,52 @@ func (s *MsgServerTestSuite) withdrawFails(
 
 /// Cancel limit order
 
-func (s *MsgServerTestSuite) aliceCancelsLimitSell(trancheKey string) {
+func (s *DexTestSuite) aliceCancelsLimitSell(trancheKey string) {
 	s.cancelsLimitSell(s.alice, trancheKey)
 }
 
-func (s *MsgServerTestSuite) bobCancelsLimitSell(trancheKey string) {
+func (s *DexTestSuite) bobCancelsLimitSell(trancheKey string) {
 	s.cancelsLimitSell(s.bob, trancheKey)
 }
 
-func (s *MsgServerTestSuite) carolCancelsLimitSell(trancheKey string) {
+func (s *DexTestSuite) carolCancelsLimitSell(trancheKey string) {
 	s.cancelsLimitSell(s.carol, trancheKey)
 }
 
-func (s *MsgServerTestSuite) danCancelsLimitSell(trancheKey string) {
+func (s *DexTestSuite) danCancelsLimitSell(trancheKey string) {
 	s.cancelsLimitSell(s.dan, trancheKey)
 }
 
-func (s *MsgServerTestSuite) cancelsLimitSell(account sdk.AccAddress, trancheKey string) {
-	_, err := s.msgServer.CancelLimitOrder(s.goCtx, &types.MsgCancelLimitOrder{
+func (s *DexTestSuite) cancelsLimitSell(account sdk.AccAddress, trancheKey string) {
+	_, err := s.msgServer.CancelLimitOrder(s.GoCtx, &types.MsgCancelLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
 	s.Assert().Nil(err)
 }
 
-func (s *MsgServerTestSuite) aliceCancelsLimitSellFails(trancheKey string, expectedErr error) {
+func (s *DexTestSuite) aliceCancelsLimitSellFails(trancheKey string, expectedErr error) {
 	s.cancelsLimitSellFails(s.alice, trancheKey, expectedErr)
 }
 
-func (s *MsgServerTestSuite) bobCancelsLimitSellFails(trancheKey string, expectedErr error) {
+func (s *DexTestSuite) bobCancelsLimitSellFails(trancheKey string, expectedErr error) {
 	s.cancelsLimitSellFails(s.bob, trancheKey, expectedErr)
 }
 
-func (s *MsgServerTestSuite) carolCancelsLimitSellFails(trancheKey string, expectedErr error) {
+func (s *DexTestSuite) carolCancelsLimitSellFails(trancheKey string, expectedErr error) {
 	s.cancelsLimitSellFails(s.carol, trancheKey, expectedErr)
 }
 
-func (s *MsgServerTestSuite) danCancelsLimitSellFails(trancheKey string, expectedErr error) {
+func (s *DexTestSuite) danCancelsLimitSellFails(trancheKey string, expectedErr error) {
 	s.cancelsLimitSellFails(s.dan, trancheKey, expectedErr)
 }
 
-func (s *MsgServerTestSuite) cancelsLimitSellFails(
+func (s *DexTestSuite) cancelsLimitSellFails(
 	account sdk.AccAddress,
 	trancheKey string,
 	expectedErr error,
 ) {
-	_, err := s.msgServer.CancelLimitOrder(s.goCtx, &types.MsgCancelLimitOrder{
+	_, err := s.msgServer.CancelLimitOrder(s.GoCtx, &types.MsgCancelLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -835,7 +818,7 @@ func (s *MsgServerTestSuite) cancelsLimitSellFails(
 
 /// MultiHopSwap
 
-func (s *MsgServerTestSuite) aliceMultiHopSwaps(
+func (s *DexTestSuite) aliceMultiHopSwaps(
 	routes [][]string,
 	amountIn int,
 	exitLimitPrice math_utils.PrecDec,
@@ -844,7 +827,7 @@ func (s *MsgServerTestSuite) aliceMultiHopSwaps(
 	s.multiHopSwaps(s.alice, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) bobMultiHopSwaps(
+func (s *DexTestSuite) bobMultiHopSwaps(
 	routes [][]string,
 	amountIn int,
 	exitLimitPrice math_utils.PrecDec,
@@ -853,7 +836,7 @@ func (s *MsgServerTestSuite) bobMultiHopSwaps(
 	s.multiHopSwaps(s.bob, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) carolMultiHopSwaps(
+func (s *DexTestSuite) carolMultiHopSwaps(
 	routes [][]string,
 	amountIn int,
 	exitLimitPrice math_utils.PrecDec,
@@ -862,7 +845,7 @@ func (s *MsgServerTestSuite) carolMultiHopSwaps(
 	s.multiHopSwaps(s.carol, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) danMultiHopSwaps(
+func (s *DexTestSuite) danMultiHopSwaps(
 	routes [][]string,
 	amountIn int,
 	exitLimitPrice math_utils.PrecDec,
@@ -871,7 +854,7 @@ func (s *MsgServerTestSuite) danMultiHopSwaps(
 	s.multiHopSwaps(s.dan, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) multiHopSwaps(
+func (s *DexTestSuite) multiHopSwaps(
 	account sdk.AccAddress,
 	routes [][]string,
 	amountIn int,
@@ -886,11 +869,11 @@ func (s *MsgServerTestSuite) multiHopSwaps(
 		exitLimitPrice,
 		pickBest,
 	)
-	_, err := s.msgServer.MultiHopSwap(s.goCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
 	s.Assert().Nil(err)
 }
 
-func (s *MsgServerTestSuite) aliceEstimatesMultiHopSwap(
+func (s *DexTestSuite) aliceEstimatesMultiHopSwap(
 	routes [][]string,
 	amountIn int,
 	exitLimitPrice math_utils.PrecDec,
@@ -908,12 +891,12 @@ func (s *MsgServerTestSuite) aliceEstimatesMultiHopSwap(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	res, err := s.app.DexKeeper.EstimateMultiHopSwap(s.goCtx, msg)
+	res, err := s.App.DexKeeper.EstimateMultiHopSwap(s.GoCtx, msg)
 	s.Require().Nil(err)
 	return res.CoinOut
 }
 
-func (s *MsgServerTestSuite) aliceEstimatesMultiHopSwapFails(
+func (s *DexTestSuite) aliceEstimatesMultiHopSwapFails(
 	expectedErr error,
 	routes [][]string,
 	amountIn int,
@@ -932,11 +915,11 @@ func (s *MsgServerTestSuite) aliceEstimatesMultiHopSwapFails(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	_, err := s.app.DexKeeper.EstimateMultiHopSwap(s.goCtx, msg)
+	_, err := s.App.DexKeeper.EstimateMultiHopSwap(s.GoCtx, msg)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
-func (s *MsgServerTestSuite) aliceMultiHopSwapFails(
+func (s *DexTestSuite) aliceMultiHopSwapFails(
 	err error,
 	routes [][]string,
 	amountIn int,
@@ -946,7 +929,7 @@ func (s *MsgServerTestSuite) aliceMultiHopSwapFails(
 	s.multiHopSwapFails(s.alice, err, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) bobMultiHopSwapFails(
+func (s *DexTestSuite) bobMultiHopSwapFails(
 	err error,
 	routes [][]string,
 	amountIn int,
@@ -956,7 +939,7 @@ func (s *MsgServerTestSuite) bobMultiHopSwapFails(
 	s.multiHopSwapFails(s.bob, err, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) carolMultiHopSwapFails(
+func (s *DexTestSuite) carolMultiHopSwapFails(
 	err error,
 	routes [][]string,
 	amountIn int,
@@ -966,7 +949,7 @@ func (s *MsgServerTestSuite) carolMultiHopSwapFails(
 	s.multiHopSwapFails(s.carol, err, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) danMultiHopSwapFails(
+func (s *DexTestSuite) danMultiHopSwapFails(
 	err error,
 	routes [][]string,
 	amountIn int,
@@ -976,7 +959,7 @@ func (s *MsgServerTestSuite) danMultiHopSwapFails(
 	s.multiHopSwapFails(s.dan, err, routes, amountIn, exitLimitPrice, pickBest)
 }
 
-func (s *MsgServerTestSuite) multiHopSwapFails(
+func (s *DexTestSuite) multiHopSwapFails(
 	account sdk.AccAddress,
 	expectedErr error,
 	routes [][]string,
@@ -992,58 +975,58 @@ func (s *MsgServerTestSuite) multiHopSwapFails(
 		exitLimitPrice,
 		pickBest,
 	)
-	_, err := s.msgServer.MultiHopSwap(s.goCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
 /// Withdraw filled limit order
 
-func (s *MsgServerTestSuite) aliceWithdrawsLimitSell(trancheKey string) {
+func (s *DexTestSuite) aliceWithdrawsLimitSell(trancheKey string) {
 	s.withdrawsLimitSell(s.alice, trancheKey)
 }
 
-func (s *MsgServerTestSuite) bobWithdrawsLimitSell(trancheKey string) {
+func (s *DexTestSuite) bobWithdrawsLimitSell(trancheKey string) {
 	s.withdrawsLimitSell(s.bob, trancheKey)
 }
 
-func (s *MsgServerTestSuite) carolWithdrawsLimitSell(trancheKey string) {
+func (s *DexTestSuite) carolWithdrawsLimitSell(trancheKey string) {
 	s.withdrawsLimitSell(s.carol, trancheKey)
 }
 
-func (s *MsgServerTestSuite) danWithdrawsLimitSell(trancheKey string) {
+func (s *DexTestSuite) danWithdrawsLimitSell(trancheKey string) {
 	s.withdrawsLimitSell(s.dan, trancheKey)
 }
 
-func (s *MsgServerTestSuite) withdrawsLimitSell(account sdk.AccAddress, trancheKey string) {
-	_, err := s.msgServer.WithdrawFilledLimitOrder(s.goCtx, &types.MsgWithdrawFilledLimitOrder{
+func (s *DexTestSuite) withdrawsLimitSell(account sdk.AccAddress, trancheKey string) {
+	_, err := s.msgServer.WithdrawFilledLimitOrder(s.GoCtx, &types.MsgWithdrawFilledLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
 	s.Assert().Nil(err)
 }
 
-func (s *MsgServerTestSuite) aliceWithdrawLimitSellFails(expectedErr error, trancheKey string) {
+func (s *DexTestSuite) aliceWithdrawLimitSellFails(expectedErr error, trancheKey string) {
 	s.withdrawLimitSellFails(s.alice, expectedErr, trancheKey)
 }
 
-func (s *MsgServerTestSuite) bobWithdrawLimitSellFails(expectedErr error, trancheKey string) {
+func (s *DexTestSuite) bobWithdrawLimitSellFails(expectedErr error, trancheKey string) {
 	s.withdrawLimitSellFails(s.bob, expectedErr, trancheKey)
 }
 
-func (s *MsgServerTestSuite) carolWithdrawLimitSellFails(expectedErr error, trancheKey string) {
+func (s *DexTestSuite) carolWithdrawLimitSellFails(expectedErr error, trancheKey string) {
 	s.withdrawLimitSellFails(s.carol, expectedErr, trancheKey)
 }
 
-func (s *MsgServerTestSuite) danWithdrawLimitSellFails(expectedErr error, trancheKey string) {
+func (s *DexTestSuite) danWithdrawLimitSellFails(expectedErr error, trancheKey string) {
 	s.withdrawLimitSellFails(s.dan, expectedErr, trancheKey)
 }
 
-func (s *MsgServerTestSuite) withdrawLimitSellFails(
+func (s *DexTestSuite) withdrawLimitSellFails(
 	account sdk.AccAddress,
 	expectedErr error,
 	trancheKey string,
 ) {
-	_, err := s.msgServer.WithdrawFilledLimitOrder(s.goCtx, &types.MsgWithdrawFilledLimitOrder{
+	_, err := s.msgServer.WithdrawFilledLimitOrder(s.GoCtx, &types.MsgWithdrawFilledLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -1051,21 +1034,21 @@ func (s *MsgServerTestSuite) withdrawLimitSellFails(
 }
 
 // Shares
-func (s *MsgServerTestSuite) getPoolShares(
+func (s *DexTestSuite) getPoolShares(
 	token0 string,
 	token1 string,
 	tick int64,
 	fee uint64,
 ) (shares sdkmath.Int) {
-	poolID, found := s.app.DexKeeper.GetPoolIDByParams(s.ctx, &types.PairID{Token0: token0, Token1: token1}, tick, fee)
+	poolID, found := s.App.DexKeeper.GetPoolIDByParams(s.Ctx, &types.PairID{Token0: token0, Token1: token1}, tick, fee)
 	if !found {
 		return sdkmath.ZeroInt()
 	}
 	poolDenom := types.NewPoolDenom(poolID)
-	return s.app.BankKeeper.GetSupply(s.ctx, poolDenom).Amount
+	return s.App.BankKeeper.GetSupply(s.Ctx, poolDenom).Amount
 }
 
-func (s *MsgServerTestSuite) assertPoolShares(
+func (s *DexTestSuite) assertPoolShares(
 	tick int64,
 	fee uint64,
 	sharesExpected uint64,
@@ -1075,23 +1058,23 @@ func (s *MsgServerTestSuite) assertPoolShares(
 	s.Assert().Equal(sharesExpectedInt, sharesOwned)
 }
 
-func (s *MsgServerTestSuite) getAccountShares(
+func (s *DexTestSuite) getAccountShares(
 	account sdk.AccAddress,
 	token0 string,
 	token1 string,
 	tick int64,
 	fee uint64,
 ) (shares sdkmath.Int) {
-	id, found := s.app.DexKeeper.GetPoolIDByParams(s.ctx, types.MustNewPairID(token0, token1), tick, fee)
+	id, found := s.App.DexKeeper.GetPoolIDByParams(s.Ctx, types.MustNewPairID(token0, token1), tick, fee)
 	if !found {
 		return sdkmath.ZeroInt()
 	}
 
 	poolDenom := types.NewPoolDenom(id)
-	return s.app.BankKeeper.GetBalance(s.ctx, account, poolDenom).Amount
+	return s.App.BankKeeper.GetBalance(s.Ctx, account, poolDenom).Amount
 }
 
-func (s *MsgServerTestSuite) assertAccountShares(
+func (s *DexTestSuite) assertAccountShares(
 	account sdk.AccAddress,
 	tick int64,
 	fee uint64,
@@ -1103,24 +1086,24 @@ func (s *MsgServerTestSuite) assertAccountShares(
 		Equal(sharesExpectedInt, sharesOwned, "expected %s != actual %s", sharesExpected, sharesOwned)
 }
 
-func (s *MsgServerTestSuite) assertAliceShares(tick int64, fee, sharesExpected uint64) {
+func (s *DexTestSuite) assertAliceShares(tick int64, fee, sharesExpected uint64) {
 	s.assertAccountShares(s.alice, tick, fee, sharesExpected)
 }
 
-func (s *MsgServerTestSuite) assertBobShares(tick int64, fee, sharesExpected uint64) {
+func (s *DexTestSuite) assertBobShares(tick int64, fee, sharesExpected uint64) {
 	s.assertAccountShares(s.bob, tick, fee, sharesExpected)
 }
 
-func (s *MsgServerTestSuite) assertCarolShares(tick int64, fee, sharesExpected uint64) {
+func (s *DexTestSuite) assertCarolShares(tick int64, fee, sharesExpected uint64) {
 	s.assertAccountShares(s.carol, tick, fee, sharesExpected)
 }
 
-func (s *MsgServerTestSuite) assertDanShares(tick int64, fee, sharesExpected uint64) {
+func (s *DexTestSuite) assertDanShares(tick int64, fee, sharesExpected uint64) {
 	s.assertAccountShares(s.dan, tick, fee, sharesExpected)
 }
 
 // Ticks
-func (s *MsgServerTestSuite) assertCurrentTicks(
+func (s *DexTestSuite) assertCurrentTicks(
 	expected1To0 int64,
 	expected0To1 int64,
 ) {
@@ -1128,9 +1111,9 @@ func (s *MsgServerTestSuite) assertCurrentTicks(
 	s.assertCurr1To0(expected1To0)
 }
 
-func (s *MsgServerTestSuite) assertCurr0To1(curr0To1Expected int64) {
-	curr0To1Actual, found := s.app.DexKeeper.GetCurrTickIndexTakerToMakerNormalized(
-		s.ctx,
+func (s *DexTestSuite) assertCurr0To1(curr0To1Expected int64) {
+	curr0To1Actual, found := s.App.DexKeeper.GetCurrTickIndexTakerToMakerNormalized(
+		s.Ctx,
 		defaultTradePairID0To1,
 	)
 	if curr0To1Expected == math.MaxInt64 {
@@ -1140,9 +1123,9 @@ func (s *MsgServerTestSuite) assertCurr0To1(curr0To1Expected int64) {
 	}
 }
 
-func (s *MsgServerTestSuite) assertCurr1To0(curr1To0Expected int64) {
-	curr1to0Actual, found := s.app.DexKeeper.GetCurrTickIndexTakerToMakerNormalized(
-		s.ctx,
+func (s *DexTestSuite) assertCurr1To0(curr1To0Expected int64) {
+	curr1to0Actual, found := s.App.DexKeeper.GetCurrTickIndexTakerToMakerNormalized(
+		s.Ctx,
 		defaultTradePairID1To0,
 	)
 	if curr1To0Expected == math.MinInt64 {
@@ -1153,7 +1136,7 @@ func (s *MsgServerTestSuite) assertCurr1To0(curr1To0Expected int64) {
 }
 
 // Pool liquidity (i.e. deposited rather than LO)
-func (s *MsgServerTestSuite) assertLiquidityAtTick(
+func (s *DexTestSuite) assertLiquidityAtTick(
 	amountA, amountB sdkmath.Int,
 	tickIndex int64,
 	fee uint64,
@@ -1165,7 +1148,7 @@ func (s *MsgServerTestSuite) assertLiquidityAtTick(
 		True(amountB.Equal(liquidityB), "liquidity B: actual %s, expected %s", liquidityB, amountB)
 }
 
-func (s *MsgServerTestSuite) assertLiquidityAtTickWithDenom(
+func (s *DexTestSuite) assertLiquidityAtTickWithDenom(
 	pairID *types.PairID,
 	expected0, expected1 sdkmath.Int,
 	tickIndex int64,
@@ -1178,7 +1161,7 @@ func (s *MsgServerTestSuite) assertLiquidityAtTickWithDenom(
 		True(expected1.Equal(liquidity1), "liquidity 1: actual %s, expected %s", liquidity1, expected1)
 }
 
-func (s *MsgServerTestSuite) assertPoolLiquidity(
+func (s *DexTestSuite) assertPoolLiquidity(
 	amountA, amountB int,
 	tickIndex int64,
 	fee uint64,
@@ -1186,12 +1169,12 @@ func (s *MsgServerTestSuite) assertPoolLiquidity(
 	s.assertLiquidityAtTick(sdkmath.NewInt(int64(amountA)), sdkmath.NewInt(int64(amountB)), tickIndex, fee)
 }
 
-func (s *MsgServerTestSuite) assertNoLiquidityAtTick(tickIndex int64, fee uint64) {
+func (s *DexTestSuite) assertNoLiquidityAtTick(tickIndex int64, fee uint64) {
 	s.assertLiquidityAtTick(sdkmath.ZeroInt(), sdkmath.ZeroInt(), tickIndex, fee)
 }
 
 // Filled limit liquidity
-func (s *MsgServerTestSuite) assertAliceLimitFilledAtTickAtIndex(
+func (s *DexTestSuite) assertAliceLimitFilledAtTickAtIndex(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1200,7 +1183,7 @@ func (s *MsgServerTestSuite) assertAliceLimitFilledAtTickAtIndex(
 	s.assertLimitFilledAtTickAtIndex(s.alice, selling, amount, tickIndex, trancheKey)
 }
 
-func (s *MsgServerTestSuite) assertBobLimitFilledAtTickAtIndex(
+func (s *DexTestSuite) assertBobLimitFilledAtTickAtIndex(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1209,7 +1192,7 @@ func (s *MsgServerTestSuite) assertBobLimitFilledAtTickAtIndex(
 	s.assertLimitFilledAtTickAtIndex(s.bob, selling, amount, tickIndex, trancheKey)
 }
 
-func (s *MsgServerTestSuite) assertCarolLimitFilledAtTickAtIndex(
+func (s *DexTestSuite) assertCarolLimitFilledAtTickAtIndex(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1218,7 +1201,7 @@ func (s *MsgServerTestSuite) assertCarolLimitFilledAtTickAtIndex(
 	s.assertLimitFilledAtTickAtIndex(s.carol, selling, amount, tickIndex, trancheKey)
 }
 
-func (s *MsgServerTestSuite) assertDanLimitFilledAtTickAtIndex(
+func (s *DexTestSuite) assertDanLimitFilledAtTickAtIndex(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1227,7 +1210,7 @@ func (s *MsgServerTestSuite) assertDanLimitFilledAtTickAtIndex(
 	s.assertLimitFilledAtTickAtIndex(s.dan, selling, amount, tickIndex, trancheKey)
 }
 
-func (s *MsgServerTestSuite) assertLimitFilledAtTickAtIndex(
+func (s *DexTestSuite) assertLimitFilledAtTickAtIndex(
 	account sdk.AccAddress,
 	selling string,
 	amount int,
@@ -1250,7 +1233,7 @@ func (s *MsgServerTestSuite) assertLimitFilledAtTickAtIndex(
 }
 
 // Limit liquidity
-func (s *MsgServerTestSuite) assertAliceLimitLiquidityAtTick(
+func (s *DexTestSuite) assertAliceLimitLiquidityAtTick(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1258,7 +1241,7 @@ func (s *MsgServerTestSuite) assertAliceLimitLiquidityAtTick(
 	s.assertAccountLimitLiquidityAtTick(s.alice, selling, amount, tickIndex)
 }
 
-func (s *MsgServerTestSuite) assertBobLimitLiquidityAtTick(
+func (s *DexTestSuite) assertBobLimitLiquidityAtTick(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1266,7 +1249,7 @@ func (s *MsgServerTestSuite) assertBobLimitLiquidityAtTick(
 	s.assertAccountLimitLiquidityAtTick(s.bob, selling, amount, tickIndex)
 }
 
-func (s *MsgServerTestSuite) assertCarolLimitLiquidityAtTick(
+func (s *DexTestSuite) assertCarolLimitLiquidityAtTick(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1274,7 +1257,7 @@ func (s *MsgServerTestSuite) assertCarolLimitLiquidityAtTick(
 	s.assertAccountLimitLiquidityAtTick(s.carol, selling, amount, tickIndex)
 }
 
-func (s *MsgServerTestSuite) assertDanLimitLiquidityAtTick(
+func (s *DexTestSuite) assertDanLimitLiquidityAtTick(
 	selling string,
 	amount int,
 	tickIndex int64,
@@ -1282,7 +1265,7 @@ func (s *MsgServerTestSuite) assertDanLimitLiquidityAtTick(
 	s.assertAccountLimitLiquidityAtTick(s.dan, selling, amount, tickIndex)
 }
 
-func (s *MsgServerTestSuite) assertAccountLimitLiquidityAtTick(
+func (s *DexTestSuite) assertAccountLimitLiquidityAtTick(
 	account sdk.AccAddress,
 	selling string,
 	amount int,
@@ -1296,28 +1279,28 @@ func (s *MsgServerTestSuite) assertAccountLimitLiquidityAtTick(
 	s.assertLimitLiquidityAtTick(selling, tickIndexNormalized, userLiquidity.Int64())
 }
 
-func (s *MsgServerTestSuite) assertLimitLiquidityAtTick(
+func (s *DexTestSuite) assertLimitLiquidityAtTick(
 	selling string,
 	tickIndexNormalized, amount int64,
 ) {
 	s.assertLimitLiquidityAtTickInt(selling, tickIndexNormalized, sdkmath.NewInt(amount))
 }
 
-func (s *MsgServerTestSuite) assertLimitLiquidityAtTickInt(
+func (s *DexTestSuite) assertLimitLiquidityAtTickInt(
 	selling string,
 	tickIndexNormalized int64,
 	amount sdkmath.Int,
 ) {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	tranches := s.app.DexKeeper.GetAllLimitOrderTrancheAtIndex(
-		s.ctx,
+	tranches := s.App.DexKeeper.GetAllLimitOrderTrancheAtIndex(
+		s.Ctx,
 		tradePairID,
 		tickIndexTakerToMaker,
 	)
 	liquidity := sdkmath.ZeroInt()
 	for _, t := range tranches {
-		if !t.IsExpired(s.ctx) {
+		if !t.IsExpired(s.Ctx) {
 			liquidity = liquidity.Add(t.ReservesMakerDenom)
 		}
 	}
@@ -1326,16 +1309,16 @@ func (s *MsgServerTestSuite) assertLimitLiquidityAtTickInt(
 		True(amount.Equal(liquidity), "Incorrect liquidity: expected %s, have %s", amount.String(), liquidity.String())
 }
 
-func (s *MsgServerTestSuite) assertFillAndPlaceTrancheKeys(
+func (s *DexTestSuite) assertFillAndPlaceTrancheKeys(
 	selling string,
 	tickIndexNormalized int64,
 	expectedFill, expectedPlace string,
 ) {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	placeTranche := s.app.DexKeeper.GetPlaceTranche(s.ctx, tradePairID, tickIndexTakerToMaker)
-	fillTranche, foundFill := s.app.DexKeeper.GetFillTranche(
-		s.ctx,
+	placeTranche := s.App.DexKeeper.GetPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
+	fillTranche, foundFill := s.App.DexKeeper.GetFillTranche(
+		s.Ctx,
 		tradePairID,
 		tickIndexTakerToMaker,
 	)
@@ -1352,15 +1335,15 @@ func (s *MsgServerTestSuite) assertFillAndPlaceTrancheKeys(
 }
 
 // Limit order map helpers
-func (s *MsgServerTestSuite) getLimitUserSharesAtTick(
+func (s *DexTestSuite) getLimitUserSharesAtTick(
 	account sdk.AccAddress,
 	selling string,
 	tickIndexNormalized int64,
 ) sdkmath.Int {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	tranches := s.app.DexKeeper.GetAllLimitOrderTrancheAtIndex(
-		s.ctx,
+	tranches := s.App.DexKeeper.GetAllLimitOrderTrancheAtIndex(
+		s.Ctx,
 		tradePairID,
 		tickIndexTakerToMaker,
 	)
@@ -1376,12 +1359,12 @@ func (s *MsgServerTestSuite) getLimitUserSharesAtTick(
 	return userShares
 }
 
-func (s *MsgServerTestSuite) getLimitUserSharesAtTickAtIndex(
+func (s *DexTestSuite) getLimitUserSharesAtTickAtIndex(
 	account sdk.AccAddress,
 	trancheKey string,
 ) sdkmath.Int {
-	userShares, found := s.app.DexKeeper.GetLimitOrderTrancheUser(
-		s.ctx,
+	userShares, found := s.App.DexKeeper.GetLimitOrderTrancheUser(
+		s.Ctx,
 		account.String(),
 		trancheKey,
 	)
@@ -1389,14 +1372,14 @@ func (s *MsgServerTestSuite) getLimitUserSharesAtTickAtIndex(
 	return userShares.SharesOwned
 }
 
-func (s *MsgServerTestSuite) getLimitTotalSharesAtTick(
+func (s *DexTestSuite) getLimitTotalSharesAtTick(
 	selling string,
 	tickIndexNormalized int64,
 ) sdkmath.Int {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	tranches := s.app.DexKeeper.GetAllLimitOrderTrancheAtIndex(
-		s.ctx,
+	tranches := s.App.DexKeeper.GetAllLimitOrderTrancheAtIndex(
+		s.Ctx,
 		tradePairID,
 		tickIndexTakerToMaker,
 	)
@@ -1409,14 +1392,14 @@ func (s *MsgServerTestSuite) getLimitTotalSharesAtTick(
 	return totalShares
 }
 
-func (s *MsgServerTestSuite) getLimitFilledLiquidityAtTickAtIndex(
+func (s *DexTestSuite) getLimitFilledLiquidityAtTickAtIndex(
 	selling string,
 	tickIndex int64,
 	trancheKey string,
 ) sdkmath.Int {
 	// grab fill tranche reserves and shares
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
-	tranche, _, found := s.app.DexKeeper.FindLimitOrderTranche(s.ctx, &types.LimitOrderTrancheKey{
+	tranche, _, found := s.App.DexKeeper.FindLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
 		TradePairID:           tradePairID,
 		TickIndexTakerToMaker: tickIndex,
 		TrancheKey:            trancheKey,
@@ -1426,14 +1409,14 @@ func (s *MsgServerTestSuite) getLimitFilledLiquidityAtTickAtIndex(
 	return tranche.ReservesTakerDenom
 }
 
-func (s *MsgServerTestSuite) getLimitReservesAtTickAtKey(
+func (s *DexTestSuite) getLimitReservesAtTickAtKey(
 	selling string,
 	tickIndex int64,
 	trancheKey string,
 ) sdkmath.Int {
 	// grab fill tranche reserves and shares
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
-	tranche, _, found := s.app.DexKeeper.FindLimitOrderTranche(s.ctx, &types.LimitOrderTrancheKey{
+	tranche, _, found := s.App.DexKeeper.FindLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
 		TradePairID:           tradePairID,
 		TickIndexTakerToMaker: tickIndex,
 		TrancheKey:            trancheKey,
@@ -1443,12 +1426,12 @@ func (s *MsgServerTestSuite) getLimitReservesAtTickAtKey(
 	return tranche.ReservesMakerDenom
 }
 
-func (s *MsgServerTestSuite) assertNLimitOrderExpiration(expected int) {
-	exps := s.app.DexKeeper.GetAllLimitOrderExpiration(s.ctx)
+func (s *DexTestSuite) assertNLimitOrderExpiration(expected int) {
+	exps := s.App.DexKeeper.GetAllLimitOrderExpiration(s.Ctx)
 	s.Assert().Equal(expected, len(exps))
 }
 
-func (s *MsgServerTestSuite) calcAutoswapSharesMinted(
+func (s *DexTestSuite) calcAutoswapSharesMinted(
 	centerTick int64,
 	fee uint64,
 	residual0, residual1, balanced0, balanced1, totalShares, valuePool int64,
@@ -1487,31 +1470,31 @@ func (s *MsgServerTestSuite) calcAutoswapSharesMinted(
 	return valueMint.Mul(totalSharesInt).Quo(valuePoolInt)
 }
 
-func (s *MsgServerTestSuite) calcSharesMinted(centerTick, amount0Int, amount1Int int64) sdkmath.Int {
+func (s *DexTestSuite) calcSharesMinted(centerTick, amount0Int, amount1Int int64) sdkmath.Int {
 	amount0, amount1 := sdkmath.NewInt(amount0Int), sdkmath.NewInt(amount1Int)
 	centerPrice := types.MustCalcPrice(-1 * centerTick)
 
 	return math_utils.NewPrecDecFromInt(amount0).Add(centerPrice.Mul(math_utils.NewPrecDecFromInt(amount1))).TruncateInt()
 }
 
-func (s *MsgServerTestSuite) calcExpectedBalancesAfterWithdrawOnePool(
+func (s *DexTestSuite) calcExpectedBalancesAfterWithdrawOnePool(
 	sharesMinted sdkmath.Int,
 	account sdk.AccAddress,
 	tickIndex int64,
 	fee uint64,
 ) (sdkmath.Int, sdkmath.Int, sdkmath.Int, sdkmath.Int) {
-	dexCurrentBalance0 := s.app.BankKeeper.GetBalance(
-		s.ctx,
-		s.app.AccountKeeper.GetModuleAddress("dex"),
+	dexCurrentBalance0 := s.App.BankKeeper.GetBalance(
+		s.Ctx,
+		s.App.AccountKeeper.GetModuleAddress("dex"),
 		"TokenA",
 	).Amount
-	dexCurrentBalance1 := s.app.BankKeeper.GetBalance(
-		s.ctx,
-		s.app.AccountKeeper.GetModuleAddress("dex"),
+	dexCurrentBalance1 := s.App.BankKeeper.GetBalance(
+		s.Ctx,
+		s.App.AccountKeeper.GetModuleAddress("dex"),
 		"TokenB",
 	).Amount
-	currentBalance0 := s.app.BankKeeper.GetBalance(s.ctx, account, "TokenA").Amount
-	currentBalance1 := s.app.BankKeeper.GetBalance(s.ctx, account, "TokenB").Amount
+	currentBalance0 := s.App.BankKeeper.GetBalance(s.Ctx, account, "TokenA").Amount
+	currentBalance1 := s.App.BankKeeper.GetBalance(s.Ctx, account, "TokenB").Amount
 	amountPool0, amountPool1 := s.getLiquidityAtTick(tickIndex, fee)
 	poolShares := s.getPoolShares("TokenA", "TokenB", tickIndex, fee)
 
@@ -1526,12 +1509,12 @@ func (s *MsgServerTestSuite) calcExpectedBalancesAfterWithdrawOnePool(
 	return expectedBalance0, expectedBalance1, dexExpectedBalance0, dexExpectedBalance1
 }
 
-func (s *MsgServerTestSuite) nextBlockWithTime(blockTime time.Time) {
-	newCtx := s.ctx.WithBlockTime(blockTime)
-	s.ctx = newCtx
-	s.goCtx = sdk.WrapSDKContext(newCtx)
-	s.app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-		Height: s.app.LastBlockHeight() + 1, AppHash: s.app.LastCommitID().Hash,
+func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
+	newCtx := s.Ctx.WithBlockTime(blockTime)
+	s.Ctx = newCtx
+	s.GoCtx = sdk.WrapSDKContext(newCtx)
+	s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+		Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
 		Time: blockTime,
 	}})
 }

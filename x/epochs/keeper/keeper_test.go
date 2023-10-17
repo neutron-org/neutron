@@ -9,16 +9,16 @@ import (
 	"github.com/neutron-org/neutron/x/epochs/types"
 )
 
-type KeeperTestSuite struct {
+type EpochsTestSuite struct {
 	apptesting.KeeperTestHelper
 	queryClient types.QueryClient
 }
 
-func (suite *KeeperTestSuite) SetupTest() {
+func (suite *EpochsTestSuite) SetupTest() {
 	suite.Setup()
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 }
 
-func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
+func TestEpochsTestSuite(t *testing.T) {
+	suite.Run(t, new(EpochsTestSuite))
 }

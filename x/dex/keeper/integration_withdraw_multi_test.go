@@ -5,7 +5,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestWithdrawMultiFailure() {
+func (s *DexTestSuite) TestWithdrawMultiFailure() {
 	s.fundAliceBalances(50, 50)
 	// GIVEN
 	// alice deposits 5 A, 5 B in tick 0 fee 0
@@ -26,7 +26,7 @@ func (s *MsgServerTestSuite) TestWithdrawMultiFailure() {
 	)
 }
 
-func (s *MsgServerTestSuite) TestWithdrawMultiSuccess() {
+func (s *DexTestSuite) TestWithdrawMultiSuccess() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN

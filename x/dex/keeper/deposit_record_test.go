@@ -5,7 +5,7 @@ import (
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
-func (s *MsgServerTestSuite) TestGetAllDeposits() {
+func (s *DexTestSuite) TestGetAllDeposits() {
 	s.fundAliceBalances(20, 20)
 	// GIVEN Alice Deposits 3 positions and withdraws the first
 	s.aliceDeposits(
@@ -36,7 +36,7 @@ func (s *MsgServerTestSuite) TestGetAllDeposits() {
 	)
 
 	// THEN GetAllDeposits returns the two remaining LP positions
-	depositList := s.app.DexKeeper.GetAllDepositsForAddress(s.ctx, s.alice)
+	depositList := s.App.DexKeeper.GetAllDepositsForAddress(s.Ctx, s.alice)
 	s.Assert().Equal(2, len(depositList))
 	s.Assert().Equal(&types.DepositRecord{
 		PairID:          defaultPairID,
