@@ -278,38 +278,26 @@ func TestNewStakeCmd(t *testing.T) {
 		},
 		"tokenized share test": {
 			Cmd: fmt.Sprintf(
-				"1000NeutronPoolShares-tokenA-tokenB-t123-f30 --from %s",
+				"1000neutron/pool/1 --from %s",
 				testAddresses[0],
 			),
 			ExpectedMsg: &types.MsgStake{
 				Owner: testAddresses[0].String(),
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("NeutronPoolShares-tokenA-tokenB-t123-f30", math.NewInt(1000)),
-				),
-			},
-		},
-		"tokenized share negative tick index test": {
-			Cmd: fmt.Sprintf(
-				"1000NeutronPoolShares-tokenA-tokenB-t-123-f30 --from %s",
-				testAddresses[0],
-			),
-			ExpectedMsg: &types.MsgStake{
-				Owner: testAddresses[0].String(),
-				Coins: sdk.NewCoins(
-					sdk.NewCoin("NeutronPoolShares-tokenA-tokenB-t-123-f30", math.NewInt(1000)),
+					sdk.NewCoin("neutron/pool/1", math.NewInt(1000)),
 				),
 			},
 		},
 		"multiple tokenized shares": {
 			Cmd: fmt.Sprintf(
-				"1000NeutronPoolShares-tokenA-tokenB-t-123-f30,1NeutronPoolShares-tokenA-tokenB-t-124-f30 --from %s",
+				"1000neutron/pool/1,1neutron/pool/2 --from %s",
 				testAddresses[0],
 			),
 			ExpectedMsg: &types.MsgStake{
 				Owner: testAddresses[0].String(),
 				Coins: sdk.NewCoins(
-					sdk.NewCoin("NeutronPoolShares-tokenA-tokenB-t-123-f30", math.NewInt(1000)),
-					sdk.NewCoin("NeutronPoolShares-tokenA-tokenB-t-124-f30", math.NewInt(1)),
+					sdk.NewCoin("neutron/pool/1", math.NewInt(1000)),
+					sdk.NewCoin("neutron/pool/2", math.NewInt(1)),
 				),
 			},
 		},
