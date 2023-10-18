@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	PoolDenomPrefix    = "duality/pool/"
+	PoolDenomPrefix    = "neutron/pool/"
 	PoolDenomRegexpStr = "^" + PoolDenomPrefix + `(\d+)` + "$"
 )
 

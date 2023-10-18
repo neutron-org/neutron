@@ -16,24 +16,24 @@ func TestParsePoolIDFromDenom(t *testing.T) {
 	}{
 		{
 			desc:     "valid denom",
-			denom:    "duality/pool/0",
+			denom:    "neutron/pool/0",
 			expected: 0,
 			valid:    true,
 		},
 		{
 			desc:     "valid denom long",
-			denom:    "duality/pool/999999999",
+			denom:    "neutron/pool/999999999",
 			expected: 999999999,
 			valid:    true,
 		},
 		{
 			desc:  "invalid format 1",
-			denom: "/duality/pool/0",
+			denom: "/neutron/pool/0",
 			valid: false,
 		},
 		{
 			desc:  "invalid format 2",
-			denom: "duality/pool/0/",
+			denom: "neutron/pool/0/",
 			valid: false,
 		},
 		{

@@ -59,7 +59,7 @@ func GetCmdGauges() (*dcli.QueryDescriptor, *types.GetGaugesRequest) {
 	return &dcli.QueryDescriptor{
 		Use:   "list-gauges [status] [denom]",
 		Short: "Query gauges",
-		Long:  `{{.Short}}{{.ExampleHeader}} list-gauges UPCOMING DualityPoolShares-stake-token-t0-f1`,
+		Long:  `{{.Short}}{{.ExampleHeader}} list-gauges UPCOMING NeutronPoolShares-stake-token-t0-f1`,
 		CustomFieldParsers: map[string]dcli.CustomFieldParserFn{
 			"Status": parseGaugeStatus,
 		},

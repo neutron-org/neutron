@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	dualityapp "github.com/neutron-org/neutron/app"
+	neutronapp "github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/suite"
@@ -15,7 +15,7 @@ import (
 // Test Suite ///////////////////////////////////////////////////////////////
 type CoreHelpersTestSuite struct {
 	suite.Suite
-	app   *dualityapp.App
+	app   *neutronapp.App
 	ctx   sdk.Context
 	alice sdk.AccAddress
 	bob   sdk.AccAddress

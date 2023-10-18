@@ -12,28 +12,28 @@ import (
 	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
 )
 
-// TestSwapAndForward_Success asserts that the swap and forward middleware stack works as intended with Duality running as a
+// TestSwapAndForward_Success asserts that the swap and forward middleware stack works as intended with Neutron running as a
 // consumer chain connected to two other chains via IBC.
 func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
-	// Send an IBC transfer from provider to Duality, so we can initialize a pool with the IBC denom token + native Duality token
-	s.IBCTransferProviderToDuality(s.providerAddr, s.dualityAddr, nativeDenom, ibcTransferAmount, "")
+	// Send an IBC transfer from provider to Neutron, so we can initialize a pool with the IBC denom token + native Neutron token
+	s.IBCTransferProviderToNeutron(s.providerAddr, s.neutronAddr, nativeDenom, ibcTransferAmount, "")
 
-	// Assert that the funds are gone from the acc on provider and present in the acc on Duality
+	// Assert that the funds are gone from the acc on provider and present in the acc on Neutron
 	newProviderBalNative := genesisWalletAmount.Sub(ibcTransferAmount)
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative)
 
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
-	// deposit stake<>ibcTransferToken to initialize the pool on Duality
+	// deposit stake<>ibcTransferToken to initialize the pool on Neutron
 	depositAmount := math.NewInt(100_000)
-	s.dualityDeposit(
+	s.neutronDeposit(
 		nativeDenom,
-		s.providerToDualityDenom,
+		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
 		0,
 		1,
-		s.dualityAddr)
+		s.neutronAddr)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
 	swapAmount := math.NewInt(100000)
@@ -44,8 +44,8 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	forwardMetadata := forwardtypes.PacketMetadata{
 		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
-			Port:     s.dualityChainBPath.EndpointA.ChannelConfig.PortID,
-			Channel:  s.dualityChainBPath.EndpointA.ChannelID,
+			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
+			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
 			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
@@ -62,9 +62,9 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	swapMetadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 2,
@@ -89,23 +89,23 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 
 	// Send an IBC transfer from chainA to chainB with packet memo containing the swap metadata
 
-	s.IBCTransferProviderToDuality(s.providerAddr, s.dualityAddr, nativeDenom, ibcTransferAmount, string(gmpMetadataBz))
+	s.IBCTransferProviderToNeutron(s.providerAddr, s.neutronAddr, nativeDenom, ibcTransferAmount, string(gmpMetadataBz))
 
 	// Relay the packet
-	err = s.RelayAllPacketsAToB(s.dualityChainBPath)
+	err = s.RelayAllPacketsAToB(s.neutronChainBPath)
 	s.Assert().NoError(err)
 
 	// Check that the funds are moved out of the acc on providerChain
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative.Sub(ibcTransferAmount))
 
-	// Check that the amountIn is deduced from the duality account
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	// Check that duality account did not keep any of the transfer denom
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
+	// Check that the amountIn is deduced from the neutron account
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	// Check that neutron account did not keep any of the transfer denom
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
-		s.dualityChainBPath.EndpointA.ChannelID,
+		s.neutronChainBPath.EndpointA.ChannelID,
 		nativeDenom,
 	)
 	transferDenomChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()

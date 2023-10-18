@@ -134,7 +134,7 @@ func (k Keeper) RefundPacketToken(
 		return err
 	}
 
-	// if the sender chain is source that means a voucher was minted on Duality when the ics20 transfer took place
+	// if the sender chain is source that means a voucher was minted on Neutron when the ics20 transfer took place
 	if transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, data.Denom) {
 		// transfer coins from user account to transfer module
 		err = k.bankKeeper.SendCoinsFromAccountToModule(
