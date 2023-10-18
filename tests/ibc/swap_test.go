@@ -8,50 +8,50 @@ import (
 	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
 )
 
-// TestIBCSwapMiddleware_Success asserts that the IBC swap middleware works as intended with Duality running as a
+// TestIBCSwapMiddleware_Success asserts that the IBC swap middleware works as intended with Neutron running as a
 // consumer chain connected to the Cosmos Hub.
 func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
-	// Send an IBC transfer from provider to Duality, so we can initialize a pool with the IBC denom token + native Duality token
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider to Neutron, so we can initialize a pool with the IBC denom token + native Neutron token
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		"",
 	)
 
-	// Assert that the funds are gone from the acc on provider and present in the acc on Duality
+	// Assert that the funds are gone from the acc on provider and present in the acc on Neutron
 	newProviderBalNative := genesisWalletAmount.Sub(ibcTransferAmount)
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative)
 
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
-	// deposit stake<>ibcTransferToken to initialize the pool on Duality
+	// deposit stake<>ibcTransferToken to initialize the pool on Neutron
 	depositAmount := math.NewInt(100_000)
-	s.dualityDeposit(
+	s.neutronDeposit(
 		nativeDenom,
-		s.providerToDualityDenom,
+		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
 		0,
 		1,
-		s.dualityAddr)
+		s.neutronAddr)
 
-	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
+	// Assert that the deposit was successful and the funds are moved out of the Neutron user acc
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
-	// Send an IBC transfer from providerChain to Duality with packet memo containing the swap metadata
+	// Send an IBC transfer from providerChain to Neutron with packet memo containing the swap metadata
 	swapAmount := math.NewInt(100000)
 	expectedOut := math.NewInt(99_990)
 
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &dextypes.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 1,
@@ -64,9 +64,9 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 	metadataBz, err := json.Marshal(metadata)
 	s.Require().NoError(err)
 
-	s.IBCTransferProviderToDuality(
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
@@ -79,14 +79,14 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 
-	// Check that the swap funds are now present in the acc on Duality
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative.Add(expectedOut))
+	// Check that the swap funds are now present in the acc on Neutron
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Add(expectedOut))
 
 	// Check that all of the IBC transfer denom have been used up
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
 }
 
-// TestIBCSwapMiddleware_FailRefund asserts that the IBC swap middleware works as intended with Duality running as a
+// TestIBCSwapMiddleware_FailRefund asserts that the IBC swap middleware works as intended with Neutron running as a
 // consumer chain connected to the Cosmos Hub. The swap should fail and a refund to the src chain should take place.
 func (s *IBCTestSuite) TestIBCSwapMiddleware_FailRefund() {
 	// Compose the swap metadata, this swap will fail because there is no pool initialized for this pair
@@ -94,9 +94,9 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailRefund() {
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &dextypes.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 1,
@@ -111,33 +111,33 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailRefund() {
 	s.Require().NoError(err)
 
 	// Send (failing) IBC transfer with  swap metadata
-	s.IBCTransferProviderToDuality(
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
 
-	// Check that the funds are not present in the account on Duality
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount)
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
+	// Check that the funds are not present in the account on Neutron
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
 
 	// Check that the refund takes place and the funds are moved back to the account on Gaia
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount)
 }
 
-// TestIBCSwapMiddleware_FailNoRefund asserts that the IBC swap middleware works as intended with Duality running as a
-// consumer chain connected to the Cosmos Hub. The swap should fail and funds should remain on Duality.
+// TestIBCSwapMiddleware_FailNoRefund asserts that the IBC swap middleware works as intended with Neutron running as a
+// consumer chain connected to the Cosmos Hub. The swap should fail and funds should remain on Neutron.
 func (s *IBCTestSuite) TestIBCSwapMiddleware_FailNoRefund() {
 	// Compose the swap metadata, this swap will fail because there is no pool initialized for this pair
 	swapAmount := math.NewInt(100000)
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &dextypes.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 1,
@@ -152,36 +152,36 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailNoRefund() {
 	s.Require().NoError(err)
 
 	// Send (failing) IBC transfer with swap metadata
-	s.IBCTransferProviderToDuality(
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
 
-	// Check that the funds are present in the account on Duality
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount)
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
+	// Check that the funds are present in the account on Neutron
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
 	// Check that no refund takes place and the funds are not in the account on provider
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount.Sub(ibcTransferAmount))
 }
 
-// TestIBCSwapMiddleware_FailWithRefundAddr asserts that the IBC swap middleware works as intended with Duality running as a
-// consumer chain connected to the Cosmos Hub. The swap should fail and funds should remain on Duality but be moved
+// TestIBCSwapMiddleware_FailWithRefundAddr asserts that the IBC swap middleware works as intended with Neutron running as a
+// consumer chain connected to the Cosmos Hub. The swap should fail and funds should remain on Neutron but be moved
 // to the refund address.
 
 func (s *IBCTestSuite) TestIBCSwapMiddleware_FailWithRefundAddr() {
 	// Compose the swap metadata, this swap will fail because there is no pool initialized for this pair
-	refundAddr := s.dualityChain.SenderAccounts[1].SenderAccount.GetAddress()
+	refundAddr := s.neutronChain.SenderAccounts[1].SenderAccount.GetAddress()
 	swapAmount := math.NewInt(100000)
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &dextypes.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 1,
@@ -197,17 +197,17 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailWithRefundAddr() {
 	s.Require().NoError(err)
 
 	// Send (failing) IBC transfer with swap metadata
-	s.IBCTransferProviderToDuality(
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
 
 	// Check that the funds have been moved to the refund address
-	s.assertDualityBalance(refundAddr, nativeDenom, genesisWalletAmount)
-	s.assertDualityBalance(refundAddr, s.providerToDualityDenom, ibcTransferAmount)
+	s.assertNeutronBalance(refundAddr, nativeDenom, genesisWalletAmount)
+	s.assertNeutronBalance(refundAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
 	// Check that no refund takes place and the funds are not in the account on provider
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount.Sub(ibcTransferAmount))

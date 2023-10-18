@@ -48,7 +48,7 @@ func TestDistributor(t *testing.T) {
 	app := testutil.Setup(t)
 	ctx := app.BaseApp.NewContext(
 		false,
-		tmtypes.Header{Height: 1, ChainID: "duality-1", Time: time.Now().UTC()},
+		tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()},
 	)
 
 	gauge := types.NewGauge(

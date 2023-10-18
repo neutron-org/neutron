@@ -365,7 +365,7 @@ reference queues are removed.
 Bond tokens in a LP for a set duration
 
 ```sh
-dualityd tx stakeup stake-tokens [tokens] --duration --from --chain-id
+neutrond tx stakeup stake-tokens [tokens] --duration --from --chain-id
 ```
 
 ::: details Example
@@ -373,19 +373,19 @@ dualityd tx stakeup stake-tokens [tokens] --duration --from --chain-id
 To stakeup `15.527546134174465309gamm/pool/3` tokens for a `one day` bonding period from `WALLET_NAME` on the osmosis mainnet:
 
 ```bash
-dualityd tx stakeup stake-tokens 15527546134174465309gamm/pool/3 --duration="24h" --from WALLET_NAME --chain-id osmosis-1
+neutrond tx stakeup stake-tokens 15527546134174465309gamm/pool/3 --duration="24h" --from WALLET_NAME --chain-id osmosis-1
 ```
 
 To stakeup `25.527546134174465309gamm/pool/13` tokens for a `one week` bonding period from `WALLET_NAME` on the osmosis testnet:
 
 ```bash
-dualityd tx stakeup stake-tokens 25527546134174465309gamm/pool/13 --duration="168h" --from WALLET_NAME --chain-id osmo-test-4
+neutrond tx stakeup stake-tokens 25527546134174465309gamm/pool/13 --duration="168h" --from WALLET_NAME --chain-id osmo-test-4
 ```
 
 To stakeup `35.527546134174465309 gamm/pool/197` tokens for a `two week` bonding period from `WALLET_NAME` on the osmosis mainnet:
 
 ```bash
-dualityd tx stakeup stake-tokens 35527546134174465309gamm/pool/197 --duration="336h" --from WALLET_NAME --chain-id osmosis-1
+neutrond tx stakeup stake-tokens 35527546134174465309gamm/pool/197 --duration="336h" --from WALLET_NAME --chain-id osmosis-1
 ```
 :::
 
@@ -395,7 +395,7 @@ dualityd tx stakeup stake-tokens 35527546134174465309gamm/pool/197 --duration="3
 Begin the unbonding process for tokens given their unique stake ID
 
 ```sh
-dualityd tx stakeup begin-unstake-by-id [id] --from --chain-id
+neutrond tx stakeup begin-unstake-by-id [id] --from --chain-id
 ```
 
 ::: details Example
@@ -403,7 +403,7 @@ dualityd tx stakeup begin-unstake-by-id [id] --from --chain-id
 To begin the unbonding time for all bonded tokens under id `75` from `WALLET_NAME` on the osmosis mainnet:
 
 ```bash
-dualityd tx stakeup begin-unstake-by-id 75 --from WALLET_NAME --chain-id osmosis-1
+neutrond tx stakeup begin-unstake-by-id 75 --from WALLET_NAME --chain-id osmosis-1
 ```
 :::
 ::: warning Note
@@ -415,7 +415,7 @@ The ID corresponds to the unique ID given to your stakeup transaction (explained
 Begin unbonding process for all bonded tokens in a wallet
 
 ```sh
-dualityd tx stakeup begin-unstake-tokens --from --chain-id
+neutrond tx stakeup begin-unstake-tokens --from --chain-id
 ```
 
 ::: details Example
@@ -424,7 +424,7 @@ To begin unbonding time for ALL pools and ALL bonded tokens in `WALLET_NAME` on 
 
 
 ```bash
-dualityd tx stakeup begin-unstake-tokens --from=WALLET_NAME --chain-id=osmosis-1 --yes
+neutrond tx stakeup begin-unstake-tokens --from=WALLET_NAME --chain-id=osmosis-1 --yes
 ```
 :::
 
@@ -484,7 +484,7 @@ In this example, the current UNIX time is `1639776682`, 2 days from now is appro
 An account's `ADDRESS` is staked in both the `1 day` and `1 week` gamm/pool/3. To query the `ADDRESS` with a timestamp 2 days from now `1639971082`:
 
 ```bash
-dualityd query stakeup account-staked-beforetime ADDRESS 1639971082
+neutrond query stakeup account-staked-beforetime ADDRESS 1639971082
 ```
 
 In this example will output the `1 day` stake but not the `1 week` stake:
@@ -503,7 +503,7 @@ stakes:
 If querying the same `ADDRESS` with a timestamp 15 days from now `1641094282`:
 
 ```bash
-dualityd query stakeup account-staked-beforetime ADDRESS 1641094282
+neutrond query stakeup account-staked-beforetime ADDRESS 1641094282
 ```
 
 In this example will output both the `1 day` and `1 week` stake:
@@ -533,13 +533,13 @@ stakes:
 Query an account's staked (bonded) LP tokens
 
 ```sh
-dualityd query stakeup account-staked-coins [address]
+neutrond query stakeup account-staked-coins [address]
 ```
 
 :::: details Example
 
 ```bash
-dualityd query stakeup account-staked-coins osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259
+neutrond query stakeup account-staked-coins osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259
 ```
 
 An example output:
@@ -571,7 +571,7 @@ You may also specify a --height flag to see bonded LP tokens at a specified heig
 Query an account's staked records that are greater than or equal to a specified stake duration
 
 ```sh
-dualityd query stakeup account-staked-longer-duration [address] [duration]
+neutrond query stakeup account-staked-longer-duration [address] [duration]
 ```
 
 ::: details Example
@@ -579,7 +579,7 @@ dualityd query stakeup account-staked-longer-duration [address] [duration]
 Here is an example of querying an `ADDRESS` for all `1 day` or greater bonding periods:
 
 ```bash
-dualityd query stakeup account-staked-longer-duration osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 24h
+neutrond query stakeup account-staked-longer-duration osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 24h
 ```
 
 An example output:
@@ -609,7 +609,7 @@ stakes:
 Query an account's staked records for a denom that is staked equal to or greater than the specified duration AND match a specified denom
 
 ```sh
-dualityd query stakeup account-staked-longer-duration-denom [address] [duration] [denom]
+neutrond query stakeup account-staked-longer-duration-denom [address] [duration] [denom]
 ```
 
 ::: details Example
@@ -617,7 +617,7 @@ dualityd query stakeup account-staked-longer-duration-denom [address] [duration]
 Here is an example of an `ADDRESS` that is staked in both the `1 day` and `1 week` for both the gamm/pool/3 and gamm/pool/1, then queries the `ADDRESS` for all bonding periods equal to or greater than `1 day` for just the gamm/pool/3:
 
 ```bash
-dualityd query stakeup account-staked-longer-duration-denom osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 24h gamm/pool/3
+neutrond query stakeup account-staked-longer-duration-denom osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 24h gamm/pool/3
 ```
 
 An example output:
@@ -649,7 +649,7 @@ As shown, the gamm/pool/3 is returned but not the gamm/pool/1 due to the denom f
 Query an account's staked records for a denom that is staked equal to or greater than the specified duration AND is not in the process of being unstaked
 
 ```sh
-dualityd query stakeup account-staked-longer-duration-not-unstaking [address] [duration]
+neutrond query stakeup account-staked-longer-duration-not-unstaking [address] [duration]
 ```
 
 ::: details Example
@@ -657,7 +657,7 @@ dualityd query stakeup account-staked-longer-duration-not-unstaking [address] [d
 Here is an example of an `ADDRESS` that is staked in both the `1 day` and `1 week` gamm/pool/3, begins unstaking process for the `1 day` bond, and queries the `ADDRESS` for all bonding periods equal to or greater than `1 day` that are not unbonding:
 
 ```bash
-dualityd query stakeup account-staked-longer-duration-not-unstaking osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 24h
+neutrond query stakeup account-staked-longer-duration-not-unstaking osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 24h
 ```
 
 An example output:
@@ -682,7 +682,7 @@ The `1 day` bond does not show since it is in the process of unbonding.
 Query the staked records of an account with the unstake time beyond timestamp (UNIX)
 
 ```bash
-dualityd query stakeup account-staked-pasttime [address] [timestamp]
+neutrond query stakeup account-staked-pasttime [address] [timestamp]
 ```
 
 ::: details Example
@@ -690,7 +690,7 @@ dualityd query stakeup account-staked-pasttime [address] [timestamp]
 Here is an example of an account that is staked in both the `1 day` and `1 week` gamm/pool/3. In this example, the UNIX time is currently `1639776682` and queries an `ADDRESS` for UNIX time two days later from the current time (which in this example would be `1639971082`)
 
 ```bash
-dualityd query stakeup account-staked-pasttime osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 1639971082
+neutrond query stakeup account-staked-pasttime osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 1639971082
 ```
 
 The example output:
@@ -715,7 +715,7 @@ Note that the `1 day` stake ID did not display because, if the unbonding time be
 Query the staked records of an account with the unstake time beyond timestamp (unix) and filter by a specific denom
 
 ```bash
-dualityd query stakeup account-staked-pasttime-denom osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 [timestamp] [denom]
+neutrond query stakeup account-staked-pasttime-denom osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 [timestamp] [denom]
 ```
 
 ::: details Example
@@ -723,7 +723,7 @@ dualityd query stakeup account-staked-pasttime-denom osmo1xqhlshlhs5g0acqgrkafde
 Here is an example of an account that is staked in both the `1 day` and `1 week` gamm/pool/3 and `1 day` and `1 week` gamm/pool/1. In this example, the UNIX time is currently `1639776682` and queries an `ADDRESS` for UNIX time two days later from the current time (which in this example would be `1639971082`) and filters for gamm/pool/3
 
 ```bash
-dualityd query stakeup account-staked-pasttime-denom osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 1639971082 gamm/pool/3
+neutrond query stakeup account-staked-pasttime-denom osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 1639971082 gamm/pool/3
 ```
 
 The example output:
@@ -748,7 +748,7 @@ Note that the `1 day` stake ID did not display because, if the unbonding time be
 Query the staked records of an account with the unstake time beyond timestamp (unix) AND is not in the process of unstaking
 
 ```sh
-dualityd query stakeup account-staked-pasttime [address] [timestamp]
+neutrond query stakeup account-staked-pasttime [address] [timestamp]
 ```
 
 ::: details Example
@@ -756,7 +756,7 @@ dualityd query stakeup account-staked-pasttime [address] [timestamp]
 Here is an example of an account that is staked in both the `1 day` and `1 week` gamm/pool/3. In this example, the UNIX time is currently `1639776682` and queries an `ADDRESS` for UNIX time two days later from the current time (which in this example would be `1639971082`) AND is not unstaking:
 
 ```bash
-dualityd query stakeup account-staked-pasttime osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 1639971082
+neutrond query stakeup account-staked-pasttime osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259 1639971082
 ```
 
 The example output:
@@ -781,7 +781,7 @@ Note that the `1 day` stake ID did not display because, if the unbonding time be
 Query an address's LP shares that have completed the unstaking period and are ready to be withdrawn
 
 ```bash
-dualityd query stakeup account-unstakeable-coins ADDRESS
+neutrond query stakeup account-unstakeable-coins ADDRESS
 ```
 
 
@@ -791,13 +791,13 @@ dualityd query stakeup account-unstakeable-coins ADDRESS
 Query an address's LP shares that are currently unstaking
 
 ```sh
-dualityd query stakeup account-unstaking-coins [address]
+neutrond query stakeup account-unstaking-coins [address]
 ```
 
 ::: details Example
 
 ```bash
-dualityd query stakeup account-unstaking-coins osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259
+neutrond query stakeup account-unstaking-coins osmo1xqhlshlhs5g0acqgrkafdemvf5kz4pp4c2x259
 ```
 
 Example output:
@@ -815,7 +815,7 @@ coins:
 Query a stake record by its ID
 
 ```sh
-dualityd query stakeup stake-by-id [id]
+neutrond query stakeup stake-by-id [id]
 ```
 
 ::: details Example
@@ -825,7 +825,7 @@ Every time a user bonds tokens to an LP, a unique stake ID is created for that t
 Here is an example viewing the stake record for ID 9:
 
 ```bash
-dualityd query stakeup stake-by-id 9
+neutrond query stakeup stake-by-id 9
 ```
 
 And its output:
@@ -850,13 +850,13 @@ In summary, this shows wallet `osmo16r39ghhwqjcwxa8q3yswlz8jhzldygy66vlm82` bond
 Query the balance of all LP shares (bonded and unbonded)
 
 ```sh
-dualityd query stakeup module-balance
+neutrond query stakeup module-balance
 ```
 
 ::: details Example
 
 ```bash
-dualityd query stakeup module-balance
+neutrond query stakeup module-balance
 ```
 
 An example output:
@@ -904,13 +904,13 @@ coins:
 Query the balance of all bonded LP shares
 
 ```sh
-dualityd query stakeup module-staked-amount
+neutrond query stakeup module-staked-amount
 ```
 
 ::: details Example
 
 ```bash
-dualityd query stakeup module-staked-amount
+neutrond query stakeup module-staked-amount
 ```
 
 An example output:
@@ -964,7 +964,7 @@ NOTE: This command seems to only work on gRPC and on CLI returns an EOF error.
 Output all stakes into a json file
 
 ```sh
-dualityd query stakeup output-all-stakes [max stake ID]
+neutrond query stakeup output-all-stakes [max stake ID]
 ```
 
 :::: details Example
@@ -972,7 +972,7 @@ dualityd query stakeup output-all-stakes [max stake ID]
 This example command outputs stakes 1-1000 and saves to a json file:
 
 ```bash
-dualityd query stakeup output-all-stakes 1000
+neutrond query stakeup output-all-stakes 1000
 ```
 ::: warning Note
 If a stakeup has been completed, the stakeup status will show as "0" (or successful) and no further information will be available. To get further information on a completed stake, run the stake-by-id query.
@@ -985,7 +985,7 @@ If a stakeup has been completed, the stakeup status will show as "0" (or success
 Query staked amount for a specific denom in the duration provided
 
 ```sh
-dualityd query stakeup total-staked-of-denom [denom] --min-duration
+neutrond query stakeup total-staked-of-denom [denom] --min-duration
 ```
 
 :::: details Example
@@ -993,7 +993,7 @@ dualityd query stakeup total-staked-of-denom [denom] --min-duration
 This example command outputs the amount of `gamm/pool/2` LP shares that staked in the `2 week` bonding period:
 
 ```bash
-dualityd query stakeup total-staked-of-denom gamm/pool/2 --min-duration "336h"
+neutrond query stakeup total-staked-of-denom gamm/pool/2 --min-duration "336h"
 ```
 
 Which, at the time of this writing outputs `14106985399822075248947045` which is equivalent to `14106985.3998 gamm/pool/2`
@@ -1005,50 +1005,50 @@ NOTE: As of this writing, there is a bug that defaults the min duration to days 
 
 ```sh
 # 1 day 100stake stake-tokens command
-dualityd tx stakeup stake-tokens 200stake --duration="86400s" --from=validator --chain-id=testing --keyring-backend=test --yes
+neutrond tx stakeup stake-tokens 200stake --duration="86400s" --from=validator --chain-id=testing --keyring-backend=test --yes
 
 # 5s 100stake stake-tokens command
-dualityd tx stakeup stake-tokens 100stake --duration="5s" --from=validator --chain-id=testing --keyring-backend=test --yes
+neutrond tx stakeup stake-tokens 100stake --duration="5s" --from=validator --chain-id=testing --keyring-backend=test --yes
 
 # begin unstake tokens, NOTE: add more gas when unstaking more than two stakes in a same command
-dualityd tx stakeup begin-unstake-tokens --from=validator --gas=500000 --chain-id=testing --keyring-backend=test --yes
+neutrond tx stakeup begin-unstake-tokens --from=validator --gas=500000 --chain-id=testing --keyring-backend=test --yes
 
 # unstake tokens, NOTE: add more gas when unstaking more than two stakes in a same command
-dualityd tx stakeup unstake-tokens --from=validator --gas=500000 --chain-id=testing --keyring-backend=test --yes
+neutrond tx stakeup unstake-tokens --from=validator --gas=500000 --chain-id=testing --keyring-backend=test --yes
 
 # unstake specific period stake
-dualityd tx stakeup unstake-by-id 1 --from=validator --chain-id=testing --keyring-backend=test --yes
+neutrond tx stakeup unstake-by-id 1 --from=validator --chain-id=testing --keyring-backend=test --yes
 
 # account balance
-dualityd query bank balances $(dualityd keys show -a validator --keyring-backend=test)
+neutrond query bank balances $(neutrond keys show -a validator --keyring-backend=test)
 
 # query module balance
-dualityd query stakeup module-balance
+neutrond query stakeup module-balance
 
 # query staked amount
-dualityd query stakeup module-staked-amount
+neutrond query stakeup module-staked-amount
 
 # query stake by id
-dualityd query stakeup stake-by-id 1
+neutrond query stakeup stake-by-id 1
 
 # query account unstakeable coins
-dualityd query stakeup account-unstakeable-coins $(dualityd keys show -a validator --keyring-backend=test)
+neutrond query stakeup account-unstakeable-coins $(neutrond keys show -a validator --keyring-backend=test)
 
 # query account stakes by denom past time
-dualityd query stakeup account-staked-pasttime-denom $(dualityd keys show -a validator --keyring-backend=test) 1611879610 stake
+neutrond query stakeup account-staked-pasttime-denom $(neutrond keys show -a validator --keyring-backend=test) 1611879610 stake
 
 # query account stakes past time
-dualityd query stakeup account-staked-pasttime $(dualityd keys show -a validator --keyring-backend=test) 1611879610
+neutrond query stakeup account-staked-pasttime $(neutrond keys show -a validator --keyring-backend=test) 1611879610
 
 # query account stakes by denom with longer duration
-dualityd query stakeup account-staked-longer-duration-denom $(dualityd keys show -a validator --keyring-backend=test) 5.1s stake
+neutrond query stakeup account-staked-longer-duration-denom $(neutrond keys show -a validator --keyring-backend=test) 5.1s stake
 
 # query account stakes with longer duration
-dualityd query stakeup account-staked-longer-duration $(dualityd keys show -a validator --keyring-backend=test) 5.1s
+neutrond query stakeup account-staked-longer-duration $(neutrond keys show -a validator --keyring-backend=test) 5.1s
 
 # query account staked coins
-dualityd query stakeup account-staked-coins $(dualityd keys show -a validator --keyring-backend=test)
+neutrond query stakeup account-staked-coins $(neutrond keys show -a validator --keyring-backend=test)
 
 # query account stakes before time
-dualityd query stakeup account-staked-beforetime $(dualityd keys show -a validator --keyring-backend=test) 1611879610
+neutrond query stakeup account-staked-beforetime $(neutrond keys show -a validator --keyring-backend=test) 1611879610
 ```

@@ -42,7 +42,7 @@ func (sm SwapMetadata) Validate() error {
 	if sm.RefundAddress != "" {
 		_, err := sdk.AccAddressFromBech32(sm.RefundAddress)
 		if err != nil {
-			return sdkerrors.Wrapf(dextypes.ErrInvalidAddress, "%s is not a valid Duality address", sm.RefundAddress)
+			return sdkerrors.Wrapf(dextypes.ErrInvalidAddress, "%s is not a valid Neutron address", sm.RefundAddress)
 		}
 	}
 

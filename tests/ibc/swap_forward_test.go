@@ -14,36 +14,36 @@ import (
 )
 
 func (s *IBCTestSuite) TestSwapAndForward_Success() {
-	// Send an IBC transfer from provider chain to duality, so we can initialize a pool with the IBC denom token + native Duality token
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider chain to neutron, so we can initialize a pool with the IBC denom token + native Neutron token
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		"",
 	)
 
-	// Assert that the funds are gone from the acc on provider and present in the acc on Duality
+	// Assert that the funds are gone from the acc on provider and present in the acc on Neutron
 	newProviderBalNative := genesisWalletAmount.Sub(ibcTransferAmount)
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative)
 
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
-	// deposit stake<>ibcTransferToken to initialize the pool on Duality
+	// deposit stake<>ibcTransferToken to initialize the pool on Neutron
 	depositAmount := math.NewInt(100_000)
-	s.dualityDeposit(
+	s.neutronDeposit(
 		nativeDenom,
-		s.providerToDualityDenom,
+		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
 		0,
 		1,
-		s.dualityAddr)
+		s.neutronAddr)
 
-	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
+	// Assert that the deposit was successful and the funds are moved out of the Neutron user acc
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
 	swapAmount := math.NewInt(100000)
@@ -55,8 +55,8 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 	forwardMetadata := forwardtypes.PacketMetadata{
 		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
-			Port:     s.dualityChainBPath.EndpointA.ChannelConfig.PortID,
-			Channel:  s.dualityChainBPath.EndpointA.ChannelID,
+			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
+			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
 			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
@@ -73,9 +73,9 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 2,
@@ -88,17 +88,17 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 	metadataBz, err := json.Marshal(metadata)
 	s.Require().NoError(err)
 
-	// Send an IBC transfer from provider to duality with packet memo containing the swap metadata
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider to neutron with packet memo containing the swap metadata
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
 
 	// Relay the packets
-	err = s.RelayAllPacketsAToB(s.dualityChainBPath)
+	err = s.RelayAllPacketsAToB(s.neutronChainBPath)
 	s.Assert().NoError(err)
 
 	// Check that the funds are moved out of the acc on providerChain
@@ -108,55 +108,55 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 
-	// Check that the amountIn is deduced from the duality account
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	// Check that duality account did not keep any of the transfer denom
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
+	// Check that the amountIn is deducted from the neutron account
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	// Check that neutron account did not keep any of the transfer denom
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
-		s.dualityChainBPath.EndpointA.ChannelID,
+		s.neutronChainBPath.EndpointA.ChannelID,
 		nativeDenom,
 	)
-	transferDenomDualityChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
+	transferDenomNeutronChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
 	// Check that the funds are now present in the acc on chainB
-	s.assertChainBBalance(chainBAddr, transferDenomDualityChainB, expectedAmountOut)
+	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, expectedAmountOut)
 
 	s.Assert().NoError(err)
 }
 
 func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
-	// Send an IBC transfer from provider chain to duality, so we can initialize a pool with the IBC denom token + native Duality token
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider chain to neutron, so we can initialize a pool with the IBC denom token + native Neutron token
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		"",
 	)
 
-	// Assert that the funds are gone from the acc on provider and present in the acc on Duality
+	// Assert that the funds are gone from the acc on provider and present in the acc on Neutron
 	newProviderBalNative := genesisWalletAmount.Sub(ibcTransferAmount)
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative)
 
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
-	// deposit stake<>ibcTransferToken to initialize the pool on Duality
+	// deposit stake<>ibcTransferToken to initialize the pool on Neutron
 	depositAmount := math.NewInt(100_000)
-	s.dualityDeposit(
+	s.neutronDeposit(
 		nativeDenom,
-		s.providerToDualityDenom,
+		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
 		0,
 		1,
-		s.dualityAddr)
+		s.neutronAddr)
 
-	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
+	// Assert that the deposit was successful and the funds are moved out of the Neutron user acc
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
 	swapAmount := math.NewInt(100000)
@@ -184,8 +184,8 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 	forwardMetadata := forwardtypes.PacketMetadata{
 		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
-			Port:     s.dualityChainBPath.EndpointA.ChannelConfig.PortID,
-			Channel:  s.dualityChainBPath.EndpointA.ChannelID,
+			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
+			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
 			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nextForwardJSON,
@@ -201,9 +201,9 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 2,
@@ -216,33 +216,33 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 	metadataBz, err := json.Marshal(metadata)
 	s.Assert().NoError(err)
 
-	// Send an IBC transfer from provider to duality with packet memo containing the swap metadata
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider to neutron with packet memo containing the swap metadata
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
 
-	dualityPacket := maps.Values(s.dualityChain.SentPackets)[0]
-	err = s.dualityChainBPath.EndpointB.UpdateClient()
+	neutronPacket := maps.Values(s.neutronChain.SentPackets)[0]
+	err = s.neutronChainBPath.EndpointB.UpdateClient()
 	s.Require().NoError(err)
-	err = s.dualityChainBPath.EndpointB.RecvPacket(dualityPacket)
+	err = s.neutronChainBPath.EndpointB.RecvPacket(neutronPacket)
 	s.Require().NoError(err)
 	err = s.RelayAllPacketsAToB(s.chainBChainCPath)
 	s.Require().NoError(err)
 
-	transferDenomPathDualityChainB := transfertypes.GetPrefixedDenom(
+	transferDenomPathNeutronChainB := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
-		s.dualityChainBPath.EndpointB.ChannelID,
+		s.neutronChainBPath.EndpointB.ChannelID,
 		nativeDenom,
 	)
-	transferDenomDualityChainB := transfertypes.ParseDenomTrace(transferDenomPathDualityChainB).IBCDenom()
+	transferDenomNeutronChainB := transfertypes.ParseDenomTrace(transferDenomPathNeutronChainB).IBCDenom()
 	transferDenomPathChainC := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
 		s.chainBChainCPath.EndpointB.ChannelID,
-		transferDenomPathDualityChainB,
+		transferDenomPathNeutronChainB,
 	)
 	transferDenomChainC := transfertypes.ParseDenomTrace(transferDenomPathChainC).IBCDenom()
 
@@ -253,7 +253,7 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 	// Check that chain B balance is unchanged
-	s.assertChainBBalance(chainBAddr, transferDenomDualityChainB, math.ZeroInt())
+	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, math.ZeroInt())
 
 	// Check that funds made it to chainC
 	s.assertChainCBalance(chainCAddr, transferDenomChainC, expectedOut)
@@ -261,38 +261,38 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 
 // TestSwapAndForward_UnwindIBCDenomSuccess asserts that the swap and forward middleware stack works as intended in the
 // case that a native token from ChainB is sent to ChainA and then ChainA initiates a swap and forward with the token.
-// This asserts that denom unwinding works as intended when going provider->duality->provider
+// This asserts that denom unwinding works as intended when going provider->neutron->provider
 func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
-	// Send an IBC transfer from provider chain to duality, so we can initialize a pool with the IBC denom token + native Duality token
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider chain to neutron, so we can initialize a pool with the IBC denom token + native Neutron token
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		"",
 	)
 
-	// Assert that the funds are gone from the acc on provider and present in the acc on Duality
+	// Assert that the funds are gone from the acc on provider and present in the acc on Neutron
 	newProviderBalNative := genesisWalletAmount.Sub(ibcTransferAmount)
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative)
 
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
-	// deposit stake<>ibcTransferToken to initialize the pool on Duality
+	// deposit stake<>ibcTransferToken to initialize the pool on Neutron
 	depositAmount := math.NewInt(100_000)
-	s.dualityDeposit(
+	s.neutronDeposit(
 		nativeDenom,
-		s.providerToDualityDenom,
+		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
 		0,
 		1,
-		s.dualityAddr)
+		s.neutronAddr)
 
-	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
+	// Assert that the deposit was successful and the funds are moved out of the Neutron user acc
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
 	swapAmount := math.NewInt(100000)
 	expectedAmountOut := math.NewInt(99990)
@@ -302,8 +302,8 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	forwardMetadata := forwardtypes.PacketMetadata{
 		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: s.providerAddr.String(),
-			Port:     s.dualityTransferPath.EndpointA.ChannelConfig.PortID,
-			Channel:  s.dualityTransferPath.EndpointA.ChannelID,
+			Port:     s.neutronTransferPath.EndpointA.ChannelConfig.PortID,
+			Channel:  s.neutronTransferPath.EndpointA.ChannelID,
 			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
@@ -320,10 +320,10 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
 				TokenIn:          nativeDenom,
-				TokenOut:         s.providerToDualityDenom,
+				TokenOut:         s.providerToNeutronDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 2,
 				OrderType:        types.LimitOrderType_FILL_OR_KILL,
@@ -335,24 +335,24 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	metadataBz, err := json.Marshal(metadata)
 	s.Require().NoError(err)
 
-	// Send an IBC transfer from provider to duality with packet memo containing the swap metadata
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider to neutron with packet memo containing the swap metadata
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
 
 	// Relay the packets
-	err = s.RelayAllPacketsAToB(s.dualityTransferPath)
+	err = s.RelayAllPacketsAToB(s.neutronTransferPath)
 	s.Assert().NoError(err)
-	s.coordinator.CommitBlock(s.dualityChain)
+	s.coordinator.CommitBlock(s.neutronChain)
 
-	// Check that the amountIn is deduced from the duality account
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative.Sub(swapAmount))
-	// Check that the amountIn has been deducted from the duality chain
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative.Sub(swapAmount))
+	// Check that the amountIn is deduced from the neutron account
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Sub(swapAmount))
+	// Check that the amountIn has been deducted from the neutron chain
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Sub(swapAmount))
 	// Check that the funds are now present on the provider chainer
 	s.assertProviderBalance(
 		s.providerAddr,
@@ -366,36 +366,36 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 // TestSwapAndForward_ForwardFails asserts that the swap and forward middleware stack works as intended in the case
 // that an incoming IBC swap succeeds but the forward fails.
 func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
-	// Send an IBC transfer from provider chain to duality, so we can initialize a pool with the IBC denom token + native Duality token
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider chain to neutron, so we can initialize a pool with the IBC denom token + native Neutron token
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		"",
 	)
 
-	// Assert that the funds are gone from the acc on provider and present in the acc on Duality
+	// Assert that the funds are gone from the acc on provider and present in the acc on Neutron
 	newProviderBalNative := genesisWalletAmount.Sub(ibcTransferAmount)
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative)
 
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, ibcTransferAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
-	// deposit stake<>ibcTransferToken to initialize the pool on Duality
+	// deposit stake<>ibcTransferToken to initialize the pool on Neutron
 	depositAmount := math.NewInt(100_000)
-	s.dualityDeposit(
+	s.neutronDeposit(
 		nativeDenom,
-		s.providerToDualityDenom,
+		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
 		0,
 		1,
-		s.dualityAddr)
+		s.neutronAddr)
 
-	// Assert that the deposit was successful and the funds are moved out of the Duality user acc
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	postDepositDualityBalNative := genesisWalletAmount.Sub(depositAmount)
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, postDepositDualityBalNative)
+	// Assert that the deposit was successful and the funds are moved out of the Neutron user acc
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
 	swapAmount := math.NewInt(100000)
@@ -407,7 +407,7 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	forwardMetadata := forwardtypes.PacketMetadata{
 		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
-			Port:     s.dualityChainBPath.EndpointA.ChannelConfig.PortID,
+			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  "invalid-channel", // add an invalid channel identifier so the forward fails
 			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
@@ -425,9 +425,9 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
-				Creator:          s.dualityAddr.String(),
-				Receiver:         s.dualityAddr.String(),
-				TokenIn:          s.providerToDualityDenom,
+				Creator:          s.neutronAddr.String(),
+				Receiver:         s.neutronAddr.String(),
+				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
 				TickIndexInToOut: 2,
@@ -440,17 +440,17 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	metadataBz, err := json.Marshal(metadata)
 	s.Require().NoError(err)
 
-	// Send an IBC transfer from provider to duality with packet memo containing the swap metadata
-	s.IBCTransferProviderToDuality(
+	// Send an IBC transfer from provider to neutron with packet memo containing the swap metadata
+	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
-		s.dualityAddr,
+		s.neutronAddr,
 		nativeDenom,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
 
-	// Relay the packets from duality => ChainB
-	err = s.RelayAllPacketsAToB(s.dualityChainBPath)
+	// Relay the packets from neutron => ChainB
+	err = s.RelayAllPacketsAToB(s.neutronChainBPath)
 	// Relay Fails
 	s.Assert().Error(err)
 
@@ -461,22 +461,22 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 
-	// Check that the amountIn is deduced from the duality account
-	s.assertDualityBalance(s.dualityAddr, s.providerToDualityDenom, math.ZeroInt())
-	// Check that the amountOut stays on the dualitychain
-	s.assertDualityBalance(
-		s.dualityAddr,
+	// Check that the amountIn is deduced from the neutron account
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	// Check that the amountOut stays on the neutronchain
+	s.assertNeutronBalance(
+		s.neutronAddr,
 		nativeDenom,
-		postDepositDualityBalNative.Add(expectedAmountOut),
+		postDepositNeutronBalNative.Add(expectedAmountOut),
 	)
 
 	// Check that nothing made it to chainB
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
-		s.dualityChainBPath.EndpointA.ChannelID,
+		s.neutronChainBPath.EndpointA.ChannelID,
 		nativeDenom,
 	)
-	transferDenomDualityChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
+	transferDenomNeutronChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
-	s.assertChainBBalance(chainBAddr, transferDenomDualityChainB, math.ZeroInt())
+	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, math.ZeroInt())
 }

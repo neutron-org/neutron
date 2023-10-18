@@ -252,7 +252,7 @@ func GenesisStateWithValSet(
 // var _ network.TestFixtureFactory = NewTestNetworkFixture
 
 // func NewTestNetworkFixture() network.TestFixture {
-// 	dir, err := os.MkdirTemp("", "duality")
+// 	dir, err := os.MkdirTemp("", "neutron")
 // 	if err != nil {
 // 		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
 // 	}

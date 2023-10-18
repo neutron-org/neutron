@@ -47,7 +47,7 @@ var (
 	ErrInvalidPoolDenom = sdkerrors.Register(
 		ModuleName,
 		1118,
-		"Denom is not an instance of Duality PoolDenom",
+		"Denom is not an instance of Neutron PoolDenom",
 	)
 	ErrInvalidPairIDStr = sdkerrors.Register(
 		ModuleName,

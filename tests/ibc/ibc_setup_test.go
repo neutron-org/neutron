@@ -1,13 +1,10 @@
 package ibc_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
-	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -16,12 +13,11 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	icsibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
 
-	"github.com/cometbft/cometbft/libs/log"
 	icstestingutils "github.com/cosmos/interchain-security/v3/testutil/ibc_testing"
-	testutil "github.com/cosmos/interchain-security/v3/testutil/integration"
+	icstestutil "github.com/cosmos/interchain-security/v3/testutil/integration"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 	ccv "github.com/cosmos/interchain-security/v3/x/ccv/types"
-	app "github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/testutil"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/suite"
 )
@@ -37,20 +33,20 @@ type IBCTestSuite struct {
 
 	coordinator   *icsibctesting.Coordinator
 	providerChain *icsibctesting.TestChain
-	providerApp   testutil.ProviderApp
-	dualityChain  *icsibctesting.TestChain // aka chainA
-	dualityApp    testutil.ConsumerApp
+	providerApp   icstestutil.ProviderApp
+	neutronChain  *icsibctesting.TestChain // aka chainA
+	neutronApp    icstestutil.ConsumerApp
 	bundleB       *icstestingutils.ConsumerBundle
 	bundleC       *icstestingutils.ConsumerBundle
 
-	dualityCCVPath      *icsibctesting.Path
-	dualityTransferPath *icsibctesting.Path
-	dualityChainBPath   *icsibctesting.Path
+	neutronCCVPath      *icsibctesting.Path
+	neutronTransferPath *icsibctesting.Path
+	neutronChainBPath   *icsibctesting.Path
 	chainBChainCPath    *icsibctesting.Path
 
 	providerAddr           sdk.AccAddress
-	dualityAddr            sdk.AccAddress
-	providerToDualityDenom string
+	neutronAddr            sdk.AccAddress
+	providerToNeutronDenom string
 }
 
 func TestIBCTestSuite(t *testing.T) {
@@ -60,46 +56,46 @@ func TestIBCTestSuite(t *testing.T) {
 func (s *IBCTestSuite) SetupTest() {
 	// Create coordinator
 	s.coordinator = icsibctesting.NewCoordinator(s.T(), 0)
-	s.providerChain, s.providerApp = icstestingutils.AddProvider[testutil.ProviderApp](
+	s.providerChain, s.providerApp = icstestingutils.AddProvider[icstestutil.ProviderApp](
 		s.T(),
 		s.coordinator,
 		icstestingutils.ProviderAppIniter,
 	)
 
-	// Setup duality as a consumer chain
-	dualityBundle := s.addConsumerChain(dualityAppIniter, 1)
-	s.dualityChain = dualityBundle.Chain
-	s.dualityApp = dualityBundle.App
-	s.dualityCCVPath = dualityBundle.Path
-	s.dualityTransferPath = dualityBundle.TransferPath
+	// Setup neutron as a consumer chain
+	neutronBundle := s.addConsumerChain(testutil.SetupTestingApp("neutron-1"), 1)
+	s.neutronChain = neutronBundle.Chain
+	s.neutronApp = neutronBundle.App
+	s.neutronCCVPath = neutronBundle.Path
+	s.neutronTransferPath = neutronBundle.TransferPath
 
 	// Setup consumer chainB
-	// NOTE: using dualityAppIniter otherwise the consumer chain doesn't have the packetForwarding middleware
-	s.bundleB = s.addConsumerChain(dualityAppIniter, 2)
+	// NOTE: using neutron Setup for chain B, otherwise the consumer chain doesn't have the packetForwarding middleware
+	s.bundleB = s.addConsumerChain(testutil.SetupTestingApp("chainB-1"), 2)
 	// Setup consumer chainC
 	s.bundleC = s.addConsumerChain(icstestingutils.ConsumerAppIniter, 3)
 
-	// setup transfer channel between duality and consumerChainB
-	s.dualityChainBPath = s.setupConsumerToConsumerTransferChannel(dualityBundle, s.bundleB)
+	// setup transfer channel between neutron and consumerChainB
+	s.neutronChainBPath = s.setupConsumerToConsumerTransferChannel(neutronBundle, s.bundleB)
 
 	// setup transfer channel between consumerChainB and consumerChainC
 	s.chainBChainCPath = s.setupConsumerToConsumerTransferChannel(s.bundleB, s.bundleC)
 
-	// Store ibc transfer denom for providerChain=>duality for test convenience
+	// Store ibc transfer denom for providerChain=>neutron for test convenience
 	fullTransferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
-		s.dualityTransferPath.EndpointB.ChannelID,
+		s.neutronTransferPath.EndpointB.ChannelID,
 		nativeDenom,
 	)
 	transferDenom := transfertypes.ParseDenomTrace(fullTransferDenomPath).IBCDenom()
-	s.providerToDualityDenom = transferDenom
+	s.providerToNeutronDenom = transferDenom
 
-	// Store default addresses from duality and provider chain for test convenience
+	// Store default addresses from neutron and provider chain for test convenience
 	s.providerAddr = s.providerChain.SenderAccount.GetAddress()
-	s.dualityAddr = s.dualityChain.SenderAccount.GetAddress()
+	s.neutronAddr = s.neutronChain.SenderAccount.GetAddress()
 
 	// ensure genesis balances are as expected
-	s.assertDualityBalance(s.dualityAddr, nativeDenom, genesisWalletAmount)
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount)
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount)
 }
 
@@ -107,7 +103,7 @@ func (s *IBCTestSuite) addConsumerChain(
 	appIniter icsibctesting.AppIniter,
 	chainIdx int,
 ) *icstestingutils.ConsumerBundle {
-	bundle := icstestingutils.AddConsumer[testutil.ProviderApp, testutil.ConsumerApp](
+	bundle := icstestingutils.AddConsumer[icstestutil.ProviderApp, icstestutil.ConsumerApp](
 		s.coordinator,
 		&s.Suite,
 		chainIdx,
@@ -136,7 +132,7 @@ func (s *IBCTestSuite) setupCCVChannel(bundle *icstestingutils.ConsumerBundle) *
 	ccvPath := icsibctesting.NewPath(bundle.Chain, s.providerChain)
 
 	providerKeeper := s.providerApp.GetProviderKeeper()
-	dualityKeeper := bundle.GetKeeper()
+	neutronKeeper := bundle.GetKeeper()
 
 	providerEndpointClientID, found := providerKeeper.GetConsumerClientId(
 		s.providerCtx(),
@@ -145,7 +141,7 @@ func (s *IBCTestSuite) setupCCVChannel(bundle *icstestingutils.ConsumerBundle) *
 	s.Require().True(found, "provider endpoint clientID not found")
 	ccvPath.EndpointB.ClientID = providerEndpointClientID
 
-	consumerEndpointClientID, found := dualityKeeper.GetProviderClientID(bundle.GetCtx())
+	consumerEndpointClientID, found := neutronKeeper.GetProviderClientID(bundle.GetCtx())
 	s.Require().True(found, "consumer endpoint clientID not found")
 	ccvPath.EndpointA.ClientID = consumerEndpointClientID
 
@@ -188,7 +184,7 @@ func (s *IBCTestSuite) setupConsumerToConsumerTransferChannel(
 
 func (s *IBCTestSuite) setupTransferChannel(
 	ccvPath *icsibctesting.Path,
-	appA testutil.ConsumerApp,
+	appA icstestutil.ConsumerApp,
 	chainA, chainB *icsibctesting.TestChain,
 ) *icsibctesting.Path {
 	// transfer path will use the same connection as ibc path
@@ -225,26 +221,6 @@ func (s *IBCTestSuite) setupTransferChannel(
 	return transferPath
 }
 
-func dualityAppIniter() (icsibctesting.TestingApp, map[string]json.RawMessage) {
-	encoding := app.MakeEncodingConfig()
-	db := dbm.NewMemDB()
-	testApp := app.New(
-		log.NewNopLogger(),
-		"neutron-1",
-		db,
-		nil,
-		true,
-		map[int64]bool{},
-		app.DefaultNodeHome,
-		0,
-		encoding,
-		sims.EmptyAppOptions{},
-		nil,
-	)
-
-	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
-}
-
 func (s *IBCTestSuite) providerCtx() sdk.Context {
 	return s.providerChain.GetContext()
 }
@@ -277,7 +253,7 @@ func (s *IBCTestSuite) IBCTransfer(
 	res, err := sourceEndpoint.Chain.SendMsgs(transferMsg)
 	s.Assert().NoError(err)
 
-	// Relay transfer msg to Duality chain
+	// Relay transfer msg to Neutron chain
 	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
 	s.Require().NoError(err)
 
@@ -285,18 +261,18 @@ func (s *IBCTestSuite) IBCTransfer(
 	path.RelayPacket(packet)
 }
 
-func (s *IBCTestSuite) IBCTransferProviderToDuality(
+func (s *IBCTestSuite) IBCTransferProviderToNeutron(
 	providerAddr sdk.AccAddress,
-	dualityAddr sdk.AccAddress,
+	neutronAddr sdk.AccAddress,
 	transferDenom string,
 	transferAmount math.Int,
 	memo string,
 ) {
 	s.IBCTransfer(
-		s.dualityTransferPath,
-		s.dualityTransferPath.EndpointB,
+		s.neutronTransferPath,
+		s.neutronTransferPath.EndpointB,
 		providerAddr,
-		dualityAddr,
+		neutronAddr,
 		transferDenom,
 		transferAmount,
 		memo,
@@ -304,7 +280,7 @@ func (s *IBCTestSuite) IBCTransferProviderToDuality(
 }
 
 func (s *IBCTestSuite) getBalance(
-	bk testutil.TestBankKeeper,
+	bk icstestutil.TestBankKeeper,
 	chain *icsibctesting.TestChain,
 	addr sdk.AccAddress,
 	denom string,
@@ -314,7 +290,7 @@ func (s *IBCTestSuite) getBalance(
 }
 
 func (s *IBCTestSuite) assertBalance(
-	bk testutil.TestBankKeeper,
+	bk icstestutil.TestBankKeeper,
 	chain *icsibctesting.TestChain,
 	addr sdk.AccAddress,
 	denom string,
@@ -325,12 +301,12 @@ func (s *IBCTestSuite) assertBalance(
 		Equal(expectedAmt, actualAmt, "Expected amount of %s: %s; Got: %s", denom, expectedAmt, actualAmt)
 }
 
-func (s *IBCTestSuite) assertDualityBalance(
+func (s *IBCTestSuite) assertNeutronBalance(
 	addr sdk.AccAddress,
 	denom string,
 	expectedAmt math.Int,
 ) {
-	s.assertBalance(s.dualityApp.GetTestBankKeeper(), s.dualityChain, addr, denom, expectedAmt)
+	s.assertBalance(s.neutronApp.GetTestBankKeeper(), s.neutronChain, addr, denom, expectedAmt)
 }
 
 func (s *IBCTestSuite) assertProviderBalance(
@@ -350,7 +326,7 @@ func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, ex
 }
 
 //nolint:unparam // keep this flexible even if we aren't currently using all the params
-func (s *IBCTestSuite) dualityDeposit(
+func (s *IBCTestSuite) neutronDeposit(
 	token0 string,
 	token1 string,
 	depositAmount0 math.Int,
@@ -373,7 +349,7 @@ func (s *IBCTestSuite) dualityDeposit(
 	)
 
 	// execute deposit msg
-	_, err := s.dualityChain.SendMsgs(msgDeposit)
+	_, err := s.neutronChain.SendMsgs(msgDeposit)
 	s.Assert().NoError(err, "Deposit Failed")
 }
 

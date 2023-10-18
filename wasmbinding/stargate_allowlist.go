@@ -52,28 +52,28 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/neutron.feeburner.Query/Params": &feeburnertypes.QueryParamsResponse{},
 
 		// dex
-		"/dualitylabs.duality.dex.Query/Params":                    &dextypes.QueryParamsResponse{},
-		"/dualitylabs.duality.dex.Query/LimitOrderTrancheUser":     &dextypes.QueryGetLimitOrderTrancheUserResponse{},
-		"/dualitylabs.duality.dex.Query/LimitOrderTranche":         &dextypes.QueryGetLimitOrderTrancheResponse{},
-		"/dualitylabs.duality.dex.Query/UserDepositsAll":           &dextypes.QueryAllUserDepositsResponse{},
-		"/dualitylabs.duality.dex.Query/UserLimitOrdersAll":        &dextypes.QueryAllUserLimitOrdersResponse{},
-		"/dualitylabs.duality.dex.Query/InactiveLimitOrderTranche": &dextypes.QueryGetInactiveLimitOrderTrancheResponse{},
-		"/dualitylabs.duality.dex.Query/PoolReserves":              &dextypes.QueryGetPoolReservesResponse{},
-		"/dualitylabs.duality.dex.Query/EstimateMultiHopSwap":      &dextypes.QueryEstimateMultiHopSwapResponse{},
-		"/dualitylabs.duality.dex.Query/EstimatePlaceLimitOrder":   &dextypes.QueryEstimatePlaceLimitOrderResponse{},
+		"/neutron.dex.Query/Params":                    &dextypes.QueryParamsResponse{},
+		"/neutron.dex.Query/LimitOrderTrancheUser":     &dextypes.QueryGetLimitOrderTrancheUserResponse{},
+		"/neutron.dex.Query/LimitOrderTranche":         &dextypes.QueryGetLimitOrderTrancheResponse{},
+		"/neutron.dex.Query/UserDepositsAll":           &dextypes.QueryAllUserDepositsResponse{},
+		"/neutron.dex.Query/UserLimitOrdersAll":        &dextypes.QueryAllUserLimitOrdersResponse{},
+		"/neutron.dex.Query/InactiveLimitOrderTranche": &dextypes.QueryGetInactiveLimitOrderTrancheResponse{},
+		"/neutron.dex.Query/PoolReserves":              &dextypes.QueryGetPoolReservesResponse{},
+		"/neutron.dex.Query/EstimateMultiHopSwap":      &dextypes.QueryEstimateMultiHopSwapResponse{},
+		"/neutron.dex.Query/EstimatePlaceLimitOrder":   &dextypes.QueryEstimatePlaceLimitOrderResponse{},
 
 		// incentives
-		"/dualitylabs.duality.incentives.Query/GetModuleStatus":         &incentivestypes.GetModuleStatusResponse{},
-		"/dualitylabs.duality.incentives.Query/GetGaugeByID":            &incentivestypes.GetGaugeByIDResponse{},
-		"/dualitylabs.duality.incentives.Query/GetGauges":               &incentivestypes.GetGaugesResponse{},
-		"/dualitylabs.duality.incentives.Query/GetStakeByID":            &incentivestypes.GetStakeByIDResponse{},
-		"/dualitylabs.duality.incentives.Query/GetStakes":               &incentivestypes.GetStakesResponse{},
-		"/dualitylabs.duality.incentives.Query/GetFutureRewardEstimate": &incentivestypes.GetFutureRewardEstimateResponse{},
-		"/dualitylabs.duality.incentives.Query/GetAccountHistory":       &incentivestypes.GetAccountHistoryResponse{},
-		"/dualitylabs.duality.incentives.Query/GetGaugeQualifyingValue": &incentivestypes.GetGaugeQualifyingValueResponse{},
+		"/neutron.incentives.Query/GetModuleStatus":         &incentivestypes.GetModuleStatusResponse{},
+		"/neutron.incentives.Query/GetGaugeByID":            &incentivestypes.GetGaugeByIDResponse{},
+		"/neutron.incentives.Query/GetGauges":               &incentivestypes.GetGaugesResponse{},
+		"/neutron.incentives.Query/GetStakeByID":            &incentivestypes.GetStakeByIDResponse{},
+		"/neutron.incentives.Query/GetStakes":               &incentivestypes.GetStakesResponse{},
+		"/neutron.incentives.Query/GetFutureRewardEstimate": &incentivestypes.GetFutureRewardEstimateResponse{},
+		"/neutron.incentives.Query/GetAccountHistory":       &incentivestypes.GetAccountHistoryResponse{},
+		"/neutron.incentives.Query/GetGaugeQualifyingValue": &incentivestypes.GetGaugeQualifyingValueResponse{},
 
 		// epochs
-		"/dualitylabs.duality.epochs.Query/EpochInfos":   &epochstypes.QueryEpochsInfoResponse{},
-		"/dualitylabs.duality.epochs.Query/CurrentEpoch": &epochstypes.QueryCurrentEpochResponse{},
+		"/neutron.epochs.Query/EpochInfos":   &epochstypes.QueryEpochsInfoResponse{},
+		"/neutron.epochs.Query/CurrentEpoch": &epochstypes.QueryCurrentEpochResponse{},
 	}
 }

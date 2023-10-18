@@ -7,7 +7,7 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	dualityapp "github.com/neutron-org/neutron/app"
+	neutronapp "github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	keepertest "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func simulateDeposit(ctx sdk.Context, app *dualityapp.App, addr sdk.AccAddress, deposit *types.DepositRecord) {
+func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, deposit *types.DepositRecord) {
 	// NOTE: For simplicyt sake, we are not actually doing a deposit, we are just initializing
 	// the pool and adding the poolDenom to the users account
 	pool, err := app.DexKeeper.InitPool(ctx, deposit.PairID, deposit.CenterTickIndex, deposit.Fee)
