@@ -185,7 +185,7 @@ type MsgAddToGauge struct {
 	// owner is the gauge owner's address
 	Owner string `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty" yaml:"owner"`
 	// gauge_id is the ID of gauge that rewards are getting added to
-	GaugeId uint64 `protobuf:"varint,2,opt,name=gauge_id,json=gaugeID,proto3" json:"gauge_id,omitempty"`
+	GaugeId uint64 `protobuf:"varint,2,opt,name=gauge_id,json=gaugeId,proto3" json:"gauge_id,omitempty"`
 	// rewards are the coin(s) to add to gauge
 	Rewards github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,3,rep,name=rewards,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"rewards"`
 }
@@ -520,7 +520,8 @@ var xxx_messageInfo_MsgUnstakeResponse proto.InternalMessageInfo
 type MsgUpdateParams struct {
 	// Authority is the address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	Params    Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
+	// NOTE: All parameters must be supplied.
+	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
 
 func (m *MsgUpdateParams) Reset()         { *m = MsgUpdateParams{} }
