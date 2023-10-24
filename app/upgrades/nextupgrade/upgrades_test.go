@@ -55,9 +55,6 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	pTokenfactory := tokenfactorytypes.DefaultParams()
 	subspace.SetParamSet(ctx, &pTokenfactory)
 
-	pWasmTypes := icqtypes.DefaultParams()
-	subspace.SetParamSet(ctx, &pWasmTypes)
-
 	subspace, _ = app.ParamsKeeper.GetSubspace(icqtypes.StoreKey)
 	pICQTypes := icqtypes.DefaultParams()
 	subspace.SetParamSet(ctx, &pICQTypes)
@@ -65,6 +62,9 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	subspace, _ = app.ParamsKeeper.GetSubspace(interchaintxstypes.StoreKey)
 	pICAtx := interchaintxstypes.DefaultParams()
 	subspace.SetParamSet(ctx, &pICAtx)
+
+	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1weweewe"), "testdata/neutron_interchain_txs.wasm")
+	suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1weweewe"), codeIDBefore)
 }
 
 func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
@@ -172,7 +172,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	)
 
 	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
-
+	suite.FundAcc(sdk.AccAddress("neutron1weweewe"), sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(10000))))
 	// emulate mainnet/testnet state
 	ccvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &[]string{params.DefaultDenom})
 
@@ -180,8 +180,11 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denomsBefore)
 	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
-	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1weweewe"), "../../wasmbiding/testdata/neutron_interchain_txs.wasm.wasm")
-	contractAddressBefore := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1weweewe"), codeIDBefore)
+	// store contract just to increase code_id
+	_ = suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
+	// store contract for register ica w/o fees
+	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
+	contractAddressBeforeUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeIDBefore)
 
 	upgrade := upgradetypes.Plan{
 		Name:   nextupgrade.UpgradeName,
@@ -190,22 +193,26 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
 
-	// Store code and instantiate reflect contract
-	codeID := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1weweewe"), "../../wasmbinding/testdata/neutron_interchain_txs.wasm")
-	contractAddressAfter := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1weweewe"), codeID)
-	// register w/o actual fees
-	jsonStringBefore := `{"connection_id":"1","interchain_account_id":"test-1"}`
-	byteEncodedMsgBefore := []byte(jsonStringBefore)
-	_, err := contractKeeper.Execute(ctx, contractAddressBefore, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgBefore, nil)
-	suite.Require().Error(err)
+	lastCodeID := app.InterchainTxsKeeper.GetLastCodeIDBeforeUpgrade(ctx)
+	// ensure that wasm module stores next code id
+	suite.Require().Equal(lastCodeID, codeIDBefore+1)
 
-	// register with fees
-	jsonStringAfter := `{"connection_id":"1","interchain_account_id":"test-2"}`
-	byteEncodedMsgAfter := []byte(jsonStringAfter)
-	_, err = contractKeeper.Execute(ctx, contractAddressAfter, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfter, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1000))))
+	// store contract after upgrade
+	codeID := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
+	contractAddressAfterUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeID)
+	// register w/o actual fees
+	jsonStringBeforeUpgrade := `{"register": {"connection_id":"connection-1","interchain_account_id":"test-2"}}`
+	byteEncodedMsgBeforeUpgrade := []byte(jsonStringBeforeUpgrade)
+	_, err := contractKeeper.Execute(ctx, contractAddressBeforeUpgrade, sdk.AccAddress("neutron1_ica"), byteEncodedMsgBeforeUpgrade, nil)
 	suite.Require().NoError(err)
 
-	// failed register due lack of fees
-	_, err = contractKeeper.Execute(ctx, contractAddressAfter, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfter, nil)
-	suite.Require().Error(err)
+	// register with fees
+	jsonStringAfterUpgrade := `{"register": {"connection_id":"connection-1","interchain_account_id":"test-3"}}`
+	byteEncodedMsgAfterUpgrade := []byte(jsonStringAfterUpgrade)
+	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1000))))
+	suite.Require().NoError(err)
+
+	// failed register due lack of fees (fees required)
+	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, nil)
+	suite.Error(err)
 }
