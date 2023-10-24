@@ -100,6 +100,18 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 			err: ErrZeroDeposit,
 		},
 		{
+			name: "invalid duplicate deposit",
+			msg: MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{1, 2, 1},
+				TickIndexesAToB: []int64{0, 0, 0},
+				AmountsA:        []math.Int{math.OneInt(), math.OneInt(), math.OneInt()},
+				AmountsB:        []math.Int{math.OneInt(), math.OneInt(), math.OneInt()},
+			},
+			err: ErrDuplicatePoolDeposit,
+		},
+		{
 			name: "invalid no deposit",
 			msg: MsgDeposit{
 				Creator:         sample.AccAddress(),

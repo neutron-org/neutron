@@ -164,4 +164,9 @@ var (
 		1149,
 		"Invalid Address",
 	)
+	ErrDuplicatePoolDeposit = sdkerrors.Register(
+		ModuleName,
+		1150,
+		"Can only provide a single deposit amount for each tick, fee pair",
+	)
 )

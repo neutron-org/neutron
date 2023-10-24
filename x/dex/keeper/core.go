@@ -77,9 +77,6 @@ func (k Keeper) DepositCore(
 			return nil, nil, nil, types.ErrDepositShareUnderflow
 		}
 
-		if err := k.MintShares(ctx, receiverAddr, outShares); err != nil {
-			return nil, nil, nil, err
-		}
 		sharesIssued = append(sharesIssued, outShares)
 
 		amounts0Deposited[i] = inAmount0
@@ -103,6 +100,7 @@ func (k Keeper) DepositCore(
 	// At this point shares issued is not sorted and may have duplicates
 	// we must sanitize to convert it to a valid set of coins
 	sharesIssued = utils.SanitizeCoins(sharesIssued)
+
 	if totalAmountReserve0.IsPositive() {
 		coin0 := sdk.NewCoin(pairID.Token0, totalAmountReserve0)
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin0}); err != nil {
@@ -115,6 +113,10 @@ func (k Keeper) DepositCore(
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin1}); err != nil {
 			return nil, nil, nil, err
 		}
+	}
+
+	if err := k.MintShares(ctx, receiverAddr, sharesIssued); err != nil {
+		return nil, nil, nil, err
 	}
 
 	return amounts0Deposited, amounts1Deposited, sharesIssued, nil
