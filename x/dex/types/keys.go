@@ -276,8 +276,8 @@ const (
 )
 
 const (
-	GoodTilPurgeHitGasLimitEventKey = "GoodTilPurgeHitGasLimit"
-	GoodTilPurgeHitGasLimitEventGas = "Gas"
+	EventTypeGoodTilPurgeHitGasLimit = "GoodTilPurgeHitGasLimit"
+	GoodTilPurgeHitGasLimitEventGas  = "Gas"
 )
 
 const (

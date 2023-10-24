@@ -220,9 +220,8 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
 func GoodTilPurgeHitLimitEvent(gas sdk.Gas) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
-		sdk.NewAttribute(sdk.AttributeKeyAction, GoodTilPurgeHitGasLimitEventKey),
 		sdk.NewAttribute(GoodTilPurgeHitGasLimitEventGas, strconv.FormatUint(gas, 10)),
 	}
 
-	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
+	return sdk.NewEvent(EventTypeGoodTilPurgeHitGasLimit, attrs...)
 }

@@ -166,7 +166,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	keeper.PurgeExpiredLimitOrders(ctx, now)
 
 	// THEN GoodTilPurgeHitGasLimit event is emitted
-	s.AssertEventValueEmitted(types.GoodTilPurgeHitGasLimitEventKey, "Gas Limit Event not emitted")
+	s.AssertEventEmitted(ctx, types.EventTypeGoodTilPurgeHitGasLimit, 1)
 
 	// All JIT expirations are purged but other expirations remain
 	expList := keeper.GetAllLimitOrderExpiration(ctx)
