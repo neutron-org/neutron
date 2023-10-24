@@ -3,6 +3,7 @@ package nextupgrade_test
 import (
 	"testing"
 
+	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
@@ -53,6 +54,9 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	subspace, _ = app.ParamsKeeper.GetSubspace(tokenfactorytypes.StoreKey)
 	pTokenfactory := tokenfactorytypes.DefaultParams()
 	subspace.SetParamSet(ctx, &pTokenfactory)
+
+	pWasmTypes := icqtypes.DefaultParams()
+	subspace.SetParamSet(ctx, &pWasmTypes)
 
 	subspace, _ = app.ParamsKeeper.GetSubspace(icqtypes.StoreKey)
 	pICQTypes := icqtypes.DefaultParams()
@@ -158,4 +162,50 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	id, err := app.AdminmoduleKeeper.GetProposalID(ctx)
 	suite.Require().NoError(err)
 	suite.Require().Equal(uint64(1), id)
+}
+
+func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
+	var (
+		app                 = suite.GetNeutronZoneApp(suite.ChainA)
+		ccvConsumerSubspace = app.GetSubspace(ccvconsumertypes.ModuleName)
+		ctx                 = suite.ChainA.GetContext()
+	)
+
+	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
+
+	// emulate mainnet/testnet state
+	ccvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &[]string{params.DefaultDenom})
+
+	var denomsBefore []string
+	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denomsBefore)
+	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1weweewe"), "../../wasmbiding/testdata/neutron_interchain_txs.wasm.wasm")
+	contractAddressBefore := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1weweewe"), codeIDBefore)
+
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1weweewe"), "../../wasmbinding/testdata/neutron_interchain_txs.wasm")
+	contractAddressAfter := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1weweewe"), codeID)
+	// register w/o actual fees
+	jsonStringBefore := `{"connection_id":"1","interchain_account_id":"test-1"}`
+	byteEncodedMsgBefore := []byte(jsonStringBefore)
+	_, err := contractKeeper.Execute(ctx, contractAddressBefore, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgBefore, nil)
+	suite.Require().Error(err)
+
+	// register with fees
+	jsonStringAfter := `{"connection_id":"1","interchain_account_id":"test-2"}`
+	byteEncodedMsgAfter := []byte(jsonStringAfter)
+	_, err = contractKeeper.Execute(ctx, contractAddressAfter, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfter, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1000))))
+	suite.Require().NoError(err)
+
+	// failed register due lack of fees
+	_, err = contractKeeper.Execute(ctx, contractAddressAfter, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfter, nil)
+	suite.Require().Error(err)
 }

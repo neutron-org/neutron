@@ -92,3 +92,19 @@ func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) 
 func (k Keeper) GetAuthority() string {
 	return k.authority
 }
+
+func (k Keeper) GetLastCodeIDBeforeUpgrade(ctx sdk.Context) (codeID uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bytes := store.Get(types.LastCodeIdBeforeUpgrade)
+
+	if bytes == nil {
+		k.Logger(ctx).Debug("Last code id key don't exists, GetLastCodeID returns 0")
+		return 0
+	}
+	return sdk.BigEndianToUint64(bytes)
+}
+
+func (k Keeper) SetLastCodeIDBeforeUpgrade(ctx sdk.Context, id uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.LastCodeIdBeforeUpgrade, sdk.Uint64ToBigEndian(id))
+}

@@ -126,8 +126,8 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		)
 
 		// Store code and instantiate reflect contract.
-		codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-		contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+		codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+		contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 		suite.Require().NotEmpty(contractAddress)
 
 		err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -383,8 +383,8 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 					ctx           = suite.ChainA.GetContext()
 					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 				)
-				codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-				newContractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+				codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+				newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 				suite.Require().NotEmpty(newContractAddress)
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
@@ -411,8 +411,8 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			)
 
 			// Store code and instantiate reflect contract.
-			codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+			codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+			contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 			suite.Require().NotEmpty(contractAddress)
 
 			err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -553,8 +553,8 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					ctx           = suite.ChainA.GetContext()
 					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
 				)
-				codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-				newContractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+				codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+				newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 				suite.Require().NotEmpty(newContractAddress)
 				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
@@ -583,8 +583,8 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 			)
 
 			// Store code and instantiate reflect contract.
-			codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+			codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+			contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 			suite.Require().NotEmpty(contractAddress)
 
 			err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -1421,8 +1421,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			)
 
 			// Store code and instantiate reflect contract.
-			codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+			codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+			contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 			suite.Require().NotEmpty(contractAddress)
 
 			err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -1691,8 +1691,8 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 	)
 
 	// Store code and instantiate reflect contract.
-	codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+	codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+	contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Top up contract address with native coins for deposit
@@ -1724,7 +1724,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 	suite.Require().Equal(params.QuerySubmitTimeout, registeredQuery.SubmitTimeout)
 	suite.Require().Greater(uint64(ctx.BlockHeight()), registeredQuery.LastSubmittedResultLocalHeight+registeredQuery.SubmitTimeout)
 
-	newContractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+	newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 	suite.Require().NotEmpty(newContractAddress)
 	resp, err := msgSrv.RemoveInterchainQuery(sdk.WrapSDKContext(ctx), &iqtypes.MsgRemoveInterchainQueryRequest{
 		QueryId: 1,
