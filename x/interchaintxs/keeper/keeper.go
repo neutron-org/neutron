@@ -32,7 +32,7 @@ type (
 		icaControllerKeeper types.ICAControllerKeeper
 		sudoKeeper          types.WasmKeeper
 		bankKeeper          types.BankKeeper
-		feeBurnerKeeper     types.FeeBurnerKeeper
+		treasuryKeeper      types.TreasuryKeeper
 		authority           string
 	}
 )
@@ -46,7 +46,7 @@ func NewKeeper(
 	sudoKeeper types.WasmKeeper,
 	feeKeeper types.FeeRefunderKeeper,
 	bankKeeper types.BankKeeper,
-	feeBurnerKeeper types.FeeBurnerKeeper,
+	treasuryKeeper types.TreasuryKeeper,
 	authority string,
 ) *Keeper {
 	return &Keeper{
@@ -58,7 +58,7 @@ func NewKeeper(
 		sudoKeeper:          sudoKeeper,
 		feeKeeper:           feeKeeper,
 		bankKeeper:          bankKeeper,
-		feeBurnerKeeper:     feeBurnerKeeper,
+		treasuryKeeper:      treasuryKeeper,
 		authority:           authority,
 	}
 }
@@ -76,7 +76,7 @@ func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) 
 		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided fee is less than min governance set ack fee: %s < %s", fee, params.RegisterFee)
 	}
 
-	treasury := k.feeBurnerKeeper.GetParams(ctx).TreasuryAddress
+	treasury := k.treasuryKeeper.GetTreasury(ctx)
 	treasuryAddress, err := sdk.AccAddressFromBech32(treasury)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert treasury, bech32 to AccAddress: %s: %s", treasury, err.Error())

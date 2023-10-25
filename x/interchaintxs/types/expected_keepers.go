@@ -7,7 +7,6 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
@@ -49,6 +48,8 @@ type ChannelKeeper interface {
 	GetConnection(ctx sdk.Context, connectionID string) (ibcexported.ConnectionI, error)
 }
 
-type FeeBurnerKeeper interface {
-	GetParams(ctx sdk.Context) feeburnertypes.Params
+// TreasuryKeeper is a keeper of a module that keeps and maintains the treasury address.
+// This could be different module for each chain.
+type TreasuryKeeper interface {
+	GetTreasury(ctx sdk.Context) string
 }

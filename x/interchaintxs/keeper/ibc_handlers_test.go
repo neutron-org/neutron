@@ -26,8 +26,8 @@ func TestHandleAcknowledgement(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, feeburnerKeeper)
+	treasuryKeeper := mock_types.NewMockTreasuryKeeper(ctrl)
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, treasuryKeeper)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 
 	resACK := channeltypes.Acknowledgement{
@@ -75,8 +75,8 @@ func TestHandleTimeout(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, feeburnerKeeper)
+	treasuryKeeper := mock_types.NewMockTreasuryKeeper(ctrl)
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, treasuryKeeper)
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
@@ -113,8 +113,8 @@ func TestHandleChanOpenAck(t *testing.T) {
 	defer ctrl.Finish()
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	feeburnerKeeper := mock_types.NewMockFeeBurnerKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, feeburnerKeeper)
+	treasuryKeeper := mock_types.NewMockTreasuryKeeper(ctrl)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, treasuryKeeper)
 	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0"
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	channelID := "channel-0"
