@@ -7,6 +7,7 @@ package mock_types
 import (
 	reflect "reflect"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types1 "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -110,6 +111,10 @@ func (mr *MockBankKeeperMockRecorder) SpendableCoins(ctx, addr interface{}) *gom
 type MockWasmKeeper struct {
 	ctrl     *gomock.Controller
 	recorder *MockWasmKeeperMockRecorder
+}
+
+func (m *MockWasmKeeper) GetContractInfo(ctx types.Context, contractAddress types.AccAddress) *wasmtypes.ContractInfo {
+	return &wasmtypes.ContractInfo{CodeID: 1}
 }
 
 // MockWasmKeeperMockRecorder is the mock recorder for MockWasmKeeper.
