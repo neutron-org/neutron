@@ -55,25 +55,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderInSpread0To1() {
 	s.assertCurr0To1(1)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderInSpreadMinMaxNotAdjusted() {
-	s.fundAliceBalances(50, 50)
-
-	// GIVEN
-	// create spread around -5, 5
-	s.aliceDeposits(NewDeposit(10, 10, 0, 5))
-	s.assertAliceBalances(40, 40)
-	s.assertDexBalances(10, 10)
-
-	// WHEN
-	// place limit order for B at tick -1
-	s.aliceLimitSells("TokenA", -1, 10)
-	s.assertAliceBalances(30, 40)
-	s.assertDexBalances(20, 10)
-
-	// THEN
-	// assert min, max not moved
-}
-
 func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpread0To1NotAdjusted() {
 	s.fundAliceBalances(50, 50)
 
@@ -118,98 +99,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpread1To0NotAdjusted() {
 	s.assertCurr1To0(-1)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMinAdjusted() {
-	s.fundAliceBalances(50, 50)
-
-	// GIVEN
-	// create spread around -1, 1
-	s.aliceDeposits(NewDeposit(10, 10, 0, 1))
-	s.assertAliceBalances(40, 40)
-	s.assertDexBalances(10, 10)
-	s.assertCurr1To0(-1)
-	s.assertCurr0To1(1)
-
-	// WHEN
-	// place limit order out of spread (for B at tick -3)
-	s.aliceLimitSells("TokenA", -3, 10)
-	s.assertAliceBalances(30, 40)
-	s.assertDexBalances(20, 10)
-
-	// THEN
-	// assert min moved
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMaxAdjusted() {
-	s.fundAliceBalances(50, 50)
-
-	// GIVEN
-	// create spread around -1, 1
-	s.aliceDeposits(NewDeposit(10, 10, 0, 1))
-	s.assertAliceBalances(40, 40)
-	s.assertDexBalances(10, 10)
-	s.assertCurr1To0(-1)
-	s.assertCurr0To1(1)
-
-	// WHEN
-	// place limit order out of spread (for A at tick 3)
-	s.aliceLimitSells("TokenB", 3, 10)
-	s.assertAliceBalances(40, 30)
-	s.assertDexBalances(10, 20)
-
-	// THEN
-	// assert max moved
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMinNotAdjusted() {
-	s.fundAliceBalances(50, 50)
-
-	// GIVEN
-	// create spread around -1, 1
-	s.aliceDeposits(NewDeposit(10, 10, 0, 1))
-	s.assertAliceBalances(40, 40)
-	s.assertDexBalances(10, 10)
-	s.assertCurr1To0(-1)
-	s.assertCurr0To1(1)
-	// deposit new min at -5
-	s.aliceDeposits(NewDeposit(10, 0, 0, 5))
-	s.assertAliceBalances(30, 40)
-	s.assertDexBalances(20, 10)
-
-	// WHEN
-	// place limit order in spread (for B at tick -3)
-	s.aliceLimitSells("TokenA", -3, 10)
-	s.assertAliceBalances(20, 40)
-	s.assertDexBalances(30, 10)
-
-	// THEN
-	// assert min not moved
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderOutOfSpreadMaxNotAdjusted() {
-	s.fundAliceBalances(50, 50)
-
-	// GIVEN
-	// create spread around -1, 1
-	s.aliceDeposits(NewDeposit(10, 10, 0, 1))
-	s.assertAliceBalances(40, 40)
-	s.assertDexBalances(10, 10)
-	s.assertCurr1To0(-1)
-	s.assertCurr0To1(1)
-	// deposit new max at 5
-	s.aliceDeposits(NewDeposit(0, 10, 0, 5))
-	s.assertAliceBalances(40, 30)
-	s.assertDexBalances(10, 20)
-
-	// WHEN
-	// place limit order in spread (for A at tick 3)
-	s.aliceLimitSells("TokenB", 3, 10)
-	s.assertAliceBalances(40, 20)
-	s.assertDexBalances(10, 30)
-
-	// THEN
-	// assert max not moved
-}
-
 func (s *DexTestSuite) TestPlaceLimitOrderExistingLiquidityA() {
 	s.fundAliceBalances(50, 50)
 
@@ -223,18 +112,18 @@ func (s *DexTestSuite) TestPlaceLimitOrderExistingLiquidityA() {
 	s.assertCurr1To0(-1)
 	s.assertCurr0To1(math.MaxInt64)
 
-	// // WHEN
-	// // place limit order on same tick (for B at tick -1)
-	// s.aliceLimitSells("TokenA", -1, 10)
+	// WHEN
+	// place limit order on same tick (for B at tick -1)
+	s.aliceLimitSells("TokenA", -1, 10)
 
-	// // THEN
-	// // assert 20 of token A deposited at tick 0 fee 0 and ticks unchanged
-	// s.assertLimitLiquidityAtTick("TokenA", -1, 20)
-	// s.assertAliceLimitLiquidityAtTick("TokenA", 20, -1)
-	// s.assertAliceBalances(30, 50)
-	// s.assertDexBalances(20, 0)
-	// s.assertCurr1To0(-1)
-	// s.assertCurr0To1(math.MaxInt64)
+	// THEN
+	// assert 20 of token A deposited at tick 0 fee 0 and ticks unchanged
+	s.assertLimitLiquidityAtTick("TokenA", -1, 20)
+	s.assertAliceLimitLiquidityAtTick("TokenA", 20, -1)
+	s.assertAliceBalances(30, 50)
+	s.assertDexBalances(20, 0)
+	s.assertCurr1To0(-1)
+	s.assertCurr0To1(math.MaxInt64)
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderExistingLiquidityB() {
