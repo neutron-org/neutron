@@ -17,6 +17,7 @@ import (
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	blocksdk "github.com/skip-mev/block-sdk/block"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -34,7 +35,7 @@ type HandlerOptions struct {
 	AuctionKeeper auctionkeeper.Keeper
 	TxEncoder     sdk.TxEncoder
 	MEVLane       auctionante.MEVLane
-	Mempool       auctionante.Mempool
+	Mempool       blocksdk.Mempool
 
 	// globalFee
 	GlobalFeeSubspace paramtypes.Subspace
@@ -100,7 +101,6 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 			options.AuctionKeeper,
 			options.TxEncoder,
 			options.MEVLane,
-			options.Mempool,
 		),
 	}
 
