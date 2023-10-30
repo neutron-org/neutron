@@ -103,8 +103,3 @@ func (k Keeper) GetLastCodeIDBeforeUpgrade(ctx sdk.Context) (codeID uint64) {
 	}
 	return sdk.BigEndianToUint64(bytes)
 }
-
-func (k Keeper) SetLastCodeIDBeforeUpgrade(ctx sdk.Context, id uint64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.LastCodeIdBeforeUpgrade, sdk.Uint64ToBigEndian(id))
-}
