@@ -7,6 +7,7 @@ import (
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
@@ -26,10 +27,11 @@ func RegisterCustomPlugins(
 	feeRefunderKeeper *feerefunderkeeper.Keeper,
 	bank *bankkeeper.BaseKeeper,
 	tfk *tokenfactorykeeper.Keeper,
+	wasmHooks *ibchooks.WasmHooks,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
 ) []wasmkeeper.Option {
-	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, contractmanagerKeeper)
+	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, wasmHooks, contractmanagerKeeper)
 
 	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
 		Custom: CustomQuerier(wasmQueryPlugin),

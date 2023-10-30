@@ -154,6 +154,20 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 
+		case contractQuery.IbcHooksContext != nil:
+			currentPacket := qp.wasmHooks.CurrentPacket()
+
+			res := &bindings.IbcHooksContextResponse{
+				CurrentPacket: currentPacket,
+			}
+
+			bz, err := json.Marshal(res)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to JSON marshal IbcHooksContext response.")
+			}
+
+			return bz, nil
+
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}

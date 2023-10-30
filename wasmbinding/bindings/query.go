@@ -2,6 +2,7 @@ package bindings
 
 import (
 	"encoding/json"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
@@ -39,6 +40,8 @@ type NeutronQuery struct {
 	// Contractmanager queries
 	// Query all failures for address
 	Failures *Failures `json:"failures,omitempty"`
+	/// Returns originating IBC packet if contract was called within the context of IBC wasm hook
+	IbcHooksContext *IbcHooksContext `json:"ibc_hooks_context,omitempty"`
 }
 
 /* Requests */
@@ -208,4 +211,10 @@ type Failures struct {
 
 type FailuresResponse struct {
 	Failures []contractmanagertypes.Failure `json:"failures"`
+}
+
+type IbcHooksContext struct{}
+
+type IbcHooksContextResponse struct {
+	CurrentPacket *channeltypes.Packet `json:"current_packet,omitempty"`
 }

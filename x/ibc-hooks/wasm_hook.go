@@ -25,20 +25,27 @@ type ContractAck struct {
 type WasmHooks struct {
 	ContractKeeper      *wasmkeeper.Keeper
 	bech32PrefixAccAddr string
+	// used to provide originating packet to wasm contracts when they are executed within context of IBC wasm hook
+	currentPacket *channeltypes.Packet
 }
 
 func NewWasmHooks(contractKeeper *wasmkeeper.Keeper, bech32PrefixAccAddr string) WasmHooks {
 	return WasmHooks{
 		ContractKeeper:      contractKeeper,
 		bech32PrefixAccAddr: bech32PrefixAccAddr,
+		currentPacket:       nil,
 	}
+}
+
+func (h WasmHooks) CurrentPacket() *channeltypes.Packet {
+	return h.currentPacket
 }
 
 func (h WasmHooks) ProperlyConfigured() bool {
 	return h.ContractKeeper != nil
 }
 
-func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
+func (h *WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
 	if !h.ProperlyConfigured() {
 		// Not configured
 		return im.App.OnRecvPacket(ctx, packet, relayer)
@@ -97,6 +104,12 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 	// The packet's denom is the denom in the sender chain. This needs to be converted to the local denom.
 	denom := utils.MustExtractDenomFromPacketOnRecv(packet)
 	funds := sdk.NewCoins(sdk.NewCoin(denom, amount))
+
+	// Prepare IBC hook context to be queried by contract
+	h.currentPacket = &packet
+	defer func() {
+		h.currentPacket = nil
+	}()
 
 	// Execute the contract
 	execMsg := wasmtypes.MsgExecuteContract{
