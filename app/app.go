@@ -328,7 +328,7 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   auctionante.Mempool
+	Mempool   blocksdk.Mempool
 	MEVLane   auctionante.MEVLane
 }
 
@@ -983,6 +983,7 @@ func New(
 	handler := blocksdkabci.NewProposalHandler(
 		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
+		app.GetTxConfig().TxEncoder(),
 		mempool,
 	)
 	app.SetPrepareProposal(handler.PrepareProposalHandler())
