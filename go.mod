@@ -192,7 +192,7 @@ replace (
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.40.0-rc.0.0.20230808084410-6083b888424e
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v0.0.0-20230906150724-9ccb75c61fc5
-	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.47.5-0.20230929200416-6c59762e84ad
+	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.47.5
 	github.com/cosmos/gaia/v11 => github.com/cosmos/gaia/v11 v11.0.0-20230724152830-861ba391c3b4
 	github.com/cosmos/ledger-cosmos-go => github.com/cosmos/ledger-cosmos-go v0.12.1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
