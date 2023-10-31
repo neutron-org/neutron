@@ -18,7 +18,9 @@ const (
 )
 
 const (
-	prefixParamsKey                 = iota + 1
+	// parameters key
+	prefixParamsKey = iota + 1
+	// prefix of code id, starting from which we charge fee for ICA registration
 	prefixLastFreeRegisterICACodeID = iota + 2
 )
 
