@@ -328,8 +328,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool auctionante.Mempool
-	MEVLane auctionante.MEVLane
+	Mempool   blocksdk.Mempool
+	MEVLane   auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -982,6 +982,7 @@ func New(
 	handler := blocksdkabci.NewProposalHandler(
 		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
+		app.GetTxConfig().TxEncoder(),
 		mempool,
 	)
 	app.SetPrepareProposal(handler.PrepareProposalHandler())
