@@ -18,9 +18,9 @@ const (
 )
 
 const (
-	prefixParamsKey               = iota + 1
-	prefixLastCodeIdBeforeUpgrade = iota + 2
+	prefixParamsKey                 = iota + 1
+	prefixLastFreeRegisterICACodeID = iota + 2
 )
 
 var ParamsKey = []byte{prefixParamsKey}
-var LastCodeIdBeforeUpgrade = []byte{prefixLastCodeIdBeforeUpgrade}
+var LastFreeRegisterICACodeID = []byte{prefixLastFreeRegisterICACodeID}

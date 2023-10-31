@@ -93,9 +93,9 @@ func (k Keeper) GetAuthority() string {
 	return k.authority
 }
 
-func (k Keeper) GetLastCodeIDBeforeUpgrade(ctx sdk.Context) (codeID uint64) {
+func (k Keeper) GetLastFreeRegisterICACodeID(ctx sdk.Context) (codeID uint64) {
 	store := ctx.KVStore(k.storeKey)
-	bytes := store.Get(types.LastCodeIdBeforeUpgrade)
+	bytes := store.Get(types.LastFreeRegisterICACodeID)
 
 	if bytes == nil {
 		k.Logger(ctx).Debug("Last code id key don't exists, GetLastCodeID returns 0")

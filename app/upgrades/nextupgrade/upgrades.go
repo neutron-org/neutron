@@ -246,7 +246,7 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 	if bzWasm == nil {
 		return fmt.Errorf("last code ID not found during the upgrade")
 	}
-	store.Set(interchaintxstypes.LastCodeIdBeforeUpgrade, bzWasm)
+	store.Set(interchaintxstypes.LastFreeRegisterICACodeID, bzWasm)
 	return nil
 }
 

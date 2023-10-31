@@ -5,6 +5,7 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
@@ -166,22 +167,12 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 
 func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	var (
-		app                 = suite.GetNeutronZoneApp(suite.ChainA)
-		ccvConsumerSubspace = app.GetSubspace(ccvconsumertypes.ModuleName)
-		ctx                 = suite.ChainA.GetContext()
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext()
 	)
 
-	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
 	suite.FundAcc(sdk.AccAddress("neutron1weweewe"), sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(10000))))
-	// emulate mainnet/testnet state
-	ccvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &[]string{params.DefaultDenom})
-
-	var denomsBefore []string
-	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denomsBefore)
-	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
-	// store contract just to increase code_id
-	_ = suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
 	// store contract for register ica w/o fees
 	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
 	contractAddressBeforeUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeIDBefore)
@@ -193,7 +184,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
 
-	lastCodeID := app.InterchainTxsKeeper.GetLastCodeIDBeforeUpgrade(ctx)
+	lastCodeID := app.InterchainTxsKeeper.GetLastFreeRegisterICACodeID(ctx)
 	// ensure that wasm module stores next code id
 	suite.Require().Equal(lastCodeID, codeIDBefore+1)
 
@@ -214,5 +205,5 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 
 	// failed register due lack of fees (fees required)
 	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, nil)
-	suite.Error(err)
+	suite.ErrorIs(err, errors.ErrInsufficientFunds)
 }
