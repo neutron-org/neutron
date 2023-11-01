@@ -30,8 +30,8 @@ func (s *DexTestSuite) TestAutoswapperWithdraws() {
 
 	s.aliceWithdraws(NewWithdrawalInt(autoswapSharesMinted, int64(tickIndex), uint64(fee)))
 
-	s.assertAliceBalances(aliceExpectedBalance0.Int64(), aliceExpectedBalance1.Int64())
-	s.assertDexBalances(dexExpectedBalance0.Int64(), dexExpectedBalance1.Int64())
+	s.assertAliceBalancesInt(aliceExpectedBalance0, aliceExpectedBalance1)
+	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
 }
 
 func (s *DexTestSuite) TestAutoswapOtherDepositorWithdraws() {
@@ -60,10 +60,10 @@ func (s *DexTestSuite) TestAutoswapOtherDepositorWithdraws() {
 
 	bobExpectedBalance0, bobExpectedBalance1, dexExpectedBalance0, dexExpectedBalance1 := s.calcExpectedBalancesAfterWithdrawOnePool(bobSharesMinted, s.bob, int64(tickIndex), uint64(fee))
 
-	s.bobWithdraws(NewWithdrawal(bobSharesMinted.Int64(), int64(tickIndex), uint64(fee)))
+	s.bobWithdraws(NewWithdrawalInt(bobSharesMinted, int64(tickIndex), uint64(fee)))
 
-	s.assertBobBalances(bobExpectedBalance0.Int64(), bobExpectedBalance1.Int64())
-	s.assertDexBalances(dexExpectedBalance0.Int64(), dexExpectedBalance1.Int64())
+	s.assertBobBalancesInt(bobExpectedBalance0, bobExpectedBalance1)
+	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
 }
 
 func (s *DexTestSuite) TestAutoswapBothWithdraws() {
@@ -77,9 +77,8 @@ func (s *DexTestSuite) TestAutoswapBothWithdraws() {
 	tickIndex := 10000
 	fee := 5
 
-	bobSharesMinted := s.calcSharesMinted(int64(tickIndex), int64(bobDep0), int64(bobDep1))
-
 	s.bobDeposits(NewDeposit(bobDep0, bobDep1, tickIndex, fee))
+	bobSharesMinted := s.getAccountShares(s.bob, "TokenA", "TokenB", int64(tickIndex), uint64(fee))
 	s.assertBobBalances(40, 40)
 	s.assertDexBalances(10, 10)
 
@@ -89,20 +88,20 @@ func (s *DexTestSuite) TestAutoswapBothWithdraws() {
 	s.assertDexBalances(20, 15)
 
 	// Calculated expected amounts out
-	autoswapSharesMinted := s.calcAutoswapSharesMinted(int64(tickIndex), uint64(fee), 5, 0, 5, 5, bobSharesMinted.Int64(), bobSharesMinted.Int64())
+	autoswapSharesMinted := s.getAccountShares(s.alice, "TokenA", "TokenB", int64(tickIndex), uint64(fee))
 	// totalShares := autoswapSharesMinted.Add(math.NewInt(20))
 
 	bobExpectedBalance0, bobExpectedBalance1, dexExpectedBalance0, dexExpectedBalance1 := s.calcExpectedBalancesAfterWithdrawOnePool(bobSharesMinted, s.bob, int64(tickIndex), uint64(fee))
 
-	s.bobWithdraws(NewWithdrawal(bobSharesMinted.Int64(), int64(tickIndex), uint64(fee)))
+	s.bobWithdraws(NewWithdrawalInt(bobSharesMinted, int64(tickIndex), uint64(fee)))
 
-	s.assertBobBalances(bobExpectedBalance0.Int64(), bobExpectedBalance1.Int64())
-	s.assertDexBalances(dexExpectedBalance0.Int64(), dexExpectedBalance1.Int64())
+	s.assertBobBalancesInt(bobExpectedBalance0, bobExpectedBalance1)
+	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
 
 	aliceExpectedBalance0, aliceExpectedBalance1, dexExpectedBalance0, dexExpectedBalance1 := s.calcExpectedBalancesAfterWithdrawOnePool(autoswapSharesMinted, s.alice, int64(tickIndex), uint64(fee))
 
 	s.aliceWithdraws(NewWithdrawalInt(autoswapSharesMinted, int64(tickIndex), uint64(fee)))
 
-	s.assertAliceBalances(aliceExpectedBalance0.Int64(), aliceExpectedBalance1.Int64())
-	s.assertDexBalances(dexExpectedBalance0.Int64(), dexExpectedBalance1.Int64())
+	s.assertAliceBalancesInt(aliceExpectedBalance0, aliceExpectedBalance1)
+	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
 }

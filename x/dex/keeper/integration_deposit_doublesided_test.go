@@ -113,7 +113,7 @@ func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbBelow() {
 	// THEN
 	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
 
-	s.aliceDeposits(NewDeposit(10, 10, -5, 1))
+	s.aliceDeposits(NewDeposit(10, 11, -5, 1))
 
 	// buying liquidity behind enemy lines doesn't break anything
 	s.bobLimitSells("TokenA", 0, 10, types.LimitOrderType_FILL_OR_KILL)
@@ -135,7 +135,7 @@ func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbAbove() {
 	// THEN
 	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
 
-	s.aliceDeposits(NewDeposit(10, 10, 5, 1))
+	s.aliceDeposits(NewDeposit(11, 10, 5, 1))
 
 	// buying liquidity behind enemy lines doesn't break anything
 	s.bobLimitSells("TokenB", 0, 10, types.LimitOrderType_FILL_OR_KILL)
@@ -221,28 +221,30 @@ func (s *DexTestSuite) TestDepositValueAccural() {
 	// Alice deposits 100TokenA @ tick0 => 100 shares
 	s.aliceDeposits(NewDeposit(100, 0, 0, 10))
 	s.assertAliceShares(0, 10, 100)
-	s.assertLiquidityAtTick(math.NewInt(100), math.ZeroInt(), 0, 10)
+	s.assertLiquidityAtTick(100, 0, 0, 10)
 
-	// Lots of trade activity => ~200 ExistingValueToken0
+	// Lots of trade activity => ~110 ExistingValueToken0
 
 	for i := 0; i < 100; i++ {
-		liquidityA, liquidityB := s.getLiquidityAtTick(0, 10)
 		if i%2 == 0 {
-			s.bobLimitSells("TokenB", -10, int(liquidityA.Int64())+10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+			s.bobLimitSells("TokenB", -10, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		} else {
-			s.bobLimitSells("TokenA", 10, int(liquidityB.Int64())+10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+			s.bobLimitSells("TokenA", 10, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		}
 	}
-	s.assertLiquidityAtTick(math.NewInt(200), math.NewInt(0), 0, 10)
-	s.assertDexBalances(200, 0)
+	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
+	s.assertDexBalancesInt(math.NewInt(110516593), math.ZeroInt())
 
+	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
 	// Carol deposits 100TokenA @tick0
-	s.carolDeposits(NewDeposit(100, 1, 0, 10))
-	s.assertCarolShares(0, 10, 50)
+	s.carolDeposits(NewDeposit(100, 0, 0, 10))
+	s.assertLiquidityAtTickInt(math.NewInt(210516593), math.ZeroInt(), 0, 10)
+	s.assertAccountSharesInt(s.carol, 0, 10, math.NewInt(90484150))
 
+	// Alice gets back 100% of the accrued trade value
 	s.aliceWithdraws(NewWithdrawal(100, 0, 10))
-	s.assertAliceBalances(200, 0)
-
-	s.carolWithdraws(NewWithdrawal(50, 0, 10))
+	s.assertAliceBalancesInt(math.NewInt(110516593), math.NewInt(0))
+	// AND carol get's back only what she put in
+	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484150), 0, 10))
 	s.assertCarolBalances(100, 1)
 }

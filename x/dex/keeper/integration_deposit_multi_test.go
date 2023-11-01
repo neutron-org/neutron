@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"cosmossdk.io/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -34,12 +33,13 @@ func (s *DexTestSuite) TestDepositMultiSuccess() {
 	// alice deposits 5 A, 5 B at tick 0 fee 0 and then 10 A, 10 B at tick 5 fee 0
 	s.aliceDeposits(
 		NewDeposit(5, 5, 0, 1),
-		NewDeposit(10, 10, 0, 1),
+		NewDeposit(10, 10, 5, 0),
 	)
 
 	// THEN
 	// both deposits should go through
 	s.assertAliceBalances(35, 35)
-	s.assertLiquidityAtTick(math.NewInt(15), math.NewInt(15), 0, 1)
+	s.assertLiquidityAtTick(5, 5, 0, 1)
+	s.assertLiquidityAtTick(10, 10, 5, 0)
 	s.assertDexBalances(15, 15)
 }

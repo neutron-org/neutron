@@ -16,8 +16,8 @@ func (suite *IncentivesTestSuite) TestGetFutureRewardEstimate() {
 		depositSpecs: []depositSpec{
 			{
 				addr:   addr1,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   0,
 				fee:    1,
 			},
@@ -29,8 +29,8 @@ func (suite *IncentivesTestSuite) TestGetFutureRewardEstimate() {
 		depositSpecs: []depositSpec{
 			{
 				addr:   addr2,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   0,
 				fee:    1,
 			},
@@ -73,8 +73,8 @@ func (suite *IncentivesTestSuite) TestGetGauges() {
 		depositSpecs: []depositSpec{
 			{
 				addr:   addr1,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   0,
 				fee:    1,
 			},
@@ -86,8 +86,8 @@ func (suite *IncentivesTestSuite) TestGetGauges() {
 		depositSpecs: []depositSpec{
 			{
 				addr:   addr2,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   0,
 				fee:    1,
 			},

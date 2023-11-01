@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-// / Test suite
+// Test suite
 type DexTestSuite struct {
 	apptesting.KeeperTestHelper
 	msgServer types.MsgServer
@@ -29,6 +29,8 @@ type DexTestSuite struct {
 }
 
 var defaultPairID *types.PairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
+
+var denomMultiple = sdk.NewInt(1000000)
 
 var defaultTradePairID0To1 *types.TradePairID = &types.TradePairID{
 	TakerDenom: "TokenA",
@@ -55,11 +57,22 @@ func (s *DexTestSuite) SetupTest() {
 	s.msgServer = NewMsgServerImpl(s.App.DexKeeper)
 }
 
-/// Fund accounts
+// NOTE: In order to simulate more realistic trade volume and avoid inadvertent failures due to ErrInvalidPositionSpread
+// all of the basic user operations (fundXXXBalance, assertXXXBalance, XXXLimitsSells, etc.) treat TokenA and TokenB
+// as BIG tokens with an exponent of 6. Ie. fundAliceBalance(10, 10) funds alices account with 10,000,000 small TokenA and TokenB.
+// For tests requiring more accuracy methods that take Ints (ie. assertXXXAccountBalancesInt, NewWithdrawlInt) are used
+// and assume that amount are being provided in terms of small tokens.
+
+// Example:
+// s.fundAliceBalances(10, 10)
+// s.assertAliceBalances(10, 10) ==> True
+// s.assertAliceBalancesInt(sdkmath.NewInt(10_000_000), sdkmath.NewInt(10_000_000)) ==> true
+
+// Fund accounts
 
 func (s *DexTestSuite) fundAccountBalances(account sdk.AccAddress, aBalance, bBalance int64) {
-	aBalanceInt := sdkmath.NewInt(aBalance)
-	bBalanceInt := sdkmath.NewInt(bBalance)
+	aBalanceInt := sdkmath.NewInt(aBalance).Mul(denomMultiple)
+	bBalanceInt := sdkmath.NewInt(bBalance).Mul(denomMultiple)
 	balances := sdk.NewCoins(NewACoin(aBalanceInt), NewBCoin(bBalanceInt))
 
 	FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
@@ -70,13 +83,7 @@ func (s *DexTestSuite) fundAccountBalancesWithDenom(
 	addr sdk.AccAddress,
 	amounts sdk.Coins,
 ) {
-	if err := s.App.BankKeeper.MintCoins(s.Ctx, types.ModuleName, amounts); err != nil {
-		panic(err)
-	}
-
-	if err := s.App.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, types.ModuleName, addr, amounts); err != nil {
-		panic(err)
-	}
+	FundAccount(s.App.BankKeeper, s.Ctx, addr, amounts)
 }
 
 func (s *DexTestSuite) fundAliceBalances(a, b int64) {
@@ -114,7 +121,17 @@ func (s *DexTestSuite) assertAccountBalances(
 	aBalance int64,
 	bBalance int64,
 ) {
-	s.assertAccountBalancesInt(account, sdkmath.NewInt(aBalance), sdkmath.NewInt(bBalance))
+	s.assertAccountBalancesInt(account, sdkmath.NewInt(aBalance).Mul(denomMultiple), sdkmath.NewInt(bBalance).Mul(denomMultiple))
+}
+
+func (s *DexTestSuite) assertAccountBalanceWithDenomInt(
+	account sdk.AccAddress,
+	denom string,
+	expBalance sdkmath.Int,
+) {
+	actualBalance := s.App.BankKeeper.GetBalance(s.Ctx, account, denom).Amount
+	s.Assert().
+		True(expBalance.Equal(actualBalance), "expected %s != actual %s", expBalance, actualBalance)
 }
 
 func (s *DexTestSuite) assertAccountBalanceWithDenom(
@@ -122,10 +139,8 @@ func (s *DexTestSuite) assertAccountBalanceWithDenom(
 	denom string,
 	expBalance int64,
 ) {
-	actualBalance := s.App.BankKeeper.GetBalance(s.Ctx, account, denom).Amount
-	expBalanceInt := sdkmath.NewInt(expBalance)
-	s.Assert().
-		True(expBalanceInt.Equal(actualBalance), "expected %s != actual %s", expBalance, actualBalance)
+	expBalanceInt := sdkmath.NewInt(expBalance).Mul(denomMultiple)
+	s.assertAccountBalanceWithDenomInt(account, denom, expBalanceInt)
 }
 
 func (s *DexTestSuite) assertAliceBalances(a, b int64) {
@@ -164,6 +179,10 @@ func (s *DexTestSuite) assertDexBalances(a, b int64) {
 	s.assertAccountBalances(s.App.AccountKeeper.GetModuleAddress("dex"), a, b)
 }
 
+func (s *DexTestSuite) assertDexBalancesInt(a, b sdkmath.Int) {
+	s.assertAccountBalancesInt(s.App.AccountKeeper.GetModuleAddress("dex"), a, b)
+}
+
 func (s *DexTestSuite) assertDexBalanceWithDenom(denom string, expectedAmount int64) {
 	s.assertAccountBalanceWithDenom(
 		s.App.AccountKeeper.GetModuleAddress("dex"),
@@ -172,8 +191,12 @@ func (s *DexTestSuite) assertDexBalanceWithDenom(denom string, expectedAmount in
 	)
 }
 
-func (s *DexTestSuite) assertDexBalancesInt(a, b sdkmath.Int) {
-	s.assertAccountBalancesInt(s.App.AccountKeeper.GetModuleAddress("dex"), a, b)
+func (s *DexTestSuite) assertDexBalanceWithDenomInt(denom string, expectedAmount sdkmath.Int) {
+	s.assertAccountBalanceWithDenomInt(
+		s.App.AccountKeeper.GetModuleAddress("dex"),
+		denom,
+		expectedAmount,
+	)
 }
 
 func (s *DexTestSuite) traceBalances() {
@@ -353,7 +376,7 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	maxAmoutOut int,
 ) string {
 	tokenIn, tokenOut := GetInOutTokens(tokenIn, "TokenA", "TokenB")
-	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut))
+	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut)).Mul(denomMultiple)
 
 	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
@@ -361,7 +384,7 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 		TokenIn:          tokenIn,
 		TokenOut:         tokenOut,
 		TickIndexInToOut: int64(tick),
-		AmountIn:         sdkmath.NewInt(int64(amountIn)),
+		AmountIn:         sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		OrderType:        types.LimitOrderType_FILL_OR_KILL,
 		MaxAmountOut:     &maxAmountOutInt,
 	})
@@ -392,7 +415,7 @@ func (s *DexTestSuite) limitSells(
 		TokenIn:          tradePairID.TakerDenom,
 		TokenOut:         tradePairID.MakerDenom,
 		TickIndexInToOut: tickIndexTakerToMaker,
-		AmountIn:         sdkmath.NewInt(int64(amountIn)),
+		AmountIn:         sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		OrderType:        orderType,
 	})
 
@@ -414,7 +437,7 @@ func (s *DexTestSuite) limitSellsGoodTil(
 		TokenIn:          tradePairID.TakerDenom,
 		TokenOut:         tradePairID.MakerDenom,
 		TickIndexInToOut: tickIndexTakerToMaker,
-		AmountIn:         sdkmath.NewInt(int64(amountIn)),
+		AmountIn:         sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		OrderType:        types.LimitOrderType_GOOD_TIL_TIME,
 		ExpirationTime:   &goodTil,
 	})
@@ -446,8 +469,8 @@ type DepositWithOptions struct {
 
 func NewDeposit(amountA, amountB, tickIndex, fee int) *Deposit {
 	return &Deposit{
-		AmountA:   sdkmath.NewInt(int64(amountA)),
-		AmountB:   sdkmath.NewInt(int64(amountB)),
+		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
+		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
 		TickIndex: int64(tickIndex),
 		Fee:       uint64(fee),
 	}
@@ -458,8 +481,8 @@ func NewDepositWithOptions(
 	options DepositOptions,
 ) *DepositWithOptions {
 	return &DepositWithOptions{
-		AmountA:   sdkmath.NewInt(int64(amountA)),
-		AmountB:   sdkmath.NewInt(int64(amountB)),
+		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
+		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
 		TickIndex: int64(tickIndex),
 		Fee:       uint64(fee),
 		Options:   options,
@@ -677,8 +700,9 @@ func NewWithdrawalInt(shares sdkmath.Int, tick int64, fee uint64) *Withdrawal {
 	}
 }
 
+// Multiples amount of shares to represent BIGtoken with exponent 6
 func NewWithdrawal(shares, tick int64, fee uint64) *Withdrawal {
-	return NewWithdrawalInt(sdkmath.NewInt(shares), tick, fee)
+	return NewWithdrawalInt(sdkmath.NewInt(shares).Mul(denomMultiple), tick, fee)
 }
 
 func (s *DexTestSuite) aliceWithdraws(withdrawals ...*Withdrawal) {
@@ -865,7 +889,7 @@ func (s *DexTestSuite) multiHopSwaps(
 		account.String(),
 		account.String(),
 		routes,
-		sdkmath.NewInt(int64(amountIn)),
+		sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		exitLimitPrice,
 		pickBest,
 	)
@@ -887,7 +911,7 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwap(
 		Creator:        s.alice.String(),
 		Receiver:       s.alice.String(),
 		Routes:         multiHopRoutes,
-		AmountIn:       sdkmath.NewInt(int64(amountIn)),
+		AmountIn:       sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
@@ -911,7 +935,7 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwapFails(
 		Creator:        s.alice.String(),
 		Receiver:       s.alice.String(),
 		Routes:         multiHopRoutes,
-		AmountIn:       sdkmath.NewInt(int64(amountIn)),
+		AmountIn:       sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
@@ -971,7 +995,7 @@ func (s *DexTestSuite) multiHopSwapFails(
 		account.String(),
 		account.String(),
 		routes,
-		sdkmath.NewInt(int64(amountIn)),
+		sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		exitLimitPrice,
 		pickBest,
 	)
@@ -1053,7 +1077,7 @@ func (s *DexTestSuite) assertPoolShares(
 	fee uint64,
 	sharesExpected uint64,
 ) {
-	sharesExpectedInt := sdkmath.NewIntFromUint64(sharesExpected)
+	sharesExpectedInt := sdkmath.NewIntFromUint64(sharesExpected).Mul(denomMultiple)
 	sharesOwned := s.getPoolShares("TokenA", "TokenB", tick, fee)
 	s.Assert().Equal(sharesExpectedInt, sharesOwned)
 }
@@ -1074,16 +1098,25 @@ func (s *DexTestSuite) getAccountShares(
 	return s.App.BankKeeper.GetBalance(s.Ctx, account, poolDenom).Amount
 }
 
+func (s *DexTestSuite) assertAccountSharesInt(
+	account sdk.AccAddress,
+	tick int64,
+	fee uint64,
+	sharesExpected sdkmath.Int,
+) {
+	sharesOwned := s.getAccountShares(account, "TokenA", "TokenB", tick, fee)
+	s.Assert().
+		Equal(sharesExpected, sharesOwned, "expected %s != actual %s", sharesExpected, sharesOwned)
+}
+
 func (s *DexTestSuite) assertAccountShares(
 	account sdk.AccAddress,
 	tick int64,
 	fee uint64,
 	sharesExpected uint64,
 ) {
-	sharesExpectedInt := sdkmath.NewIntFromUint64(sharesExpected)
-	sharesOwned := s.getAccountShares(account, "TokenA", "TokenB", tick, fee)
-	s.Assert().
-		Equal(sharesExpectedInt, sharesOwned, "expected %s != actual %s", sharesExpected, sharesOwned)
+	sharesExpectedInt := sdkmath.NewIntFromUint64(sharesExpected).Mul(denomMultiple)
+	s.assertAccountSharesInt(account, tick, fee, sharesExpectedInt)
 }
 
 func (s *DexTestSuite) assertAliceShares(tick int64, fee, sharesExpected uint64) {
@@ -1136,7 +1169,7 @@ func (s *DexTestSuite) assertCurr1To0(curr1To0Expected int64) {
 }
 
 // Pool liquidity (i.e. deposited rather than LO)
-func (s *DexTestSuite) assertLiquidityAtTick(
+func (s *DexTestSuite) assertLiquidityAtTickInt(
 	amountA, amountB sdkmath.Int,
 	tickIndex int64,
 	fee uint64,
@@ -1148,7 +1181,17 @@ func (s *DexTestSuite) assertLiquidityAtTick(
 		True(amountB.Equal(liquidityB), "liquidity B: actual %s, expected %s", liquidityB, amountB)
 }
 
-func (s *DexTestSuite) assertLiquidityAtTickWithDenom(
+func (s *DexTestSuite) assertLiquidityAtTick(
+	amountA, amountB int64,
+	tickIndex int64,
+	fee uint64,
+) {
+	amountAInt := sdkmath.NewInt(amountA).Mul(denomMultiple)
+	amountBInt := sdkmath.NewInt(amountB).Mul(denomMultiple)
+	s.assertLiquidityAtTickInt(amountAInt, amountBInt, tickIndex, fee)
+}
+
+func (s *DexTestSuite) assertLiquidityAtTickWithDenomInt(
 	pairID *types.PairID,
 	expected0, expected1 sdkmath.Int,
 	tickIndex int64,
@@ -1161,16 +1204,28 @@ func (s *DexTestSuite) assertLiquidityAtTickWithDenom(
 		True(expected1.Equal(liquidity1), "liquidity 1: actual %s, expected %s", liquidity1, expected1)
 }
 
-func (s *DexTestSuite) assertPoolLiquidity(
-	amountA, amountB int,
+func (s *DexTestSuite) assertLiquidityAtTickWithDenom(
+	pairID *types.PairID,
+	expected0,
+	expected1,
 	tickIndex int64,
 	fee uint64,
 ) {
-	s.assertLiquidityAtTick(sdkmath.NewInt(int64(amountA)), sdkmath.NewInt(int64(amountB)), tickIndex, fee)
+	expected0Int := sdkmath.NewInt(expected0).Mul(denomMultiple)
+	expected1Int := sdkmath.NewInt(expected1).Mul(denomMultiple)
+	s.assertLiquidityAtTickWithDenomInt(pairID, expected0Int, expected1Int, tickIndex, fee)
+}
+
+func (s *DexTestSuite) assertPoolLiquidity(
+	amountA, amountB int64,
+	tickIndex int64,
+	fee uint64,
+) {
+	s.assertLiquidityAtTick(amountA, amountB, tickIndex, fee)
 }
 
 func (s *DexTestSuite) assertNoLiquidityAtTick(tickIndex int64, fee uint64) {
-	s.assertLiquidityAtTick(sdkmath.ZeroInt(), sdkmath.ZeroInt(), tickIndex, fee)
+	s.assertLiquidityAtTick(0, 0, tickIndex, fee)
 }
 
 // Filled limit liquidity
@@ -1227,7 +1282,7 @@ func (s *DexTestSuite) assertLimitFilledAtTickAtIndex(
 	)
 	userRatio := math_utils.NewPrecDecFromInt(userShares).QuoInt(totalShares)
 	filled := s.getLimitFilledLiquidityAtTickAtIndex(selling, tickIndex, trancheKey)
-	amt := sdkmath.NewInt(int64(amount))
+	amt := sdkmath.NewInt(int64(amount)).Mul(denomMultiple)
 	userFilled := userRatio.MulInt(filled).RoundInt()
 	s.Assert().True(amt.Equal(userFilled))
 }
@@ -1291,6 +1346,7 @@ func (s *DexTestSuite) assertLimitLiquidityAtTickInt(
 	tickIndexNormalized int64,
 	amount sdkmath.Int,
 ) {
+	amount = amount.Mul(denomMultiple)
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
 	tranches := s.App.DexKeeper.GetAllLimitOrderTrancheAtIndex(
@@ -1436,19 +1492,12 @@ func (s *DexTestSuite) calcAutoswapSharesMinted(
 	fee uint64,
 	residual0, residual1, balanced0, balanced1, totalShares, valuePool int64,
 ) sdkmath.Int {
-	residual0Int, residual1Int, balanced0Int, balanced1Int, totalSharesInt, valuePoolInt := sdkmath.NewInt(
-		residual0,
-	), sdkmath.NewInt(
-		residual1,
-	), sdkmath.NewInt(
-		balanced0,
-	), sdkmath.NewInt(
-		balanced1,
-	), sdkmath.NewInt(
-		totalShares,
-	), sdkmath.NewInt(
-		valuePool,
-	)
+	residual0Int, residual1Int, balanced0Int, balanced1Int, totalSharesInt, valuePoolInt := sdkmath.NewInt(residual0),
+		sdkmath.NewInt(residual1),
+		sdkmath.NewInt(balanced0),
+		sdkmath.NewInt(balanced1),
+		sdkmath.NewInt(totalShares),
+		sdkmath.NewInt(valuePool)
 
 	// residualValue = 1.0001^-f * residualAmount0 + 1.0001^{i-f} * residualAmount1
 	// balancedValue = balancedAmount0 + 1.0001^{i} * balancedAmount1

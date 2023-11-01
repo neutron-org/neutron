@@ -31,7 +31,7 @@ func TestPoolInit(t *testing.T) {
 
 	pool, err := keeper.InitPool(ctx, defaultPairID, 0, 1)
 	require.NoError(t, err)
-	pool.Deposit(math.NewInt(100), math.NewInt(100), math.NewInt(0), true)
+	pool.Deposit(math.NewInt(1000), math.NewInt(1000), math.NewInt(0), true)
 	keeper.SetPool(ctx, pool)
 
 	dbPool, found := keeper.GetPool(ctx, defaultPairID, 0, 1)

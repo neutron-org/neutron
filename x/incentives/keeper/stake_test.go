@@ -16,8 +16,8 @@ func (suite *IncentivesTestSuite) TestStakeLifecycle() {
 		depositSpecs: []depositSpec{
 			{
 				addr:   addr0,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   0,
 				fee:    1,
 			},
@@ -33,7 +33,7 @@ func (suite *IncentivesTestSuite) TestStakeLifecycle() {
 	_, err = suite.App.IncentivesKeeper.Unstake(suite.Ctx, stake, sdk.Coins{})
 	suite.Require().NoError(err)
 	balances := suite.App.BankKeeper.GetAllBalances(suite.Ctx, addr0)
-	suite.Require().Equal(sdk.NewCoins(sdk.NewInt64Coin(suite.LPDenom0, 20)), balances)
+	suite.Require().Equal(sdk.NewCoins(sdk.NewInt64Coin(suite.LPDenom0, 2000)), balances)
 	_, err = suite.App.IncentivesKeeper.GetStakeByID(suite.Ctx, stake.ID)
 	// should be deleted
 	suite.Require().Error(err)
@@ -47,15 +47,15 @@ func (suite *IncentivesTestSuite) TestMultipleStakeLifecycle() {
 		depositSpecs: []depositSpec{
 			{
 				addr:   addr0,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   0,
 				fee:    1,
 			},
 			{
 				addr:   addr0,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   1,
 				fee:    1,
 			},
@@ -73,8 +73,8 @@ func (suite *IncentivesTestSuite) TestMultipleStakeLifecycle() {
 	balances := suite.App.BankKeeper.GetAllBalances(suite.Ctx, addr0)
 	suite.Require().Equal(
 		sdk.NewCoins(
-			sdk.NewInt64Coin(suite.LPDenom0, 20),
-			sdk.NewInt64Coin(suite.LPDenom1, 20),
+			sdk.NewInt64Coin(suite.LPDenom0, 2000),
+			sdk.NewInt64Coin(suite.LPDenom1, 2000),
 		), balances)
 	_, err = suite.App.IncentivesKeeper.GetStakeByID(suite.Ctx, stake.ID)
 	// should be deleted
@@ -89,8 +89,8 @@ func (suite *IncentivesTestSuite) TestStakeUnstakePartial() {
 		depositSpecs: []depositSpec{
 			{
 				addr:   addr0,
-				token0: sdk.NewInt64Coin("TokenA", 10),
-				token1: sdk.NewInt64Coin("TokenB", 10),
+				token0: sdk.NewInt64Coin("TokenA", 1000),
+				token1: sdk.NewInt64Coin("TokenB", 1000),
 				tick:   0,
 				fee:    1,
 			},
@@ -102,21 +102,21 @@ func (suite *IncentivesTestSuite) TestStakeUnstakePartial() {
 	suite.Require().NoError(err)
 	suite.Require().NotNil(retrievedStake)
 
-	// unstake the full amount
+	// unstake the partial amount
 	_, err = suite.App.IncentivesKeeper.Unstake(
 		suite.Ctx,
 		stake,
-		sdk.Coins{sdk.NewInt64Coin(suite.LPDenom0, 9)},
+		sdk.Coins{sdk.NewInt64Coin(suite.LPDenom0, 900)},
 	)
 	suite.Require().NoError(err)
 	balances := suite.App.BankKeeper.GetAllBalances(suite.Ctx, addr0)
-	suite.Require().ElementsMatch(sdk.NewCoins(sdk.NewInt64Coin(suite.LPDenom0, 9)), balances)
+	suite.Require().ElementsMatch(sdk.NewCoins(sdk.NewInt64Coin(suite.LPDenom0, 900)), balances)
 	// should still be accessible
 	retrievedStake, err = suite.App.IncentivesKeeper.GetStakeByID(suite.Ctx, stake.ID)
 	suite.Require().NoError(err)
 	suite.Require().NotNil(retrievedStake)
 	suite.Require().
-		ElementsMatch(sdk.NewCoins(sdk.NewInt64Coin(suite.LPDenom0, 11)), retrievedStake.Coins)
+		ElementsMatch(sdk.NewCoins(sdk.NewInt64Coin(suite.LPDenom0, 1100)), retrievedStake.Coins)
 
 	// fin.
 }

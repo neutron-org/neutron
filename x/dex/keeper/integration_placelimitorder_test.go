@@ -389,7 +389,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK0TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenA", 21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalances(6, 1352)
+	s.assertAliceBalancesInt(sdkmath.NewInt(5), sdkmath.NewInt(1_353_046_854))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
@@ -403,7 +403,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenB", -21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalances(1352, 6)
+	s.assertAliceBalancesInt(sdkmath.NewInt(135_3046_854), sdkmath.NewInt(5))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
@@ -416,8 +416,8 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
 	// WHEN alice submits FoK limitOrder of 50 TokenB with maxOut of 20
 	s.aliceLimitSellsWithMaxOut("TokenB", 0, 50, 20)
 
-	// THEN alice swap 19 TokenB and gets back 20 TokenA
-	s.assertAliceBalances(20, 31)
+	// THEN alice swap ~19 BIGTokenB and gets back 20 BIGTokenA
+	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_162_769))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
@@ -432,8 +432,8 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 	// WHEN alice submits FoK limitOrder of 50 TokenB with maxOut of 20
 	s.aliceLimitSellsWithMaxOut("TokenB", 0, 50, 20)
 
-	// THEN alice swap 20 TokenB and gets back 20 TokenA
-	s.assertAliceBalances(20, 30)
+	// THEN alice swap ~19 BIGTokenB and gets back 20 BIGTokenA
+	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_165_594))
 }
 
 // Immediate Or Cancel LimitOrders ////////////////////////////////////////////////////////////////////
@@ -536,13 +536,13 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITBehindEnemyLines() {
 	s.assertLimitLiquidityAtTick("TokenA", 1, 10)
 	s.assertAliceBalances(0, 0)
 	// AND bob swaps through all the liquidity
-	s.bobLimitSells("TokenB", -10, 10, types.LimitOrderType_FILL_OR_KILL)
+	s.bobLimitSells("TokenB", -10, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 
 	// THEN all liquidity is depleted
 	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
-	// Alice can withdraw 9 TokenB
+	// Alice can withdraw ~10 BIGTokenB
 	s.aliceWithdrawsLimitSell(trancheKey)
-	s.assertAliceBalances(0, 9)
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(9999000))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {

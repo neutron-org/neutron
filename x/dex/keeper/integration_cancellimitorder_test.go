@@ -4,6 +4,7 @@ import (
 	"math"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
@@ -214,12 +215,12 @@ func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
 	s.aliceCancelsLimitSell(trancheKey)
 	s.carolCancelsLimitSell(trancheKey)
 
-	// THEN alice gets back 41 TokenA (125 * 1/3)
-	s.assertAliceBalances(41, 0)
+	// THEN alice gets back ~41 BIGTokenA (125 * 1/3)
+	s.assertAliceBalancesInt(sdkmath.NewInt(41_666_666), sdkmath.ZeroInt())
 
 	// Carol gets back 83 TokenA (125 * 2/3)
-	s.assertCarolBalances(83, 0)
-	s.assertDexBalances(1, 25)
+	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.ZeroInt())
+	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.NewInt(25_000_000))
 }
 
 func (s *DexTestSuite) TestCancelGoodTil() {

@@ -39,8 +39,8 @@ func (suite *IncentivesTestSuite) TestValueForShares() {
 			deposits: []depositSpec{
 				{
 					addr:   addrs[0],
-					token0: sdk.NewInt64Coin("TokenA", 10),
-					token1: sdk.NewInt64Coin("TokenB", 10),
+					token0: sdk.NewInt64Coin("TokenA", 1000),
+					token1: sdk.NewInt64Coin("TokenB", 1000),
 					tick:   0,
 					fee:    1,
 				},
@@ -54,8 +54,8 @@ func (suite *IncentivesTestSuite) TestValueForShares() {
 			deposits: []depositSpec{
 				{
 					addr:   addrs[0],
-					token0: sdk.NewInt64Coin("TokenA", 10),
-					token1: sdk.NewInt64Coin("TokenB", 10),
+					token0: sdk.NewInt64Coin("TokenA", 1000),
+					token1: sdk.NewInt64Coin("TokenB", 1000),
 					tick:   0,
 					fee:    1,
 				},
@@ -69,15 +69,15 @@ func (suite *IncentivesTestSuite) TestValueForShares() {
 			deposits: []depositSpec{
 				{
 					addr:   addrs[0],
-					token0: sdk.NewInt64Coin("TokenA", 10),
-					token1: sdk.NewInt64Coin("TokenB", 10),
+					token0: sdk.NewInt64Coin("TokenA", 1000),
+					token1: sdk.NewInt64Coin("TokenB", 1000),
 					tick:   0,
 					fee:    1,
 				},
 				{
 					addr:   addrs[0],
-					token0: sdk.NewInt64Coin("TokenA", 10),
-					token1: sdk.NewInt64Coin("TokenB", 10),
+					token0: sdk.NewInt64Coin("TokenA", 1000),
+					token1: sdk.NewInt64Coin("TokenB", 1000),
 					tick:   0,
 					fee:    2,
 				},
@@ -91,15 +91,15 @@ func (suite *IncentivesTestSuite) TestValueForShares() {
 			deposits: []depositSpec{
 				{
 					addr:   addrs[0],
-					token0: sdk.NewInt64Coin("TokenA", 10),
-					token1: sdk.NewInt64Coin("TokenB", 10),
+					token0: sdk.NewInt64Coin("TokenA", 1000),
+					token1: sdk.NewInt64Coin("TokenB", 1000),
 					tick:   0,
 					fee:    1,
 				},
 				{
 					addr:   addrs[0],
-					token0: sdk.NewInt64Coin("TokenA", 10),
-					token1: sdk.NewInt64Coin("TokenB", 10),
+					token0: sdk.NewInt64Coin("TokenA", 1000),
+					token1: sdk.NewInt64Coin("TokenB", 1000),
 					tick:   0,
 					fee:    1,
 				},
@@ -142,8 +142,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[0],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   0,
 							fee:    1,
 						},
@@ -154,8 +154,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[1],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   0,
 							fee:    1,
 						},
@@ -166,8 +166,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[1],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   0,
 							fee:    1,
 						},
@@ -197,8 +197,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[0],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   0,
 							fee:    1,
 						},
@@ -209,8 +209,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[1],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   0,
 							fee:    1,
 						},
@@ -221,8 +221,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[1],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   0,
 							fee:    1,
 						},
@@ -233,8 +233,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[0],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   0,
 							fee:    1,
 						},
@@ -272,8 +272,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[0],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   999,
 							fee:    1,
 						},
@@ -284,8 +284,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[1],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   999,
 							fee:    1,
 						},
@@ -296,8 +296,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[1],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   999,
 							fee:    50,
 						},
@@ -308,8 +308,8 @@ func (suite *IncentivesTestSuite) TestDistribute() {
 					depositSpecs: []depositSpec{
 						{
 							addr:   addrs[1],
-							token0: sdk.NewInt64Coin("TokenA", 10),
-							token1: sdk.NewInt64Coin("TokenB", 10),
+							token0: sdk.NewInt64Coin("TokenA", 1000),
+							token1: sdk.NewInt64Coin("TokenB", 1000),
 							tick:   999,
 							fee:    50,
 						},

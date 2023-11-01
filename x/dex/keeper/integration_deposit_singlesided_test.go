@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"math"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -276,7 +277,7 @@ func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken0() {
 	// Bob arbs
 	s.bobLimitSells("TokenB", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 	s.bobLimitSells("TokenA", 1, 10)
-	s.assertBobBalances(50, 52)
+	s.assertBobBalancesInt(sdkmath.NewInt(50_000_000), sdkmath.NewInt(53_294_995))
 }
 
 func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
@@ -301,7 +302,7 @@ func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
 	// Bob arbs
 	s.bobLimitSells("TokenA", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 	s.bobLimitSells("TokenB", -1, 10)
-	s.assertBobBalances(52, 50)
+	s.assertBobBalancesInt(sdkmath.NewInt(53_295_665), sdkmath.NewInt(50_000_000))
 }
 
 func (s *DexTestSuite) TestDepositSingleSidedMultiA() {
@@ -410,17 +411,19 @@ func (s *DexTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
 	s.assertAliceDepositFails(err, NewDeposit(0, 5, 0, 1))
 }
 
-func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
-	s.fundAliceBalances(0, 50)
+// NOTE: The error checking for ShareUnderflow is completely subsumed by the ensureFairTruePrice check
+// it no longer possible to manually check this test case. Leaving the example test here should things change in the future
+// func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
+// 	s.fundAliceBalances(0, 40_000_000_000_0)
 
-	// GIVEN
-	// deposit 50 of token B at tick -352436 fee 0
-	// THEN 0 shares would be issued so deposit fails
-	s.assertAliceDepositFails(
-		types.ErrDepositShareUnderflow,
-		NewDeposit(0, 50, -352436, 0),
-	)
-}
+// 	// GIVEN
+// 	// deposit 50 of token B at tick -352436 fee 0
+// 	// THEN 0 shares would be issued so deposit fails
+// 	s.assertAliceDepositFails(
+// 		types.ErrDepositShareUnderflow,
+// 		NewDeposit(0, 26457, -240_000, 0),
+// 	)
+// }
 
 func (s *DexTestSuite) TestDepositSingleInvalidFeeFails() {
 	s.fundAliceBalances(0, 50)
