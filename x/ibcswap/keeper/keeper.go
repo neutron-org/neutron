@@ -140,7 +140,7 @@ func (k Keeper) RefundPacketToken(
 		err = k.bankKeeper.SendCoinsFromAccountToModule(
 			ctx,
 			receiver,
-			transfertypes.ModuleName,
+			types.ModuleName,
 			sdk.NewCoins(token),
 		)
 		if err != nil {
@@ -148,7 +148,7 @@ func (k Keeper) RefundPacketToken(
 		}
 
 		// burn the coins
-		err = k.bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(token))
+		err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(token))
 		if err != nil {
 			return err
 		}

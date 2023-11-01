@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 )
 
 const (
@@ -38,4 +41,18 @@ func ParsePoolIDFromDenom(denom string) (uint64, error) {
 	}
 
 	return idInt, nil
+}
+
+// NewDexMintCoinsRestriction creates and returns a BankMintingRestrictionFn that only allows minting of
+// valid pool denoms
+func NewDexDenomMintCoinsRestriction() bankkeeper.MintingRestrictionFn {
+	return func(_ sdk.Context, coinsToMint sdk.Coins) error {
+		for _, coin := range coinsToMint {
+			err := ValidatePoolDenom(coin.Denom)
+			if err != nil {
+				return fmt.Errorf("does not have permission to mint %s", coin.Denom)
+			}
+		}
+		return nil
+	}
 }

@@ -256,8 +256,9 @@ var (
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
 		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
 		crontypes.ModuleName:                          nil,
-		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner, authtypes.Staking},
+		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner},
 		incentivestypes.ModuleName:                    nil,
+		ibcswaptypes.ModuleName:                       {authtypes.Burner},
 	}
 )
 
@@ -356,8 +357,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   blocksdk.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool blocksdk.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -636,7 +637,7 @@ func New(
 		appCodec,
 		keys[dextypes.StoreKey],
 		keys[dextypes.MemStoreKey],
-		app.BankKeeper,
+		app.BankKeeper.WithMintCoinsRestriction(dextypes.NewDexDenomMintCoinsRestriction()),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -896,9 +897,9 @@ func New(
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
-		dextypes.ModuleName,
 		incentivestypes.ModuleName,
 		epochstypes.ModuleName,
+		dextypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -1077,7 +1078,6 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-
 
 	app.SetEndBlocker(app.EndBlocker)
 
@@ -1355,9 +1355,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(tokenfactorytypes.StoreKey).WithKeyTable(tokenfactorytypes.ParamKeyTable())
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.StoreKey).WithKeyTable(interchainqueriesmoduletypes.ParamKeyTable())
 	paramsKeeper.Subspace(interchaintxstypes.StoreKey).WithKeyTable(interchaintxstypes.ParamKeyTable())
-	paramsKeeper.Subspace(dextypes.ModuleName)
-	paramsKeeper.Subspace(epochstypes.ModuleName)
-	paramsKeeper.Subspace(incentivestypes.ModuleName)
 
 	return paramsKeeper
 }
