@@ -93,12 +93,12 @@ func (k Keeper) GetAuthority() string {
 	return k.authority
 }
 
-func (k Keeper) GetLastFreeRegisterICACodeID(ctx sdk.Context) (codeID uint64) {
+func (k Keeper) GetFeeRegisterICACodeID(ctx sdk.Context) (codeID uint64) {
 	store := ctx.KVStore(k.storeKey)
-	bytes := store.Get(types.LastFreeRegisterICACodeID)
+	bytes := store.Get(types.FeeRegisterICACodeID)
 
 	if bytes == nil {
-		k.Logger(ctx).Debug("Last code id key don't exists, GetLastCodeID returns 0")
+		k.Logger(ctx).Debug("Fee register ICA code id key don't exists, GetLastCodeID returns 0")
 		return 0
 	}
 	return sdk.BigEndianToUint64(bytes)

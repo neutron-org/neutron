@@ -184,7 +184,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
 
-	lastCodeID := app.InterchainTxsKeeper.GetLastFreeRegisterICACodeID(ctx)
+	lastCodeID := app.InterchainTxsKeeper.GetFeeRegisterICACodeID(ctx)
 	// ensure that wasm module stores next code id
 	suite.Require().Equal(lastCodeID, codeIDBefore+1)
 
