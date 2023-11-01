@@ -27,7 +27,7 @@ func InterchainTxsKeeper(
 	icaControllerKeeper types.ICAControllerKeeper,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
-	treasuryKeeper types.TreasuryKeeper,
+	getFeeCollectorAddr types.GetFeeCollectorAddr,
 ) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
@@ -50,7 +50,7 @@ func InterchainTxsKeeper(
 		managerKeeper,
 		refunderKeeper,
 		bankKeeper,
-		treasuryKeeper,
+		getFeeCollectorAddr,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 

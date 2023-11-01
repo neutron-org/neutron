@@ -47,9 +47,3 @@ type ChannelKeeper interface {
 	GetNextSequenceSend(ctx sdk.Context, portID, channelID string) (uint64, bool)
 	GetConnection(ctx sdk.Context, connectionID string) (ibcexported.ConnectionI, error)
 }
-
-// TreasuryKeeper is a keeper of a module that keeps and maintains the treasury address.
-// This could be different module for each chain.
-type TreasuryKeeper interface {
-	GetTreasury(ctx sdk.Context) string
-}

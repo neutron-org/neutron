@@ -142,9 +142,3 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) FundCommunityPool(ctx sdk.Context, amount sdk.Coins, sender sdk.AccAddress) error {
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, authtypes.FeeCollectorName, amount)
 }
-
-// GetTreasury is used to satisfy the interface requirement for interchaintxs module.
-// The single point of truth for the treasury address is in the feeburner module params.
-func (k Keeper) GetTreasury(ctx sdk.Context) string {
-	return k.GetParams(ctx).TreasuryAddress
-}
