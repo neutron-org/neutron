@@ -60,7 +60,7 @@ type NeutronMsg struct {
 	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
 
 	/// Incentives types
-	Incentives *Incentives `json:"incentives"`
+	Incentives *IncentivesMsg `json:"incentives,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -226,7 +226,7 @@ type ResubmitFailure struct {
 	FailureId uint64 `json:"failure_id"`
 }
 
-type Incentives struct {
+type IncentivesMsg struct {
 	/// Create an incentive program
 	CreateGauge *CreateGauge `json:"create_gauge"`
 	/// Add rewards to an existing incentives program

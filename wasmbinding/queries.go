@@ -5,6 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/neutron-org/neutron/x/incentives/keeper"
+	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -122,6 +124,124 @@ func (qp *QueryPlugin) GetFailures(ctx sdk.Context, address string, pagination *
 	}
 
 	return &bindings.FailuresResponse{Failures: res.Failures}, nil
+}
+
+func (qp *QueryPlugin) GetGauges(ctx sdk.Context, status string, denom string) (*bindings.GaugesResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	gaugeStatusInt, ok := incentivestypes.GaugeStatus_value[status]
+	if !ok {
+		return nil, errors.Wrapf(incentivestypes.ErrInvalidGaugeStatus, "failed to parse gauge status")
+	}
+	res, err := queryServer.GetGauges(ctx, &incentivestypes.GetGaugesRequest{
+		Status: incentivestypes.GaugeStatus(gaugeStatusInt),
+		Denom:  denom,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get gauges for status=%s denom=%s", status, denom)
+	}
+
+	return &bindings.GaugesResponse{
+		Gauges: res.Gauges,
+	}, nil
+}
+
+func (qp *QueryPlugin) GetModuleStatus(ctx sdk.Context) (*bindings.ModuleStatusResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	res, err := queryServer.GetModuleStatus(ctx, &incentivestypes.GetModuleStatusRequest{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get module status")
+	}
+
+	return &bindings.ModuleStatusResponse{
+		RewardCoins: res.RewardCoins,
+		Params:      res.Params,
+	}, nil
+}
+
+func (qp *QueryPlugin) GetGaugeByID(ctx sdk.Context, id uint64) (*bindings.GaugeByIDResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	res, err := queryServer.GetGaugeByID(ctx, &incentivestypes.GetGaugeByIDRequest{
+		Id: id,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get gauge for ID=%d", id)
+	}
+
+	return &bindings.GaugeByIDResponse{
+		Gauge: res.Gauge,
+	}, nil
+}
+
+func (qp *QueryPlugin) GetStakeByID(ctx sdk.Context, id uint64) (*bindings.StakeByIDResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	res, err := queryServer.GetStakeByID(ctx, &incentivestypes.GetStakeByIDRequest{
+		StakeId: id,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get stake for ID=%d", id)
+	}
+
+	return &bindings.StakeByIDResponse{
+		Stake: res.Stake,
+	}, nil
+}
+
+func (qp *QueryPlugin) GetStakes(ctx sdk.Context, owner string) (*bindings.StakesResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	res, err := queryServer.GetStakes(ctx, &incentivestypes.GetStakesRequest{
+		Owner: owner,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get stakes for owner=%s", owner)
+	}
+
+	return &bindings.StakesResponse{
+		Stakes: res.Stakes,
+	}, nil
+}
+
+func (qp *QueryPlugin) GetFutureRewardsEstimate(ctx sdk.Context, owner string, stakeIds []uint64, numEpochs int64) (*bindings.FutureRewardEstimateResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	res, err := queryServer.GetFutureRewardEstimate(ctx, &incentivestypes.GetFutureRewardEstimateRequest{
+		Owner:     owner,
+		StakeIds:  stakeIds,
+		NumEpochs: numEpochs,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get future rewards estimate for owner=%s", owner)
+	}
+
+	return &bindings.FutureRewardEstimateResponse{
+		Coins: res.Coins,
+	}, nil
+}
+
+func (qp *QueryPlugin) GetAccountHistory(ctx sdk.Context, account string) (*bindings.AccountHistoryResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	res, err := queryServer.GetAccountHistory(ctx, &incentivestypes.GetAccountHistoryRequest{
+		Account: account,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get account history for account=%s", account)
+	}
+
+	return &bindings.AccountHistoryResponse{
+		Coins: res.Coins,
+	}, nil
+}
+
+func (qp *QueryPlugin) GetGaugeQualifyingValue(ctx sdk.Context, id uint64) (*bindings.GaugeQualifyingValueResponse, error) {
+	queryServer := keeper.NewQueryServer(qp.incentivesKeeper)
+	res, err := queryServer.GetGaugeQualifyingValue(ctx, &incentivestypes.GetGaugeQualifyingValueRequest{
+		Id: id,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get gauge qualifying value for id=%d", id)
+	}
+
+	return &bindings.GaugeQualifyingValueResponse{
+		QualifyingValue: res.QualifyingValue,
+	}, nil
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {

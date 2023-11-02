@@ -154,6 +154,117 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 
+		case contractQuery.Incentives != nil:
+			incentives := contractQuery.Incentives
+			switch {
+			case incentives.ModuleStatus != nil:
+				res, err := qp.GetModuleStatus(ctx)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query ModuleStatus")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal ModuleStatus response")
+				}
+
+				return bz, nil
+
+			case incentives.GaugeByID != nil:
+				res, err := qp.GetGaugeByID(ctx, incentives.GaugeByID.ID)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query GaugeByID")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal GaugeByID response")
+				}
+
+				return bz, nil
+
+			case incentives.Gauges != nil:
+				res, err := qp.GetGauges(ctx, incentives.Gauges.Status, incentives.Gauges.Denom)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query Gauges")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal Gauges response")
+				}
+
+				return bz, nil
+
+			case incentives.StakeByID != nil:
+				res, err := qp.GetStakeByID(ctx, incentives.StakeByID.StakeID)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query StakeByID")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal StakeByID response")
+				}
+
+				return bz, nil
+
+			case incentives.Stakes != nil:
+				res, err := qp.GetStakes(ctx, incentives.Stakes.Owner)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query Stakes")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal Stakes response")
+				}
+
+				return bz, nil
+
+			case incentives.FutureRewardEstimate != nil:
+				res, err := qp.GetFutureRewardsEstimate(ctx, incentives.FutureRewardEstimate.Owner, incentives.FutureRewardEstimate.StakeIDs, incentives.FutureRewardEstimate.NumEpochs)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query FutureRewardEstimate")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal FutureRewardEstimate response")
+				}
+
+				return bz, nil
+
+			case incentives.AccountHistory != nil:
+				res, err := qp.GetAccountHistory(ctx, incentives.AccountHistory.Account)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query AccountHistory")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal AccountHistory response")
+				}
+
+				return bz, nil
+
+			case incentives.GaugeQualifyingValue != nil:
+				res, err := qp.GetGaugeQualifyingValue(ctx, incentives.GaugeQualifyingValue.ID)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to query GaugeQualifyingValue")
+				}
+
+				bz, err := json.Marshal(res)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to JSON marshal GaugeQualifyingValue response")
+				}
+
+				return bz, nil
+
+			default:
+				return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown incentives neutron query type"}
+			}
+
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}

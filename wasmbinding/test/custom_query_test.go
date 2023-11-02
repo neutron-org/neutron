@@ -229,7 +229,7 @@ func (suite *CustomQuerierTestSuite) TestFullDenom() {
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
-		FullDenom: &bindings.FullDenom{
+		FullDenom: &bindings.QueryFullDenom{
 			CreatorAddr: contractAddress.String(),
 			Subdenom:    "test",
 		},
@@ -270,7 +270,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 	denom, _ := neutron.TokenFactoryKeeper.CreateDenom(ctx, contractAddress.String(), "test")
 
 	query := bindings.NeutronQuery{
-		DenomAdmin: &bindings.DenomAdmin{
+		DenomAdmin: &bindings.QueryDenomAdmin{
 			Subdenom: denom,
 		},
 	}

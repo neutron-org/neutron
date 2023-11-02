@@ -2,6 +2,7 @@ package bindings
 
 import (
 	"encoding/json"
+	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
@@ -31,14 +32,16 @@ type NeutronQuery struct {
 	// Token Factory queries
 	// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
 	// returns the full denom as used by `BankMsg::Send`.
-	FullDenom *FullDenom `json:"full_denom,omitempty"`
+	FullDenom *QueryFullDenom `json:"full_denom,omitempty"`
 	// Returns the admin of a denom, if the denom is a Token Factory denom.
-	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
+	DenomAdmin *QueryDenomAdmin `json:"denom_admin,omitempty"`
 	// Returns the before send hook if it was set before
-	BeforeSendHook *BeforeSendHook `json:"before_send_hook,omitempty"`
+	BeforeSendHook *QueryBeforeSendHook `json:"before_send_hook,omitempty"`
 	// Contractmanager queries
 	// Query all failures for address
-	Failures *Failures `json:"failures,omitempty"`
+	Failures *QueryFailures `json:"failures,omitempty"`
+	/// Incentives queries
+	Incentives *QueryIncentives `json:"incentives,omitempty"`
 }
 
 /* Requests */
@@ -176,16 +179,16 @@ func (sv StorageValue) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a)
 }
 
-type FullDenom struct {
+type QueryFullDenom struct {
 	CreatorAddr string `json:"creator_addr"`
 	Subdenom    string `json:"subdenom"`
 }
 
-type DenomAdmin struct {
+type QueryDenomAdmin struct {
 	Subdenom string `json:"subdenom"`
 }
 
-type BeforeSendHook struct {
+type QueryBeforeSendHook struct {
 	Denom string `json:"denom"`
 }
 
@@ -201,11 +204,89 @@ type FullDenomResponse struct {
 	Denom string `json:"denom"`
 }
 
-type Failures struct {
+type QueryFailures struct {
 	Address    string             `json:"address"`
 	Pagination *query.PageRequest `json:"pagination,omitempty"`
 }
 
 type FailuresResponse struct {
 	Failures []contractmanagertypes.Failure `json:"failures"`
+}
+
+type QueryIncentives struct {
+	ModuleStatus         *ModuleStatus         `json:"module_status,omitempty"`
+	GaugeByID            *GaugeByID            `json:"gauge_by_id,omitempty"`
+	Gauges               *Gauges               `json:"gauges,omitempty"`
+	StakeByID            *StakeByID            `json:"stake_by_id,omitempty"`
+	Stakes               *Stakes               `json:"stakes,omitempty"`
+	FutureRewardEstimate *FutureRewardEstimate `json:"future_reward_estimate,omitempty"`
+	AccountHistory       *AccountHistory       `json:"account_history,omitempty"`
+	GaugeQualifyingValue *GaugeQualifyingValue `json:"gauge_qualifying_value,omitempty"`
+}
+
+type ModuleStatus struct {
+}
+
+type ModuleStatusResponse struct {
+	RewardCoins sdktypes.Coins         `json:"reward_coins"`
+	Params      incentivestypes.Params `json:"params"`
+}
+
+type GaugeByID struct {
+	ID uint64 `json:"id"`
+}
+
+type GaugeByIDResponse struct {
+	Gauge *incentivestypes.Gauge `json:"gauge"`
+}
+
+type Gauges struct {
+	Status string `json:"status"`
+	Denom  string `json:"denom"`
+}
+
+type GaugesResponse struct {
+	Gauges []*incentivestypes.Gauge `json:"gauges"`
+}
+
+type StakeByID struct {
+	StakeID uint64 `json:"stake_id"`
+}
+
+type StakeByIDResponse struct {
+	Stake *incentivestypes.Stake `json:"stake"`
+}
+
+type Stakes struct {
+	Owner string `json:"owner"`
+}
+
+type StakesResponse struct {
+	Stakes []*incentivestypes.Stake `json:"stakes"`
+}
+
+type FutureRewardEstimate struct {
+	Owner     string   `json:"owner"`
+	StakeIDs  []uint64 `json:"stake_ids"`
+	NumEpochs int64    `json:"num_epochs"`
+}
+
+type FutureRewardEstimateResponse struct {
+	Coins sdktypes.Coins `json:"coins"`
+}
+
+type AccountHistory struct {
+	Account string `json:"account"`
+}
+
+type AccountHistoryResponse struct {
+	Coins sdktypes.Coins `json:"coins"`
+}
+
+type GaugeQualifyingValue struct {
+	ID uint64 `json:"id"`
+}
+
+type GaugeQualifyingValueResponse struct {
+	QualifyingValue uint64 `json:"qualifying_value"`
 }

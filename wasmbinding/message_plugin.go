@@ -1039,7 +1039,7 @@ func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) 
 	return false
 }
 
-func (m *CustomMessenger) executeIncentiveMsg(ctx sdk.Context, contractAddr sdk.AccAddress, incentives *bindings.Incentives) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) executeIncentiveMsg(ctx sdk.Context, contractAddr sdk.AccAddress, incentives *bindings.IncentivesMsg) ([]sdk.Event, [][]byte, error) {
 	if incentives.CreateGauge != nil {
 		return m.createGauge(ctx, contractAddr, incentives.CreateGauge)
 	}

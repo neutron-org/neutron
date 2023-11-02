@@ -80,7 +80,7 @@ message GetModuleStatusResponse {
 }
 
 message GetGaugeByIDRequest {
-  // Gague ID being queried
+  // Gauge ID being queried
   uint64 id = 1;
 }
 message GetGaugeByIDResponse {
