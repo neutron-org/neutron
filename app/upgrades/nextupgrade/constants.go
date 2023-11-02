@@ -10,7 +10,9 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "Next-Upgrade"
+	UpgradeName     = "Next-Upgrade"
+	AtomDenom       = "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9"
+	AxelarUsdcDenom = "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
 )
 
 var Upgrade = upgrades.Upgrade{
