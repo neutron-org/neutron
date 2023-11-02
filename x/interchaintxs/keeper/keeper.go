@@ -79,7 +79,7 @@ func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) 
 	feeCollector := k.getFeeCollectorAddr(ctx)
 	feeCollectorAddress, err := sdk.AccAddressFromBech32(feeCollector)
 	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert fee collecor, bech32 to AccAddress: %s: %s", feeCollector, err.Error())
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert fee collector, bech32 to AccAddress: %s: %s", feeCollector, err.Error())
 	}
 
 	err = k.bankKeeper.SendCoins(ctx, payer, feeCollectorAddress, fee)
