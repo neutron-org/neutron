@@ -226,7 +226,7 @@ var (
 		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasmtypes.ModuleName:                          {authtypes.Burner},
+		wasmtypes.ModuleName:                          {},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
@@ -328,8 +328,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   blocksdk.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool blocksdk.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -976,7 +976,6 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-
 
 	app.SetEndBlocker(app.EndBlocker)
 
