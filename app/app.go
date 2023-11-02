@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
 
@@ -146,9 +147,8 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
-	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
+	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/abci"
@@ -215,7 +215,7 @@ var (
 			),
 		),
 		ibchooks.AppModuleBasic{},
-		router.AppModuleBasic{},
+		packetforward.AppModuleBasic{},
 		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 	)
@@ -298,7 +298,7 @@ type App struct {
 	CronKeeper          cronkeeper.Keeper
 	RouterKeeper        *routerkeeper.Keeper
 
-	RouterModule router.AppModule
+	RouterModule packetforward.AppModule
 
 	HooksTransferIBCModule *ibchooks.IBCMiddleware
 	HooksICS4Wrapper       ibchooks.ICS4Middleware
@@ -328,8 +328,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   blocksdk.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool blocksdk.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -716,9 +716,9 @@ func New(
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.RouterModule = router.NewAppModule(app.RouterKeeper)
+	app.RouterModule = packetforward.NewAppModule(app.RouterKeeper)
 
-	ibcStack := router.NewIBCMiddleware(
+	ibcStack := packetforward.NewIBCMiddleware(
 		app.HooksTransferIBCModule,
 		app.RouterKeeper,
 		0,
@@ -976,7 +976,6 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-
 
 	app.SetEndBlocker(app.EndBlocker)
 
