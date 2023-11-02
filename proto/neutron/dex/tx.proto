@@ -37,13 +37,13 @@ message MsgDeposit {
       (gogoproto.moretags)   = "yaml:\"amountsA\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "amountA"
+      (gogoproto.jsontag) = "amountsA"
   ]; 
    repeated string amountsB = 6  [
       (gogoproto.moretags)   = "yaml:\"amountsB\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "amountB"
+      (gogoproto.jsontag) = "amountsB"
   ]; 
   repeated int64 tickIndexesAToB = 7;
   repeated uint64 fees = 8;
