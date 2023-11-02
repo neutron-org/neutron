@@ -21,8 +21,8 @@ const (
 	// parameters key
 	prefixParamsKey = iota + 1
 	// prefix of code id, starting from which we charge fee for ICA registration
-	prefixFeeRegisterICACodeID = iota + 2
+	prefixICARegistrationFeeFirstCodeID = iota + 2
 )
 
 var ParamsKey = []byte{prefixParamsKey}
-var FeeRegisterICACodeID = []byte{prefixFeeRegisterICACodeID}
+var ICARegistrationFeeFirstCodeID = []byte{prefixICARegistrationFeeFirstCodeID}
