@@ -6,8 +6,9 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-
+	"github.com/golang/protobuf/ptypes/timestamp"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	"github.com/neutron-org/neutron/x/incentives/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
 )
@@ -44,17 +45,22 @@ type NeutronMsg struct {
 	/// Currently, the burn from address must be the admin contract.
 	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
 	/// Contracts can set before send hook for an existing factory denom
-	//	that they are the admin of.
-	//	Currently, the set before hook call should be performed from address that must be the admin contract.
+	///	that they are the admin of.
+	///	Currently, the set before hook call should be performed from address that must be the admin contract.
 	SetBeforeSendHook *SetBeforeSendHook `json:"set_before_send_hook,omitempty"`
 
 	// Cron types
-	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
+	/// Add new schedule with given period, name and messages.
+	AddSchedule *AddSchedule `json:"add_schedule,omitempty"`
+	/// Remove schedule with given name.
 	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
 
 	// Contractmanager types
 	/// A contract that has failed acknowledgement can resubmit it
 	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
+
+	/// Incentives types
+	Incentives *Incentives `json:"incentives"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -220,6 +226,54 @@ type ResubmitFailure struct {
 	FailureId uint64 `json:"failure_id"`
 }
 
+type Incentives struct {
+	/// Create an incentive program
+	CreateGauge *CreateGauge `json:"create_gauge"`
+	/// Add rewards to an existing incentives program
+	AddToGauge *AddToGauge `json:"add_to_gauge"`
+	/// Deposit LP tokens to the module, qualifying for rewards from gauges
+	Stake *Stake `json:"stake"`
+	/// Withdraw LP tokens from the module, forfeiting future rewards from gauges
+	Unstake *Unstake `json:"unstake"`
+}
+
 type ResubmitFailureResponse struct {
 	FailureId uint64 `json:"failure_id"`
 }
+
+type CreateGauge struct {
+	IsPerpetual       bool                 `json:"is_perpetual"`
+	Owner             string               `json:"owner"`
+	DistributeTo      types.QueryCondition `json:"distribute_to"`
+	Coins             sdk.Coins            `json:"coins"`
+	StartTime         timestamp.Timestamp  `json:"start_time"`
+	NumEpochsPaidOver uint64               `json:"num_epochs_paid_over"`
+	PricingTick       int64                `json:"pricing_tick"`
+}
+
+type CreateGaugeResponse struct{}
+
+type AddToGauge struct {
+	Owner   string    `json:"owner"`
+	GaugeID uint64    `json:"gauge_id"`
+	Rewards sdk.Coins `json:"rewards"`
+}
+
+type AddToGaugeResponse struct{}
+
+type Stake struct {
+	Owner string    `json:"owner"`
+	Coins sdk.Coins `json:"coins"`
+}
+
+type StakeResponse struct {
+	ID uint64 `json:"id"` // TODO: what is this ID? better naming?
+}
+
+type Unstake struct {
+	Owner string `json:"owner"`
+	/// if left empty interpreted as "unstake all"
+	Unstakes []*types.MsgUnstake_UnstakeDescriptor `json:"unstakes"`
+}
+
+type UnstakeResponse struct{}

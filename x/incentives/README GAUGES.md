@@ -235,8 +235,8 @@ rewards at the end of epochs. As `epochs` module is handling multiple
 epochs, the identifier is required to check if distribution should be
 done at `AfterEpochEnd` hook
 
-</br>
-</br>
+<br>
+<br>
 
 ## Transactions
 

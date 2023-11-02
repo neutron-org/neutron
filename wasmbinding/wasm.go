@@ -7,6 +7,7 @@ import (
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	incentiveskeeper "github.com/neutron-org/neutron/x/incentives/keeper"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
@@ -28,6 +29,7 @@ func RegisterCustomPlugins(
 	tfk *tokenfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
+	incentivesKeeper *incentiveskeeper.Keeper,
 ) []wasmkeeper.Option {
 	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, contractmanagerKeeper)
 
@@ -35,7 +37,7 @@ func RegisterCustomPlugins(
 		Custom: CustomQuerier(wasmQueryPlugin),
 	})
 	messagePluginOpt := wasmkeeper.WithMessageHandlerDecorator(
-		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, adminKeeper, bank, tfk, cronKeeper, contractmanagerKeeper),
+		CustomMessageDecorator(ictxKeeper, icqKeeper, transfer, adminKeeper, bank, tfk, cronKeeper, contractmanagerKeeper, incentivesKeeper),
 	)
 
 	return []wasmkeeper.Option{

@@ -356,8 +356,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   auctionante.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool auctionante.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -739,7 +739,7 @@ func New(
 	)
 
 	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper, &app.ContractManagerKeeper), wasmOpts...)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper, &app.ContractManagerKeeper, app.IncentivesKeeper), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
 		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
@@ -1077,7 +1077,6 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-
 
 	app.SetEndBlocker(app.EndBlocker)
 

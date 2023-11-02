@@ -97,7 +97,7 @@ func (server msgServer) AddToGauge(
 	return &types.MsgAddToGaugeResponse{}, nil
 }
 
-// StakeTokens stakes tokens in either two ways.
+// Stake stakes tokens in either two ways.
 // 1. Add to an existing stake if a stake with the same owner and same duration exists.
 // 2. Create a new stake if not.
 // A sanity check to ensure given tokens is a single token is done in ValidateBaic.
@@ -134,7 +134,7 @@ func (server msgServer) Stake(
 	return &types.MsgStakeResponse{ID: stake.ID}, nil
 }
 
-// BeginUnstaking begins unstaking of the specified stake.
+// Unstake begins unstaking of the specified stake.
 // The stake would enter the unstaking queue, with the endtime of the stake set as block time + duration.
 func (server msgServer) Unstake(
 	goCtx context.Context,

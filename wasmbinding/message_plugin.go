@@ -3,11 +3,14 @@ package wasmbinding
 import (
 	"encoding/json"
 	"fmt"
-
-	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
+	"time"
 
 	"cosmossdk.io/errors"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
+	incentiveskeeper "github.com/neutron-org/neutron/x/incentives/keeper"
+	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 
@@ -48,6 +51,7 @@ func CustomMessageDecorator(
 	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
+	incentivesKeeper *incentiveskeeper.Keeper,
 ) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
@@ -62,6 +66,7 @@ func CustomMessageDecorator(
 			CronKeeper:            cronKeeper,
 			AdminKeeper:           adminKeeper,
 			ContractmanagerKeeper: contractmanagerKeeper,
+			IncentivesKeeper:      incentivesKeeper,
 		}
 	}
 }
@@ -78,6 +83,7 @@ type CustomMessenger struct {
 	CronKeeper            *cronkeeper.Keeper
 	AdminKeeper           *adminmodulekeeper.Keeper
 	ContractmanagerKeeper *contractmanagerkeeper.Keeper
+	IncentivesKeeper      *incentiveskeeper.Keeper
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -138,6 +144,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		}
 		if contractMsg.ResubmitFailure != nil {
 			return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
+		}
+		if contractMsg.Incentives != nil {
+			return m.executeIncentiveMsg(ctx, contractAddr, contractMsg.Incentives)
 		}
 	}
 
@@ -912,6 +921,114 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 	return nil, [][]byte{data}, nil
 }
 
+func (m *CustomMessenger) createGauge(ctx sdk.Context, contractAddr sdk.AccAddress, createGauge *bindings.CreateGauge) ([]sdk.Event, [][]byte, error) {
+	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
+	_, err := msgServer.CreateGauge(ctx, &incentivestypes.MsgCreateGauge{
+		IsPerpetual:       createGauge.IsPerpetual,
+		Owner:             createGauge.Owner,
+		DistributeTo:      createGauge.DistributeTo,
+		Coins:             createGauge.Coins,
+		StartTime:         time.Unix(createGauge.StartTime.GetSeconds(), int64(createGauge.StartTime.GetNanos())),
+		NumEpochsPaidOver: createGauge.NumEpochsPaidOver,
+		PricingTick:       createGauge.PricingTick,
+	})
+	if err != nil {
+		ctx.Logger().Error("failed to create gauge",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "failed to create gauge")
+	}
+
+	resp := bindings.CreateGaugeResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal createGauge response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "marshal json failed")
+	}
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) addToGauge(ctx sdk.Context, contractAddr sdk.AccAddress, addToGauge *bindings.AddToGauge) ([]sdk.Event, [][]byte, error) {
+	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
+	_, err := msgServer.AddToGauge(ctx, &incentivestypes.MsgAddToGauge{
+		Owner:   addToGauge.Owner,
+		GaugeId: addToGauge.GaugeID,
+		Rewards: addToGauge.Rewards,
+	})
+	if err != nil {
+		ctx.Logger().Error("failed to add to gauge",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "failed to add to gauge")
+	}
+
+	resp := bindings.AddToGaugeResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal addToGauge response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "marshal json failed")
+	}
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) stake(ctx sdk.Context, contractAddr sdk.AccAddress, stakeMsg *bindings.Stake) ([]sdk.Event, [][]byte, error) {
+	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
+	stakeResp, err := msgServer.Stake(ctx, &incentivestypes.MsgStake{
+		Owner: stakeMsg.Owner,
+		Coins: stakeMsg.Coins,
+	})
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to stake now")
+	}
+
+	resp := bindings.StakeResponse{
+		ID: stakeResp.ID,
+	}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal stake response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "marshal json failed")
+	}
+	return nil, [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) unstake(ctx sdk.Context, contractAddr sdk.AccAddress, unstake *bindings.Unstake) ([]sdk.Event, [][]byte, error) {
+	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
+	_, err := msgServer.Unstake(ctx, &incentivestypes.MsgUnstake{
+		Owner:    unstake.Owner,
+		Unstakes: unstake.Unstakes,
+	})
+	if err != nil {
+		ctx.Logger().Error("failed to unstake",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "failed to unstake")
+	}
+
+	resp := bindings.UnstakeResponse{}
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		ctx.Logger().Error("json.Marshal: failed to marshal unstake response to JSON",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "marshal json failed")
+	}
+	return nil, [][]byte{data}, nil
+}
+
 func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
 	for _, admin := range m.AdminKeeper.GetAdmins(ctx) {
 		if admin == contractAddr.String() {
@@ -920,4 +1037,21 @@ func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) 
 	}
 
 	return false
+}
+
+func (m *CustomMessenger) executeIncentiveMsg(ctx sdk.Context, contractAddr sdk.AccAddress, incentives *bindings.Incentives) ([]sdk.Event, [][]byte, error) {
+	if incentives.CreateGauge != nil {
+		return m.createGauge(ctx, contractAddr, incentives.CreateGauge)
+	}
+	if incentives.AddToGauge != nil {
+		return m.addToGauge(ctx, contractAddr, incentives.AddToGauge)
+	}
+	if incentives.Stake != nil {
+		return m.stake(ctx, contractAddr, incentives.Stake)
+	}
+	if incentives.Unstake != nil {
+		return m.unstake(ctx, contractAddr, incentives.Unstake)
+	}
+
+	return nil, nil, fmt.Errorf("no incentive message inside")
 }
