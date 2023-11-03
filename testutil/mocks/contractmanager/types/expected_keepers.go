@@ -20,7 +20,7 @@ type MockWasmKeeper struct {
 }
 
 func (m *MockWasmKeeper) GetContractInfo(ctx types.Context, contractAddress types.AccAddress) *wasmtypes.ContractInfo {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

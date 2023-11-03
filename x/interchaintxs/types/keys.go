@@ -24,5 +24,7 @@ const (
 	prefixICARegistrationFeeFirstCodeID = iota + 2
 )
 
-var ParamsKey = []byte{prefixParamsKey}
-var ICARegistrationFeeFirstCodeID = []byte{prefixICARegistrationFeeFirstCodeID}
+var (
+	ParamsKey                     = []byte{prefixParamsKey}
+	ICARegistrationFeeFirstCodeID = []byte{prefixICARegistrationFeeFirstCodeID}
+)
