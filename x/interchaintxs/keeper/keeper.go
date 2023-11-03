@@ -92,3 +92,14 @@ func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) 
 func (k Keeper) GetAuthority() string {
 	return k.authority
 }
+
+// GetICARegistrationFeeFirstCodeID returns code id, starting from which we charge fee for ICA registration
+func (k Keeper) GetICARegistrationFeeFirstCodeID(ctx sdk.Context) (codeID uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bytes := store.Get(types.ICARegistrationFeeFirstCodeID)
+	if bytes == nil {
+		k.Logger(ctx).Debug("Fee register ICA code id key don't exists, GetLastCodeID returns 0")
+		return 0
+	}
+	return sdk.BigEndianToUint64(bytes)
+}

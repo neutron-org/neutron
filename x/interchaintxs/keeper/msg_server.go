@@ -47,8 +47,11 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		return nil, errors.Wrapf(ictxtypes.ErrNotContract, "%s is not a contract address", msg.FromAddress)
 	}
 
-	if err := k.ChargeFee(ctx, senderAddr, msg.RegisterFee); err != nil {
-		return nil, errors.Wrapf(err, "failed to charge fees to pay for RegisterInterchainAccount msg: %s", msg)
+	// if contract is stored after [last] upgrade, we're not going charge fees for register ICA
+	if k.sudoKeeper.GetContractInfo(ctx, senderAddr).CodeID >= k.GetICARegistrationFeeFirstCodeID(ctx) {
+		if err := k.ChargeFee(ctx, senderAddr, msg.RegisterFee); err != nil {
+			return nil, errors.Wrapf(err, "failed to charge fees to pay for RegisterInterchainAccount msg: %s", msg)
+		}
 	}
 
 	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)

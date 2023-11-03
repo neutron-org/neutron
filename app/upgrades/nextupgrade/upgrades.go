@@ -3,6 +3,7 @@ package nextupgrade
 import (
 	"fmt"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -80,7 +81,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Migrating interchaintxs module parameters...")
-		if err := setInterchainTxsParams(ctx, keepers.ParamsKeeper, storeKeys.GetKey(interchaintxstypes.StoreKey), codec); err != nil {
+		if err := setInterchainTxsParams(ctx, keepers.ParamsKeeper, storeKeys.GetKey(interchaintxstypes.StoreKey), storeKeys.GetKey(wasmtypes.StoreKey), codec); err != nil {
 			return nil, err
 		}
 
@@ -226,7 +227,7 @@ func migrateInterchainQueriesParams(ctx sdk.Context, paramsKeepers paramskeeper.
 	return nil
 }
 
-func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, codec codec.Codec) error {
+func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, wasmStoreKey storetypes.StoreKey, codec codec.Codec) error {
 	store := ctx.KVStore(storeKey)
 	var currParams interchaintxstypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(interchaintxstypes.StoreKey)
@@ -239,6 +240,13 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 
 	bz := codec.MustMarshal(&currParams)
 	store.Set(interchaintxstypes.ParamsKey, bz)
+
+	wasmStore := ctx.KVStore(wasmStoreKey)
+	bzWasm := wasmStore.Get(wasmtypes.KeySequenceCodeID)
+	if bzWasm == nil {
+		return fmt.Errorf("KeySequenceCodeID not found during the upgrade")
+	}
+	store.Set(interchaintxstypes.ICARegistrationFeeFirstCodeID, bzWasm)
 	return nil
 }
 
