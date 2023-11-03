@@ -147,8 +147,8 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/abci"
@@ -296,7 +296,7 @@ type App struct {
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 	CronKeeper          cronkeeper.Keeper
-	RouterKeeper        *routerkeeper.Keeper
+	RouterKeeper        *pfmkeeper.Keeper
 
 	RouterModule packetforward.AppModule
 
@@ -380,7 +380,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctiontypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -516,10 +516,10 @@ func New(
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	// RouterKeeper must be created before TransferKeeper
-	app.RouterKeeper = routerkeeper.NewKeeper(
+	app.RouterKeeper = pfmkeeper.NewKeeper(
 		appCodec,
-		app.keys[routertypes.StoreKey],
-		app.GetSubspace(routertypes.ModuleName),
+		app.keys[pfmtypes.StoreKey],
+		app.GetSubspace(pfmtypes.ModuleName),
 		app.TransferKeeper.Keeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
@@ -722,8 +722,8 @@ func New(
 		app.HooksTransferIBCModule,
 		app.RouterKeeper,
 		0,
-		routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-		routerkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
@@ -806,7 +806,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName,
-		routertypes.ModuleName,
+		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 	)
@@ -837,7 +837,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName,
-		routertypes.ModuleName,
+		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 	)
@@ -873,7 +873,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName, // after auth keeper
-		routertypes.ModuleName,
+		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 	)
@@ -1229,7 +1229,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
+	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
