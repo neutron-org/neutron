@@ -243,7 +243,6 @@ type ResubmitFailureResponse struct {
 
 type CreateGauge struct {
 	IsPerpetual       bool                 `json:"is_perpetual"`
-	Owner             string               `json:"owner"`
 	DistributeTo      types.QueryCondition `json:"distribute_to"`
 	Coins             sdk.Coins            `json:"coins"`
 	StartTime         timestamp.Timestamp  `json:"start_time"`
@@ -254,7 +253,6 @@ type CreateGauge struct {
 type CreateGaugeResponse struct{}
 
 type AddToGauge struct {
-	Owner   string    `json:"owner"`
 	GaugeID uint64    `json:"gauge_id"`
 	Rewards sdk.Coins `json:"rewards"`
 }
@@ -262,7 +260,6 @@ type AddToGauge struct {
 type AddToGaugeResponse struct{}
 
 type Stake struct {
-	Owner string    `json:"owner"`
 	Coins sdk.Coins `json:"coins"`
 }
 
@@ -271,7 +268,6 @@ type StakeResponse struct {
 }
 
 type Unstake struct {
-	Owner string `json:"owner"`
 	/// if left empty interpreted as "unstake all"
 	Unstakes []*types.MsgUnstake_UnstakeDescriptor `json:"unstakes"`
 }

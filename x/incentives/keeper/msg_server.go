@@ -82,6 +82,8 @@ func (server msgServer) AddToGauge(
 		return nil, err
 	}
 
+	// TODO: missing check on owner?
+
 	err = server.keeper.AddToGaugeRewards(ctx, owner, msg.Rewards, msg.GaugeId)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrInvalidRequest, err.Error())
@@ -113,6 +115,8 @@ func (server msgServer) Stake(
 		return nil, err
 	}
 
+	// TODO: missing check on owner?
+
 	params := server.keeper.GetParams(ctx)
 	startDistEpoch := server.keeper.ek.GetEpochInfo(ctx, params.DistrEpochIdentifier).CurrentEpoch
 
@@ -141,6 +145,8 @@ func (server msgServer) Unstake(
 	msg *types.MsgUnstake,
 ) (*types.MsgUnstakeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// TODO: missing check on owner?
 
 	unstakes := msg.Unstakes
 	if len(msg.Unstakes) == 0 {

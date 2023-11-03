@@ -925,7 +925,7 @@ func (m *CustomMessenger) createGauge(ctx sdk.Context, contractAddr sdk.AccAddre
 	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
 	_, err := msgServer.CreateGauge(ctx, &incentivestypes.MsgCreateGauge{
 		IsPerpetual:       createGauge.IsPerpetual,
-		Owner:             createGauge.Owner,
+		Owner:             contractAddr.String(),
 		DistributeTo:      createGauge.DistributeTo,
 		Coins:             createGauge.Coins,
 		StartTime:         time.Unix(createGauge.StartTime.GetSeconds(), int64(createGauge.StartTime.GetNanos())),
@@ -955,7 +955,7 @@ func (m *CustomMessenger) createGauge(ctx sdk.Context, contractAddr sdk.AccAddre
 func (m *CustomMessenger) addToGauge(ctx sdk.Context, contractAddr sdk.AccAddress, addToGauge *bindings.AddToGauge) ([]sdk.Event, [][]byte, error) {
 	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
 	_, err := msgServer.AddToGauge(ctx, &incentivestypes.MsgAddToGauge{
-		Owner:   addToGauge.Owner,
+		Owner:   contractAddr.String(),
 		GaugeId: addToGauge.GaugeID,
 		Rewards: addToGauge.Rewards,
 	})
@@ -982,7 +982,7 @@ func (m *CustomMessenger) addToGauge(ctx sdk.Context, contractAddr sdk.AccAddres
 func (m *CustomMessenger) stake(ctx sdk.Context, contractAddr sdk.AccAddress, stakeMsg *bindings.Stake) ([]sdk.Event, [][]byte, error) {
 	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
 	stakeResp, err := msgServer.Stake(ctx, &incentivestypes.MsgStake{
-		Owner: stakeMsg.Owner,
+		Owner: contractAddr.String(),
 		Coins: stakeMsg.Coins,
 	})
 	if err != nil {
@@ -1006,7 +1006,7 @@ func (m *CustomMessenger) stake(ctx sdk.Context, contractAddr sdk.AccAddress, st
 func (m *CustomMessenger) unstake(ctx sdk.Context, contractAddr sdk.AccAddress, unstake *bindings.Unstake) ([]sdk.Event, [][]byte, error) {
 	msgServer := incentiveskeeper.NewMsgServerImpl(m.IncentivesKeeper)
 	_, err := msgServer.Unstake(ctx, &incentivestypes.MsgUnstake{
-		Owner:    unstake.Owner,
+		Owner:    contractAddr.String(),
 		Unstakes: unstake.Unstakes,
 	})
 	if err != nil {
