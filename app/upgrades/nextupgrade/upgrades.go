@@ -242,9 +242,9 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 	store.Set(interchaintxstypes.ParamsKey, bz)
 
 	wasmStore := ctx.KVStore(wasmStoreKey)
-	bzWasm := wasmStore.Get(wasmtypes.KeyLastCodeID)
+	bzWasm := wasmStore.Get(wasmtypes.KeySequenceCodeID)
 	if bzWasm == nil {
-		return fmt.Errorf("last code ID not found during the upgrade")
+		return fmt.Errorf("KeySequenceCodeID not found during the upgrade")
 	}
 	store.Set(interchaintxstypes.ICARegistrationFeeFirstCodeID, bzWasm)
 	return nil
