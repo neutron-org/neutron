@@ -6,7 +6,6 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/incentives/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -245,7 +244,7 @@ type CreateGauge struct {
 	IsPerpetual       bool                 `json:"is_perpetual"`
 	DistributeTo      types.QueryCondition `json:"distribute_to"`
 	Coins             sdk.Coins            `json:"coins"`
-	StartTime         timestamp.Timestamp  `json:"start_time"`
+	StartTime         Timestamp            `json:"start_time"`
 	NumEpochsPaidOver uint64               `json:"num_epochs_paid_over"`
 	PricingTick       int64                `json:"pricing_tick"`
 }
@@ -273,3 +272,8 @@ type Unstake struct {
 }
 
 type UnstakeResponse struct{}
+
+type Timestamp struct {
+	Seconds int64 `json:"seconds"`
+	Nanos   int32 `json:"nanos"`
+}

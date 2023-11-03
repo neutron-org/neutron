@@ -928,7 +928,7 @@ func (m *CustomMessenger) createGauge(ctx sdk.Context, contractAddr sdk.AccAddre
 		Owner:             contractAddr.String(),
 		DistributeTo:      createGauge.DistributeTo,
 		Coins:             createGauge.Coins,
-		StartTime:         time.Unix(createGauge.StartTime.GetSeconds(), int64(createGauge.StartTime.GetNanos())),
+		StartTime:         time.Unix(createGauge.StartTime.Seconds, int64(createGauge.StartTime.Nanos)),
 		NumEpochsPaidOver: createGauge.NumEpochsPaidOver,
 		PricingTick:       createGauge.PricingTick,
 	})
