@@ -54,3 +54,6 @@ func (i ICAOwner) GetContract() sdk.AccAddress {
 func (i ICAOwner) GetInterchainAccountID() string {
 	return i.interchainAccountID
 }
+
+// GetFeeCollectorAddr is a function to return the current fee collector address
+type GetFeeCollectorAddr func(ctx sdk.Context) string

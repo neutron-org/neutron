@@ -250,7 +250,7 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 	return nil
 }
 
-func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
 	ctx.Logger().Info("Implementing GlobalFee Params...")
 
 	// global fee is empty set, set global fee to equal to 0.05 USD (for 200k of gas) in appropriate coin
@@ -299,7 +299,7 @@ func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	return nil
 }
 
-func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
 	ctx.Logger().Info("Migrating admin module...")
 
 	keepers.AdminModule.SetProposalID(ctx, 1)
