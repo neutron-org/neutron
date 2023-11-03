@@ -328,8 +328,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   blocksdk.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool blocksdk.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -655,7 +655,7 @@ func New(
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		app.FeeKeeper,
 		app.BankKeeper,
-		app.FeeBurnerKeeper,
+		func(ctx sdk.Context) string { return app.FeeBurnerKeeper.GetParams(ctx).TreasuryAddress },
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -976,7 +976,6 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-
 
 	app.SetEndBlocker(app.EndBlocker)
 
