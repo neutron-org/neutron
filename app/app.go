@@ -328,8 +328,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   blocksdk.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool blocksdk.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -615,7 +615,7 @@ func New(
 	// NOTE: we need staking feature here even if there is no staking module anymore because cosmwasm-std in the CosmWasm SDK requires this feature
 	// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
 	//       however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
-	supportedFeatures := "iterator,stargate,staking,neutron,cosmwasm_1_1,cosmwasm_1_2"
+	supportedFeatures := "iterator,stargate,staking,neutron,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3,cosmwasm_1_4"
 
 	// register the proposal types
 	adminRouterLegacy := govv1beta1.NewRouter()
@@ -976,7 +976,6 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-
 
 	app.SetEndBlocker(app.EndBlocker)
 
