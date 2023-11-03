@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"net/url"
 	"strconv"
 	"time"
 
@@ -230,7 +229,7 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 				return nil, errors.Wrapf(types.ErrInvalidSubmittedResult, "KV path from result is not equal to registered query storage prefix: %v != %v", result.StoragePrefix, query.Keys[index].Path)
 			}
 
-			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, url.PathEscape(string(result.Key)))
+			path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
 			// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
 			// and call corresponding method to verify it
 			switch proof.GetProofs()[0].GetProof().(type) {
