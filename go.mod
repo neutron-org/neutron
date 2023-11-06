@@ -22,7 +22,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/spf13/cast v1.5.1
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.16.0
 	github.com/strangelove-ventures/packet-forward-middleware/v4 v4.0.5
 	github.com/stretchr/testify v1.8.3
