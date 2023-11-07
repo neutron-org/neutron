@@ -356,8 +356,8 @@ type App struct {
 	checkTxHandler mev_lane.CheckTx
 
 	// Lanes
-	Mempool   auctionante.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool auctionante.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -1077,7 +1077,6 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	mevLane.SetAnteHandler(anteHandler)
 	baseLane.SetAnteHandler(anteHandler)
-
 
 	app.SetEndBlocker(app.EndBlocker)
 

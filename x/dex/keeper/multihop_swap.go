@@ -4,6 +4,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
@@ -143,19 +144,16 @@ func (k Keeper) SwapExactAmountIn(ctx sdk.Context,
 	tradePairID *types.TradePairID,
 	amountIn math.Int,
 ) (totalOut sdk.Coin, err error) {
-	_, swapAmountMakerDenom, orderFilled, err := k.Swap(
+	_, swapAmountMakerDenom, orderFilled := k.Swap(
 		ctx,
 		tradePairID,
 		amountIn,
 		nil,
 		nil,
 	)
-	if err != nil {
-		return sdk.Coin{}, err
-	}
 	if !orderFilled {
 		return sdk.Coin{}, types.ErrInsufficientLiquidity
 	}
 
-	return swapAmountMakerDenom, err
+	return swapAmountMakerDenom, nil
 }

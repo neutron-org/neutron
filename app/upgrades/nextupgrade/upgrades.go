@@ -2,6 +2,7 @@ package nextupgrade
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"

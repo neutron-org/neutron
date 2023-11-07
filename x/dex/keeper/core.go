@@ -7,6 +7,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/dex/utils"
@@ -330,16 +331,13 @@ func (k Keeper) PlaceLimitOrderCore(
 		}
 
 		var orderFilled bool
-		swapInCoin, swapOutCoin, orderFilled, err = k.SwapWithCache(
+		swapInCoin, swapOutCoin, orderFilled = k.SwapWithCache(
 			ctx,
 			takerTradePairID,
 			amountIn,
 			maxAmountOut,
 			&limitPrice,
 		)
-		if err != nil {
-			return
-		}
 
 		if orderType.IsFoK() && !orderFilled {
 			err = types.ErrFoKLimitOrderNotFilled

@@ -3,6 +3,7 @@ package keeper
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
@@ -13,7 +14,7 @@ func (k Keeper) Swap(
 	maxAmountTakerDenom math.Int,
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
-) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
+) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool) {
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math.Int
 	if useMaxOut {
@@ -72,7 +73,7 @@ func (k Keeper) Swap(
 		), sdk.NewCoin(
 			tradePairID.MakerDenom,
 			totalMakerDenom,
-		), orderFilled, nil
+		), orderFilled
 }
 
 func (k Keeper) SwapWithCache(
@@ -81,9 +82,9 @@ func (k Keeper) SwapWithCache(
 	maxAmountIn math.Int,
 	maxAmountOut *math.Int,
 	limitPrice *math_utils.PrecDec,
-) (totalIn, totalOut sdk.Coin, orderFilled bool, err error) {
+) (totalIn, totalOut sdk.Coin, orderFilled bool) {
 	cacheCtx, writeCache := ctx.CacheContext()
-	totalIn, totalOut, orderFilled, err = k.Swap(
+	totalIn, totalOut, orderFilled = k.Swap(
 		cacheCtx,
 		tradePairID,
 		maxAmountIn,
@@ -93,7 +94,7 @@ func (k Keeper) SwapWithCache(
 
 	writeCache()
 
-	return totalIn, totalOut, orderFilled, err
+	return totalIn, totalOut, orderFilled
 }
 
 func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {

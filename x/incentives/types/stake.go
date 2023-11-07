@@ -1,10 +1,10 @@
 package types
 
 import (
-	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -33,13 +33,6 @@ func (p Stake) OwnerAddress() sdk.AccAddress {
 		panic(err)
 	}
 	return addr
-}
-
-func (p Stake) SingleCoin() (sdk.Coin, error) {
-	if len(p.Coins) != 1 {
-		return sdk.Coin{}, fmt.Errorf("Stake %d has no single coin: %s", p.ID, p.Coins)
-	}
-	return p.Coins[0], nil
 }
 
 func (p Stake) ValidateBasic() error {
