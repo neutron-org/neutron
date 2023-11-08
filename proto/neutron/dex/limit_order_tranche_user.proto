@@ -15,7 +15,7 @@ message LimitOrderTrancheUser {
       (gogoproto.moretags)   = "yaml:\"shares_owned\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "sharesOwned"
+      (gogoproto.jsontag) = "shares_owned"
   ];  
   string shares_withdrawn = 6  [
       (gogoproto.moretags)   = "yaml:\"shares_withdrawn\"",
