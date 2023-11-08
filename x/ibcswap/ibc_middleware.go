@@ -3,11 +3,13 @@ package ibcswap
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
@@ -127,6 +129,16 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	metadata := m.Swap
+
+	// override the receiver so that senders cannot move funds through arbitrary addresses.
+	// also needed to match behavior of PFM
+	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+	metadata.Receiver = overrideReceiver
+	metadata.Creator = overrideReceiver
+
 	if err := metadata.Validate(); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
@@ -145,7 +157,9 @@ func (im IBCMiddleware) OnRecvPacket(
 	)
 	wrappedSdkCtx := ctx.WithContext(ctxWithForwardFlags)
 
-	ack := im.app.OnRecvPacket(wrappedSdkCtx, packet, relayer)
+	overridePacket := NewPacketWithOverrideReceiver(packet, data, overrideReceiver)
+
+	ack := im.app.OnRecvPacket(wrappedSdkCtx, overridePacket, relayer)
 	if ack == nil || !ack.Success() {
 		return ack
 	}
@@ -371,4 +385,38 @@ func getDenomForThisChain(
 	// append port and channel from this chain to denom
 	prefixedDenom := transfertypes.GetDenomPrefix(port, channel) + denom
 	return transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
+}
+
+func NewPacketWithOverrideReceiver(oldPacket channeltypes.Packet, data transfertypes.FungibleTokenPacketData, overrideReceiver string) channeltypes.Packet {
+	overrideData := transfertypes.FungibleTokenPacketData{
+		Denom:    data.Denom,
+		Amount:   data.Amount,
+		Sender:   data.Sender,
+		Receiver: overrideReceiver, // override receiver
+	}
+	overrideDataBz := transfertypes.ModuleCdc.MustMarshalJSON(&overrideData)
+
+	return channeltypes.Packet{
+		Sequence:           oldPacket.Sequence,
+		SourcePort:         oldPacket.SourcePort,
+		SourceChannel:      oldPacket.SourceChannel,
+		DestinationPort:    oldPacket.DestinationPort,
+		DestinationChannel: oldPacket.DestinationChannel,
+		Data:               overrideDataBz, // override data
+		TimeoutHeight:      oldPacket.TimeoutHeight,
+		TimeoutTimestamp:   oldPacket.TimeoutTimestamp,
+	}
+}
+
+// NOTE: This has been copied from https://github.com/cosmos/ibc-apps/blob/0288bf5c3ec205134e288815f654b59611bd2153/middleware/packet-forward-middleware/packetforward/ibc_middleware.go#L143
+// this allows us to use the same address as the PFM.
+// Unfortunately, this is a very brittle solution that depends on the corresponding function in th PFM not being changed.
+// Nonetheless, any breaking changes in the PFM will be caught by tests.
+// An issue has been created on the cosmos/ibc-apps repo to make this function public so we can use it directly: https://github.com/cosmos/ibc-apps/issues/131
+func getReceiver(channel, originalSender string) (string, error) {
+	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
+	senderHash32 := address.Hash(forwardtypes.ModuleName, []byte(senderStr))
+	sender := sdk.AccAddress(senderHash32[:20])
+	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
+	return sdk.Bech32ifyAddressBytes(bech32Prefix, sender)
 }

@@ -122,8 +122,6 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 
 	// Check that the funds are now present in the acc on chainB
 	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, expectedAmountOut)
-
-	s.Assert().NoError(err)
 }
 
 func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
