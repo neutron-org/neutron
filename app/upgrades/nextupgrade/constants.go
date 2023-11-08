@@ -5,10 +5,8 @@ import (
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/neutron-org/neutron/app/upgrades"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
-	epochstypes "github.com/neutron-org/neutron/x/epochs/types"
-	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 )
 
 const (
@@ -25,8 +23,6 @@ var Upgrade = upgrades.Upgrade{
 			crisistypes.ModuleName,
 			auctiontypes.ModuleName,
 			dextypes.ModuleName,
-			incentivestypes.ModuleName,
-			epochstypes.ModuleName,
 		},
 	},
 }
