@@ -10,12 +10,13 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/neutron-org/neutron/testutil/apptesting"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	. "github.com/neutron-org/neutron/x/dex/keeper"
 	. "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/suite"
 )
 
 // Test suite
@@ -1456,7 +1457,7 @@ func (s *DexTestSuite) getLimitFilledLiquidityAtTickAtIndex(
 	// grab fill tranche reserves and shares
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tranche, _, found := s.App.DexKeeper.FindLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
-		TradePairID:           tradePairID,
+		TradePairId:           tradePairID,
 		TickIndexTakerToMaker: tickIndex,
 		TrancheKey:            trancheKey,
 	})
@@ -1473,7 +1474,7 @@ func (s *DexTestSuite) getLimitReservesAtTickAtKey(
 	// grab fill tranche reserves and shares
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tranche, _, found := s.App.DexKeeper.FindLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
-		TradePairID:           tradePairID,
+		TradePairId:           tradePairID,
 		TickIndexTakerToMaker: tickIndex,
 		TrancheKey:            trancheKey,
 	})

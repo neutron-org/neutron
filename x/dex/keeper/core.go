@@ -7,6 +7,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/dex/utils"
@@ -453,11 +454,11 @@ func (k Keeper) CancelLimitOrderCore(
 		return types.ErrActiveLimitOrderNotFound
 	}
 
-	tradePairID, tickIndex := trancheUser.TradePairID, trancheUser.TickIndexTakerToMaker
+	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
 	tranche := k.GetLimitOrderTranche(
 		ctx,
 		&types.LimitOrderTrancheKey{
-			TradePairID:           tradePairID,
+			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndex,
 			TrancheKey:            trancheKey,
 		},
@@ -524,13 +525,13 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		return sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
-	tradePairID, tickIndex := trancheUser.TradePairID, trancheUser.TickIndexTakerToMaker
+	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
 	pairID := tradePairID.MustPairID()
 
 	tranche, wasFilled, found := k.FindLimitOrderTranche(
 		ctx,
 		&types.LimitOrderTrancheKey{
-			TradePairID:           tradePairID,
+			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndex,
 			TrancheKey:            trancheKey,
 		},

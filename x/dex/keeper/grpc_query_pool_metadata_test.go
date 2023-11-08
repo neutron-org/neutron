@@ -26,12 +26,12 @@ func TestPoolMetadataQuerySingle(t *testing.T) {
 	}{
 		{
 			desc:     "First",
-			request:  &types.QueryGetPoolMetadataRequest{Id: msgs[0].ID},
+			request:  &types.QueryGetPoolMetadataRequest{Id: msgs[0].Id},
 			response: &types.QueryGetPoolMetadataResponse{PoolMetadata: msgs[0]},
 		},
 		{
 			desc:     "Second",
-			request:  &types.QueryGetPoolMetadataRequest{Id: msgs[1].ID},
+			request:  &types.QueryGetPoolMetadataRequest{Id: msgs[1].Id},
 			response: &types.QueryGetPoolMetadataResponse{PoolMetadata: msgs[1]},
 		},
 		{

@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/dex/utils"
 )
@@ -208,14 +209,14 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 	switch orderType {
 	case types.LimitOrderType_JUST_IN_TIME:
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
-			TradePairID:           tradePairID,
+			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, &JITGoodTilTime)
 	case types.LimitOrderType_GOOD_TIL_TIME:
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
-			TradePairID:           tradePairID,
+			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
@@ -224,7 +225,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 		placeTranche = k.GetPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
 		if placeTranche == nil {
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
-				TradePairID:           tradePairID,
+				TradePairId:           tradePairID,
 				TickIndexTakerToMaker: tickIndexTakerToMaker,
 				TrancheKey:            NewTrancheKey(ctx),
 			}

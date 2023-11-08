@@ -7,8 +7,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func CmdShowPool() *cobra.Command {
@@ -41,7 +42,7 @@ func CmdShowPool() *cobra.Command {
 			}
 
 			params := &types.QueryPoolRequest{
-				PairID:    argPairID,
+				PairId:    argPairID,
 				TickIndex: argTickIndexInt,
 				Fee:       argFeeInt,
 			}
@@ -77,7 +78,7 @@ func CmdShowPoolByID() *cobra.Command {
 			}
 
 			params := &types.QueryPoolByIDRequest{
-				PoolID: argPoolID,
+				PoolId: argPoolID,
 			}
 
 			res, err := queryClient.PoolByID(context.Background(), params)

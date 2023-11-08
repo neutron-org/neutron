@@ -9,8 +9,8 @@ import "neutron/dex/pool_reserves.proto";
 
 message TickLiquidity {
   oneof liquidity {
-    PoolReserves poolReserves = 1;
-    LimitOrderTranche limitOrderTranche = 2;
+    PoolReserves pool_reserves = 1;
+    LimitOrderTranche limit_order_tranche = 2;
   }
 
 }

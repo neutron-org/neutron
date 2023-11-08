@@ -31,8 +31,8 @@ func TestInactiveLimitOrderTrancheQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetInactiveLimitOrderTrancheRequest{
-				PairID:     msgs[0].Key.TradePairID.MustPairID().CanonicalString(),
-				TokenIn:    msgs[0].Key.TradePairID.MakerDenom,
+				PairId:     msgs[0].Key.TradePairId.MustPairID().CanonicalString(),
+				TokenIn:    msgs[0].Key.TradePairId.MakerDenom,
 				TickIndex:  msgs[0].Key.TickIndexTakerToMaker,
 				TrancheKey: msgs[0].Key.TrancheKey,
 			},
@@ -41,8 +41,8 @@ func TestInactiveLimitOrderTrancheQuerySingle(t *testing.T) {
 		{
 			desc: "Second",
 			request: &types.QueryGetInactiveLimitOrderTrancheRequest{
-				PairID:     msgs[1].Key.TradePairID.MustPairID().CanonicalString(),
-				TokenIn:    msgs[1].Key.TradePairID.MakerDenom,
+				PairId:     msgs[1].Key.TradePairId.MustPairID().CanonicalString(),
+				TokenIn:    msgs[1].Key.TradePairId.MakerDenom,
 				TickIndex:  msgs[1].Key.TickIndexTakerToMaker,
 				TrancheKey: msgs[1].Key.TrancheKey,
 			},
@@ -51,7 +51,7 @@ func TestInactiveLimitOrderTrancheQuerySingle(t *testing.T) {
 		{
 			desc: "KeyNotFound",
 			request: &types.QueryGetInactiveLimitOrderTrancheRequest{
-				PairID:     "TokenZ<>TokenQ",
+				PairId:     "TokenZ<>TokenQ",
 				TokenIn:    strconv.Itoa(100000),
 				TickIndex:  100000,
 				TrancheKey: "100000",

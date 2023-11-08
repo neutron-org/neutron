@@ -3,6 +3,7 @@ package types
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/utils"
 )
@@ -16,7 +17,7 @@ func NewPool(
 	feeInt64 := utils.MustSafeUint64ToInt64(fee)
 
 	id0To1 := &PoolReservesKey{
-		TradePairID:           NewTradePairIDFromMaker(pairID, pairID.Token1),
+		TradePairId:           NewTradePairIDFromMaker(pairID, pairID.Token1),
 		TickIndexTakerToMaker: centerTickIndexNormalized + feeInt64,
 		Fee:                   fee,
 	}
@@ -31,7 +32,7 @@ func NewPool(
 	return &Pool{
 		LowerTick0: lowerTick,
 		UpperTick1: upperTick,
-		ID:         id,
+		Id:         id,
 	}, nil
 }
 
@@ -152,7 +153,7 @@ func (p *Pool) Deposit(
 }
 
 func (p *Pool) GetPoolDenom() string {
-	return NewPoolDenom(p.ID)
+	return NewPoolDenom(p.Id)
 }
 
 func (p *Pool) Price(tradePairID *TradePairID) math_utils.PrecDec {

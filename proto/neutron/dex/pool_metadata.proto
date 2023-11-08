@@ -6,8 +6,8 @@ option go_package = "github.com/neutron-org/neutron/x/dex/types";
 import "neutron/dex/pair_id.proto";
 
 message PoolMetadata {
-  uint64 ID = 1;
+  uint64 id = 1;
   int64 tick = 2;
   uint64 fee = 3;
-  PairID pairID = 4;
+  PairID pair_id = 4;
 }

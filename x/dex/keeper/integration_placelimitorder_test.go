@@ -7,6 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -631,7 +632,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilHandlesTimezoneCorrectly() {
 	timeInPST, _ := time.Parse(time.RFC3339, "2050-01-02T15:04:05-08:00")
 	trancheKey := s.aliceLimitSellsGoodTil("TokenA", 0, 10, timeInPST)
 	tranche := s.App.DexKeeper.GetLimitOrderTranche(s.Ctx, &types.LimitOrderTrancheKey{
-		TradePairID:           defaultTradePairID1To0,
+		TradePairId:           defaultTradePairID1To0,
 		TickIndexTakerToMaker: 0,
 		TrancheKey:            trancheKey,
 	})

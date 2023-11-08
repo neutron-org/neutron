@@ -60,13 +60,13 @@ func (gs GenesisState) Validate() error {
 	poolMetadataIDMap := make(map[uint64]bool)
 	poolMetadataCount := gs.GetPoolCount()
 	for _, elem := range gs.PoolMetadataList {
-		if _, ok := poolMetadataIDMap[elem.ID]; ok {
+		if _, ok := poolMetadataIDMap[elem.Id]; ok {
 			return fmt.Errorf("duplicated id for poolMetadata")
 		}
-		if elem.ID >= poolMetadataCount {
+		if elem.Id >= poolMetadataCount {
 			return fmt.Errorf("poolMetadata id should be lower or equal than the last id")
 		}
-		poolMetadataIDMap[elem.ID] = true
+		poolMetadataIDMap[elem.Id] = true
 	}
 	// this line is used by starport scaffolding # genesis/types/validate
 

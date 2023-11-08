@@ -6,11 +6,12 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/testutil/dex/nullify"
 	"github.com/neutron-org/neutron/x/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int) []*types.LimitOrderTrancheUser {
@@ -19,7 +20,7 @@ func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int)
 		val := &types.LimitOrderTrancheUser{
 			TrancheKey:            strconv.Itoa(i),
 			Address:               strconv.Itoa(i),
-			TradePairID:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
+			TradePairId:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
 			TickIndexTakerToMaker: 0,
 			SharesOwned:           math.ZeroInt(),
 			SharesWithdrawn:       math.ZeroInt(),
@@ -38,7 +39,7 @@ func createNLimitOrderTrancheUserWithAddress(keeper *keeper.Keeper, ctx sdk.Cont
 		val := &types.LimitOrderTrancheUser{
 			TrancheKey:            strconv.Itoa(i),
 			Address:               address,
-			TradePairID:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
+			TradePairId:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
 			TickIndexTakerToMaker: 0,
 			SharesOwned:           math.ZeroInt(),
 			SharesWithdrawn:       math.ZeroInt(),
@@ -86,7 +87,7 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 	LOList := s.App.DexKeeper.GetAllLimitOrderTrancheUserForAddress(s.Ctx, s.alice)
 	s.Assert().Equal(2, len(LOList))
 	s.Assert().Equal(&types.LimitOrderTrancheUser{
-		TradePairID:           defaultTradePairID1To0,
+		TradePairId:           defaultTradePairID1To0,
 		TickIndexTakerToMaker: 1,
 		TrancheKey:            trancheKeyA,
 		Address:               s.alice.String(),
@@ -97,7 +98,7 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 		LOList[0],
 	)
 	s.Assert().Equal(&types.LimitOrderTrancheUser{
-		TradePairID:           defaultTradePairID0To1,
+		TradePairId:           defaultTradePairID0To1,
 		TickIndexTakerToMaker: 0,
 		TrancheKey:            trancheKeyB,
 		Address:               s.alice.String(),

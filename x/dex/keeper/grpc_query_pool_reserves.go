@@ -6,9 +6,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func (k Keeper) PoolReservesAll(
@@ -21,7 +22,7 @@ func (k Keeper) PoolReservesAll(
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	pairID, err := types.NewPairIDFromCanonicalString(req.PairID)
+	pairID, err := types.NewPairIDFromCanonicalString(req.PairId)
 	if err != nil {
 		return nil, err
 	}
@@ -67,14 +68,14 @@ func (k Keeper) PoolReserves(
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	pairID, err := types.NewPairIDFromCanonicalString(req.PairID)
+	pairID, err := types.NewPairIDFromCanonicalString(req.PairId)
 	if err != nil {
 		return nil, err
 	}
 	tradePairID := types.NewTradePairIDFromMaker(pairID, req.TokenIn)
 
 	poolReservesID := &types.PoolReservesKey{
-		TradePairID:           tradePairID,
+		TradePairId:           tradePairID,
 		TickIndexTakerToMaker: req.TickIndex,
 		Fee:                   req.Fee,
 	}

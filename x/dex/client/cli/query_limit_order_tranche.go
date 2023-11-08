@@ -7,8 +7,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func CmdListLimitOrderTranche() *cobra.Command {
@@ -32,7 +33,7 @@ func CmdListLimitOrderTranche() *cobra.Command {
 
 			params := &types.QueryAllLimitOrderTrancheRequest{
 				Pagination: pageReq,
-				PairID:     argPairID,
+				PairId:     argPairID,
 				TokenIn:    argTokenIn,
 			}
 
@@ -77,7 +78,7 @@ func CmdShowLimitOrderTranche() *cobra.Command {
 			}
 
 			params := &types.QueryGetLimitOrderTrancheRequest{
-				PairID:     argPairID,
+				PairId:     argPairID,
 				TickIndex:  argTickIndexInt,
 				TokenIn:    argTokenIn,
 				TrancheKey: argTrancheKey,

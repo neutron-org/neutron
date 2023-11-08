@@ -9,11 +9,11 @@ var _ TickLiquidityKey = (*LimitOrderTrancheKey)(nil)
 func (p LimitOrderTrancheKey) KeyMarshal() []byte {
 	var key []byte
 
-	pairKeyBytes := []byte(p.TradePairID.MustPairID().CanonicalString())
+	pairKeyBytes := []byte(p.TradePairId.MustPairID().CanonicalString())
 	key = append(key, pairKeyBytes...)
 	key = append(key, []byte("/")...)
 
-	makerDenomBytes := []byte(p.TradePairID.MakerDenom)
+	makerDenomBytes := []byte(p.TradePairId.MakerDenom)
 	key = append(key, makerDenomBytes...)
 	key = append(key, []byte("/")...)
 

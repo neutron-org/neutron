@@ -6,9 +6,10 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func CmdListInactiveLimitOrderTranche() *cobra.Command {
@@ -69,7 +70,7 @@ func CmdShowInactiveLimitOrderTranche() *cobra.Command {
 			}
 
 			params := &types.QueryGetInactiveLimitOrderTrancheRequest{
-				PairID:     argPairID,
+				PairId:     argPairID,
 				TokenIn:    argTokenIn,
 				TickIndex:  argTickIndex,
 				TrancheKey: argTrancheKey,

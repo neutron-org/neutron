@@ -2,6 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/utils"
 )
@@ -11,11 +12,11 @@ var _ TickLiquidityKey = (*PoolReservesKey)(nil)
 func (p PoolReservesKey) KeyMarshal() []byte {
 	var key []byte
 
-	pairKeyBytes := []byte(p.TradePairID.MustPairID().CanonicalString())
+	pairKeyBytes := []byte(p.TradePairId.MustPairID().CanonicalString())
 	key = append(key, pairKeyBytes...)
 	key = append(key, []byte("/")...)
 
-	makerDenomBytes := []byte(p.TradePairID.MakerDenom)
+	makerDenomBytes := []byte(p.TradePairId.MakerDenom)
 	key = append(key, makerDenomBytes...)
 	key = append(key, []byte("/")...)
 
@@ -37,7 +38,7 @@ func (p PoolReservesKey) KeyMarshal() []byte {
 func (p PoolReservesKey) Counterpart() *PoolReservesKey {
 	feeInt64 := utils.MustSafeUint64ToInt64(p.Fee)
 	return &PoolReservesKey{
-		TradePairID:           p.TradePairID.Reversed(),
+		TradePairId:           p.TradePairId.Reversed(),
 		TickIndexTakerToMaker: p.TickIndexTakerToMaker*-1 + 2*feeInt64,
 		Fee:                   p.Fee,
 	}

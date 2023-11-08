@@ -7,28 +7,28 @@ import "neutron/dex/trade_pair_id.proto";
 import "neutron/dex/tx.proto";
 
 message LimitOrderTrancheUser {
-  TradePairID tradePairID = 1;
-  int64 tickIndexTakerToMaker = 2;
-  string trancheKey = 3;
+  TradePairID trade_pair_id = 1;
+  int64 tick_index_taker_to_maker = 2;
+  string tranche_key = 3;
   string address = 4; 
-  string sharesOwned = 5  [
+  string shares_owned = 5  [
       (gogoproto.moretags)   = "yaml:\"sharesOwned\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
       (gogoproto.jsontag) = "sharesOwned"
   ];  
-  string sharesWithdrawn = 6  [
+  string shares_withdrawn = 6  [
       (gogoproto.moretags)   = "yaml:\"sharesWithdrawn\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
       (gogoproto.jsontag) = "sharesWithdrawn"
   ]; 
-  string sharesCancelled = 7  [
+  string shares_cancelled = 7  [
       (gogoproto.moretags)   = "yaml:\"sharesCancelled\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
       (gogoproto.jsontag) = "sharesCancelled"
   ];
-  LimitOrderType orderType = 8;
+  LimitOrderType order_type = 8;
 }
 

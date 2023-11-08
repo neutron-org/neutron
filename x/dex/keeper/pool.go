@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/dex/utils"
 )
@@ -29,11 +30,11 @@ func (k Keeper) InitPool(
 	centerTickIndexNormalized int64,
 	fee uint64,
 ) (pool *types.Pool, err error) {
-	poolMetadata := types.PoolMetadata{PairID: pairID, Tick: centerTickIndexNormalized, Fee: fee}
+	poolMetadata := types.PoolMetadata{PairId: pairID, Tick: centerTickIndexNormalized, Fee: fee}
 
 	// Get current poolID
 	poolID := k.GetPoolCount(ctx)
-	poolMetadata.ID = poolID
+	poolMetadata.Id = poolID
 
 	// Store poolMetadata
 	k.SetPoolMetadata(ctx, poolMetadata)
@@ -65,7 +66,7 @@ func (k Keeper) GetPool(
 	feeInt64 := utils.MustSafeUint64ToInt64(fee)
 
 	id0To1 := &types.PoolReservesKey{
-		TradePairID:           types.NewTradePairIDFromMaker(pairID, pairID.Token1),
+		TradePairId:           types.NewTradePairIDFromMaker(pairID, pairID.Token1),
 		TickIndexTakerToMaker: centerTickIndexNormalized + feeInt64,
 		Fee:                   fee,
 	}
@@ -89,7 +90,7 @@ func (k Keeper) GetPool(
 	}
 
 	return &types.Pool{
-		ID:         poolID,
+		Id:         poolID,
 		LowerTick0: lowerTick,
 		UpperTick1: upperTick,
 	}, true
@@ -101,7 +102,7 @@ func (k Keeper) GetPoolByID(ctx sdk.Context, poolID uint64) (pool *types.Pool, f
 		return pool, false
 	}
 
-	return k.GetPool(ctx, poolMetadata.PairID, poolMetadata.Tick, poolMetadata.Fee)
+	return k.GetPool(ctx, poolMetadata.PairId, poolMetadata.Tick, poolMetadata.Fee)
 }
 
 func (k Keeper) GetPoolIDByParams(

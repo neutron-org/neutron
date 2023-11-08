@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/neutron-org/neutron/x/dex/utils"
 )
@@ -21,7 +22,7 @@ func (k Keeper) GetAllDepositsForAddress(ctx sdk.Context, addr sdk.AccAddress) [
 			}
 			fee := utils.MustSafeUint64ToInt64(poolMetadata.Fee)
 			depositRecord := &types.DepositRecord{
-				PairID:          poolMetadata.PairID,
+				PairId:          poolMetadata.PairId,
 				SharesOwned:     sharesMaybe.Amount,
 				CenterTickIndex: poolMetadata.Tick,
 				LowerTickIndex:  poolMetadata.Tick - fee,

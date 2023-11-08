@@ -7,19 +7,20 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	neutronapp "github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	keepertest "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, deposit *types.DepositRecord) {
 	// NOTE: For simplicyt sake, we are not actually doing a deposit, we are just initializing
 	// the pool and adding the poolDenom to the users account
-	pool, err := app.DexKeeper.InitPool(ctx, deposit.PairID, deposit.CenterTickIndex, deposit.Fee)
+	pool, err := app.DexKeeper.InitPool(ctx, deposit.PairId, deposit.CenterTickIndex, deposit.Fee)
 	if err != nil {
 		panic("Cannot init pool")
 	}
@@ -35,7 +36,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	addr := sdk.AccAddress([]byte("test_addr"))
 	msgs := []*types.DepositRecord{
 		{
-			PairID:          defaultPairID,
+			PairId:          defaultPairID,
 			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 2,
 			LowerTickIndex:  1,
@@ -43,7 +44,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 			Fee:             1,
 		},
 		{
-			PairID:          defaultPairID,
+			PairId:          defaultPairID,
 			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 3,
 			LowerTickIndex:  2,
@@ -51,7 +52,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 			Fee:             1,
 		},
 		{
-			PairID:          defaultPairID,
+			PairId:          defaultPairID,
 			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 4,
 			LowerTickIndex:  3,
@@ -59,7 +60,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 			Fee:             1,
 		},
 		{
-			PairID:          defaultPairID,
+			PairId:          defaultPairID,
 			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 5,
 			LowerTickIndex:  4,
@@ -67,7 +68,7 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 			Fee:             1,
 		},
 		{
-			PairID:          defaultPairID,
+			PairId:          defaultPairID,
 			SharesOwned:     math.NewInt(10),
 			CenterTickIndex: 6,
 			LowerTickIndex:  5,

@@ -6,26 +6,26 @@ import "gogoproto/gogo.proto";
 import "neutron/dex/trade_pair_id.proto";
 
 message PoolReservesKey {
-	TradePairID tradePairID = 1;           
-	int64 TickIndexTakerToMaker = 2;
-	uint64 Fee = 3;
+	TradePairID trade_pair_id = 1;
+	int64 tick_index_taker_to_maker = 2;
+	uint64 fee = 3;
 }
 
 message PoolReserves {
   PoolReservesKey key = 1;
-  string reservesMakerDenom = 2 [
+  string reserves_maker_denom = 2 [
                  (gogoproto.moretags)   = "yaml:\"reservesMakerDenom\"",
                  (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
                  (gogoproto.jsontag) = "reservesMakerDenom",
                  (gogoproto.nullable)   = false
                  ];
-  string priceTakerToMaker = 3 [
+  string price_taker_to_maker = 3 [
                 (gogoproto.moretags)   = "yaml:\"priceTakerToMaker\"",
                 (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
                 (gogoproto.nullable)   = false,
                 (gogoproto.jsontag) = "priceTakerToMaker"
                 ];
-  string priceOppositeTakerToMaker = 4 [
+  string price_opposite_taker_to_maker = 4 [
                 (gogoproto.moretags)   = "yaml:\"priceOppositeTakerToMaker\"",
                 (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
                 (gogoproto.nullable)   = false,

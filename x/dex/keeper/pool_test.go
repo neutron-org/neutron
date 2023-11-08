@@ -5,10 +5,11 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {
@@ -38,7 +39,7 @@ func TestPoolInit(t *testing.T) {
 
 	require.True(t, found)
 
-	require.Equal(t, pool.ID, dbPool.ID)
+	require.Equal(t, pool.Id, dbPool.Id)
 	require.Equal(t, pool.LowerTick0, dbPool.LowerTick0)
 	require.Equal(t, pool.UpperTick1, dbPool.UpperTick1)
 }
@@ -54,11 +55,11 @@ func TestGetPoolByID(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
 	items := createNPools(keeper, ctx, 2)
 
-	pool0, found := keeper.GetPoolByID(ctx, items[0].ID)
+	pool0, found := keeper.GetPoolByID(ctx, items[0].Id)
 	require.True(t, found)
 	require.Equal(t, items[0], pool0)
 
-	pool1, found := keeper.GetPoolByID(ctx, items[1].ID)
+	pool1, found := keeper.GetPoolByID(ctx, items[1].Id)
 	require.True(t, found)
 	require.Equal(t, items[1], pool1)
 
@@ -72,21 +73,21 @@ func TestGetPoolIDByParams(t *testing.T) {
 
 	id0, found := keeper.GetPoolIDByParams(
 		ctx,
-		items[0].LowerTick0.Key.TradePairID.MustPairID(),
+		items[0].LowerTick0.Key.TradePairId.MustPairID(),
 		items[0].CenterTickIndex(),
 		items[0].Fee(),
 	)
 	require.True(t, found)
-	require.Equal(t, items[0].ID, id0)
+	require.Equal(t, items[0].Id, id0)
 
 	id1, found := keeper.GetPoolIDByParams(
 		ctx,
-		items[1].LowerTick0.Key.TradePairID.MustPairID(),
+		items[1].LowerTick0.Key.TradePairId.MustPairID(),
 		items[1].CenterTickIndex(),
 		items[1].Fee(),
 	)
 	require.True(t, found)
-	require.Equal(t, items[1].ID, id1)
+	require.Equal(t, items[1].Id, id1)
 
 	_, found = keeper.GetPoolIDByParams(ctx, defaultPairID, 99, 2)
 	require.False(t, found)

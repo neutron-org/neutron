@@ -9,32 +9,32 @@ import "gogoproto/gogo.proto";
 import "neutron/dex/pair_id.proto";
 
 message LimitOrderTrancheKey {
-  TradePairID tradePairID = 1;
-  int64 tickIndexTakerToMaker = 2;
-  string trancheKey = 3; 
+  TradePairID trade_pair_id = 1;
+  int64 tick_index_taker_to_maker = 2;
+  string tranche_key = 3;
 }
 
 message LimitOrderTranche {
   LimitOrderTrancheKey key = 1;
-  string reservesMakerDenom = 2  [
+  string reserves_maker_denom = 2  [
       (gogoproto.moretags)   = "yaml:\"reservesMakerDenom\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
       (gogoproto.jsontag) = "reservesMakerDenom"
   ]; 
-  string reservesTakerDenom = 3  [
+  string reserves_taker_denom = 3  [
       (gogoproto.moretags)   = "yaml:\"reservesTakerDenom\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
       (gogoproto.jsontag) = "reservesTakerDenom"
   ];  
-  string totalMakerDenom = 4  [
+  string total_maker_denom = 4  [
       (gogoproto.moretags)   = "yaml:\"totalMakerDenom\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
       (gogoproto.jsontag) = "totalTokenIn"
   ];  
-  string totalTakerDenom = 5  [
+  string total_taker_denom = 5  [
       (gogoproto.moretags)   = "yaml:\"totalTakerDenom\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
@@ -46,11 +46,11 @@ message LimitOrderTranche {
   // JIT orders also use goodTilDate to handle deletion but represent a special case
   // All JIT orders have a goodTilDate of 0 and an exception is made to still still treat these orders as live
   // Order deletion still functions the same and the orders will be deleted at the end of the block
-  google.protobuf.Timestamp expirationTime = 6 [
+  google.protobuf.Timestamp expiration_time = 6 [
                                              (gogoproto.stdtime) = true,
                                              (gogoproto.nullable) = true
                                              ];
-  string priceTakerToMaker = 7 [
+  string price_taker_to_maker = 7 [
                 (gogoproto.moretags)   = "yaml:\"priceTakerToMaker\"",
                 (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
                 (gogoproto.nullable)   = false,
