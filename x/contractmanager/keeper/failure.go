@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"cosmossdk.io/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -9,10 +9,11 @@ import (
 )
 
 // AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte) {
+func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte, errMsg string) types.Failure {
 	failure := types.Failure{
 		Address:     address,
 		SudoPayload: sudoPayload,
+		Error:       errMsg,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 	failure.Id = nextFailureID
@@ -20,6 +21,7 @@ func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload 
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&failure)
 	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), bz)
+	return failure
 }
 
 func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
@@ -58,7 +60,7 @@ func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint
 
 	bz := store.Get(key)
 	if bz == nil {
-		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), id)
+		return nil, errorsmod.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), id)
 	}
 	var res types.Failure
 	k.cdc.MustUnmarshal(bz, &res)
@@ -69,11 +71,11 @@ func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint
 // ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
 func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
 	if failure.SudoPayload == nil {
-		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
+		return errorsmod.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
 	}
 
 	if _, err := k.wasmKeeper.Sudo(ctx, contractAddr, failure.SudoPayload); err != nil {
-		return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure; failureId = %d; err = %s", failure.Id, err)
+		return errorsmod.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure; failureId = %d; err = %s", failure.Id, err)
 	}
 
 	// Cleanup failure since we resubmitted it successfully
