@@ -13,7 +13,7 @@ var _ sdk.Msg = &MsgMultiHopSwap{}
 
 func NewMsgMultiHopSwap(
 	creator string,
-	receiever string,
+	receiver string,
 	routesArr [][]string,
 	amountIn math.Int,
 	exitLimitPrice math_utils.PrecDec,
@@ -26,7 +26,7 @@ func NewMsgMultiHopSwap(
 
 	return &MsgMultiHopSwap{
 		Creator:        creator,
-		Receiver:       receiever,
+		Receiver:       receiver,
 		Routes:         routes,
 		AmountIn:       amountIn,
 		ExitLimitPrice: exitLimitPrice,
@@ -70,6 +70,20 @@ func (msg *MsgMultiHopSwap) ValidateBasic() error {
 		return ErrMissingMultihopRoute
 	}
 
+	for _, route := range msg.Routes {
+		if len(route.Hops) < 2 {
+			return ErrRouteWithoutExitToken
+		}
+
+		existingHops := make(map[string]bool, len(route.Hops))
+		for _, hop := range route.Hops {
+			if _, ok := existingHops[hop]; ok {
+				return ErrCycleInHops
+			}
+			existingHops[hop] = true
+		}
+	}
+
 	expectedExitToken := msg.Routes[0].Hops[len(msg.Routes[0].Hops)-1]
 	for _, route := range msg.Routes[1:] {
 		hops := route.Hops
@@ -80,6 +94,10 @@ func (msg *MsgMultiHopSwap) ValidateBasic() error {
 
 	if msg.AmountIn.LTE(math.ZeroInt()) {
 		return ErrZeroSwap
+	}
+
+	if !msg.ExitLimitPrice.IsPositive() {
+		return ErrZeroExitPrice
 	}
 
 	return nil

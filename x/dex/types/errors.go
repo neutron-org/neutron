@@ -164,4 +164,19 @@ var (
 		1149,
 		"Invalid Address",
 	)
+	ErrRouteWithoutExitToken = sdkerrors.Register(
+		ModuleName,
+		1150,
+		"Each route should specify at least two hops - input and output tokens",
+	)
+	ErrCycleInHops = sdkerrors.Register(
+		ModuleName,
+		1151,
+		"Hops cannot have cycles",
+	)
+	ErrZeroExitPrice = sdkerrors.Register(
+		ModuleName,
+		1152,
+		"Cannot have negative or zero exit price",
+	)
 )

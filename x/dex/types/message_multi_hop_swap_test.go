@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	math_utils "github.com/neutron-org/neutron/utils/math"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -20,6 +21,10 @@ func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {
 			msg: MsgMultiHopSwap{
 				Creator:  "invalid_address",
 				Receiver: sample.AccAddress(),
+				Routes: []*MultiHopRoute{
+					{Hops: []string{"A", "B", "C"}},
+				},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
 			err: ErrInvalidAddress,
 		},
@@ -28,14 +33,20 @@ func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {
 			msg: MsgMultiHopSwap{
 				Creator:  sample.AccAddress(),
 				Receiver: "invalid_address",
+				Routes: []*MultiHopRoute{
+					{Hops: []string{"A", "B", "C"}},
+				},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
 			err: ErrInvalidAddress,
 		},
 		{
 			name: "missing route",
 			msg: MsgMultiHopSwap{
-				Creator:  sample.AccAddress(),
-				Receiver: sample.AccAddress(),
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*MultiHopRoute{},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
 			err: ErrMissingMultihopRoute,
 		},
@@ -48,26 +59,65 @@ func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {
 					{Hops: []string{"A", "B", "C"}},
 					{Hops: []string{"A", "B", "Z"}},
 				},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
 			err: ErrMultihopExitTokensMismatch,
 		},
 		{
 			name: "invalid amountIn",
 			msg: MsgMultiHopSwap{
-				Creator:  sample.AccAddress(),
-				Receiver: sample.AccAddress(),
-				Routes:   []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
-				AmountIn: math.NewInt(-1),
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				AmountIn:       math.NewInt(-1),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
 			err: ErrZeroSwap,
 		},
 		{
-			name: "valid",
+			name: "cycles in hops",
 			msg: MsgMultiHopSwap{
-				Routes:   []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),
-				AmountIn: math.OneInt(),
+				Routes: []*MultiHopRoute{
+					{Hops: []string{"A", "B", "C"}},                // normal
+					{Hops: []string{"A", "B", "D", "E", "B", "C"}}, // has cycle
+				},
+				AmountIn:       math.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			err: ErrCycleInHops,
+		},
+		{
+			name: "zero exit limit price",
+			msg: MsgMultiHopSwap{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				AmountIn:       math.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0"),
+			},
+			err: ErrZeroExitPrice,
+		},
+		{
+			name: "negative exit limit price",
+			msg: MsgMultiHopSwap{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				AmountIn:       math.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("-0.5"),
+			},
+			err: ErrZeroExitPrice,
+		},
+		{
+			name: "valid",
+			msg: MsgMultiHopSwap{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				AmountIn:       math.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
 		},
 	}
