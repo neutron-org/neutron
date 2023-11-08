@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/iancoleman/orderedmap"
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -52,12 +52,12 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 
 	retries := uint8(0)
 
-	forwardMetadata := forwardtypes.PacketMetadata{
-		Forward: &forwardtypes.ForwardMetadata{
+	forwardMetadata := pfmtypes.PacketMetadata{
+		Forward: &pfmtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
-			Timeout:  forwardtypes.Duration(5 * time.Minute),
+			Timeout:  pfmtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
@@ -165,26 +165,26 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 	chainCAddr := s.bundleC.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
-	nextForward := forwardtypes.PacketMetadata{
-		Forward: &forwardtypes.ForwardMetadata{
+	nextForward := pfmtypes.PacketMetadata{
+		Forward: &pfmtypes.ForwardMetadata{
 			Receiver: chainCAddr.String(),
 			Port:     s.chainBChainCPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.chainBChainCPath.EndpointA.ChannelID,
-			Timeout:  forwardtypes.Duration(5 * time.Minute),
+			Timeout:  pfmtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
 	}
 	nextForwardBz, err := json.Marshal(nextForward)
 	s.Assert().NoError(err)
-	nextForwardJSON := forwardtypes.NewJSONObject(false, nextForwardBz, orderedmap.OrderedMap{})
+	nextForwardJSON := pfmtypes.NewJSONObject(false, nextForwardBz, orderedmap.OrderedMap{})
 
-	forwardMetadata := forwardtypes.PacketMetadata{
-		Forward: &forwardtypes.ForwardMetadata{
+	forwardMetadata := pfmtypes.PacketMetadata{
+		Forward: &pfmtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
-			Timeout:  forwardtypes.Duration(5 * time.Minute),
+			Timeout:  pfmtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nextForwardJSON,
 		},
@@ -297,12 +297,12 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 
 	retries := uint8(0)
 
-	forwardMetadata := forwardtypes.PacketMetadata{
-		Forward: &forwardtypes.ForwardMetadata{
+	forwardMetadata := pfmtypes.PacketMetadata{
+		Forward: &pfmtypes.ForwardMetadata{
 			Receiver: s.providerAddr.String(),
 			Port:     s.neutronTransferPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronTransferPath.EndpointA.ChannelID,
-			Timeout:  forwardtypes.Duration(5 * time.Minute),
+			Timeout:  pfmtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
@@ -402,12 +402,12 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 
 	retries := uint8(0)
 
-	forwardMetadata := forwardtypes.PacketMetadata{
-		Forward: &forwardtypes.ForwardMetadata{
+	forwardMetadata := pfmtypes.PacketMetadata{
+		Forward: &pfmtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  "invalid-channel", // add an invalid channel identifier so the forward fails
-			Timeout:  forwardtypes.Duration(5 * time.Minute),
+			Timeout:  pfmtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},

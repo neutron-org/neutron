@@ -272,8 +272,8 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 			)
 
 			// Store code and instantiate reflect contract.
-			codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-			contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+			codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+			contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 			suite.Require().NotEmpty(contractAddress)
 
 			err := testutil.SetupICAPath(suite.Path, contractAddress.String())

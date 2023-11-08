@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
@@ -144,15 +144,15 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	// Compose our context with values that will be used to pass through to the forward middleware
-	ctxWithForwardFlags := context.WithValue(ctx.Context(), forwardtypes.ProcessedKey{}, true)
+	ctxWithForwardFlags := context.WithValue(ctx.Context(), pfmtypes.ProcessedKey{}, true)
 	ctxWithForwardFlags = context.WithValue(
 		ctxWithForwardFlags,
-		forwardtypes.NonrefundableKey{},
+		pfmtypes.NonrefundableKey{},
 		true,
 	)
 	ctxWithForwardFlags = context.WithValue(
 		ctxWithForwardFlags,
-		forwardtypes.DisableDenomCompositionKey{},
+		pfmtypes.DisableDenomCompositionKey{},
 		true,
 	)
 	wrappedSdkCtx := ctx.WithContext(ctxWithForwardFlags)
@@ -415,7 +415,7 @@ func NewPacketWithOverrideReceiver(oldPacket channeltypes.Packet, data transfert
 // An issue has been created on the cosmos/ibc-apps repo to make this function public so we can use it directly: https://github.com/cosmos/ibc-apps/issues/131
 func getReceiver(channel, originalSender string) (string, error) {
 	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
-	senderHash32 := address.Hash(forwardtypes.ModuleName, []byte(senderStr))
+	senderHash32 := address.Hash(pfmtypes.ModuleName, []byte(senderStr))
 	sender := sdk.AccAddress(senderHash32[:20])
 	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	return sdk.Bech32ifyAddressBytes(bech32Prefix, sender)
