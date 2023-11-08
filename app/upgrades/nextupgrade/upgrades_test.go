@@ -3,7 +3,9 @@ package nextupgrade_test
 import (
 	"testing"
 
+	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
@@ -61,6 +63,9 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	subspace, _ = app.ParamsKeeper.GetSubspace(interchaintxstypes.StoreKey)
 	pICAtx := interchaintxstypes.DefaultParams()
 	subspace.SetParamSet(ctx, &pICAtx)
+
+	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1weweewe"), "testdata/neutron_interchain_txs.wasm")
+	suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1weweewe"), codeIDBefore)
 }
 
 func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
@@ -141,7 +146,7 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 		ctx = suite.ChainA.GetContext()
 	)
 
-	//emulate lack of ProposalIDKey like on a real mainnet
+	// emulate lack of ProposalIDKey like on a real mainnet
 	store := ctx.KVStore(app.GetKey(adminmoduletypes.StoreKey))
 	store.Delete(adminmoduletypes.ProposalIDKey)
 
@@ -158,4 +163,47 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	id, err := app.AdminmoduleKeeper.GetProposalID(ctx)
 	suite.Require().NoError(err)
 	suite.Require().Equal(uint64(1), id)
+}
+
+func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
+	var (
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext()
+	)
+
+	suite.FundAcc(sdk.AccAddress("neutron1weweewe"), sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(10000))))
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	// store contract for register ica w/o fees
+	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
+	contractAddressBeforeUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeIDBefore)
+
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	lastCodeID := app.InterchainTxsKeeper.GetICARegistrationFeeFirstCodeID(ctx)
+	// ensure that wasm module stores next code id
+	suite.Require().Equal(lastCodeID, codeIDBefore+1)
+
+	// store contract after upgrade
+	codeID := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
+	contractAddressAfterUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeID)
+	// register w/o actual fees
+	jsonStringBeforeUpgrade := `{"register": {"connection_id":"connection-1","interchain_account_id":"test-2"}}`
+	byteEncodedMsgBeforeUpgrade := []byte(jsonStringBeforeUpgrade)
+	_, err := contractKeeper.Execute(ctx, contractAddressBeforeUpgrade, sdk.AccAddress("neutron1_ica"), byteEncodedMsgBeforeUpgrade, nil)
+	suite.Require().NoError(err)
+
+	// register with fees
+	jsonStringAfterUpgrade := `{"register": {"connection_id":"connection-1","interchain_account_id":"test-3"}}`
+	byteEncodedMsgAfterUpgrade := []byte(jsonStringAfterUpgrade)
+	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1000))))
+	suite.Require().NoError(err)
+
+	// failed register due lack of fees (fees required)
+	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, nil)
+	suite.ErrorIs(err, errors.ErrInsufficientFunds)
 }

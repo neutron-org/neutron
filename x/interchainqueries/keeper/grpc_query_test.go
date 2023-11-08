@@ -476,8 +476,8 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 	ctx := suite.ChainA.GetContext()
 	contractOwner := wasmKeeper.RandomAccountAddress(suite.T())
-	codeID := suite.StoreReflectCode(ctx, contractOwner, reflectContractPath)
-	contractAddress := suite.InstantiateReflectContract(ctx, contractOwner, codeID)
+	codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
+	contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 	registerMsg := iqtypes.MsgRegisterInterchainQuery{
 		ConnectionId: suite.Path.EndpointA.ConnectionID,
 		Keys: []*iqtypes.KVKey{

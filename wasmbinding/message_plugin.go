@@ -712,7 +712,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
-		RegisterFee:         reg.RegisterFee,
+		RegisterFee:         getRegisterFee(reg.RegisterFee),
 	}
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")
@@ -925,4 +925,11 @@ func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) 
 	}
 
 	return false
+}
+
+func getRegisterFee(fee sdk.Coins) sdk.Coins {
+	if fee == nil {
+		return make(sdk.Coins, 0)
+	}
+	return fee
 }

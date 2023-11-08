@@ -7,6 +7,7 @@ package mock_types
 import (
 	reflect "reflect"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	types "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
 	types0 "github.com/neutron-org/neutron/x/contractmanager/types"
@@ -16,6 +17,11 @@ import (
 type MockWasmKeeper struct {
 	ctrl     *gomock.Controller
 	recorder *MockWasmKeeperMockRecorder
+}
+
+func (m *MockWasmKeeper) GetContractInfo(ctx types.Context, contractAddress types.AccAddress) *wasmtypes.ContractInfo {
+	//TODO implement me
+	panic("implement me")
 }
 
 // MockWasmKeeperMockRecorder is the mock recorder for MockWasmKeeper.
