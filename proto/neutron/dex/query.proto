@@ -250,8 +250,8 @@ message QueryEstimateMultiHopSwapRequest {
            string        creator        = 1;
            string        receiver       = 2;
   repeated MultiHopRoute routes         = 3;
-           string        amount_in       = 4 [(gogoproto.moretags) = "yaml:\"amountIn\""      , (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false, (gogoproto.jsontag) = "amountIn"      ];
-  string        exit_limit_price = 5 [(gogoproto.moretags) = "yaml:\"exitLimitPrice\"", (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec", (gogoproto.nullable) = false, (gogoproto.jsontag) = "exitLimitPrice"];
+           string        amount_in       = 4 [(gogoproto.moretags) = "yaml:\"amount_in\""      , (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false, (gogoproto.jsontag) = "amount_in"      ];
+  string        exit_limit_price = 5 [(gogoproto.moretags) = "yaml:\"exit_limit_price\"", (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec", (gogoproto.nullable) = false, (gogoproto.jsontag) = "exit_limit_price"];
   
   // If pickBestRoute == true then all routes are run and the route with the best price is chosen
   // otherwise, the first succesful route is used.
@@ -259,7 +259,7 @@ message QueryEstimateMultiHopSwapRequest {
 }
 
 message QueryEstimateMultiHopSwapResponse {
-  cosmos.base.v1beta1.Coin coin_out = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "coinOut"];
+  cosmos.base.v1beta1.Coin coin_out = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "coin_out"];
 }
 
 message QueryEstimatePlaceLimitOrderRequest {
@@ -268,27 +268,27 @@ message QueryEstimatePlaceLimitOrderRequest {
   string         token_in          = 3;
   string         token_out         = 4;
   int64          tick_index_in_to_out = 5;
-  string         amount_in         = 6 [(gogoproto.moretags) = "yaml:\"amountIn\"", (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false, (gogoproto.jsontag) = "amountIn"];
+  string         amount_in         = 6 [(gogoproto.moretags) = "yaml:\"amount_in\"", (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false, (gogoproto.jsontag) = "amount_in"];
   LimitOrderType order_type        = 7;
   
   // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
   google.protobuf.Timestamp expiration_time = 8 [(gogoproto.stdtime)  = true                   , (gogoproto.nullable)   = true                                    ] ;
-  string                    maxAmount_out   = 9 [(gogoproto.moretags) = "yaml:\"maxAmountOut\"", (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = true, (gogoproto.jsontag) = "maxAmountOut"];
+  string                    maxAmount_out   = 9 [(gogoproto.moretags) = "yaml:\"max_amount_out\"", (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = true, (gogoproto.jsontag) = "max_amount_out"];
 }
 
 message QueryEstimatePlaceLimitOrderResponse {
   
   // Total amount of coin used for the limit order
   // You can derive makerLimitInCoin using the equation: totalInCoin = swapInCoin + makerLimitInCoin
-  cosmos.base.v1beta1.Coin total_in_coin = 1 [(gogoproto.moretags) = "yaml:\"totalInCoin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "totalInCoin"];
+  cosmos.base.v1beta1.Coin total_in_coin = 1 [(gogoproto.moretags) = "yaml:\"total_in_coin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "total_in_coin"];
   
   // Total amount of the token in that was immediately swapped for swapOutCoin
-  cosmos.base.v1beta1.Coin swap_in_coin = 2 [(gogoproto.moretags) = "yaml:\"swapInCoin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "swapInCoin"];
+  cosmos.base.v1beta1.Coin swap_in_coin = 2 [(gogoproto.moretags) = "yaml:\"swap_in_coin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "swap_in_coin"];
   
   // Total amount of coin received from the taker portion of the limit order
   // This is the amount of coin immediately available in the users account after executing the
   // limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
-  cosmos.base.v1beta1.Coin swap_out_coin = 3 [(gogoproto.moretags) = "yaml:\"swapOutCoin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "swapOutCoin"];
+  cosmos.base.v1beta1.Coin swap_out_coin = 3 [(gogoproto.moretags) = "yaml:\"swap_out_coin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "swap_out_coin"];
 }
 
 message QueryPoolRequest {

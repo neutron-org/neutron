@@ -14,22 +14,22 @@ message PoolReservesKey {
 message PoolReserves {
   PoolReservesKey key = 1;
   string reserves_maker_denom = 2 [
-                 (gogoproto.moretags)   = "yaml:\"reservesMakerDenom\"",
+                 (gogoproto.moretags)   = "yaml:\"reserves_maker_denom\"",
                  (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-                 (gogoproto.jsontag) = "reservesMakerDenom",
+                 (gogoproto.jsontag) = "reserves_maker_denom",
                  (gogoproto.nullable)   = false
                  ];
   string price_taker_to_maker = 3 [
-                (gogoproto.moretags)   = "yaml:\"priceTakerToMaker\"",
+                (gogoproto.moretags)   = "yaml:\"price_taker_to_maker\"",
                 (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
                 (gogoproto.nullable)   = false,
-                (gogoproto.jsontag) = "priceTakerToMaker"
+                (gogoproto.jsontag) = "price_taker_to_maker"
                 ];
   string price_opposite_taker_to_maker = 4 [
-                (gogoproto.moretags)   = "yaml:\"priceOppositeTakerToMaker\"",
+                (gogoproto.moretags)   = "yaml:\"price_opposite_taker_to_maker\"",
                 (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
                 (gogoproto.nullable)   = false,
-                (gogoproto.jsontag) = "priceOppositeTakerToMaker"
+                (gogoproto.jsontag) = "price_opposite_taker_to_maker"
                 ];
 }
 

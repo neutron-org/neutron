@@ -12,22 +12,22 @@ message LimitOrderTrancheUser {
   string tranche_key = 3;
   string address = 4; 
   string shares_owned = 5  [
-      (gogoproto.moretags)   = "yaml:\"sharesOwned\"",
+      (gogoproto.moretags)   = "yaml:\"shares_owned\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
       (gogoproto.jsontag) = "sharesOwned"
   ];  
   string shares_withdrawn = 6  [
-      (gogoproto.moretags)   = "yaml:\"sharesWithdrawn\"",
+      (gogoproto.moretags)   = "yaml:\"shares_withdrawn\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "sharesWithdrawn"
+      (gogoproto.jsontag) = "shares_withdrawn"
   ]; 
   string shares_cancelled = 7  [
-      (gogoproto.moretags)   = "yaml:\"sharesCancelled\"",
+      (gogoproto.moretags)   = "yaml:\"shares_cancelled\"",
       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "sharesCancelled"
+      (gogoproto.jsontag) = "shares_cancelled"
   ];
   LimitOrderType order_type = 8;
 }
