@@ -46,21 +46,6 @@ func (s *KeeperTestHelper) Setup() {
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
 	}
-
-	s.SetEpochStartTime()
-}
-
-func (s *KeeperTestHelper) SetEpochStartTime() {
-	epochsKeeper := s.App.EpochsKeeper
-
-	for _, epoch := range epochsKeeper.AllEpochInfos(s.Ctx) {
-		epoch.StartTime = s.Ctx.BlockTime()
-		epochsKeeper.DeleteEpochInfo(s.Ctx, epoch.Identifier)
-		err := epochsKeeper.AddEpochInfo(s.Ctx, epoch)
-		if err != nil {
-			panic(err)
-		}
-	}
 }
 
 // setupAddr takes a balance, prefix, and address number. Then returns the respective account address byte array.
