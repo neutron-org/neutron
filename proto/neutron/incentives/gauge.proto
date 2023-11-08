@@ -101,7 +101,7 @@ message Gauge {
 // must have both tick-fee and tick+fee fall within the range [startTick, endTick],
 // such that all of the tradable liquidity for the pool is within that range.
 message QueryCondition {
-
+  // TODO: fix inconsistent camel case?
   // pairID is the token pair which should be distributed to.
   neutron.dex.PairID pairID = 1;
 

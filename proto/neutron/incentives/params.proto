@@ -9,7 +9,7 @@ option go_package = "github.com/neutron-org/neutron/x/incentives/types";
 message Params {
   // distr_epoch_identifier is what epoch type distribution will be triggered by
   // (day, week, etc.)
-  string distr_epoch_identifier = 1
+    string distr_epoch_identifier = 1
       [ (gogoproto.moretags) = "yaml:\"distr_epoch_identifier\"" ];
   
   uint64 max_gauges = 2
