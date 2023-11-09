@@ -69,7 +69,7 @@ func outOfGasRecovery(
 		if !ok || !gasMeter.IsOutOfGas() {
 			panic(r)
 		}
-		*err = errorsmod.Wrapf(errorsmod.ErrPanic, "%v", r)
+		*err = contractmanagertypes.ErrSudoOutOfGas
 	}
 }
 
