@@ -3,14 +3,14 @@ package ibcswap
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strings"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/address"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -111,6 +111,15 @@ func (im IBCMiddleware) OnChanCloseConfirm(ctx sdk.Context, portID, channelID st
 // OnRecvPacket checks the memo field on this packet and if the metadata inside's root key indicates this packet
 // should be handled by the swap middleware it attempts to perform a swap. If the swap is successful
 // the underlying application's OnRecvPacket callback is invoked.
+
+// For clarity, here is a breakdown of the steps
+// 1. Check if this is a swap packet; if not pass it to next middleware
+// 2. validate swapMetadata; ErrAck if invalid
+// 3. Pass through the middleware stack to ibc-go/transfer#OnRecvPacket; transfer coins are sent to receiver
+// 4. Do swap; handle failures
+// 5. If no PFM is present we are done; return ack
+// 6. Unpack packet so that it is a valid PFM packet and set required context variables
+// 7. Pass through middleware stack again where the forward is handled by packet-forward-middleware#OnRecvPacket
 func (im IBCMiddleware) OnRecvPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
@@ -130,48 +139,43 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	metadata := m.Swap
 
-	// override the receiver so that senders cannot move funds through arbitrary addresses.
-	// also needed to match behavior of PFM
-	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
-	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
-	}
-	metadata.Receiver = overrideReceiver
-	metadata.Creator = overrideReceiver
-
 	if err := metadata.Validate(); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	// Compose our context with values that will be used to pass through to the forward middleware
-	ctxWithForwardFlags := context.WithValue(ctx.Context(), pfmtypes.ProcessedKey{}, true)
-	ctxWithForwardFlags = context.WithValue(
-		ctxWithForwardFlags,
-		pfmtypes.NonrefundableKey{},
-		true,
-	)
-	ctxWithForwardFlags = context.WithValue(
-		ctxWithForwardFlags,
-		pfmtypes.DisableDenomCompositionKey{},
-		true,
-	)
-	wrappedSdkCtx := ctx.WithContext(ctxWithForwardFlags)
+	if err := validateSwapPacket(packet, data, *metadata); err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
 
-	overridePacket := NewPacketWithOverrideReceiver(packet, data, overrideReceiver)
+	// Use overrideReceiver so that users cannot ibcswap through arbitrary addresses.
+	// Instead generate a unique address for each user based on their channel and origin-address
+	overrideReceiver, err := packetforward.GetReceiver(packet.DestinationChannel, data.Sender)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+	metadata.Creator = overrideReceiver
+	// Update packet data to match the new receiver so that transfer middleware adds tokens to the expected address
+	packet = newPacketWithOverrideReceiver(packet, data, overrideReceiver)
+	if metadata.ContainsPFM() {
+		// If we are using PFM change receiver to the expected address for forwarding
+		metadata.Receiver = overrideReceiver
+	}
 
-	ack := im.app.OnRecvPacket(wrappedSdkCtx, overridePacket, relayer)
+	ack := im.app.OnRecvPacket(ctx, packet, relayer)
 	if ack == nil || !ack.Success() {
 		return ack
 	}
 
-	// Attempt to perform a swap since this packets memo included swap metadata.
-	res, err := im.keeper.Swap(ctx, metadata.MsgPlaceLimitOrder)
+	// Attempt to perform a swap using a cacheCtx
+	cacheCtx, writeCache := ctx.CacheContext()
+	res, err := im.keeper.Swap(cacheCtx, metadata.MsgPlaceLimitOrder)
 	if err != nil {
 		return im.handleFailedSwap(ctx, packet, data, metadata, err)
 	}
 
 	// If there is no next field set in the metadata return ack
 	if metadata.Next == nil {
+		writeCache()
 		return ack
 	}
 
@@ -182,30 +186,46 @@ func (im IBCMiddleware) OnRecvPacket(
 		return ack
 	}
 
-	data.Memo = string(memoBz)
+	postSwapData := data
+	postSwapData.Memo = string(memoBz)
 
 	// Override the packet data to include the token denom and amount that was received from the swap.
-	data.Denom = res.TakerCoinOut.Denom
-	data.Amount = res.TakerCoinOut.Amount.String()
+	postSwapData.Denom = res.TakerCoinOut.Denom
+	postSwapData.Amount = res.TakerCoinOut.Amount.String()
 
 	// After a successful swap funds are now in the receiver account from the MsgPlaceLimitOrder so,
 	// we need to override the packets receiver field before invoking the forward middlewares OnRecvPacket.
-	data.Receiver = m.Swap.Receiver
+	postSwapData.Receiver = m.Swap.Receiver
 
-	dataBz, err := transfertypes.ModuleCdc.MarshalJSON(&data)
+	dataBz, err := transfertypes.ModuleCdc.MarshalJSON(&postSwapData)
 	if err != nil {
 		return ack
 	}
 
 	packet.Data = dataBz
 
+	// Compose our context with values that will be used to pass through to the forward middleware
+	ctxWithForwardFlags := context.WithValue(cacheCtx.Context(), pfmtypes.ProcessedKey{}, true)
+	ctxWithForwardFlags = context.WithValue(
+		ctxWithForwardFlags,
+		pfmtypes.NonrefundableKey{},
+		true,
+	)
+	ctxWithForwardFlags = context.WithValue(
+		ctxWithForwardFlags,
+		pfmtypes.DisableDenomCompositionKey{},
+		true,
+	)
+	wrappedSdkCtx := cacheCtx.WithContext(ctxWithForwardFlags)
+
 	// The forward middleware should return a nil ack if the forward is initiated properly.
 	// If not an error occurred, and we return the original ack.
 	newAck := im.app.OnRecvPacket(wrappedSdkCtx, packet, relayer)
 	if newAck != nil {
-		return ack
+		return im.handleFailedSwap(ctx, packet, data, metadata, errors.New(string(newAck.Acknowledgement())))
 	}
 
+	writeCache()
 	return nil
 }
 
@@ -286,38 +306,29 @@ func (im IBCMiddleware) handleFailedSwap(
 		"AmountIn", metadata.AmountIn,
 		"TickIndexInToOut", metadata.TickIndexInToOut,
 		"OrderType", metadata.OrderType,
-		"refundable", metadata.NonRefundable,
-		"refund address", metadata.RefundAddress,
+		"refund address", metadata.NeutronRefundAddress,
 	)
 
 	// The current denom is from the sender chains perspective, we need to compose the appropriate denom for this side
-	denomOnThisChain := getDenomForThisChain(
-		packet.DestinationPort, packet.DestinationChannel,
-		packet.SourcePort, packet.SourceChannel,
-		data.Denom,
-	)
+	denomOnThisChain := getDenomForThisChain(packet, data.Denom)
 
-	if metadata.NonRefundable {
-		return im.handleNoRefund(ctx, data, metadata, denomOnThisChain, err)
+	if len(metadata.NeutronRefundAddress) != 0 {
+		return im.handleOnChainRefund(ctx, data, metadata, denomOnThisChain, err)
 	}
 
-	return im.handleRefund(ctx, packet, data, denomOnThisChain, err)
+	return im.handleIBCRefund(ctx, packet, data, metadata, denomOnThisChain, err)
 }
 
-// handleNoRefund will compose a successful ack to send back to the counterparty chain containing any error messages.
+// handleOnChainRefund will compose a successful ack to send back to the counterparty chain containing any error messages.
 // Returning a successful ack ensures that a refund is not issued on the counterparty chain.
 // See: https://github.com/cosmos/ibc-go/blob/3ecc7dd3aef5790ec5d906936a297b34adf1ee41/modules/apps/transfer/keeper/relay.go#L320
-func (im IBCMiddleware) handleNoRefund(
+func (im IBCMiddleware) handleOnChainRefund(
 	ctx sdk.Context,
 	data transfertypes.FungibleTokenPacketData,
 	metadata *types.SwapMetadata,
 	newDenom string,
 	swapErr error,
 ) ibcexported.Acknowledgement {
-	if metadata.RefundAddress == "" {
-		return channeltypes.NewResultAcknowledgement([]byte(swapErr.Error()))
-	}
-
 	amount, ok := math.NewIntFromString(data.Amount)
 	if !ok {
 		wrappedErr := sdkerrors.Wrapf(
@@ -330,7 +341,7 @@ func (im IBCMiddleware) handleNoRefund(
 	}
 
 	token := sdk.NewCoin(newDenom, amount)
-	err := im.keeper.SendCoins(ctx, data.Receiver, metadata.RefundAddress, sdk.NewCoins(token))
+	err := im.keeper.SendCoins(ctx, metadata.Creator, metadata.NeutronRefundAddress, sdk.NewCoins(token))
 	if err != nil {
 		wrappedErr := sdkerrors.Wrap(err, "failed to move funds to refund address")
 		wrappedErr = sdkerrors.Wrap(swapErr, wrappedErr.Error())
@@ -340,19 +351,20 @@ func (im IBCMiddleware) handleNoRefund(
 	return channeltypes.NewResultAcknowledgement([]byte(swapErr.Error()))
 }
 
-// handleRefund will either burn or transfer the funds back to the appropriate escrow account.
+// handleIBCRefund will either burn or transfer the funds back to the appropriate escrow account.
 // When a packet comes in the transfer module's OnRecvPacket callback is invoked which either
 // mints or unescrows funds on this side so if the swap fails an explicit refund is required.
-func (im IBCMiddleware) handleRefund(
+func (im IBCMiddleware) handleIBCRefund(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
+	metadata *types.SwapMetadata,
 	newDenom string,
 	swapErr error,
 ) ibcexported.Acknowledgement {
 	data.Denom = newDenom
 
-	err := im.keeper.RefundPacketToken(ctx, packet, data)
+	err := im.keeper.RefundPacketToken(ctx, packet, data, metadata)
 	if err != nil {
 		wrappedErr := sdkerrors.Wrap(swapErr, err.Error())
 
@@ -366,10 +378,8 @@ func (im IBCMiddleware) handleRefund(
 
 // getDenomForThisChain composes a new token denom by either unwinding or prefixing the specified token denom appropriately.
 // This is necessary because the token denom in the packet data is from the perspective of the counterparty chain.
-func getDenomForThisChain(
-	port, channel, counterpartyPort, counterpartyChannel, denom string,
-) string {
-	counterpartyPrefix := transfertypes.GetDenomPrefix(counterpartyPort, counterpartyChannel)
+func getDenomForThisChain(packet channeltypes.Packet, denom string) string {
+	counterpartyPrefix := transfertypes.GetDenomPrefix(packet.SourcePort, packet.SourceChannel)
 	if strings.HasPrefix(denom, counterpartyPrefix) {
 		// unwind denom
 		unwoundDenom := denom[len(counterpartyPrefix):]
@@ -383,11 +393,12 @@ func getDenomForThisChain(
 	}
 
 	// append port and channel from this chain to denom
-	prefixedDenom := transfertypes.GetDenomPrefix(port, channel) + denom
+	prefixedDenom := transfertypes.GetDenomPrefix(packet.DestinationPort, packet.DestinationChannel) + denom
 	return transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
 }
 
-func NewPacketWithOverrideReceiver(oldPacket channeltypes.Packet, data transfertypes.FungibleTokenPacketData, overrideReceiver string) channeltypes.Packet {
+// Update the packet data to reflect the new receiver address that is used by the PFM
+func newPacketWithOverrideReceiver(oldPacket channeltypes.Packet, data transfertypes.FungibleTokenPacketData, overrideReceiver string) channeltypes.Packet {
 	overrideData := transfertypes.FungibleTokenPacketData{
 		Denom:    data.Denom,
 		Amount:   data.Amount,
@@ -408,15 +419,23 @@ func NewPacketWithOverrideReceiver(oldPacket channeltypes.Packet, data transfert
 	}
 }
 
-// NOTE: This has been copied from https://github.com/cosmos/ibc-apps/blob/0288bf5c3ec205134e288815f654b59611bd2153/middleware/packet-forward-middleware/packetforward/ibc_middleware.go#L143
-// this allows us to use the same address as the PFM.
-// Unfortunately, this is a very brittle solution that depends on the corresponding function in th PFM not being changed.
-// Nonetheless, any breaking changes in the PFM will be caught by tests.
-// An issue has been created on the cosmos/ibc-apps repo to make this function public so we can use it directly: https://github.com/cosmos/ibc-apps/issues/131
-func getReceiver(channel, originalSender string) (string, error) {
-	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
-	senderHash32 := address.Hash(pfmtypes.ModuleName, []byte(senderStr))
-	sender := sdk.AccAddress(senderHash32[:20])
-	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
-	return sdk.Bech32ifyAddressBytes(bech32Prefix, sender)
+func validateSwapPacket(packet channeltypes.Packet, transferData transfertypes.FungibleTokenPacketData, sm types.SwapMetadata) error {
+	denomOnNeutron := getDenomForThisChain(packet, transferData.Denom)
+	if denomOnNeutron != sm.TokenIn {
+		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer Denom must match TokenIn")
+	}
+
+	transferAmount, ok := math.NewIntFromString(transferData.Amount)
+	if !ok {
+		return sdkerrors.Wrapf(
+			transfertypes.ErrInvalidAmount,
+			"unable to parse transfer amount (%s) into math.Int",
+			transferData.Amount,
+		)
+	}
+
+	if transferAmount.LT(sm.AmountIn) {
+		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer amount must be <= AmountIn")
+	}
+	return nil
 }
