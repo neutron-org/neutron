@@ -8,7 +8,14 @@ import (
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
-// AddContractFailure adds a specific failure to the store using address as the key
+// AddContractFailure adds a specific failure to the store. The provided address is used to determine
+// the failure ID and they both are used to create a storage key for the failure.
+//
+// WARNING: The errMsg string parameter is expected to be deterministic. It means that the errMsg
+// must be OS/library version agnostic and carry a concrete defined error message. One of the good
+// ways to do so is to redact error as it is done in SudoLimitWrapper Sudo method:
+// https://github.com/neutron-org/neutron/blob/4ee803ff75bb8fdddee1ed62fbf8b771d8006347/x/contractmanager/ibc_middleware.go#L40.
+// Another good way could be passing here some constant value.
 func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte, errMsg string) types.Failure {
 	failure := types.Failure{
 		Address:     address,
