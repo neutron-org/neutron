@@ -78,11 +78,11 @@ func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint
 // ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
 func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
 	if failure.SudoPayload == nil {
-		return errorsmod.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
+		return errorsmod.Wrapf(types.ErrIncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
 	}
 
 	if _, err := k.wasmKeeper.Sudo(ctx, contractAddr, failure.SudoPayload); err != nil {
-		return errorsmod.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure; failureId = %d; err = %s", failure.Id, err)
+		return errorsmod.Wrapf(types.ErrFailedToResubmitFailure, "cannot resubmit failure; failureId = %d; err = %s", failure.Id, err)
 	}
 
 	// Cleanup failure since we resubmitted it successfully
