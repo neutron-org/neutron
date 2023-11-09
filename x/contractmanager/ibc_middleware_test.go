@@ -1,13 +1,14 @@
 package contractmanager_test
 
 import (
-	"fmt"
 	"testing"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
 	test_keeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/contractmanager/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 	"github.com/stretchr/testify/require"
 )
@@ -49,11 +50,11 @@ func TestSudo(t *testing.T) {
 	//  error during Sudo
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
-	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg)
+	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg, contractmanagerkeeper.RedactError(wasmtypes.ErrExecuteFailed))
 	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {
 		st := cachedCtx.KVStore(storeKey)
 		st.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
-	}).Return(nil, fmt.Errorf("sudo error"))
+	}).Return(nil, wasmtypes.ErrExecuteFailed)
 	_, err = middleware.Sudo(ctx, contractAddress, msg)
 	require.Error(t, err)
 	require.Nil(t, st.Get(ShouldNotBeWrittenKey))
@@ -61,13 +62,13 @@ func TestSudo(t *testing.T) {
 	// ou of gas during Sudo
 	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
-	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg)
+	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg, contractmanagerkeeper.RedactError(types.ErrSudoOutOfGas))
 	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {
 		st := cachedCtx.KVStore(storeKey)
 		st.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(10001, "heavy calculations")
 	})
 	_, err = middleware.Sudo(ctx, contractAddress, msg)
-	require.ErrorContains(t, err, "{heavy calculations}: panic")
+	require.ErrorContains(t, err, types.ErrSudoOutOfGas.Error())
 	require.Nil(t, st.Get(ShouldNotBeWrittenKey))
 }
