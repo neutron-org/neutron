@@ -49,7 +49,12 @@ func (k Keeper) Swap(
 		// break if remainingTakerDenom will yield less than 1 tokenOut at current price
 		// this avoids unnecessary iteration since outAmount will always be 0 going forward
 		// this also catches the normal exit case where remainingTakerDenom == 0
-		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.OnePrecDec()) {
+
+		// NOTE: In theory this check should be: price * remainingTakerDenom < 1
+		// but due to rounding and inaccuracy of fixed decimal math, it is possible
+		// for liq.swap to use the full the amount of taker liquidity and have a leftover
+		// amount amount of the taker Denom > than 1 token worth of maker denom
+		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
 		}
