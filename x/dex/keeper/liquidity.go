@@ -48,7 +48,7 @@ func (k Keeper) Swap(
 		// being swapped, it is possible that the next swap could yield a "fair" price.
 		// Nonethless, once the remainingTakerDenom gets small enough to start causing unfair swaps
 		// it is much simpler to just abort.
-		if isUnfairTruePrice(inAmount, outAmount, liq) {
+		if inAmount.IsZero() || isUnfairTruePrice(inAmount, outAmount, liq) {
 			// If they've already swapped just end the swap
 			if remainingTakerDenom.LT(maxAmountTakerDenom) {
 				break
