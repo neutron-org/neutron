@@ -41,6 +41,21 @@ func (k Keeper) Swap(
 		}
 
 		inAmount, outAmount := liq.Swap(remainingTakerDenom, remainingMakerDenom)
+
+		// If (due to rounding) the actual price given to the maker is demonstrably unfair
+		// we do not save the results of the swap and we exit.
+		// While the decrease in price quality for the maker is semi-linear with the amount
+		// being swapped, it is possible that the next swap could yield a "fair" price.
+		// Nonethless, once the remainingTakerDenom gets small enough to start causing unfair swaps
+		// it is much simpler to just abort.
+		if isUnfairTruePrice(inAmount, outAmount, liq) {
+			// If they've already swapped just end the swap
+			if remainingTakerDenom.LT(maxAmountTakerDenom) {
+				break
+			}
+			// If they have not swapped anything return informative error
+			return sdk.Coin{}, sdk.Coin{}, false, types.ErrSwapAmountTooSmall
+		}
 		k.SaveLiquidity(ctx, liq)
 
 		remainingTakerDenom = remainingTakerDenom.Sub(inAmount)
@@ -112,4 +127,15 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 	default:
 		panic("Invalid liquidity type")
 	}
+}
+
+var MaxTrueMakerSpread = math_utils.MustNewPrecDecFromStr("0.005")
+
+func isUnfairTruePrice(inAmount, outAmount math.Int, liq types.Liquidity) bool {
+	bookPrice := liq.Price()
+	truePrice := math_utils.NewPrecDecFromInt(outAmount).QuoInt(inAmount)
+	priceDiffFromExpected := truePrice.Sub(bookPrice)
+	pctDiff := priceDiffFromExpected.Quo(bookPrice)
+
+	return pctDiff.GT(MaxTrueMakerSpread)
 }
