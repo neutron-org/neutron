@@ -85,6 +85,9 @@ func (msg *MsgDeposit) ValidateBasic() error {
 		if msg.AmountsA[i].Equal(math.ZeroInt()) && msg.AmountsB[i].Equal(math.ZeroInt()) {
 			return ErrZeroDeposit
 		}
+		if err := ValidateTickFee(msg.TickIndexesAToB[i], msg.Fees[i]); err != nil {
+			return err
+		}
 	}
 
 	return nil

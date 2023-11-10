@@ -93,6 +93,28 @@ func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 			err: ErrZeroWithdraw,
 		},
 		{
+			name: "invalid tick + fee upper",
+			msg: MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{3},
+				TickIndexesAToB: []int64{559678},
+				SharesToRemove:  []math.Int{math.OneInt()},
+			},
+			err: ErrTickOutsideRange,
+		},
+		{
+			name: "invalid tick + fee lower",
+			msg: MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{50},
+				TickIndexesAToB: []int64{-559631},
+				SharesToRemove:  []math.Int{math.OneInt()},
+			},
+			err: ErrTickOutsideRange,
+		},
+		{
 			name: "valid msg",
 			msg: MsgWithdrawal{
 				Creator:         sample.AccAddress(),
