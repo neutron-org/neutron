@@ -144,13 +144,16 @@ func (k Keeper) SwapExactAmountIn(ctx sdk.Context,
 	tradePairID *types.TradePairID,
 	amountIn math.Int,
 ) (totalOut sdk.Coin, err error) {
-	_, swapAmountMakerDenom, orderFilled := k.Swap(
+	_, swapAmountMakerDenom, orderFilled, err := k.Swap(
 		ctx,
 		tradePairID,
 		amountIn,
 		nil,
 		nil,
 	)
+	if err != nil {
+		return sdk.Coin{}, err
+	}
 	if !orderFilled {
 		return sdk.Coin{}, types.ErrInsufficientLiquidity
 	}

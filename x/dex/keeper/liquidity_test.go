@@ -591,13 +591,14 @@ func (s *DexTestSuite) swap(
 ) (coinIn, coinOut sdk.Coin) {
 	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
 	s.Assert().NoError(err)
-	coinIn, coinOut, _ = s.App.DexKeeper.Swap(
+	coinIn, coinOut, _, err = s.App.DexKeeper.Swap(
 		s.Ctx,
 		tradePairID,
 		sdkmath.NewInt(maxAmountIn).Mul(denomMultiple),
 		nil,
 		nil,
 	)
+	s.Assert().NoError(err)
 	return coinIn, coinOut
 }
 
@@ -609,13 +610,14 @@ func (s *DexTestSuite) swapWithMaxOut(
 ) (coinIn, coinOut sdk.Coin) {
 	tradePairID := types.MustNewTradePairID(tokenIn, tokenOut)
 	maxAmountOutInt := sdkmath.NewInt(maxAmountOut).Mul(denomMultiple)
-	coinIn, coinOut, _ = s.App.DexKeeper.Swap(
+	coinIn, coinOut, _, err := s.App.DexKeeper.Swap(
 		s.Ctx,
 		tradePairID,
 		sdkmath.NewInt(maxAmountIn).Mul(denomMultiple),
 		&maxAmountOutInt,
 		nil,
 	)
+	s.Assert().NoError(err)
 
 	return coinIn, coinOut
 }

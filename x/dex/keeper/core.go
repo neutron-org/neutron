@@ -331,13 +331,16 @@ func (k Keeper) PlaceLimitOrderCore(
 		}
 
 		var orderFilled bool
-		swapInCoin, swapOutCoin, orderFilled = k.SwapWithCache(
+		swapInCoin, swapOutCoin, orderFilled, err = k.SwapWithCache(
 			ctx,
 			takerTradePairID,
 			amountIn,
 			maxAmountOut,
 			&limitPrice,
 		)
+		if err != nil {
+			return
+		}
 
 		if orderType.IsFoK() && !orderFilled {
 			err = types.ErrFoKLimitOrderNotFilled

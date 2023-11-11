@@ -14,7 +14,7 @@ func (k Keeper) Swap(
 	maxAmountTakerDenom math.Int,
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
-) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool) {
+) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math.Int
 	if useMaxOut {
@@ -73,7 +73,7 @@ func (k Keeper) Swap(
 		), sdk.NewCoin(
 			tradePairID.MakerDenom,
 			totalMakerDenom,
-		), orderFilled
+		), orderFilled, nil
 }
 
 func (k Keeper) SwapWithCache(
@@ -82,9 +82,9 @@ func (k Keeper) SwapWithCache(
 	maxAmountIn math.Int,
 	maxAmountOut *math.Int,
 	limitPrice *math_utils.PrecDec,
-) (totalIn, totalOut sdk.Coin, orderFilled bool) {
+) (totalIn, totalOut sdk.Coin, orderFilled bool, err error) {
 	cacheCtx, writeCache := ctx.CacheContext()
-	totalIn, totalOut, orderFilled = k.Swap(
+	totalIn, totalOut, orderFilled, err = k.Swap(
 		cacheCtx,
 		tradePairID,
 		maxAmountIn,
@@ -94,7 +94,7 @@ func (k Keeper) SwapWithCache(
 
 	writeCache()
 
-	return totalIn, totalOut, orderFilled
+	return totalIn, totalOut, orderFilled, err
 }
 
 func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
