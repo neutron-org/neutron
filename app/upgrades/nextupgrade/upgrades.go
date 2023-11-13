@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/neutron-org/neutron/app/params"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -227,7 +228,7 @@ func migrateInterchainQueriesParams(ctx sdk.Context, paramsKeepers paramskeeper.
 	return nil
 }
 
-func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, wasmStoreKey storetypes.StoreKey, codec codec.Codec) error {
+func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey, wasmStoreKey storetypes.StoreKey, codec codec.Codec) error {
 	store := ctx.KVStore(storeKey)
 	var currParams interchaintxstypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(interchaintxstypes.StoreKey)
@@ -257,9 +258,9 @@ func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error 
 	// As of June 22nd, 2023 this is
 	// 0.9untrn,0.026ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9,0.25ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349
 	requiredGlobalFees := sdk.DecCoins{
-		sdk.NewDecCoinFromDec("untrn", sdk.MustNewDecFromStr("0.9")),
-		sdk.NewDecCoinFromDec("ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9", sdk.MustNewDecFromStr("0.026")),
-		sdk.NewDecCoinFromDec("ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349", sdk.MustNewDecFromStr("0.25")),
+		sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0.9")),
+		sdk.NewDecCoinFromDec(AtomDenom, sdk.MustNewDecFromStr("0.026")),
+		sdk.NewDecCoinFromDec(AxelarUsdcDenom, sdk.MustNewDecFromStr("0.25")),
 	}
 	requiredGlobalFees = requiredGlobalFees.Sort()
 
