@@ -7,10 +7,10 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	"github.com/neutron-org/neutron/utils"
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/neutron-org/neutron/x/dex/utils"
+	dexutils "github.com/neutron-org/neutron/x/dex/utils"
 )
 
 // NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into math.Ints.
@@ -77,10 +77,7 @@ func (k Keeper) DepositCore(
 			return nil, nil, nil, types.ErrDepositShareUnderflow
 		}
 
-		if err := k.MintShares(ctx, receiverAddr, outShares); err != nil {
-			return nil, nil, nil, err
-		}
-		sharesIssued = sharesIssued.Add(outShares)
+		sharesIssued = append(sharesIssued, outShares)
 
 		amounts0Deposited[i] = inAmount0
 		amounts1Deposited[i] = inAmount1
@@ -100,6 +97,10 @@ func (k Keeper) DepositCore(
 		))
 	}
 
+	// At this point shares issued is not sorted and may have duplicates
+	// we must sanitize to convert it to a valid set of coins
+	sharesIssued = utils.SanitizeCoins(sharesIssued)
+
 	if totalAmountReserve0.IsPositive() {
 		coin0 := sdk.NewCoin(pairID.Token0, totalAmountReserve0)
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin0}); err != nil {
@@ -112,6 +113,10 @@ func (k Keeper) DepositCore(
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin1}); err != nil {
 			return nil, nil, nil, err
 		}
+	}
+
+	if err := k.MintShares(ctx, receiverAddr, sharesIssued); err != nil {
+		return nil, nil, nil, err
 	}
 
 	return amounts0Deposited, amounts1Deposited, sharesIssued, nil
@@ -258,7 +263,7 @@ func (k Keeper) MultiHopSwapCore(
 	if len(routeErrors) == len(routes) {
 		// All routes have failed
 
-		allErr := utils.JoinErrors(types.ErrAllMultiHopRoutesFailed, routeErrors...)
+		allErr := dexutils.JoinErrors(types.ErrAllMultiHopRoutesFailed, routeErrors...)
 
 		return sdk.Coin{}, allErr
 	}

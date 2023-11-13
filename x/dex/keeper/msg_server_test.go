@@ -543,7 +543,7 @@ func (s *DexTestSuite) deposits(
 		s.Assert().Fail("Only 1 pairID can be provided")
 	}
 
-	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
+	msg := &types.MsgDeposit{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          tokenA,
@@ -553,7 +553,10 @@ func (s *DexTestSuite) deposits(
 		TickIndexesAToB: tickIndexes,
 		Fees:            fees,
 		Options:         options,
-	})
+	}
+	err := msg.ValidateBasic()
+	s.Assert().NoError(err)
+	_, err = s.msgServer.Deposit(s.GoCtx, msg)
 	s.Assert().Nil(err)
 }
 
