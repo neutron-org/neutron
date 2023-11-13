@@ -15,6 +15,7 @@ func (k Keeper) Swap(
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
+	params := k.GetParams(ctx)
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math.Int
 	if useMaxOut {
@@ -48,7 +49,7 @@ func (k Keeper) Swap(
 		// being swapped, it is possible that the next swap could yield a "fair" price.
 		// Nonethless, once the remainingTakerDenom gets small enough to start causing unfair swaps
 		// it is much simpler to just abort.
-		if inAmount.IsZero() || isUnfairTruePrice(inAmount, outAmount, liq) {
+		if inAmount.IsZero() || isUnfairTruePrice(params.MaxTrueTakerSpread, inAmount, outAmount, liq) {
 			// If they've already swapped just end the swap
 			if remainingTakerDenom.LT(maxAmountTakerDenom) {
 				break
@@ -129,13 +130,15 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 	}
 }
 
-var MaxTrueMakerSpread = math_utils.MustNewPrecDecFromStr("0.005")
-
-func isUnfairTruePrice(inAmount, outAmount math.Int, liq types.Liquidity) bool {
+func isUnfairTruePrice(
+	maxTrueTakerSpread math_utils.PrecDec,
+	inAmount, outAmount math.Int,
+	liq types.Liquidity,
+) bool {
 	bookPrice := liq.Price()
 	truePrice := math_utils.NewPrecDecFromInt(outAmount).QuoInt(inAmount)
 	priceDiffFromExpected := truePrice.Sub(bookPrice)
 	pctDiff := priceDiffFromExpected.Quo(bookPrice)
 
-	return pctDiff.GT(MaxTrueMakerSpread)
+	return pctDiff.GT(maxTrueTakerSpread)
 }
