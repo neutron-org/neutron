@@ -16,7 +16,6 @@ import (
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
@@ -63,7 +62,6 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*feerefundertypes.MsgUpdateParams,
 		*crontypes.MsgUpdateParams,
 		*contractmanagertypes.MsgUpdateParams,
-		*incentivestypes.MsgUpdateParams,
 		*dextypes.MsgUpdateParams:
 		return true
 	}

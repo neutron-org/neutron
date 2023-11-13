@@ -154,14 +154,6 @@ import (
 	dexkeeper "github.com/neutron-org/neutron/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 
-	"github.com/neutron-org/neutron/x/incentives"
-	incentiveskeeper "github.com/neutron-org/neutron/x/incentives/keeper"
-	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
-
-	"github.com/neutron-org/neutron/x/epochs"
-	epochskeeper "github.com/neutron-org/neutron/x/epochs/keeper"
-	epochstypes "github.com/neutron-org/neutron/x/epochs/types"
-
 	"github.com/neutron-org/neutron/x/ibcswap"
 	ibcswapkeeper "github.com/neutron-org/neutron/x/ibcswap/keeper"
 	ibcswaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
@@ -238,8 +230,6 @@ var (
 		globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
-		epochs.AppModuleBasic{},
-		incentives.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -257,7 +247,6 @@ var (
 		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
 		crontypes.ModuleName:                          nil,
 		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner},
-		incentivestypes.ModuleName:                    nil,
 		ibcswaptypes.ModuleName:                       {authtypes.Burner},
 	}
 )
@@ -324,8 +313,6 @@ type App struct {
 	RouterKeeper        *routerkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
-	IncentivesKeeper    *incentiveskeeper.Keeper
-	EpochsKeeper        *epochskeeper.Keeper
 
 	RouterModule router.AppModule
 
@@ -410,7 +397,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctiontypes.StoreKey, dextypes.StoreKey, incentivestypes.StoreKey, epochstypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctiontypes.StoreKey, dextypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -652,38 +639,6 @@ func New(
 
 	swapModule := ibcswap.NewAppModule(app.SwapKeeper)
 
-	app.EpochsKeeper = epochskeeper.NewKeeper(keys[epochstypes.StoreKey])
-
-	app.IncentivesKeeper = incentiveskeeper.NewKeeper(
-		keys[incentivestypes.StoreKey],
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.EpochsKeeper,
-		app.DexKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	app.IncentivesKeeper.SetHooks(
-		incentivestypes.NewMultiIncentiveHooks(
-		// insert Incentives hooks receivers here
-		),
-	)
-
-	incentivesModule := incentives.NewAppModule(
-		app.IncentivesKeeper,
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.EpochsKeeper,
-	)
-
-	app.EpochsKeeper.SetHooks(epochstypes.NewMultiEpochHooks(
-		app.IncentivesKeeper.Hooks(),
-	))
-
-	// NB: This must be initialized AFTER app.EpochsKeeper.SetHooks() because otherwise
-	// we dereference an out-of-date EpochsKeeper.
-	epochsModule := epochs.NewAppModule(*app.EpochsKeeper)
-
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
@@ -858,8 +813,6 @@ func New(
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		swapModule,
 		dexModule,
-		incentivesModule,
-		epochsModule,
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	)
 
@@ -897,8 +850,6 @@ func New(
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
-		incentivestypes.ModuleName,
-		epochstypes.ModuleName,
 		dextypes.ModuleName,
 	)
 
@@ -932,8 +883,6 @@ func New(
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
-		incentivestypes.ModuleName,
-		epochstypes.ModuleName,
 		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
 		// dexmodule must be the last endBlock module to run
 		dextypes.ModuleName,
@@ -975,8 +924,6 @@ func New(
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
-		incentivestypes.ModuleName,
-		epochstypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

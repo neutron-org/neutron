@@ -9,9 +9,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
-	epochstypes "github.com/neutron-org/neutron/x/epochs/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
-	incentivestypes "github.com/neutron-org/neutron/x/incentives/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
@@ -65,19 +63,5 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/neutron.dex.Query/PoolReserves":              &dextypes.QueryGetPoolReservesResponse{},
 		"/neutron.dex.Query/EstimateMultiHopSwap":      &dextypes.QueryEstimateMultiHopSwapResponse{},
 		"/neutron.dex.Query/EstimatePlaceLimitOrder":   &dextypes.QueryEstimatePlaceLimitOrderResponse{},
-
-		// incentives
-		"/neutron.incentives.Query/GetModuleStatus":         &incentivestypes.GetModuleStatusResponse{},
-		"/neutron.incentives.Query/GetGaugeByID":            &incentivestypes.GetGaugeByIDResponse{},
-		"/neutron.incentives.Query/GetGauges":               &incentivestypes.GetGaugesResponse{},
-		"/neutron.incentives.Query/GetStakeByID":            &incentivestypes.GetStakeByIDResponse{},
-		"/neutron.incentives.Query/GetStakes":               &incentivestypes.GetStakesResponse{},
-		"/neutron.incentives.Query/GetFutureRewardEstimate": &incentivestypes.GetFutureRewardEstimateResponse{},
-		"/neutron.incentives.Query/GetAccountHistory":       &incentivestypes.GetAccountHistoryResponse{},
-		"/neutron.incentives.Query/GetGaugeQualifyingValue": &incentivestypes.GetGaugeQualifyingValueResponse{},
-
-		// epochs
-		"/neutron.epochs.Query/EpochInfos":   &epochstypes.QueryEpochsInfoResponse{},
-		"/neutron.epochs.Query/CurrentEpoch": &epochstypes.QueryCurrentEpochResponse{},
 	}
 }

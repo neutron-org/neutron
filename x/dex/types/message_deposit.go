@@ -73,7 +73,8 @@ func (msg *MsgDeposit) ValidateBasic() error {
 	numDeposits := len(msg.AmountsA)
 	if numDeposits != len(msg.Fees) ||
 		numDeposits != len(msg.TickIndexesAToB) ||
-		numDeposits != len(msg.AmountsB) {
+		numDeposits != len(msg.AmountsB) ||
+		numDeposits != len(msg.Options) {
 		return ErrUnbalancedTxArray
 	}
 	if numDeposits == 0 {
