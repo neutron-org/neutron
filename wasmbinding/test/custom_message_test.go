@@ -90,14 +90,14 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 			InterchainAccountId: testutil.TestInterchainID,
-			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
+			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))),
 		},
 	})
 	suite.NoError(err)
 
 	bankKeeper := suite.neutron.BankKeeper
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))))
+	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message

@@ -8,6 +8,7 @@ import (
 	"github.com/neutron-org/neutron/app/params"
 
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	"github.com/neutron-org/neutron/x/interchaintxs/keeper"
 
@@ -58,7 +59,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
 	require.Nil(t, resp)
 
-	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)))
+	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestFeeCollectorAddr), msgRegAcc.RegisterFee)

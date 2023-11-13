@@ -599,8 +599,8 @@ func New(
 		keys[auctiontypes.StoreKey],
 		app.AccountKeeper,
 		&app.BankKeeper,
-		// 25% of rewards should be sent to the redistribute address
-		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
+		// 25% of rewards should be sent to the Hub
+		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerToSendToProviderName)),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -1056,6 +1056,7 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
+					AccountKeeper:       app.AccountKeeper,
 					FeeBurnerKeeper:     app.FeeBurnerKeeper,
 					CronKeeper:          app.CronKeeper,
 					IcqKeeper:           app.InterchainQueriesKeeper,
