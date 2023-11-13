@@ -77,10 +77,12 @@ func (k Keeper) MultihopStep(
 	}
 
 	// TODO: Due to rounding on swap it is possible to leak tokens at each hop.
-	// In these cases the user will end up with trace amounts of tokens from intermediary steps.
+	// In these cases the user will lose trace amounts of tokens from intermediary steps.
 	// To fix this we would have to pre-calculate the route such that the amount
-	// in will be used completely at each step
-	coinOut, err := k.SwapExactAmountIn(bctx.Ctx, step.tradePairID, inCoin.Amount)
+	// in will be used completely at each step.
+	// As an intermediary fix, we should credit the unswapped coins back to the user's account.
+
+	coinOut, err := k.SwapFullAmountIn(bctx.Ctx, step.tradePairID, inCoin.Amount)
 	ctxBranch := bctx.Branch()
 	stepCache[cacheKey] = StepResult{Ctx: bctx, CoinOut: coinOut, Err: err}
 	if err != nil {
@@ -140,7 +142,9 @@ func (k Keeper) RunMultihopRoute(
 	return currentOutCoin, bCacheCtx.WriteCache, nil
 }
 
-func (k Keeper) SwapExactAmountIn(ctx sdk.Context,
+// NOTE: SwapFullAmountIn does not ensure that 100% of amountIn is used. Due to rounding it is possible that
+// a dust amount of AmountIn remains unswapped. It is the caller's responsibility to handle this appropriately.
+func (k Keeper) SwapFullAmountIn(ctx sdk.Context,
 	tradePairID *types.TradePairID,
 	amountIn math.Int,
 ) (totalOut sdk.Coin, err error) {
