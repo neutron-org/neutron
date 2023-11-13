@@ -46,11 +46,10 @@ func (s *DexTestSuite) TestSwapZeroInFailsLowTick() {
 	s.addDeposit(NewDeposit(10000, 0, -20_000, 2))
 
 	// WHEN swap 7 tokenB
-	_, _, _, err := s.swap("TokenB", "TokenA", sdkmath.NewInt(7))
 
 	// THEN swap would give an InAmount and outAmount of 0 and fail
 	// Floor(7 * 1.0001^-20,000) = 0
-	s.ErrorIs(err, types.ErrSwapAmountTooSmall)
+	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdkmath.NewInt(7))
 }
 
 func (s *DexTestSuite) TestSwapUnfairPriceFailsLowTick() {
@@ -58,29 +57,27 @@ func (s *DexTestSuite) TestSwapUnfairPriceFailsLowTick() {
 	s.addDeposit(NewDeposit(10000, 0, -20_000, 2))
 
 	// WHEN swap 8 tokenB
-	_, _, _, err := s.swap("TokenB", "TokenA", sdkmath.NewInt(8))
 
 	// THEN swap fails because maker is selling at an unfair true price
 	// AmountOut = Floor(8 * 1.0001^-20,000) = 1
 	// AmountIn = Floor(1 * 1.0001^20000) = 7
 	// TruePrice = AmountOut/AmountIn = 1/7 = .142857
 	// BookPrice = 0.135348817 (thus maker is getting a price 5.5% worse than expected)
-	s.ErrorIs(err, types.ErrSwapAmountTooSmall)
+	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdkmath.NewInt(8))
 }
 
 func (s *DexTestSuite) TestSwapUnfairPriceFailsHighTick() {
 	// GIVEN liquidity tokenA at tick 159,680
 	s.addDeposit(NewDeposit(2000, 0, 159681, 1))
 
-	// WHEN swap 8 tokenB
-	_, _, _, err := s.swap("TokenB", "TokenA", sdk.NewInt(200))
+	// WHEN swap 200 tokenB
 
 	// THEN swap fails because maker is selling at an unfair true price
 	// AmountOut = Floor(200 * 1.0001^159,680) = 1,719,877,698
 	// AmountIn = Floor(1,719,877,697 * 1.0001^-159,680) = 199
 	// TruePrice = AmountOut/AmountIn = 1,719,877,698/199 = 8,642,601
 	// BookPrice = 8,599,388 (thus maker is getting a price .502% worse than expected)
-	s.ErrorIs(err, types.ErrSwapAmountTooSmall)
+	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdk.NewInt(200))
 }
 
 func (s *DexTestSuite) TestSwapUnfairPriceAbortEarly() {
@@ -91,7 +88,7 @@ func (s *DexTestSuite) TestSwapUnfairPriceAbortEarly() {
 	)
 
 	// WHEN swap 700 BIgTokenB
-	tokenIn, tokenOut, orderFilled, err := s.swap("TokenB", "TokenA", sdk.NewInt(499))
+	tokenIn, tokenOut, orderFilled, err := s.swapInt("TokenB", "TokenA", sdk.NewInt(499))
 
 	// THEN swap works on the first tick, but aborts on the second tick because of Unfair price condition
 	s.NoError(err)
@@ -643,7 +640,7 @@ func (s *DexTestSuite) placeGTCLimitOrder(
 	s.App.DexKeeper.SaveTranche(s.Ctx, tranche)
 }
 
-func (s *DexTestSuite) swap(
+func (s *DexTestSuite) swapInt(
 	tokenIn string,
 	tokenOut string,
 	maxAmountIn sdkmath.Int,
@@ -659,12 +656,32 @@ func (s *DexTestSuite) swap(
 	)
 }
 
+func (s *DexTestSuite) swapIntFails(
+	targetErr error,
+	tokenIn string,
+	tokenOut string,
+	maxAmountIn sdkmath.Int,
+) {
+	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
+	s.Assert().NoError(err)
+	coinIn, coinOut, _, err := s.App.DexKeeper.Swap(
+		s.Ctx,
+		tradePairID,
+		maxAmountIn,
+		nil,
+		nil,
+	)
+	s.Assert().Equal(coinIn, sdk.Coin{})
+	s.Assert().Equal(coinOut, sdk.Coin{})
+	s.ErrorIs(err, targetErr)
+}
+
 func (s *DexTestSuite) swapSuccess(
 	tokenIn string,
 	tokenOut string,
 	maxAmountIn int64,
 ) (coinIn, coinOut sdk.Coin) {
-	coinIn, coinOut, _, err := s.swap(tokenIn, tokenOut, sdk.NewInt(maxAmountIn).Mul(denomMultiple))
+	coinIn, coinOut, _, err := s.swapInt(tokenIn, tokenOut, sdk.NewInt(maxAmountIn).Mul(denomMultiple))
 	s.Assert().NoError(err)
 	return coinIn, coinOut
 }
