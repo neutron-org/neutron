@@ -1,7 +1,5 @@
 package gmp
 
-const AxelarGMPAcc = "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
-
 // Message is attached in ICS20 packet memo field
 type Message struct {
 	SourceChain   string `json:"source_chain"`

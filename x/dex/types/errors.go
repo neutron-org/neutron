@@ -179,4 +179,9 @@ var (
 		1152,
 		"Cannot have negative or zero exit price",
 	)
+	ErrDuplicatePoolDeposit = sdkerrors.Register(
+		ModuleName,
+		1153,
+		"Can only provide a single deposit amount for each tick, fee pair",
+	)
 )

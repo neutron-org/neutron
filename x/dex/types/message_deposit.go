@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -71,14 +73,21 @@ func (msg *MsgDeposit) ValidateBasic() error {
 	numDeposits := len(msg.AmountsA)
 	if numDeposits != len(msg.Fees) ||
 		numDeposits != len(msg.TickIndexesAToB) ||
-		numDeposits != len(msg.AmountsB) {
+		numDeposits != len(msg.AmountsB) ||
+		numDeposits != len(msg.Options) {
 		return ErrUnbalancedTxArray
 	}
 	if numDeposits == 0 {
 		return ErrZeroDeposit
 	}
 
+	poolsDeposited := make(map[string]bool)
 	for i := 0; i < numDeposits; i++ {
+		poolStr := fmt.Sprintf("%d-%d", msg.TickIndexesAToB[i], msg.Fees[i])
+		if _, ok := poolsDeposited[poolStr]; ok {
+			return ErrDuplicatePoolDeposit
+		}
+		poolsDeposited[poolStr] = true
 		if msg.AmountsA[i].LT(math.ZeroInt()) || msg.AmountsB[i].LT(math.ZeroInt()) {
 			return ErrZeroDeposit
 		}

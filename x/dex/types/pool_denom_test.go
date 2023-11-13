@@ -3,11 +3,12 @@ package types_test
 import (
 	"testing"
 
-	. "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/neutron-org/neutron/x/dex/types"
 )
 
-func TestParsePoolIDFromDenom(t *testing.T) {
+func TestValidatePoolDenom(t *testing.T) {
 	for _, tc := range []struct {
 		desc     string
 		denom    string
@@ -27,6 +28,11 @@ func TestParsePoolIDFromDenom(t *testing.T) {
 			valid:    true,
 		},
 		{
+			desc:  "invalid denom long",
+			denom: "neutron/pool/99999999999999999999",
+			valid: false,
+		},
+		{
 			desc:  "invalid format 1",
 			denom: "/neutron/pool/0",
 			valid: false,
@@ -43,12 +49,15 @@ func TestParsePoolIDFromDenom(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
+			validateError := ValidatePoolDenom(tc.denom)
 			id, err := ParsePoolIDFromDenom(tc.denom)
 			if tc.valid {
 				require.NoError(t, err)
+				require.NoError(t, validateError)
 				require.Equal(t, tc.expected, id)
 			} else {
 				require.Error(t, err)
+				require.Equal(t, err, validateError)
 			}
 		})
 	}
