@@ -228,7 +228,7 @@ func migrateInterchainQueriesParams(ctx sdk.Context, paramsKeepers paramskeeper.
 	return nil
 }
 
-func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, wasmStoreKey storetypes.StoreKey, codec codec.Codec) error {
+func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey, wasmStoreKey storetypes.StoreKey, codec codec.Codec) error {
 	store := ctx.KVStore(storeKey)
 	var currParams interchaintxstypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(interchaintxstypes.StoreKey)
