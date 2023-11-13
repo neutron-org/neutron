@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMsgDeposit_ValidateBasic(t *testing.T) {
@@ -24,7 +25,7 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*DepositOptions{{false}},
 			},
 			err: ErrInvalidAddress,
 		},
@@ -37,7 +38,7 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*DepositOptions{{false}},
 			},
 			err: ErrInvalidAddress,
 		},
@@ -50,7 +51,7 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 				TickIndexesAToB: []int64{},
 				AmountsA:        []math.Int{},
 				AmountsB:        []math.Int{},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*DepositOptions{{false}},
 			},
 			err: ErrUnbalancedTxArray,
 		},
@@ -120,6 +121,19 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 			err: ErrZeroDeposit,
 		},
 		{
+			name: "invalid duplicate deposit",
+			msg: MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{1, 2, 1},
+				TickIndexesAToB: []int64{0, 0, 0},
+				AmountsA:        []math.Int{math.OneInt(), math.OneInt(), math.OneInt()},
+				AmountsB:        []math.Int{math.OneInt(), math.OneInt(), math.OneInt()},
+				Options:         []*DepositOptions{{false}, {false}, {false}},
+			},
+			err: ErrDuplicatePoolDeposit,
+		},
+		{
 			name: "invalid no deposit",
 			msg: MsgDeposit{
 				Creator:         sample.AccAddress(),
@@ -128,7 +142,7 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.ZeroInt()},
 				AmountsB:        []math.Int{math.ZeroInt()},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*DepositOptions{{false}},
 			},
 			err: ErrZeroDeposit,
 		},
@@ -141,7 +155,7 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*DepositOptions{{false}},
 			},
 		},
 	}

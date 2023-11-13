@@ -21,10 +21,9 @@ func NewPoolDenom(poolID uint64) string {
 }
 
 func ValidatePoolDenom(denom string) error {
-	if !PoolDenomRegexp.MatchString(denom) {
-		return ErrInvalidPoolDenom
+	if _, err := ParsePoolIDFromDenom(denom); err != nil {
+		return err
 	}
-
 	return nil
 }
 

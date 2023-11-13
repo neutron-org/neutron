@@ -62,7 +62,7 @@ func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB
 
 	totalShares := pool.CalcSharesMinted(amountAInt, amountBInt, existingShares)
 
-	err = s.app.DexKeeper.MintShares(s.ctx, s.alice, totalShares)
+	err = s.app.DexKeeper.MintShares(s.ctx, s.alice, sdk.NewCoins(totalShares))
 	s.Require().NoError(err)
 
 	lowerTick.ReservesMakerDenom = amountAInt
