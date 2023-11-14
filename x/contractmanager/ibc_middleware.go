@@ -3,10 +3,10 @@ package contractmanager
 import (
 	"fmt"
 
-	"cosmossdk.io/errors"
-
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cometbft/cometbft/libs/log"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
@@ -34,9 +34,21 @@ func (k SudoLimitWrapper) Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, 
 		// maybe later we'll retrieve actual errors from events
 		resp, err = k.WasmKeeper.Sudo(cacheCtx, contractAddress, msg)
 	}()
-	if err != nil {
-		// the contract either returned an error or panicked with `out of gas`
-		k.contractManager.AddContractFailure(ctx, contractAddress.String(), msg)
+	if err != nil { // the contract either returned an error or panicked with `out of gas`
+		failure := k.contractManager.AddContractFailure(
+			ctx,
+			contractAddress.String(),
+			msg,
+			contractmanagerkeeper.RedactError(err).Error(),
+		)
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				wasmtypes.EventTypeSudo,
+				sdk.NewAttribute(wasmtypes.AttributeKeyContractAddr, contractAddress.String()),
+				sdk.NewAttribute(contractmanagertypes.AttributeKeySudoFailureID, fmt.Sprintf("%d", failure.Id)),
+				sdk.NewAttribute(contractmanagertypes.AttributeKeySudoError, err.Error()),
+			),
+		})
 	} else {
 		writeFn()
 	}
@@ -60,7 +72,7 @@ func outOfGasRecovery(
 		if !ok || !gasMeter.IsOutOfGas() {
 			panic(r)
 		}
-		*err = errors.Wrapf(errors.ErrPanic, "%v", r)
+		*err = contractmanagertypes.ErrSudoOutOfGas
 	}
 }
 

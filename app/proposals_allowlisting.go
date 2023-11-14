@@ -11,6 +11,7 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"

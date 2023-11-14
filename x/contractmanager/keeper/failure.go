@@ -1,18 +1,30 @@
 package keeper
 
 import (
-	"cosmossdk.io/errors"
+	"fmt"
+
+	errorsmod "cosmossdk.io/errors"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
-// AddContractFailure adds a specific failure to the store using address as the key
-func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte) {
+// AddContractFailure adds a specific failure to the store. The provided address is used to determine
+// the failure ID and they both are used to create a storage key for the failure.
+//
+// WARNING: The errMsg string parameter is expected to be deterministic. It means that the errMsg
+// must be OS/library version agnostic and carry a concrete defined error message. One of the good
+// ways to do so is to redact error using the RedactError func as it is done in SudoLimitWrapper
+// Sudo method:
+// https://github.com/neutron-org/neutron/blob/eb8b5ae50907439ff9af0527a42ef0cb448a78b5/x/contractmanager/ibc_middleware.go#L42.
+// Another good way could be passing here some constant value.
+func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte, errMsg string) types.Failure {
 	failure := types.Failure{
 		Address:     address,
 		SudoPayload: sudoPayload,
+		Error:       errMsg,
 	}
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 	failure.Id = nextFailureID
@@ -20,6 +32,7 @@ func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload 
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&failure)
 	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), bz)
+	return failure
 }
 
 func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
@@ -58,7 +71,7 @@ func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint
 
 	bz := store.Get(key)
 	if bz == nil {
-		return nil, errors.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), id)
+		return nil, errorsmod.Wrapf(sdkerrors.ErrKeyNotFound, "no failure found for contractAddress = %s and failureId = %d", contractAddr.String(), id)
 	}
 	var res types.Failure
 	k.cdc.MustUnmarshal(bz, &res)
@@ -69,11 +82,11 @@ func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint
 // ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
 func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
 	if failure.SudoPayload == nil {
-		return errors.Wrapf(types.IncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
+		return errorsmod.Wrapf(types.ErrIncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
 	}
 
 	if _, err := k.wasmKeeper.Sudo(ctx, contractAddr, failure.SudoPayload); err != nil {
-		return errors.Wrapf(types.FailedToResubmitFailure, "cannot resubmit failure; failureId = %d; err = %s", failure.Id, err)
+		return errorsmod.Wrapf(types.ErrFailedToResubmitFailure, "cannot resubmit failure; failureId = %d; err = %s", failure.Id, err)
 	}
 
 	// Cleanup failure since we resubmitted it successfully
@@ -86,4 +99,24 @@ func (k Keeper) removeFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id u
 	store := ctx.KVStore(k.storeKey)
 	failureKey := types.GetFailureKey(contractAddr.String(), id)
 	store.Delete(failureKey)
+}
+
+// RedactError removes non-determenistic details from the error returning just codespace and core
+// of the error. Returns full error for system errors.
+//
+// Copy+paste from https://github.com/neutron-org/wasmd/blob/5b59886e41ed55a7a4a9ae196e34b0852285503d/x/wasm/keeper/msg_dispatcher.go#L175-L190
+func RedactError(err error) error {
+	// Do not redact system errors
+	// SystemErrors must be created in x/wasm and we can ensure determinism
+	if wasmvmtypes.ToSystemError(err) != nil {
+		return err
+	}
+
+	// FIXME: do we want to hardcode some constant string mappings here as well?
+	// Or better document them? (SDK error string may change on a patch release to fix wording)
+	// sdk/11 is out of gas
+	// sdk/5 is insufficient funds (on bank send)
+	// (we can theoretically redact less in the future, but this is a first step to safety)
+	codespace, code, _ := errorsmod.ABCIInfo(err, false)
+	return fmt.Errorf("codespace: %s, code: %d", codespace, code)
 }

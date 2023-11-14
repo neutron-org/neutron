@@ -1,13 +1,13 @@
 package types
 
 import (
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 )
@@ -26,6 +26,7 @@ type BankKeeper interface {
 
 type WasmKeeper interface {
 	HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool
+	GetContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) *wasmtypes.ContractInfo
 	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
 
@@ -47,8 +48,4 @@ type ChannelKeeper interface {
 	GetChannel(ctx sdk.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
 	GetNextSequenceSend(ctx sdk.Context, portID, channelID string) (uint64, bool)
 	GetConnection(ctx sdk.Context, connectionID string) (ibcexported.ConnectionI, error)
-}
-
-type FeeBurnerKeeper interface {
-	GetParams(ctx sdk.Context) feeburnertypes.Params
 }

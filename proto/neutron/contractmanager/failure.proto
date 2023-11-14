@@ -15,4 +15,6 @@ message Failure {
   uint64 id = 2;
   // Serialized MessageSudoCallback with Packet and Ack(if exists)
   bytes sudo_payload = 3;
+  // Redacted error response of the sudo call. Full error is emitted as an event
+  string error = 4;
 }

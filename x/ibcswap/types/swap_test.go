@@ -7,11 +7,12 @@ import (
 	"cosmossdk.io/math"
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	"github.com/iancoleman/orderedmap"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	"github.com/neutron-org/neutron/x/dex/types"
 	. "github.com/neutron-org/neutron/x/ibcswap/types"
-	"github.com/stretchr/testify/require"
 )
 
 func init() {
