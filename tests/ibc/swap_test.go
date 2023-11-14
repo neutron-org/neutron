@@ -57,7 +57,8 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 				TickIndexInToOut: 1,
 				OrderType:        dextypes.LimitOrderType_FILL_OR_KILL,
 			},
-			Next: nil,
+			NoIBCRefund: true,
+			Next:        nil,
 		},
 	}
 
@@ -126,9 +127,8 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailRefund() {
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount)
 }
 
-func (s *IBCTestSuite) TestIBCSwapMiddleware_FailWithRefundAddr() {
+func (s *IBCTestSuite) TestIBCSwapMiddleware_FailNoIBCRefund() {
 	// Compose the swap metadata, this swap will fail because there is no pool initialized for this pair
-	refundAddr := s.neutronChain.SenderAccounts[1].SenderAccount.GetAddress()
 	swapAmount := math.NewInt(100000)
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
@@ -141,8 +141,8 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailWithRefundAddr() {
 				TickIndexInToOut: 1,
 				OrderType:        dextypes.LimitOrderType_FILL_OR_KILL,
 			},
-			NeutronRefundAddress: refundAddr.String(),
-			Next:                 nil,
+			NoIBCRefund: true,
+			Next:        nil,
 		},
 	}
 
@@ -158,9 +158,9 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_FailWithRefundAddr() {
 		string(metadataBz),
 	)
 
-	// Check that the funds have been moved to the refund address
-	s.assertNeutronBalance(refundAddr, nativeDenom, genesisWalletAmount)
-	s.assertNeutronBalance(refundAddr, s.providerToNeutronDenom, ibcTransferAmount)
+	// Check that the funds have been moved to the creator address
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount)
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
 	// Check that no refund takes place and the funds are not in the account on provider
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount.Sub(ibcTransferAmount))

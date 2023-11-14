@@ -377,7 +377,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 // TestSwapAndForward_ForwardFailsRefundAddr asserts that the swap and forward middleware stack works as intended in the case
 // that an incoming IBC swap succeeds but the forward fails when a NeutronRefundAddress is provided.
 // The swap will be reverted and the transferred amount will be credited to the refundAddr
-func (s *IBCTestSuite) TestSwapAndForward_ForwardFailsRefundAddr() {
+func (s *IBCTestSuite) TestSwapAndForward_ForwardFailsNoIBCRefund() {
 	// Send an IBC transfer from provider chain to neutron, so we can initialize a pool with the IBC denom token + native Neutron token
 	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
@@ -433,7 +433,6 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFailsRefundAddr() {
 	err = json.Unmarshal(bz, nextJSON)
 	s.Assert().NoError(err)
 
-	refundAddr := s.neutronChain.SenderAccounts[1].SenderAccount.GetAddress()
 	metadata := swaptypes.PacketMetadata{
 		Swap: &swaptypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
@@ -445,8 +444,8 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFailsRefundAddr() {
 				TickIndexInToOut: 2,
 				OrderType:        types.LimitOrderType_FILL_OR_KILL,
 			},
-			NeutronRefundAddress: refundAddr.String(),
-			Next:                 nextJSON,
+			NoIBCRefund: true,
+			Next:        nextJSON,
 		},
 	}
 
@@ -479,8 +478,8 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFailsRefundAddr() {
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
 
-	// Check that the swap was reverted and the transfer amount is in the refundAddr
-	s.assertNeutronBalance(refundAddr, s.providerToNeutronDenom, ibcTransferAmount)
+	// Check that the swap was reverted and the transfer amount is in the creator account
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
 
 	// Check that nothing made it to chainB
 	transferDenomPath := transfertypes.GetPrefixedDenom(

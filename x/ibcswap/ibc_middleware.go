@@ -154,9 +154,10 @@ func (im IBCMiddleware) OnRecvPacket(
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
+	originalCreator := metadata.Creator
 	metadata.Creator = overrideReceiver
 	// Update packet data to match the new receiver so that transfer middleware adds tokens to the expected address
-	packet = newPacketWithOverrideReceiver(packet, data, overrideReceiver)
+	packet, data = newPacketWithOverrideReceiver(packet, data, overrideReceiver)
 	if metadata.ContainsPFM() {
 		// If we are using PFM change receiver to the expected address for forwarding
 		metadata.Receiver = overrideReceiver
@@ -171,7 +172,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	cacheCtx, writeCache := ctx.CacheContext()
 	res, err := im.keeper.Swap(cacheCtx, metadata.MsgPlaceLimitOrder)
 	if err != nil {
-		return im.handleFailedSwap(ctx, packet, data, metadata, err)
+		return im.handleFailedSwap(ctx, originalCreator, packet, data, metadata, err)
 	}
 
 	// If there is no next field set in the metadata return ack
@@ -223,7 +224,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	// If not an error occurred, and we return the original ack.
 	newAck := im.app.OnRecvPacket(wrappedSdkCtx, packet, relayer)
 	if newAck != nil {
-		return im.handleFailedSwap(ctx, packet, data, metadata, errors.New(string(newAck.Acknowledgement())))
+		return im.handleFailedSwap(ctx, originalCreator, packet, data, metadata, errors.New(string(newAck.Acknowledgement())))
 	}
 
 	writeCache()
@@ -291,6 +292,7 @@ func (im IBCMiddleware) GetAppVersion(
 // or non-refundable in the SwapMetadata.
 func (im IBCMiddleware) handleFailedSwap(
 	ctx sdk.Context,
+	originalCreator string,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
 	metadata *types.SwapMetadata,
@@ -307,17 +309,17 @@ func (im IBCMiddleware) handleFailedSwap(
 		"AmountIn", metadata.AmountIn,
 		"TickIndexInToOut", metadata.TickIndexInToOut,
 		"OrderType", metadata.OrderType,
-		"refund address", metadata.NeutronRefundAddress,
+		"NoIBCRefund", metadata.NoIBCRefund,
 	)
 
 	// The current denom is from the sender chains perspective, we need to compose the appropriate denom for this side
 	denomOnThisChain := getDenomForThisChain(packet, data.Denom)
 
-	if len(metadata.NeutronRefundAddress) != 0 {
-		return im.handleOnChainRefund(ctx, data, metadata, denomOnThisChain, err)
+	if metadata.NoIBCRefund {
+		return im.handleOnChainRefund(ctx, originalCreator, data, denomOnThisChain, err)
 	}
 
-	return im.handleIBCRefund(ctx, packet, data, metadata, denomOnThisChain, err)
+	return im.handleIBCRefund(ctx, packet, data, denomOnThisChain, err)
 }
 
 // handleOnChainRefund will compose a successful ack to send back to the counterparty chain containing any error messages.
@@ -325,8 +327,8 @@ func (im IBCMiddleware) handleFailedSwap(
 // See: https://github.com/cosmos/ibc-go/blob/3ecc7dd3aef5790ec5d906936a297b34adf1ee41/modules/apps/transfer/keeper/relay.go#L320
 func (im IBCMiddleware) handleOnChainRefund(
 	ctx sdk.Context,
+	refundAddr string,
 	data transfertypes.FungibleTokenPacketData,
-	metadata *types.SwapMetadata,
 	newDenom string,
 	swapErr error,
 ) ibcexported.Acknowledgement {
@@ -342,7 +344,7 @@ func (im IBCMiddleware) handleOnChainRefund(
 	}
 
 	token := sdk.NewCoin(newDenom, amount)
-	err := im.keeper.SendCoins(ctx, metadata.Creator, metadata.NeutronRefundAddress, sdk.NewCoins(token))
+	err := im.keeper.SendCoins(ctx, data.Receiver, refundAddr, sdk.NewCoins(token))
 	if err != nil {
 		wrappedErr := sdkerrors.Wrap(err, "failed to move funds to refund address")
 		wrappedErr = sdkerrors.Wrap(swapErr, wrappedErr.Error())
@@ -359,13 +361,12 @@ func (im IBCMiddleware) handleIBCRefund(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
-	metadata *types.SwapMetadata,
 	newDenom string,
 	swapErr error,
 ) ibcexported.Acknowledgement {
 	data.Denom = newDenom
 
-	err := im.keeper.RefundPacketToken(ctx, packet, data, metadata)
+	err := im.keeper.RefundPacketToken(ctx, packet, data)
 	if err != nil {
 		wrappedErr := sdkerrors.Wrap(swapErr, err.Error())
 
@@ -399,7 +400,11 @@ func getDenomForThisChain(packet channeltypes.Packet, denom string) string {
 }
 
 // Update the packet data to reflect the new receiver address that is used by the PFM
-func newPacketWithOverrideReceiver(oldPacket channeltypes.Packet, data transfertypes.FungibleTokenPacketData, overrideReceiver string) channeltypes.Packet {
+func newPacketWithOverrideReceiver(
+	oldPacket channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+	overrideReceiver string,
+) (channeltypes.Packet, transfertypes.FungibleTokenPacketData) {
 	overrideData := transfertypes.FungibleTokenPacketData{
 		Denom:    data.Denom,
 		Amount:   data.Amount,
@@ -417,7 +422,7 @@ func newPacketWithOverrideReceiver(oldPacket channeltypes.Packet, data transfert
 		Data:               overrideDataBz, // override data
 		TimeoutHeight:      oldPacket.TimeoutHeight,
 		TimeoutTimestamp:   oldPacket.TimeoutTimestamp,
-	}
+	}, overrideData
 }
 
 func validateSwapPacket(packet channeltypes.Packet, transferData transfertypes.FungibleTokenPacketData, sm types.SwapMetadata) error {

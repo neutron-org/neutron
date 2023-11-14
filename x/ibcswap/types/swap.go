@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	sdkerrors "cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/iancoleman/orderedmap"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 )
@@ -20,7 +19,10 @@ type PacketMetadata struct {
 // further in the middleware stack or on the counterparty.
 type SwapMetadata struct {
 	*dextypes.MsgPlaceLimitOrder
-	NonRefundable bool `json:"non-refundable,omitempty"`
+	// If NoIBCRefund==true and the swap or subsequent forward fails, the transferred balance will remain
+	// in the neutron MsgPlaceLimitOrder.Creator address and an IBCRefund will NOT be issued
+
+	NoIBCRefund bool `json:"non-refundable,omitempty"`
 	// If a value is provided for NeutronRefundAddress and the swap fails the Transfer.Amount will be moved to this address for later recovery.
 	// If no NeutronRefundAddress is provided and a swap fails we will fail the ibc transfer and tokens will be refunded on the source chain.
 
@@ -41,12 +43,6 @@ func (sm SwapMetadata) Validate() error {
 	}
 	if sm.TokenOut == "" {
 		return sdkerrors.Wrap(ErrInvalidSwapMetadata, "limit order tokenOut cannot be an empty string")
-	}
-	if sm.NeutronRefundAddress != "" {
-		_, err := sdk.AccAddressFromBech32(sm.NeutronRefundAddress)
-		if err != nil {
-			return sdkerrors.Wrapf(dextypes.ErrInvalidAddress, "%s is not a valid Neutron address", sm.NeutronRefundAddress)
-		}
 	}
 
 	if !sm.OrderType.IsFoK() {
