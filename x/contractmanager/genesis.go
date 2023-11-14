@@ -11,7 +11,7 @@ import (
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// Set all the failure
 	for _, elem := range genState.FailuresList {
-		k.AddContractFailure(ctx, elem.Address, elem.SudoPayload)
+		k.AddContractFailure(ctx, elem.Address, elem.SudoPayload, elem.Error)
 	}
 	// this line is used by starport scaffolding # genesis/module/init
 	err := k.SetParams(ctx, genState.Params)

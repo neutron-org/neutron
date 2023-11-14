@@ -13,6 +13,6 @@ type WasmKeeper interface {
 }
 
 type ContractManagerKeeper interface {
-	AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte)
+	AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte, errMsg string) Failure
 	GetParams(ctx sdk.Context) (params Params)
 }
