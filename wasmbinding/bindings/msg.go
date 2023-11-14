@@ -228,12 +228,12 @@ type ResubmitFailureResponse struct {
 }
 
 type Dex struct {
-	Deposit                  *types.MsgDeposit
-	Withdrawal               *types.MsgWithdrawal
-	PlaceLimitOrder          *MsgPlaceLimitOrder
-	WithdrawFilledLimitOrder *types.MsgWithdrawFilledLimitOrder
-	CancelLimitOrder         *types.MsgCancelLimitOrder
-	MultiHopSwap             *types.MsgMultiHopSwap
+	Deposit                  *types.MsgDeposit                  `json:"deposit"`
+	Withdrawal               *types.MsgWithdrawal               `json:"withdrawal"`
+	PlaceLimitOrder          *MsgPlaceLimitOrder                `json:"place_limit_order"`
+	WithdrawFilledLimitOrder *types.MsgWithdrawFilledLimitOrder `json:"withdraw_filled_limit_order"`
+	CancelLimitOrder         *types.MsgCancelLimitOrder         `json:"cancel_limit_order"`
+	MultiHopSwap             *types.MsgMultiHopSwap             `json:"multi_hop_swap"`
 }
 
 type MsgPlaceLimitOrder struct {
@@ -242,7 +242,7 @@ type MsgPlaceLimitOrder struct {
 	TokenIn          string               `json:"token_in,omitempty"`
 	TokenOut         string               `json:"token_out,omitempty"`
 	TickIndexInToOut int64                `json:"tick_index_in_to_out,omitempty"`
-	AmountIn         math.Int             `json:"amount_in""`
+	AmountIn         math.Int             `json:"amount_in"`
 	OrderType        types.LimitOrderType `json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`

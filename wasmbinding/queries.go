@@ -161,7 +161,6 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) ([]byt
 			TickIndexInToOut: query.EstimatePlaceLimitOrder.TickIndexInToOut,
 			AmountIn:         query.EstimatePlaceLimitOrder.AmountIn,
 			OrderType:        query.EstimatePlaceLimitOrder.OrderType,
-			ExpirationTime:   nil,
 			MaxAmountOut:     query.EstimatePlaceLimitOrder.MaxAmountOut,
 		}
 		if query.EstimatePlaceLimitOrder.ExpirationTime != nil {
