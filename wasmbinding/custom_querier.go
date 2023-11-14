@@ -155,6 +155,11 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 
+		case contractQuery.Dex != nil:
+			bz, err := qp.DexQuery(ctx, *contractQuery.Dex)
+
+			return bz, err
+
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}

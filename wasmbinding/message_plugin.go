@@ -1,8 +1,12 @@
 package wasmbinding
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	dexkeeper "github.com/neutron-org/neutron/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	"time"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
 
@@ -49,6 +53,7 @@ func CustomMessageDecorator(
 	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
+	dexKeeper *dexkeeper.Keeper,
 ) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
@@ -63,6 +68,7 @@ func CustomMessageDecorator(
 			CronKeeper:            cronKeeper,
 			AdminKeeper:           adminKeeper,
 			ContractmanagerKeeper: contractmanagerKeeper,
+			DexMsgServer:          dexkeeper.NewMsgServerImpl(*dexKeeper),
 		}
 	}
 }
@@ -79,6 +85,7 @@ type CustomMessenger struct {
 	CronKeeper            *cronkeeper.Keeper
 	AdminKeeper           *adminmodulekeeper.Keeper
 	ContractmanagerKeeper *contractmanagerkeeper.Keeper
+	DexMsgServer          dextypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -98,56 +105,136 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		)
 		return nil, nil, errors.Wrap(err, "failed to decode incoming custom cosmos message")
 	}
-
-	// Dispatch the message based on its type by checking each possible field
-	if contractMsg.SubmitTx != nil {
-		return m.submitTx(ctx, contractAddr, contractMsg.SubmitTx)
-	}
-	if contractMsg.RegisterInterchainAccount != nil {
-		return m.registerInterchainAccount(ctx, contractAddr, contractMsg.RegisterInterchainAccount)
-	}
-	if contractMsg.RegisterInterchainQuery != nil {
-		return m.registerInterchainQuery(ctx, contractAddr, contractMsg.RegisterInterchainQuery)
-	}
-	if contractMsg.UpdateInterchainQuery != nil {
-		return m.updateInterchainQuery(ctx, contractAddr, contractMsg.UpdateInterchainQuery)
-	}
-	if contractMsg.RemoveInterchainQuery != nil {
-		return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
-	}
-	if contractMsg.IBCTransfer != nil {
-		return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
-	}
-	if contractMsg.SubmitAdminProposal != nil {
-		return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
-	}
-	if contractMsg.CreateDenom != nil {
-		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
-	}
-	if contractMsg.MintTokens != nil {
-		return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
-	}
-	if contractMsg.SetBeforeSendHook != nil {
-		return m.setBeforeSendHook(ctx, contractAddr, contractMsg.SetBeforeSendHook)
-	}
-	if contractMsg.ChangeAdmin != nil {
-		return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
-	}
-	if contractMsg.BurnTokens != nil {
-		return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
-	}
-	if contractMsg.AddSchedule != nil {
-		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
-	}
-	if contractMsg.RemoveSchedule != nil {
-		return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
-	}
-	if contractMsg.ResubmitFailure != nil {
-		return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
+	    // Dispatch the message based on its type by checking each possible field
+		if contractMsg.SubmitTx != nil {
+			return m.submitTx(ctx, contractAddr, contractMsg.SubmitTx)
+		}
+		if contractMsg.RegisterInterchainAccount != nil {
+			return m.registerInterchainAccount(ctx, contractAddr, contractMsg.RegisterInterchainAccount)
+		}
+		if contractMsg.RegisterInterchainQuery != nil {
+			return m.registerInterchainQuery(ctx, contractAddr, contractMsg.RegisterInterchainQuery)
+		}
+		if contractMsg.UpdateInterchainQuery != nil {
+			return m.updateInterchainQuery(ctx, contractAddr, contractMsg.UpdateInterchainQuery)
+		}
+		if contractMsg.RemoveInterchainQuery != nil {
+			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
+		}
+		if contractMsg.IBCTransfer != nil {
+			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
+		}
+		if contractMsg.SubmitAdminProposal != nil {
+			return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
+		}
+		if contractMsg.CreateDenom != nil {
+			return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
+		}
+		if contractMsg.MintTokens != nil {
+			return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
+		}
+		if contractMsg.SetBeforeSendHook != nil {
+			return m.setBeforeSendHook(ctx, contractAddr, contractMsg.SetBeforeSendHook)
+		}
+		if contractMsg.ChangeAdmin != nil {
+			return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
+		}
+		if contractMsg.BurnTokens != nil {
+			return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
+		}
+		if contractMsg.AddSchedule != nil {
+			return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
+		}
+		if contractMsg.RemoveSchedule != nil {
+			return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
+		}
+		if contractMsg.ResubmitFailure != nil {
+			return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
+		}
+		if contractMsg.Dex != nil {
+			data, err := m.dispatchDexMsg(ctx, contractAddr, *(contractMsg.Dex))
+			return nil, data, err
+		}
 	}
 
 	// If none of the conditions are met, forward the message to the wrapped handler
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+}
+
+// TODO: add handler name as arg for logging purpose
+// fmt.Sprintf("%T: failed to execute", handler) -> fmt.Sprintf("%Ts: failed to execute", handlerName)
+func handleDexMsg[T sdk.Msg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrapf(err, "failed to validate %T", msg)
+	}
+
+	resp, err := handler(ctx, msg)
+	if err != nil {
+		ctx.Logger().Debug(fmt.Sprintf("%T: failed to execute", handler),
+			"from_address", msg.GetSigners()[0].String(),
+			"msg", msg,
+			"error", err,
+		)
+		return nil, errors.Wrapf(err, "failed to execute %T", msg)
+	}
+
+	data, err := json.Marshal(resp)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("json.Marshal: failed to marshal %T response to JSON", resp),
+			"from_address", msg.GetSigners()[0].String(),
+			"msg", resp,
+			"error", err,
+		)
+		return nil, errors.Wrap(err, "marshal json failed")
+	}
+
+	ctx.Logger().Debug(fmt.Sprintf("%T completed", handler),
+		"from_address", msg.GetSigners()[0].String(),
+		"msg", msg,
+	)
+	return [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAddress, dex bindings.Dex) ([][]byte, error) {
+	if dex.Deposit != nil {
+		dex.Deposit.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.Deposit, m.DexMsgServer.Deposit)
+	} else if dex.Withdrawal != nil {
+		dex.Withdrawal.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.Withdrawal, m.DexMsgServer.Withdrawal)
+	}
+	if dex.PlaceLimitOrder != nil {
+		msg := dextypes.MsgPlaceLimitOrder{
+			Creator:          contractAddr.String(),
+			Receiver:         dex.PlaceLimitOrder.Receiver,
+			TokenIn:          dex.PlaceLimitOrder.TokenIn,
+			TokenOut:         dex.PlaceLimitOrder.TokenOut,
+			TickIndexInToOut: dex.PlaceLimitOrder.TickIndexInToOut,
+			AmountIn:         dex.PlaceLimitOrder.AmountIn,
+			OrderType:        dex.PlaceLimitOrder.OrderType,
+			MaxAmountOut:     dex.PlaceLimitOrder.MaxAmountOut,
+		}
+		dex.PlaceLimitOrder.Creator = contractAddr.String()
+		if dex.PlaceLimitOrder.ExpirationTime != nil {
+			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
+			msg.ExpirationTime = &t
+		}
+		return handleDexMsg(ctx, &msg, m.DexMsgServer.PlaceLimitOrder)
+	}
+	if dex.CancelLimitOrder != nil {
+		dex.CancelLimitOrder.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.CancelLimitOrder, m.DexMsgServer.CancelLimitOrder)
+	}
+	if dex.WithdrawFilledLimitOrder != nil {
+		dex.WithdrawFilledLimitOrder.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.WithdrawFilledLimitOrder, m.DexMsgServer.WithdrawFilledLimitOrder)
+	}
+	if dex.MultiHopSwap != nil {
+		dex.MultiHopSwap.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.MultiHopSwap, m.DexMsgServer.MultiHopSwap)
+	}
+
+	return nil, sdkerrors.ErrUnknownRequest
 }
 
 func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, error) {

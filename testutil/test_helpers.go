@@ -134,7 +134,7 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainA.NextBlock()
 	suite.ChainB.NextBlock()
 
-	// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper.
+	// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper2.
 	prop1 := GetTestConsumerAdditionProp(suite.ChainA)
 	err := providerKeeper.CreateConsumerClient(
 		suite.ChainProvider.GetContext(),
