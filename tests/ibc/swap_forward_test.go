@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/iancoleman/orderedmap"
 	"golang.org/x/exp/maps"

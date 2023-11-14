@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 
