@@ -16,7 +16,7 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/contractmanager/params";
   }
-  
+
   // Queries a Failure by contract address and failure ID.
   rpc AddressFailure(QueryFailuresRequest) returns (QueryFailuresResponse) {
     option (google.api.http).get = "/neutron/contractmanager/failures/{address}/{failure_id}";
