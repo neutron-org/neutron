@@ -436,7 +436,7 @@ func validateSwapPacket(packet channeltypes.Packet, transferData transfertypes.F
 	}
 
 	if transferAmount.LT(sm.AmountIn) {
-		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer amount must be <= AmountIn")
+		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer amount must be >= AmountIn")
 	}
 	return nil
 }
