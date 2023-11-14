@@ -1,4 +1,4 @@
-package nextupgrade
+package v1_1_0
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	"github.com/neutron-org/neutron/app/params"
 
 	"cosmossdk.io/math"
