@@ -109,11 +109,13 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 
-	// Check that the amountIn is deducted from the neutron overrid receiver account
+	// Check that the overrideAddr did not keep anything
 	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.OneInt())
-	// Check that neutron account did not keep any of the transfer denom
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
+
+	// check that the original creator is credited with the unused swap balances
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
@@ -367,9 +369,10 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	s.Assert().NoError(err)
 	s.coordinator.CommitBlock(s.neutronChain)
 
-	// Check that the amountIn is deducted from the neutron override receiever  account
+	// Check that the overrideReceiver did not keep anything
 	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, nativeDenom, math.OneInt())
+	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	// Check that the funds are now present on the provider chainer
 	s.assertProviderBalance(
 		s.providerAddr,

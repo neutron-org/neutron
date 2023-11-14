@@ -83,9 +83,13 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 	// Check that the swap funds are now present in the acc on Neutron
 	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Add(expectedOut))
 
-	// Check that all of the IBC transfer denom have been used up
+	// Check that the overrideReceiver did not keep anything
 	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.OneInt())
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
+
+	// Check that the unused balance is credited to the original creator
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
 }
 
 // TestIBCSwapMiddleware_FailRefund asserts that the IBC swap middleware works as intended with Neutron running as a

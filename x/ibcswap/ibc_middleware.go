@@ -170,7 +170,7 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	// Attempt to perform a swap using a cacheCtx
 	cacheCtx, writeCache := ctx.CacheContext()
-	res, err := im.keeper.Swap(cacheCtx, metadata.MsgPlaceLimitOrder)
+	res, err := im.keeper.Swap(cacheCtx, originalCreator, metadata.MsgPlaceLimitOrder)
 	if err != nil {
 		return im.handleFailedSwap(ctx, originalCreator, packet, data, metadata, err)
 	}
