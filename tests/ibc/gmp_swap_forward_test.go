@@ -99,10 +99,9 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	// Check that the funds are moved out of the acc on providerChain
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative.Sub(ibcTransferAmount))
 
-	// Check that the amountIn is deducted from the neutron override account
+	// Check that neutron override account did not keep anything
 	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.OneInt())
-	// Check that neutron override account did not keep any of the transfer denom
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
