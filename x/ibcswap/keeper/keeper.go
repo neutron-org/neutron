@@ -69,7 +69,7 @@ func (k Keeper) Swap(
 	}
 
 	msgSwapRes := &dextypes.MsgPlaceLimitOrderResponse{}
-	if err := proto.Unmarshal(res.Data, msgSwapRes); err != nil {
+	if err := proto.Unmarshal(res.MsgResponses[0].Value, msgSwapRes); err != nil {
 		return nil, err
 	}
 
