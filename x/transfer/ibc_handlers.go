@@ -71,7 +71,7 @@ func (im IBCModule) HandleTimeout(ctx sdk.Context, packet channeltypes.Packet, r
 
 	_, err = im.sudoKeeper.Sudo(ctx, senderAddress, msg)
 	if err != nil {
-		im.keeper.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet acknowledgement", "error", err)
+		im.keeper.Logger(ctx).Debug("HandleAcknowledgement: failed to Sudo contract on packet timeout", "error", err)
 	}
 
 	return nil

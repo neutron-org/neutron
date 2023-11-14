@@ -147,6 +147,32 @@ func TestMsgDeposit_ValidateBasic(t *testing.T) {
 			err: ErrZeroDeposit,
 		},
 		{
+			name: "invalid tick + fee upper",
+			msg: MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{3},
+				TickIndexesAToB: []int64{559678},
+				AmountsA:        []math.Int{math.OneInt()},
+				AmountsB:        []math.Int{math.OneInt()},
+				Options:         []*DepositOptions{{false}},
+			},
+			err: ErrTickOutsideRange,
+		},
+		{
+			name: "invalid tick + fee lower",
+			msg: MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{50},
+				TickIndexesAToB: []int64{-559631},
+				AmountsA:        []math.Int{math.OneInt()},
+				AmountsB:        []math.Int{math.OneInt()},
+				Options:         []*DepositOptions{{false}},
+			},
+			err: ErrTickOutsideRange,
+		},
+		{
 			name: "valid msg",
 			msg: MsgDeposit{
 				Creator:         sample.AccAddress(),

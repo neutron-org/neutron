@@ -7,14 +7,14 @@ package mock_types
 import (
 	reflect "reflect"
 
-	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types1 "github.com/cosmos/cosmos-sdk/x/capability/types"
-	types2 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	types3 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	types "github.com/CosmWasm/wasmd/x/wasm/types"
+	types0 "github.com/cosmos/cosmos-sdk/types"
+	types1 "github.com/cosmos/cosmos-sdk/x/auth/types"
+	types2 "github.com/cosmos/cosmos-sdk/x/capability/types"
+	types3 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	types4 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	gomock "github.com/golang/mock/gomock"
-	types4 "github.com/neutron-org/neutron/x/feeburner/types"
 	types5 "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
@@ -42,10 +42,10 @@ func (m *MockAccountKeeper) EXPECT() *MockAccountKeeperMockRecorder {
 }
 
 // GetAccount mocks base method.
-func (m *MockAccountKeeper) GetAccount(ctx types.Context, addr types.AccAddress) types0.AccountI {
+func (m *MockAccountKeeper) GetAccount(ctx types0.Context, addr types0.AccAddress) types1.AccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", ctx, addr)
-	ret0, _ := ret[0].(types0.AccountI)
+	ret0, _ := ret[0].(types1.AccountI)
 	return ret0
 }
 
@@ -79,7 +79,7 @@ func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 }
 
 // SendCoins mocks base method.
-func (m *MockBankKeeper) SendCoins(ctx types.Context, fromAddr, toAddr types.AccAddress, amt types.Coins) error {
+func (m *MockBankKeeper) SendCoins(ctx types0.Context, fromAddr, toAddr types0.AccAddress, amt types0.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoins", ctx, fromAddr, toAddr, amt)
 	ret0, _ := ret[0].(error)
@@ -93,10 +93,10 @@ func (mr *MockBankKeeperMockRecorder) SendCoins(ctx, fromAddr, toAddr, amt inter
 }
 
 // SpendableCoins mocks base method.
-func (m *MockBankKeeper) SpendableCoins(ctx types.Context, addr types.AccAddress) types.Coins {
+func (m *MockBankKeeper) SpendableCoins(ctx types0.Context, addr types0.AccAddress) types0.Coins {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpendableCoins", ctx, addr)
-	ret0, _ := ret[0].(types.Coins)
+	ret0, _ := ret[0].(types0.Coins)
 	return ret0
 }
 
@@ -129,8 +129,22 @@ func (m *MockWasmKeeper) EXPECT() *MockWasmKeeperMockRecorder {
 	return m.recorder
 }
 
+// GetContractInfo mocks base method.
+func (m *MockWasmKeeper) GetContractInfo(ctx types0.Context, contractAddress types0.AccAddress) *types.ContractInfo {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetContractInfo", ctx, contractAddress)
+	ret0, _ := ret[0].(*types.ContractInfo)
+	return ret0
+}
+
+// GetContractInfo indicates an expected call of GetContractInfo.
+func (mr *MockWasmKeeperMockRecorder) GetContractInfo(ctx, contractAddress interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContractInfo", reflect.TypeOf((*MockWasmKeeper)(nil).GetContractInfo), ctx, contractAddress)
+}
+
 // HasContractInfo mocks base method.
-func (m *MockWasmKeeper) HasContractInfo(ctx types.Context, contractAddress types.AccAddress) bool {
+func (m *MockWasmKeeper) HasContractInfo(ctx types0.Context, contractAddress types0.AccAddress) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasContractInfo", ctx, contractAddress)
 	ret0, _ := ret[0].(bool)
@@ -144,7 +158,7 @@ func (mr *MockWasmKeeperMockRecorder) HasContractInfo(ctx, contractAddress inter
 }
 
 // Sudo mocks base method.
-func (m *MockWasmKeeper) Sudo(ctx types.Context, contractAddress types.AccAddress, msg []byte) ([]byte, error) {
+func (m *MockWasmKeeper) Sudo(ctx types0.Context, contractAddress types0.AccAddress, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Sudo", ctx, contractAddress, msg)
 	ret0, _ := ret[0].([]byte)
@@ -182,7 +196,7 @@ func (m *MockICAControllerKeeper) EXPECT() *MockICAControllerKeeperMockRecorder 
 }
 
 // GetActiveChannelID mocks base method.
-func (m *MockICAControllerKeeper) GetActiveChannelID(ctx types.Context, connectionID, portID string) (string, bool) {
+func (m *MockICAControllerKeeper) GetActiveChannelID(ctx types0.Context, connectionID, portID string) (string, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActiveChannelID", ctx, connectionID, portID)
 	ret0, _ := ret[0].(string)
@@ -197,7 +211,7 @@ func (mr *MockICAControllerKeeperMockRecorder) GetActiveChannelID(ctx, connectio
 }
 
 // GetInterchainAccountAddress mocks base method.
-func (m *MockICAControllerKeeper) GetInterchainAccountAddress(ctx types.Context, connectionID, portID string) (string, bool) {
+func (m *MockICAControllerKeeper) GetInterchainAccountAddress(ctx types0.Context, connectionID, portID string) (string, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetInterchainAccountAddress", ctx, connectionID, portID)
 	ret0, _ := ret[0].(string)
@@ -212,7 +226,7 @@ func (mr *MockICAControllerKeeperMockRecorder) GetInterchainAccountAddress(ctx, 
 }
 
 // RegisterInterchainAccount mocks base method.
-func (m *MockICAControllerKeeper) RegisterInterchainAccount(ctx types.Context, connectionID, owner, version string) error {
+func (m *MockICAControllerKeeper) RegisterInterchainAccount(ctx types0.Context, connectionID, owner, version string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterInterchainAccount", ctx, connectionID, owner, version)
 	ret0, _ := ret[0].(error)
@@ -226,7 +240,7 @@ func (mr *MockICAControllerKeeperMockRecorder) RegisterInterchainAccount(ctx, co
 }
 
 // SendTx mocks base method.
-func (m *MockICAControllerKeeper) SendTx(ctx types.Context, chanCap *types1.Capability, connectionID, portID string, icaPacketData types2.InterchainAccountPacketData, timeoutTimestamp uint64) (uint64, error) {
+func (m *MockICAControllerKeeper) SendTx(ctx types0.Context, chanCap *types2.Capability, connectionID, portID string, icaPacketData types3.InterchainAccountPacketData, timeoutTimestamp uint64) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendTx", ctx, chanCap, connectionID, portID, icaPacketData, timeoutTimestamp)
 	ret0, _ := ret[0].(uint64)
@@ -264,7 +278,7 @@ func (m *MockFeeRefunderKeeper) EXPECT() *MockFeeRefunderKeeperMockRecorder {
 }
 
 // DistributeAcknowledgementFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeAcknowledgementFee(ctx types.Context, receiver types.AccAddress, packetID types5.PacketID) {
+func (m *MockFeeRefunderKeeper) DistributeAcknowledgementFee(ctx types0.Context, receiver types0.AccAddress, packetID types5.PacketID) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DistributeAcknowledgementFee", ctx, receiver, packetID)
 }
@@ -276,7 +290,7 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeAcknowledgementFee(ctx, r
 }
 
 // DistributeTimeoutFee mocks base method.
-func (m *MockFeeRefunderKeeper) DistributeTimeoutFee(ctx types.Context, receiver types.AccAddress, packetID types5.PacketID) {
+func (m *MockFeeRefunderKeeper) DistributeTimeoutFee(ctx types0.Context, receiver types0.AccAddress, packetID types5.PacketID) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DistributeTimeoutFee", ctx, receiver, packetID)
 }
@@ -288,7 +302,7 @@ func (mr *MockFeeRefunderKeeperMockRecorder) DistributeTimeoutFee(ctx, receiver,
 }
 
 // LockFees mocks base method.
-func (m *MockFeeRefunderKeeper) LockFees(ctx types.Context, payer types.AccAddress, packetID types5.PacketID, fee types5.Fee) error {
+func (m *MockFeeRefunderKeeper) LockFees(ctx types0.Context, payer types0.AccAddress, packetID types5.PacketID, fee types5.Fee) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LockFees", ctx, payer, packetID, fee)
 	ret0, _ := ret[0].(error)
@@ -325,10 +339,10 @@ func (m *MockChannelKeeper) EXPECT() *MockChannelKeeperMockRecorder {
 }
 
 // GetChannel mocks base method.
-func (m *MockChannelKeeper) GetChannel(ctx types.Context, srcPort, srcChan string) (types3.Channel, bool) {
+func (m *MockChannelKeeper) GetChannel(ctx types0.Context, srcPort, srcChan string) (types4.Channel, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetChannel", ctx, srcPort, srcChan)
-	ret0, _ := ret[0].(types3.Channel)
+	ret0, _ := ret[0].(types4.Channel)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -340,7 +354,7 @@ func (mr *MockChannelKeeperMockRecorder) GetChannel(ctx, srcPort, srcChan interf
 }
 
 // GetConnection mocks base method.
-func (m *MockChannelKeeper) GetConnection(ctx types.Context, connectionID string) (exported.ConnectionI, error) {
+func (m *MockChannelKeeper) GetConnection(ctx types0.Context, connectionID string) (exported.ConnectionI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetConnection", ctx, connectionID)
 	ret0, _ := ret[0].(exported.ConnectionI)
@@ -355,7 +369,7 @@ func (mr *MockChannelKeeperMockRecorder) GetConnection(ctx, connectionID interfa
 }
 
 // GetNextSequenceSend mocks base method.
-func (m *MockChannelKeeper) GetNextSequenceSend(ctx types.Context, portID, channelID string) (uint64, bool) {
+func (m *MockChannelKeeper) GetNextSequenceSend(ctx types0.Context, portID, channelID string) (uint64, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNextSequenceSend", ctx, portID, channelID)
 	ret0, _ := ret[0].(uint64)
@@ -367,41 +381,4 @@ func (m *MockChannelKeeper) GetNextSequenceSend(ctx types.Context, portID, chann
 func (mr *MockChannelKeeperMockRecorder) GetNextSequenceSend(ctx, portID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextSequenceSend", reflect.TypeOf((*MockChannelKeeper)(nil).GetNextSequenceSend), ctx, portID, channelID)
-}
-
-// MockFeeBurnerKeeper is a mock of FeeBurnerKeeper interface.
-type MockFeeBurnerKeeper struct {
-	ctrl     *gomock.Controller
-	recorder *MockFeeBurnerKeeperMockRecorder
-}
-
-// MockFeeBurnerKeeperMockRecorder is the mock recorder for MockFeeBurnerKeeper.
-type MockFeeBurnerKeeperMockRecorder struct {
-	mock *MockFeeBurnerKeeper
-}
-
-// NewMockFeeBurnerKeeper creates a new mock instance.
-func NewMockFeeBurnerKeeper(ctrl *gomock.Controller) *MockFeeBurnerKeeper {
-	mock := &MockFeeBurnerKeeper{ctrl: ctrl}
-	mock.recorder = &MockFeeBurnerKeeperMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockFeeBurnerKeeper) EXPECT() *MockFeeBurnerKeeperMockRecorder {
-	return m.recorder
-}
-
-// GetParams mocks base method.
-func (m *MockFeeBurnerKeeper) GetParams(ctx types.Context) types4.Params {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetParams", ctx)
-	ret0, _ := ret[0].(types4.Params)
-	return ret0
-}
-
-// GetParams indicates an expected call of GetParams.
-func (mr *MockFeeBurnerKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockFeeBurnerKeeper)(nil).GetParams), ctx)
 }

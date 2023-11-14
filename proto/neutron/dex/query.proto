@@ -254,7 +254,7 @@ message QueryEstimateMultiHopSwapRequest {
   string        exitLimitPrice = 5 [(gogoproto.moretags) = "yaml:\"exitLimitPrice\"", (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec", (gogoproto.nullable) = false, (gogoproto.jsontag) = "exitLimitPrice"];
   
   // If pickBestRoute == true then all routes are run and the route with the best price is chosen
-  // otherwise, the first succesful route is used.
+  // otherwise, the first successful route is used.
   bool pickBestRoute = 6;
 }
 

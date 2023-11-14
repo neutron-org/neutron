@@ -33,5 +33,14 @@ func MustCalcPrice(relativeTickIndex int64) math_utils.PrecDec {
 }
 
 func IsTickOutOfRange(tickIndex int64) bool {
-	return tickIndex > 0 && uint64(tickIndex) > MaxTickExp
+	return utils.Abs(tickIndex) > MaxTickExp
+}
+
+func ValidateTickFee(tick int64, fee uint64) error {
+	// Ensure |tick| + fee <= MaxTickExp
+	// NOTE: Ugly arithmetic is to ensure that we don't overflow uint64
+	if utils.Abs(tick) > MaxTickExp-fee {
+		return ErrTickOutsideRange
+	}
+	return nil
 }

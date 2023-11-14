@@ -721,6 +721,7 @@ func (s *DexTestSuite) assertSwapOutputInt(
 		True(amtOut.Equal(expectedOut), "Expected amountOut %s != %s", expectedOut, amtOut)
 }
 
+//nolint:unused
 func (s *DexTestSuite) assertSwapOutput(
 	actualIn sdk.Coin,
 	expectedIn int64,
@@ -773,6 +774,7 @@ func (s *DexTestSuite) assertTickBalancesInt(expectedABalance, expectedBBalance 
 		True(actualB.Equal(expectedBBalance), "TokenB: expected %s != actual %s", expectedBBalance, actualB)
 }
 
+//nolint:unused
 func (s *DexTestSuite) assertTickBalances(expectedABalance, expectedBBalance int64) {
 	expectedAInt := sdkmath.NewInt(expectedABalance).Mul(denomMultiple)
 	expectedBInt := sdkmath.NewInt(expectedBBalance).Mul(denomMultiple)

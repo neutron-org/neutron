@@ -79,7 +79,7 @@ type SubmitTxResponse struct {
 type RegisterInterchainAccount struct {
 	ConnectionId        string    `json:"connection_id"`
 	InterchainAccountId string    `json:"interchain_account_id"`
-	RegisterFee         sdk.Coins `json:"register_fee"`
+	RegisterFee         sdk.Coins `json:"register_fee,omitempty"`
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.

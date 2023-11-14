@@ -113,6 +113,7 @@ func (k Keeper) RefundPacketToken(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
+	metadata *types.SwapMetadata,
 ) error {
 	// parse the denomination from the full denom path
 	trace := transfertypes.ParseDenomTrace(data.Denom)
@@ -128,8 +129,8 @@ func (k Keeper) RefundPacketToken(
 	}
 	token := sdk.NewCoin(trace.IBCDenom(), transferAmount)
 
-	// decode the receiver address
-	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
+	// decode the creator address
+	receiver, err := sdk.AccAddressFromBech32(metadata.Creator)
 	if err != nil {
 		return err
 	}
