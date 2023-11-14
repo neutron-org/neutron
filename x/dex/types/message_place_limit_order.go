@@ -90,6 +90,10 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 		}
 	}
 
+	if IsTickOutOfRange(msg.TickIndexInToOut) {
+		return ErrTickOutsideRange
+	}
+
 	return nil
 }
 

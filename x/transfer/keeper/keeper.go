@@ -53,7 +53,6 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 	}
 
 	transferMsg := types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp, msg.Memo)
-	transferMsg.Memo = msg.Memo
 	if _, err := k.Keeper.Transfer(goCtx, transferMsg); err != nil {
 		return nil, err
 	}

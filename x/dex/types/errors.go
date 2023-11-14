@@ -42,7 +42,7 @@ var (
 	ErrTickOutsideRange = sdkerrors.Register(
 		ModuleName,
 		1117,
-		"Supplying a tick > 559,680 is not allowed",
+		"abs(tick) + fee must be < 559,680",
 	)
 	ErrInvalidPoolDenom = sdkerrors.Register(
 		ModuleName,
@@ -163,5 +163,25 @@ var (
 		ModuleName,
 		1149,
 		"Invalid Address",
+	)
+	ErrRouteWithoutExitToken = sdkerrors.Register(
+		ModuleName,
+		1150,
+		"Each route should specify at least two hops - input and output tokens",
+	)
+	ErrCycleInHops = sdkerrors.Register(
+		ModuleName,
+		1151,
+		"Hops cannot have cycles",
+	)
+	ErrZeroExitPrice = sdkerrors.Register(
+		ModuleName,
+		1152,
+		"Cannot have negative or zero exit price",
+	)
+	ErrDuplicatePoolDeposit = sdkerrors.Register(
+		ModuleName,
+		1153,
+		"Can only provide a single deposit amount for each tick, fee pair",
 	)
 )

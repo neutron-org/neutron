@@ -10,7 +10,6 @@ import (
 
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
-
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -238,7 +237,7 @@ var (
 		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasmtypes.ModuleName:                          {authtypes.Burner},
+		wasmtypes.ModuleName:                          {},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
@@ -310,11 +309,11 @@ type App struct {
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 	CronKeeper          cronkeeper.Keeper
-	RouterKeeper        *pfmkeeper.Keeper
+	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
 
-	RouterModule packetforward.AppModule
+	PFMModule packetforward.AppModule
 
 	HooksTransferIBCModule *ibchooks.IBCMiddleware
 	HooksICS4Wrapper       ibchooks.ICS4Middleware
@@ -531,21 +530,21 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
-	// RouterKeeper must be created before TransferKeeper
-	app.RouterKeeper = pfmkeeper.NewKeeper(
+	// PFMKeeper must be created before TransferKeeper
+	app.PFMKeeper = pfmkeeper.NewKeeper(
 		appCodec,
 		app.keys[pfmtypes.StoreKey],
-		app.GetSubspace(pfmtypes.ModuleName),
 		app.TransferKeeper.Keeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
 		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		app.RouterKeeper,
+		app.PFMKeeper,
 		&wasmHooks,
 	)
 
@@ -564,7 +563,7 @@ func New(
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 	)
 
-	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
+	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
 
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
@@ -751,11 +750,11 @@ func New(
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.RouterModule = packetforward.NewAppModule(app.RouterKeeper)
+	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
 		app.HooksTransferIBCModule,
-		app.RouterKeeper,
+		app.PFMKeeper,
 		0,
 		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
 		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
@@ -799,7 +798,7 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
-		app.RouterModule,
+		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeModule,
@@ -947,7 +946,7 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
-		app.RouterModule,
+		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeBurnerModule,

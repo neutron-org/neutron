@@ -5,6 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -636,6 +637,7 @@ func (s *DexTestSuite) assertSwapOutputInt(
 		True(amtOut.Equal(expectedOut), "Expected amountOut %s != %s", expectedOut, amtOut)
 }
 
+//nolint:unused
 func (s *DexTestSuite) assertSwapOutput(
 	actualIn sdk.Coin,
 	expectedIn int64,
@@ -688,6 +690,7 @@ func (s *DexTestSuite) assertTickBalancesInt(expectedABalance, expectedBBalance 
 		True(actualB.Equal(expectedBBalance), "TokenB: expected %s != actual %s", expectedBBalance, actualB)
 }
 
+//nolint:unused
 func (s *DexTestSuite) assertTickBalances(expectedABalance, expectedBBalance int64) {
 	// NOTE: We can't just check the actual DEX bank balances since we are testing swap
 	// before any transfers take place. Instead we have to sum up the total amount of coins
