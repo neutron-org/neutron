@@ -109,10 +109,11 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 
-	// Check that the amountIn is deducted from the neutron account
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	// Check that the amountIn is deducted from the neutron overrid receiver account
+	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.OneInt())
 	// Check that neutron account did not keep any of the transfer denom
-	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
+	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
@@ -284,7 +285,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
-		0,
+		1,
 		1,
 		s.neutronAddr)
 
@@ -293,8 +294,8 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
 	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
-	swapAmount := math.NewInt(100000)
-	expectedAmountOut := math.NewInt(99990)
+	swapAmount := math.NewInt(100_000)
+	expectedAmountOut := math.NewInt(99980)
 
 	retries := uint8(0)
 
@@ -357,7 +358,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 		s.providerAddr,
 		s.neutronAddr,
 		transferDenomNeutronProvider,
-		ibcTransferAmount,
+		swapAmount,
 		string(metadataBz),
 	)
 
@@ -366,6 +367,9 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	s.Assert().NoError(err)
 	s.coordinator.CommitBlock(s.neutronChain)
 
+	// Check that the amountIn is deducted from the neutron override receiever  account
+	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
+	s.assertNeutronBalance(overrideAddr, nativeDenom, math.OneInt())
 	// Check that the funds are now present on the provider chainer
 	s.assertProviderBalance(
 		s.providerAddr,
@@ -587,6 +591,16 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
+
+	// Check that nothing made it to chainB
+	transferDenomPath := transfertypes.GetPrefixedDenom(
+		transfertypes.PortID,
+		s.neutronChainBPath.EndpointA.ChannelID,
+		nativeDenom,
+	)
+	transferDenomNeutronChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
+
+	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, math.ZeroInt())
 
 	// Check that the refund takes place and the funds are moved back to the account on Gaia
 	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount.Sub(depositAmount))

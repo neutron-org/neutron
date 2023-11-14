@@ -50,9 +50,9 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRoute() {
 
 	// GIVEN liquidity in pools A<>B, B<>C, C<>D,
 	s.SetupMultiplePools(
-		NewPoolSetup("TokenA", "TokenB", 0, 100, 0, 1),
-		NewPoolSetup("TokenB", "TokenC", 0, 100, 0, 1),
-		NewPoolSetup("TokenC", "TokenD", 0, 100, 0, 1),
+		NewPoolSetup("TokenA", "TokenB", 0, 100, -1, 1),
+		NewPoolSetup("TokenB", "TokenC", 0, 100, -1, 1),
+		NewPoolSetup("TokenC", "TokenD", 0, 100, -1, 1),
 	)
 
 	// WHEN alice multihopswaps A<>B => B<>C => C<>D,
@@ -61,12 +61,12 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRoute() {
 
 	// THEN alice gets out 99 TokenD
 	s.assertAccountBalanceWithDenom(s.alice, "TokenA", 0)
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(99_970_003))
+	s.assertAccountBalanceWithDenom(s.alice, "TokenD", 100)
 
 	s.assertDexBalanceWithDenom("TokenA", 100)
 	s.assertDexBalanceWithDenom("TokenB", 100)
 	s.assertDexBalanceWithDenom("TokenC", 100)
-	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(29_997))
+	s.assertDexBalanceWithDenom("TokenD", 0)
 }
 
 func (s *DexTestSuite) TestMultiHopSwapInsufficientLiquiditySingleRoute() {
@@ -116,15 +116,15 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteOneGood() {
 
 	// GIVEN viable liquidity in pools A<>B, B<>E, E<>X
 	s.SetupMultiplePools(
-		NewPoolSetup("TokenA", "TokenB", 0, 100, 0, 1),
+		NewPoolSetup("TokenA", "TokenB", 0, 100, -1, 1),
 		NewPoolSetup("TokenB", "TokenC", 0, 100, 0, 1),
 		NewPoolSetup("TokenC", "TokenX", 0, 50, 0, 1),
 		NewPoolSetup("TokenC", "TokenX", 0, 50, 2200, 1),
 		NewPoolSetup("TokenB", "TokenD", 0, 100, 0, 1),
 		NewPoolSetup("TokenD", "TokenX", 0, 50, 0, 1),
 		NewPoolSetup("TokenD", "TokenX", 0, 50, 2200, 1),
-		NewPoolSetup("TokenB", "TokenE", 0, 100, 0, 1),
-		NewPoolSetup("TokenE", "TokenX", 0, 100, 0, 1),
+		NewPoolSetup("TokenB", "TokenE", 0, 100, -1, 1),
+		NewPoolSetup("TokenE", "TokenX", 0, 100, -1, 1),
 	)
 
 	// WHEN alice multihopswaps with three routes the first two routes fail and the third works
@@ -137,26 +137,26 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteOneGood() {
 
 	// THEN swap succeeds through route A<>B, B<>E, E<>X
 	s.assertAccountBalanceWithDenom(s.alice, "TokenA", 0)
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(99_970_003))
-	s.assertLiquidityAtTickWithDenomInt(
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(100_000_000))
+	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},
-		math.NewInt(99_999_999),
-		math.NewInt(10_000),
+		100,
 		0,
+		-1,
 		1,
 	)
-	s.assertLiquidityAtTickWithDenomInt(
+	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenB", Token1: "TokenE"},
-		math.NewInt(99_990_000),
-		math.NewInt(19_999),
+		100,
 		0,
+		-1,
 		1,
 	)
-	s.assertLiquidityAtTickWithDenomInt(
+	s.assertLiquidityAtTickWithDenom(
 		&types.PairID{Token0: "TokenE", Token1: "TokenX"},
-		math.NewInt(99_980_001),
-		math.NewInt(29_997),
+		100,
 		0,
+		-1,
 		1,
 	)
 
@@ -276,14 +276,14 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteFindBestRoute() {
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(134_943_366))
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},
-		math.NewInt(99_999_999),
+		math.NewInt(99_999_998),
 		math.NewInt(10000),
 		0,
 		1,
 	)
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenB", Token1: "TokenE"},
-		math.NewInt(99_990_000),
+		math.NewInt(99_989_999),
 		math.NewInt(19_999),
 		0,
 		1,
@@ -291,7 +291,7 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteFindBestRoute() {
 
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenE", Token1: "TokenX"},
-		math.NewInt(99_980_001),
+		math.NewInt(99_980_000),
 		math.NewInt(865_056_634),
 		-3000,
 		1,
@@ -369,7 +369,7 @@ func (s *DexTestSuite) TestMultiHopSwapLongRouteWithCache() {
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(99_880_066))
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenM", Token1: "TokenX"},
-		math.NewInt(99_890_055),
+		math.NewInt(99_890_054),
 		math.NewInt(119_934),
 		0,
 		1,
