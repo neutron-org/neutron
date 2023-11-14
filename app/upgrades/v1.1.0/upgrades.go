@@ -1,4 +1,4 @@
-package v1_1_0
+package v110
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package v1_1_0_test
+package v110_test
 
 import (
 	"testing"
@@ -24,7 +24,7 @@ import (
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/app/upgrades/v1.1.0"
+	v110 "github.com/neutron-org/neutron/app/upgrades/v1.1.0"
 	"github.com/neutron-org/neutron/testutil"
 )
 
@@ -80,7 +80,7 @@ func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
 	suite.Require().True(globalFeeSubspace.Has(ctx, globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage))
 
 	upgrade := upgradetypes.Plan{
-		Name:   v1_1_0.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -126,7 +126,7 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 
 	upgrade := upgradetypes.Plan{
-		Name:   v1_1_0.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -154,7 +154,7 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	suite.Require().Error(err)
 
 	upgrade := upgradetypes.Plan{
-		Name:   v1_1_0.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -178,7 +178,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	contractAddressBeforeUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeIDBefore)
 
 	upgrade := upgradetypes.Plan{
-		Name:   v1_1_0.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
