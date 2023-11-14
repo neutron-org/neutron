@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 
@@ -41,8 +41,8 @@ func TestPacketMetadata_Marshal(t *testing.T) {
 
 // TestPacketMetadata_MarshalWithNext asserts that the marshaling of the swap metadata works as intended with next field initialized.
 func TestPacketMetadata_MarshalWithNext(t *testing.T) {
-	forwardMedata := &forwardtypes.PacketMetadata{
-		Forward: &forwardtypes.ForwardMetadata{
+	forwardMedata := &pfmtypes.PacketMetadata{
+		Forward: &pfmtypes.ForwardMetadata{
 			Receiver: "cosmos14zde8usc4ur04y3aqnufzzmv2uqdpwwttr5uwv",
 			Port:     "transfer",
 			Channel:  "channel-0",
