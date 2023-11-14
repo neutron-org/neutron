@@ -82,6 +82,32 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 			err: ErrInvalidMaxAmountOutForMaker,
 		},
 		{
+			name: "tick outside range upper",
+			msg: MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 700_000,
+				AmountIn:         math.OneInt(),
+				OrderType:        LimitOrderType_GOOD_TIL_CANCELLED,
+			},
+			err: ErrTickOutsideRange,
+		},
+		{
+			name: "tick outside range lower",
+			msg: MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: -600_000,
+				AmountIn:         math.OneInt(),
+				OrderType:        LimitOrderType_GOOD_TIL_CANCELLED,
+			},
+			err: ErrTickOutsideRange,
+		},
+		{
 			name: "valid msg",
 			msg: MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),

@@ -76,6 +76,9 @@ func (msg *MsgWithdrawal) ValidateBasic() error {
 		if msg.SharesToRemove[i].LTE(math.ZeroInt()) {
 			return ErrZeroWithdraw
 		}
+		if err := ValidateTickFee(msg.TickIndexesAToB[i], msg.Fees[i]); err != nil {
+			return err
+		}
 	}
 
 	return nil
