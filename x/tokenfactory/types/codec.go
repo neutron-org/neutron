@@ -6,7 +6,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authzcodec "github.com/cosmos/cosmos-sdk/x/authz/codec"
 
-	// this line is used by starport scaffolding # 1
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
