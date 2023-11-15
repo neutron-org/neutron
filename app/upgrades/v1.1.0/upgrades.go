@@ -1,14 +1,13 @@
-package nextupgrade
+package v110
 
 import (
 	"fmt"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	"github.com/neutron-org/neutron/app/params"
 

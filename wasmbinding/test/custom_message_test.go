@@ -637,7 +637,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
@@ -669,7 +669,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	payload, err := keeper2.PrepareSudoCallbackMessage(packet, nil)
 	require.NoError(suite.T(), err)
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{
@@ -704,7 +704,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
 	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload, "test error")
 
 	// Craft message
 	msg, err := json.Marshal(bindings.NeutronMsg{

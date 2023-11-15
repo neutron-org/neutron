@@ -7,6 +7,7 @@ import (
 
 	"github.com/neutron-org/neutron/app/params"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
@@ -55,6 +56,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.Nil(t, resp)
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
 	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
 	require.Nil(t, resp)
@@ -62,6 +64,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
 	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestFeeCollectorAddr), msgRegAcc.RegisterFee)
 	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(fmt.Errorf("failed to register ica"))
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)
@@ -69,6 +72,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.Nil(t, resp)
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
 	bankKeeper.EXPECT().
 		SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestFeeCollectorAddr), msgRegAcc.RegisterFee).
 		Return(fmt.Errorf("failed to send coins"))
@@ -77,6 +81,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.Nil(t, resp)
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
 	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestFeeCollectorAddr), msgRegAcc.RegisterFee)
 	icaKeeper.EXPECT().RegisterInterchainAccount(ctx, msgRegAcc.ConnectionId, icaOwner.String(), "").Return(nil)
 	resp, err = icak.RegisterInterchainAccount(goCtx, &msgRegAcc)

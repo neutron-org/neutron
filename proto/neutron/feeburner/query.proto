@@ -43,7 +43,7 @@ message QueryTotalBurnedNeutronsAmountRequest {}
 // Query/QueryTotalBurnedNeutronsAmount method.
 message QueryTotalBurnedNeutronsAmountResponse {
   TotalBurnedNeutronsAmount total_burned_neutrons_amount = 1
-      [ (gogoproto.nullable) = false ];
+  [ (gogoproto.nullable) = false ];
 }
 
 // this line is used by starport scaffolding # 3

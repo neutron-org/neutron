@@ -23,7 +23,6 @@ func TestGenesis(t *testing.T) {
 				LastExecuteHeight: uint64(ctx.BlockHeight()),
 			},
 		},
-		// this line is used by starport scaffolding # genesis/test/state
 	}
 
 	cron.InitGenesis(ctx, *k, genesisState)
@@ -35,5 +34,4 @@ func TestGenesis(t *testing.T) {
 
 	require.Equal(t, genesisState.Params, got.Params)
 	require.ElementsMatch(t, genesisState.ScheduleList, got.ScheduleList)
-	// this line is used by starport scaffolding # genesis/test/assert
 }

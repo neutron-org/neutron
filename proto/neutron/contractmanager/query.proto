@@ -16,13 +16,19 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/contractmanager/params";
   }
-  // Queries a Failure by address.
+
+  // Queries a Failure by contract address and failure ID.
+  rpc AddressFailure(QueryFailuresRequest) returns (QueryFailuresResponse) {
+    option (google.api.http).get = "/neutron/contractmanager/failures/{address}/{failure_id}";
+  }
+
+  // Queries Failures by contract address.
   rpc AddressFailures(QueryFailuresRequest) returns (QueryFailuresResponse) {
     option (google.api.http).get =
         "/neutron/contractmanager/failures/{address}";
   }
 
-  // Queries a list of Failure items.
+  // Queries a list of Failures occurred on the network.
   rpc Failures(QueryFailuresRequest) returns (QueryFailuresResponse) {
     option (google.api.http).get = "/neutron/contractmanager/failures";
   }
@@ -39,11 +45,16 @@ message QueryParamsResponse {
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
+// QueryFailuresRequest is request type for the Query/Failures RPC method.
 message QueryFailuresRequest {
+  // address of the contract which Sudo call failed.
   string address = 1;
-  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  // ID of the failure for the given contract.
+  uint64 failure_id = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
+// QueryFailuresResponse is response type for the Query/Failures RPC method.
 message QueryFailuresResponse {
   repeated Failure failures = 1 [ (gogoproto.nullable) = false ];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
