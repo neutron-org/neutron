@@ -171,7 +171,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 		ctx = suite.ChainA.GetContext()
 	)
 
-	suite.FundAcc(sdk.AccAddress("neutron1weweewe"), sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(10000))))
+	suite.FundAcc(sdk.AccAddress("neutron1weweewe"), sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1_000_000))))
 	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	// store contract for register ica w/o fees
 	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
@@ -200,7 +200,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	// register with fees
 	jsonStringAfterUpgrade := `{"register": {"connection_id":"connection-1","interchain_account_id":"test-3"}}`
 	byteEncodedMsgAfterUpgrade := []byte(jsonStringAfterUpgrade)
-	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1000))))
+	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1_000_000))))
 	suite.Require().NoError(err)
 
 	// failed register due lack of fees (fees required)

@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	"github.com/neutron-org/neutron/app/params"
 
 	"gopkg.in/yaml.v2"
@@ -15,7 +16,7 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 var (
 	KeyMsgSubmitTxMaxMessages     = []byte("MsgSubmitTxMaxMessages")
 	DefaultMsgSubmitTxMaxMessages = uint64(16)
-	DefaultRegisterFee            = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000)))
+	DefaultRegisterFee            = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
 )
 
 func ParamKeyTable() paramtypes.KeyTable {
