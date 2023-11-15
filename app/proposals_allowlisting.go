@@ -102,5 +102,5 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	// {Subspace: crontypes.ModuleName, Key: string(crontypes.KeySecurityAddress)}: {},
 	// {Subspace: crontypes.ModuleName, Key: string(crontypes.KeyLimit)}:           {},
 	// packet-forward-middleware
-	//{Subspace: packetforwardmiddlewaretypes.ModuleName, Key: string(packetforwardmiddlewaretypes.KeyFeePercentage)}: {},
+	// {Subspace: packetforwardmiddlewaretypes.ModuleName, Key: string(packetforwardmiddlewaretypes.KeyFeePercentage)}: {},
 }
