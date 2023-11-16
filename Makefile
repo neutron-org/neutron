@@ -53,7 +53,7 @@ build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
 build_tags_test_binary = $(build_tags)
-build_tags_test_binary += skip_ccv_msg_filter
+#build_tags_test_binary += skip_ccv_msg_filter
 
 whitespace :=
 empty = $(whitespace) $(whitespace)

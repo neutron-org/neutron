@@ -49,7 +49,10 @@ CW4_VOTING_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_voting.wasm
 CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
 echo "Add consumer section..."
-$BINARY add-consumer-section --home "$CHAIN_DIR"
+#$BINARY add-consumer-section --home "$CHAIN_DIR"
+jq -s '.[0].app_state.ccvconsumer = .[1] | .[0]' $CHAIN_DIR/config/genesis.json ccv-state.json > $CHAIN_DIR/config/genesis_new.json
+mv $CHAIN_DIR/config/genesis_new.json $CHAIN_DIR/config/genesis.json
+cp $CHAIN_DIR/../test-2/config/priv_validator_key.json $CHAIN_DIR/config/
 ### PARAMETERS SECTION
 
 ## slashing params
