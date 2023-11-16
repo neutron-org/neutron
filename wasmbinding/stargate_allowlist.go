@@ -8,6 +8,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
+
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -54,14 +55,23 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/neutron.feeburner.Query/Params": &feeburnertypes.QueryParamsResponse{},
 
 		// dex
-		"/neutron.dex.Query/Params":                    &dextypes.QueryParamsResponse{},
-		"/neutron.dex.Query/LimitOrderTrancheUser":     &dextypes.QueryGetLimitOrderTrancheUserResponse{},
-		"/neutron.dex.Query/LimitOrderTranche":         &dextypes.QueryGetLimitOrderTrancheResponse{},
-		"/neutron.dex.Query/UserDepositsAll":           &dextypes.QueryAllUserDepositsResponse{},
-		"/neutron.dex.Query/UserLimitOrdersAll":        &dextypes.QueryAllUserLimitOrdersResponse{},
-		"/neutron.dex.Query/InactiveLimitOrderTranche": &dextypes.QueryGetInactiveLimitOrderTrancheResponse{},
-		"/neutron.dex.Query/PoolReserves":              &dextypes.QueryGetPoolReservesResponse{},
-		"/neutron.dex.Query/EstimateMultiHopSwap":      &dextypes.QueryEstimateMultiHopSwapResponse{},
-		"/neutron.dex.Query/EstimatePlaceLimitOrder":   &dextypes.QueryEstimatePlaceLimitOrderResponse{},
+		"/neutron.dex.Query/Params":                            &dextypes.QueryParamsResponse{},
+		"/neutron.dex.Query/LimitOrderTrancheUser":             &dextypes.QueryGetLimitOrderTrancheUserResponse{},
+		"/neutron.dex.Query/LimitOrderTrancheUserAll":          &dextypes.QueryAllLimitOrderTrancheUserResponse{},
+		"/neutron.dex.Query/LimitOrderTrancheUserAllByAddress": &dextypes.QueryAllUserLimitOrdersResponse{},
+		"/neutron.dex.Query/LimitOrderTranche":                 &dextypes.QueryGetLimitOrderTrancheResponse{},
+		"/neutron.dex.Query/UserDepositsAll":                   &dextypes.QueryAllUserDepositsResponse{},
+		"/neutron.dex.Query/TickLiquidityAll":                  &dextypes.QueryAllTickLiquidityResponse{},
+		"/neutron.dex.Query/UserLimitOrdersAll":                &dextypes.QueryAllUserLimitOrdersResponse{},
+		"/neutron.dex.Query/InactiveLimitOrderTranche":         &dextypes.QueryGetInactiveLimitOrderTrancheResponse{},
+		"/neutron.dex.Query/InactiveLimitOrderTrancheAll":      &dextypes.QueryAllInactiveLimitOrderTrancheResponse{},
+		"/neutron.dex.Query/PoolReservesAll":                   &dextypes.QueryAllPoolReservesResponse{},
+		"/neutron.dex.Query/PoolReserves":                      &dextypes.QueryGetPoolReservesResponse{},
+		"/neutron.dex.Query/EstimateMultiHopSwap":              &dextypes.QueryEstimateMultiHopSwapResponse{},
+		"/neutron.dex.Query/EstimatePlaceLimitOrder":           &dextypes.QueryEstimatePlaceLimitOrderResponse{},
+		"/neutron.dex.Query/Pool":                              &dextypes.QueryPoolResponse{},
+		"/neutron.dex.Query/PoolByID":                          &dextypes.QueryPoolResponse{},
+		"/neutron.dex.Query/PoolMetadata":                      &dextypes.QueryGetPoolMetadataResponse{},
+		"/neutron.dex.Query/PoolMetadataAll":                   &dextypes.QueryAllPoolMetadataResponse{},
 	}
 }
