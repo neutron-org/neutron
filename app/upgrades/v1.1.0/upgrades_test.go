@@ -165,6 +165,42 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	suite.Require().Equal(uint64(1), id)
 }
 
+func (suite *UpgradeTestSuite) TestTokenFactoryUpgrade() {
+	var (
+		app                  = suite.GetNeutronZoneApp(suite.ChainA)
+		tokenFactorySubspace = app.GetSubspace(tokenfactorytypes.ModuleName)
+		ctx                  = suite.ChainA.GetContext()
+	)
+
+	var denomGasBefore uint64
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, &denomGasBefore)
+	suite.Require().Equal(denomGasBefore, uint64(0))
+
+	// emulate mainnet state
+	tokenFactorySubspace.Set(ctx, tokenfactorytypes.KeyDenomCreationFee, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(100_000_000))))
+
+	var denomFeeBefore sdk.Coins
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationFee, &denomFeeBefore)
+	suite.Require().Equal(denomFeeBefore, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(100_000_000))))
+
+	upgrade := upgradetypes.Plan{
+		Name:   v110.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	var denomGas uint64
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, &denomGas)
+	requiredGasDenom := uint64(0)
+	suite.Require().Equal(requiredGasDenom, denomGas)
+
+	var denomFee sdk.Coins
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationFee, &denomFee)
+	requiredFeeDenom := sdk.NewCoins()
+	suite.Require().Equal(len(requiredFeeDenom), len(denomFee))
+}
+
 func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	var (
 		app = suite.GetNeutronZoneApp(suite.ChainA)
