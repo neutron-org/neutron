@@ -3,8 +3,10 @@ package bindings
 import (
 	"cosmossdk.io/math"
 	"encoding/json"
+	utils_math "github.com/neutron-org/neutron/utils/math"
 	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	"time"
 
 	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 
@@ -239,7 +241,7 @@ type DexQuery struct {
 	// Queries a list of PoolReserves items.
 	PoolReservesAll *dextypes.QueryAllPoolReservesRequest `json:"pool_reserves_all"`
 	// Queries a PoolReserve by index
-	PoolReserves *dextypes.QueryGetPoolReservesRequest `json:"pool_reverses"`
+	PoolReserves *dextypes.QueryGetPoolReservesRequest `json:"pool_reserves"`
 	// Queries the simulated result of a multihop swap
 	EstimateMultiHopSwap *dextypes.QueryEstimateMultiHopSwapRequest `json:"estimate_multi_hop_swap"`
 	// // Queries the simulated result of a PlaceLimit order
@@ -265,4 +267,17 @@ type QueryEstimatePlaceLimitOrderRequest struct {
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
 	MaxAmountOut   *math.Int `json:"maxAmount_out"`
+}
+
+type LimitOrderTrancheResponse struct {
+	Key                *dextypes.LimitOrderTrancheKey `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	ReservesMakerDenom math.Int                       `protobuf:"bytes,2,opt,name=reserves_maker_denom,json=reservesMakerDenom,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"reserves_maker_denom" yaml:"reserves_maker_denom"`
+	ReservesTakerDenom math.Int                       `protobuf:"bytes,3,opt,name=reserves_taker_denom,json=reservesTakerDenom,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"reserves_taker_denom" yaml:"reserves_taker_denom"`
+	TotalMakerDenom    math.Int                       `protobuf:"bytes,4,opt,name=total_maker_denom,json=totalMakerDenom,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"total_maker_denom" yaml:"total_maker_denom"`
+	TotalTakerDenom    math.Int                       `protobuf:"bytes,5,opt,name=total_taker_denom,json=totalTakerDenom,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"total_taker_denom" yaml:"total_taker_denom"`
+	// JIT orders also use goodTilDate to handle deletion but represent a special case
+	// All JIT orders have a goodTilDate of 0 and an exception is made to still still treat these orders as live
+	// Order deletion still functions the same and the orders will be deleted at the end of the block
+	ExpirationTime    *time.Time         `protobuf:"bytes,6,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
+	PriceTakerToMaker utils_math.PrecDec `protobuf:"bytes,7,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"`
 }

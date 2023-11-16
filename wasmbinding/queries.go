@@ -137,8 +137,14 @@ func dexQuery[T any, R any](ctx sdk.Context, query *T, queryHandler func(ctx con
 	if err != nil {
 		return nil, errors.Wrapf(err, fmt.Sprintf("failed to query request %T", query))
 	}
+	var data []byte
 
-	data, err := json.Marshal(resp)
+	if q, ok := any(resp).(bindings.BindingMarshaller); ok {
+		data, err = q.MarshalBinding()
+	} else {
+		data, err = json.Marshal(resp)
+	}
+
 	if err != nil {
 		return nil, errors.Wrapf(err, fmt.Sprintf("failed to marshal response %T", resp))
 	}
