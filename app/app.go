@@ -519,12 +519,12 @@ func New(
 	app.RouterKeeper = pfmkeeper.NewKeeper(
 		appCodec,
 		app.keys[pfmtypes.StoreKey],
-		app.GetSubspace(pfmtypes.ModuleName),
 		app.TransferKeeper.Keeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
 		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
@@ -716,7 +716,7 @@ func New(
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.RouterModule = packetforward.NewAppModule(app.RouterKeeper)
+	app.RouterModule = packetforward.NewAppModule(app.RouterKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	ibcStack := packetforward.NewIBCMiddleware(
 		app.HooksTransferIBCModule,
