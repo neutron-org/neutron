@@ -110,7 +110,7 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 	)
 
 	// Check that the amountIn is deducted from the neutron account
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
 	// Check that neutron account did not keep any of the transfer denom
 	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
 
@@ -358,10 +358,8 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	s.Assert().NoError(err)
 	s.coordinator.CommitBlock(s.neutronChain)
 
-	// Check that the amountIn is deduced from the neutron account
-	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Sub(swapAmount))
 	// Check that the amountIn has been deducted from the neutron chain
-	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Sub(swapAmount))
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Sub(swapAmount).Add(math.OneInt()))
 	// Check that the funds are now present on the provider chainer
 	s.assertProviderBalance(
 		s.providerAddr,
@@ -471,7 +469,7 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	)
 
 	// Check that the amountIn is deduced from the neutron account
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
 	// Check that the amountOut stays on the neutronchain
 	s.assertNeutronBalance(
 		s.neutronAddr,

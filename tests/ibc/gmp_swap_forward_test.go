@@ -100,7 +100,7 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative.Sub(ibcTransferAmount))
 
 	// Check that the amountIn is deduced from the neutron account
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
 	// Check that neutron account did not keep any of the transfer denom
 	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
 

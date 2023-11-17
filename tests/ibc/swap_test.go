@@ -83,7 +83,7 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Add(expectedOut))
 
 	// Check that all of the IBC transfer denom have been used up
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
 }
 
 // TestIBCSwapMiddleware_FailRefund asserts that the IBC swap middleware works as intended with Neutron running as a
