@@ -17,7 +17,7 @@ func (s *DexTestSuite) TestSwap0To1NoLiquidity() {
 	s.placeGTCLimitOrder("TokenA", 1000, 10)
 
 	// WHEN swap 10 of tokenB
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 10)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 10)
 
 	// THEN swap should do nothing
 	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(0o_000_000), tokenOut, sdkmath.NewInt(0o_000_000))
@@ -32,13 +32,69 @@ func (s *DexTestSuite) TestSwap1To0NoLiquidity() {
 	s.placeGTCLimitOrder("TokenB", 1000, 10)
 
 	// WHEN swap 10 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 10)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 10)
 
 	// THEN swap should do nothing
 	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(0o_000_000), tokenOut, sdkmath.NewInt(0o_000_000))
 	s.assertTickBalancesInt(sdkmath.NewInt(0o_000_000), sdkmath.NewInt(1010_000_000))
 
 	s.assertCurr1To0(math.MinInt64)
+}
+
+func (s *DexTestSuite) TestSwapZeroInFailsLowTick() {
+	// GIVEN liquidity tokenA at tick -20,002
+	s.addDeposit(NewDeposit(10000, 0, -20_000, 2))
+
+	// WHEN swap 7 tokenB
+
+	// THEN swap would give an InAmount and outAmount of 0 and fail
+	// Floor(7 * 1.0001^-20,000) = 0
+	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdkmath.NewInt(7))
+}
+
+func (s *DexTestSuite) TestSwapUnfairPriceFailsLowTick() {
+	// GIVEN liquidity tokenA at tick -20,002
+	s.addDeposit(NewDeposit(10000, 0, -20_000, 2))
+
+	// WHEN swap 8 tokenB
+
+	// THEN swap fails because maker is selling at an unfair true price
+	// AmountOut = Floor(8 * 1.0001^-20,000) = 1
+	// AmountIn = Floor(1 * 1.0001^20000) = 7
+	// TruePrice = AmountOut/AmountIn = 1/7 = .142857
+	// BookPrice = 0.135348817 (thus maker is getting a price 5.5% worse than expected)
+	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdkmath.NewInt(8))
+}
+
+func (s *DexTestSuite) TestSwapUnfairPriceFailsHighTick() {
+	// GIVEN liquidity tokenA at tick 159,680
+	s.addDeposit(NewDeposit(2000, 0, 159681, 1))
+
+	// WHEN swap 200 tokenB
+
+	// THEN swap fails because maker is selling at an unfair true price
+	// AmountOut = Floor(200 * 1.0001^159,680) = 1,719,877,698
+	// AmountIn = Floor(1,719,877,697 * 1.0001^-159,680) = 199
+	// TruePrice = AmountOut/AmountIn = 1,719,877,698/199 = 8,642,601
+	// BookPrice = 8,599,388 (thus maker is getting a price .502% worse than expected)
+	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdk.NewInt(200))
+}
+
+func (s *DexTestSuite) TestSwapUnfairPriceAbortEarly() {
+	// GIVEN liquidity tokenA at tick 159,681 and 159,680
+	s.addDeposits(
+		NewDeposit(2580, 0, 159682, 1),
+		NewDeposit(2000, 0, 159681, 1),
+	)
+
+	// WHEN swap 700 BIgTokenB
+	tokenIn, tokenOut, orderFilled, err := s.swapInt("TokenB", "TokenA", sdk.NewInt(499))
+
+	// THEN swap works on the first tick, but aborts on the second tick because of Unfair price condition
+	s.NoError(err)
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(299), tokenOut, sdkmath.NewInt(2580000000))
+	s.False(orderFilled)
+	s.assertTickBalancesInt(sdkmath.NewInt(2_000_000_000), sdkmath.NewInt(299))
 }
 
 // swaps against LPs only /////////////////////////////////////////////////////
@@ -48,13 +104,13 @@ func (s *DexTestSuite) TestSwap0To1PartialFillLP() {
 	s.addDeposit(NewDeposit(0, 10, 0, 1))
 
 	// WHEN swap 20 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 20)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 20)
 
 	// THEN swap should return ~10 BIGTokenA in and 10 BIGTokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(10_001_000), tokenOut, sdkmath.NewInt(10_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(10_001_000), sdkmath.ZeroInt())
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(10_000_999), tokenOut, sdkmath.NewInt(10_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(10_000_999), sdkmath.ZeroInt())
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-1)
@@ -65,13 +121,13 @@ func (s *DexTestSuite) TestSwap1To0PartialFillLP() {
 	s.addDeposit(NewDeposit(10, 0, 0, 1))
 
 	// WHEN swap 20 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 20)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 20)
 
 	// THEN swap should return ~10 BIGTokenB in and 10 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdk.NewInt(10_001_000), tokenOut, sdk.NewInt(10_000_000))
-	s.assertTickBalancesInt(sdk.ZeroInt(), sdk.NewInt(10001000))
+	s.assertSwapOutputInt(tokenIn, sdk.NewInt(10_000_999), tokenOut, sdk.NewInt(10_000_000))
+	s.assertTickBalancesInt(sdk.ZeroInt(), sdk.NewInt(10_000_999))
 
 	s.assertCurr0To1(1)
 	s.assertCurr1To0(math.MinInt64)
@@ -82,13 +138,13 @@ func (s *DexTestSuite) TestSwap0To1FillLP() {
 	s.addDeposit(NewDeposit(0, 100, 200, 5))
 
 	// WHEN swap 100 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 100)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 100)
 
 	// THEN swap should return 100 BIGTokenA in and ~98 BIGTokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(100_000_000), tokenOut, sdkmath.NewInt(97_970_970))
-	s.assertTickBalancesInt(sdkmath.NewInt(100_000_000), sdkmath.NewInt(20_29_030))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_999), tokenOut, sdkmath.NewInt(97_970_970))
+	s.assertTickBalancesInt(sdkmath.NewInt(99_999_999), sdkmath.NewInt(20_29_030))
 
 	s.assertCurr0To1(205)
 	s.assertCurr1To0(195)
@@ -99,14 +155,14 @@ func (s *DexTestSuite) TestSwap1To0FillLP() {
 	s.addDeposit(NewDeposit(100, 0, -20_000, 1))
 
 	// WHEN swap 100 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 100)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 100)
 
 	// THEN swap should return ~99 BIGTokenB in and ~14 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
 	// NOTE: Given rounding for amountOut, amountIn does not use the full maxAmount
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_998), tokenOut, sdkmath.NewInt(13_533_528))
-	s.assertTickBalancesInt(sdkmath.NewInt(86_466_472), sdkmath.NewInt(99_999_998))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_997), tokenOut, sdkmath.NewInt(13_533_528))
+	s.assertTickBalancesInt(sdkmath.NewInt(86_466_472), sdkmath.NewInt(99_999_997))
 
 	s.assertCurr0To1(-19_999)
 	s.assertCurr1To0(-20_001)
@@ -117,13 +173,13 @@ func (s *DexTestSuite) TestSwap0To1FillLPHighFee() {
 	s.addDeposit(NewDeposit(0, 100, 20_000, 1_000))
 
 	// WHEN swap 100 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 100)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 100)
 
 	// THEN swap should return ~99 BIGTokenA in and ~12 BIGTokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_996), tokenOut, sdkmath.NewInt(12_246_928))
-	s.assertTickBalancesInt(sdkmath.NewInt(99_999_996), sdkmath.NewInt(87_753_072))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_995), tokenOut, sdkmath.NewInt(12_246_928))
+	s.assertTickBalancesInt(sdkmath.NewInt(99_999_995), sdkmath.NewInt(87_753_072))
 
 	s.assertCurr0To1(21_000)
 	s.assertCurr1To0(19_000)
@@ -134,13 +190,13 @@ func (s *DexTestSuite) TestSwap1To0FillLPHighFee() {
 	s.addDeposit(NewDeposit(1000, 0, 20_000, 1000))
 
 	// WHEN swap 100 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 100)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 100)
 
 	// THEN swap should return 100 BIGTokenB in and ~668 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(100_000_000), tokenOut, sdkmath.NewInt(668_525_935))
-	s.assertTickBalancesInt(sdkmath.NewInt(331_474_065), sdkmath.NewInt(100_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_999), tokenOut, sdkmath.NewInt(668_525_935))
+	s.assertTickBalancesInt(sdkmath.NewInt(331_474_065), sdkmath.NewInt(99_999_999))
 
 	s.assertCurr0To1(21_000)
 	s.assertCurr1To0(19_000)
@@ -155,13 +211,13 @@ func (s *DexTestSuite) TestSwap0To1PartialFillMultipleLP() {
 	)
 
 	// WHEN swap 100 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 100)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 100)
 
 	// THEN swap should return ~40 BIGTokenA in and 300 TokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(40_604_647), tokenOut, sdkmath.NewInt(300_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(40_604_647), sdkmath.ZeroInt())
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(40_604_644), tokenOut, sdkmath.NewInt(300_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(40_604_644), sdkmath.ZeroInt())
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-20_001)
@@ -176,13 +232,13 @@ func (s *DexTestSuite) TestSwap1To0PartialFillMultipleLP() {
 	)
 
 	// WHEN swap 100 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 100)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 100)
 
 	// THEN swap should return ~41 BIGTokenB in and 300 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdk.NewInt(40604647), tokenOut, sdk.NewInt(300000000))
-	s.assertTickBalancesInt(sdk.ZeroInt(), sdk.NewInt(40604647))
+	s.assertSwapOutputInt(tokenIn, sdk.NewInt(40604644), tokenOut, sdk.NewInt(300000000))
+	s.assertTickBalancesInt(sdk.ZeroInt(), sdk.NewInt(40604644))
 
 	s.assertCurr0To1(20_001)
 	s.assertCurr1To0(math.MinInt64)
@@ -198,13 +254,13 @@ func (s *DexTestSuite) TestSwap0To1FillMultipleLP() {
 	)
 
 	// WHEN swap 100 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 400)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 400)
 
 	// THEN swap should return ~399 BIGTokenA in and 400 BIGTokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(399_180_884), tokenOut, sdkmath.NewInt(400_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(399_180_884), sdkmath.ZeroInt())
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(399_180_880), tokenOut, sdkmath.NewInt(400_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(399_180_880), sdkmath.ZeroInt())
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-21)
@@ -220,13 +276,13 @@ func (s *DexTestSuite) TestSwap1To0FillMultipleLP() {
 	)
 
 	// WHEN swap 400 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 400)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 400)
 
 	// THEN swap should return 400 BIGTokenB in and ~400 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(399_180_884), tokenOut, sdkmath.NewInt(400_000_000))
-	s.assertTickBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(399_180_884))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(399_180_880), tokenOut, sdkmath.NewInt(400_000_000))
+	s.assertTickBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(399_180_880))
 
 	s.assertCurr0To1(21)
 	s.assertCurr1To0(math.MinInt64)
@@ -240,8 +296,8 @@ func (s *DexTestSuite) TestSwap0To1LPMaxAmountUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 50, 5)
 
 	// THEN swap should return ~5 BIGTokenA in and 5 BIGTokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(5_000_500), tokenOut, sdkmath.NewInt(5_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(5_000_500), sdkmath.NewInt(5_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(5_000_499), tokenOut, sdkmath.NewInt(5_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(5_000_499), sdkmath.NewInt(5_000_000))
 }
 
 func (s *DexTestSuite) TestSwap1To0LPMaxAmountUsed() {
@@ -252,8 +308,8 @@ func (s *DexTestSuite) TestSwap1To0LPMaxAmountUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenB", "TokenA", 50, 5)
 
 	// THEN swap should return ~5 BIGTokenB in and 5 BIGTokenA out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(5_000_500), tokenOut, sdkmath.NewInt(5_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(5_000_000), sdkmath.NewInt(5_000_500))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(5_000_499), tokenOut, sdkmath.NewInt(5_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(5_000_000), sdkmath.NewInt(5_000_499))
 }
 
 func (s *DexTestSuite) TestSwap0To1LPMaxAmountNotUsed() {
@@ -264,8 +320,8 @@ func (s *DexTestSuite) TestSwap0To1LPMaxAmountNotUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 8, 15)
 
 	// THEN swap should return 8 BIGTokenA in and ~8 BIGTokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(8_000_000), tokenOut, sdkmath.NewInt(7_999_200))
-	s.assertTickBalancesInt(sdkmath.NewInt(8_000_000), sdkmath.NewInt(20_00_800))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(7_999_999), tokenOut, sdkmath.NewInt(7_999_200))
+	s.assertTickBalancesInt(sdkmath.NewInt(7_999_999), sdkmath.NewInt(20_00_800))
 }
 
 func (s *DexTestSuite) TestSwap1To0LPMaxAmountNotUsed() {
@@ -276,8 +332,8 @@ func (s *DexTestSuite) TestSwap1To0LPMaxAmountNotUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenB", "TokenA", 8, 15)
 
 	// THEN swap should return 8 BIGTokenB in and ~8 BIGTokenA out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(8_000_000), tokenOut, sdkmath.NewInt(7_999_200))
-	s.assertTickBalancesInt(sdkmath.NewInt(2000800), sdkmath.NewInt(8_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(7_999_999), tokenOut, sdkmath.NewInt(7_999_200))
+	s.assertTickBalancesInt(sdkmath.NewInt(2000800), sdkmath.NewInt(7_999_999))
 }
 
 func (s *DexTestSuite) TestSwap0To1LPMaxAmountUsedMultiTick() {
@@ -294,8 +350,8 @@ func (s *DexTestSuite) TestSwap0To1LPMaxAmountUsedMultiTick() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 50, 20)
 
 	// THEN swap should return ~20 BIGTokenA in and 20 BIGTokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(20_005_003), tokenOut, sdkmath.NewInt(20_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(20_005_003), sdkmath.NewInt(30_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(20_004_999), tokenOut, sdkmath.NewInt(20_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(20_004_999), sdkmath.NewInt(30_000_000))
 }
 
 func (s *DexTestSuite) TestSwap1To0LPMaxAmountUsedMultiTick() {
@@ -312,8 +368,8 @@ func (s *DexTestSuite) TestSwap1To0LPMaxAmountUsedMultiTick() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenB", "TokenA", 50, 20)
 
 	// THEN swap should return ~ 20 BIGTokenB in and 20 BIGTokenA out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(19_994_002), tokenOut, sdkmath.NewInt(20_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(30_000_000), sdkmath.NewInt(19_994_002))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(19_994_001), tokenOut, sdkmath.NewInt(20_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(30_000_000), sdkmath.NewInt(19_994_001))
 }
 
 func (s *DexTestSuite) TestSwap0To1LPMaxAmountNotUsedMultiTick() {
@@ -330,8 +386,8 @@ func (s *DexTestSuite) TestSwap0To1LPMaxAmountNotUsedMultiTick() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 19, 20)
 
 	// THEN swap should return 19 BIGTokenA in and 19 BIGTokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(19_000_000), tokenOut, sdkmath.NewInt(18_995_399))
-	s.assertTickBalancesInt(sdkmath.NewInt(19_000_000), sdkmath.NewInt(31_004_601))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(18_999_999), tokenOut, sdkmath.NewInt(18_995_402))
+	s.assertTickBalancesInt(sdkmath.NewInt(18_999_999), sdkmath.NewInt(31_004_598))
 }
 
 // swaps against LOs only /////////////////////////////////////////////////////
@@ -341,13 +397,13 @@ func (s *DexTestSuite) TestSwap0To1PartialFillLO() {
 	s.placeGTCLimitOrder("TokenB", 10, 1_000)
 
 	// WHEN swap 20 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 20)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 20)
 
 	// THEN swap should return ~11 BIGTokenA in and 10 BIGTokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(11_051_654), tokenOut, sdkmath.NewInt(10_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(11_051_654), sdkmath.ZeroInt())
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(11_051_653), tokenOut, sdkmath.NewInt(10_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(11_051_653), sdkmath.ZeroInt())
 }
 
 func (s *DexTestSuite) TestSwap1To0PartialFillLO() {
@@ -355,13 +411,13 @@ func (s *DexTestSuite) TestSwap1To0PartialFillLO() {
 	s.placeGTCLimitOrder("TokenA", 10, -1_000)
 
 	// WHEN swap 20 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 20)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 20)
 
 	// THEN swap should return ~11 BIGTokenB in and 10 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(11_051_654), tokenOut, sdkmath.NewInt(10_000_000))
-	s.assertTickBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(11_051_654))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(11_051_653), tokenOut, sdkmath.NewInt(10_000_000))
+	s.assertTickBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(11_051_653))
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(math.MinInt64)
@@ -372,13 +428,13 @@ func (s *DexTestSuite) TestSwap0To1FillLO() {
 	s.placeGTCLimitOrder("TokenB", 100, 10_000)
 
 	// WHEN swap 100 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 100)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 100)
 
 	// THEN swap should return ~99 BIGTokenA in and ~37 BIGTokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_999), tokenOut, sdkmath.NewInt(36_789_783))
-	s.assertTickBalancesInt(sdkmath.NewInt(99_999_999), sdkmath.NewInt(63_210_217))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(99_999_998), tokenOut, sdkmath.NewInt(36_789_783))
+	s.assertTickBalancesInt(sdkmath.NewInt(99_999_998), sdkmath.NewInt(63_210_217))
 
 	s.assertCurr0To1(10_000)
 	s.assertCurr1To0(math.MinInt64)
@@ -389,13 +445,13 @@ func (s *DexTestSuite) TestSwap1To0FillLO() {
 	s.placeGTCLimitOrder("TokenA", 100, -10_000)
 
 	// WHEN swap 10 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 10)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 10)
 
 	// THEN swap should return 10 BIGTokenB in and ~4 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(10_000_000), tokenOut, sdkmath.NewInt(3_678_978))
-	s.assertTickBalancesInt(sdkmath.NewInt(96_321_022), sdkmath.NewInt(10_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(9_999_999), tokenOut, sdkmath.NewInt(3_678_978))
+	s.assertTickBalancesInt(sdkmath.NewInt(96_321_022), sdkmath.NewInt(9_999_999))
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-10_000)
@@ -408,13 +464,13 @@ func (s *DexTestSuite) TestSwap0To1FillMultipleLO() {
 	s.placeGTCLimitOrder("TokenB", 100, 1_002)
 
 	// WHEN swap 300 of tokenA
-	tokenIn, tokenOut := s.swap("TokenA", "TokenB", 300)
+	tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 300)
 
 	// THEN swap should return 300 BIGTokenA in and ~271 BIGTokenB out
 	s.Assert().Equal("TokenA", tokenIn.Denom)
 	s.Assert().Equal("TokenB", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(300_000_000), tokenOut, sdkmath.NewInt(271_428_295))
-	s.assertTickBalancesInt(sdkmath.NewInt(300_000_000), sdkmath.NewInt(28_571_705))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(299_999_999), tokenOut, sdkmath.NewInt(271_428_297))
+	s.assertTickBalancesInt(sdkmath.NewInt(299_999_999), sdkmath.NewInt(28_571_703))
 
 	s.assertCurr0To1(1_002)
 	s.assertCurr1To0(math.MinInt64)
@@ -427,13 +483,13 @@ func (s *DexTestSuite) TestSwap1To0FillMultipleLO() {
 	s.placeGTCLimitOrder("TokenA", 100, -1_002)
 
 	// WHEN swap 300 of tokenB
-	tokenIn, tokenOut := s.swap("TokenB", "TokenA", 300)
+	tokenIn, tokenOut := s.swapSuccess("TokenB", "TokenA", 300)
 
 	// THEN swap should return 300 BIGTokenB in and ~271 BIGTokenB out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(300_000_000), tokenOut, sdkmath.NewInt(271_428_295))
-	s.assertTickBalancesInt(sdkmath.NewInt(28_571_705), sdkmath.NewInt(300_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(299_999_999), tokenOut, sdkmath.NewInt(271_428_297))
+	s.assertTickBalancesInt(sdkmath.NewInt(28_571_703), sdkmath.NewInt(299_999_999))
 
 	s.assertCurr0To1(math.MaxInt64)
 	s.assertCurr1To0(-1_002)
@@ -447,8 +503,8 @@ func (s *DexTestSuite) TestSwap0To1LOMaxAmountUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 50, 5)
 
 	// THEN swap should return ~5 BIGTokenA in and 5 BIGTokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(5_000_500), tokenOut, sdkmath.NewInt(5_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(5_000_500), sdkmath.NewInt(5_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(5_000_499), tokenOut, sdkmath.NewInt(5_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(5_000_499), sdkmath.NewInt(5_000_000))
 }
 
 func (s *DexTestSuite) TestSwap1To0LOMaxAmountUsed() {
@@ -471,8 +527,8 @@ func (s *DexTestSuite) TestSwap0To1LOMaxAmountNotUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 8, 15)
 
 	// THEN swap should return 8 BIGTokenA in and ~8 BIGTokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(8_000_000), tokenOut, sdkmath.NewInt(7_999_200))
-	s.assertTickBalancesInt(sdkmath.NewInt(8_000_000), sdkmath.NewInt(2_000_800))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(7_999_999), tokenOut, sdkmath.NewInt(7_999_200))
+	s.assertTickBalancesInt(sdkmath.NewInt(7_999_999), sdkmath.NewInt(2_000_800))
 }
 
 func (s *DexTestSuite) TestSwap1To0LOMaxAmountNotUsed() {
@@ -499,8 +555,8 @@ func (s *DexTestSuite) TestSwap0To1LOMaxAmountUsedMultiTick() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 50, 20)
 
 	// THEN swap should return ~20 BIGTokenA in and 20 TokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(20_003_002), tokenOut, sdkmath.NewInt(20_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(20_003_002), sdkmath.NewInt(30_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(20_002_999), tokenOut, sdkmath.NewInt(20_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(20_002_999), sdkmath.NewInt(30_000_000))
 }
 
 func (s *DexTestSuite) TestSwap1To0LOMaxAmountUsedMultiTick() {
@@ -515,8 +571,8 @@ func (s *DexTestSuite) TestSwap1To0LOMaxAmountUsedMultiTick() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenB", "TokenA", 50, 20)
 
 	// THEN swap should return ~20 BIGTokenB in and 20 BIGTokenA out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(19_992_002), tokenOut, sdkmath.NewInt(20_000_000))
-	s.assertTickBalancesInt(sdkmath.NewInt(30_000_000), sdkmath.NewInt(19_992_002))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(19_992_001), tokenOut, sdkmath.NewInt(20_000_000))
+	s.assertTickBalancesInt(sdkmath.NewInt(30_000_000), sdkmath.NewInt(19_992_001))
 }
 
 func (s *DexTestSuite) TestSwap0To1LOMaxAmountNotUsedMultiTick() {
@@ -531,8 +587,8 @@ func (s *DexTestSuite) TestSwap0To1LOMaxAmountNotUsedMultiTick() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenA", "TokenB", 19, 20)
 
 	// THEN swap should return 19 BIGTokenA in and ~19 BIGTokenB out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(19_000_000), tokenOut, sdkmath.NewInt(18_997_299))
-	s.assertTickBalancesInt(sdkmath.NewInt(19_000_000), sdkmath.NewInt(31_002_701))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(18_999_999), tokenOut, sdkmath.NewInt(18_997_301))
+	s.assertTickBalancesInt(sdkmath.NewInt(18_999_999), sdkmath.NewInt(31_002_699))
 }
 
 // Swap LO and LP  ////////////////////////////////////////////////////////////
@@ -584,20 +640,48 @@ func (s *DexTestSuite) placeGTCLimitOrder(
 	s.App.DexKeeper.SaveTranche(s.Ctx, tranche)
 }
 
-func (s *DexTestSuite) swap(
+func (s *DexTestSuite) swapInt(
+	tokenIn string,
+	tokenOut string,
+	maxAmountIn sdkmath.Int,
+) (coinIn, coinOut sdk.Coin, filled bool, err error) {
+	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
+	s.Assert().NoError(err)
+	return s.App.DexKeeper.Swap(
+		s.Ctx,
+		tradePairID,
+		maxAmountIn,
+		nil,
+		nil,
+	)
+}
+
+func (s *DexTestSuite) swapIntFails(
+	targetErr error,
+	tokenIn string,
+	tokenOut string,
+	maxAmountIn sdkmath.Int,
+) {
+	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
+	s.Assert().NoError(err)
+	coinIn, coinOut, _, err := s.App.DexKeeper.Swap(
+		s.Ctx,
+		tradePairID,
+		maxAmountIn,
+		nil,
+		nil,
+	)
+	s.Assert().Equal(coinIn, sdk.Coin{})
+	s.Assert().Equal(coinOut, sdk.Coin{})
+	s.ErrorIs(err, targetErr)
+}
+
+func (s *DexTestSuite) swapSuccess(
 	tokenIn string,
 	tokenOut string,
 	maxAmountIn int64,
 ) (coinIn, coinOut sdk.Coin) {
-	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
-	s.Assert().NoError(err)
-	coinIn, coinOut, _, err = s.App.DexKeeper.Swap(
-		s.Ctx,
-		tradePairID,
-		sdkmath.NewInt(maxAmountIn).Mul(denomMultiple),
-		nil,
-		nil,
-	)
+	coinIn, coinOut, _, err := s.swapInt(tokenIn, tokenOut, sdk.NewInt(maxAmountIn).Mul(denomMultiple))
 	s.Assert().NoError(err)
 	return coinIn, coinOut
 }
@@ -637,6 +721,7 @@ func (s *DexTestSuite) assertSwapOutputInt(
 		True(amtOut.Equal(expectedOut), "Expected amountOut %s != %s", expectedOut, amtOut)
 }
 
+//nolint:unused
 func (s *DexTestSuite) assertSwapOutput(
 	actualIn sdk.Coin,
 	expectedIn int64,
@@ -689,10 +774,8 @@ func (s *DexTestSuite) assertTickBalancesInt(expectedABalance, expectedBBalance 
 		True(actualB.Equal(expectedBBalance), "TokenB: expected %s != actual %s", expectedBBalance, actualB)
 }
 
+//nolint:unused
 func (s *DexTestSuite) assertTickBalances(expectedABalance, expectedBBalance int64) {
-	// NOTE: We can't just check the actual DEX bank balances since we are testing swap
-	// before any transfers take place. Instead we have to sum up the total amount of coins
-	// at each tick
 	expectedAInt := sdkmath.NewInt(expectedABalance).Mul(denomMultiple)
 	expectedBInt := sdkmath.NewInt(expectedBBalance).Mul(denomMultiple)
 	s.assertTickBalancesInt(expectedAInt, expectedBInt)

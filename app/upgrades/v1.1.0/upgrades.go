@@ -1,16 +1,20 @@
-package nextupgrade
+package v110
 
 import (
 	"fmt"
+
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
+	"github.com/neutron-org/neutron/app/params"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -25,7 +29,6 @@ import (
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
-	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -79,12 +82,12 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Migrating interchaintxs module parameters...")
-		if err := setInterchainTxsParams(ctx, keepers.ParamsKeeper, storeKeys.GetKey(interchaintxstypes.StoreKey), codec); err != nil {
+		if err := setInterchainTxsParams(ctx, keepers.ParamsKeeper, storeKeys.GetKey(interchaintxstypes.StoreKey), storeKeys.GetKey(wasmtypes.StoreKey), codec); err != nil {
 			return nil, err
 		}
 
 		ctx.Logger().Info("Setting pob params...")
-		err = setAuctionParams(ctx, keepers.FeeBurnerKeeper, keepers.AuctionKeeper)
+		err = setAuctionParams(ctx, keepers.AccountKeeper, keepers.AuctionKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -124,20 +127,21 @@ func CreateUpgradeHandler(
 	}
 }
 
-func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, auctionKeeper auctionkeeper.Keeper) error {
-	treasury := feeBurnerKeeper.GetParams(ctx).TreasuryAddress
-	_, data, err := bech32.DecodeAndConvert(treasury)
-	if err != nil {
-		return err
-	}
+func setAuctionParams(ctx sdk.Context, accountKeeper authkeeper.AccountKeeper, auctionKeeper auctionkeeper.Keeper) error {
+	consumerRedistributeAddr := accountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)
 
 	auctionParams := auctiontypes.Params{
-		MaxBundleSize:          2,
-		EscrowAccountAddress:   data,
-		ReserveFee:             sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-		MinBidIncrement:        sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-		FrontRunningProtection: true,
-		ProposerFee:            math.LegacyNewDecWithPrec(25, 2),
+		MaxBundleSize: 4,
+		// 75% of rewards goes to consumer redistribution module and then to the FeeBurner module
+		// where all the NTRNs are burned
+		EscrowAccountAddress:   consumerRedistributeAddr,
+		ReserveFee:             sdk.Coin{Denom: params.DefaultDenom, Amount: sdk.NewInt(500_000)},
+		MinBidIncrement:        sdk.Coin{Denom: params.DefaultDenom, Amount: sdk.NewInt(100_000)},
+		FrontRunningProtection: false,
+		// in the app.go on L603 set FixedAddressRewardsAddressProvider (where 25% goes to)
+		// to ConsumerToSendToProviderName module from where rewards goes to the Hub
+		// Meaning we sent 25% of the MEV rewards to the Hub
+		ProposerFee: math.LegacyNewDecWithPrec(25, 2),
 	}
 	return auctionKeeper.SetParams(ctx, auctionParams)
 }
@@ -184,6 +188,8 @@ func migrateTokenFactoryParams(ctx sdk.Context, paramsKeepers paramskeeper.Keepe
 	var currParams tokenfactorytypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(tokenfactorytypes.StoreKey)
 	subspace.Set(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, uint64(0))
+	subspace.Set(ctx, tokenfactorytypes.KeyDenomCreationFee, sdk.NewCoins())
+	subspace.Set(ctx, tokenfactorytypes.KeyFeeCollectorAddress, "")
 	subspace.GetParamSet(ctx, &currParams)
 
 	if err := currParams.Validate(); err != nil {
@@ -216,6 +222,8 @@ func migrateInterchainQueriesParams(ctx sdk.Context, paramsKeepers paramskeeper.
 	subspace, _ := paramsKeepers.GetSubspace(icqtypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
 
+	currParams.QueryDeposit = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
+
 	if err := currParams.Validate(); err != nil {
 		return err
 	}
@@ -225,7 +233,7 @@ func migrateInterchainQueriesParams(ctx sdk.Context, paramsKeepers paramskeeper.
 	return nil
 }
 
-func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey storetypes.StoreKey, codec codec.Codec) error {
+func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, storeKey, wasmStoreKey storetypes.StoreKey, codec codec.Codec) error {
 	store := ctx.KVStore(storeKey)
 	var currParams interchaintxstypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(interchaintxstypes.StoreKey)
@@ -238,19 +246,26 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 
 	bz := codec.MustMarshal(&currParams)
 	store.Set(interchaintxstypes.ParamsKey, bz)
+
+	wasmStore := ctx.KVStore(wasmStoreKey)
+	bzWasm := wasmStore.Get(wasmtypes.KeySequenceCodeID)
+	if bzWasm == nil {
+		return fmt.Errorf("KeySequenceCodeID not found during the upgrade")
+	}
+	store.Set(interchaintxstypes.ICARegistrationFeeFirstCodeID, bzWasm)
 	return nil
 }
 
-func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
 	ctx.Logger().Info("Implementing GlobalFee Params...")
 
 	// global fee is empty set, set global fee to equal to 0.05 USD (for 200k of gas) in appropriate coin
 	// As of June 22nd, 2023 this is
 	// 0.9untrn,0.026ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9,0.25ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349
 	requiredGlobalFees := sdk.DecCoins{
-		sdk.NewDecCoinFromDec("untrn", sdk.MustNewDecFromStr("0.9")),
-		sdk.NewDecCoinFromDec("ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9", sdk.MustNewDecFromStr("0.026")),
-		sdk.NewDecCoinFromDec("ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349", sdk.MustNewDecFromStr("0.25")),
+		sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0.9")),
+		sdk.NewDecCoinFromDec(AtomDenom, sdk.MustNewDecFromStr("0.026")),
+		sdk.NewDecCoinFromDec(AxelarUsdcDenom, sdk.MustNewDecFromStr("0.25")),
 	}
 	requiredGlobalFees = requiredGlobalFees.Sort()
 
@@ -290,7 +305,7 @@ func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) erro
 	return nil
 }
 
-func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
+func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
 	ctx.Logger().Info("Migrating admin module...")
 
 	keepers.AdminModule.SetProposalID(ctx, 1)

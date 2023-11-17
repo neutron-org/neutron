@@ -83,64 +83,69 @@ type CustomMessenger struct {
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
 
 func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
-	if msg.Custom != nil {
-		var contractMsg bindings.NeutronMsg
-		if err := json.Unmarshal(msg.Custom, &contractMsg); err != nil {
-			ctx.Logger().Debug("json.Unmarshal: failed to decode incoming custom cosmos message",
-				"from_address", contractAddr.String(),
-				"message", string(msg.Custom),
-				"error", err,
-			)
-			return nil, nil, errors.Wrap(err, "failed to decode incoming custom cosmos message")
-		}
-
-		if contractMsg.SubmitTx != nil {
-			return m.submitTx(ctx, contractAddr, contractMsg.SubmitTx)
-		}
-		if contractMsg.RegisterInterchainAccount != nil {
-			return m.registerInterchainAccount(ctx, contractAddr, contractMsg.RegisterInterchainAccount)
-		}
-		if contractMsg.RegisterInterchainQuery != nil {
-			return m.registerInterchainQuery(ctx, contractAddr, contractMsg.RegisterInterchainQuery)
-		}
-		if contractMsg.UpdateInterchainQuery != nil {
-			return m.updateInterchainQuery(ctx, contractAddr, contractMsg.UpdateInterchainQuery)
-		}
-		if contractMsg.RemoveInterchainQuery != nil {
-			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
-		}
-		if contractMsg.IBCTransfer != nil {
-			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
-		}
-		if contractMsg.SubmitAdminProposal != nil {
-			return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
-		}
-		if contractMsg.CreateDenom != nil {
-			return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
-		}
-		if contractMsg.MintTokens != nil {
-			return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
-		}
-		if contractMsg.SetBeforeSendHook != nil {
-			return m.setBeforeSendHook(ctx, contractAddr, contractMsg.SetBeforeSendHook)
-		}
-		if contractMsg.ChangeAdmin != nil {
-			return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
-		}
-		if contractMsg.BurnTokens != nil {
-			return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
-		}
-		if contractMsg.AddSchedule != nil {
-			return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
-		}
-		if contractMsg.RemoveSchedule != nil {
-			return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
-		}
-		if contractMsg.ResubmitFailure != nil {
-			return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
-		}
+	// Return early if msg.Custom is nil
+	if msg.Custom == nil {
+		return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 	}
 
+	var contractMsg bindings.NeutronMsg
+	if err := json.Unmarshal(msg.Custom, &contractMsg); err != nil {
+		ctx.Logger().Debug("json.Unmarshal: failed to decode incoming custom cosmos message",
+			"from_address", contractAddr.String(),
+			"message", string(msg.Custom),
+			"error", err,
+		)
+		return nil, nil, errors.Wrap(err, "failed to decode incoming custom cosmos message")
+	}
+
+	// Dispatch the message based on its type by checking each possible field
+	if contractMsg.SubmitTx != nil {
+		return m.submitTx(ctx, contractAddr, contractMsg.SubmitTx)
+	}
+	if contractMsg.RegisterInterchainAccount != nil {
+		return m.registerInterchainAccount(ctx, contractAddr, contractMsg.RegisterInterchainAccount)
+	}
+	if contractMsg.RegisterInterchainQuery != nil {
+		return m.registerInterchainQuery(ctx, contractAddr, contractMsg.RegisterInterchainQuery)
+	}
+	if contractMsg.UpdateInterchainQuery != nil {
+		return m.updateInterchainQuery(ctx, contractAddr, contractMsg.UpdateInterchainQuery)
+	}
+	if contractMsg.RemoveInterchainQuery != nil {
+		return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
+	}
+	if contractMsg.IBCTransfer != nil {
+		return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
+	}
+	if contractMsg.SubmitAdminProposal != nil {
+		return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
+	}
+	if contractMsg.CreateDenom != nil {
+		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
+	}
+	if contractMsg.MintTokens != nil {
+		return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
+	}
+	if contractMsg.SetBeforeSendHook != nil {
+		return m.setBeforeSendHook(ctx, contractAddr, contractMsg.SetBeforeSendHook)
+	}
+	if contractMsg.ChangeAdmin != nil {
+		return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
+	}
+	if contractMsg.BurnTokens != nil {
+		return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
+	}
+	if contractMsg.AddSchedule != nil {
+		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
+	}
+	if contractMsg.RemoveSchedule != nil {
+		return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
+	}
+	if contractMsg.ResubmitFailure != nil {
+		return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
+	}
+
+	// If none of the conditions are met, forward the message to the wrapped handler
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 }
 
@@ -310,7 +315,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "invalid proposal quantity")
 	}
-	// here we handle pre-nextupgrade style of proposals: param change, upgrade, client update
+	// here we handle pre-v1.1.0 style of proposals: param change, upgrade, client update
 	if m.isLegacyProposal(adminProposal) {
 		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, adminProposal)
 		if err != nil {
@@ -707,7 +712,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
-		RegisterFee:         reg.RegisterFee,
+		RegisterFee:         getRegisterFee(reg.RegisterFee),
 	}
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")
@@ -920,4 +925,11 @@ func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) 
 	}
 
 	return false
+}
+
+func getRegisterFee(fee sdk.Coins) sdk.Coins {
+	if fee == nil {
+		return make(sdk.Coins, 0)
+	}
+	return fee
 }

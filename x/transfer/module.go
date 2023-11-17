@@ -1,9 +1,10 @@
 package transfer
 
 import (
+	"fmt"
+
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
-	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"

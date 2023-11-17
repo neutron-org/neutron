@@ -15,9 +15,9 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
+	blocksdk "github.com/skip-mev/block-sdk/block"
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
-	blocksdk "github.com/skip-mev/block-sdk/block"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC

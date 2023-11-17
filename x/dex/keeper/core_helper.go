@@ -77,9 +77,8 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 //                            TOKENIZER UTILS                                //
 ///////////////////////////////////////////////////////////////////////////////
 
-func (k Keeper) MintShares(ctx sdk.Context, addr sdk.AccAddress, shareCoin sdk.Coin) error {
+func (k Keeper) MintShares(ctx sdk.Context, addr sdk.AccAddress, sharesCoins sdk.Coins) error {
 	// mint share tokens
-	sharesCoins := sdk.Coins{shareCoin}
 	if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sharesCoins); err != nil {
 		return err
 	}

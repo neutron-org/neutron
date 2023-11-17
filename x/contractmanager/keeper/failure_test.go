@@ -48,7 +48,8 @@ func createNFailure(k *keeper.Keeper, ctx sdk.Context, addresses, failures int) 
 				panic(err)
 			}
 			items[i][c].SudoPayload = sudo
-			k.AddContractFailure(ctx, items[i][c].Address, sudo)
+			items[i][c].Error = "test error"
+			k.AddContractFailure(ctx, items[i][c].Address, sudo, "test error")
 		}
 	}
 	return items
@@ -87,11 +88,12 @@ func TestAddGetFailure(t *testing.T) {
 	k, ctx := keepertest.ContractManagerKeeper(t, nil)
 	failureID := k.GetNextFailureIDKey(ctx, contractAddress.String())
 	sudoPayload := []byte("payload")
-	k.AddContractFailure(ctx, contractAddress.String(), sudoPayload)
+	k.AddContractFailure(ctx, contractAddress.String(), sudoPayload, "test error")
 	failure, err := k.GetFailure(ctx, contractAddress, failureID)
 	require.NoError(t, err)
 	require.Equal(t, failureID, failure.Id)
 	require.Equal(t, sudoPayload, failure.SudoPayload)
+	require.Equal(t, "test error", failure.Error)
 
 	// non-existent id
 	_, err = k.GetFailure(ctx, contractAddress, failureID+1)
@@ -123,7 +125,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	payload, err := keeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(t, err)
-	k.AddContractFailure(ctx, contractAddr.String(), payload)
+	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	// success response
 	xSuc := types.MessageSudoCallback{Response: &types.ResponseSudoPayload{
@@ -159,7 +161,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID2 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	payload, err = keeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(t, err)
-	k.AddContractFailure(ctx, contractAddr.String(), payload)
+	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(ctx, contractAddr, msgSuc).Return(nil, fmt.Errorf("failed to sudo"))
 
@@ -177,7 +179,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID3 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	payload, err = keeper.PrepareSudoCallbackMessage(packet, &ackError)
 	require.NoError(t, err)
-	k.AddContractFailure(ctx, contractAddr.String(), payload)
+	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return([]byte{}, nil)
 
@@ -193,7 +195,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID4 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	payload, err = keeper.PrepareSudoCallbackMessage(packet, &ackError)
 	require.NoError(t, err)
-	k.AddContractFailure(ctx, contractAddr.String(), payload)
+	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgErr).Return(nil, fmt.Errorf("failed to sudo"))
 
@@ -211,7 +213,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID5 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	payload, err = keeper.PrepareSudoCallbackMessage(packet, nil)
 	require.NoError(t, err)
-	k.AddContractFailure(ctx, contractAddr.String(), payload)
+	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgTimeout).Return([]byte{}, nil)
 
@@ -227,7 +229,7 @@ func TestResubmitFailure(t *testing.T) {
 	failureID6 := k.GetNextFailureIDKey(ctx, contractAddr.String())
 	payload, err = keeper.PrepareSudoCallbackMessage(packet, nil)
 	require.NoError(t, err)
-	k.AddContractFailure(ctx, contractAddr.String(), payload)
+	k.AddContractFailure(ctx, contractAddr.String(), payload, "test error")
 
 	wk.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddr, msgTimeout).Return(nil, fmt.Errorf("failed to sudo"))
 

@@ -390,7 +390,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK0TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenA", 21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalancesInt(sdkmath.NewInt(5), sdkmath.NewInt(1_353_046_854))
+	s.assertAliceBalancesInt(sdkmath.NewInt(7), sdkmath.NewInt(1_353_046_854))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
@@ -404,7 +404,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenB", -21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalancesInt(sdkmath.NewInt(135_3046_854), sdkmath.NewInt(5))
+	s.assertAliceBalancesInt(sdkmath.NewInt(135_3046_854), sdkmath.NewInt(7))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
@@ -418,7 +418,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
 	s.aliceLimitSellsWithMaxOut("TokenB", 0, 50, 20)
 
 	// THEN alice swap ~19 BIGTokenB and gets back 20 BIGTokenA
-	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_162_769))
+	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_162_770))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
@@ -434,7 +434,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 	s.aliceLimitSellsWithMaxOut("TokenB", 0, 50, 20)
 
 	// THEN alice swap ~19 BIGTokenB and gets back 20 BIGTokenA
-	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_165_594))
+	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_165_596))
 }
 
 // Immediate Or Cancel LimitOrders ////////////////////////////////////////////////////////////////////
@@ -504,6 +504,43 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
 }
 
+func (s *DexTestSuite) TestPlaceLimitOrderIoCUnfairPriceFails() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 1)
+	// GIVEN LP of 1 TokenB at tick -20
+	s.bobDeposits(NewDeposit(0, 1, -20, 1))
+	// WHEN alice submits IoC limitOrder for 2 tokenA
+	_, err := s.limitSellsInt(s.alice, "TokenA", 10, sdkmath.NewInt(2), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+
+	// THEN alice's LimitOrder failswith SwapAmountTooSmall
+	s.ErrorIs(err, types.ErrSwapAmountTooSmall)
+
+	// Nothing is changed
+	s.assertAliceBalances(10, 0)
+	s.assertLiquidityAtTick(0, 1, -20, 1)
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderIoCUnfairPriceAbortsEarly() {
+	s.fundAliceBalances(1, 0)
+	s.fundBobBalances(0, 2)
+	// GIVEN LP of 1 TokenB at ticks -20 & -21
+	s.bobDeposits(
+		NewDeposit(0, 1, -21, 1),
+		NewDeposit(0, 1, -20, 1),
+	)
+	// WHEN alice submits IoC limitOrder for 999_004 small TokenA
+	_, err := s.limitSellsInt(s.alice, "TokenA", 10, sdkmath.NewInt(998_004), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+
+	// THEN alice's LimitOrder swaps through the first tick, but does not swap the second tick due to unfair pricing
+	s.NoError(err)
+
+	// The first tick swapped and the second tick is not
+	s.assertLiquidityAtTickInt(sdkmath.NewInt(998_002), sdkmath.ZeroInt(), -21, 1)
+	s.assertLiquidityAtTick(0, 1, -20, 1)
+	// only the first swap is deducted from alices balance
+	s.assertAliceBalancesInt(sdkmath.NewInt(1998), sdkmath.NewInt(1_000_000))
+}
+
 // Just In Time Limit Orders //////////////////////////////////////////////////
 
 func (s *DexTestSuite) TestPlaceLimitOrderJITFills() {
@@ -543,7 +580,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITBehindEnemyLines() {
 	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
 	// Alice can withdraw ~10 BIGTokenB
 	s.aliceWithdrawsLimitSell(trancheKey)
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(9999000))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(9998999))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {

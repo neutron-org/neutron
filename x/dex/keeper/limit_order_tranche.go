@@ -103,7 +103,11 @@ func (k Keeper) GetLimitOrderTrancheByKey(
 	var tick types.TickLiquidity
 	k.cdc.MustUnmarshal(b, &tick)
 
-	return tick.GetLimitOrderTranche(), true
+	tranche = tick.GetLimitOrderTranche()
+	if tranche != nil {
+		return tranche, true
+	}
+	return nil, false
 }
 
 func (k Keeper) RemoveLimitOrderTranche(ctx sdk.Context, trancheKey *types.LimitOrderTrancheKey) {

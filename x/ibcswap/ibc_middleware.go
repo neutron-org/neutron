@@ -15,6 +15,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+
 	"github.com/neutron-org/neutron/x/ibcswap/keeper"
 	"github.com/neutron-org/neutron/x/ibcswap/types"
 )
@@ -128,6 +129,10 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	metadata := m.Swap
 	if err := metadata.Validate(); err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
+	if err := validateSwapPacket(packet, data, *metadata); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
@@ -371,4 +376,35 @@ func getDenomForThisChain(
 	// append port and channel from this chain to denom
 	prefixedDenom := transfertypes.GetDenomPrefix(port, channel) + denom
 	return transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
+}
+
+func validateSwapPacket(packet channeltypes.Packet, transferData transfertypes.FungibleTokenPacketData, sm types.SwapMetadata) error {
+	denomOnNeutron := getDenomForThisChain(
+		packet.DestinationPort,
+		packet.DestinationChannel,
+		packet.SourcePort,
+		packet.SourceChannel,
+		transferData.Denom,
+	)
+	if denomOnNeutron != sm.TokenIn {
+		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer Denom must match TokenIn")
+	}
+
+	transferAmount, ok := math.NewIntFromString(transferData.Amount)
+	if !ok {
+		return sdkerrors.Wrapf(
+			transfertypes.ErrInvalidAmount,
+			"unable to parse transfer amount (%s) into math.Int",
+			transferData.Amount,
+		)
+	}
+
+	if transferAmount.LT(sm.AmountIn) {
+		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer amount must be >= AmountIn")
+	}
+
+	if transferData.Receiver != sm.Creator || transferData.Receiver != sm.Receiver {
+		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer receiver must equal swap Creator and Receiver")
+	}
+	return nil
 }

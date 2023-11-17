@@ -37,8 +37,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
+	codeID := suite.StoreTestCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateTestContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Register and submit query result
@@ -109,8 +109,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
+	codeID := suite.StoreTestCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateTestContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	// Query interchain query result
@@ -132,8 +132,8 @@ func (suite *CustomQuerierTestSuite) TestInterchainAccountAddress() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
+	codeID := suite.StoreTestCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateTestContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -164,8 +164,8 @@ func (suite *CustomQuerierTestSuite) TestUnknownInterchainAcc() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
+	codeID := suite.StoreTestCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateTestContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, contractAddress.String())
@@ -192,8 +192,8 @@ func (suite *CustomQuerierTestSuite) TestMinIbcFee() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
+	codeID := suite.StoreTestCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateTestContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
@@ -224,8 +224,8 @@ func (suite *CustomQuerierTestSuite) TestFullDenom() {
 	)
 
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
+	codeID := suite.StoreTestCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateTestContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	query := bindings.NeutronQuery{
@@ -257,8 +257,8 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 	suite.Require().NoError(err)
 
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(ctx, owner, "../testdata/reflect.wasm")
-	contractAddress := suite.InstantiateReflectContract(ctx, owner, codeID)
+	codeID := suite.StoreTestCode(ctx, owner, "../testdata/reflect.wasm")
+	contractAddress := suite.InstantiateTestContract(ctx, owner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
