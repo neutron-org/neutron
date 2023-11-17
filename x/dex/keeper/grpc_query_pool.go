@@ -4,9 +4,10 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func (k Keeper) Pool(
@@ -19,7 +20,7 @@ func (k Keeper) Pool(
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	pairID, err := types.NewPairIDFromCanonicalString(req.PairID)
+	pairID, err := types.NewPairIDFromCanonicalString(req.PairId)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,7 @@ func (k Keeper) PoolByID(
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	pool, found := k.GetPoolByID(ctx, req.PoolID)
+	pool, found := k.GetPoolByID(ctx, req.PoolId)
 	if !found {
 		return nil, status.Error(codes.NotFound, "not found")
 	}

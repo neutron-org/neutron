@@ -3,6 +3,7 @@ package types
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 	"github.com/neutron-org/neutron/x/dex/utils"
 )
@@ -27,7 +28,7 @@ func NewLimitOrderTranche(
 	}
 	return &LimitOrderTranche{
 		Key: &LimitOrderTrancheKey{
-			TradePairID:           tradePairID,
+			TradePairId:           tradePairID,
 			TrancheKey:            trancheKey,
 			TickIndexTakerToMaker: tickIndex,
 		},

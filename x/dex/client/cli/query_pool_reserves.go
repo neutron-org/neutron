@@ -7,8 +7,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func CmdListPoolReserves() *cobra.Command {
@@ -29,7 +30,7 @@ func CmdListPoolReserves() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &types.QueryAllPoolReservesRequest{
-				PairID:  reqPairID,
+				PairId:  reqPairID,
 				TokenIn: reqTokenIn,
 			}
 
@@ -84,7 +85,7 @@ func CmdShowPoolReserves() *cobra.Command {
 			}
 
 			params := &types.QueryGetPoolReservesRequest{
-				PairID:    argPairID,
+				PairId:    argPairID,
 				TickIndex: argTickIndexInt,
 				TokenIn:   argTokenIn,
 				Fee:       argTrancheKeyInt,

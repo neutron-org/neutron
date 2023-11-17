@@ -744,23 +744,23 @@ func (s *DexTestSuite) assertTickBalancesInt(expectedABalance, expectedBBalance 
 	for _, tick := range ticks {
 		switch liquidity := tick.Liquidity.(type) {
 		case *types.TickLiquidity_LimitOrderTranche:
-			tokenIn := liquidity.LimitOrderTranche.Key.TradePairID.MakerDenom
+			tokenIn := liquidity.LimitOrderTranche.Key.TradePairId.MakerDenom
 			amountIn := liquidity.LimitOrderTranche.ReservesMakerDenom
 			allCoins = allCoins.Add(sdk.NewCoin(tokenIn, amountIn))
 
-			tokenOut := liquidity.LimitOrderTranche.Key.TradePairID.TakerDenom
+			tokenOut := liquidity.LimitOrderTranche.Key.TradePairId.TakerDenom
 			amountOut := liquidity.LimitOrderTranche.ReservesTakerDenom
 			allCoins = allCoins.Add(sdk.NewCoin(tokenOut, amountOut))
 
 		case *types.TickLiquidity_PoolReserves:
-			tokenIn := liquidity.PoolReserves.Key.TradePairID.MakerDenom
+			tokenIn := liquidity.PoolReserves.Key.TradePairId.MakerDenom
 			reserves := liquidity.PoolReserves.ReservesMakerDenom
 			allCoins = allCoins.Add(sdk.NewCoin(tokenIn, reserves))
 		}
 	}
 
 	for _, lo := range inactiveLOs {
-		tokenOut := lo.Key.TradePairID.TakerDenom
+		tokenOut := lo.Key.TradePairId.TakerDenom
 		amountOut := lo.ReservesTakerDenom
 		allCoins = allCoins.Add(sdk.NewCoin(tokenOut, amountOut))
 	}

@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
 	"github.com/neutron-org/neutron/testutil/dex/nullify"
 	"github.com/neutron-org/neutron/x/dex"
 	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {
@@ -16,7 +17,7 @@ func TestGenesis(t *testing.T) {
 		Params: types.DefaultParams(),
 		LimitOrderTrancheUserList: []*types.LimitOrderTrancheUser{
 			{
-				TradePairID: &types.TradePairID{
+				TradePairId: &types.TradePairID{
 					TakerDenom: "TokenA",
 					MakerDenom: "TokenB",
 				},
@@ -28,7 +29,7 @@ func TestGenesis(t *testing.T) {
 				SharesCancelled:       math.NewInt(0),
 			},
 			{
-				TradePairID: &types.TradePairID{
+				TradePairId: &types.TradePairID{
 					TakerDenom: "TokenB",
 					MakerDenom: "TokenA",
 				},
@@ -73,7 +74,7 @@ func TestGenesis(t *testing.T) {
 		InactiveLimitOrderTrancheList: []*types.LimitOrderTranche{
 			{
 				Key: &types.LimitOrderTrancheKey{
-					TradePairID: &types.TradePairID{
+					TradePairId: &types.TradePairID{
 						TakerDenom: "TokenA",
 						MakerDenom: "TokenB",
 					},
@@ -83,7 +84,7 @@ func TestGenesis(t *testing.T) {
 			},
 			{
 				Key: &types.LimitOrderTrancheKey{
-					TradePairID: &types.TradePairID{
+					TradePairId: &types.TradePairID{
 						TakerDenom: "TokenA",
 						MakerDenom: "TokenB",
 					},
@@ -94,10 +95,10 @@ func TestGenesis(t *testing.T) {
 		},
 		PoolMetadataList: []types.PoolMetadata{
 			{
-				ID: 0,
+				Id: 0,
 			},
 			{
-				ID: 1,
+				Id: 1,
 			},
 		},
 		PoolCount: 2,

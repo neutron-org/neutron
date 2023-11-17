@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -19,7 +20,7 @@ func (s *DexTestSuite) TestGetAllDeposits() {
 	depositList := s.App.DexKeeper.GetAllDepositsForAddress(s.Ctx, s.alice)
 	s.Assert().Equal(2, len(depositList))
 	s.Assert().Equal(&types.DepositRecord{
-		PairID:          defaultPairID,
+		PairId:          defaultPairID,
 		SharesOwned:     math.NewInt(10_000_000),
 		CenterTickIndex: 0,
 		LowerTickIndex:  -1,
@@ -29,7 +30,7 @@ func (s *DexTestSuite) TestGetAllDeposits() {
 		depositList[0],
 	)
 	s.Assert().Equal(&types.DepositRecord{
-		PairID:          defaultPairID,
+		PairId:          defaultPairID,
 		SharesOwned:     math.NewInt(10_002_000),
 		CenterTickIndex: 2,
 		LowerTickIndex:  1,

@@ -27,7 +27,7 @@ func TestPoolReservesQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetPoolReservesRequest{
-				PairID:    "TokenA<>TokenB",
+				PairId:    "TokenA<>TokenB",
 				TickIndex: msgs[0].Key.TickIndexTakerToMaker,
 				TokenIn:   "TokenA",
 				Fee:       msgs[0].Key.Fee,
@@ -37,7 +37,7 @@ func TestPoolReservesQuerySingle(t *testing.T) {
 		{
 			desc: "Second",
 			request: &types.QueryGetPoolReservesRequest{
-				PairID:    "TokenA<>TokenB",
+				PairId:    "TokenA<>TokenB",
 				TickIndex: msgs[1].Key.TickIndexTakerToMaker,
 				TokenIn:   "TokenA",
 				Fee:       msgs[1].Key.Fee,
@@ -47,7 +47,7 @@ func TestPoolReservesQuerySingle(t *testing.T) {
 		{
 			desc: "KeyNotFound",
 			request: &types.QueryGetPoolReservesRequest{
-				PairID:    "TokenA<>TokenB",
+				PairId:    "TokenA<>TokenB",
 				TickIndex: 0,
 				TokenIn:   "TokenA",
 				Fee:       100000,
@@ -83,7 +83,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllPoolReservesRequest {
 		return &types.QueryAllPoolReservesRequest{
-			PairID:  "TokenA<>TokenB",
+			PairId:  "TokenA<>TokenB",
 			TokenIn: "TokenA",
 			Pagination: &query.PageRequest{
 				Key:        next,

@@ -4,11 +4,12 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/neutron-org/neutron/utils"
 	"github.com/neutron-org/neutron/x/dex/types"
 	dexutils "github.com/neutron-org/neutron/x/dex/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (k Keeper) UserDepositsAll(
@@ -47,7 +48,7 @@ func (k Keeper) UserDepositsAll(
 
 			if accumulate {
 				depositRecord := &types.DepositRecord{
-					PairID:          poolMetadata.PairID,
+					PairId:          poolMetadata.PairId,
 					SharesOwned:     poolCoinMaybe.Amount,
 					CenterTickIndex: poolMetadata.Tick,
 					LowerTickIndex:  poolMetadata.Tick - fee,

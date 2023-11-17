@@ -20,7 +20,7 @@ func TestTickLiquidityQueryPaginated(t *testing.T) {
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllTickLiquidityRequest {
 		return &types.QueryAllTickLiquidityRequest{
-			PairID:  "TokenA<>TokenB",
+			PairId:  "TokenA<>TokenB",
 			TokenIn: "TokenA",
 			Pagination: &query.PageRequest{
 				Key:        next,

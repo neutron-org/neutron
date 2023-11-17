@@ -27,7 +27,7 @@ func TestLimitOrderTrancheQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetLimitOrderTrancheRequest{
-				PairID:     "TokenA<>TokenB",
+				PairId:     "TokenA<>TokenB",
 				TickIndex:  msgs[0].Key.TickIndexTakerToMaker,
 				TokenIn:    "TokenA",
 				TrancheKey: msgs[0].Key.TrancheKey,
@@ -37,7 +37,7 @@ func TestLimitOrderTrancheQuerySingle(t *testing.T) {
 		{
 			desc: "Second",
 			request: &types.QueryGetLimitOrderTrancheRequest{
-				PairID:     "TokenA<>TokenB",
+				PairId:     "TokenA<>TokenB",
 				TickIndex:  msgs[1].Key.TickIndexTakerToMaker,
 				TokenIn:    "TokenA",
 				TrancheKey: msgs[1].Key.TrancheKey,
@@ -47,7 +47,7 @@ func TestLimitOrderTrancheQuerySingle(t *testing.T) {
 		{
 			desc: "KeyNotFound",
 			request: &types.QueryGetLimitOrderTrancheRequest{
-				PairID:     "TokenA<>TokenB",
+				PairId:     "TokenA<>TokenB",
 				TickIndex:  0,
 				TokenIn:    "TokenA",
 				TrancheKey: "100000",
@@ -83,7 +83,7 @@ func TestLimitOrderTrancheQueryPaginated(t *testing.T) {
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllLimitOrderTrancheRequest {
 		return &types.QueryAllLimitOrderTrancheRequest{
-			PairID:  "TokenA<>TokenB",
+			PairId:  "TokenA<>TokenB",
 			TokenIn: "TokenA",
 			Pagination: &query.PageRequest{
 				Key:        next,

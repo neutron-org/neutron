@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -12,7 +13,7 @@ import (
 func (k Keeper) SetPoolMetadata(ctx sdk.Context, poolMetadata types.PoolMetadata) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PoolMetadataKeyPrefix))
 	b := k.cdc.MustMarshal(&poolMetadata)
-	store.Set(GetPoolMetadataIDBytes(poolMetadata.ID), b)
+	store.Set(GetPoolMetadataIDBytes(poolMetadata.Id), b)
 }
 
 // GetPoolMetadata returns a poolMetadata from its id

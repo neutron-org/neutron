@@ -192,7 +192,7 @@ func TickUpdateEvent(
 }
 
 func CreateTickUpdatePoolReserves(tick PoolReserves) sdk.Event {
-	tradePairID := tick.Key.TradePairID
+	tradePairID := tick.Key.TradePairId
 	pairID := tradePairID.MustPairID()
 	return TickUpdateEvent(
 		pairID.Token0,
@@ -205,7 +205,7 @@ func CreateTickUpdatePoolReserves(tick PoolReserves) sdk.Event {
 }
 
 func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
-	tradePairID := tranche.Key.TradePairID
+	tradePairID := tranche.Key.TradePairId
 	pairID := tradePairID.MustPairID()
 	return TickUpdateEvent(
 		pairID.Token0,

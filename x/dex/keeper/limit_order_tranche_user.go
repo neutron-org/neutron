@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 
@@ -25,7 +26,7 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 			SharesWithdrawn:       math.ZeroInt(),
 			SharesCancelled:       math.ZeroInt(),
 			TickIndexTakerToMaker: tickIndex,
-			TradePairID:           tradePairID,
+			TradePairId:           tradePairID,
 			OrderType:             orderType,
 		}
 	}

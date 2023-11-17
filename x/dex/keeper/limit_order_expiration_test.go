@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/dex/keeper"
 	"github.com/neutron-org/neutron/x/dex/types"
 )
@@ -35,7 +36,7 @@ func createLimitOrderExpirationAndTranches(
 	for i := range items {
 		tranche := &types.LimitOrderTranche{
 			Key: &types.LimitOrderTrancheKey{
-				TradePairID: &types.TradePairID{
+				TradePairId: &types.TradePairID{
 					MakerDenom: "TokenA",
 					TakerDenom: "TokenB",
 				},

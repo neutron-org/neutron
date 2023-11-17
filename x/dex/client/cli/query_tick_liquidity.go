@@ -5,8 +5,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func CmdListTickLiquidity() *cobra.Command {
@@ -29,7 +30,7 @@ func CmdListTickLiquidity() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &types.QueryAllTickLiquidityRequest{
-				PairID:     argPairID,
+				PairId:     argPairID,
 				TokenIn:    argTokenIn,
 				Pagination: pageReq,
 			}

@@ -4,6 +4,6 @@ package neutron.dex;
 option go_package = "github.com/neutron-org/neutron/x/dex/types";
 
 message TradePairID {
-    string makerDenom = 2; 
-    string takerDenom = 3; 
+    string maker_denom = 2;
+    string taker_denom = 3;
 }

@@ -8,11 +8,11 @@ import "gogoproto/gogo.proto";
 
 message LimitOrderExpiration {
   // see limitOrderTranche.proto for details on goodTilDate
-  google.protobuf.Timestamp expirationTime = 1 [
+  google.protobuf.Timestamp expiration_time = 1 [
                                                (gogoproto.stdtime) = true,
                                                (gogoproto.nullable) = false
                                                ];
-  bytes trancheRef = 2;
+  bytes tranche_ref = 2;
 
 }
 
