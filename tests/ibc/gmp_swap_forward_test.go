@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -42,12 +42,12 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
-	forwardMetadata := pfmtypes.PacketMetadata{
-		Forward: &pfmtypes.ForwardMetadata{
+	forwardMetadata := forwardtypes.PacketMetadata{
+		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
-			Timeout:  pfmtypes.Duration(5 * time.Minute),
+			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},

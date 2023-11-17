@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
@@ -326,14 +325,6 @@ func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, ex
 	s.assertBalance(s.bundleC.App.GetTestBankKeeper(), s.bundleC.Chain, addr, denom, expectedAmt)
 }
 
-func (s *IBCTestSuite) ReceiverOverrideAddr(channel, sender string) sdk.AccAddress {
-	addr, err := packetforward.GetReceiver(channel, sender)
-	if err != nil {
-		panic("Cannot calc receiver override: " + err.Error())
-	}
-	return sdk.MustAccAddressFromBech32(addr)
-}
-
 //nolint:unparam // keep this flexible even if we aren't currently using all the params
 func (s *IBCTestSuite) neutronDeposit(
 	token0 string,
@@ -364,18 +355,11 @@ func (s *IBCTestSuite) neutronDeposit(
 
 func (s *IBCTestSuite) RelayAllPacketsAToB(path *icsibctesting.Path) error {
 	sentPackets := path.EndpointA.Chain.SentPackets
-	chainB := path.EndpointB.Chain
 	if len(sentPackets) == 0 {
 		return fmt.Errorf("No packets to send")
 	}
 
 	for _, packet := range sentPackets {
-		// Skip if packet has already been sent
-		ack, _ := chainB.App.GetIBCKeeper().ChannelKeeper.
-			GetPacketAcknowledgement(chainB.GetContext(), packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
-		if ack != nil {
-			continue
-		}
 		err := path.RelayPacket(packet)
 		if err != nil {
 			return err
