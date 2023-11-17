@@ -109,10 +109,11 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 
-	// Check that the amountIn is deducted from the neutron account
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
+	// Check that the amountIn is deducted from the neutron overrid receiver account
+	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.OneInt())
 	// Check that neutron account did not keep any of the transfer denom
-	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
+	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
@@ -286,7 +287,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 		s.providerToNeutronDenom,
 		depositAmount,
 		depositAmount,
-		0,
+		1,
 		1,
 		s.neutronAddr)
 
@@ -295,8 +296,8 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
 	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
-	swapAmount := math.NewInt(100000)
-	expectedAmountOut := math.NewInt(99990)
+	swapAmount := math.NewInt(100_000)
+	expectedAmountOut := math.NewInt(99980)
 
 	// Send native denom to gaia chain so it can be swapped
 	s.IBCTransfer(s.neutronTransferPath, s.neutronTransferPath.EndpointA, s.neutronAddr, s.providerAddr, nativeDenom, swapAmount, "")
@@ -349,7 +350,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 		s.providerAddr,
 		s.neutronAddr,
 		transferDenomNeutronToProvider,
-		ibcTransferAmount,
+		swapAmount,
 		string(metadataBz),
 	)
 

@@ -178,6 +178,7 @@ func (suite *UpgradeTestSuite) TestTokenFactoryUpgrade() {
 
 	// emulate mainnet state
 	tokenFactorySubspace.Set(ctx, tokenfactorytypes.KeyDenomCreationFee, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(100_000_000))))
+	tokenFactorySubspace.Set(ctx, tokenfactorytypes.KeyFeeCollectorAddress, "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh")
 
 	var denomFeeBefore sdk.Coins
 	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationFee, &denomFeeBefore)
@@ -199,6 +200,11 @@ func (suite *UpgradeTestSuite) TestTokenFactoryUpgrade() {
 	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationFee, &denomFee)
 	requiredFeeDenom := sdk.NewCoins()
 	suite.Require().Equal(len(requiredFeeDenom), len(denomFee))
+
+	var feeCollector string
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyFeeCollectorAddress, &feeCollector)
+	requiredFeeCollector := ""
+	suite.Require().Equal(requiredFeeCollector, feeCollector)
 }
 
 func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {

@@ -394,10 +394,10 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	return msg.TrancheKey
 }
 
-func (s *DexTestSuite) limitSells(
+func (s *DexTestSuite) limitSellsInt(
 	account sdk.AccAddress,
 	tokenIn string,
-	tickIndexNormalized, amountIn int,
+	tickIndexNormalized int, amountIn sdkmath.Int,
 	orderTypeOpt ...types.LimitOrderType,
 ) (string, error) {
 	var orderType types.LimitOrderType
@@ -415,11 +415,20 @@ func (s *DexTestSuite) limitSells(
 		TokenIn:          tradePairID.TakerDenom,
 		TokenOut:         tradePairID.MakerDenom,
 		TickIndexInToOut: tickIndexTakerToMaker,
-		AmountIn:         sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
+		AmountIn:         amountIn,
 		OrderType:        orderType,
 	})
 
 	return msg.TrancheKey, err
+}
+
+func (s *DexTestSuite) limitSells(
+	account sdk.AccAddress,
+	tokenIn string,
+	tickIndexNormalized, amountIn int,
+	orderTypeOpt ...types.LimitOrderType,
+) (string, error) {
+	return s.limitSellsInt(account, tokenIn, tickIndexNormalized, sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple), orderTypeOpt...)
 }
 
 func (s *DexTestSuite) limitSellsGoodTil(
