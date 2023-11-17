@@ -4,14 +4,16 @@ import (
 	fmt "fmt"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	math_utils "github.com/neutron-org/neutron/utils/math"
 	"gopkg.in/yaml.v2"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyFeeTiers     = []byte("FeeTiers")
-	DefaultFeeTiers = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
+	KeyFeeTiers               = []byte("FeeTiers")
+	DefaultFeeTiers           = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
+	DefaultMaxTrueTakerSpread = math_utils.MustNewPrecDecFromStr("0.005")
 )
 
 // ParamKeyTable the param key table for launch module
@@ -20,13 +22,16 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(feeTiers []uint64) Params {
-	return Params{FeeTiers: feeTiers}
+func NewParams(feeTiers []uint64, maxTrueTakerSpread math_utils.PrecDec) Params {
+	return Params{
+		FeeTiers:           feeTiers,
+		MaxTrueTakerSpread: maxTrueTakerSpread,
+	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultFeeTiers)
+	return NewParams(DefaultFeeTiers, DefaultMaxTrueTakerSpread)
 }
 
 // ParamSetPairs get the params.ParamSet
