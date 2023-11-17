@@ -298,8 +298,16 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	swapAmount := math.NewInt(100000)
 	expectedAmountOut := math.NewInt(99990)
 
-	retries := uint8(0)
+	// Send native denom to gaia chain so it can be swapped
+	s.IBCTransfer(s.neutronTransferPath, s.neutronTransferPath.EndpointA, s.neutronAddr, s.providerAddr, nativeDenom, swapAmount, "")
+	transferDenomPath := transfertypes.GetPrefixedDenom(
+		transfertypes.PortID,
+		s.neutronTransferPath.EndpointA.ChannelID,
+		nativeDenom,
+	)
+	transferDenomNeutronToProvider := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
+	retries := uint8(0)
 	forwardMetadata := forwardtypes.PacketMetadata{
 		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: s.providerAddr.String(),
@@ -340,7 +348,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
 		s.neutronAddr,
-		nativeDenom,
+		transferDenomNeutronToProvider,
 		ibcTransferAmount,
 		string(metadataBz),
 	)
@@ -358,7 +366,7 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	s.assertProviderBalance(
 		s.providerAddr,
 		nativeDenom,
-		newProviderBalNative.Sub(ibcTransferAmount).Add(expectedAmountOut),
+		newProviderBalNative.Add(expectedAmountOut),
 	)
 
 	s.Assert().NoError(err)

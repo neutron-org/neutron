@@ -355,11 +355,18 @@ func (s *IBCTestSuite) neutronDeposit(
 
 func (s *IBCTestSuite) RelayAllPacketsAToB(path *icsibctesting.Path) error {
 	sentPackets := path.EndpointA.Chain.SentPackets
+	chainB := path.EndpointB.Chain
 	if len(sentPackets) == 0 {
 		return fmt.Errorf("No packets to send")
 	}
 
 	for _, packet := range sentPackets {
+		// Skip if packet has already been sent
+		ack, _ := chainB.App.GetIBCKeeper().ChannelKeeper.
+			GetPacketAcknowledgement(chainB.GetContext(), packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
+		if ack != nil {
+			continue
+		}
 		err := path.RelayPacket(packet)
 		if err != nil {
 			return err
