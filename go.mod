@@ -17,7 +17,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.47.5
 	github.com/cosmos/gaia/v11 v11.0.0-00010101000000-000000000000
 	github.com/cosmos/gogoproto v1.4.10
-	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.1
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.1
 	github.com/cosmos/ibc-go/v7 v7.3.1
 	github.com/cosmos/ics23/go v0.10.0
 	github.com/cosmos/interchain-security/v3 v3.1.0
@@ -191,7 +191,7 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.43.0
-	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v0.0.0-20231102080303-b3efc44ef5d9
+	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.0
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.47.5
 	github.com/cosmos/gaia/v11 => github.com/cosmos/gaia/v11 v11.0.0-20230724152830-861ba391c3b4
 	github.com/cosmos/ledger-cosmos-go => github.com/cosmos/ledger-cosmos-go v0.12.1

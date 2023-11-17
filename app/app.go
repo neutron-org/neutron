@@ -22,8 +22,8 @@ import (
 	"github.com/neutron-org/neutron/docs"
 
 	"github.com/neutron-org/neutron/app/upgrades"
-	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
 	v044 "github.com/neutron-org/neutron/app/upgrades/v0.4.4"
+	v110 "github.com/neutron-org/neutron/app/upgrades/v1.1.0"
 	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
 	"github.com/neutron-org/neutron/x/cron"
 
@@ -169,7 +169,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade, nextupgrade.Upgrade}
+	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade, v110.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -519,12 +519,12 @@ func New(
 	app.RouterKeeper = pfmkeeper.NewKeeper(
 		appCodec,
 		app.keys[pfmtypes.StoreKey],
-		app.GetSubspace(pfmtypes.ModuleName),
 		app.TransferKeeper.Keeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
 		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
@@ -599,8 +599,8 @@ func New(
 		keys[auctiontypes.StoreKey],
 		app.AccountKeeper,
 		&app.BankKeeper,
-		// 25% of rewards should be sent to the redistribute address
-		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
+		// 25% of rewards should be sent to the Hub
+		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerToSendToProviderName)),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -716,7 +716,7 @@ func New(
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.RouterModule = packetforward.NewAppModule(app.RouterKeeper)
+	app.RouterModule = packetforward.NewAppModule(app.RouterKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	ibcStack := packetforward.NewIBCMiddleware(
 		app.HooksTransferIBCModule,
@@ -1056,6 +1056,7 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
+					AccountKeeper:       app.AccountKeeper,
 					FeeBurnerKeeper:     app.FeeBurnerKeeper,
 					CronKeeper:          app.CronKeeper,
 					IcqKeeper:           app.InterchainQueriesKeeper,

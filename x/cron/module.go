@@ -9,8 +9,6 @@ import (
 
 	"github.com/gorilla/mux"
 
-	// this line is used by starport scaffolding # 1
-
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 

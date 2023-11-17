@@ -1,4 +1,4 @@
-package nextupgrade_test
+package v110_test
 
 import (
 	"testing"
@@ -24,7 +24,7 @@ import (
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/app/upgrades/nextupgrade"
+	v110 "github.com/neutron-org/neutron/app/upgrades/v1.1.0"
 	"github.com/neutron-org/neutron/testutil"
 )
 
@@ -80,7 +80,7 @@ func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
 	suite.Require().True(globalFeeSubspace.Has(ctx, globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage))
 
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -126,7 +126,7 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -154,7 +154,7 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	suite.Require().Error(err)
 
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -165,20 +165,56 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	suite.Require().Equal(uint64(1), id)
 }
 
+func (suite *UpgradeTestSuite) TestTokenFactoryUpgrade() {
+	var (
+		app                  = suite.GetNeutronZoneApp(suite.ChainA)
+		tokenFactorySubspace = app.GetSubspace(tokenfactorytypes.ModuleName)
+		ctx                  = suite.ChainA.GetContext()
+	)
+
+	var denomGasBefore uint64
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, &denomGasBefore)
+	suite.Require().Equal(denomGasBefore, uint64(0))
+
+	// emulate mainnet state
+	tokenFactorySubspace.Set(ctx, tokenfactorytypes.KeyDenomCreationFee, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(100_000_000))))
+
+	var denomFeeBefore sdk.Coins
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationFee, &denomFeeBefore)
+	suite.Require().Equal(denomFeeBefore, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(100_000_000))))
+
+	upgrade := upgradetypes.Plan{
+		Name:   v110.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	var denomGas uint64
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, &denomGas)
+	requiredGasDenom := uint64(0)
+	suite.Require().Equal(requiredGasDenom, denomGas)
+
+	var denomFee sdk.Coins
+	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationFee, &denomFee)
+	requiredFeeDenom := sdk.NewCoins()
+	suite.Require().Equal(len(requiredFeeDenom), len(denomFee))
+}
+
 func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	var (
 		app = suite.GetNeutronZoneApp(suite.ChainA)
 		ctx = suite.ChainA.GetContext()
 	)
 
-	suite.FundAcc(sdk.AccAddress("neutron1weweewe"), sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(10000))))
+	suite.FundAcc(sdk.AccAddress("neutron1weweewe"), sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1_000_000))))
 	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	// store contract for register ica w/o fees
 	codeIDBefore := suite.StoreTestCode(ctx, sdk.AccAddress("neutron1_ica"), "testdata/neutron_interchain_txs.wasm")
 	contractAddressBeforeUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeIDBefore)
 
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
+		Name:   v110.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -200,7 +236,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	// register with fees
 	jsonStringAfterUpgrade := `{"register": {"connection_id":"connection-1","interchain_account_id":"test-3"}}`
 	byteEncodedMsgAfterUpgrade := []byte(jsonStringAfterUpgrade)
-	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1000))))
+	_, err = contractKeeper.Execute(ctx, contractAddressAfterUpgrade, sdk.AccAddress("neutron1weweewe"), byteEncodedMsgAfterUpgrade, sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1_000_000))))
 	suite.Require().NoError(err)
 
 	// failed register due lack of fees (fees required)

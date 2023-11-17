@@ -1,19 +1,20 @@
-package nextupgrade
+package v110
 
 import (
 	"fmt"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	"github.com/neutron-org/neutron/app/params"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -28,7 +29,6 @@ import (
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
-	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -87,7 +87,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Setting pob params...")
-		err = setAuctionParams(ctx, keepers.FeeBurnerKeeper, keepers.AuctionKeeper)
+		err = setAuctionParams(ctx, keepers.AccountKeeper, keepers.AuctionKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -127,20 +127,21 @@ func CreateUpgradeHandler(
 	}
 }
 
-func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, auctionKeeper auctionkeeper.Keeper) error {
-	treasury := feeBurnerKeeper.GetParams(ctx).TreasuryAddress
-	_, data, err := bech32.DecodeAndConvert(treasury)
-	if err != nil {
-		return err
-	}
+func setAuctionParams(ctx sdk.Context, accountKeeper authkeeper.AccountKeeper, auctionKeeper auctionkeeper.Keeper) error {
+	consumerRedistributeAddr := accountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)
 
 	auctionParams := auctiontypes.Params{
-		MaxBundleSize:          2,
-		EscrowAccountAddress:   data,
-		ReserveFee:             sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-		MinBidIncrement:        sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-		FrontRunningProtection: true,
-		ProposerFee:            math.LegacyNewDecWithPrec(25, 2),
+		MaxBundleSize: 4,
+		// 75% of rewards goes to consumer redistribution module and then to the FeeBurner module
+		// where all the NTRNs are burned
+		EscrowAccountAddress:   consumerRedistributeAddr,
+		ReserveFee:             sdk.Coin{Denom: params.DefaultDenom, Amount: sdk.NewInt(500_000)},
+		MinBidIncrement:        sdk.Coin{Denom: params.DefaultDenom, Amount: sdk.NewInt(100_000)},
+		FrontRunningProtection: false,
+		// in the app.go on L603 set FixedAddressRewardsAddressProvider (where 25% goes to)
+		// to ConsumerToSendToProviderName module from where rewards goes to the Hub
+		// Meaning we sent 25% of the MEV rewards to the Hub
+		ProposerFee: math.LegacyNewDecWithPrec(25, 2),
 	}
 	return auctionKeeper.SetParams(ctx, auctionParams)
 }
@@ -187,6 +188,7 @@ func migrateTokenFactoryParams(ctx sdk.Context, paramsKeepers paramskeeper.Keepe
 	var currParams tokenfactorytypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(tokenfactorytypes.StoreKey)
 	subspace.Set(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, uint64(0))
+	subspace.Set(ctx, tokenfactorytypes.KeyDenomCreationFee, sdk.NewCoins())
 	subspace.GetParamSet(ctx, &currParams)
 
 	if err := currParams.Validate(); err != nil {
@@ -218,6 +220,8 @@ func migrateInterchainQueriesParams(ctx sdk.Context, paramsKeepers paramskeeper.
 	var currParams icqtypes.Params
 	subspace, _ := paramsKeepers.GetSubspace(icqtypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
+
+	currParams.QueryDeposit = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
 
 	if err := currParams.Validate(); err != nil {
 		return err
