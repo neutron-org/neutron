@@ -189,6 +189,7 @@ func migrateTokenFactoryParams(ctx sdk.Context, paramsKeepers paramskeeper.Keepe
 	subspace, _ := paramsKeepers.GetSubspace(tokenfactorytypes.StoreKey)
 	subspace.Set(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, uint64(0))
 	subspace.Set(ctx, tokenfactorytypes.KeyDenomCreationFee, sdk.NewCoins())
+	subspace.Set(ctx, tokenfactorytypes.KeyFeeCollectorAddress, "")
 	subspace.GetParamSet(ctx, &currParams)
 
 	if err := currParams.Validate(); err != nil {
