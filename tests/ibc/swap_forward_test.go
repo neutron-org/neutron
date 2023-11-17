@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/iancoleman/orderedmap"
 	"golang.org/x/exp/maps"
@@ -53,12 +53,12 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 
 	retries := uint8(0)
 
-	forwardMetadata := pfmtypes.PacketMetadata{
-		Forward: &pfmtypes.ForwardMetadata{
+	forwardMetadata := forwardtypes.PacketMetadata{
+		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
-			Timeout:  pfmtypes.Duration(5 * time.Minute),
+			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
@@ -109,11 +109,10 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 		newProviderBalNative.Sub(ibcTransferAmount),
 	)
 
-	// Check that the amountIn is deducted from the neutron overrid receiver account
-	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.OneInt())
+	// Check that the amountIn is deducted from the neutron account
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
 	// Check that neutron account did not keep any of the transfer denom
-	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
@@ -124,6 +123,8 @@ func (s *IBCTestSuite) TestSwapAndForward_Success() {
 
 	// Check that the funds are now present in the acc on chainB
 	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, expectedAmountOut)
+
+	s.Assert().NoError(err)
 }
 
 func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
@@ -167,26 +168,26 @@ func (s *IBCTestSuite) TestSwapAndForward_MultiHopSuccess() {
 	chainCAddr := s.bundleC.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
-	nextForward := pfmtypes.PacketMetadata{
-		Forward: &pfmtypes.ForwardMetadata{
+	nextForward := forwardtypes.PacketMetadata{
+		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainCAddr.String(),
 			Port:     s.chainBChainCPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.chainBChainCPath.EndpointA.ChannelID,
-			Timeout:  pfmtypes.Duration(5 * time.Minute),
+			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
 	}
 	nextForwardBz, err := json.Marshal(nextForward)
 	s.Assert().NoError(err)
-	nextForwardJSON := pfmtypes.NewJSONObject(false, nextForwardBz, orderedmap.OrderedMap{})
+	nextForwardJSON := forwardtypes.NewJSONObject(false, nextForwardBz, orderedmap.OrderedMap{})
 
-	forwardMetadata := pfmtypes.PacketMetadata{
-		Forward: &pfmtypes.ForwardMetadata{
+	forwardMetadata := forwardtypes.PacketMetadata{
+		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
-			Timeout:  pfmtypes.Duration(5 * time.Minute),
+			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nextForwardJSON,
 		},
@@ -297,14 +298,22 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	swapAmount := math.NewInt(100_000)
 	expectedAmountOut := math.NewInt(99980)
 
-	retries := uint8(0)
+	// Send native denom to gaia chain so it can be swapped
+	s.IBCTransfer(s.neutronTransferPath, s.neutronTransferPath.EndpointA, s.neutronAddr, s.providerAddr, nativeDenom, swapAmount, "")
+	transferDenomPath := transfertypes.GetPrefixedDenom(
+		transfertypes.PortID,
+		s.neutronTransferPath.EndpointA.ChannelID,
+		nativeDenom,
+	)
+	transferDenomNeutronToProvider := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
-	forwardMetadata := pfmtypes.PacketMetadata{
-		Forward: &pfmtypes.ForwardMetadata{
+	retries := uint8(0)
+	forwardMetadata := forwardtypes.PacketMetadata{
+		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: s.providerAddr.String(),
 			Port:     s.neutronTransferPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronTransferPath.EndpointA.ChannelID,
-			Timeout:  pfmtypes.Duration(5 * time.Minute),
+			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
@@ -335,29 +344,11 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	metadataBz, err := json.Marshal(metadata)
 	s.Require().NoError(err)
 
-	// Transfer native denom from neutron to provider
-	s.IBCTransfer(
-		s.neutronTransferPath,
-		s.neutronTransferPath.EndpointA,
-		s.neutronAddr,
-		s.providerAddr,
-		nativeDenom,
-		ibcTransferAmount,
-		"",
-	)
-	transferDenomPath := transfertypes.GetPrefixedDenom(
-		transfertypes.PortID,
-		s.neutronTransferPath.EndpointB.ChannelID,
-		nativeDenom,
-	)
-	transferDenomNeutronProvider := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
-	s.assertProviderBalance(s.providerAddr, transferDenomNeutronProvider, ibcTransferAmount)
-
 	// Send an IBC transfer from provider to neutron with packet memo containing the swap metadata
 	s.IBCTransferProviderToNeutron(
 		s.providerAddr,
 		s.neutronAddr,
-		transferDenomNeutronProvider,
+		transferDenomNeutronToProvider,
 		swapAmount,
 		string(metadataBz),
 	)
@@ -367,139 +358,20 @@ func (s *IBCTestSuite) TestSwapAndForward_UnwindIBCDenomSuccess() {
 	s.Assert().NoError(err)
 	s.coordinator.CommitBlock(s.neutronChain)
 
-	// Check that the amountIn is deducted from the neutron override receiever  account
-	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, nativeDenom, math.OneInt())
+	// Check that the amountIn has been deducted from the neutron chain
+	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative.Sub(swapAmount).Add(math.OneInt()))
 	// Check that the funds are now present on the provider chainer
 	s.assertProviderBalance(
 		s.providerAddr,
 		nativeDenom,
 		newProviderBalNative.Add(expectedAmountOut),
 	)
+
+	s.Assert().NoError(err)
 }
 
-// TestSwapAndForward_ForwardFailsRefundAddr asserts that the swap and forward middleware stack works as intended in the case
-// that an incoming IBC swap succeeds but the forward fails when a NeutronRefundAddress is provided.
-// The swap will be reverted and the transferred amount will be credited to the refundAddr
-func (s *IBCTestSuite) TestSwapAndForward_ForwardFailsRefundAddr() {
-	// Send an IBC transfer from provider chain to neutron, so we can initialize a pool with the IBC denom token + native Neutron token
-	s.IBCTransferProviderToNeutron(
-		s.providerAddr,
-		s.neutronAddr,
-		nativeDenom,
-		ibcTransferAmount,
-		"",
-	)
-
-	// Assert that the funds are gone from the acc on provider and present in the acc on Neutron
-	newProviderBalNative := genesisWalletAmount.Sub(ibcTransferAmount)
-	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative)
-
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, ibcTransferAmount)
-
-	// deposit stake<>ibcTransferToken to initialize the pool on Neutron
-	depositAmount := math.NewInt(100_000)
-	s.neutronDeposit(
-		nativeDenom,
-		s.providerToNeutronDenom,
-		depositAmount,
-		depositAmount,
-		0,
-		1,
-		s.neutronAddr)
-
-	// Assert that the deposit was successful and the funds are moved out of the Neutron user acc
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
-	postDepositNeutronBalNative := genesisWalletAmount.Sub(depositAmount)
-	s.assertNeutronBalance(s.neutronAddr, nativeDenom, postDepositNeutronBalNative)
-
-	// Compose the IBC transfer memo metadata to be used in the swap and forward
-	swapAmount := math.NewInt(100000)
-	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
-
-	retries := uint8(0)
-
-	forwardMetadata := pfmtypes.PacketMetadata{
-		Forward: &pfmtypes.ForwardMetadata{
-			Receiver: chainBAddr.String(),
-			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
-			Channel:  "invalid-channel", // add an invalid channel identifier so the forward fails
-			Timeout:  pfmtypes.Duration(5 * time.Minute),
-			Retries:  &retries,
-			Next:     nil,
-		},
-	}
-
-	bz, err := json.Marshal(forwardMetadata)
-	s.Assert().NoError(err)
-
-	nextJSON := new(swaptypes.JSONObject)
-	err = json.Unmarshal(bz, nextJSON)
-	s.Assert().NoError(err)
-
-	refundAddr := s.neutronChain.SenderAccounts[1].SenderAccount.GetAddress()
-	metadata := swaptypes.PacketMetadata{
-		Swap: &swaptypes.SwapMetadata{
-			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
-				Creator:          s.neutronAddr.String(),
-				Receiver:         s.neutronAddr.String(),
-				TokenIn:          s.providerToNeutronDenom,
-				TokenOut:         nativeDenom,
-				AmountIn:         swapAmount,
-				TickIndexInToOut: 2,
-				OrderType:        types.LimitOrderType_FILL_OR_KILL,
-			},
-			NeutronRefundAddress: refundAddr.String(),
-			Next:                 nextJSON,
-		},
-	}
-
-	metadataBz, err := json.Marshal(metadata)
-	s.Require().NoError(err)
-
-	// Send an IBC transfer from provider to neutron with packet memo containing the swap metadata
-	s.IBCTransferProviderToNeutron(
-		s.providerAddr,
-		s.neutronAddr,
-		nativeDenom,
-		ibcTransferAmount,
-		string(metadataBz),
-	)
-
-	// Relay the packets from neutron => ChainB
-	err = s.RelayAllPacketsAToB(s.neutronChainBPath)
-	// Relay Fails
-	s.Assert().Error(err)
-
-	// Check that the funds are moved out of the acc on providerChain
-	s.assertProviderBalance(
-		s.providerAddr,
-		nativeDenom,
-		newProviderBalNative.Sub(ibcTransferAmount),
-	)
-
-	// Check that nothing remains in the overrideReceiver account
-	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
-	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
-
-	// Check that the swap was reverted and the transfer amount is in the refundAddr
-	s.assertNeutronBalance(refundAddr, s.providerToNeutronDenom, ibcTransferAmount)
-
-	// Check that nothing made it to chainB
-	transferDenomPath := transfertypes.GetPrefixedDenom(
-		transfertypes.PortID,
-		s.neutronChainBPath.EndpointA.ChannelID,
-		nativeDenom,
-	)
-	transferDenomNeutronChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
-
-	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, math.ZeroInt())
-}
-
-// TestSwapAndForward_ForwardFailsRefundAddr asserts that the swap and forward middleware stack works as intended in the case
-// that an incoming IBC swap succeeds but the forward fails when no NeutronRefundAddress is provided.
-// The swap will be reverted and a refund to the src chain will take place.
+// TestSwapAndForward_ForwardFails asserts that the swap and forward middleware stack works as intended in the case
+// that an incoming IBC swap succeeds but the forward fails.
 func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	// Send an IBC transfer from provider chain to neutron, so we can initialize a pool with the IBC denom token + native Neutron token
 	s.IBCTransferProviderToNeutron(
@@ -534,16 +406,17 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 
 	// Compose the IBC transfer memo metadata to be used in the swap and forward
 	swapAmount := math.NewInt(100000)
+	expectedAmountOut := math.NewInt(99990)
 	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
 
-	forwardMetadata := pfmtypes.PacketMetadata{
-		Forward: &pfmtypes.ForwardMetadata{
+	forwardMetadata := forwardtypes.PacketMetadata{
+		Forward: &forwardtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  "invalid-channel", // add an invalid channel identifier so the forward fails
-			Timeout:  pfmtypes.Duration(5 * time.Minute),
+			Timeout:  forwardtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
@@ -588,10 +461,21 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	// Relay Fails
 	s.Assert().Error(err)
 
-	// Check that nothing remains in the overrideReceiver account
-	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
-	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
-	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
+	// Check that the funds are moved out of the acc on providerChain
+	s.assertProviderBalance(
+		s.providerAddr,
+		nativeDenom,
+		newProviderBalNative.Sub(ibcTransferAmount),
+	)
+
+	// Check that the amountIn is deduced from the neutron account
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
+	// Check that the amountOut stays on the neutronchain
+	s.assertNeutronBalance(
+		s.neutronAddr,
+		nativeDenom,
+		postDepositNeutronBalNative.Add(expectedAmountOut),
+	)
 
 	// Check that nothing made it to chainB
 	transferDenomPath := transfertypes.GetPrefixedDenom(
@@ -602,7 +486,4 @@ func (s *IBCTestSuite) TestSwapAndForward_ForwardFails() {
 	transferDenomNeutronChainB := transfertypes.ParseDenomTrace(transferDenomPath).IBCDenom()
 
 	s.assertChainBBalance(chainBAddr, transferDenomNeutronChainB, math.ZeroInt())
-
-	// Check that the refund takes place and the funds are moved back to the account on Gaia
-	s.assertProviderBalance(s.providerAddr, nativeDenom, genesisWalletAmount.Sub(depositAmount))
 }

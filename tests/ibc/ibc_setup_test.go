@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
@@ -324,14 +323,6 @@ func (s *IBCTestSuite) assertChainBBalance(addr sdk.AccAddress, denom string, ex
 
 func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, expectedAmt math.Int) {
 	s.assertBalance(s.bundleC.App.GetTestBankKeeper(), s.bundleC.Chain, addr, denom, expectedAmt)
-}
-
-func (s *IBCTestSuite) ReceiverOverrideAddr(channel, sender string) sdk.AccAddress {
-	addr, err := packetforward.GetReceiver(channel, sender)
-	if err != nil {
-		panic("Cannot calc receiver override: " + err.Error())
-	}
-	return sdk.MustAccAddressFromBech32(addr)
 }
 
 //nolint:unparam // keep this flexible even if we aren't currently using all the params
