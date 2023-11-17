@@ -277,7 +277,7 @@ func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken0() {
 	// Bob arbs
 	s.bobLimitSells("TokenB", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 	s.bobLimitSells("TokenA", 1, 10)
-	s.assertBobBalancesInt(sdkmath.NewInt(50_000_000), sdkmath.NewInt(53_294_995))
+	s.assertBobBalancesInt(sdkmath.NewInt(50_000_000), sdkmath.NewInt(53_294_996))
 }
 
 func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
@@ -302,7 +302,7 @@ func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
 	// Bob arbs
 	s.bobLimitSells("TokenA", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 	s.bobLimitSells("TokenB", -1, 10)
-	s.assertBobBalancesInt(sdkmath.NewInt(53_295_665), sdkmath.NewInt(50_000_000))
+	s.assertBobBalancesInt(sdkmath.NewInt(53_295_666), sdkmath.NewInt(50_000_000))
 }
 
 func (s *DexTestSuite) TestDepositSingleSidedMultiA() {

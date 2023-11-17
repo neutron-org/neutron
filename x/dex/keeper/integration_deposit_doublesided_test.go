@@ -232,19 +232,19 @@ func (s *DexTestSuite) TestDepositValueAccural() {
 			s.bobLimitSells("TokenA", 10, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		}
 	}
-	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
-	s.assertDexBalancesInt(math.NewInt(110516593), math.ZeroInt())
+	s.assertLiquidityAtTickInt(math.NewInt(110516491), math.ZeroInt(), 0, 10)
+	s.assertDexBalancesInt(math.NewInt(110516491), math.ZeroInt())
 
-	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
+	s.assertLiquidityAtTickInt(math.NewInt(110516491), math.ZeroInt(), 0, 10)
 	// Carol deposits 100TokenA @tick0
 	s.carolDeposits(NewDeposit(100, 0, 0, 10))
-	s.assertLiquidityAtTickInt(math.NewInt(210516593), math.ZeroInt(), 0, 10)
-	s.assertAccountSharesInt(s.carol, 0, 10, math.NewInt(90484150))
+	s.assertLiquidityAtTickInt(math.NewInt(210516491), math.ZeroInt(), 0, 10)
+	s.assertAccountSharesInt(s.carol, 0, 10, math.NewInt(90484233))
 
 	// Alice gets back 100% of the accrued trade value
 	s.aliceWithdraws(NewWithdrawal(100, 0, 10))
-	s.assertAliceBalancesInt(math.NewInt(110516593), math.NewInt(0))
+	s.assertAliceBalancesInt(math.NewInt(110516491), math.NewInt(0))
 	// AND carol get's back only what she put in
-	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484150), 0, 10))
+	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484233), 0, 10))
 	s.assertCarolBalances(100, 1)
 }
