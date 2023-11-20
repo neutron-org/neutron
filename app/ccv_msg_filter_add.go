@@ -2,4 +2,4 @@
 
 package app
 
-const SkipCcvMsgFilter = true // TODO вернуть false
+const SkipCcvMsgFilter = false
