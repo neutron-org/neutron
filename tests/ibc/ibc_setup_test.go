@@ -320,10 +320,12 @@ func (s *IBCTestSuite) assertProviderBalance(
 	s.assertBalance(s.providerApp.GetTestBankKeeper(), s.providerChain, addr, denom, expectedAmt)
 }
 
+//nolint:unused
 func (s *IBCTestSuite) assertChainBBalance(addr sdk.AccAddress, denom string, expectedAmt math.Int) {
 	s.assertBalance(s.bundleB.App.GetTestBankKeeper(), s.bundleB.Chain, addr, denom, expectedAmt)
 }
 
+//nolint:unused
 func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, expectedAmt math.Int) {
 	s.assertBalance(s.bundleC.App.GetTestBankKeeper(), s.bundleC.Chain, addr, denom, expectedAmt)
 }
@@ -336,7 +338,6 @@ func (s *IBCTestSuite) ReceiverOverrideAddr(channel, sender string) sdk.AccAddre
 	return sdk.MustAccAddressFromBech32(addr)
 }
 
-//nolint:unparam // keep this flexible even if we aren't currently using all the params
 func (s *IBCTestSuite) neutronDeposit(
 	token0 string,
 	token1 string,
