@@ -936,8 +936,8 @@ github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OS
 github.com/neilotoole/errgroup v0.1.6/go.mod h1:Q2nLGf+594h0CLBs/Mbg6qOr7GtqDK7C2S41udRnToE=
 github.com/neutron-org/admin-module v1.0.0 h1:mmX5U6jz4rX+lk8SB5Bx0Lsugu9bh4PCREMnVkLQoIs=
 github.com/neutron-org/admin-module v1.0.0/go.mod h1:INknneN2W3Fr9Eld7SpfLRdjyHR1muzFbbqXln1ixic=
-github.com/neutron-org/cosmos-sdk v0.47.6 h1:FaHH5DUb4JP1zI945/j+CzbhBvhxqe6iFIn2HER4xks=
-github.com/neutron-org/cosmos-sdk v0.47.6/go.mod h1:7BmlRp0txKo2UZ01OLq4DGEjgLDiPgmpRpjLOq89Jys=
+github.com/neutron-org/cosmos-sdk v0.47.6-neutron h1:agxUiBWlAGQf5+8A7e5omYrpgbylL+SoSQlCVuQTd3Y=
+github.com/neutron-org/cosmos-sdk v0.47.6-neutron/go.mod h1:7BmlRp0txKo2UZ01OLq4DGEjgLDiPgmpRpjLOq89Jys=
 github.com/neutron-org/wasmd v0.43.0 h1:aXzN9diVRAKTs2+EdK4zoTOmNCjjr8vpAhIq8VbBUJc=
 github.com/neutron-org/wasmd v0.43.0/go.mod h1:GEWnDHjbx7qtVHQ+5ocrNe1sIHNiXcTlSocXyLQNnRY=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
