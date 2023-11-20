@@ -154,11 +154,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	metadata.Creator = overrideReceiver
 	// Update packet data to match the new receiver so that transfer middleware adds tokens to the expected address
 	packet = newPacketWithOverrideReceiver(packet, data, overrideReceiver)
-	// TODO: fully validate PFM with ibcswap before re-enabling
-	// if metadata.ContainsPFM() {
-	// 	// If we are using PFM change receiver to the expected address for forwarding
-	// 	metadata.Receiver = overrideReceiver
-	// }
 
 	ack := im.app.OnRecvPacket(ctx, packet, relayer)
 	if ack == nil || !ack.Success() {
@@ -202,21 +197,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	packet.Data = dataBz
-
-	// TODO: fully validate PFM post ibcswap before re-enabling this
-	// // Compose our context with values that will be used to pass through to the forward middleware
-	// ctxWithForwardFlags := context.WithValue(cacheCtx.Context(), pfmtypes.ProcessedKey{}, true)
-	// ctxWithForwardFlags = context.WithValue(
-	// 	ctxWithForwardFlags,
-	// 	pfmtypes.NonrefundableKey{},
-	// 	true,
-	// )
-	// ctxWithForwardFlags = context.WithValue(
-	// 	ctxWithForwardFlags,
-	// 	pfmtypes.DisableDenomCompositionKey{},
-	// 	true,
-	// )
-	// wrappedSdkCtx := cacheCtx.WithContext(ctxWithForwardFlags)
 
 	// The forward middleware should return a nil ack if the forward is initiated properly.
 	// If not an error occurred, and we return the original ack.
