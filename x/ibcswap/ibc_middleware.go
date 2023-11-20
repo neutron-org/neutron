@@ -441,7 +441,7 @@ func validateSwapPacket(packet channeltypes.Packet, transferData transfertypes.F
 	if sm.ContainsPFM() {
 		return sdkerrors.Wrap(
 			types.ErrInvalidSwapMetadata,
-			"ibcswap middle cannot be used in conjunction with packet-forward-middleware",
+			"ibcswap middleware cannot be used in conjunction with packet-forward-middleware",
 		)
 	}
 	return nil
