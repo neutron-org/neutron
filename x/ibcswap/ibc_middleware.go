@@ -1,7 +1,6 @@
 package ibcswap
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -11,7 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
-	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
@@ -118,9 +116,7 @@ func (im IBCMiddleware) OnChanCloseConfirm(ctx sdk.Context, portID, channelID st
 // 2. validate swapMetadata; ErrAck if invalid
 // 3. Pass through the middleware stack to ibc-go/transfer#OnRecvPacket; transfer coins are sent to receiver
 // 4. Do swap; handle failures
-// 5. If no PFM is present we are done; return ack
-// 6. Unpack packet so that it is a valid PFM packet and set required context variables
-// 7. Pass through middleware stack again where the forward is handled by packet-forward-middleware#OnRecvPacket
+
 func (im IBCMiddleware) OnRecvPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
@@ -157,10 +153,11 @@ func (im IBCMiddleware) OnRecvPacket(
 	metadata.Creator = overrideReceiver
 	// Update packet data to match the new receiver so that transfer middleware adds tokens to the expected address
 	packet = newPacketWithOverrideReceiver(packet, data, overrideReceiver)
-	if metadata.ContainsPFM() {
-		// If we are using PFM change receiver to the expected address for forwarding
-		metadata.Receiver = overrideReceiver
-	}
+	// TODO: fully validate PFM with ibcswap before re-enabling
+	// if metadata.ContainsPFM() {
+	// 	// If we are using PFM change receiver to the expected address for forwarding
+	// 	metadata.Receiver = overrideReceiver
+	// }
 
 	ack := im.app.OnRecvPacket(ctx, packet, relayer)
 	if ack == nil || !ack.Success() {
@@ -205,23 +202,24 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	packet.Data = dataBz
 
-	// Compose our context with values that will be used to pass through to the forward middleware
-	ctxWithForwardFlags := context.WithValue(cacheCtx.Context(), pfmtypes.ProcessedKey{}, true)
-	ctxWithForwardFlags = context.WithValue(
-		ctxWithForwardFlags,
-		pfmtypes.NonrefundableKey{},
-		true,
-	)
-	ctxWithForwardFlags = context.WithValue(
-		ctxWithForwardFlags,
-		pfmtypes.DisableDenomCompositionKey{},
-		true,
-	)
-	wrappedSdkCtx := cacheCtx.WithContext(ctxWithForwardFlags)
+	// TODO: fully validate PFM post ibcswap before re-enabling this
+	// // Compose our context with values that will be used to pass through to the forward middleware
+	// ctxWithForwardFlags := context.WithValue(cacheCtx.Context(), pfmtypes.ProcessedKey{}, true)
+	// ctxWithForwardFlags = context.WithValue(
+	// 	ctxWithForwardFlags,
+	// 	pfmtypes.NonrefundableKey{},
+	// 	true,
+	// )
+	// ctxWithForwardFlags = context.WithValue(
+	// 	ctxWithForwardFlags,
+	// 	pfmtypes.DisableDenomCompositionKey{},
+	// 	true,
+	// )
+	// wrappedSdkCtx := cacheCtx.WithContext(ctxWithForwardFlags)
 
 	// The forward middleware should return a nil ack if the forward is initiated properly.
 	// If not an error occurred, and we return the original ack.
-	newAck := im.app.OnRecvPacket(wrappedSdkCtx, packet, relayer)
+	newAck := im.app.OnRecvPacket(cacheCtx, packet, relayer)
 	if newAck != nil {
 		return im.handleFailedSwap(ctx, packet, data, metadata, errors.New(string(newAck.Acknowledgement())))
 	}
@@ -436,7 +434,14 @@ func validateSwapPacket(packet channeltypes.Packet, transferData transfertypes.F
 	}
 
 	if transferAmount.LT(sm.AmountIn) {
-		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer amount must be <= AmountIn")
+		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer amount must be >= AmountIn")
+	}
+
+	if sm.ContainsPFM() {
+		return sdkerrors.Wrap(
+			types.ErrInvalidSwapMetadata,
+			"ibcswap middle cannot be used in conjunction with packet-forward-middleware",
+		)
 	}
 	return nil
 }
