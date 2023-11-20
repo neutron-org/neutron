@@ -9,8 +9,7 @@ import (
 	"path/filepath"
 
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -147,8 +146,8 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
-	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 
 	"github.com/neutron-org/neutron/x/dex"
 	dexkeeper "github.com/neutron-org/neutron/x/dex/keeper"
@@ -225,7 +224,7 @@ var (
 			),
 		),
 		ibchooks.AppModuleBasic{},
-		router.AppModuleBasic{},
+		packetforward.AppModuleBasic{},
 		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 		dex.AppModuleBasic{},
@@ -310,11 +309,11 @@ type App struct {
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 	CronKeeper          cronkeeper.Keeper
-	PFMKeeper           *routerkeeper.Keeper
+	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
 
-	RouterModule router.AppModule
+	PFMModule packetforward.AppModule
 
 	HooksTransferIBCModule *ibchooks.IBCMiddleware
 	HooksICS4Wrapper       ibchooks.ICS4Middleware
@@ -396,7 +395,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
-		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, routertypes.StoreKey,
+		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, auctiontypes.StoreKey, dextypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -532,15 +531,15 @@ func New(
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	// PFMKeeper must be created before TransferKeeper
-	app.PFMKeeper = routerkeeper.NewKeeper(
+	app.PFMKeeper = pfmkeeper.NewKeeper(
 		appCodec,
-		app.keys[routertypes.StoreKey],
-		app.GetSubspace(routertypes.ModuleName),
+		app.keys[pfmtypes.StoreKey],
 		app.TransferKeeper.Keeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
 		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
@@ -751,14 +750,14 @@ func New(
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.RouterModule = router.NewAppModule(app.PFMKeeper)
+	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
-	var ibcStack ibcporttypes.IBCModule = router.NewIBCMiddleware(
+	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
 		app.HooksTransferIBCModule,
 		app.PFMKeeper,
 		0,
-		routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-		routerkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
 	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
@@ -799,7 +798,7 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
-		app.RouterModule,
+		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeModule,
@@ -846,7 +845,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName,
-		routertypes.ModuleName,
+		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
@@ -879,7 +878,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName,
-		routertypes.ModuleName,
+		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
@@ -919,7 +918,7 @@ func New(
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
 		ibchookstypes.ModuleName, // after auth keeper
-		routertypes.ModuleName,
+		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
@@ -947,7 +946,7 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
-		app.RouterModule,
+		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeBurnerModule,
@@ -1289,7 +1288,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
+	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 

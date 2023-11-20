@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
 	"github.com/neutron-org/neutron/x/dex/types"
@@ -42,12 +42,12 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	chainBAddr := s.bundleB.Chain.SenderAccount.GetAddress()
 
 	retries := uint8(0)
-	forwardMetadata := forwardtypes.PacketMetadata{
-		Forward: &forwardtypes.ForwardMetadata{
+	forwardMetadata := pfmtypes.PacketMetadata{
+		Forward: &pfmtypes.ForwardMetadata{
 			Receiver: chainBAddr.String(),
 			Port:     s.neutronChainBPath.EndpointA.ChannelConfig.PortID,
 			Channel:  s.neutronChainBPath.EndpointA.ChannelID,
-			Timeout:  forwardtypes.Duration(5 * time.Minute),
+			Timeout:  pfmtypes.Duration(5 * time.Minute),
 			Retries:  &retries,
 			Next:     nil,
 		},
@@ -99,10 +99,11 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	// Check that the funds are moved out of the acc on providerChain
 	s.assertProviderBalance(s.providerAddr, nativeDenom, newProviderBalNative.Sub(ibcTransferAmount))
 
-	// Check that the amountIn is deduced from the neutron account
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
-	// Check that neutron account did not keep any of the transfer denom
-	s.assertNeutronBalance(s.neutronAddr, nativeDenom, genesisWalletAmount.Sub(swapAmount))
+	// Check that the amountIn is deducted from the neutron override account
+	overrideAddr := s.ReceiverOverrideAddr(s.neutronTransferPath.EndpointA.ChannelID, s.providerAddr.String())
+	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.OneInt())
+	// Check that neutron override account did not keep any of the transfer denom
+	s.assertNeutronBalance(overrideAddr, nativeDenom, math.ZeroInt())
 
 	transferDenomPath := transfertypes.GetPrefixedDenom(
 		transfertypes.PortID,
