@@ -20,10 +20,8 @@ type PacketMetadata struct {
 // further in the middleware stack or on the counterparty.
 type SwapMetadata struct {
 	*dextypes.MsgPlaceLimitOrder
-	NonRefundable bool `json:"non-refundable,omitempty"`
 	// If a value is provided for NeutronRefundAddress and the swap fails the Transfer.Amount will be moved to this address for later recovery.
 	// If no NeutronRefundAddress is provided and a swap fails we will fail the ibc transfer and tokens will be refunded on the source chain.
-
 	NeutronRefundAddress string `json:"refund-address,omitempty"`
 
 	// Using JSONObject so that objects for next property will not be mutated by golang's lexicographic key sort on map keys during Marshal.
