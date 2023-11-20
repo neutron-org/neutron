@@ -17,9 +17,10 @@ import (
 	icstestutil "github.com/cosmos/interchain-security/v3/testutil/integration"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 	ccv "github.com/cosmos/interchain-security/v3/x/ccv/types"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/neutron-org/neutron/testutil"
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/suite"
 )
 
 var (
@@ -124,6 +125,7 @@ func (s *IBCTestSuite) addConsumerChain(
 		bundle.Chain,
 		s.providerChain,
 	)
+	consumerKeeper.SetProviderChannel(bundle.GetCtx(), bundle.Path.EndpointA.ChannelID)
 
 	return bundle
 }
