@@ -223,6 +223,8 @@ github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d h1:nalkkPQ
 github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d/go.mod h1:URdX5+vg25ts3aCh8H5IFZybJYKWhJHYMTnf+ULtoC4=
 github.com/CosmWasm/wasmvm v1.4.1 h1:YgodVlBrXa2HJZzOXjWDH0EIRwQzK3zuA73dDPRRLS4=
 github.com/CosmWasm/wasmvm v1.4.1/go.mod h1:fXB+m2gyh4v9839zlIXdMZGeLAxqUdYdFQqYsTha2hc=
+github.com/CosmWasm/wasmvm v1.5.0 h1:3hKeT9SfwfLhxTGKH3vXaKFzBz1yuvP8SlfwfQXbQfw=
+github.com/CosmWasm/wasmvm v1.5.0/go.mod h1:fXB+m2gyh4v9839zlIXdMZGeLAxqUdYdFQqYsTha2hc=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DataDog/zstd v1.5.0/go.mod h1:g4AWEaM3yOg3HYfnJ3YIawPnVdXJh9QME85blwSAmyw=
@@ -940,6 +942,8 @@ github.com/neutron-org/cosmos-sdk v0.47.6-neutron h1:agxUiBWlAGQf5+8A7e5omYrpgby
 github.com/neutron-org/cosmos-sdk v0.47.6-neutron/go.mod h1:7BmlRp0txKo2UZ01OLq4DGEjgLDiPgmpRpjLOq89Jys=
 github.com/neutron-org/wasmd v0.43.0 h1:aXzN9diVRAKTs2+EdK4zoTOmNCjjr8vpAhIq8VbBUJc=
 github.com/neutron-org/wasmd v0.43.0/go.mod h1:GEWnDHjbx7qtVHQ+5ocrNe1sIHNiXcTlSocXyLQNnRY=
+github.com/neutron-org/wasmd v0.43.1-0.20231121134303-e47173b19d80 h1:NZxcnl5FHTyRjwuHPh6f4jFPvK5OHez7CQvElN+Nz/E=
+github.com/neutron-org/wasmd v0.43.1-0.20231121134303-e47173b19d80/go.mod h1:k2/B7hBKbCEHhhOSaiv7UBHUR2fLVb003pnswasgG/w=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nxadm/tail v1.4.4 h1:DQuhQpB1tVlglWS2hLQ5OV6B5r8aGxSrPc5Qo6uTN78=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
