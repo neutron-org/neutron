@@ -14,7 +14,7 @@ accounts:
 faucet:
   name: bob
   coins:
-  - 500000ustrd
+  - 500000untrn
   - 100000stake
   host: 0.0.0.0:4500
 client:
