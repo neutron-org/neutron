@@ -248,6 +248,9 @@ start-docker-container:
 stop-docker-container:
 	@docker stop neutron
 
+openapi:
+	ignite generate openapi
+
 mocks:
 	@echo "Regenerate mocks..."
 	@go generate ./...
