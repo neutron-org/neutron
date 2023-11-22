@@ -944,6 +944,7 @@ github.com/neutron-org/wasmd v0.43.0 h1:aXzN9diVRAKTs2+EdK4zoTOmNCjjr8vpAhIq8VbB
 github.com/neutron-org/wasmd v0.43.0/go.mod h1:GEWnDHjbx7qtVHQ+5ocrNe1sIHNiXcTlSocXyLQNnRY=
 github.com/neutron-org/wasmd v0.43.1-0.20231121134303-e47173b19d80 h1:NZxcnl5FHTyRjwuHPh6f4jFPvK5OHez7CQvElN+Nz/E=
 github.com/neutron-org/wasmd v0.43.1-0.20231121134303-e47173b19d80/go.mod h1:k2/B7hBKbCEHhhOSaiv7UBHUR2fLVb003pnswasgG/w=
+github.com/neutron-org/wasmd v0.45.0 h1:K3WpYYTP9Msd7cLtdIau8VBUW1n1CC1qC/yaKPCYJsQ=
 github.com/neutron-org/wasmd v0.45.0/go.mod h1:k2/B7hBKbCEHhhOSaiv7UBHUR2fLVb003pnswasgG/w=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nxadm/tail v1.4.4 h1:DQuhQpB1tVlglWS2hLQ5OV6B5r8aGxSrPc5Qo6uTN78=
