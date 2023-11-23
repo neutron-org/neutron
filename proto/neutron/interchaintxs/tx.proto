@@ -1,11 +1,11 @@
 syntax = "proto3";
-package neutron.interchaintxs.v1;
+package neutron.interchaintxs;
 
 option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
 import "cosmos_proto/cosmos.proto";
 import "cosmos/base/v1beta1/coin.proto";
-import "neutron/interchaintxs/v1/params.proto";
+import "neutron/interchaintxs/params.proto";
 import "gogoproto/gogo.proto";
 import "google/api/http.proto";
 import "google/api/annotations.proto";

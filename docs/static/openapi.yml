@@ -40292,7 +40292,7 @@ paths:
   /neutron/interchaintxs/params:
     get:
       summary: Parameters queries the parameters of the module.
-      operationId: NeutronInterchaintxsV1Params
+      operationId: NeutronInterchaintxsParams
       responses:
         '200':
           description: A successful response.
@@ -40521,7 +40521,7 @@ paths:
         - Query
   /neutron/interchaintxs/{owner_address}/{interchain_account_id}/{connection_id}/interchain_account_address:
     get:
-      operationId: NeutronInterchaintxsV1InterchainAccountAddress
+      operationId: NeutronInterchaintxsInterchainAccountAddress
       responses:
         '200':
           description: A successful response.
@@ -71305,12 +71305,12 @@ definitions:
             The data could be arbitrary format, providing nessecary data
             for example neighbouring node hash
     title: ProofOps is Merkle proof defined by the list of ProofOps
-  neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse:
+  neutron.interchaintxs.MsgRegisterInterchainAccountResponse:
     type: object
     description: |-
       MsgRegisterInterchainAccountResponse is the response type for
       MsgRegisterInterchainAccount.
-  neutron.interchaintxs.v1.MsgSubmitTxResponse:
+  neutron.interchaintxs.MsgSubmitTxResponse:
     type: object
     properties:
       sequence_id:
@@ -71321,14 +71321,14 @@ definitions:
         type: string
         title: channel src channel on neutron side transaction was submitted from
     title: MsgSubmitTxResponse defines the response for Msg/SubmitTx
-  neutron.interchaintxs.v1.MsgUpdateParamsResponse:
+  neutron.interchaintxs.MsgUpdateParamsResponse:
     type: object
     description: |-
       MsgUpdateParamsResponse defines the response structure for executing a
       MsgUpdateParams message.
 
       Since: 0.47
-  neutron.interchaintxs.v1.Params:
+  neutron.interchaintxs.Params:
     type: object
     properties:
       msg_submit_tx_max_messages:
@@ -71351,14 +71351,14 @@ definitions:
             signatures required by gogoproto.
         title: Defines a minimum fee required to register interchain account
     description: Params defines the parameters for the module.
-  neutron.interchaintxs.v1.QueryInterchainAccountAddressResponse:
+  neutron.interchaintxs.QueryInterchainAccountAddressResponse:
     type: object
     properties:
       interchain_account_address:
         type: string
         title: The corresponding interchain account address on the host chain
     title: Query response for an interchain account address
-  neutron.interchaintxs.v1.QueryParamsResponse:
+  neutron.interchaintxs.QueryParamsResponse:
     type: object
     properties:
       params:

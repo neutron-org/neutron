@@ -45,7 +45,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/cosmos.bank.v1beta1.Query/SupplyOf":      &banktypes.QuerySupplyOfResponse{},
 
 		// interchaintxs
-		"/neutron.interchaintxs.v1.Query/Params": &interchaintxstypes.QueryParamsResponse{},
+		"/neutron.interchaintxs.Query/Params": &interchaintxstypes.QueryParamsResponse{},
 
 		// interchainqueries
 		"/neutron.interchainqueries.Query/Params": &interchainqueriestypes.QueryParamsResponse{},
