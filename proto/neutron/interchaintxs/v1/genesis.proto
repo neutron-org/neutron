@@ -1,8 +1,8 @@
 syntax = "proto3";
-package neutron.interchaintxs;
+package neutron.interchaintxs.v1;
 
 import "gogoproto/gogo.proto";
-import "neutron/interchaintxs/params.proto";
+import "neutron/interchaintxs/v1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
 
