@@ -65,7 +65,7 @@ func (s *IBCTestSuite) SetupTest() {
 	)
 
 	// Setup neutron as a consumer chain
-	neutronBundle := s.addConsumerChain(testutil.SetupTestingApp("neutron-1"), 1)
+	neutronBundle := s.addConsumerChain(testutil.SetupTestingApp(), 1)
 	s.neutronChain = neutronBundle.Chain
 	s.neutronApp = neutronBundle.App
 	s.neutronCCVPath = neutronBundle.Path
@@ -73,7 +73,7 @@ func (s *IBCTestSuite) SetupTest() {
 
 	// Setup consumer chainB
 	// NOTE: using neutron Setup for chain B, otherwise the consumer chain doesn't have the packetForwarding middleware
-	s.bundleB = s.addConsumerChain(testutil.SetupTestingApp("chainB-1"), 2)
+	s.bundleB = s.addConsumerChain(testutil.SetupTestingApp(), 2)
 	// Setup consumer chainC
 	s.bundleC = s.addConsumerChain(icstestingutils.ConsumerAppIniter, 3)
 

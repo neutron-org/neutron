@@ -36,11 +36,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/app/params"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -241,7 +242,7 @@ func (ac appCreator) newApp(
 		chainID = appGenesis.ChainID
 	}
 
-	return app.New(logger, chainID, db, traceStore, true, skipUpgradeHeights,
+	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		ac.encCfg,
@@ -276,21 +277,10 @@ func (ac appCreator) appExport(
 		return servertypes.ExportedApp{}, errors.New("application home is not set")
 	}
 
-	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
-	if chainID == "" {
-		appGenesis, err := tmtypes.GenesisDocFromFile(filepath.Join(homePath, "config", "genesis.json"))
-		if err != nil {
-			panic(err)
-		}
-
-		chainID = appGenesis.ChainID
-	}
-
 	loadLatest := height == -1
 	var emptyWasmOpts []wasmkeeper.Option
 	interchainapp = app.New(
 		logger,
-		chainID,
 		db,
 		traceStore,
 		loadLatest,

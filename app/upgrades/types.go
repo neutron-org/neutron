@@ -11,7 +11,6 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
@@ -47,7 +46,6 @@ type UpgradeKeepers struct {
 	SlashingKeeper     slashingkeeper.Keeper
 	ParamsKeeper       paramskeeper.Keeper
 	CapabilityKeeper   *capabilitykeeper.Keeper
-	AuctionKeeper      auctionkeeper.Keeper
 	ContractManager    contractmanagerkeeper.Keeper
 	AdminModule        adminmodulekeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper

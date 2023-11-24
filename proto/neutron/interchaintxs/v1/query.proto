@@ -1,5 +1,5 @@
 syntax = "proto3";
-package neutron.interchaintxs;
+package neutron.interchaintxs.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
