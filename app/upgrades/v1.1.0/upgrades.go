@@ -230,13 +230,15 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
 	ctx.Logger().Info("Implementing GlobalFee Params...")
 
-	// global fee is empty set, set global fee to equal to 0.05 USD (for 200k of gas) in appropriate coin
-	// As of June 22nd, 2023 this is
-	// 0.9untrn,0.026ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9,0.25ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349
+	// The average gas cost for an average transaction on Neutron should not go beyond 5 cents.
+	// Users have three designated coins that can be used for gas: NTRN, ATOM, and axlUSDC
+	// Assuming average transaction gas on Neutron consumer is ~250000 approximately, ATOM 30D TWAP is $8.4 and NTRN 30D TWAP is $0.36
+	// we set minimum-gas-prices as per this formula:
+	// ((0.05 * 10^(6)) / TOKEN_30d_TWAP) / AVG_GAS_PRICE
 	requiredGlobalFees := sdk.DecCoins{
-		sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0.9")),
-		sdk.NewDecCoinFromDec(AtomDenom, sdk.MustNewDecFromStr("0.026")),
-		sdk.NewDecCoinFromDec(AxelarUsdcDenom, sdk.MustNewDecFromStr("0.25")),
+		sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0.56")),
+		sdk.NewDecCoinFromDec(AtomDenom, sdk.MustNewDecFromStr("0.02")),
+		sdk.NewDecCoinFromDec(AxelarUsdcDenom, sdk.MustNewDecFromStr("0.2")),
 	}
 	requiredGlobalFees = requiredGlobalFees.Sort()
 
