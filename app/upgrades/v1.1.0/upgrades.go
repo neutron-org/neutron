@@ -5,13 +5,11 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/neutron-org/neutron/app/params"
 
-	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,8 +20,6 @@ import (
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
 	"github.com/neutron-org/neutron/app/upgrades"
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
@@ -86,12 +82,6 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
-		ctx.Logger().Info("Setting pob params...")
-		err = setAuctionParams(ctx, keepers.AccountKeeper, keepers.AuctionKeeper)
-		if err != nil {
-			return nil, err
-		}
-
 		ctx.Logger().Info("Setting sudo callback limit...")
 		err = setContractManagerParams(ctx, keepers.ContractManager)
 		if err != nil {
@@ -125,25 +115,6 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info("Upgrade complete")
 		return vm, nil
 	}
-}
-
-func setAuctionParams(ctx sdk.Context, accountKeeper authkeeper.AccountKeeper, auctionKeeper auctionkeeper.Keeper) error {
-	consumerRedistributeAddr := accountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)
-
-	auctionParams := auctiontypes.Params{
-		MaxBundleSize: 4,
-		// 75% of rewards goes to consumer redistribution module and then to the FeeBurner module
-		// where all the NTRNs are burned
-		EscrowAccountAddress:   consumerRedistributeAddr,
-		ReserveFee:             sdk.Coin{Denom: params.DefaultDenom, Amount: sdk.NewInt(500_000)},
-		MinBidIncrement:        sdk.Coin{Denom: params.DefaultDenom, Amount: sdk.NewInt(100_000)},
-		FrontRunningProtection: false,
-		// in the app.go on L603 set FixedAddressRewardsAddressProvider (where 25% goes to)
-		// to ConsumerToSendToProviderName module from where rewards goes to the Hub
-		// Meaning we sent 25% of the MEV rewards to the Hub
-		ProposerFee: math.LegacyNewDecWithPrec(25, 2),
-	}
-	return auctionKeeper.SetParams(ctx, auctionParams)
 }
 
 func setContractManagerParams(ctx sdk.Context, keeper contractmanagerkeeper.Keeper) error {

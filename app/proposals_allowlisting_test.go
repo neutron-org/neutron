@@ -30,7 +30,6 @@ func SetupTestingAppConsumer() (ibctesting.TestingApp, map[string]json.RawMessag
 	encoding := app.MakeEncodingConfig()
 	testApp := app.New(
 		log.NewNopLogger(),
-		"test-1",
 		db,
 		nil,
 		true,
