@@ -327,7 +327,6 @@ func (app *App) GetTestEvidenceKeeper() integration.TestEvidenceKeeper {
 // New returns a reference to an initialized blockchain app
 func New(
 	logger log.Logger,
-	_ string,
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,

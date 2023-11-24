@@ -57,7 +57,7 @@ var (
 )
 
 func init() {
-	ibctesting.DefaultTestingAppInit = SetupTestingApp("test-1")
+	ibctesting.DefaultTestingAppInit = SetupTestingApp()
 	app.GetDefaultConfig()
 }
 
@@ -263,11 +263,11 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 
 	chainID = ibctesting.GetChainID(2)
 	coordinator.Chains[chainID] = NewTestChainWithValSet(t, coordinator,
-		SetupTestingApp(chainID), chainID, providerChain.Vals, providerChain.Signers)
+		SetupTestingApp(), chainID, providerChain.Vals, providerChain.Signers)
 
 	chainID = ibctesting.GetChainID(3)
 	coordinator.Chains[chainID] = NewTestChainWithValSet(t, coordinator,
-		SetupTestingApp(chainID), chainID, providerChain.Vals, providerChain.Signers)
+		SetupTestingApp(), chainID, providerChain.Vals, providerChain.Signers)
 
 	return coordinator
 }
@@ -374,13 +374,12 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 }
 
 // SetupTestingApp initializes the IBC-go testing application
-func SetupTestingApp(chainID string) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
+func SetupTestingApp() func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		encoding := app.MakeEncodingConfig()
 		db := dbm.NewMemDB()
 		testApp := app.New(
 			log.NewNopLogger(),
-			chainID,
 			db,
 			nil,
 			true,
