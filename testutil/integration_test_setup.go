@@ -23,6 +23,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	consumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil/consumer"
 
@@ -34,7 +35,6 @@ func setup(withGenesis bool) (*app.App, app.GenesisState) {
 	db := dbm.NewMemDB()
 	testApp := app.New(
 		log.NewNopLogger(),
-		"neutron-1",
 		db,
 		nil,
 		true,

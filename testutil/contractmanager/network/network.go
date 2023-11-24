@@ -22,6 +22,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/neutron-org/neutron/app/params"
 
 	"github.com/neutron-org/neutron/app"
@@ -77,7 +78,7 @@ func DefaultConfig() network.Config {
 			}
 
 			return app.New(
-				val.GetCtx().Logger, chainID, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
+				val.GetCtx().Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
 				sims.EmptyAppOptions{},
 				nil,
