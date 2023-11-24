@@ -277,16 +277,6 @@ func (ac appCreator) appExport(
 		return servertypes.ExportedApp{}, errors.New("application home is not set")
 	}
 
-	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
-	if chainID == "" {
-		appGenesis, err := tmtypes.GenesisDocFromFile(filepath.Join(homePath, "config", "genesis.json"))
-		if err != nil {
-			panic(err)
-		}
-
-		chainID = appGenesis.ChainID
-	}
-
 	loadLatest := height == -1
 	var emptyWasmOpts []wasmkeeper.Option
 	interchainapp = app.New(
