@@ -1,0 +1,9 @@
+syntax = "proto3";
+package neutron.dex;
+
+option go_package = "github.com/neutron-org/neutron/x/dex/types";
+
+message TradePairID {
+    string maker_denom = 2;
+    string taker_denom = 3;
+}

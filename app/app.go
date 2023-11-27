@@ -10,7 +10,6 @@ import (
 
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
-
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -149,6 +148,16 @@ import (
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+
+	"github.com/neutron-org/neutron/x/dex"
+	dexkeeper "github.com/neutron-org/neutron/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
+
+	"github.com/neutron-org/neutron/x/ibcswap"
+	ibcswapkeeper "github.com/neutron-org/neutron/x/ibcswap/keeper"
+	ibcswaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
+
+	gmpmiddleware "github.com/neutron-org/neutron/x/gmp"
 )
 
 const (
@@ -204,6 +213,8 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		globalfee.AppModule{},
+		dex.AppModuleBasic{},
+		ibcswap.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -219,6 +230,8 @@ var (
 		ccvconsumertypes.ConsumerToSendToProviderName: nil,
 		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
 		crontypes.ModuleName:                          nil,
+		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner},
+		ibcswaptypes.ModuleName:                       {authtypes.Burner},
 	}
 )
 
@@ -279,9 +292,11 @@ type App struct {
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 	CronKeeper          cronkeeper.Keeper
-	RouterKeeper        *pfmkeeper.Keeper
+	PFMKeeper           *pfmkeeper.Keeper
+	DexKeeper           dexkeeper.Keeper
+	SwapKeeper          ibcswapkeeper.Keeper
 
-	RouterModule packetforward.AppModule
+	PFMModule packetforward.AppModule
 
 	HooksTransferIBCModule *ibchooks.IBCMiddleware
 	HooksICS4Wrapper       ibchooks.ICS4Middleware
@@ -356,7 +371,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -490,8 +505,8 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
-	// RouterKeeper must be created before TransferKeeper
-	app.RouterKeeper = pfmkeeper.NewKeeper(
+	// PFMKeeper must be created before TransferKeeper
+	app.PFMKeeper = pfmkeeper.NewKeeper(
 		appCodec,
 		app.keys[pfmtypes.StoreKey],
 		app.TransferKeeper.Keeper,
@@ -504,7 +519,7 @@ func New(
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		app.RouterKeeper,
+		app.PFMKeeper,
 		&wasmHooks,
 	)
 
@@ -523,7 +538,7 @@ func New(
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 	)
 
-	app.RouterKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
+	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
 
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
@@ -568,6 +583,25 @@ func New(
 		banktypes.NewMultiBankHooks(
 			app.TokenFactoryKeeper.Hooks(),
 		))
+
+	app.DexKeeper = *dexkeeper.NewKeeper(
+		appCodec,
+		keys[dextypes.StoreKey],
+		keys[dextypes.MemStoreKey],
+		app.BankKeeper.WithMintCoinsRestriction(dextypes.NewDexDenomMintCoinsRestriction()),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
+
+	app.SwapKeeper = ibcswapkeeper.NewKeeper(
+		appCodec,
+		app.MsgServiceRouter(),
+		app.IBCKeeper.ChannelKeeper,
+		app.BankKeeper,
+	)
+
+	swapModule := ibcswap.NewAppModule(app.SwapKeeper)
 
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
@@ -681,15 +715,18 @@ func New(
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.RouterModule = packetforward.NewAppModule(app.RouterKeeper, app.GetSubspace(pfmtypes.ModuleName))
+	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
-	ibcStack := packetforward.NewIBCMiddleware(
+	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
 		app.HooksTransferIBCModule,
-		app.RouterKeeper,
+		app.PFMKeeper,
 		0,
 		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
 		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
+
+	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
+	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
@@ -726,7 +763,7 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
-		app.RouterModule,
+		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeModule,
@@ -737,6 +774,8 @@ func New(
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
 		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
+		swapModule,
+		dexModule,
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	)
 
@@ -772,6 +811,8 @@ func New(
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
+		ibcswaptypes.ModuleName,
+		dextypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -802,6 +843,10 @@ func New(
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
+		ibcswaptypes.ModuleName,
+		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
+		// dexmodule must be the last endBlock module to run
+		dextypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -837,6 +882,8 @@ func New(
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
+		ibcswaptypes.ModuleName,
+		dextypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -860,11 +907,12 @@ func New(
 		transferModule,
 		consumerModule,
 		icaModule,
-		app.RouterModule,
+		app.PFMModule,
 		interchainQueriesModule,
 		interchainTxsModule,
 		feeBurnerModule,
 		cronModule,
+		dexModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -998,12 +1046,22 @@ func (app *App) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Respo
 	return app.mm.EndBlock(ctx, req)
 }
 
+func (app *App) EnsureBlockGasMeter(ctx sdk.Context) {
+	// TrancheKey generation and LimitOrderExpirationPurge both rely on a BlockGas meter.
+	// check that it works at startup
+	cp := app.GetConsensusParams(ctx)
+	if cp == nil || cp.Block == nil || cp.Block.MaxGas <= 0 {
+		panic("BlockGas meter must be initialized. Genesis must provide value for Block.MaxGas")
+	}
+}
+
 // InitChainer application update at chain initialization
 func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+	app.EnsureBlockGasMeter(ctx)
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }

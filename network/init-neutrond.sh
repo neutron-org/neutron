@@ -721,8 +721,7 @@ set_genesis_param_jq ".app_state.globalfee.params.bypass_min_fee_msg_types" "$BY
 set_genesis_param proposer_fee                          "\"0.25\""                                        # builder(POB)
 set_genesis_param escrow_account_address                "\"$CONSUMER_REDISTRIBUTE_ACCOUNT_ADDRESS_B64\"," # builder(POB)
 set_genesis_param sudo_call_gas_limit                   "\"1000000\""                                     # contractmanager
-
-cat $GENESIS_PATH
+set_genesis_param max_gas                               "\"1000000000\""                                  # consensus_params
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2

@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -18,6 +19,7 @@ import (
 
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -66,9 +68,11 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*feerefundertypes.MsgUpdateParams,
 		*crontypes.MsgUpdateParams,
 		*contractmanagertypes.MsgUpdateParams,
+		*dextypes.MsgUpdateParams,
 		*banktypes.MsgUpdateParams,
 		*crisistypes.MsgUpdateParams,
 		*minttypes.MsgUpdateParams,
+		*pfmtypes.MsgUpdateParams,
 		*authtypes.MsgUpdateParams:
 		return true
 	}

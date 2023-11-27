@@ -6,6 +6,7 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
 	"github.com/neutron-org/neutron/app/upgrades"
+	dextypes "github.com/neutron-org/neutron/x/dex/types"
 )
 
 const (
@@ -22,6 +23,7 @@ var Upgrade = upgrades.Upgrade{
 		Added: []string{
 			consensusparamtypes.ModuleName,
 			crisistypes.ModuleName,
+			dextypes.ModuleName,
 		},
 	},
 }
