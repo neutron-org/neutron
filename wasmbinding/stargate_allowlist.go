@@ -46,13 +46,19 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/cosmos.bank.v1beta1.Query/SupplyOf":      &banktypes.QuerySupplyOfResponse{},
 
 		// interchaintxs
-		"/neutron.interchaintxs.v1.Query/Params": &interchaintxstypes.QueryParamsResponse{},
+		"/neutron.interchaintxs.v1.Query/Params":                   &interchaintxstypes.QueryParamsResponse{},
+		"/neutron.interchaintxs.v1.Query/InterchainAccountAddress": &interchaintxstypes.QueryInterchainAccountAddressResponse{},
 
 		// interchainqueries
-		"/neutron.interchainqueries.Query/Params": &interchainqueriestypes.QueryParamsResponse{},
+		"/neutron.interchainqueries.Query/Params":            &interchainqueriestypes.QueryParamsResponse{},
+		"/neutron.interchainqueries.Query/RegisteredQueries": &interchainqueriestypes.QueryRegisteredQueriesResponse{},
+		"/neutron.interchainqueries.Query/RegisteredQuery":   &interchainqueriestypes.QueryRegisteredQueryResponse{},
+		"/neutron.interchainqueries.Query/QueryResult":       &interchainqueriestypes.QueryRegisteredQueryResultResponse{},
+		"/neutron.interchainqueries.Query/LastRemoteHeight":  &interchainqueriestypes.QueryLastRemoteHeightResponse{},
 
 		// feeburner
-		"/neutron.feeburner.Query/Params": &feeburnertypes.QueryParamsResponse{},
+		"/neutron.feeburner.Query/Params":                    &feeburnertypes.QueryParamsResponse{},
+		"/neutron.feeburner.Query/TotalBurnedNeutronsAmount": &feeburnertypes.QueryTotalBurnedNeutronsAmountResponse{},
 
 		// dex
 		"/neutron.dex.Query/Params":                            &dextypes.QueryParamsResponse{},
