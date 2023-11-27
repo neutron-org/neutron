@@ -53,6 +53,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 // Swap calls into the base app's msg service router so that the appropriate handler is called when sending the swap msg.
 func (k Keeper) Swap(
 	ctx sdk.Context,
+	originalCreator string,
 	msg *dextypes.MsgPlaceLimitOrder,
 ) (*dextypes.MsgPlaceLimitOrderResponse, error) {
 	swapHandler := k.msgServiceRouter.Handler(msg)
@@ -71,6 +72,20 @@ func (k Keeper) Swap(
 	msgSwapRes := &dextypes.MsgPlaceLimitOrderResponse{}
 	if err := proto.Unmarshal(res.Data, msgSwapRes); err != nil {
 		return nil, err
+	}
+
+	amountUnused := msg.AmountIn.Sub(msgSwapRes.CoinIn.Amount)
+	// If not all tokenIn is swapped and a temporary creator address has been used
+	// return the unused portion to the original creator address
+	if amountUnused.IsPositive() && originalCreator != msg.Creator {
+		overrrideCreatorAddr := sdk.MustAccAddressFromBech32(msg.Creator)
+		originalCreatorAddr := sdk.MustAccAddressFromBech32(originalCreator)
+		unusedCoin := sdk.NewCoin(msg.TokenIn, amountUnused)
+
+		err := k.bankKeeper.SendCoins(ctx, overrrideCreatorAddr, originalCreatorAddr, sdk.Coins{unusedCoin})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return msgSwapRes, nil
@@ -113,6 +128,7 @@ func (k Keeper) RefundPacketToken(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
+	metadata *types.SwapMetadata,
 ) error {
 	// parse the denomination from the full denom path
 	trace := transfertypes.ParseDenomTrace(data.Denom)
@@ -128,8 +144,8 @@ func (k Keeper) RefundPacketToken(
 	}
 	token := sdk.NewCoin(trace.IBCDenom(), transferAmount)
 
-	// decode the receiver address
-	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
+	// decode the creator address
+	receiver, err := sdk.AccAddressFromBech32(metadata.Creator)
 	if err != nil {
 		return err
 	}
