@@ -38099,6 +38099,2100 @@ paths:
           type: string
       tags:
         - Query
+  /neutron/dex/estimate_multi_hop_swap:
+    get:
+      summary: Queries the simulated result of a multihop swap
+      operationId: NeutronDexEstimateMultiHopSwap
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              coin_out:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: creator
+          in: query
+          required: false
+          type: string
+        - name: receiver
+          in: query
+          required: false
+          type: string
+        - name: amount_in
+          in: query
+          required: false
+          type: string
+        - name: exit_limit_price
+          in: query
+          required: false
+          type: string
+        - name: pick_best_route
+          description: >-
+            If pickBestRoute == true then all routes are run and the route with
+            the best price is chosen
+
+            otherwise, the first succesful route is used.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/estimate_place_limit_order:
+    get:
+      summary: Queries the simulated result of a multihop swap
+      operationId: NeutronDexEstimatePlaceLimitOrder
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              total_in_coin:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                title: >-
+                  Total amount of coin used for the limit order
+
+                  You can derive makerLimitInCoin using the equation:
+                  totalInCoin = swapInCoin + makerLimitInCoin
+              swap_in_coin:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                title: >-
+                  Total amount of the token in that was immediately swapped for
+                  swapOutCoin
+              swap_out_coin:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                title: >-
+                  Total amount of coin received from the taker portion of the
+                  limit order
+
+                  This is the amount of coin immediately available in the users
+                  account after executing the
+
+                  limit order. It does not include any future proceeds from the
+                  maker portion which will have withdrawn in the future
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: creator
+          in: query
+          required: false
+          type: string
+        - name: receiver
+          in: query
+          required: false
+          type: string
+        - name: token_in
+          in: query
+          required: false
+          type: string
+        - name: token_out
+          in: query
+          required: false
+          type: string
+        - name: tick_index_in_to_out
+          in: query
+          required: false
+          type: string
+          format: int64
+        - name: amount_in
+          in: query
+          required: false
+          type: string
+        - name: order_type
+          in: query
+          required: false
+          type: string
+          enum:
+            - GOOD_TIL_CANCELLED
+            - FILL_OR_KILL
+            - IMMEDIATE_OR_CANCEL
+            - JUST_IN_TIME
+            - GOOD_TIL_TIME
+          default: GOOD_TIL_CANCELLED
+        - name: expiration_time
+          description: expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+          in: query
+          required: false
+          type: string
+          format: date-time
+        - name: maxAmount_out
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
+  /neutron/dex/filled_limit_order_tranche:
+    get:
+      summary: Queries a list of InactiveLimitOrderTranche items.
+      operationId: NeutronDexInactiveLimitOrderTrancheAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              inactive_limit_order_tranche:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: object
+                      properties:
+                        trade_pair_id:
+                          type: object
+                          properties:
+                            maker_denom:
+                              type: string
+                            taker_denom:
+                              type: string
+                        tick_index_taker_to_maker:
+                          type: string
+                          format: int64
+                        tranche_key:
+                          type: string
+                    reserves_maker_denom:
+                      type: string
+                    reserves_taker_denom:
+                      type: string
+                    total_maker_denom:
+                      type: string
+                    total_taker_denom:
+                      type: string
+                      title: >-
+                        GoodTilDate is represented as seconds since  January 1,
+                        year 1, 00:00:00.00 UTC
+                         LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                    expiration_time:
+                      type: string
+                      format: date-time
+                      title: >-
+                        JIT orders also use goodTilDate to handle deletion but
+                        represent a special case
+
+                        All JIT orders have a goodTilDate of 0 and an exception
+                        is made to still still treat these orders as live
+
+                        Order deletion still functions the same and the orders
+                        will be deleted at the end of the block
+                    price_taker_to_maker:
+                      type: string
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}:
+    get:
+      summary: Queries a InactiveLimitOrderTranche by index.
+      operationId: NeutronDexInactiveLimitOrderTranche
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              inactive_limit_order_tranche:
+                type: object
+                properties:
+                  key:
+                    type: object
+                    properties:
+                      trade_pair_id:
+                        type: object
+                        properties:
+                          maker_denom:
+                            type: string
+                          taker_denom:
+                            type: string
+                      tick_index_taker_to_maker:
+                        type: string
+                        format: int64
+                      tranche_key:
+                        type: string
+                  reserves_maker_denom:
+                    type: string
+                  reserves_taker_denom:
+                    type: string
+                  total_maker_denom:
+                    type: string
+                  total_taker_denom:
+                    type: string
+                    title: >-
+                      GoodTilDate is represented as seconds since  January 1,
+                      year 1, 00:00:00.00 UTC
+                       LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                  expiration_time:
+                    type: string
+                    format: date-time
+                    title: >-
+                      JIT orders also use goodTilDate to handle deletion but
+                      represent a special case
+
+                      All JIT orders have a goodTilDate of 0 and an exception is
+                      made to still still treat these orders as live
+
+                      Order deletion still functions the same and the orders
+                      will be deleted at the end of the block
+                  price_taker_to_maker:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pair_id
+          in: path
+          required: true
+          type: string
+        - name: token_in
+          in: path
+          required: true
+          type: string
+        - name: tick_index
+          in: path
+          required: true
+          type: string
+          format: int64
+        - name: tranche_key
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /neutron/dex/limit_order_tranche/{pair_id}/{token_in}:
+    get:
+      summary: >-
+        Queries a list of LimitOrderTranche items for a given pairID / TokenIn
+        combination.
+      operationId: NeutronDexLimitOrderTrancheAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              limit_order_tranche:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: object
+                      properties:
+                        trade_pair_id:
+                          type: object
+                          properties:
+                            maker_denom:
+                              type: string
+                            taker_denom:
+                              type: string
+                        tick_index_taker_to_maker:
+                          type: string
+                          format: int64
+                        tranche_key:
+                          type: string
+                    reserves_maker_denom:
+                      type: string
+                    reserves_taker_denom:
+                      type: string
+                    total_maker_denom:
+                      type: string
+                    total_taker_denom:
+                      type: string
+                      title: >-
+                        GoodTilDate is represented as seconds since  January 1,
+                        year 1, 00:00:00.00 UTC
+                         LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                    expiration_time:
+                      type: string
+                      format: date-time
+                      title: >-
+                        JIT orders also use goodTilDate to handle deletion but
+                        represent a special case
+
+                        All JIT orders have a goodTilDate of 0 and an exception
+                        is made to still still treat these orders as live
+
+                        Order deletion still functions the same and the orders
+                        will be deleted at the end of the block
+                    price_taker_to_maker:
+                      type: string
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pair_id
+          in: path
+          required: true
+          type: string
+        - name: token_in
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}:
+    get:
+      summary: Queries a LimitOrderTranche by index.
+      operationId: NeutronDexLimitOrderTranche
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              limit_order_tranche:
+                type: object
+                properties:
+                  key:
+                    type: object
+                    properties:
+                      trade_pair_id:
+                        type: object
+                        properties:
+                          maker_denom:
+                            type: string
+                          taker_denom:
+                            type: string
+                      tick_index_taker_to_maker:
+                        type: string
+                        format: int64
+                      tranche_key:
+                        type: string
+                  reserves_maker_denom:
+                    type: string
+                  reserves_taker_denom:
+                    type: string
+                  total_maker_denom:
+                    type: string
+                  total_taker_denom:
+                    type: string
+                    title: >-
+                      GoodTilDate is represented as seconds since  January 1,
+                      year 1, 00:00:00.00 UTC
+                       LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                  expiration_time:
+                    type: string
+                    format: date-time
+                    title: >-
+                      JIT orders also use goodTilDate to handle deletion but
+                      represent a special case
+
+                      All JIT orders have a goodTilDate of 0 and an exception is
+                      made to still still treat these orders as live
+
+                      Order deletion still functions the same and the orders
+                      will be deleted at the end of the block
+                  price_taker_to_maker:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pair_id
+          in: path
+          required: true
+          type: string
+        - name: token_in
+          in: path
+          required: true
+          type: string
+        - name: tick_index
+          in: path
+          required: true
+          type: string
+          format: int64
+        - name: tranche_key
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /neutron/dex/limit_order_tranche_user:
+    get:
+      summary: Queries a list of LimitOrderTrancheMap items.
+      operationId: NeutronDexLimitOrderTrancheUserAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              limit_order_tranche_user:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    trade_pair_id:
+                      type: object
+                      properties:
+                        maker_denom:
+                          type: string
+                        taker_denom:
+                          type: string
+                    tick_index_taker_to_maker:
+                      type: string
+                      format: int64
+                    tranche_key:
+                      type: string
+                    address:
+                      type: string
+                    shares_owned:
+                      type: string
+                    shares_withdrawn:
+                      type: string
+                    shares_cancelled:
+                      type: string
+                    order_type:
+                      type: string
+                      enum:
+                        - GOOD_TIL_CANCELLED
+                        - FILL_OR_KILL
+                        - IMMEDIATE_OR_CANCEL
+                        - JUST_IN_TIME
+                        - GOOD_TIL_TIME
+                      default: GOOD_TIL_CANCELLED
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/limit_order_tranche_user/{address}/{tranche_key}:
+    get:
+      summary: Queries a LimitOrderTrancheUser by index.
+      operationId: NeutronDexLimitOrderTrancheUser
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              limit_order_tranche_user:
+                type: object
+                properties:
+                  trade_pair_id:
+                    type: object
+                    properties:
+                      maker_denom:
+                        type: string
+                      taker_denom:
+                        type: string
+                  tick_index_taker_to_maker:
+                    type: string
+                    format: int64
+                  tranche_key:
+                    type: string
+                  address:
+                    type: string
+                  shares_owned:
+                    type: string
+                  shares_withdrawn:
+                    type: string
+                  shares_cancelled:
+                    type: string
+                  order_type:
+                    type: string
+                    enum:
+                      - GOOD_TIL_CANCELLED
+                      - FILL_OR_KILL
+                      - IMMEDIATE_OR_CANCEL
+                      - JUST_IN_TIME
+                      - GOOD_TIL_TIME
+                    default: GOOD_TIL_CANCELLED
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: address
+          in: path
+          required: true
+          type: string
+        - name: tranche_key
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /neutron/dex/params:
+    get:
+      summary: Parameters queries the parameters of the module.
+      operationId: NeutronDexParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params holds all the parameters of this module.
+                type: object
+                properties:
+                  fee_tiers:
+                    type: array
+                    items:
+                      type: string
+                      format: uint64
+                  max_true_taker_spread:
+                    type: string
+            description: >-
+              QueryParamsResponse is response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Query
+  /neutron/dex/pool/{pair_id}/{tick_index}/{fee}:
+    get:
+      summary: Queries a pool by pair, tick and fee
+      operationId: NeutronDexPool
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pool:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uint64
+                  lower_tick0:
+                    type: object
+                    properties:
+                      key:
+                        type: object
+                        properties:
+                          trade_pair_id:
+                            type: object
+                            properties:
+                              maker_denom:
+                                type: string
+                              taker_denom:
+                                type: string
+                          tick_index_taker_to_maker:
+                            type: string
+                            format: int64
+                          fee:
+                            type: string
+                            format: uint64
+                      reserves_maker_denom:
+                        type: string
+                      price_taker_to_maker:
+                        type: string
+                      price_opposite_taker_to_maker:
+                        type: string
+                  upper_tick1:
+                    type: object
+                    properties:
+                      key:
+                        type: object
+                        properties:
+                          trade_pair_id:
+                            type: object
+                            properties:
+                              maker_denom:
+                                type: string
+                              taker_denom:
+                                type: string
+                          tick_index_taker_to_maker:
+                            type: string
+                            format: int64
+                          fee:
+                            type: string
+                            format: uint64
+                      reserves_maker_denom:
+                        type: string
+                      price_taker_to_maker:
+                        type: string
+                      price_opposite_taker_to_maker:
+                        type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pair_id
+          in: path
+          required: true
+          type: string
+        - name: tick_index
+          in: path
+          required: true
+          type: string
+          format: int64
+        - name: fee
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /neutron/dex/pool/{pool_id}:
+    get:
+      summary: Queries a pool by ID
+      operationId: NeutronDexPoolByID
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pool:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uint64
+                  lower_tick0:
+                    type: object
+                    properties:
+                      key:
+                        type: object
+                        properties:
+                          trade_pair_id:
+                            type: object
+                            properties:
+                              maker_denom:
+                                type: string
+                              taker_denom:
+                                type: string
+                          tick_index_taker_to_maker:
+                            type: string
+                            format: int64
+                          fee:
+                            type: string
+                            format: uint64
+                      reserves_maker_denom:
+                        type: string
+                      price_taker_to_maker:
+                        type: string
+                      price_opposite_taker_to_maker:
+                        type: string
+                  upper_tick1:
+                    type: object
+                    properties:
+                      key:
+                        type: object
+                        properties:
+                          trade_pair_id:
+                            type: object
+                            properties:
+                              maker_denom:
+                                type: string
+                              taker_denom:
+                                type: string
+                          tick_index_taker_to_maker:
+                            type: string
+                            format: int64
+                          fee:
+                            type: string
+                            format: uint64
+                      reserves_maker_denom:
+                        type: string
+                      price_taker_to_maker:
+                        type: string
+                      price_opposite_taker_to_maker:
+                        type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pool_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /neutron/dex/pool_metadata:
+    get:
+      summary: Queries a list of PoolMetadata items.
+      operationId: NeutronDexPoolMetadataAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pool_metadata:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uint64
+                    tick:
+                      type: string
+                      format: int64
+                    fee:
+                      type: string
+                      format: uint64
+                    pair_id:
+                      type: object
+                      properties:
+                        token0:
+                          type: string
+                        token1:
+                          type: string
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/pool_metadata/{id}:
+    get:
+      summary: Queries a PoolMetadata by ID
+      operationId: NeutronDexPoolMetadata
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              Pool_metadata:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uint64
+                  tick:
+                    type: string
+                    format: int64
+                  fee:
+                    type: string
+                    format: uint64
+                  pair_id:
+                    type: object
+                    properties:
+                      token0:
+                        type: string
+                      token1:
+                        type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /neutron/dex/pool_reserves/{pair_id}/{token_in}:
+    get:
+      summary: Queries a list of PoolReserves items.
+      operationId: NeutronDexPoolReservesAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pool_reserves:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: object
+                      properties:
+                        trade_pair_id:
+                          type: object
+                          properties:
+                            maker_denom:
+                              type: string
+                            taker_denom:
+                              type: string
+                        tick_index_taker_to_maker:
+                          type: string
+                          format: int64
+                        fee:
+                          type: string
+                          format: uint64
+                    reserves_maker_denom:
+                      type: string
+                    price_taker_to_maker:
+                      type: string
+                    price_opposite_taker_to_maker:
+                      type: string
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pair_id
+          in: path
+          required: true
+          type: string
+        - name: token_in
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/pool_reserves/{pair_id}/{token_in}/{tick_index}/{fee}:
+    get:
+      summary: Queries a PoolReserve by index
+      operationId: NeutronDexPoolReserves
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pool_reserves:
+                type: object
+                properties:
+                  key:
+                    type: object
+                    properties:
+                      trade_pair_id:
+                        type: object
+                        properties:
+                          maker_denom:
+                            type: string
+                          taker_denom:
+                            type: string
+                      tick_index_taker_to_maker:
+                        type: string
+                        format: int64
+                      fee:
+                        type: string
+                        format: uint64
+                  reserves_maker_denom:
+                    type: string
+                  price_taker_to_maker:
+                    type: string
+                  price_opposite_taker_to_maker:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pair_id
+          in: path
+          required: true
+          type: string
+        - name: token_in
+          in: path
+          required: true
+          type: string
+        - name: tick_index
+          in: path
+          required: true
+          type: string
+          format: int64
+        - name: fee
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /neutron/dex/tick_liquidity/{pair_id}/{token_in}:
+    get:
+      summary: Queries a list of TickLiquidity items.
+      operationId: NeutronDexTickLiquidityAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              tick_liquidity:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pool_reserves:
+                      type: object
+                      properties:
+                        key:
+                          type: object
+                          properties:
+                            trade_pair_id:
+                              type: object
+                              properties:
+                                maker_denom:
+                                  type: string
+                                taker_denom:
+                                  type: string
+                            tick_index_taker_to_maker:
+                              type: string
+                              format: int64
+                            fee:
+                              type: string
+                              format: uint64
+                        reserves_maker_denom:
+                          type: string
+                        price_taker_to_maker:
+                          type: string
+                        price_opposite_taker_to_maker:
+                          type: string
+                    limit_order_tranche:
+                      type: object
+                      properties:
+                        key:
+                          type: object
+                          properties:
+                            trade_pair_id:
+                              type: object
+                              properties:
+                                maker_denom:
+                                  type: string
+                                taker_denom:
+                                  type: string
+                            tick_index_taker_to_maker:
+                              type: string
+                              format: int64
+                            tranche_key:
+                              type: string
+                        reserves_maker_denom:
+                          type: string
+                        reserves_taker_denom:
+                          type: string
+                        total_maker_denom:
+                          type: string
+                        total_taker_denom:
+                          type: string
+                          title: >-
+                            GoodTilDate is represented as seconds since  January
+                            1, year 1, 00:00:00.00 UTC
+                             LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                        expiration_time:
+                          type: string
+                          format: date-time
+                          title: >-
+                            JIT orders also use goodTilDate to handle deletion
+                            but represent a special case
+
+                            All JIT orders have a goodTilDate of 0 and an
+                            exception is made to still still treat these orders
+                            as live
+
+                            Order deletion still functions the same and the
+                            orders will be deleted at the end of the block
+                        price_taker_to_maker:
+                          type: string
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pair_id
+          in: path
+          required: true
+          type: string
+        - name: token_in
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/user/deposits/{address}:
+    get:
+      summary: Queries a list of UserDeposits items.
+      operationId: NeutronDexUserDepositsAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              deposits:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pair_id:
+                      type: object
+                      properties:
+                        token0:
+                          type: string
+                        token1:
+                          type: string
+                    shares_owned:
+                      type: string
+                    center_tick_index:
+                      type: string
+                      format: int64
+                    lower_tick_index:
+                      type: string
+                      format: int64
+                    upper_tick_index:
+                      type: string
+                      format: int64
+                    fee:
+                      type: string
+                      format: uint64
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: address
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /neutron/dex/user/limit_orders/{address}:
+    get:
+      summary: Queries a list of LimitOrderTrancheUser items for a given address.
+      operationId: NeutronDexLimitOrderTrancheUserAllByAddress
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              limit_orders:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    trade_pair_id:
+                      type: object
+                      properties:
+                        maker_denom:
+                          type: string
+                        taker_denom:
+                          type: string
+                    tick_index_taker_to_maker:
+                      type: string
+                      format: int64
+                    tranche_key:
+                      type: string
+                    address:
+                      type: string
+                    shares_owned:
+                      type: string
+                    shares_withdrawn:
+                      type: string
+                    shares_cancelled:
+                      type: string
+                    order_type:
+                      type: string
+                      enum:
+                        - GOOD_TIL_CANCELLED
+                        - FILL_OR_KILL
+                        - IMMEDIATE_OR_CANCEL
+                        - JUST_IN_TIME
+                        - GOOD_TIL_TIME
+                      default: GOOD_TIL_CANCELLED
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: address
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
   /neutron/feeburner/params:
     get:
       summary: Parameters queries the parameters of the module.
@@ -41953,152 +44047,6 @@ paths:
                 properties:
                   fee_percentage:
                     type: string
-            description: >-
-              QueryParamsResponse is the response type for the Query/Params RPC
-              method.
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    '@type':
-                      type: string
-                  additionalProperties: {}
-      tags:
-        - Query
-  /block-sdk/auction/v1/bid:
-    post:
-      summary: AuctionBid defines a method for sending bids to the x/auction module.
-      operationId: SdkAuctionV1AuctionBid
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            description: MsgAuctionBidResponse defines the Msg/AuctionBid response type.
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    '@type':
-                      type: string
-                  additionalProperties: {}
-      parameters:
-        - name: bidder
-          description: |-
-            bidder is the address of the account that is submitting a bid to the
-            auction.
-          in: query
-          required: false
-          type: string
-        - name: bid.denom
-          in: query
-          required: false
-          type: string
-        - name: bid.amount
-          in: query
-          required: false
-          type: string
-        - name: transactions
-          description: >-
-            transactions are the bytes of the transactions that the bidder wants
-            to
-
-            bundle together.
-          in: query
-          required: false
-          type: array
-          items:
-            type: string
-            format: byte
-          collectionFormat: multi
-      tags:
-        - Msg
-  /block-sdk/auction/v1/params:
-    get:
-      summary: Params queries the parameters of the x/auction module.
-      operationId: SdkAuctionV1Params
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              params:
-                description: params defines the parameters of the module.
-                type: object
-                properties:
-                  max_bundle_size:
-                    type: integer
-                    format: int64
-                    description: >-
-                      max_bundle_size is the maximum number of transactions that
-                      can be bundled
-
-                      in a single bundle.
-                  escrow_account_address:
-                    type: string
-                    format: byte
-                    description: >-
-                      escrow_account_address is the address of the account that
-                      will receive a
-
-                      portion of the bid proceeds.
-                  reserve_fee:
-                    description: reserve_fee specifies the bid floor for the auction.
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                  min_bid_increment:
-                    description: >-
-                      min_bid_increment specifies the minimum amount that the
-                      next bid must be
-
-                      greater than the previous bid.
-                    type: object
-                    properties:
-                      denom:
-                        type: string
-                      amount:
-                        type: string
-                  front_running_protection:
-                    type: boolean
-                    description: >-
-                      front_running_protection specifies whether front running
-                      and sandwich
-
-                      attack protection is enabled.
-                  proposer_fee:
-                    type: string
-                    description: >-
-                      proposer_fee defines the portion of the winning bid that
-                      goes to the block
-
-                      proposer that proposed the block.
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
               method.
@@ -68754,6 +70702,1297 @@ definitions:
         type: string
         format: uint64
         title: Last execution's block height
+  neutron.dex.DepositOptions:
+    type: object
+    properties:
+      disable_autoswap:
+        type: boolean
+  neutron.dex.DepositRecord:
+    type: object
+    properties:
+      pair_id:
+        type: object
+        properties:
+          token0:
+            type: string
+          token1:
+            type: string
+      shares_owned:
+        type: string
+      center_tick_index:
+        type: string
+        format: int64
+      lower_tick_index:
+        type: string
+        format: int64
+      upper_tick_index:
+        type: string
+        format: int64
+      fee:
+        type: string
+        format: uint64
+  neutron.dex.LimitOrderTranche:
+    type: object
+    properties:
+      key:
+        type: object
+        properties:
+          trade_pair_id:
+            type: object
+            properties:
+              maker_denom:
+                type: string
+              taker_denom:
+                type: string
+          tick_index_taker_to_maker:
+            type: string
+            format: int64
+          tranche_key:
+            type: string
+      reserves_maker_denom:
+        type: string
+      reserves_taker_denom:
+        type: string
+      total_maker_denom:
+        type: string
+      total_taker_denom:
+        type: string
+        title: >-
+          GoodTilDate is represented as seconds since  January 1, year 1,
+          00:00:00.00 UTC
+           LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+      expiration_time:
+        type: string
+        format: date-time
+        title: >-
+          JIT orders also use goodTilDate to handle deletion but represent a
+          special case
+
+          All JIT orders have a goodTilDate of 0 and an exception is made to
+          still still treat these orders as live
+
+          Order deletion still functions the same and the orders will be deleted
+          at the end of the block
+      price_taker_to_maker:
+        type: string
+  neutron.dex.LimitOrderTrancheKey:
+    type: object
+    properties:
+      trade_pair_id:
+        type: object
+        properties:
+          maker_denom:
+            type: string
+          taker_denom:
+            type: string
+      tick_index_taker_to_maker:
+        type: string
+        format: int64
+      tranche_key:
+        type: string
+  neutron.dex.LimitOrderTrancheUser:
+    type: object
+    properties:
+      trade_pair_id:
+        type: object
+        properties:
+          maker_denom:
+            type: string
+          taker_denom:
+            type: string
+      tick_index_taker_to_maker:
+        type: string
+        format: int64
+      tranche_key:
+        type: string
+      address:
+        type: string
+      shares_owned:
+        type: string
+      shares_withdrawn:
+        type: string
+      shares_cancelled:
+        type: string
+      order_type:
+        type: string
+        enum:
+          - GOOD_TIL_CANCELLED
+          - FILL_OR_KILL
+          - IMMEDIATE_OR_CANCEL
+          - JUST_IN_TIME
+          - GOOD_TIL_TIME
+        default: GOOD_TIL_CANCELLED
+  neutron.dex.LimitOrderType:
+    type: string
+    enum:
+      - GOOD_TIL_CANCELLED
+      - FILL_OR_KILL
+      - IMMEDIATE_OR_CANCEL
+      - JUST_IN_TIME
+      - GOOD_TIL_TIME
+    default: GOOD_TIL_CANCELLED
+  neutron.dex.MsgCancelLimitOrderResponse:
+    type: object
+  neutron.dex.MsgDepositResponse:
+    type: object
+    properties:
+      reserve0_deposited:
+        type: array
+        items:
+          type: string
+      reserve1_deposited:
+        type: array
+        items:
+          type: string
+  neutron.dex.MsgMultiHopSwapResponse:
+    type: object
+    properties:
+      coin_out:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+  neutron.dex.MsgPlaceLimitOrderResponse:
+    type: object
+    properties:
+      trancheKey:
+        type: string
+      coin_in:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: Total amount of coin used for the limit order
+      taker_coin_out:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: >-
+          Total amount of coin received from the taker portion of the limit
+          order
+
+          This is the amount of coin immediately available in the users account
+          after executing the
+
+          limit order. It does not include any future proceeds from the maker
+          portion which will have withdrawn in the future
+  neutron.dex.MsgUpdateParamsResponse:
+    type: object
+    description: |-
+      MsgUpdateParamsResponse defines the response structure for executing a
+      MsgUpdateParams message.
+
+      Since: 0.47
+  neutron.dex.MsgWithdrawFilledLimitOrderResponse:
+    type: object
+  neutron.dex.MsgWithdrawalResponse:
+    type: object
+  neutron.dex.MultiHopRoute:
+    type: object
+    properties:
+      hops:
+        type: array
+        items:
+          type: string
+  neutron.dex.PairID:
+    type: object
+    properties:
+      token0:
+        type: string
+      token1:
+        type: string
+  neutron.dex.Params:
+    type: object
+    properties:
+      fee_tiers:
+        type: array
+        items:
+          type: string
+          format: uint64
+      max_true_taker_spread:
+        type: string
+    description: Params defines the parameters for the module.
+  neutron.dex.Pool:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+      lower_tick0:
+        type: object
+        properties:
+          key:
+            type: object
+            properties:
+              trade_pair_id:
+                type: object
+                properties:
+                  maker_denom:
+                    type: string
+                  taker_denom:
+                    type: string
+              tick_index_taker_to_maker:
+                type: string
+                format: int64
+              fee:
+                type: string
+                format: uint64
+          reserves_maker_denom:
+            type: string
+          price_taker_to_maker:
+            type: string
+          price_opposite_taker_to_maker:
+            type: string
+      upper_tick1:
+        type: object
+        properties:
+          key:
+            type: object
+            properties:
+              trade_pair_id:
+                type: object
+                properties:
+                  maker_denom:
+                    type: string
+                  taker_denom:
+                    type: string
+              tick_index_taker_to_maker:
+                type: string
+                format: int64
+              fee:
+                type: string
+                format: uint64
+          reserves_maker_denom:
+            type: string
+          price_taker_to_maker:
+            type: string
+          price_opposite_taker_to_maker:
+            type: string
+  neutron.dex.PoolMetadata:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+      tick:
+        type: string
+        format: int64
+      fee:
+        type: string
+        format: uint64
+      pair_id:
+        type: object
+        properties:
+          token0:
+            type: string
+          token1:
+            type: string
+  neutron.dex.PoolReserves:
+    type: object
+    properties:
+      key:
+        type: object
+        properties:
+          trade_pair_id:
+            type: object
+            properties:
+              maker_denom:
+                type: string
+              taker_denom:
+                type: string
+          tick_index_taker_to_maker:
+            type: string
+            format: int64
+          fee:
+            type: string
+            format: uint64
+      reserves_maker_denom:
+        type: string
+      price_taker_to_maker:
+        type: string
+      price_opposite_taker_to_maker:
+        type: string
+  neutron.dex.PoolReservesKey:
+    type: object
+    properties:
+      trade_pair_id:
+        type: object
+        properties:
+          maker_denom:
+            type: string
+          taker_denom:
+            type: string
+      tick_index_taker_to_maker:
+        type: string
+        format: int64
+      fee:
+        type: string
+        format: uint64
+  neutron.dex.QueryAllInactiveLimitOrderTrancheResponse:
+    type: object
+    properties:
+      inactive_limit_order_tranche:
+        type: array
+        items:
+          type: object
+          properties:
+            key:
+              type: object
+              properties:
+                trade_pair_id:
+                  type: object
+                  properties:
+                    maker_denom:
+                      type: string
+                    taker_denom:
+                      type: string
+                tick_index_taker_to_maker:
+                  type: string
+                  format: int64
+                tranche_key:
+                  type: string
+            reserves_maker_denom:
+              type: string
+            reserves_taker_denom:
+              type: string
+            total_maker_denom:
+              type: string
+            total_taker_denom:
+              type: string
+              title: >-
+                GoodTilDate is represented as seconds since  January 1, year 1,
+                00:00:00.00 UTC
+                 LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+            expiration_time:
+              type: string
+              format: date-time
+              title: >-
+                JIT orders also use goodTilDate to handle deletion but represent
+                a special case
+
+                All JIT orders have a goodTilDate of 0 and an exception is made
+                to still still treat these orders as live
+
+                Order deletion still functions the same and the orders will be
+                deleted at the end of the block
+            price_taker_to_maker:
+              type: string
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryAllLimitOrderTrancheResponse:
+    type: object
+    properties:
+      limit_order_tranche:
+        type: array
+        items:
+          type: object
+          properties:
+            key:
+              type: object
+              properties:
+                trade_pair_id:
+                  type: object
+                  properties:
+                    maker_denom:
+                      type: string
+                    taker_denom:
+                      type: string
+                tick_index_taker_to_maker:
+                  type: string
+                  format: int64
+                tranche_key:
+                  type: string
+            reserves_maker_denom:
+              type: string
+            reserves_taker_denom:
+              type: string
+            total_maker_denom:
+              type: string
+            total_taker_denom:
+              type: string
+              title: >-
+                GoodTilDate is represented as seconds since  January 1, year 1,
+                00:00:00.00 UTC
+                 LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+            expiration_time:
+              type: string
+              format: date-time
+              title: >-
+                JIT orders also use goodTilDate to handle deletion but represent
+                a special case
+
+                All JIT orders have a goodTilDate of 0 and an exception is made
+                to still still treat these orders as live
+
+                Order deletion still functions the same and the orders will be
+                deleted at the end of the block
+            price_taker_to_maker:
+              type: string
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryAllLimitOrderTrancheUserResponse:
+    type: object
+    properties:
+      limit_order_tranche_user:
+        type: array
+        items:
+          type: object
+          properties:
+            trade_pair_id:
+              type: object
+              properties:
+                maker_denom:
+                  type: string
+                taker_denom:
+                  type: string
+            tick_index_taker_to_maker:
+              type: string
+              format: int64
+            tranche_key:
+              type: string
+            address:
+              type: string
+            shares_owned:
+              type: string
+            shares_withdrawn:
+              type: string
+            shares_cancelled:
+              type: string
+            order_type:
+              type: string
+              enum:
+                - GOOD_TIL_CANCELLED
+                - FILL_OR_KILL
+                - IMMEDIATE_OR_CANCEL
+                - JUST_IN_TIME
+                - GOOD_TIL_TIME
+              default: GOOD_TIL_CANCELLED
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryAllPoolMetadataResponse:
+    type: object
+    properties:
+      pool_metadata:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uint64
+            tick:
+              type: string
+              format: int64
+            fee:
+              type: string
+              format: uint64
+            pair_id:
+              type: object
+              properties:
+                token0:
+                  type: string
+                token1:
+                  type: string
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryAllPoolReservesResponse:
+    type: object
+    properties:
+      pool_reserves:
+        type: array
+        items:
+          type: object
+          properties:
+            key:
+              type: object
+              properties:
+                trade_pair_id:
+                  type: object
+                  properties:
+                    maker_denom:
+                      type: string
+                    taker_denom:
+                      type: string
+                tick_index_taker_to_maker:
+                  type: string
+                  format: int64
+                fee:
+                  type: string
+                  format: uint64
+            reserves_maker_denom:
+              type: string
+            price_taker_to_maker:
+              type: string
+            price_opposite_taker_to_maker:
+              type: string
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryAllTickLiquidityResponse:
+    type: object
+    properties:
+      tick_liquidity:
+        type: array
+        items:
+          type: object
+          properties:
+            pool_reserves:
+              type: object
+              properties:
+                key:
+                  type: object
+                  properties:
+                    trade_pair_id:
+                      type: object
+                      properties:
+                        maker_denom:
+                          type: string
+                        taker_denom:
+                          type: string
+                    tick_index_taker_to_maker:
+                      type: string
+                      format: int64
+                    fee:
+                      type: string
+                      format: uint64
+                reserves_maker_denom:
+                  type: string
+                price_taker_to_maker:
+                  type: string
+                price_opposite_taker_to_maker:
+                  type: string
+            limit_order_tranche:
+              type: object
+              properties:
+                key:
+                  type: object
+                  properties:
+                    trade_pair_id:
+                      type: object
+                      properties:
+                        maker_denom:
+                          type: string
+                        taker_denom:
+                          type: string
+                    tick_index_taker_to_maker:
+                      type: string
+                      format: int64
+                    tranche_key:
+                      type: string
+                reserves_maker_denom:
+                  type: string
+                reserves_taker_denom:
+                  type: string
+                total_maker_denom:
+                  type: string
+                total_taker_denom:
+                  type: string
+                  title: >-
+                    GoodTilDate is represented as seconds since  January 1, year
+                    1, 00:00:00.00 UTC
+                     LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                expiration_time:
+                  type: string
+                  format: date-time
+                  title: >-
+                    JIT orders also use goodTilDate to handle deletion but
+                    represent a special case
+
+                    All JIT orders have a goodTilDate of 0 and an exception is
+                    made to still still treat these orders as live
+
+                    Order deletion still functions the same and the orders will
+                    be deleted at the end of the block
+                price_taker_to_maker:
+                  type: string
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryAllUserDepositsResponse:
+    type: object
+    properties:
+      deposits:
+        type: array
+        items:
+          type: object
+          properties:
+            pair_id:
+              type: object
+              properties:
+                token0:
+                  type: string
+                token1:
+                  type: string
+            shares_owned:
+              type: string
+            center_tick_index:
+              type: string
+              format: int64
+            lower_tick_index:
+              type: string
+              format: int64
+            upper_tick_index:
+              type: string
+              format: int64
+            fee:
+              type: string
+              format: uint64
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryAllUserLimitOrdersResponse:
+    type: object
+    properties:
+      limit_orders:
+        type: array
+        items:
+          type: object
+          properties:
+            trade_pair_id:
+              type: object
+              properties:
+                maker_denom:
+                  type: string
+                taker_denom:
+                  type: string
+            tick_index_taker_to_maker:
+              type: string
+              format: int64
+            tranche_key:
+              type: string
+            address:
+              type: string
+            shares_owned:
+              type: string
+            shares_withdrawn:
+              type: string
+            shares_cancelled:
+              type: string
+            order_type:
+              type: string
+              enum:
+                - GOOD_TIL_CANCELLED
+                - FILL_OR_KILL
+                - IMMEDIATE_OR_CANCEL
+                - JUST_IN_TIME
+                - GOOD_TIL_TIME
+              default: GOOD_TIL_CANCELLED
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  neutron.dex.QueryEstimateMultiHopSwapResponse:
+    type: object
+    properties:
+      coin_out:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+  neutron.dex.QueryEstimatePlaceLimitOrderResponse:
+    type: object
+    properties:
+      total_in_coin:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: >-
+          Total amount of coin used for the limit order
+
+          You can derive makerLimitInCoin using the equation: totalInCoin =
+          swapInCoin + makerLimitInCoin
+      swap_in_coin:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: >-
+          Total amount of the token in that was immediately swapped for
+          swapOutCoin
+      swap_out_coin:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        title: >-
+          Total amount of coin received from the taker portion of the limit
+          order
+
+          This is the amount of coin immediately available in the users account
+          after executing the
+
+          limit order. It does not include any future proceeds from the maker
+          portion which will have withdrawn in the future
+  neutron.dex.QueryGetInactiveLimitOrderTrancheResponse:
+    type: object
+    properties:
+      inactive_limit_order_tranche:
+        type: object
+        properties:
+          key:
+            type: object
+            properties:
+              trade_pair_id:
+                type: object
+                properties:
+                  maker_denom:
+                    type: string
+                  taker_denom:
+                    type: string
+              tick_index_taker_to_maker:
+                type: string
+                format: int64
+              tranche_key:
+                type: string
+          reserves_maker_denom:
+            type: string
+          reserves_taker_denom:
+            type: string
+          total_maker_denom:
+            type: string
+          total_taker_denom:
+            type: string
+            title: >-
+              GoodTilDate is represented as seconds since  January 1, year 1,
+              00:00:00.00 UTC
+               LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+          expiration_time:
+            type: string
+            format: date-time
+            title: >-
+              JIT orders also use goodTilDate to handle deletion but represent a
+              special case
+
+              All JIT orders have a goodTilDate of 0 and an exception is made to
+              still still treat these orders as live
+
+              Order deletion still functions the same and the orders will be
+              deleted at the end of the block
+          price_taker_to_maker:
+            type: string
+  neutron.dex.QueryGetLimitOrderTrancheResponse:
+    type: object
+    properties:
+      limit_order_tranche:
+        type: object
+        properties:
+          key:
+            type: object
+            properties:
+              trade_pair_id:
+                type: object
+                properties:
+                  maker_denom:
+                    type: string
+                  taker_denom:
+                    type: string
+              tick_index_taker_to_maker:
+                type: string
+                format: int64
+              tranche_key:
+                type: string
+          reserves_maker_denom:
+            type: string
+          reserves_taker_denom:
+            type: string
+          total_maker_denom:
+            type: string
+          total_taker_denom:
+            type: string
+            title: >-
+              GoodTilDate is represented as seconds since  January 1, year 1,
+              00:00:00.00 UTC
+               LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+          expiration_time:
+            type: string
+            format: date-time
+            title: >-
+              JIT orders also use goodTilDate to handle deletion but represent a
+              special case
+
+              All JIT orders have a goodTilDate of 0 and an exception is made to
+              still still treat these orders as live
+
+              Order deletion still functions the same and the orders will be
+              deleted at the end of the block
+          price_taker_to_maker:
+            type: string
+  neutron.dex.QueryGetLimitOrderTrancheUserResponse:
+    type: object
+    properties:
+      limit_order_tranche_user:
+        type: object
+        properties:
+          trade_pair_id:
+            type: object
+            properties:
+              maker_denom:
+                type: string
+              taker_denom:
+                type: string
+          tick_index_taker_to_maker:
+            type: string
+            format: int64
+          tranche_key:
+            type: string
+          address:
+            type: string
+          shares_owned:
+            type: string
+          shares_withdrawn:
+            type: string
+          shares_cancelled:
+            type: string
+          order_type:
+            type: string
+            enum:
+              - GOOD_TIL_CANCELLED
+              - FILL_OR_KILL
+              - IMMEDIATE_OR_CANCEL
+              - JUST_IN_TIME
+              - GOOD_TIL_TIME
+            default: GOOD_TIL_CANCELLED
+  neutron.dex.QueryGetPoolMetadataResponse:
+    type: object
+    properties:
+      Pool_metadata:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uint64
+          tick:
+            type: string
+            format: int64
+          fee:
+            type: string
+            format: uint64
+          pair_id:
+            type: object
+            properties:
+              token0:
+                type: string
+              token1:
+                type: string
+  neutron.dex.QueryGetPoolReservesResponse:
+    type: object
+    properties:
+      pool_reserves:
+        type: object
+        properties:
+          key:
+            type: object
+            properties:
+              trade_pair_id:
+                type: object
+                properties:
+                  maker_denom:
+                    type: string
+                  taker_denom:
+                    type: string
+              tick_index_taker_to_maker:
+                type: string
+                format: int64
+              fee:
+                type: string
+                format: uint64
+          reserves_maker_denom:
+            type: string
+          price_taker_to_maker:
+            type: string
+          price_opposite_taker_to_maker:
+            type: string
+  neutron.dex.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params holds all the parameters of this module.
+        type: object
+        properties:
+          fee_tiers:
+            type: array
+            items:
+              type: string
+              format: uint64
+          max_true_taker_spread:
+            type: string
+    description: QueryParamsResponse is response type for the Query/Params RPC method.
+  neutron.dex.QueryPoolResponse:
+    type: object
+    properties:
+      pool:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uint64
+          lower_tick0:
+            type: object
+            properties:
+              key:
+                type: object
+                properties:
+                  trade_pair_id:
+                    type: object
+                    properties:
+                      maker_denom:
+                        type: string
+                      taker_denom:
+                        type: string
+                  tick_index_taker_to_maker:
+                    type: string
+                    format: int64
+                  fee:
+                    type: string
+                    format: uint64
+              reserves_maker_denom:
+                type: string
+              price_taker_to_maker:
+                type: string
+              price_opposite_taker_to_maker:
+                type: string
+          upper_tick1:
+            type: object
+            properties:
+              key:
+                type: object
+                properties:
+                  trade_pair_id:
+                    type: object
+                    properties:
+                      maker_denom:
+                        type: string
+                      taker_denom:
+                        type: string
+                  tick_index_taker_to_maker:
+                    type: string
+                    format: int64
+                  fee:
+                    type: string
+                    format: uint64
+              reserves_maker_denom:
+                type: string
+              price_taker_to_maker:
+                type: string
+              price_opposite_taker_to_maker:
+                type: string
+  neutron.dex.TickLiquidity:
+    type: object
+    properties:
+      pool_reserves:
+        type: object
+        properties:
+          key:
+            type: object
+            properties:
+              trade_pair_id:
+                type: object
+                properties:
+                  maker_denom:
+                    type: string
+                  taker_denom:
+                    type: string
+              tick_index_taker_to_maker:
+                type: string
+                format: int64
+              fee:
+                type: string
+                format: uint64
+          reserves_maker_denom:
+            type: string
+          price_taker_to_maker:
+            type: string
+          price_opposite_taker_to_maker:
+            type: string
+      limit_order_tranche:
+        type: object
+        properties:
+          key:
+            type: object
+            properties:
+              trade_pair_id:
+                type: object
+                properties:
+                  maker_denom:
+                    type: string
+                  taker_denom:
+                    type: string
+              tick_index_taker_to_maker:
+                type: string
+                format: int64
+              tranche_key:
+                type: string
+          reserves_maker_denom:
+            type: string
+          reserves_taker_denom:
+            type: string
+          total_maker_denom:
+            type: string
+          total_taker_denom:
+            type: string
+            title: >-
+              GoodTilDate is represented as seconds since  January 1, year 1,
+              00:00:00.00 UTC
+               LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+          expiration_time:
+            type: string
+            format: date-time
+            title: >-
+              JIT orders also use goodTilDate to handle deletion but represent a
+              special case
+
+              All JIT orders have a goodTilDate of 0 and an exception is made to
+              still still treat these orders as live
+
+              Order deletion still functions the same and the orders will be
+              deleted at the end of the block
+          price_taker_to_maker:
+            type: string
+  neutron.dex.TradePairID:
+    type: object
+    properties:
+      maker_denom:
+        type: string
+      taker_denom:
+        type: string
   neutron.feeburner.MsgUpdateParamsResponse:
     type: object
     description: |-
@@ -71739,120 +74978,4 @@ definitions:
         properties:
           fee_percentage:
             type: string
-    description: QueryParamsResponse is the response type for the Query/Params RPC method.
-  sdk.auction.v1.MsgAuctionBidResponse:
-    type: object
-    description: MsgAuctionBidResponse defines the Msg/AuctionBid response type.
-  sdk.auction.v1.MsgUpdateParamsResponse:
-    type: object
-    description: MsgUpdateParamsResponse defines the Msg/UpdateParams response type.
-  sdk.auction.v1.Params:
-    type: object
-    properties:
-      max_bundle_size:
-        type: integer
-        format: int64
-        description: >-
-          max_bundle_size is the maximum number of transactions that can be
-          bundled
-
-          in a single bundle.
-      escrow_account_address:
-        type: string
-        format: byte
-        description: >-
-          escrow_account_address is the address of the account that will receive
-          a
-
-          portion of the bid proceeds.
-      reserve_fee:
-        description: reserve_fee specifies the bid floor for the auction.
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-      min_bid_increment:
-        description: >-
-          min_bid_increment specifies the minimum amount that the next bid must
-          be
-
-          greater than the previous bid.
-        type: object
-        properties:
-          denom:
-            type: string
-          amount:
-            type: string
-      front_running_protection:
-        type: boolean
-        description: |-
-          front_running_protection specifies whether front running and sandwich
-          attack protection is enabled.
-      proposer_fee:
-        type: string
-        description: >-
-          proposer_fee defines the portion of the winning bid that goes to the
-          block
-
-          proposer that proposed the block.
-    description: Params defines the parameters of the x/auction module.
-  sdk.auction.v1.QueryParamsResponse:
-    type: object
-    properties:
-      params:
-        description: params defines the parameters of the module.
-        type: object
-        properties:
-          max_bundle_size:
-            type: integer
-            format: int64
-            description: >-
-              max_bundle_size is the maximum number of transactions that can be
-              bundled
-
-              in a single bundle.
-          escrow_account_address:
-            type: string
-            format: byte
-            description: >-
-              escrow_account_address is the address of the account that will
-              receive a
-
-              portion of the bid proceeds.
-          reserve_fee:
-            description: reserve_fee specifies the bid floor for the auction.
-            type: object
-            properties:
-              denom:
-                type: string
-              amount:
-                type: string
-          min_bid_increment:
-            description: >-
-              min_bid_increment specifies the minimum amount that the next bid
-              must be
-
-              greater than the previous bid.
-            type: object
-            properties:
-              denom:
-                type: string
-              amount:
-                type: string
-          front_running_protection:
-            type: boolean
-            description: >-
-              front_running_protection specifies whether front running and
-              sandwich
-
-              attack protection is enabled.
-          proposer_fee:
-            type: string
-            description: >-
-              proposer_fee defines the portion of the winning bid that goes to
-              the block
-
-              proposer that proposed the block.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
