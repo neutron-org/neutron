@@ -7,8 +7,9 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	. "github.com/neutron-org/neutron/utils/dcli"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/neutron-org/neutron/utils/dcli"
 )
 
 type testingStruct struct {

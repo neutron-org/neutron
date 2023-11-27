@@ -6,9 +6,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/neutron-org/neutron/x/dex/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/neutron-org/neutron/x/dex/types"
 )
 
 func (k Keeper) PoolMetadataAll(goCtx context.Context, req *types.QueryAllPoolMetadataRequest) (*types.QueryAllPoolMetadataResponse, error) {

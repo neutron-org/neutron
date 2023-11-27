@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
+
 	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"

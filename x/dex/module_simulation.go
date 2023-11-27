@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	dexsimulation "github.com/neutron-org/neutron/x/dex/simulation"
 	"github.com/neutron-org/neutron/x/dex/types"

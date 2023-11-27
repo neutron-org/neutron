@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
+
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 

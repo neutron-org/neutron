@@ -14,10 +14,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/neutron-org/neutron/app"
 	"github.com/neutron-org/neutron/testutil"
 	dexmoduletypes "github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/suite"
 )
 
 type KeeperTestHelper struct {

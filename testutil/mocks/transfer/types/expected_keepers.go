@@ -11,6 +11,7 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types1 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
+
 	types2 "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 

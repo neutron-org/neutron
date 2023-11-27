@@ -2,6 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/math"
+
 	math_utils "github.com/neutron-org/neutron/utils/math"
 )
 

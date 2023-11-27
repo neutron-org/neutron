@@ -6,9 +6,10 @@ import (
 	math_utils "github.com/neutron-org/neutron/utils/math"
 
 	"cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {

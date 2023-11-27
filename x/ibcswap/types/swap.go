@@ -6,6 +6,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/iancoleman/orderedmap"
+
 	dextypes "github.com/neutron-org/neutron/x/dex/types"
 )
 

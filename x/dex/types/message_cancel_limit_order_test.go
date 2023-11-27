@@ -3,9 +3,10 @@ package types_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/testutil/common/sample"
 	. "github.com/neutron-org/neutron/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMsgCancelLimitOrder_ValidateBasic(t *testing.T) {

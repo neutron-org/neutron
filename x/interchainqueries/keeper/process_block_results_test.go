@@ -7,6 +7,7 @@ import (
 
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	"github.com/golang/mock/gomock"
+
 	icqtestkeeper "github.com/neutron-org/neutron/testutil/interchainqueries/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchainqueries/types"
 
@@ -26,6 +27,7 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
+
 	"github.com/neutron-org/neutron/testutil"
 	iqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"

@@ -9,8 +9,9 @@ import (
 
 	testkeeper "github.com/neutron-org/neutron/testutil/cron/keeper"
 
-	"github.com/neutron-org/neutron/x/cron/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/x/cron/types"
 )
 
 func TestGetParams(t *testing.T) {

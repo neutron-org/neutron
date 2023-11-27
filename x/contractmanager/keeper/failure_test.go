@@ -8,10 +8,12 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+
 	"github.com/neutron-org/neutron/testutil"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/contractmanager/types"
 
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+
 	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"

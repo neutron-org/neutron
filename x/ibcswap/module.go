@@ -12,9 +12,10 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
+
 	"github.com/neutron-org/neutron/x/ibcswap/keeper"
 	"github.com/neutron-org/neutron/x/ibcswap/types"
-	"github.com/spf13/cobra"
 )
 
 var (

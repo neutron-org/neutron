@@ -27,6 +27,7 @@ import (
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"

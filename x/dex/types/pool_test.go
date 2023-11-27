@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	. "github.com/neutron-org/neutron/x/dex/types"
 	"github.com/stretchr/testify/assert"
+
+	. "github.com/neutron-org/neutron/x/dex/types"
 )
 
 func TestCalcGreatestMatchingRatioBothReservesNonZero(t *testing.T) {

@@ -10,13 +10,14 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/testutil"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/transfer/types"
 	testkeeper "github.com/neutron-org/neutron/testutil/transfer/keeper"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 	"github.com/neutron-org/neutron/x/transfer"
-	"github.com/stretchr/testify/require"
 )
 
 const TestCosmosAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"

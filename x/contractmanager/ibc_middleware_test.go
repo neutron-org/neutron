@@ -6,11 +6,12 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	test_keeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/contractmanager/types"
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/x/contractmanager/types"
-	"github.com/stretchr/testify/require"
 )
 
 var (

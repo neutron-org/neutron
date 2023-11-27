@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
+
 	"github.com/neutron-org/neutron/x/dex/types"
 )
 

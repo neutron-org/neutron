@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
 	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
