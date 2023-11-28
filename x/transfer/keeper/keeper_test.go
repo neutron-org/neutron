@@ -5,8 +5,8 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/app/params"
@@ -90,8 +90,8 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 
 	// Store code and instantiate reflect contract.
-	codeID := suite.StoreReflectCode(ctx, testOwner, reflectContractPath)
-	contractAddress := suite.InstantiateReflectContract(ctx, testOwner, codeID)
+	codeID := suite.StoreTestCode(ctx, testOwner, reflectContractPath)
+	contractAddress := suite.InstantiateTestContract(ctx, testOwner, codeID)
 	suite.Require().NotEmpty(contractAddress)
 
 	ctx = suite.ChainA.GetContext()

@@ -8,34 +8,33 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
+	dbm "github.com/cometbft/cometbft-db"
+	"github.com/cometbft/cometbft/libs/log"
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/interchain-security/legacy_ibc_testing/testing"
-	icssimapp "github.com/cosmos/interchain-security/testutil/ibc_testing"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
+	icssimapp "github.com/cosmos/interchain-security/v3/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
 
 	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	appProvider "github.com/cosmos/interchain-security/app/provider"
-	e2e "github.com/cosmos/interchain-security/testutil/e2e"
-	ccvutils "github.com/cosmos/interchain-security/x/ccv/utils"
-	tmtypes "github.com/tendermint/tendermint/types"
+	tmtypes "github.com/cometbft/cometbft/types"
+	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	appProvider "github.com/cosmos/interchain-security/v3/app/provider"
+	e2e "github.com/cosmos/interchain-security/v3/testutil/integration"
 
 	"github.com/neutron-org/neutron/app"
 	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
 
-	consumertypes "github.com/cosmos/interchain-security/x/ccv/consumer/types"
-	providertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/x/ccv/types"
+	consumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+	providertypes "github.com/cosmos/interchain-security/v3/x/ccv/provider/types"
+	ccv "github.com/cosmos/interchain-security/v3/x/ccv/types"
 )
 
 var (
@@ -58,7 +57,7 @@ var (
 )
 
 func init() {
-	ibctesting.DefaultTestingAppInit = SetupTestingApp
+	ibctesting.DefaultTestingAppInit = SetupTestingApp()
 	app.GetDefaultConfig()
 }
 
@@ -92,6 +91,7 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		time.Now(),
 		consumertypes.DefaultConsumerRedistributeFrac,
 		consumertypes.DefaultBlocksPerDistributionTransmission,
+		"channel-0",
 		consumertypes.DefaultHistoricalEntries,
 		ccv.DefaultCCVTimeoutPeriod,
 		consumertypes.DefaultTransferTimeoutPeriod,
@@ -122,9 +122,9 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Require().True(len(providerValUpdates) == len(consumerBValUpdates), "initial valset not matching")
 
 	for i := 0; i < len(providerValUpdates); i++ {
-		addr1, _ := ccvutils.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
-		addr2, _ := ccvutils.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
-		addr3, _ := ccvutils.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
+		addr1, _ := ccv.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
+		addr2, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
+		addr3, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
 		suite.Require().True(bytes.Equal(addr1, addr2), "validator mismatch")
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
 	}
@@ -263,11 +263,11 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 
 	chainID = ibctesting.GetChainID(2)
 	coordinator.Chains[chainID] = NewTestChainWithValSet(t, coordinator,
-		SetupTestingApp, chainID, providerChain.Vals, providerChain.Signers)
+		SetupTestingApp(), chainID, providerChain.Vals, providerChain.Signers)
 
 	chainID = ibctesting.GetChainID(3)
 	coordinator.Chains[chainID] = NewTestChainWithValSet(t, coordinator,
-		SetupTestingApp, chainID, providerChain.Vals, providerChain.Signers)
+		SetupTestingApp(), chainID, providerChain.Vals, providerChain.Signers)
 
 	return coordinator
 }
@@ -281,18 +281,19 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 	return testApp
 }
 
-func (suite *IBCConnectionTestSuite) StoreReflectCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
+func (suite *IBCConnectionTestSuite) StoreTestCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
 	// wasm file built with https://github.com/neutron-org/neutron-contracts/tree/main/contracts/reflect
+	// wasm file built with https://github.com/neutron-org/neutron-dev/tree/feat/ica-register-fee-update/contracts/neutron_interchain_txs
 	wasmCode, err := os.ReadFile(path)
 	suite.Require().NoError(err)
 
-	codeID, _, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody, Address: ""})
+	codeID, _, err := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper).Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody})
 	suite.Require().NoError(err)
 
 	return codeID
 }
 
-func (suite *IBCConnectionTestSuite) InstantiateReflectContract(ctx sdk.Context, funder sdk.AccAddress, codeID uint64) sdk.AccAddress {
+func (suite *IBCConnectionTestSuite) InstantiateTestContract(ctx sdk.Context, funder sdk.AccAddress, codeID uint64) sdk.AccAddress {
 	initMsgBz := []byte("{}")
 	contractKeeper := keeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
 	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
@@ -303,8 +304,8 @@ func (suite *IBCConnectionTestSuite) InstantiateReflectContract(ctx sdk.Context,
 
 func NewICAPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
-	path.EndpointA.ChannelConfig.PortID = icatypes.PortID
-	path.EndpointB.ChannelConfig.PortID = icatypes.PortID
+	path.EndpointA.ChannelConfig.PortID = icatypes.HostPortID
+	path.EndpointB.ChannelConfig.PortID = icatypes.HostPortID
 	path.EndpointA.ChannelConfig.Order = channeltypes.ORDERED
 	path.EndpointB.ChannelConfig.Order = channeltypes.ORDERED
 	path.EndpointA.ChannelConfig.Version = TestVersion
@@ -373,24 +374,24 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 }
 
 // SetupTestingApp initializes the IBC-go testing application
-func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
-	encoding := app.MakeEncodingConfig()
-	db := dbm.NewMemDB()
-	testApp := app.New(
-		log.NewNopLogger(),
-		db,
-		nil,
-		true,
-		map[int64]bool{},
-		app.DefaultNodeHome,
-		0,
-		encoding,
-		app.GetEnabledProposals(),
-		simapp.EmptyAppOptions{},
-		nil,
-	)
-
-	return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
+func SetupTestingApp() func() (ibctesting.TestingApp, map[string]json.RawMessage) {
+	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
+		encoding := app.MakeEncodingConfig()
+		db := dbm.NewMemDB()
+		testApp := app.New(
+			log.NewNopLogger(),
+			db,
+			nil,
+			true,
+			map[int64]bool{},
+			app.DefaultNodeHome,
+			0,
+			encoding,
+			sims.EmptyAppOptions{},
+			nil,
+		)
+		return testApp, app.NewDefaultGenesisState(testApp.AppCodec())
+	}
 }
 
 func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting.Path {

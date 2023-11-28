@@ -18,9 +18,13 @@ const (
 
 const (
 	prefixContractFailures = iota + 1
+	prefixParamsKey
 )
 
-var ContractFailuresKey = []byte{prefixContractFailures}
+var (
+	ContractFailuresKey = []byte{prefixContractFailures}
+	ParamsKey           = []byte{prefixParamsKey}
+)
 
 // GetFailureKeyPrefix returns the store key for the failures of the specific address
 func GetFailureKeyPrefix(

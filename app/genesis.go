@@ -4,6 +4,12 @@ import (
 	"encoding/json"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+
+	"github.com/neutron-org/neutron/app/params"
 )
 
 // GenesisState is the genesis state of the blockchain represented here as a map of raw json
@@ -20,11 +26,28 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	// This ugly hack is required to alter globalfee module genesis state
 	// because in current chain implementation staking module is absent which is required by globalfee module
 	// and we can't use default genesis state for globalfee module.
-	// If we will not alter globalfee module genesis state, then we will get panic during tests run.
+	// If we do not alter globalfee module genesis state, then we will get panic during tests run.
 
 	genesisState := ModuleBasics.DefaultGenesis(cdc)
-	minGasPrices := json.RawMessage(`{"params":{"minimum_gas_prices":[{"denom": "untrn", "amount": "0"}]}}`)
-	genesisState["globalfee"] = minGasPrices
+	globalFeeGenesisState := globalfeetypes.GenesisState{
+		Params: globalfeetypes.Params{
+			MinimumGasPrices: sdk.DecCoins{
+				sdk.NewDecCoinFromDec(sdk.DefaultBondDenom, sdk.MustNewDecFromStr("0")),
+				sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0")),
+			},
+			BypassMinFeeMsgTypes: []string{
+				sdk.MsgTypeURL(&ibcchanneltypes.MsgRecvPacket{}),
+				sdk.MsgTypeURL(&ibcchanneltypes.MsgAcknowledgement{}),
+				sdk.MsgTypeURL(&ibcclienttypes.MsgUpdateClient{}),
+			},
+			MaxTotalBypassMinFeeMsgGasUsage: globalfeetypes.DefaultmaxTotalBypassMinFeeMsgGasUsage,
+		},
+	}
+	globalFeeGenesisStateBytes, err := json.Marshal(globalFeeGenesisState)
+	if err != nil {
+		panic("cannot marshal globalfee genesis state for tests")
+	}
+	genesisState["globalfee"] = globalFeeGenesisStateBytes
 
 	return genesisState
 }

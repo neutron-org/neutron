@@ -18,11 +18,15 @@ const (
 
 const (
 	prefixFeeKey = iota + 1
+	prefixParamsKey
 
 	Separator = ";"
 )
 
-var FeeKey = []byte{prefixFeeKey}
+var (
+	FeeKey    = []byte{prefixFeeKey}
+	ParamsKey = []byte{prefixParamsKey}
+)
 
 func GetFeePacketKey(packet PacketID) []byte {
 	return append(append(FeeKey, []byte(packet.ChannelId+Separator+packet.PortId+Separator)...), sdk.Uint64ToBigEndian(packet.Sequence)...)

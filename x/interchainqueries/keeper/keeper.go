@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/errors"
+
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
-	tendermintLightClientTypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
-	"github.com/tendermint/tendermint/libs/log"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
@@ -27,12 +27,14 @@ type (
 		cdc                   codec.BinaryCodec
 		storeKey              storetypes.StoreKey
 		memKey                storetypes.StoreKey
-		paramstore            paramtypes.Subspace
 		ibcKeeper             *ibckeeper.Keeper
 		bank                  types.BankKeeper
 		contractManagerKeeper types.ContractManagerKeeper
 		headerVerifier        types.HeaderVerifier
 		transactionVerifier   types.TransactionVerifier
+		// the address capable of executing a MsgUpdateParams message. Typically, this
+		// should be the x/adminmodule module account.
+		authority string
 	}
 )
 
@@ -40,28 +42,23 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
 	ibcKeeper *ibckeeper.Keeper,
 	bank types.BankKeeper,
 	contractManagerKeeper types.ContractManagerKeeper,
 	headerVerifier types.HeaderVerifier,
 	transactionVerifier types.TransactionVerifier,
+	authority string,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return &Keeper{
 		cdc:                   cdc,
 		storeKey:              storeKey,
 		memKey:                memKey,
-		paramstore:            ps,
 		ibcKeeper:             ibcKeeper,
 		bank:                  bank,
 		contractManagerKeeper: contractManagerKeeper,
 		headerVerifier:        headerVerifier,
 		transactionVerifier:   transactionVerifier,
+		authority:             authority,
 	}
 }
 
@@ -88,7 +85,7 @@ func (k Keeper) SaveQuery(ctx sdk.Context, query *types.RegisteredQuery) error {
 	store := ctx.KVStore(k.storeKey)
 	bz, err := k.cdc.Marshal(query)
 	if err != nil {
-		return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal registered query: %v", err)
+		return errors.Wrapf(types.ErrProtoMarshal, "failed to marshal registered query: %v", err)
 	}
 
 	store.Set(types.GetRegisteredQueryByIDKey(query.Id), bz)
@@ -102,12 +99,12 @@ func (k Keeper) GetQueryByID(ctx sdk.Context, id uint64) (*types.RegisteredQuery
 
 	bz := store.Get(types.GetRegisteredQueryByIDKey(id))
 	if bz == nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "there is no query with id: %v", id)
+		return nil, errors.Wrapf(types.ErrInvalidQueryID, "there is no query with id: %v", id)
 	}
 
 	var query types.RegisteredQuery
 	if err := k.cdc.Unmarshal(bz, &query); err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
+		return nil, errors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
 	}
 
 	return &query, nil
@@ -193,7 +190,7 @@ func (k Keeper) TxQueriesCleanup(ctx sdk.Context) {
 func (k Keeper) SaveKVQueryResult(ctx sdk.Context, queryID uint64, result *types.QueryResult) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to get registered query")
+		return errors.Wrap(err, "failed to get registered query")
 	}
 
 	return k.saveKVQueryResult(ctx, query, result)
@@ -227,7 +224,7 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 
 	var query types.QueryResult
 	if err := k.cdc.Unmarshal(bz, &query); err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
+		return nil, errors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
 	}
 
 	return &query, nil
@@ -236,7 +233,7 @@ func (k Keeper) GetQueryResultByID(ctx sdk.Context, id uint64) (*types.QueryResu
 func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID, newLocalHeight uint64) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to get registered query")
+		return errors.Wrap(err, "failed to get registered query")
 	}
 
 	query.LastSubmittedResultLocalHeight = newLocalHeight
@@ -249,11 +246,11 @@ func (k Keeper) UpdateLastLocalHeight(ctx sdk.Context, queryID, newLocalHeight u
 func (k Keeper) UpdateLastRemoteHeight(ctx sdk.Context, queryID uint64, newRemoteHeight ibcclienttypes.Height) error {
 	query, err := k.getRegisteredQueryByID(ctx, queryID)
 	if err != nil {
-		return sdkerrors.Wrap(err, "failed to get registered query")
+		return errors.Wrap(err, "failed to get registered query")
 	}
 
 	if err := k.checkLastRemoteHeight(ctx, *query, newRemoteHeight); err != nil {
-		return sdkerrors.Wrap(types.ErrInvalidHeight, err.Error())
+		return errors.Wrap(types.ErrInvalidHeight, err.Error())
 	}
 	k.updateLastRemoteHeight(ctx, query, newRemoteHeight)
 	return k.SaveQuery(ctx, query)
@@ -267,14 +264,14 @@ func (k Keeper) saveKVQueryResult(ctx sdk.Context, query *types.RegisteredQuery,
 	cleanResult := clearQueryResult(result)
 	bz, err := k.cdc.Marshal(&cleanResult)
 	if err != nil {
-		return sdkerrors.Wrapf(types.ErrProtoMarshal, "failed to marshal result result: %v", err)
+		return errors.Wrapf(types.ErrProtoMarshal, "failed to marshal result result: %v", err)
 	}
 	store.Set(types.GetRegisteredQueryResultByIDKey(query.Id), bz)
 
 	k.updateLastRemoteHeight(ctx, query, ibcclienttypes.NewHeight(result.Revision, result.Height))
 	k.updateLastLocalHeight(ctx, query, uint64(ctx.BlockHeight()))
 	if err := k.SaveQuery(ctx, query); err != nil {
-		return sdkerrors.Wrapf(err, "failed to save query %d: %v", query.Id, err)
+		return errors.Wrapf(err, "failed to save query %d: %v", query.Id, err)
 	}
 
 	k.Logger(ctx).Debug("Successfully saved query result", "result", &result)
@@ -306,12 +303,12 @@ func (k Keeper) getRegisteredQueryByID(ctx sdk.Context, queryID uint64) (*types.
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GetRegisteredQueryByIDKey(queryID))
 	if bz == nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "query with ID %d not found", queryID)
+		return nil, errors.Wrapf(types.ErrInvalidQueryID, "query with ID %d not found", queryID)
 	}
 
 	var query types.RegisteredQuery
 	if err := k.cdc.Unmarshal(bz, &query); err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
+		return nil, errors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal registered query: %v", err)
 	}
 	return &query, nil
 }
@@ -347,12 +344,12 @@ func (k Keeper) checkRegisteredQueryExists(ctx sdk.Context, id uint64) bool {
 func (k Keeper) GetClientState(ctx sdk.Context, clientID string) (*tendermintLightClientTypes.ClientState, error) {
 	clientStateResponse, ok := k.ibcKeeper.ClientKeeper.GetClientState(ctx, clientID)
 	if !ok {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidClientID, "could not find a ClientState with client id: %s", clientID)
+		return nil, errors.Wrapf(types.ErrInvalidClientID, "could not find a ClientState with client id: %s", clientID)
 	}
 
 	clientState, ok := clientStateResponse.(*tendermintLightClientTypes.ClientState)
 	if !ok {
-		return nil, sdkerrors.Wrapf(ibcclienttypes.ErrInvalidClientType, "cannot cast ClientState interface into ClientState type")
+		return nil, errors.Wrapf(ibcclienttypes.ErrInvalidClientType, "cannot cast ClientState interface into ClientState type")
 	}
 
 	return clientState, nil
@@ -416,6 +413,10 @@ func (k Keeper) calculateTxQueryRemoval(ctx sdk.Context, queryID, limit uint64) 
 	}
 	result.CompleteRemoval = true
 	return result
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // TxQueryToRemove contains data related to a single query listed for removal and needed in the

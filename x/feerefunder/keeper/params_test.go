@@ -14,7 +14,10 @@ func TestGetParams(t *testing.T) {
 	k, ctx := testkeeper.FeeKeeper(t, nil, nil)
 	params := types.DefaultParams()
 
-	k.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
+	if err != nil {
+		panic(err)
+	}
 
 	require.EqualValues(t, params, k.GetParams(ctx))
 }

@@ -26,6 +26,7 @@ const (
 	prefixRegisteredQueryResult
 	prefixSubmittedTx
 	prefixTxQueryToRemove
+	prefixParamsKey
 )
 
 var (
@@ -37,6 +38,8 @@ var (
 	SubmittedTxKey = []byte{prefixSubmittedTx}
 	// TxQueryToRemoveKey is the store key for TX queries marked to be removed.
 	TxQueryToRemoveKey = []byte{prefixTxQueryToRemove}
+	// ParamsKey is the store key for the module params
+	ParamsKey = []byte{prefixParamsKey}
 	// LastRegisteredQueryIDKey is the store key for last registered query ID.
 	LastRegisteredQueryIDKey = []byte{0x64}
 )

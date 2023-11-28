@@ -3,12 +3,14 @@ package keeper
 import (
 	"fmt"
 
+	"cosmossdk.io/errors"
+
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/neutron-org/neutron/x/interchaintxs/types"
 )
@@ -23,15 +25,16 @@ const (
 
 type (
 	Keeper struct {
-		Codec                 codec.BinaryCodec
-		storeKey              storetypes.StoreKey
-		memKey                storetypes.StoreKey
-		paramstore            paramtypes.Subspace
-		scopedKeeper          types.ScopedKeeper
-		channelKeeper         types.ChannelKeeper
-		feeKeeper             types.FeeRefunderKeeper
-		icaControllerKeeper   types.ICAControllerKeeper
-		contractManagerKeeper types.ContractManagerKeeper
+		Codec               codec.BinaryCodec
+		storeKey            storetypes.StoreKey
+		memKey              storetypes.StoreKey
+		channelKeeper       types.ChannelKeeper
+		feeKeeper           types.FeeRefunderKeeper
+		icaControllerKeeper types.ICAControllerKeeper
+		sudoKeeper          types.WasmKeeper
+		bankKeeper          types.BankKeeper
+		getFeeCollectorAddr types.GetFeeCollectorAddr
+		authority           string
 	}
 )
 
@@ -39,28 +42,25 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	paramstore paramtypes.Subspace,
 	channelKeeper types.ChannelKeeper,
 	icaControllerKeeper types.ICAControllerKeeper,
-	scopedKeeper types.ScopedKeeper,
-	contractManagerKeeper types.ContractManagerKeeper,
+	sudoKeeper types.WasmKeeper,
 	feeKeeper types.FeeRefunderKeeper,
+	bankKeeper types.BankKeeper,
+	getFeeCollectorAddr types.GetFeeCollectorAddr,
+	authority string,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !paramstore.HasKeyTable() {
-		paramstore = paramstore.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return &Keeper{
-		Codec:                 cdc,
-		storeKey:              storeKey,
-		memKey:                memKey,
-		paramstore:            paramstore,
-		channelKeeper:         channelKeeper,
-		icaControllerKeeper:   icaControllerKeeper,
-		scopedKeeper:          scopedKeeper,
-		contractManagerKeeper: contractManagerKeeper,
-		feeKeeper:             feeKeeper,
+		Codec:               cdc,
+		storeKey:            storeKey,
+		memKey:              memKey,
+		channelKeeper:       channelKeeper,
+		icaControllerKeeper: icaControllerKeeper,
+		sudoKeeper:          sudoKeeper,
+		feeKeeper:           feeKeeper,
+		bankKeeper:          bankKeeper,
+		getFeeCollectorAddr: getFeeCollectorAddr,
+		authority:           authority,
 	}
 }
 
@@ -68,7 +68,39 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// ClaimCapability claims the channel capability passed via the OnOpenChanInit callback
-func (k *Keeper) ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) error {
-	return k.scopedKeeper.ClaimCapability(ctx, cap, name)
+func (k Keeper) ChargeFee(ctx sdk.Context, payer sdk.AccAddress, fee sdk.Coins) error {
+	k.Logger(ctx).Debug("Trying to change fees", "payer", payer, "fee", fee)
+
+	params := k.GetParams(ctx)
+
+	if !fee.IsAnyGTE(params.RegisterFee) {
+		return errors.Wrapf(sdkerrors.ErrInsufficientFee, "provided fee is less than min governance set ack fee: %s < %s", fee, params.RegisterFee)
+	}
+
+	feeCollector := k.getFeeCollectorAddr(ctx)
+	feeCollectorAddress, err := sdk.AccAddressFromBech32(feeCollector)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to convert fee collector, bech32 to AccAddress: %s: %s", feeCollector, err.Error())
+	}
+
+	err = k.bankKeeper.SendCoins(ctx, payer, feeCollectorAddress, fee)
+	if err != nil {
+		return errors.Wrapf(err, "failed send fee(%s) from %s to %s", fee, payer, feeCollectorAddress)
+	}
+	return nil
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
+}
+
+// GetICARegistrationFeeFirstCodeID returns code id, starting from which we charge fee for ICA registration
+func (k Keeper) GetICARegistrationFeeFirstCodeID(ctx sdk.Context) (codeID uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bytes := store.Get(types.ICARegistrationFeeFirstCodeID)
+	if bytes == nil {
+		k.Logger(ctx).Debug("Fee register ICA code id key don't exists, GetLastCodeID returns 0")
+		return 0
+	}
+	return sdk.BigEndianToUint64(bytes)
 }

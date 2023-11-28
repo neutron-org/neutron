@@ -1,12 +1,12 @@
 package types
 
-// DONTCOVER
-
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"cosmossdk.io/errors"
 )
 
 // x/contractmanager module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrIncorrectFailureToResubmit = errors.Register(ModuleName, 1101, "incorrect failure to resubmit")
+	ErrFailedToResubmitFailure    = errors.Register(ModuleName, 1102, "failed to resubmit failure")
+	ErrSudoOutOfGas               = errors.Register(ModuleName, 1103, "sudo handling went beyond the gas limit allowed by the module")
 )

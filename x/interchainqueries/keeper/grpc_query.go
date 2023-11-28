@@ -3,12 +3,13 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	querytypes "github.com/cosmos/cosmos-sdk/types/query"
-	contypes "github.com/cosmos/ibc-go/v4/modules/core/03-connection/types"
-	tndtypes "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
+	contypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
+	tndtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,7 +24,7 @@ func (k Keeper) RegisteredQuery(goCtx context.Context, request *types.QueryRegis
 
 	registeredQuery, err := k.GetQueryByID(ctx, request.QueryId)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "failed to get registered query by query id: %v", err)
+		return nil, errors.Wrapf(types.ErrInvalidQueryID, "failed to get registered query by query id: %v", err)
 	}
 
 	return &types.QueryRegisteredQueryResponse{RegisteredQuery: registeredQuery}, nil
@@ -78,12 +79,12 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegistere
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	if !k.checkRegisteredQueryExists(ctx, request.QueryId) {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidQueryID, "query with id %d doesn't exist", request.QueryId)
+		return nil, errors.Wrapf(types.ErrInvalidQueryID, "query with id %d doesn't exist", request.QueryId)
 	}
 
 	result, err := k.GetQueryResultByID(ctx, request.QueryId)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "failed to get query result by query id: %v", err)
+		return nil, errors.Wrapf(err, "failed to get query result by query id: %v", err)
 	}
 	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
 }
@@ -92,14 +93,14 @@ func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLast
 	req := contypes.QueryConnectionClientStateRequest{ConnectionId: request.ConnectionId}
 	r, err := k.ibcKeeper.ConnectionClientState(goCtx, &req)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidConnectionID, "connection not found")
+		return nil, errors.Wrapf(types.ErrInvalidConnectionID, "connection not found")
 	}
 	clientState := r.GetIdentifiedClientState().GetClientState()
 
 	m := new(tndtypes.ClientState)
 	err = proto.Unmarshal(clientState.Value, m)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrProtoUnmarshal, "can't unmarshal client state")
+		return nil, errors.Wrapf(types.ErrProtoUnmarshal, "can't unmarshal client state")
 	}
 
 	return &types.QueryLastRemoteHeightResponse{Height: m.LatestHeight.RevisionHeight}, nil

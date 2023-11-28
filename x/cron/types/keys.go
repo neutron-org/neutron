@@ -17,11 +17,13 @@ const (
 const (
 	prefixScheduleKey = iota + 1
 	prefixScheduleCountKey
+	prefixParamsKey
 )
 
 var (
 	ScheduleKey      = []byte{prefixScheduleKey}
 	ScheduleCountKey = []byte{prefixScheduleCountKey}
+	ParamsKey        = []byte{prefixParamsKey}
 )
 
 func GetScheduleKey(name string) []byte {

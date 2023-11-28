@@ -1,0 +1,20 @@
+syntax = "proto3";
+package neutron.contractmanager;
+
+import "ibc/core/channel/v1/channel.proto";
+
+option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
+
+// Failure message contains information about ACK failures and can be used to
+// replay ACK in case of requirement.
+// Note that Failure means that sudo handler to cosmwasm contract failed for some reason
+message Failure {
+  // Address of the failed contract
+  string address = 1;
+  // Id of the failure under specific address
+  uint64 id = 2;
+  // Serialized MessageSudoCallback with Packet and Ack(if exists)
+  bytes sudo_payload = 3;
+  // Redacted error response of the sudo call. Full error is emitted as an event
+  string error = 4;
+}

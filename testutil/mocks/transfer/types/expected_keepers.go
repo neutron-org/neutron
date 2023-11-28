@@ -9,48 +9,37 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types1 "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	types1 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
+
 	types2 "github.com/neutron-org/neutron/x/feerefunder/types"
 )
 
-// MockContractManagerKeeper is a mock of ContractManagerKeeper interface.
-type MockContractManagerKeeper struct {
+// MockWasmKeeper is a mock of WasmKeeper interface.
+type MockWasmKeeper struct {
 	ctrl     *gomock.Controller
-	recorder *MockContractManagerKeeperMockRecorder
+	recorder *MockWasmKeeperMockRecorder
 }
 
-// MockContractManagerKeeperMockRecorder is the mock recorder for MockContractManagerKeeper.
-type MockContractManagerKeeperMockRecorder struct {
-	mock *MockContractManagerKeeper
+// MockWasmKeeperMockRecorder is the mock recorder for MockWasmKeeper.
+type MockWasmKeeperMockRecorder struct {
+	mock *MockWasmKeeper
 }
 
-// NewMockContractManagerKeeper creates a new mock instance.
-func NewMockContractManagerKeeper(ctrl *gomock.Controller) *MockContractManagerKeeper {
-	mock := &MockContractManagerKeeper{ctrl: ctrl}
-	mock.recorder = &MockContractManagerKeeperMockRecorder{mock}
+// NewMockWasmKeeper creates a new mock instance.
+func NewMockWasmKeeper(ctrl *gomock.Controller) *MockWasmKeeper {
+	mock := &MockWasmKeeper{ctrl: ctrl}
+	mock.recorder = &MockWasmKeeperMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecorder {
+func (m *MockWasmKeeper) EXPECT() *MockWasmKeeperMockRecorder {
 	return m.recorder
 }
 
-// AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types.Context, channelID, address string, ackID uint64, ackType string) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddContractFailure", ctx, channelID, address, ackID, ackType)
-}
-
-// AddContractFailure indicates an expected call of AddContractFailure.
-func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, channelID, address, ackID, ackType interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, channelID, address, ackID, ackType)
-}
-
 // HasContractInfo mocks base method.
-func (m *MockContractManagerKeeper) HasContractInfo(ctx types.Context, contractAddress types.AccAddress) bool {
+func (m *MockWasmKeeper) HasContractInfo(ctx types.Context, contractAddress types.AccAddress) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasContractInfo", ctx, contractAddress)
 	ret0, _ := ret[0].(bool)
@@ -58,54 +47,24 @@ func (m *MockContractManagerKeeper) HasContractInfo(ctx types.Context, contractA
 }
 
 // HasContractInfo indicates an expected call of HasContractInfo.
-func (mr *MockContractManagerKeeperMockRecorder) HasContractInfo(ctx, contractAddress interface{}) *gomock.Call {
+func (mr *MockWasmKeeperMockRecorder) HasContractInfo(ctx, contractAddress interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasContractInfo", reflect.TypeOf((*MockContractManagerKeeper)(nil).HasContractInfo), ctx, contractAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasContractInfo", reflect.TypeOf((*MockWasmKeeper)(nil).HasContractInfo), ctx, contractAddress)
 }
 
-// SudoError mocks base method.
-func (m *MockContractManagerKeeper) SudoError(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, details string) ([]byte, error) {
+// Sudo mocks base method.
+func (m *MockWasmKeeper) Sudo(ctx types.Context, contractAddress types.AccAddress, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SudoError", ctx, senderAddress, request, details)
+	ret := m.ctrl.Call(m, "Sudo", ctx, contractAddress, msg)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SudoError indicates an expected call of SudoError.
-func (mr *MockContractManagerKeeperMockRecorder) SudoError(ctx, senderAddress, request, details interface{}) *gomock.Call {
+// Sudo indicates an expected call of Sudo.
+func (mr *MockWasmKeeperMockRecorder) Sudo(ctx, contractAddress, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoError", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoError), ctx, senderAddress, request, details)
-}
-
-// SudoResponse mocks base method.
-func (m *MockContractManagerKeeper) SudoResponse(ctx types.Context, senderAddress types.AccAddress, request types1.Packet, msg []byte) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SudoResponse", ctx, senderAddress, request, msg)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SudoResponse indicates an expected call of SudoResponse.
-func (mr *MockContractManagerKeeperMockRecorder) SudoResponse(ctx, senderAddress, request, msg interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoResponse", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoResponse), ctx, senderAddress, request, msg)
-}
-
-// SudoTimeout mocks base method.
-func (m *MockContractManagerKeeper) SudoTimeout(ctx types.Context, senderAddress types.AccAddress, request types1.Packet) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SudoTimeout", ctx, senderAddress, request)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SudoTimeout indicates an expected call of SudoTimeout.
-func (mr *MockContractManagerKeeperMockRecorder) SudoTimeout(ctx, senderAddress, request interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SudoTimeout", reflect.TypeOf((*MockContractManagerKeeper)(nil).SudoTimeout), ctx, senderAddress, request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sudo", reflect.TypeOf((*MockWasmKeeper)(nil).Sudo), ctx, contractAddress, msg)
 }
 
 // MockFeeRefunderKeeper is a mock of FeeRefunderKeeper interface.
@@ -190,6 +149,20 @@ func NewMockChannelKeeper(ctrl *gomock.Controller) *MockChannelKeeper {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockChannelKeeper) EXPECT() *MockChannelKeeperMockRecorder {
 	return m.recorder
+}
+
+// GetAllChannelsWithPortPrefix mocks base method.
+func (m *MockChannelKeeper) GetAllChannelsWithPortPrefix(ctx types.Context, portPrefix string) []types1.IdentifiedChannel {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllChannelsWithPortPrefix", ctx, portPrefix)
+	ret0, _ := ret[0].([]types1.IdentifiedChannel)
+	return ret0
+}
+
+// GetAllChannelsWithPortPrefix indicates an expected call of GetAllChannelsWithPortPrefix.
+func (mr *MockChannelKeeperMockRecorder) GetAllChannelsWithPortPrefix(ctx, portPrefix interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllChannelsWithPortPrefix", reflect.TypeOf((*MockChannelKeeper)(nil).GetAllChannelsWithPortPrefix), ctx, portPrefix)
 }
 
 // GetChannel mocks base method.

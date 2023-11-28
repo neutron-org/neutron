@@ -1,56 +1,67 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	"github.com/neutron-org/neutron/app/params"
 )
 
 // Parameter store keys.
 var (
-	KeyDenomCreationFee              = []byte("DenomCreationFee")
-	DefaultNeutronDenom              = params.DefaultDenom
-	DefaultFeeAmount           int64 = 1_000_000
-	KeyFeeCollectorAddress           = []byte("FeeCollectorAddress")
-	DefaultFeeCollectorAddress       = ""
+	KeyDenomCreationFee        = []byte("DenomCreationFee")
+	KeyDenomCreationGasConsume = []byte("DenomCreationGasConsume")
+	KeyFeeCollectorAddress     = []byte("FeeCollectorAddress")
+	// We don't want to charge users for denom creation
+	DefaultDenomCreationFee        sdk.Coins
+	DefaultDenomCreationGasConsume uint64
+	DefaultFeeCollectorAddress     = ""
 )
 
-// ParamTable for tokenfactory module.
+// ParamKeyTable the param key table for tokenfactory module.
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(denomCreationFee sdk.Coins, feeCollectorAddress string) Params {
+func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64, feeCollectorAddress string) Params {
 	return Params{
-		DenomCreationFee:    denomCreationFee,
-		FeeCollectorAddress: feeCollectorAddress,
+		DenomCreationFee:        denomCreationFee,
+		DenomCreationGasConsume: denomCreationGasConsume,
+		FeeCollectorAddress:     feeCollectorAddress,
 	}
 }
 
-// default tokenfactory module parameters.
+// DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return Params{
-		DenomCreationFee:    sdk.NewCoins(sdk.NewInt64Coin(DefaultNeutronDenom, DefaultFeeAmount)),
-		FeeCollectorAddress: DefaultFeeCollectorAddress,
-	}
+	return NewParams(DefaultDenomCreationFee, DefaultDenomCreationGasConsume, DefaultFeeCollectorAddress)
 }
 
-// validate params.
+// Validate validates params
 func (p Params) Validate() error {
-	if err := validateDenomCreationFee(p.DenomCreationFee); err != nil {
-		return err
+	// DenomCreationFee and FeeCollectorAddress must be both set, or both unset
+	hasDenomCreationFee := len(p.DenomCreationFee) > 0
+	hasFeeCollectorAddress := p.FeeCollectorAddress != ""
+
+	if hasDenomCreationFee != hasFeeCollectorAddress {
+		return fmt.Errorf("DenomCreationFee and FeeCollectorAddr must be both set or both unset")
 	}
 
-	return validateFeeCollectorAddress(p.FeeCollectorAddress)
+	if err := validateDenomCreationFee(p.DenomCreationFee); err != nil {
+		return fmt.Errorf("failed to validate params: %w", err)
+	}
+
+	if err := validateFeeCollectorAddress(p.FeeCollectorAddress); err != nil {
+		return fmt.Errorf("failed to validate params: %w", err)
+	}
+
+	return nil
 }
 
-// Implements params.ParamSet.
+// ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDenomCreationFee, &p.DenomCreationFee, validateDenomCreationFee),
+		paramtypes.NewParamSetPair(KeyDenomCreationGasConsume, &p.DenomCreationGasConsume, validateDenomCreationGasConsume),
 		paramtypes.NewParamSetPair(KeyFeeCollectorAddress, &p.FeeCollectorAddress, validateFeeCollectorAddress),
 	}
 }
@@ -61,8 +72,17 @@ func validateDenomCreationFee(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if err := v.Validate(); err != nil {
-		return fmt.Errorf("invalid denom creation fee: %+v, %w", i, err)
+	if v.Validate() != nil {
+		return fmt.Errorf("invalid denom creation fee: %+v", i)
+	}
+
+	return nil
+}
+
+func validateDenomCreationGasConsume(i interface{}) error {
+	_, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	return nil
@@ -74,7 +94,6 @@ func validateFeeCollectorAddress(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	// Fee collector address might be explicitly empty in test environments
 	if len(v) == 0 {
 		return nil
 	}

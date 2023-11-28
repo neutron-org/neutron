@@ -1,8 +1,11 @@
 version: v1
 name: buf.build/neutron-org/neutron
 deps:
+  - buf.build/cosmos/cosmos-proto
+  - buf.build/cosmos/cosmos-sdk:v0.47.0
   - buf.build/cosmos/gogo-proto
   - buf.build/googleapis/googleapis
+#  - buf.build/osmosis-labs/osmosis
 breaking:
   use:
     - FILE
@@ -17,5 +20,6 @@ lint:
     - SERVICE_SUFFIX
     - PACKAGE_VERSION_SUFFIX
     - RPC_REQUEST_STANDARD_NAME
+    - PACKAGE_DIRECTORY_MATCH
   ignore:
     - tendermint

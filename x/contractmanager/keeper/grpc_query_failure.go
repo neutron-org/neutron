@@ -58,3 +58,21 @@ func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresReque
 
 	return &types.QueryFailuresResponse{Failures: failures, Pagination: pageRes}, nil
 }
+
+func (k Keeper) AddressFailure(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request field must not be empty")
+	}
+
+	addr, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid address: %v", err)
+	}
+
+	resp, err := k.GetFailure(sdk.UnwrapSDKContext(c), addr, req.GetFailureId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &types.QueryFailuresResponse{Failures: []types.Failure{*resp}}, nil
+}

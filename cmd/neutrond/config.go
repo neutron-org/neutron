@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"text/template"
 
+	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client"
 	scconfig "github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	tmcli "github.com/tendermint/tendermint/libs/cli"
 )
 
 // This code is copied from the Juno implementation: https://github.com/CosmosContracts/juno/pull/601/files

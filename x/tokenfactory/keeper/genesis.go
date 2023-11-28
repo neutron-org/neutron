@@ -11,7 +11,13 @@ import (
 func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.CreateModuleAccount(ctx)
 
-	k.SetParams(ctx, genState.Params)
+	if genState.Params.DenomCreationFee == nil {
+		genState.Params.DenomCreationFee = sdk.NewCoins()
+	}
+	err := k.SetParams(ctx, genState.Params)
+	if err != nil {
+		panic("failed to init params")
+	}
 
 	for _, genDenom := range genState.GetFactoryDenoms() {
 		creator, _, err := types.DeconstructDenom(genDenom.GetDenom())

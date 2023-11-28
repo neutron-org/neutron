@@ -2,7 +2,7 @@ package v3
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	ccvprovider "github.com/cosmos/interchain-security/x/ccv/provider/types"
+	ccvprovider "github.com/cosmos/interchain-security/v3/x/ccv/provider/types"
 
 	"github.com/neutron-org/neutron/app/upgrades"
 )

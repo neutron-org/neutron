@@ -8,11 +8,11 @@ import (
 
 	"github.com/neutron-org/neutron/app"
 
+	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/stretchr/testify/require"
-	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -38,7 +38,8 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 		require.NoError(t, err)
 		acc := sdktypes.AccAddress(pub.Address())
 		failure := types.Failure{
-			Address: acc.String(),
+			Address:     acc.String(),
+			SudoPayload: []byte("&channeltypes.Packet{}"),
 		}
 		nullify.Fill(&failure)
 		state.FailuresList = append(state.FailuresList, failure)

@@ -10,11 +10,12 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/testutil"
 	testutil_keeper "github.com/neutron-org/neutron/testutil/cron/keeper"
 	mock_types "github.com/neutron-org/neutron/testutil/mocks/cron/types"
 	"github.com/neutron-org/neutron/x/cron/types"
-	"github.com/stretchr/testify/require"
 )
 
 // ExecuteReadySchedules:
@@ -34,10 +35,11 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	k, ctx := testutil_keeper.CronKeeper(t, wasmMsgServer, accountKeeper)
 	ctx = ctx.WithBlockHeight(0)
 
-	k.SetParams(ctx, types.Params{
+	err = k.SetParams(ctx, types.Params{
 		SecurityAddress: testutil.TestOwnerAddress,
 		Limit:           2,
 	})
+	require.NoError(t, err)
 
 	schedules := []types.Schedule{
 		{
@@ -169,13 +171,14 @@ func TestAddSchedule(t *testing.T) {
 	k, ctx := testutil_keeper.CronKeeper(t, wasmMsgServer, accountKeeper)
 	ctx = ctx.WithBlockHeight(0)
 
-	k.SetParams(ctx, types.Params{
+	err := k.SetParams(ctx, types.Params{
 		SecurityAddress: testutil.TestOwnerAddress,
 		Limit:           2,
 	})
+	require.NoError(t, err)
 
 	// normal add schedule
-	err := k.AddSchedule(ctx, "a", 7, []types.MsgExecuteContract{
+	err = k.AddSchedule(ctx, "a", 7, []types.MsgExecuteContract{
 		{
 			Contract: "c",
 			Msg:      "m",
@@ -207,10 +210,12 @@ func TestAddSchedule(t *testing.T) {
 func TestGetAllSchedules(t *testing.T) {
 	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
 
-	k.SetParams(ctx, types.Params{
+	err := k.SetParams(ctx, types.Params{
 		SecurityAddress: testutil.TestOwnerAddress,
 		Limit:           2,
 	})
+	require.NoError(t, err)
+
 	expectedSchedules := make([]types.Schedule, 0, 3)
 	for i := range []int{1, 2, 3} {
 		s := types.Schedule{

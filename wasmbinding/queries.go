@@ -1,9 +1,11 @@
 package wasmbinding
 
 import (
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
+
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
 
 	"github.com/neutron-org/neutron/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
@@ -77,7 +79,7 @@ func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindin
 		return nil, err
 	}
 	if grpcResp == nil {
-		return nil, sdkerrors.Wrapf(types.ErrEmptyResult, "interchain query response empty for query id %d", req.QueryID)
+		return nil, errors.Wrapf(types.ErrEmptyResult, "interchain query response empty for query id %d", req.QueryID)
 	}
 	query := mapGRPCRegisteredQueryToWasmBindings(*grpcResp)
 
@@ -88,10 +90,17 @@ func (qp *QueryPlugin) GetRegisteredInterchainQuery(ctx sdk.Context, req *bindin
 func (qp QueryPlugin) GetDenomAdmin(ctx sdk.Context, denom string) (*bindings.DenomAdminResponse, error) {
 	metadata, err := qp.tokenFactoryKeeper.GetAuthorityMetadata(ctx, denom)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "failed to get admin for denom: %s", denom)
+		return nil, errors.Wrapf(err, "failed to get admin for denom: %s", denom)
 	}
 
 	return &bindings.DenomAdminResponse{Admin: metadata.Admin}, nil
+}
+
+// GetBeforeSendHook is a query to get denom before send hook.
+func (qp QueryPlugin) GetBeforeSendHook(ctx sdk.Context, denom string) (*bindings.BeforeSendHookResponse, error) {
+	contractAddr := qp.tokenFactoryKeeper.GetBeforeSendHook(ctx, denom)
+
+	return &bindings.BeforeSendHookResponse{ContractAddr: contractAddr}, nil
 }
 
 func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings.QueryTotalBurnedNeutronsAmountRequest) (*bindings.QueryTotalBurnedNeutronsAmountResponse, error) {
@@ -102,6 +111,18 @@ func (qp *QueryPlugin) GetTotalBurnedNeutronsAmount(ctx sdk.Context, _ *bindings
 func (qp *QueryPlugin) GetMinIbcFee(ctx sdk.Context, _ *bindings.QueryMinIbcFeeRequest) (*bindings.QueryMinIbcFeeResponse, error) {
 	fee := qp.feeRefunderKeeper.GetMinFee(ctx)
 	return &bindings.QueryMinIbcFeeResponse{MinFee: fee}, nil
+}
+
+func (qp *QueryPlugin) GetFailures(ctx sdk.Context, address string, pagination *sdkquery.PageRequest) (*bindings.FailuresResponse, error) {
+	res, err := qp.contractmanagerKeeper.AddressFailures(ctx, &contractmanagertypes.QueryFailuresRequest{
+		Address:    address,
+		Pagination: pagination,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get failures for address: %s", address)
+	}
+
+	return &bindings.FailuresResponse{Failures: res.Failures}, nil
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {

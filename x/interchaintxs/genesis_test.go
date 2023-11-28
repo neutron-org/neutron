@@ -16,7 +16,7 @@ func TestGenesis(t *testing.T) {
 		Params: types.DefaultParams(),
 	}
 
-	k, ctx, _ := keepertest.InterchainTxsKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := keepertest.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil)
 	interchaintxs.InitGenesis(ctx, *k, genesisState)
 	got := interchaintxs.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)

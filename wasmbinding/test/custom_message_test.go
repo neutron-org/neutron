@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"testing"
 
+	keeper2 "github.com/neutron-org/neutron/x/contractmanager/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
+
+	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+
 	"github.com/stretchr/testify/suite"
 
 	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
@@ -17,7 +22,8 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/app"
@@ -56,27 +62,42 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
 	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
+	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
-	suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
-		sdk.NewCoins(sdk.NewInt64Coin(tokenfactorytypes.DefaultNeutronDenom, 10_000_000)),
+	err := suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
+		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
+		0,
 		FeeCollectorAddress,
 	))
+	suite.Require().NoError(err)
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
+
+	err := suite.neutron.FeeBurnerKeeper.SetParams(suite.ctx, feeburnertypes.Params{
+		NeutronDenom:    "untrn",
+		TreasuryAddress: "neutron13jrwrtsyjjuynlug65r76r2zvfw5xjcq6532h2",
+	})
+	suite.Require().NoError(err)
 
 	// Craft RegisterInterchainAccount message
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 			InterchainAccountId: testutil.TestInterchainID,
+			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))),
 		},
 	})
+	suite.NoError(err)
+
+	bankKeeper := suite.neutron.BankKeeper
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
@@ -90,8 +111,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Craft RegisterInterchainAccount message
@@ -114,8 +135,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -133,7 +154,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 		RegisterInterchainQuery: &bindings.RegisterInterchainQuery{
 			QueryType: string(icqtypes.InterchainQueryTypeKV),
 			Keys: []*icqtypes.KVKey{
-				{Path: host.StoreKey, Key: host.FullClientStateKey(suite.Path.EndpointB.ClientID)},
+				{Path: ibchost.StoreKey, Key: host.FullClientStateKey(suite.Path.EndpointB.ClientID)},
 			},
 			TransactionsFilter: "{}",
 			ConnectionId:       suite.Path.EndpointA.ConnectionID,
@@ -152,8 +173,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 }
 
 func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
@@ -180,8 +201,8 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 		lucky   = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
 	)
 
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
@@ -356,8 +377,8 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
@@ -389,8 +410,8 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -411,18 +432,23 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	// Set admin so that we can execute this proposal without permission error
 	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
 
+	executeMsg := fmt.Sprintf(`
+{
+  "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+  "authority": "%s",
+  "plan": {
+    "name": "TestPlane",
+    "height": "150",
+    "info": "TestInfo"
+  }
+}
+`, suite.neutron.BankKeeper.GetAuthority())
 	// Craft SubmitAdminProposal message
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
 			AdminProposal: bindings.AdminProposal{
-				SoftwareUpgradeProposal: &bindings.SoftwareUpgradeProposal{
-					Title:       "Test",
-					Description: "Test",
-					Plan: bindings.Plan{
-						Name:   "TestPlan",
-						Height: 150,
-						Info:   "TestInfo",
-					},
+				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{
+					Message: executeMsg,
 				},
 			},
 		},
@@ -452,15 +478,16 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 
 	// Check CancelSubmitAdminProposal
 
+	executeMsg = fmt.Sprintf(`
+				{
+                "@type": "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
+                "authority": "%s"
+}
+`, suite.neutron.BankKeeper.GetAuthority())
 	// Craft CancelSubmitAdminProposal message
 	msg, err = json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
-			AdminProposal: bindings.AdminProposal{
-				CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
-					Title:       "Test",
-					Description: "Test",
-				},
-			},
+			AdminProposal: bindings.AdminProposal{ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg}},
 		},
 	})
 	suite.NoError(err)
@@ -480,26 +507,31 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 
 func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
+	executeMsg := fmt.Sprintf(`
+				{
+                "@type": "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
+                "authority": "%s"
+}
+`, suite.neutron.BankKeeper.GetAuthority())
+
 	// Craft  message with 2 proposals
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
 			AdminProposal: bindings.AdminProposal{
-				CancelSoftwareUpgradeProposal: &bindings.CancelSoftwareUpgradeProposal{
-					Title:       "Test",
-					Description: "Test",
+				ClientUpdateProposal: &bindings.ClientUpdateProposal{
+					Title:              "aaa",
+					Description:        "ddafds",
+					SubjectClientId:    "sdfsdf",
+					SubstituteClientId: "sdfsd",
 				},
-				ClearAdminProposal: &bindings.ClearAdminProposal{
-					Title:       "Test",
-					Description: "Test",
-					Contract:    "Test",
-				},
+				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg},
 			},
 		},
 	})
@@ -515,8 +547,8 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 
 func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
@@ -540,8 +572,8 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 
 func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	// Store code and instantiate reflect contract
-	codeID := suite.StoreReflectCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
-	suite.contractAddress = suite.InstantiateReflectContract(suite.ctx, suite.contractOwner, codeID)
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
 	suite.Require().NotEmpty(suite.contractAddress)
 
 	// Set admin so that we can execute this proposal without permission error
@@ -589,6 +621,104 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
 	suite.NoError(err)
 	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Add failure
+	packet := ibcchanneltypes.Packet{}
+	ack := ibcchanneltypes.Acknowledgement{
+		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
+	}
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	require.NoError(suite.T(), err)
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
+
+	// Craft message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		ResubmitFailure: &bindings.ResubmitFailure{
+			FailureId: failureID,
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Add failure
+	packet := ibcchanneltypes.Packet{}
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, nil)
+	require.NoError(suite.T(), err)
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
+
+	// Craft message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		ResubmitFailure: &bindings.ResubmitFailure{
+			FailureId: failureID,
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch
+	events, data, err := suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.NoError(err)
+	suite.Nil(events)
+	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
+	suite.NoError(err)
+	suite.Equal([][]uint8{expected}, data)
+}
+
+func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract() {
+	// Store code and instantiate reflect contract
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	// Add failure
+	packet := ibcchanneltypes.Packet{}
+	ack := ibcchanneltypes.Acknowledgement{
+		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
+	}
+	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
+	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	require.NoError(suite.T(), err)
+	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload, "test error")
+
+	// Craft message
+	msg, err := json.Marshal(bindings.NeutronMsg{
+		ResubmitFailure: &bindings.ResubmitFailure{
+			FailureId: failureID,
+		},
+	})
+	suite.NoError(err)
+
+	// Dispatch
+	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+		Custom: msg,
+	})
+	suite.ErrorContains(err, "no failure found to resubmit: not found")
 }
 
 func (suite *CustomMessengerTestSuite) executeCustomMsg(owner sdk.AccAddress, fullMsg bindings.NeutronMsg) (result [][]byte, msg []byte) {

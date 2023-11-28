@@ -7,8 +7,11 @@ package mock_types
 import (
 	reflect "reflect"
 
-	types "github.com/cosmos/cosmos-sdk/types"
+	types "github.com/CosmWasm/wasmd/x/wasm/types"
+	types0 "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
+
+	types1 "github.com/neutron-org/neutron/x/contractmanager/types"
 )
 
 // MockWasmKeeper is a mock of WasmKeeper interface.
@@ -34,8 +37,22 @@ func (m *MockWasmKeeper) EXPECT() *MockWasmKeeperMockRecorder {
 	return m.recorder
 }
 
+// GetContractInfo mocks base method.
+func (m *MockWasmKeeper) GetContractInfo(ctx types0.Context, contractAddress types0.AccAddress) *types.ContractInfo {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetContractInfo", ctx, contractAddress)
+	ret0, _ := ret[0].(*types.ContractInfo)
+	return ret0
+}
+
+// GetContractInfo indicates an expected call of GetContractInfo.
+func (mr *MockWasmKeeperMockRecorder) GetContractInfo(ctx, contractAddress interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContractInfo", reflect.TypeOf((*MockWasmKeeper)(nil).GetContractInfo), ctx, contractAddress)
+}
+
 // HasContractInfo mocks base method.
-func (m *MockWasmKeeper) HasContractInfo(ctx types.Context, contractAddress types.AccAddress) bool {
+func (m *MockWasmKeeper) HasContractInfo(ctx types0.Context, contractAddress types0.AccAddress) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasContractInfo", ctx, contractAddress)
 	ret0, _ := ret[0].(bool)
@@ -49,7 +66,7 @@ func (mr *MockWasmKeeperMockRecorder) HasContractInfo(ctx, contractAddress inter
 }
 
 // Sudo mocks base method.
-func (m *MockWasmKeeper) Sudo(ctx types.Context, contractAddress types.AccAddress, msg []byte) ([]byte, error) {
+func (m *MockWasmKeeper) Sudo(ctx types0.Context, contractAddress types0.AccAddress, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Sudo", ctx, contractAddress, msg)
 	ret0, _ := ret[0].([]byte)
@@ -61,4 +78,55 @@ func (m *MockWasmKeeper) Sudo(ctx types.Context, contractAddress types.AccAddres
 func (mr *MockWasmKeeperMockRecorder) Sudo(ctx, contractAddress, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sudo", reflect.TypeOf((*MockWasmKeeper)(nil).Sudo), ctx, contractAddress, msg)
+}
+
+// MockContractManagerKeeper is a mock of ContractManagerKeeper interface.
+type MockContractManagerKeeper struct {
+	ctrl     *gomock.Controller
+	recorder *MockContractManagerKeeperMockRecorder
+}
+
+// MockContractManagerKeeperMockRecorder is the mock recorder for MockContractManagerKeeper.
+type MockContractManagerKeeperMockRecorder struct {
+	mock *MockContractManagerKeeper
+}
+
+// NewMockContractManagerKeeper creates a new mock instance.
+func NewMockContractManagerKeeper(ctrl *gomock.Controller) *MockContractManagerKeeper {
+	mock := &MockContractManagerKeeper{ctrl: ctrl}
+	mock.recorder = &MockContractManagerKeeperMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecorder {
+	return m.recorder
+}
+
+// AddContractFailure mocks base method.
+func (m *MockContractManagerKeeper) AddContractFailure(ctx types0.Context, address string, sudoPayload []byte, errMsg string) types1.Failure {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddContractFailure", ctx, address, sudoPayload, errMsg)
+	ret0, _ := ret[0].(types1.Failure)
+	return ret0
+}
+
+// AddContractFailure indicates an expected call of AddContractFailure.
+func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, address, sudoPayload, errMsg interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContractFailure", reflect.TypeOf((*MockContractManagerKeeper)(nil).AddContractFailure), ctx, address, sudoPayload, errMsg)
+}
+
+// GetParams mocks base method.
+func (m *MockContractManagerKeeper) GetParams(ctx types0.Context) types1.Params {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParams", ctx)
+	ret0, _ := ret[0].(types1.Params)
+	return ret0
+}
+
+// GetParams indicates an expected call of GetParams.
+func (mr *MockContractManagerKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockContractManagerKeeper)(nil).GetParams), ctx)
 }

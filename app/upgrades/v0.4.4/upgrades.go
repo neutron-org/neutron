@@ -3,6 +3,7 @@ package v044
 import (
 	"errors"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -17,6 +18,8 @@ func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
 	keepers *upgrades.UpgradeKeepers,
+	_ upgrades.StoreKeys,
+	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")
@@ -29,8 +32,10 @@ func CreateUpgradeHandler(
 		oldSlashingParams := keepers.SlashingKeeper.GetParams(ctx)
 		oldSlashingParams.SignedBlocksWindow = int64(36000)
 
-		keepers.SlashingKeeper.SetParams(ctx, oldSlashingParams)
-
+		err = keepers.SlashingKeeper.SetParams(ctx, oldSlashingParams)
+		if err != nil {
+			return vm, err
+		}
 		ctx.Logger().Info("Migrating FeeBurner Params...")
 		s, ok := keepers.ParamsKeeper.GetSubspace(feeburnertypes.ModuleName)
 		if !ok {
@@ -45,12 +50,17 @@ func CreateUpgradeHandler(
 		feeburnerDefaultParams := feeburnertypes.DefaultParams()
 		feeburnerDefaultParams.TreasuryAddress = reserveAddress
 		feeburnerDefaultParams.NeutronDenom = neutronDenom
-		keepers.FeeBurnerKeeper.SetParams(ctx, feeburnerDefaultParams)
+		err = keepers.FeeBurnerKeeper.SetParams(ctx, feeburnerDefaultParams)
+		if err != nil {
+			return vm, err
+		}
 
 		ctx.Logger().Info("Migrating TokenFactory Params...")
 		tokenfactoryDefaultParams := tokenfactorytypes.DefaultParams()
-		tokenfactoryDefaultParams.FeeCollectorAddress = reserveAddress
-		keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactoryDefaultParams)
+		err = keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactoryDefaultParams)
+		if err != nil {
+			return vm, err
+		}
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, err

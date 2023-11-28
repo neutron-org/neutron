@@ -22,7 +22,6 @@ func (k Keeper) DenomAuthorityMetadata(ctx context.Context, req *types.QueryDeno
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	denom := fmt.Sprintf("factory/%s/%s", req.GetCreator(), req.GetSubdenom())
-
 	authorityMetadata, err := k.GetAuthorityMetadata(sdkCtx, denom)
 	if err != nil {
 		return nil, err
@@ -35,4 +34,13 @@ func (k Keeper) DenomsFromCreator(ctx context.Context, req *types.QueryDenomsFro
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	denoms := k.getDenomsFromCreator(sdkCtx, req.GetCreator())
 	return &types.QueryDenomsFromCreatorResponse{Denoms: denoms}, nil
+}
+
+func (k Keeper) BeforeSendHookAddress(ctx context.Context, req *types.QueryBeforeSendHookAddressRequest) (*types.QueryBeforeSendHookAddressResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	denom := fmt.Sprintf("factory/%s/%s", req.GetCreator(), req.GetSubdenom())
+	contractAddr := k.GetBeforeSendHook(sdkCtx, denom)
+
+	return &types.QueryBeforeSendHookAddressResponse{ContractAddr: contractAddr}, nil
 }

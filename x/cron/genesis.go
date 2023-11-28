@@ -2,6 +2,7 @@ package cron
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/x/cron/keeper"
 	"github.com/neutron-org/neutron/x/cron/types"
 )
@@ -15,7 +16,11 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 			panic(err)
 		}
 	}
-	k.SetParams(ctx, genState.Params)
+	// this line is used by starport scaffolding # genesis/module/init
+	err := k.SetParams(ctx, genState.Params)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis returns the module's exported genesis

@@ -3,12 +3,15 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
+
+	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/suite"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/app/params"
 	"github.com/neutron-org/neutron/testutil"
 	"github.com/neutron-org/neutron/x/tokenfactory/keeper"
@@ -49,13 +52,15 @@ func (suite *KeeperTestSuite) Setup() {
 
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 
-	tokeFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
-	tokeFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
-		sdktypes.NewCoins(sdktypes.NewInt64Coin(types.DefaultNeutronDenom, TopUpCoinsAmount)),
+	tokenFactoryKeeper := suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper
+	err := tokenFactoryKeeper.SetParams(suite.ChainA.GetContext(), types.NewParams(
+		sdktypes.NewCoins(sdktypes.NewInt64Coin(params.DefaultDenom, TopUpCoinsAmount)),
+		0,
 		FeeCollectorAddress,
 	))
+	suite.Require().NoError(err)
 
-	suite.msgServer = keeper.NewMsgServerImpl(*tokeFactoryKeeper)
+	suite.msgServer = keeper.NewMsgServerImpl(*tokenFactoryKeeper)
 }
 
 func (suite *KeeperTestSuite) SetupTokenFactory() {
@@ -77,7 +82,7 @@ func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contract
 	suite.Require().NoError(err)
 }
 
-func (suite *KeeperTestSuite) WalletBalance(ctx sdktypes.Context, address string) sdktypes.Int {
+func (suite *KeeperTestSuite) WalletBalance(ctx sdktypes.Context, address string) math.Int {
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	balance, err := bankKeeper.Balance(
 		sdktypes.WrapSDKContext(ctx),

@@ -2,10 +2,11 @@
 package bindings
 
 import (
+	"cosmossdk.io/math"
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/x/transfer/types"
@@ -42,10 +43,18 @@ type NeutronMsg struct {
 	/// that they are the admin of.
 	/// Currently, the burn from address must be the admin contract.
 	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
+	/// Contracts can set before send hook for an existing factory denom
+	//	that they are the admin of.
+	//	Currently, the set before hook call should be performed from address that must be the admin contract.
+	SetBeforeSendHook *SetBeforeSendHook `json:"set_before_send_hook,omitempty"`
 
 	// Cron types
 	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
 	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
+
+	// Contractmanager types
+	/// A contract that has failed acknowledgement can resubmit it
+	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -68,8 +77,9 @@ type SubmitTxResponse struct {
 
 // RegisterInterchainAccount creates account on remote chain.
 type RegisterInterchainAccount struct {
-	ConnectionId        string `json:"connection_id"`
-	InterchainAccountId string `json:"interchain_account_id"`
+	ConnectionId        string    `json:"connection_id"`
+	InterchainAccountId string    `json:"interchain_account_id"`
+	RegisterFee         sdk.Coins `json:"register_fee,omitempty"`
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
@@ -89,32 +99,16 @@ type SubmitAdminProposal struct {
 }
 
 type AdminProposal struct {
-	ParamChangeProposal           *ParamChangeProposal           `json:"param_change_proposal,omitempty"`
-	SoftwareUpgradeProposal       *SoftwareUpgradeProposal       `json:"software_upgrade_proposal,omitempty"`
-	CancelSoftwareUpgradeProposal *CancelSoftwareUpgradeProposal `json:"cancel_software_upgrade_proposal,omitempty"`
-	UpgradeProposal               *UpgradeProposal               `json:"upgrade_proposal,omitempty"`
-	ClientUpdateProposal          *ClientUpdateProposal          `json:"client_update_proposal,omitempty"`
-	PinCodesProposal              *PinCodesProposal              `json:"pin_codes_proposal,omitempty"`
-	UnpinCodesProposal            *UnpinCodesProposal            `json:"unpin_codes_proposal,omitempty"`
-	UpdateAdminProposal           *UpdateAdminProposal           `json:"update_admin_proposal,omitempty"`
-	ClearAdminProposal            *ClearAdminProposal            `json:"clear_admin_proposal,omitempty"`
+	ParamChangeProposal    *ParamChangeProposal    `json:"param_change_proposal,omitempty"`
+	UpgradeProposal        *UpgradeProposal        `json:"upgrade_proposal,omitempty"`
+	ClientUpdateProposal   *ClientUpdateProposal   `json:"client_update_proposal,omitempty"`
+	ProposalExecuteMessage *ProposalExecuteMessage `json:"proposal_execute_message,omitempty"`
 }
 
 type ParamChangeProposal struct {
 	Title        string                    `json:"title"`
 	Description  string                    `json:"description"`
 	ParamChanges []paramChange.ParamChange `json:"param_changes"`
-}
-
-type SoftwareUpgradeProposal struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Plan        Plan   `json:"plan"`
-}
-
-type CancelSoftwareUpgradeProposal struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
 }
 
 type Plan struct {
@@ -157,29 +151,8 @@ type ClientUpdateProposal struct {
 	SubstituteClientId string `json:"substitute_client_id,omitempty"`
 }
 
-type PinCodesProposal struct {
-	Title       string   `json:"title,omitempty"`
-	Description string   `json:"description,omitempty"`
-	CodeIDs     []uint64 `json:"code_ids,omitempty"`
-}
-
-type UnpinCodesProposal struct {
-	Title       string   `json:"title,omitempty"`
-	Description string   `json:"description,omitempty"`
-	CodeIDs     []uint64 `json:"code_ids,omitempty"`
-}
-
-type UpdateAdminProposal struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	NewAdmin    string `json:"new_admin"`
-	Contract    string `json:"contract,omitempty"`
-}
-
-type ClearAdminProposal struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Contract    string `json:"contract,omitempty"`
+type ProposalExecuteMessage struct {
+	Message string `json:"message,omitempty"`
 }
 
 // CreateDenom creates a new factory denom, of denomination:
@@ -200,16 +173,21 @@ type ChangeAdmin struct {
 }
 
 type MintTokens struct {
-	Denom         string  `json:"denom"`
-	Amount        sdk.Int `json:"amount"`
-	MintToAddress string  `json:"mint_to_address"`
+	Denom         string   `json:"denom"`
+	Amount        math.Int `json:"amount"`
+	MintToAddress string   `json:"mint_to_address"`
 }
 
 type BurnTokens struct {
-	Denom  string  `json:"denom"`
-	Amount sdk.Int `json:"amount"`
+	Denom  string   `json:"denom"`
+	Amount math.Int `json:"amount"`
 	// BurnFromAddress must be set to "" for now.
 	BurnFromAddress string `json:"burn_from_address"`
+}
+
+type SetBeforeSendHook struct {
+	Denom        string `json:"denom"`
+	ContractAddr string `json:"contract_addr"`
 }
 
 // AddSchedule adds new schedule to the cron module
@@ -236,4 +214,12 @@ type MsgExecuteContract struct {
 	Contract string `json:"contract,omitempty"`
 	// Msg json encoded message to be passed to the contract
 	Msg string `json:"msg,omitempty"`
+}
+
+type ResubmitFailure struct {
+	FailureId uint64 `json:"failure_id"`
+}
+
+type ResubmitFailureResponse struct {
+	FailureId uint64 `json:"failure_id"`
 }

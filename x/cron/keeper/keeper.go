@@ -6,17 +6,18 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	"github.com/neutron-org/neutron/x/cron/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 var (
@@ -33,9 +34,9 @@ type (
 		cdc           codec.BinaryCodec
 		storeKey      storetypes.StoreKey
 		memKey        storetypes.StoreKey
-		paramstore    paramtypes.Subspace
 		accountKeeper types.AccountKeeper
 		WasmMsgServer types.WasmMsgServer
+		authority     string
 	}
 )
 
@@ -43,21 +44,20 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
 	accountKeeper types.AccountKeeper,
+	authority string,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return &Keeper{
 		cdc:           cdc,
 		storeKey:      storeKey,
 		memKey:        memKey,
-		paramstore:    ps,
 		accountKeeper: accountKeeper,
+		authority:     authority,
 	}
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {

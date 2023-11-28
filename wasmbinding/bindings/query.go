@@ -3,12 +3,15 @@ package bindings
 import (
 	"encoding/json"
 
+	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+
 	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+
 	"github.com/neutron-org/neutron/x/interchainqueries/types"
 )
 
@@ -27,11 +30,16 @@ type NeutronQuery struct {
 	// MinIbcFee
 	MinIbcFee *QueryMinIbcFeeRequest `json:"min_ibc_fee,omitempty"`
 	// Token Factory queries
-	/// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
-	/// returns the full denom as used by `BankMsg::Send`.
+	// Given a subdenom minted by a contract via `NeutronMsg::MintTokens`,
+	// returns the full denom as used by `BankMsg::Send`.
 	FullDenom *FullDenom `json:"full_denom,omitempty"`
-	/// Returns the admin of a denom, if the denom is a Token Factory denom.
+	// Returns the admin of a denom, if the denom is a Token Factory denom.
 	DenomAdmin *DenomAdmin `json:"denom_admin,omitempty"`
+	// Returns the before send hook if it was set before
+	BeforeSendHook *BeforeSendHook `json:"before_send_hook,omitempty"`
+	// Contractmanager queries
+	// Query all failures for address
+	Failures *Failures `json:"failures,omitempty"`
 }
 
 /* Requests */
@@ -178,10 +186,27 @@ type DenomAdmin struct {
 	Subdenom string `json:"subdenom"`
 }
 
+type BeforeSendHook struct {
+	Denom string `json:"denom"`
+}
+
+type BeforeSendHookResponse struct {
+	ContractAddr string `json:"contract_addr"`
+}
+
 type DenomAdminResponse struct {
 	Admin string `json:"admin"`
 }
 
 type FullDenomResponse struct {
 	Denom string `json:"denom"`
+}
+
+type Failures struct {
+	Address    string             `json:"address"`
+	Pagination *query.PageRequest `json:"pagination,omitempty"`
+}
+
+type FailuresResponse struct {
+	Failures []contractmanagertypes.Failure `json:"failures"`
 }

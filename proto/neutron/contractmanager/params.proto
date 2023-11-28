@@ -1,0 +1,12 @@
+syntax = "proto3";
+package neutron.contractmanager;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  uint64 sudo_call_gas_limit = 1;
+}

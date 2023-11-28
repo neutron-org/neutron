@@ -14,6 +14,12 @@ const (
 	MemStoreKey = "mem_feeburner"
 )
 
+const (
+	prefixParamsKey = iota + 1
+)
+
+var ParamsKey = []byte{prefixParamsKey}
+
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }

@@ -3,6 +3,8 @@ package types
 import (
 	"strings"
 
+	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -26,15 +28,15 @@ func (msg MsgRemoveInterchainQueryRequest) Type() string {
 
 func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
 	if msg.GetQueryId() == 0 {
-		return sdkerrors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
+		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
 
 	if strings.TrimSpace(msg.Sender) == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
+		return errors.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Sender)
 	}
 
 	return nil

@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/neutron-org/neutron/x/tokenfactory/types"
 )
@@ -40,7 +40,8 @@ func (suite *KeeperTestSuite) TestGenesis() {
 		}
 	}
 
-	app.TokenFactoryKeeper.SetParams(context, types.Params{})
+	err := app.TokenFactoryKeeper.SetParams(context, types.Params{})
+	suite.Require().NoError(err)
 	app.TokenFactoryKeeper.InitGenesis(context, genesisState)
 	exportedGenesis := app.TokenFactoryKeeper.ExportGenesis(context)
 	suite.Require().NotNil(exportedGenesis)
