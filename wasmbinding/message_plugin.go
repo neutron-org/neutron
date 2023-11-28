@@ -316,7 +316,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "invalid proposal quantity")
 	}
-	// here we handle pre-v1.1.0 style of proposals: param change, upgrade, client update
+	// here we handle pre-v2.0.0 style of proposals: param change, upgrade, client update
 	if m.isLegacyProposal(adminProposal) {
 		resp, err := m.performSubmitAdminProposalLegacy(ctx, contractAddr, adminProposal)
 		if err != nil {

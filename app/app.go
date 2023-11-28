@@ -21,9 +21,9 @@ import (
 	"github.com/neutron-org/neutron/docs"
 
 	"github.com/neutron-org/neutron/app/upgrades"
+	v030 "github.com/neutron-org/neutron/app/upgrades/v0.3.0"
 	v044 "github.com/neutron-org/neutron/app/upgrades/v0.4.4"
-	v110 "github.com/neutron-org/neutron/app/upgrades/v1.1.0"
-	v3 "github.com/neutron-org/neutron/app/upgrades/v3"
+	v200 "github.com/neutron-org/neutron/app/upgrades/v2.0.0"
 	"github.com/neutron-org/neutron/x/cron"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -165,7 +165,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v3.Upgrade, v044.Upgrade, v110.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
