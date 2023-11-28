@@ -1,4 +1,4 @@
-package v110
+package v200
 
 import (
 	"github.com/cosmos/cosmos-sdk/store/types"
@@ -11,7 +11,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName     = "v1.1.0"
+	UpgradeName     = "v2.0.0"
 	AtomDenom       = "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9"
 	AxelarUsdcDenom = "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
 )

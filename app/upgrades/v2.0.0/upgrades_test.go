@@ -1,4 +1,4 @@
-package v110_test
+package v200_test
 
 import (
 	"testing"
@@ -24,7 +24,7 @@ import (
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/stretchr/testify/suite"
 
-	v110 "github.com/neutron-org/neutron/app/upgrades/v1.1.0"
+	v110 "github.com/neutron-org/neutron/app/upgrades/v2.0.0"
 	"github.com/neutron-org/neutron/testutil"
 )
 
