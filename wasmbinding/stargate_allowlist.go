@@ -74,7 +74,6 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/neutron.dex.Query/LimitOrderTrancheAll":              &dextypes.QueryAllLimitOrderTrancheResponse{},
 		"/neutron.dex.Query/UserDepositsAll":                   &dextypes.QueryAllUserDepositsResponse{},
 		"/neutron.dex.Query/TickLiquidityAll":                  &dextypes.QueryAllTickLiquidityResponse{},
-		"/neutron.dex.Query/UserLimitOrdersAll":                &dextypes.QueryAllUserLimitOrdersResponse{},
 		"/neutron.dex.Query/InactiveLimitOrderTranche":         &dextypes.QueryGetInactiveLimitOrderTrancheResponse{},
 		"/neutron.dex.Query/InactiveLimitOrderTrancheAll":      &dextypes.QueryAllInactiveLimitOrderTrancheResponse{},
 		"/neutron.dex.Query/PoolReservesAll":                   &dextypes.QueryAllPoolReservesResponse{},
