@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"time"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -14,7 +13,8 @@ import (
 
 func NewLimitOrderTranche(
 	limitOrderTrancheKey *types.LimitOrderTrancheKey,
-	goodTil *time.Time,
+	goodTil int64,
+	orderType types.LimitOrderType,
 ) (*types.LimitOrderTranche, error) {
 	priceTakerToMaker, err := limitOrderTrancheKey.PriceTakerToMaker()
 	if err != nil {
@@ -28,6 +28,7 @@ func NewLimitOrderTranche(
 		TotalTakerDenom:    math.ZeroInt(),
 		ExpirationTime:     goodTil,
 		PriceTakerToMaker:  priceTakerToMaker,
+		Type:               orderType,
 	}, nil
 }
 
@@ -200,7 +201,7 @@ func NewTrancheKey(ctx sdk.Context) string {
 func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 	tradePairID *types.TradePairID,
 	tickIndexTakerToMaker int64,
-	goodTil *time.Time,
+	goodTil int64,
 	orderType types.LimitOrderType,
 ) (placeTranche *types.LimitOrderTranche, err error) {
 	// NOTE: Right now we are not indexing by goodTil date so we can't easily check if there's already a tranche
@@ -209,7 +210,6 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 	// aggregating might be more efficient particularly for deletion, but if they are relatively sparse
 	// it will incur fewer lookups to just create a new limitOrderTranche
 	// Also trying to cancel aggregated good_til orders will be a PITA
-	JITGoodTilTime := types.JITGoodTilTime()
 	switch orderType {
 	case types.LimitOrderType_JUST_IN_TIME:
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
@@ -217,14 +217,14 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
-		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, &JITGoodTilTime)
+		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, types.JITGoodTilTime, orderType)
 	case types.LimitOrderType_GOOD_TIL_TIME:
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
-		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
+		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil, orderType)
 	default:
 		placeTranche = k.GetPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
 		if placeTranche == nil {
@@ -233,7 +233,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 				TickIndexTakerToMaker: tickIndexTakerToMaker,
 				TrancheKey:            NewTrancheKey(ctx),
 			}
-			placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, nil)
+			placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, 0, orderType)
 			if err != nil {
 				return nil, err
 			}

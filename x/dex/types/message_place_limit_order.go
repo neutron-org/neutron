@@ -1,8 +1,6 @@
 package types
 
 import (
-	"time"
-
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,7 +18,7 @@ func NewMsgPlaceLimitOrder(
 	tickIndex int64,
 	amountIn math.Int,
 	orderType LimitOrderType,
-	goodTil *time.Time,
+	goodTil int64,
 	maxAmountOut *math.Int,
 ) *MsgPlaceLimitOrder {
 	return &MsgPlaceLimitOrder{
@@ -73,11 +71,11 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 		return ErrZeroLimitOrder
 	}
 
-	if msg.OrderType.IsGoodTil() && msg.ExpirationTime == nil {
+	if msg.OrderType.IsGoodTil() && msg.ExpirationTime == 0 {
 		return ErrGoodTilOrderWithoutExpiration
 	}
 
-	if !msg.OrderType.IsGoodTil() && msg.ExpirationTime != nil {
+	if !msg.OrderType.IsGoodTil() && msg.ExpirationTime != 0 {
 		return ErrExpirationOnWrongOrderType
 	}
 
@@ -97,12 +95,12 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 	return nil
 }
 
-func (msg *MsgPlaceLimitOrder) ValidateGoodTilExpiration(blockTime time.Time) error {
-	if msg.OrderType.IsGoodTil() && !msg.ExpirationTime.After(blockTime) {
+func (msg *MsgPlaceLimitOrder) ValidateGoodTilExpiration(curBlockTime int64) error {
+	if msg.OrderType.IsGoodTil() && curBlockTime > msg.ExpirationTime {
 		return sdkerrors.Wrapf(ErrExpirationTimeInPast,
-			"Current BlockTime: %s; Provided ExpirationTime: %s",
-			blockTime.String(),
-			msg.ExpirationTime.String(),
+			"Current BlockTime: %d; Provided ExpirationTime: %d",
+			curBlockTime,
+			msg.ExpirationTime,
 		)
 	}
 

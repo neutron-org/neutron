@@ -674,7 +674,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilHandlesTimezoneCorrectly() {
 		TrancheKey:            trancheKey,
 	})
 
-	s.Assert().Equal(tranche.ExpirationTime.Unix(), timeInPST.Unix())
+	s.Assert().Equal(tranche.ExpirationTime, timeInPST.Unix())
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
@@ -692,7 +692,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 		TickIndexInToOut: 0,
 		AmountIn:         sdkmath.NewInt(50),
 		OrderType:        types.LimitOrderType_GOOD_TIL_TIME,
-		ExpirationTime:   &yesterday,
+		ExpirationTime:   yesterday.Unix(),
 	})
 	s.Assert().ErrorIs(err, types.ErrExpirationTimeInPast)
 }

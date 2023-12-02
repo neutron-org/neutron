@@ -98,8 +98,8 @@ func (k MsgServer) PlaceLimitOrder(
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
-
-	err := msg.ValidateGoodTilExpiration(ctx.BlockTime())
+	blockTime := ctx.BlockTime().Unix()
+	err := msg.ValidateGoodTilExpiration(blockTime)
 	if err != nil {
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}

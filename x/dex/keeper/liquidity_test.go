@@ -632,7 +632,7 @@ func (s *DexTestSuite) placeGTCLimitOrder(
 		s.Ctx,
 		tradePairID,
 		tickIndexTakerToMaker,
-		nil,
+		0,
 		types.LimitOrderType_GOOD_TIL_CANCELLED,
 	)
 	s.Assert().NoError(err)

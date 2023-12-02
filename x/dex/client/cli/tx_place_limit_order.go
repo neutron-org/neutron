@@ -3,7 +3,6 @@ package cli
 import (
 	"strconv"
 	"strings"
-	"time"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -18,9 +17,9 @@ import (
 func CmdPlaceLimitOrder() *cobra.Command {
 	cmd := &cobra.Command{
 		//nolint:lll
-		Use:     "place-limit-order [receiver] [token-in] [token-out] [tick-index] [amount-in] ?[order-type] ?[expirationTime] ?(--max-amout-out)",
+		Use:     "place-limit-order [receiver] [token-in] [token-out] [tick-index] [amount-in] ?[order-type] ?[expirationTimeUnix] ?(--max-amout-out)",
 		Short:   "Broadcast message PlaceLimitOrder",
-		Example: "place-limit-order alice tokenA tokenB [-10] tokenA 50 GOOD_TIL_TIME '01/02/2006 15:04:05' --max-amount-out 20 --from alice",
+		Example: "place-limit-order alice tokenA tokenB [-10] tokenA 50 GOOD_TIL_TIME 1701429212 --max-amount-out 20 --from alice",
 		Args:    cobra.RangeArgs(5, 7),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			argReceiver := args[0]
@@ -51,14 +50,12 @@ func CmdPlaceLimitOrder() *cobra.Command {
 				orderType = types.LimitOrderType(orderTypeInt)
 			}
 
-			var goodTil *time.Time
+			var goodTil int64
 			if len(args) == 7 {
-				const timeFormat = "01/02/2006 15:04:05"
-				tm, err := time.Parse(timeFormat, args[6])
+				goodTil, err = strconv.ParseInt(args[6], 10, 0)
 				if err != nil {
 					return sdkerrors.Wrapf(types.ErrInvalidTimeString, err.Error())
 				}
-				goodTil = &tm
 			}
 
 			maxAmountOutArg, err := cmd.Flags().GetString(FlagMaxAmountOut)

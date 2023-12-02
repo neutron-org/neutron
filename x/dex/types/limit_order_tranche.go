@@ -76,11 +76,12 @@ func (t LimitOrderTranche) IsFilled() bool {
 }
 
 func (t LimitOrderTranche) IsJIT() bool {
-	return t.ExpirationTime != nil && *t.ExpirationTime == JITGoodTilTime()
+	return t.Type == LimitOrderType_JUST_IN_TIME
 }
 
 func (t LimitOrderTranche) IsExpired(ctx sdk.Context) bool {
-	return t.ExpirationTime != nil && !t.IsJIT() && !t.ExpirationTime.After(ctx.BlockTime())
+	blockTime := ctx.BlockTime().Unix()
+	return t.ExpirationTime != 0 && t.ExpirationTime < blockTime
 }
 
 func (t LimitOrderTranche) HasTokenIn() bool {
