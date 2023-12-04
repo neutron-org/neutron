@@ -5,19 +5,19 @@ import (
 	"fmt"
 	"testing"
 
-	keeper2 "github.com/neutron-org/neutron/x/contractmanager/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
+	keeper2 "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
-	ictxtypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	ictxtypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
-	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/v2/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/types"
@@ -26,16 +26,16 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil"
-	"github.com/neutron-org/neutron/wasmbinding"
-	"github.com/neutron-org/neutron/wasmbinding/bindings"
-	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v2/app"
+	"github.com/neutron-org/neutron/v2/testutil"
+	"github.com/neutron-org/neutron/v2/wasmbinding"
+	"github.com/neutron-org/neutron/v2/wasmbinding/bindings"
+	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
+	icqkeeper "github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v2/x/interchaintxs/keeper"
 
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
 )
 
 const FeeCollectorAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"

@@ -9,11 +9,11 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
 
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {

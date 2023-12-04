@@ -4,17 +4,17 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
-	feerefunderkeeper "github.com/neutron-org/neutron/x/feerefunder/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v2/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v2/x/feerefunder/keeper"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
-	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/x/interchaintxs/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
-	transfer "github.com/neutron-org/neutron/x/transfer/keeper"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
+	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v2/x/interchaintxs/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v2/x/tokenfactory/keeper"
+	transfer "github.com/neutron-org/neutron/v2/x/transfer/keeper"
 )
 
 // RegisterCustomPlugins returns wasmkeeper.Option that we can use to connect handlers for implemented custom queries and messages to the App

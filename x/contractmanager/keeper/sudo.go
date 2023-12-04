@@ -13,7 +13,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v2/x/contractmanager/types"
 )
 
 func (k Keeper) HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool {

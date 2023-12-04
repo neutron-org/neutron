@@ -3,13 +3,13 @@ package types_test
 import (
 	"testing"
 
-	math_utils "github.com/neutron-org/neutron/utils/math"
+	math_utils "github.com/neutron-org/neutron/v2/utils/math"
 
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/testutil/common/sample"
-	. "github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v2/testutil/common/sample"
+	. "github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {

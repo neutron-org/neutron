@@ -20,8 +20,8 @@ import (
 	ccv "github.com/cosmos/interchain-security/v3/x/ccv/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/testutil"
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v2/testutil"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 var (

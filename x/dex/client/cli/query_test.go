@@ -6,9 +6,9 @@ package cli
 // 	"github.com/cosmos/cosmos-sdk/testutil/cli"
 // 	"github.com/cosmos/cosmos-sdk/testutil/network"
 // 	sdk "github.com/cosmos/cosmos-sdk/types"
-// 	"github.com/neutron-org/neutron/app"
-// 	dexclient "github.com/neutron-org/neutron/x/dex/client/cli"
-// 	"github.com/neutron-org/neutron/x/dex/types"
+// 	"github.com/neutron-org/neutron/v2/app"
+// 	dexclient "github.com/neutron-org/neutron/v2/x/dex/client/cli"
+// 	"github.com/neutron-org/neutron/v2/x/dex/types"
 // 	"github.com/stretchr/testify/require"
 // 	"github.com/stretchr/testify/suite"
 // )

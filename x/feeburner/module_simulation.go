@@ -8,9 +8,9 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/neutron-org/neutron/testutil/feeburner/sample"
-	feeburnersimulation "github.com/neutron-org/neutron/x/feeburner/simulation"
-	"github.com/neutron-org/neutron/x/feeburner/types"
+	"github.com/neutron-org/neutron/v2/testutil/feeburner/sample"
+	feeburnersimulation "github.com/neutron-org/neutron/v2/x/feeburner/simulation"
+	"github.com/neutron-org/neutron/v2/x/feeburner/types"
 )
 
 // avoid unused import issue

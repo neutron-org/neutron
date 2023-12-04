@@ -3,13 +3,13 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/v2/app"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/x/feeburner/types"
+	testkeeper "github.com/neutron-org/neutron/v2/testutil/feeburner/keeper"
+	"github.com/neutron-org/neutron/v2/x/feeburner/types"
 )
 
 func TestParamsQuery(t *testing.T) {

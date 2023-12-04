@@ -14,7 +14,7 @@ import (
 	legacyibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/v2/app/params"
 )
 
 // NewTestChainWithValSet copypasted and modified to use neutron denom from here https://github.com/cosmos/ibc-go/blob/af9b461c63274b9ce5917beb89a2c92e865419df/testing/chain.go#L94

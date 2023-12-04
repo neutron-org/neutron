@@ -1,8 +1,8 @@
 package types
 
 import (
-	math_utils "github.com/neutron-org/neutron/utils/math"
-	"github.com/neutron-org/neutron/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v2/utils/math"
+	"github.com/neutron-org/neutron/v2/x/dex/utils"
 )
 
 // NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error

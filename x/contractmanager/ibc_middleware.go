@@ -7,8 +7,8 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
 )
 
 type SudoLimitWrapper struct {

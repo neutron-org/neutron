@@ -1,7 +1,7 @@
 syntax = "proto3";
 package neutron.interchaintxs.v1;
 
-option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/interchaintxs/types";
 
 import "cosmos_proto/cosmos.proto";
 import "cosmos/base/v1beta1/coin.proto";

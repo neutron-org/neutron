@@ -9,10 +9,10 @@ import (
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil/common/sample"
-	"github.com/neutron-org/neutron/x/dex/types"
-	. "github.com/neutron-org/neutron/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v2/app"
+	"github.com/neutron-org/neutron/v2/testutil/common/sample"
+	"github.com/neutron-org/neutron/v2/x/dex/types"
+	. "github.com/neutron-org/neutron/v2/x/ibcswap/types"
 )
 
 func init() {

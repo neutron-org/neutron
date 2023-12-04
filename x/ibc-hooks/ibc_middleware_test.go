@@ -14,10 +14,10 @@ import (
 	ibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/app/params"
-	"github.com/neutron-org/neutron/testutil"
-	"github.com/neutron-org/neutron/x/ibc-hooks/testutils"
-	"github.com/neutron-org/neutron/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v2/testutil"
+	"github.com/neutron-org/neutron/v2/x/ibc-hooks/testutils"
+	"github.com/neutron-org/neutron/v2/x/ibc-hooks/utils"
 
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"

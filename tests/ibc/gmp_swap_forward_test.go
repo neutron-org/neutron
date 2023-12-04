@@ -5,9 +5,9 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/x/dex/types"
-	"github.com/neutron-org/neutron/x/gmp"
-	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v2/x/gmp"
+	swaptypes "github.com/neutron-org/neutron/v2/x/ibcswap/types"
 )
 
 // TestGMPSwap_Success asserts that the swap middleware works as intended when the original message is sent via GMP
