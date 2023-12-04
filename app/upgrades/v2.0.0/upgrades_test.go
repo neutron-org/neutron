@@ -24,7 +24,7 @@ import (
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/stretchr/testify/suite"
 
-	v110 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.0"
+	v200 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.0"
 	"github.com/neutron-org/neutron/v2/testutil"
 )
 
@@ -80,7 +80,7 @@ func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
 	suite.Require().True(globalFeeSubspace.Has(ctx, globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage))
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -126,7 +126,7 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -154,7 +154,7 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	suite.Require().Error(err)
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -185,7 +185,7 @@ func (suite *UpgradeTestSuite) TestTokenFactoryUpgrade() {
 	suite.Require().Equal(denomFeeBefore, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(100_000_000))))
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -220,7 +220,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	contractAddressBeforeUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeIDBefore)
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}

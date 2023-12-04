@@ -282,8 +282,8 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 }
 
 func (suite *IBCConnectionTestSuite) StoreTestCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
-	// wasm file built with https://github.com/neutron-org/neutron/v2-contracts/tree/main/contracts/reflect
-	// wasm file built with https://github.com/neutron-org/neutron/v2-dev/tree/feat/ica-register-fee-update/contracts/neutron_interchain_txs
+	// wasm file built with https://github.com/neutron-org/neutron-sdk/tree/main/contracts/reflect
+	// wasm file built with https://github.com/neutron-org/neutron-dev-contracts/tree/feat/ica-register-fee-update/contracts/neutron_interchain_txs
 	wasmCode, err := os.ReadFile(path)
 	suite.Require().NoError(err)
 

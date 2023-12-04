@@ -19,7 +19,7 @@ import (
 // must be OS/library version agnostic and carry a concrete defined error message. One of the good
 // ways to do so is to redact error using the RedactError func as it is done in SudoLimitWrapper
 // Sudo method:
-// https://github.com/neutron-org/neutron/v2/blob/eb8b5ae50907439ff9af0527a42ef0cb448a78b5/x/contractmanager/ibc_middleware.go#L42.
+// https://github.com/neutron-org/neutron/blob/eb8b5ae50907439ff9af0527a42ef0cb448a78b5/x/contractmanager/ibc_middleware.go#L42.
 // Another good way could be passing here some constant value.
 func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte, errMsg string) types.Failure {
 	failure := types.Failure{
