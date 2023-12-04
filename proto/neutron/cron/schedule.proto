@@ -1,7 +1,7 @@
 syntax = "proto3";
 package neutron.cron;
 
-option go_package = "github.com/neutron-org/neutron/x/cron/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/cron/types";
 
 import "gogoproto/gogo.proto";
 

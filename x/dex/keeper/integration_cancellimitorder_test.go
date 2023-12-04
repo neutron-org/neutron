@@ -7,7 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 func (s *DexTestSuite) TestCancelEntireLimitOrderAOneExists() {

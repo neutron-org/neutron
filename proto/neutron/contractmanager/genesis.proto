@@ -6,7 +6,7 @@ import "neutron/contractmanager/params.proto";
 import "neutron/contractmanager/failure.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/contractmanager/types";
 
 // GenesisState defines the contractmanager module's genesis state.
 message GenesisState {

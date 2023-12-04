@@ -3,7 +3,7 @@ package neutron.dex;
 
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/neutron-org/neutron/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/dex/types";
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "google/protobuf/timestamp.proto";
@@ -171,7 +171,7 @@ message MsgMultiHopSwap {
                        ];
   string exit_limit_price = 5 [
                              (gogoproto.moretags)   = "yaml:\"exit_limit_price\"",
-                             (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
+                             (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
                              (gogoproto.nullable)   = false,
                              (gogoproto.jsontag) = "exit_limit_price"
                              ];

@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"google.golang.org/grpc"
 
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

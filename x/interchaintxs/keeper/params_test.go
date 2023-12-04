@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/x/interchaintxs/types"
+	testkeeper "github.com/neutron-org/neutron/v2/testutil/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v2/x/interchaintxs/types"
 )
 
 func TestGetParams(t *testing.T) {

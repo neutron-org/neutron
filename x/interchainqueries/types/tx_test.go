@@ -12,7 +12,7 @@ import (
 
 	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
-	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
+	iqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 )
 
 const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"

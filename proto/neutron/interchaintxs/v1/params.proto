@@ -4,7 +4,7 @@ package neutron.interchaintxs.v1;
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
 
-option go_package = "github.com/neutron-org/neutron/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/interchaintxs/types";
 
 // Params defines the parameters for the module.
 message Params {

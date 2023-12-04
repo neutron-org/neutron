@@ -9,7 +9,7 @@ import "amino/amino.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/neutron-org/neutron/x/cron/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/cron/types";
 
 // Msg defines the Msg service.
 service Msg {

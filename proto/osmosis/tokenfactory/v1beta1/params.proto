@@ -3,7 +3,7 @@ package osmosis.tokenfactory.v1beta1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/x/tokenfactory/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/tokenfactory/types";
 import "cosmos_proto/cosmos.proto";
 import "cosmos/base/v1beta1/coin.proto";
 

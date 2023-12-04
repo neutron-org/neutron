@@ -3,11 +3,11 @@ package keeper_test
 import (
 	"testing"
 
-	testkeeper "github.com/neutron-org/neutron/testutil/feerefunder/keeper"
+	testkeeper "github.com/neutron-org/neutron/v2/testutil/feerefunder/keeper"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v2/x/feerefunder/types"
 )
 
 func TestGetParams(t *testing.T) {

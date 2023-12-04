@@ -13,11 +13,11 @@ import (
 	staking "github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/neutron-org/neutron/testutil/consumer"
+	"github.com/neutron-org/neutron/v2/testutil/consumer"
 
-	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/v2/app/params"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/v2/app"
 
 	tmdb "github.com/cometbft/cometbft-db"
 	tmrand "github.com/cometbft/cometbft/libs/rand"

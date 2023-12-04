@@ -8,10 +8,10 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/utils"
-	math_utils "github.com/neutron-org/neutron/utils/math"
-	"github.com/neutron-org/neutron/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/x/dex/utils"
+	"github.com/neutron-org/neutron/v2/utils"
+	math_utils "github.com/neutron-org/neutron/v2/utils/math"
+	"github.com/neutron-org/neutron/v2/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v2/x/dex/utils"
 )
 
 // NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into math.Ints.

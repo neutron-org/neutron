@@ -21,9 +21,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/x/contractmanager/client/cli"
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v2/x/contractmanager/client/cli"
+	"github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v2/x/contractmanager/types"
 )
 
 var (

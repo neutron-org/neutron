@@ -22,15 +22,15 @@ import (
 	icssimapp "github.com/cosmos/interchain-security/v3/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
 
 	tmtypes "github.com/cometbft/cometbft/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/v3/app/provider"
 	e2e "github.com/cosmos/interchain-security/v3/testutil/integration"
 
-	"github.com/neutron-org/neutron/app"
-	ictxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v2/app"
+	ictxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
 
 	consumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 	providertypes "github.com/cosmos/interchain-security/v3/x/ccv/provider/types"
@@ -282,8 +282,8 @@ func (suite *IBCConnectionTestSuite) GetNeutronZoneApp(chain *ibctesting.TestCha
 }
 
 func (suite *IBCConnectionTestSuite) StoreTestCode(ctx sdk.Context, addr sdk.AccAddress, path string) uint64 {
-	// wasm file built with https://github.com/neutron-org/neutron-contracts/tree/main/contracts/reflect
-	// wasm file built with https://github.com/neutron-org/neutron-dev/tree/feat/ica-register-fee-update/contracts/neutron_interchain_txs
+	// wasm file built with https://github.com/neutron-org/neutron-sdk/tree/main/contracts/reflect
+	// wasm file built with https://github.com/neutron-org/neutron-dev-contracts/tree/feat/ica-register-fee-update/contracts/neutron_interchain_txs
 	wasmCode, err := os.ReadFile(path)
 	suite.Require().NoError(err)
 
