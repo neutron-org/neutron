@@ -19,7 +19,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 		//nolint:lll
 		Use:     "place-limit-order [receiver] [token-in] [token-out] [tick-index] [amount-in] ?[order-type] ?[expirationTimeUnix] ?(--max-amout-out)",
 		Short:   "Broadcast message PlaceLimitOrder",
-		Example: "place-limit-order alice tokenA tokenB [-10] tokenA 50 GOOD_TIL_TIME 1701429212 --max-amount-out 20 --from alice",
+		Example: "place-limit-order alice tokenA tokenB [-10] 50 GOOD_TIL_TIME 1701429212 --max-amount-out 20 --from alice",
 		Args:    cobra.RangeArgs(5, 7),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			argReceiver := args[0]
