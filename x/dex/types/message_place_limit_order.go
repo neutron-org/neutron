@@ -98,7 +98,7 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 func (msg *MsgPlaceLimitOrder) ValidateGoodTilExpiration(curBlockTime int64) error {
 	if msg.OrderType.IsGoodTil() && curBlockTime > msg.ExpirationTime {
 		return sdkerrors.Wrapf(ErrExpirationTimeInPast,
-			"Current BlockTime: %d; Provided ExpirationTime: %d",
+			"Current BlockTime (%d) is after Provided ExpirationTime (%d)",
 			curBlockTime,
 			msg.ExpirationTime,
 		)

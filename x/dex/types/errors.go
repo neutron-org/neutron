@@ -102,7 +102,7 @@ var (
 	ErrInvalidTimeString = sdkerrors.Register(
 		ModuleName,
 		1135,
-		"Time string must be formatted as MM/dd/yyyy HH:mm:ss (ex. 02/05/2023 15:34:56) ",
+		"Time string must be formatted as unix time (ex. 1701429212) ",
 	)
 	ErrGoodTilOrderWithoutExpiration = sdkerrors.Register(
 		ModuleName,
