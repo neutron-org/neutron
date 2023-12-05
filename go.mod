@@ -8,10 +8,10 @@ require (
 	cosmossdk.io/log v1.2.1
 	cosmossdk.io/math v1.2.0
 	github.com/CosmWasm/wasmd v0.45.0
-	github.com/CosmWasm/wasmvm v1.5.1
+	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/armon/go-metrics v0.4.1
 	github.com/cometbft/cometbft v0.37.2
-	github.com/cometbft/cometbft-db v0.8.0
+	github.com/cometbft/cometbft-db v0.9.1
 	github.com/cosmos/admin-module v0.0.0-20220204080909-475a98e03f31
 	github.com/cosmos/cosmos-proto v1.0.0-beta.2
 	github.com/cosmos/cosmos-sdk v0.47.6
@@ -133,7 +133,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
-	github.com/linxGnu/grocksdb v1.8.0 // indirect
+	github.com/linxGnu/grocksdb v1.8.6 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -167,7 +167,7 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/zondax/hid v0.9.2 // indirect
 	github.com/zondax/ledger-go v0.14.3 // indirect
-	go.etcd.io/bbolt v1.3.7 // indirect
+	go.etcd.io/bbolt v1.3.8 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
