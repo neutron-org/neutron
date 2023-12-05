@@ -60,7 +60,7 @@ func limitOrderTrancheV2ToV3(tranche typesv2.LimitOrderTranche) *types.LimitOrde
 		TotalTakerDenom:    tranche.TotalTakerDenom,
 		PriceTakerToMaker:  tranche.PriceTakerToMaker,
 		ExpirationTime:     expirationTimeInt64,
-		Type:               orderType,
+		OrderType:          orderType,
 	}
 }
 

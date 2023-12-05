@@ -76,7 +76,7 @@ func (t LimitOrderTranche) IsFilled() bool {
 }
 
 func (t LimitOrderTranche) IsJIT() bool {
-	return t.Type == LimitOrderType_JUST_IN_TIME
+	return t.OrderType == LimitOrderType_JUST_IN_TIME
 }
 
 func (t LimitOrderTranche) IsExpired(ctx sdk.Context) bool {

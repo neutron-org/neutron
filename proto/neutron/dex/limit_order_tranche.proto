@@ -6,7 +6,6 @@ import "google/protobuf/timestamp.proto";
 
 import "neutron/dex/trade_pair_id.proto";
 import "gogoproto/gogo.proto";
-import "neutron/dex/pair_id.proto";
 import "neutron/dex/tx.proto";
 
 message LimitOrderTrancheKey {
@@ -54,6 +53,6 @@ message LimitOrderTranche {
                 (gogoproto.nullable)   = false,
                 (gogoproto.jsontag) = "price_taker_to_maker"
                 ];
-  LimitOrderType Type = 8;
+  LimitOrderType order_type = 8;
 }
 

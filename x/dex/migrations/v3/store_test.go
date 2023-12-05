@@ -99,14 +99,14 @@ func (suite *DexMigrationTestSuite) assertV2TrancheEqualsV3(v2Tranche typesv2.Li
 	switch v2Tranche.ExpirationTime {
 	case &time.Time{}:
 		suite.Equal(int64(0), v3Tranche.ExpirationTime)
-		suite.Equal(types.LimitOrderType_JUST_IN_TIME, v3Tranche.Type)
+		suite.Equal(types.LimitOrderType_JUST_IN_TIME, v3Tranche.OrderType)
 	case nil:
 		suite.Equal(int64(0), v3Tranche.ExpirationTime)
-		suite.Equal(types.LimitOrderType_GOOD_TIL_CANCELLED, v3Tranche.Type)
+		suite.Equal(types.LimitOrderType_GOOD_TIL_CANCELLED, v3Tranche.OrderType)
 
 	default:
 		suite.Equal(v2Tranche.ExpirationTime.Unix(), v3Tranche.ExpirationTime)
-		suite.Equal(types.LimitOrderType_GOOD_TIL_TIME, v3Tranche.Type)
+		suite.Equal(types.LimitOrderType_GOOD_TIL_TIME, v3Tranche.OrderType)
 	}
 }
 

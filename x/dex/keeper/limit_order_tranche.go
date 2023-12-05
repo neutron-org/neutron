@@ -28,7 +28,7 @@ func NewLimitOrderTranche(
 		TotalTakerDenom:    math.ZeroInt(),
 		ExpirationTime:     goodTil,
 		PriceTakerToMaker:  priceTakerToMaker,
-		Type:               orderType,
+		OrderType:          orderType,
 	}, nil
 }
 

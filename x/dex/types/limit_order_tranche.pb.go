@@ -99,7 +99,7 @@ type LimitOrderTranche struct {
 	// Order deletion still functions the same and the orders will be deleted at the end of the block
 	ExpirationTime    int64                                                `protobuf:"varint,6,opt,name=expiration_time,json=expirationTime,proto3" json:"expiration_time,omitempty"`
 	PriceTakerToMaker github_com_neutron_org_neutron_v2_utils_math.PrecDec `protobuf:"bytes,7,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v2/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"`
-	Type              LimitOrderType                                       `protobuf:"varint,8,opt,name=Type,proto3,enum=neutron.dex.LimitOrderType" json:"Type,omitempty"`
+	OrderType         LimitOrderType                                       `protobuf:"varint,8,opt,name=Type,proto3,enum=neutron.dex.LimitOrderType" json:"Type,omitempty"`
 }
 
 func (m *LimitOrderTranche) Reset()         { *m = LimitOrderTranche{} }
@@ -151,7 +151,7 @@ func (m *LimitOrderTranche) GetExpirationTime() int64 {
 
 func (m *LimitOrderTranche) GetType() LimitOrderType {
 	if m != nil {
-		return m.Type
+		return m.OrderType
 	}
 	return LimitOrderType_GOOD_TIL_CANCELLED
 }
@@ -273,8 +273,8 @@ func (m *LimitOrderTranche) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Type != 0 {
-		i = encodeVarintLimitOrderTranche(dAtA, i, uint64(m.Type))
+	if m.OrderType != 0 {
+		i = encodeVarintLimitOrderTranche(dAtA, i, uint64(m.OrderType))
 		i--
 		dAtA[i] = 0x40
 	}
@@ -402,8 +402,8 @@ func (m *LimitOrderTranche) Size() (n int) {
 	}
 	l = m.PriceTakerToMaker.Size()
 	n += 1 + l + sovLimitOrderTranche(uint64(l))
-	if m.Type != 0 {
-		n += 1 + sovLimitOrderTranche(uint64(m.Type))
+	if m.OrderType != 0 {
+		n += 1 + sovLimitOrderTranche(uint64(m.OrderType))
 	}
 	return n
 }
@@ -809,7 +809,7 @@ func (m *LimitOrderTranche) Unmarshal(dAtA []byte) error {
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
 			}
-			m.Type = 0
+			m.OrderType = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowLimitOrderTranche
@@ -819,7 +819,7 @@ func (m *LimitOrderTranche) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Type |= LimitOrderType(b&0x7F) << shift
+				m.OrderType |= LimitOrderType(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
