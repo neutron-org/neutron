@@ -1,0 +1,60 @@
+syntax = "proto3";
+package neutron.dex.v2;
+
+option go_package = "github.com/neutron-org/neutron/v2/x/dex/types/v2";
+import "google/protobuf/timestamp.proto";
+
+import "neutron/dex/trade_pair_id.proto";
+import "gogoproto/gogo.proto";
+import "neutron/dex/pair_id.proto";
+
+message LimitOrderTrancheKey {
+  TradePairID trade_pair_id = 1;
+  int64 tick_index_taker_to_maker = 2;
+  string tranche_key = 3;
+}
+
+message LimitOrderTranche {
+  LimitOrderTrancheKey key = 1;
+  string reserves_maker_denom = 2  [
+      (gogoproto.moretags)   = "yaml:\"reserves_maker_denom\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable)   = false,
+      (gogoproto.jsontag) = "reserves_maker_denom"
+  ]; 
+  string reserves_taker_denom = 3  [
+      (gogoproto.moretags)   = "yaml:\"reserves_taker_denom\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable)   = false,
+      (gogoproto.jsontag) = "reserves_taker_denom"
+  ];  
+  string total_maker_denom = 4  [
+      (gogoproto.moretags)   = "yaml:\"total_maker_denom\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable)   = false,
+      (gogoproto.jsontag) = "total_maker_denom"
+  ];  
+  string total_taker_denom = 5  [
+      (gogoproto.moretags)   = "yaml:\"total_taker_denom\"",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable)   = false,
+      (gogoproto.jsontag) = "total_taker_denom"
+  ];
+  // GoodTilDate is represented as seconds since  January 1, year 1, 00:00:00.00 UTC
+  // LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+
+  // JIT orders also use goodTilDate to handle deletion but represent a special case
+  // All JIT orders have a goodTilDate of 0 and an exception is made to still still treat these orders as live
+  // Order deletion still functions the same and the orders will be deleted at the end of the block
+  google.protobuf.Timestamp expiration_time = 6 [
+                                             (gogoproto.stdtime) = true,
+                                             (gogoproto.nullable) = true
+                                             ];
+  string price_taker_to_maker = 7 [
+                (gogoproto.moretags)   = "yaml:\"price_taker_to_maker\"",
+                (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
+                (gogoproto.nullable)   = false,
+                (gogoproto.jsontag) = "price_taker_to_maker"
+                ];
+}
+
