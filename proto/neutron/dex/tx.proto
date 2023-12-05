@@ -105,11 +105,8 @@ message MsgPlaceLimitOrder {
       (gogoproto.jsontag) = "amount_in"
   ];
   LimitOrderType order_type = 8;
-  // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
-  google.protobuf.Timestamp expiration_time = 9 [
-                                             (gogoproto.stdtime) = true,
-                                             (gogoproto.nullable) = true
-                                             ];
+  // Unix time in seconds. Expiration_time is only valid iff orderType == GOOD_TIL_TIME.
+  int64 expiration_time = 9;
   string max_amount_out = 10 [
                        (gogoproto.moretags)   = "yaml:\"max_amount_out\"",
                        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

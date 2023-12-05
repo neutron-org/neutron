@@ -18,7 +18,7 @@ func createNLimitOrderExpiration(
 ) []types.LimitOrderExpiration {
 	items := make([]types.LimitOrderExpiration, n)
 	for i := range items {
-		items[i].ExpirationTime = time.Unix(int64(i), 10).UTC()
+		items[i].ExpirationTime = time.Unix(int64(i), 10).UTC().Unix()
 		items[i].TrancheRef = []byte(strconv.Itoa(i))
 
 		keeper.SetLimitOrderExpiration(ctx, &items[i])
@@ -30,7 +30,7 @@ func createNLimitOrderExpiration(
 func createLimitOrderExpirationAndTranches(
 	keeper *keeper.Keeper,
 	ctx sdk.Context,
-	expTimes []time.Time,
+	expTimes []int64,
 ) {
 	items := make([]types.LimitOrderExpiration, len(expTimes))
 	for i := range items {
@@ -47,7 +47,7 @@ func createLimitOrderExpirationAndTranches(
 			ReservesTakerDenom: math.NewInt(10),
 			TotalMakerDenom:    math.NewInt(10),
 			TotalTakerDenom:    math.NewInt(10),
-			ExpirationTime:     &expTimes[i],
+			ExpirationTime:     expTimes[i],
 		}
 		items[i].ExpirationTime = expTimes[i]
 		items[i].TrancheRef = tranche.Key.KeyMarshal()
@@ -103,21 +103,22 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
 	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(1000000))
+	nowUnix := now.Unix()
 
-	yesterday := now.AddDate(0, 0, -1)
-	tomorrow := now.AddDate(0, 0, 1)
-	nextWeek := now.AddDate(0, 0, 7)
+	yesterday := now.AddDate(0, 0, -1).Unix()
+	tomorrow := now.AddDate(0, 0, 1).Unix()
+	nextWeek := now.AddDate(0, 0, 7).Unix()
 
-	expTimes := []time.Time{
+	expTimes := []int64{
 		yesterday,
 		yesterday,
-		now,
+		nowUnix,
 		tomorrow,
 		nextWeek,
 	}
 
 	createLimitOrderExpirationAndTranches(&keeper, s.Ctx, expTimes)
-	keeper.PurgeExpiredLimitOrders(s.Ctx, now)
+	keeper.PurgeExpiredLimitOrders(s.Ctx, nowUnix)
 
 	// Only future LimitOrderExpiration items still exist
 	expList := keeper.GetAllLimitOrderExpiration(s.Ctx)
@@ -128,31 +129,32 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	// Only future LimitOrderTranches Exist
 	trancheList := keeper.GetAllLimitOrderTrancheAtIndex(s.Ctx, defaultTradePairID1To0, 0)
 	s.Equal(2, len(trancheList))
-	s.Equal(tomorrow, *trancheList[0].ExpirationTime)
-	s.Equal(nextWeek, *trancheList[1].ExpirationTime)
+	s.Equal(tomorrow, trancheList[0].ExpirationTime)
+	s.Equal(nextWeek, trancheList[1].ExpirationTime)
 
 	// InactiveLimitOrderTranches have been created for the expired tranched
 	inactiveTrancheList := keeper.GetAllInactiveLimitOrderTranche(ctx)
 	s.Equal(3, len(inactiveTrancheList))
-	s.Equal(yesterday, *inactiveTrancheList[0].ExpirationTime)
-	s.Equal(yesterday, *inactiveTrancheList[1].ExpirationTime)
-	s.Equal(now, *inactiveTrancheList[2].ExpirationTime)
+	s.Equal(yesterday, inactiveTrancheList[0].ExpirationTime)
+	s.Equal(yesterday, inactiveTrancheList[1].ExpirationTime)
+	s.Equal(nowUnix, inactiveTrancheList[2].ExpirationTime)
 }
 
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
+	nowUnix := now.Unix()
 	ctx := s.Ctx.WithBlockTime(now)
 	gasLimit := 1000000
 	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimit)))
 	timeRequiredToPurgeOneNonJIT := 35000
 	gasUsed := gasLimit - types.GoodTilPurgeGasBuffer - timeRequiredToPurgeOneNonJIT
 
-	yesterday := now.AddDate(0, 0, -1)
+	yesterday := now.AddDate(0, 0, -1).Unix()
 
-	expTimes := []time.Time{
-		types.JITGoodTilTime(),
-		types.JITGoodTilTime(),
+	expTimes := []int64{
+		types.JITGoodTilTime,
+		types.JITGoodTilTime,
 		yesterday,
 		yesterday,
 		yesterday,
@@ -164,7 +166,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	ctx.BlockGasMeter().ConsumeGas(uint64(gasUsed), "stub block gas usage")
 
 	// WHEN PurgeExpiredLimitOrders is run
-	keeper.PurgeExpiredLimitOrders(ctx, now)
+	keeper.PurgeExpiredLimitOrders(ctx, nowUnix)
 
 	// THEN GoodTilPurgeHitGasLimit event is emitted
 	s.AssertEventEmitted(ctx, types.EventTypeGoodTilPurgeHitGasLimit, 1)
@@ -180,25 +182,26 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
+	nowUnix := now.Unix()
 	ctx := s.Ctx.WithBlockTime(now)
 	gasLimt := 1000000
 	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimt)))
 	gasUsed := gasLimt - types.GoodTilPurgeGasBuffer - 30000
 
-	expTimes := []time.Time{
-		types.JITGoodTilTime(),
-		types.JITGoodTilTime(),
-		types.JITGoodTilTime(),
-		types.JITGoodTilTime(),
-		types.JITGoodTilTime(),
-		types.JITGoodTilTime(),
-		types.JITGoodTilTime(),
+	expTimes := []int64{
+		types.JITGoodTilTime,
+		types.JITGoodTilTime,
+		types.JITGoodTilTime,
+		types.JITGoodTilTime,
+		types.JITGoodTilTime,
+		types.JITGoodTilTime,
+		types.JITGoodTilTime,
 	}
 
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 	ctx = ctx.WithGasMeter(sdk.NewGasMeter(100000))
 	ctx.BlockGasMeter().ConsumeGas(uint64(gasUsed), "stub block gas usage")
-	keeper.PurgeExpiredLimitOrders(ctx, now)
+	keeper.PurgeExpiredLimitOrders(ctx, nowUnix)
 
 	// GoodTilPurgeHitGasLimit event is not been emitted
 	s.AssertEventValueNotEmitted(types.GoodTilPurgeHitGasLimitEventGas, "Hit gas limit purging JIT expirations")

@@ -449,7 +449,7 @@ func (s *DexTestSuite) limitSellsGoodTil(
 		TickIndexInToOut: tickIndexTakerToMaker,
 		AmountIn:         sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		OrderType:        types.LimitOrderType_GOOD_TIL_TIME,
-		ExpirationTime:   &goodTil,
+		ExpirationTime:   goodTil.Unix(),
 	})
 
 	s.Assert().NoError(err)

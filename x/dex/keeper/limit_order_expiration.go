@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"time"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -10,14 +8,9 @@ import (
 )
 
 func NewLimitOrderExpiration(tranche *types.LimitOrderTranche) *types.LimitOrderExpiration {
-	trancheExpiry := tranche.ExpirationTime
-	if trancheExpiry == nil {
-		panic("Cannot create LimitOrderExpiration from tranche with nil ExpirationTime")
-	}
-
 	return &types.LimitOrderExpiration{
 		TrancheRef:     tranche.Key.KeyMarshal(),
-		ExpirationTime: *tranche.ExpirationTime,
+		ExpirationTime: tranche.ExpirationTime,
 	}
 }
 
@@ -40,7 +33,7 @@ func (k Keeper) SetLimitOrderExpiration(
 // GetLimitOrderExpiration returns a goodTilRecord from its index
 func (k Keeper) GetLimitOrderExpiration(
 	ctx sdk.Context,
-	goodTilDate time.Time,
+	goodTilTime int64,
 	trancheRef []byte,
 ) (val *types.LimitOrderExpiration, found bool) {
 	store := prefix.NewStore(
@@ -49,7 +42,7 @@ func (k Keeper) GetLimitOrderExpiration(
 	)
 
 	b := store.Get(types.LimitOrderExpirationKey(
-		goodTilDate,
+		goodTilTime,
 		trancheRef,
 	))
 	if b == nil {
@@ -65,7 +58,7 @@ func (k Keeper) GetLimitOrderExpiration(
 // RemoveLimitOrderExpiration removes a goodTilRecord from the store
 func (k Keeper) RemoveLimitOrderExpiration(
 	ctx sdk.Context,
-	goodTilDate time.Time,
+	goodTilTime int64,
 	trancheRef []byte,
 ) {
 	store := prefix.NewStore(
@@ -73,7 +66,7 @@ func (k Keeper) RemoveLimitOrderExpiration(
 		types.KeyPrefix(types.LimitOrderExpirationKeyPrefix),
 	)
 	store.Delete(types.LimitOrderExpirationKey(
-		goodTilDate,
+		goodTilTime,
 		trancheRef,
 	))
 }
@@ -105,7 +98,7 @@ func (k Keeper) GetAllLimitOrderExpiration(ctx sdk.Context) (list []*types.Limit
 	return
 }
 
-func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
+func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTimeUnix int64) {
 	store := prefix.NewStore(
 		ctx.KVStore(k.storeKey),
 		types.KeyPrefix(types.LimitOrderExpirationKeyPrefix),
@@ -122,11 +115,11 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.LimitOrderExpiration
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
-		if val.ExpirationTime.After(curTime) {
+		if val.ExpirationTime > curTimeUnix {
 			return
 		}
 
-		inGoodTilSegment = inGoodTilSegment || val.ExpirationTime != types.JITGoodTilTime()
+		inGoodTilSegment = inGoodTilSegment || val.ExpirationTime != types.JITGoodTilTime
 		gasConsumed := curBlockGas + ctx.GasMeter().GasConsumed()
 		if inGoodTilSegment && gasConsumed >= gasCutoff {
 			// If we hit our gas cutoff stop deleting so as not to timeout the block.

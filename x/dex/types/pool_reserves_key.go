@@ -20,7 +20,7 @@ func (p PoolReservesKey) KeyMarshal() []byte {
 	key = append(key, makerDenomBytes...)
 	key = append(key, []byte("/")...)
 
-	tickIndexBytes := TickIndexToBytes(p.TickIndexTakerToMaker)
+	tickIndexBytes := Int64ToSortableBytes(p.TickIndexTakerToMaker)
 	key = append(key, tickIndexBytes...)
 	key = append(key, []byte("/")...)
 

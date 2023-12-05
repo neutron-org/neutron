@@ -3,13 +3,11 @@ package keeper
 import (
 	"context"
 
-	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
-// TODO: This doesn't run ValidateBasic() checks.
 func (k Keeper) EstimatePlaceLimitOrder(
 	goCtx context.Context,
 	req *types.QueryEstimatePlaceLimitOrderRequest,
@@ -36,13 +34,9 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	callerAddr := sdk.MustAccAddressFromBech32(req.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(req.Receiver)
 
-	blockTime := cacheCtx.BlockTime()
-	if req.OrderType.IsGoodTil() && !req.ExpirationTime.After(blockTime) {
-		return nil, sdkerrors.Wrapf(types.ErrExpirationTimeInPast,
-			"Current BlockTime: %s; Provided ExpirationTime: %s",
-			blockTime.String(),
-			req.ExpirationTime.String(),
-		)
+	err := msg.ValidateGoodTilExpiration(cacheCtx.BlockTime().Unix())
+	if err != nil {
+		return nil, err
 	}
 
 	_, totalInCoin, swapInCoin, swapOutCoin, err := k.PlaceLimitOrderCore(

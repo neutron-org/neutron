@@ -2,11 +2,8 @@ package types
 
 import (
 	"errors"
-	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/neutron-org/neutron/v2/x/dex/utils"
 )
 
 const (
@@ -58,7 +55,7 @@ func KeyPrefix(p string) []byte {
 	return key
 }
 
-func TickIndexToBytes(tickTakerToMaker int64) []byte {
+func Int64ToSortableBytes(tickTakerToMaker int64) []byte {
 	key := make([]byte, 9)
 	if tickTakerToMaker < 0 {
 		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker)))
@@ -109,12 +106,6 @@ func LimitOrderTrancheUserAddressPrefix(address string) []byte {
 	return key
 }
 
-func TimeBytes(timestamp time.Time) []byte {
-	unixMs := uint64(timestamp.UnixMilli())
-	str := utils.Uint64ToSortableString(unixMs)
-	return []byte(str)
-}
-
 func TickLiquidityLimitOrderPrefix(
 	tradePairID *TradePairID,
 	tickIndexTakerTomMaker int64,
@@ -129,7 +120,7 @@ func TickLiquidityLimitOrderPrefix(
 	key = append(key, makerDenomBytes...)
 	key = append(key, []byte("/")...)
 
-	tickIndexBytes := TickIndexToBytes(tickIndexTakerTomMaker)
+	tickIndexBytes := Int64ToSortableBytes(tickIndexTakerTomMaker)
 	key = append(key, tickIndexBytes...)
 	key = append(key, []byte("/")...)
 
@@ -149,13 +140,13 @@ func TickLiquidityPrefix(tradePairID *TradePairID) []byte {
 }
 
 func LimitOrderExpirationKey(
-	goodTilDate time.Time,
+	goodTilTime int64,
 	trancheRef []byte,
 ) []byte {
 	var key []byte
 
-	goodTilDateBytes := TimeBytes(goodTilDate)
-	key = append(key, goodTilDateBytes...)
+	goodTilTimeBytes := Int64ToSortableBytes(goodTilTime)
+	key = append(key, goodTilTimeBytes...)
 	key = append(key, []byte("/")...)
 
 	key = append(key, trancheRef...)
@@ -172,7 +163,7 @@ func PoolIDKey(
 	key := []byte(pairID.CanonicalString())
 	key = append(key, []byte("/")...)
 
-	tickIndexBytes := TickIndexToBytes(tickIndex)
+	tickIndexBytes := Int64ToSortableBytes(tickIndex)
 	key = append(key, tickIndexBytes...)
 	key = append(key, []byte("/")...)
 
@@ -287,11 +278,8 @@ const (
 	LiquidityTypeLimitOrder   = "B_LODeposit"
 )
 
-func JITGoodTilTime() time.Time {
-	return time.Time{}
-}
-
 const (
+	JITGoodTilTime = 0
 	// NOTE: This number is based current cost of all operations in EndBlock,
 	// if that changes this value must be updated to ensure there is enough
 	// remaining gas (weak proxy for timeoutPrepareProposal) to complete endBlock

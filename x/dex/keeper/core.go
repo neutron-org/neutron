@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"time"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -311,7 +310,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	amountIn math.Int,
 	tickIndexInToOut int64,
 	orderType types.LimitOrderType,
-	goodTil *time.Time,
+	goodTil int64,
 	maxAmountOut *math.Int,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
@@ -493,7 +492,7 @@ func (k Keeper) CancelLimitOrderCore(
 		k.SaveTranche(ctx, tranche)
 
 		if trancheUser.OrderType.HasExpiration() {
-			k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())
+			k.RemoveLimitOrderExpiration(ctx, tranche.ExpirationTime, tranche.Key.KeyMarshal())
 		}
 	} else {
 		return sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
