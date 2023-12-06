@@ -56,6 +56,10 @@ func (k Keeper) UserDepositsAll(
 					Fee:             poolMetadata.Fee,
 				}
 
+				if req.IncludePoolData {
+					depositRecord = k.addPoolData(ctx, depositRecord)
+				}
+
 				depositArr = append(depositArr, depositRecord)
 			}
 
@@ -69,4 +73,15 @@ func (k Keeper) UserDepositsAll(
 		Deposits:   depositArr,
 		Pagination: pageRes,
 	}, nil
+}
+
+func (k Keeper) addPoolData(ctx sdk.Context, record *types.DepositRecord) *types.DepositRecord {
+	pool, found := k.GetPool(ctx, record.PairId, record.CenterTickIndex, record.Fee)
+	if found {
+		record.Pool = pool
+	}
+	supply := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom())
+	record.TotalShares = &supply.Amount
+
+	return record
 }

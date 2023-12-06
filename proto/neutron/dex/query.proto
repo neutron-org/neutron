@@ -176,6 +176,7 @@ message QueryAllLimitOrderTrancheResponse {
 message QueryAllUserDepositsRequest {
   string address = 1;
 	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  bool include_pool_data = 3;
 }
 
 message QueryAllUserDepositsResponse {

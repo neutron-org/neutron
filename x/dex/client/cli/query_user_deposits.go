@@ -8,6 +8,7 @@ import (
 	"github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
+// TODO: add optional IncludePoolData arg
 func CmdListUserDeposits() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list-user-deposits [address]",
