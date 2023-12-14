@@ -6,7 +6,8 @@ import "neutron/dex/pool_reserves.proto";
 
 option go_package = "github.com/neutron-org/neutron/v2/x/dex/types";
 
-// NOTE: This struct is never actually stored in the KV store. It is merely a convenience wrapper for holding both sides of a pool.
+// NOTE: This struct is never actually stored in the KV store. It is merely a
+// convenience wrapper for holding both sides of a pool.
 
 message Pool {
   uint64 id = 1;

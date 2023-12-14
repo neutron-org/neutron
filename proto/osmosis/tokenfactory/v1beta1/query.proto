@@ -19,7 +19,9 @@ service Query {
   // DenomAuthorityMetadata defines a gRPC query method for fetching
   // DenomAuthorityMetadata for a particular denom.
   rpc DenomAuthorityMetadata(QueryDenomAuthorityMetadataRequest) returns (QueryDenomAuthorityMetadataResponse) {
-    option (google.api.http).get = "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata";
+    option (google.api.http).get =
+      "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/"
+      "authority_metadata";
   }
 
   // DenomsFromCreator defines a gRPC query method for fetching all
@@ -31,7 +33,9 @@ service Query {
   // BeforeSendHookAddress defines a gRPC query method for
   // getting the address registered for the before send hook.
   rpc BeforeSendHookAddress(QueryBeforeSendHookAddressRequest) returns (QueryBeforeSendHookAddressResponse) {
-    option (google.api.http).get = "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/before_send_hook";
+    option (google.api.http).get =
+      "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/"
+      "before_send_hook";
   }
 }
 

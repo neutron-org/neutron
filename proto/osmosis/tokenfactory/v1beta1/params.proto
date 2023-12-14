@@ -27,6 +27,7 @@ message Params {
     (gogoproto.nullable) = true
   ];
 
-  // FeeCollectorAddress is the address where fees collected from denom creation are sent to
+  // FeeCollectorAddress is the address where fees collected from denom creation
+  // are sent to
   string fee_collector_address = 3;
 }

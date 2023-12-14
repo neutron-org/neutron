@@ -45,10 +45,13 @@ service Query {
 
   // Queries a LimitOrderTranche by index.
   rpc LimitOrderTranche(QueryGetLimitOrderTrancheRequest) returns (QueryGetLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}";
+    option (google.api.http).get =
+      "/neutron/dex/limit_order_tranche/{pair_id}/"
+      "{token_in}/{tick_index}/{tranche_key}";
   }
 
-  // Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination.
+  // Queries a list of LimitOrderTranche items for a given pairID / TokenIn
+  // combination.
   rpc LimitOrderTrancheAll(QueryAllLimitOrderTrancheRequest) returns (QueryAllLimitOrderTrancheResponse) {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche/{pair_id}/{token_in}";
   }
@@ -65,7 +68,9 @@ service Query {
 
   // Queries a InactiveLimitOrderTranche by index.
   rpc InactiveLimitOrderTranche(QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}";
+    option (google.api.http).get =
+      "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/"
+      "{tick_index}/{tranche_key}";
   }
 
   // Queries a list of InactiveLimitOrderTranche items.
@@ -255,8 +260,8 @@ message QueryEstimateMultiHopSwapRequest {
     (gogoproto.jsontag) = "exit_limit_price"
   ];
 
-  // If pickBestRoute == true then all routes are run and the route with the best price is chosen
-  // otherwise, the first succesful route is used.
+  // If pickBestRoute == true then all routes are run and the route with the
+  // best price is chosen otherwise, the first succesful route is used.
   bool pick_best_route = 6;
 }
 
@@ -297,7 +302,8 @@ message QueryEstimatePlaceLimitOrderRequest {
 
 message QueryEstimatePlaceLimitOrderResponse {
   // Total amount of coin used for the limit order
-  // You can derive makerLimitInCoin using the equation: totalInCoin = swapInCoin + makerLimitInCoin
+  // You can derive makerLimitInCoin using the equation: totalInCoin =
+  // swapInCoin + makerLimitInCoin
   cosmos.base.v1beta1.Coin total_in_coin = 1 [
     (gogoproto.moretags) = "yaml:\"total_in_coin\"",
     (gogoproto.nullable) = false,
@@ -314,8 +320,9 @@ message QueryEstimatePlaceLimitOrderResponse {
   ];
 
   // Total amount of coin received from the taker portion of the limit order
-  // This is the amount of coin immediately available in the users account after executing the
-  // limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
+  // This is the amount of coin immediately available in the users account after
+  // executing the limit order. It does not include any future proceeds from the
+  // maker portion which will have withdrawn in the future
   cosmos.base.v1beta1.Coin swap_out_coin = 3 [
     (gogoproto.moretags) = "yaml:\"swap_out_coin\"",
     (gogoproto.nullable) = false,

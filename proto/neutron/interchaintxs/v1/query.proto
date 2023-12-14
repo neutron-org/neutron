@@ -15,7 +15,9 @@ service Query {
     option (google.api.http).get = "/neutron/interchaintxs/params";
   }
   rpc InterchainAccountAddress(QueryInterchainAccountAddressRequest) returns (QueryInterchainAccountAddressResponse) {
-    option (google.api.http).get = "/neutron/interchaintxs/{owner_address}/{interchain_account_id}/{connection_id}/interchain_account_address";
+    option (google.api.http).get =
+      "/neutron/interchaintxs/{owner_address}/{interchain_account_id}/"
+      "{connection_id}/interchain_account_address";
   }
 }
 
