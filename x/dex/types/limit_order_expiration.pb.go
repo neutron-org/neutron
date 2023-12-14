@@ -29,7 +29,7 @@ var _ = time.Kitchen
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type LimitOrderExpiration struct {
-	// see limitOrderTranche.proto for details on goodTilDate
+	// see limitOrderTranche.proto for details on expiration_time
 	ExpirationTime time.Time `protobuf:"bytes,1,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time"`
 	TrancheRef     []byte    `protobuf:"bytes,2,opt,name=tranche_ref,json=trancheRef,proto3" json:"tranche_ref,omitempty"`
 }
