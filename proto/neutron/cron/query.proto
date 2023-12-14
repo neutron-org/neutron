@@ -1,9 +1,9 @@
 syntax = "proto3";
 package neutron.cron;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "neutron/cron/params.proto";
 import "neutron/cron/schedule.proto";
 // this line is used by starport scaffolding # 1
@@ -34,13 +34,15 @@ message QueryParamsRequest {}
 
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
 }
 
-message QueryGetScheduleRequest { string name = 1; }
+message QueryGetScheduleRequest {
+  string name = 1;
+}
 
 message QueryGetScheduleResponse {
-  Schedule schedule = 1 [ (gogoproto.nullable) = false ];
+  Schedule schedule = 1 [(gogoproto.nullable) = false];
 }
 
 message QuerySchedulesRequest {
@@ -48,7 +50,7 @@ message QuerySchedulesRequest {
 }
 
 message QuerySchedulesResponse {
-  repeated Schedule schedules = 1 [ (gogoproto.nullable) = false ];
+  repeated Schedule schedules = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

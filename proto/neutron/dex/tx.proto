@@ -1,16 +1,17 @@
 syntax = "proto3";
 package neutron.dex;
 
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "neutron/dex/params.proto";
+
 // this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/neutron-org/neutron/v2/x/dex/types";
-import "gogoproto/gogo.proto";
-import "cosmos/base/v1beta1/coin.proto";
-import "google/protobuf/timestamp.proto";
-import "amino/amino.proto";
-import "neutron/dex/params.proto";
-import "cosmos/msg/v1/msg.proto";
-import "cosmos_proto/cosmos.proto";
 
 // Msg defines the Msg service.
 service Msg {
@@ -21,11 +22,11 @@ service Msg {
   rpc CancelLimitOrder(MsgCancelLimitOrder) returns (MsgCancelLimitOrderResponse);
   rpc MultiHopSwap(MsgMultiHopSwap) returns (MsgMultiHopSwapResponse);
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
-// this line is used by starport scaffolding # proto/tx/rpc
+  // this line is used by starport scaffolding # proto/tx/rpc
 }
 
 message DepositOptions {
-  bool disable_autoswap = 1; 
+  bool disable_autoswap = 1;
 }
 
 message MsgDeposit {
@@ -33,36 +34,36 @@ message MsgDeposit {
   string receiver = 2;
   string token_a = 3;
   string token_b = 4;
-  repeated string amounts_a = 5  [
-      (gogoproto.moretags)   = "yaml:\"amounts_a\"",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "amounts_a"
-  ]; 
-   repeated string amounts_b = 6  [
-      (gogoproto.moretags)   = "yaml:\"amounts_b\"",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "amounts_b"
-  ]; 
+  repeated string amounts_a = 5 [
+    (gogoproto.moretags) = "yaml:\"amounts_a\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amounts_a"
+  ];
+  repeated string amounts_b = 6 [
+    (gogoproto.moretags) = "yaml:\"amounts_b\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amounts_b"
+  ];
   repeated int64 tick_indexes_a_to_b = 7;
   repeated uint64 fees = 8;
   repeated DepositOptions options = 9;
 }
 
 message MsgDepositResponse {
-   repeated string reserve0_deposited = 1 [
-      (gogoproto.moretags)   = "yaml:\"reserve0_deposited\"",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "reserve0_deposited"
-  ]; 
-  repeated string reserve1_deposited = 2[
-      (gogoproto.moretags)   = "yaml:\"reserve1_deposited\"",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "reserve1_deposited"
-  ]; 
+  repeated string reserve0_deposited = 1 [
+    (gogoproto.moretags) = "yaml:\"reserve0_deposited\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "reserve0_deposited"
+  ];
+  repeated string reserve1_deposited = 2 [
+    (gogoproto.moretags) = "yaml:\"reserve1_deposited\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "reserve1_deposited"
+  ];
 }
 
 message MsgWithdrawal {
@@ -70,21 +71,19 @@ message MsgWithdrawal {
   string receiver = 2;
   string token_a = 3;
   string token_b = 4;
-  repeated string shares_to_remove = 5  [
-      (gogoproto.moretags)   = "yaml:\"shares_to_remove\"",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "shares_to_remove"
-  ]; 
+  repeated string shares_to_remove = 5 [
+    (gogoproto.moretags) = "yaml:\"shares_to_remove\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "shares_to_remove"
+  ];
   repeated int64 tick_indexes_a_to_b = 6;
   repeated uint64 fees = 7;
-  
 }
 
-message MsgWithdrawalResponse {
-}
+message MsgWithdrawalResponse {}
 
-enum LimitOrderType{
+enum LimitOrderType {
   GOOD_TIL_CANCELLED = 0;
   FILL_OR_KILL = 1;
   IMMEDIATE_OR_CANCEL = 2;
@@ -99,44 +98,43 @@ message MsgPlaceLimitOrder {
   string token_out = 4;
   int64 tick_index_in_to_out = 5;
   string amount_in = 7 [
-      (gogoproto.moretags)   = "yaml:\"amount_in\"",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable)   = false,
-      (gogoproto.jsontag) = "amount_in"
+    (gogoproto.moretags) = "yaml:\"amount_in\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amount_in"
   ];
   LimitOrderType order_type = 8;
   // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
   google.protobuf.Timestamp expiration_time = 9 [
-                                             (gogoproto.stdtime) = true,
-                                             (gogoproto.nullable) = true
-                                             ];
+    (gogoproto.stdtime) = true,
+    (gogoproto.nullable) = true
+  ];
   string max_amount_out = 10 [
-                       (gogoproto.moretags)   = "yaml:\"max_amount_out\"",
-                       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-                       (gogoproto.nullable)   = true,
-                       (gogoproto.jsontag) = "max_amount_out"
-                       ];
+    (gogoproto.moretags) = "yaml:\"max_amount_out\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = true,
+    (gogoproto.jsontag) = "max_amount_out"
+  ];
 }
 
 message MsgPlaceLimitOrderResponse {
   string trancheKey = 1;
   // Total amount of coin used for the limit order
   cosmos.base.v1beta1.Coin coin_in = 2 [
-                                       (gogoproto.moretags)   = "yaml:\"coin_in\"",
-                                             (gogoproto.nullable) = false,
-                                             (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
-                                             (gogoproto.jsontag) = "coin_in"
-                                             ];
+    (gogoproto.moretags) = "yaml:\"coin_in\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "coin_in"
+  ];
   // Total amount of coin received from the taker portion of the limit order
   // This is the amount of coin immediately available in the users account after executing the
   // limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
   cosmos.base.v1beta1.Coin taker_coin_out = 3 [
-                                             (gogoproto.moretags)   = "yaml:\"taker_coin_out\"",
-                                        (gogoproto.nullable) = false,
-                                        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
-                                             (gogoproto.jsontag) = "taker_coin_out"
-                                        ];
-
+    (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "taker_coin_out"
+  ];
 }
 
 message MsgWithdrawFilledLimitOrder {
@@ -144,16 +142,14 @@ message MsgWithdrawFilledLimitOrder {
   string tranche_key = 2;
 }
 
-message MsgWithdrawFilledLimitOrderResponse {
-}
+message MsgWithdrawFilledLimitOrderResponse {}
 
 message MsgCancelLimitOrder {
   string creator = 1;
   string tranche_key = 2;
 }
 
-message MsgCancelLimitOrderResponse {
-}
+message MsgCancelLimitOrderResponse {}
 
 message MultiHopRoute {
   repeated string hops = 1;
@@ -164,17 +160,17 @@ message MsgMultiHopSwap {
   string receiver = 2;
   repeated MultiHopRoute routes = 3;
   string amount_in = 4 [
-                       (gogoproto.moretags)   = "yaml:\"amount_in\"",
-                       (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-                       (gogoproto.nullable)   = false,
-                       (gogoproto.jsontag) = "amount_in"
-                       ];
+    (gogoproto.moretags) = "yaml:\"amount_in\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amount_in"
+  ];
   string exit_limit_price = 5 [
-                             (gogoproto.moretags)   = "yaml:\"exit_limit_price\"",
-                             (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
-                             (gogoproto.nullable)   = false,
-                             (gogoproto.jsontag) = "exit_limit_price"
-                             ];
+    (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "exit_limit_price"
+  ];
   // If pickBestRoute == true then all routes are run and the route with the best price is chosen
   // otherwise, the first succesful route is used.
   bool pick_best_route = 6;
@@ -182,10 +178,10 @@ message MsgMultiHopSwap {
 
 message MsgMultiHopSwapResponse {
   cosmos.base.v1beta1.Coin coin_out = 1 [
-                                        (gogoproto.nullable) = false,
-                                        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
-                                        (gogoproto.jsontag) = "coin_out"
-                                        ];
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "coin_out"
+  ];
 }
 
 message MsgUpdateParams {
@@ -193,10 +189,12 @@ message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "authority";
 
   // Authority is the address of the governance account.
-  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   // NOTE: All parameters must be supplied.
-  Params params = 2
-    [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // MsgUpdateParamsResponse defines the response structure for executing a
@@ -204,6 +202,5 @@ message MsgUpdateParams {
 //
 // Since: 0.47
 message MsgUpdateParamsResponse {}
-
 
 // this line is used by starport scaffolding # proto/tx/message
