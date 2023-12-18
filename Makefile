@@ -259,3 +259,8 @@ mocks:
 
 format-all: format proto-format
 
+check-proto-format:
+	@echo "Formatting Protobuf files"
+		$(DOCKER) run --rm -v $(CURDIR):/workspace \
+		--workdir /workspace $(PROTO_FORMATTER_IMAGE) \
+		format proto -d --exit-code
