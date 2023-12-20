@@ -40,13 +40,12 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "total_taker_denom"
   ];
-  // GoodTilTime is represented as seconds since  January 1, year 1, 00:00:00.00
-  // UTC LimitOrders with goodTilDate set are valid as long as blockTime <=
-  // goodTilDate
-  // JIT orders also use goodTilDate to handle deletion but represent a special
-  // case All JIT orders have a goodTilTime of 0 and an exception is made to
-  // still treat these orders as live Order deletion still functions the
-  // same and the orders will be deleted at the end of the block
+  // expiration_time is represented as an RFC 3339 formatted date.
+  // LimitOrders with expiration_time set are valid as long as blockTime <= expiration_time.
+  // JIT orders also use expiration_time to handle deletion, but represent a special case.
+  // All JIT orders have an expiration_time of 0, and an exception is made to
+  // still treat these orders as live. Order deletion still functions the
+  // same, and the orders will be deleted at the end of the block.
   google.protobuf.Timestamp expiration_time = 6 [
     (gogoproto.stdtime) = true,
     (gogoproto.nullable) = true
