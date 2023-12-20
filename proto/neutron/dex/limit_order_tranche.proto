@@ -43,10 +43,9 @@ message LimitOrderTranche {
   // GoodTilTime is represented as seconds since  January 1, year 1, 00:00:00.00
   // UTC LimitOrders with goodTilDate set are valid as long as blockTime <=
   // goodTilDate
-
   // JIT orders also use goodTilDate to handle deletion but represent a special
   // case All JIT orders have a goodTilTime of 0 and an exception is made to
-  // still still treat these orders as live Order deletion still functions the
+  // still treat these orders as live Order deletion still functions the
   // same and the orders will be deleted at the end of the block
   google.protobuf.Timestamp expiration_time = 6 [
     (gogoproto.stdtime) = true,
