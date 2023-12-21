@@ -30,26 +30,55 @@ func (k Keeper) InitPool(
 	centerTickIndexNormalized int64,
 	fee uint64,
 ) (pool *types.Pool, err error) {
-	poolMetadata := types.PoolMetadata{PairId: pairID, Tick: centerTickIndexNormalized, Fee: fee}
+	poolID := k.initializePoolMetadata(ctx, pairID, centerTickIndexNormalized, fee)
 
-	// Get current poolID
+	err = k.storePoolID(ctx, poolID, pairID, centerTickIndexNormalized, fee)
+	if err != nil {
+		return nil, err
+	}
+
+	return types.NewPool(pairID, centerTickIndexNormalized, fee, poolID)
+}
+
+func (k Keeper) initializePoolMetadata(
+	ctx sdk.Context,
+	pairID *types.PairID,
+	centerTickIndexNormalized int64,
+	fee uint64,
+) uint64 {
 	poolID := k.GetPoolCount(ctx)
-	poolMetadata.Id = poolID
+	poolMetadata := types.PoolMetadata{
+		Id:     poolID,
+		PairId: pairID,
+		Tick:   centerTickIndexNormalized,
+		Fee:    fee,
+	}
 
-	// Store poolMetadata
 	k.SetPoolMetadata(ctx, poolMetadata)
 
-	// Create a reference so poolID can be looked up by poolMetadata
+	k.incrementPoolCount(ctx)
+	return poolID
+}
+
+func (k Keeper) storePoolID(
+	ctx sdk.Context,
+	poolID uint64,
+	pairID *types.PairID,
+	centerTickIndexNormalized int64,
+	fee uint64,
+) error {
 	poolIDBz := sdk.Uint64ToBigEndian(poolID)
 	poolIDKey := types.PoolIDKey(pairID, centerTickIndexNormalized, fee)
 
 	poolIDStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PoolIDKeyPrefix))
 	poolIDStore.Set(poolIDKey, poolIDBz)
 
-	// Update poolCount
-	k.SetPoolCount(ctx, poolID+1)
+	return nil
+}
 
-	return types.NewPool(pairID, centerTickIndexNormalized, fee, poolID)
+func (k Keeper) incrementPoolCount(ctx sdk.Context) {
+	currentCount := k.GetPoolCount(ctx)
+	k.SetPoolCount(ctx, currentCount+1)
 }
 
 // GetNextPoolId get ID for the next pool to be created
@@ -131,21 +160,21 @@ func (k Keeper) GetPoolIDByParams(
 }
 
 func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) {
-	if pool.LowerTick0.HasToken() {
-		k.SetPoolReserves(ctx, pool.LowerTick0)
-	} else {
-		k.RemovePoolReserves(ctx, pool.LowerTick0.Key)
-	}
-	if pool.UpperTick1.HasToken() {
-		k.SetPoolReserves(ctx, pool.UpperTick1)
-	} else {
-		k.RemovePoolReserves(ctx, pool.UpperTick1.Key)
-	}
+	k.updatePoolReserves(ctx, pool.LowerTick0)
+	k.updatePoolReserves(ctx, pool.UpperTick1)
 
 	// TODO: this will create a bit of extra noise since not every Save is updating both ticks
 	// This should be solved upstream by better tracking of dirty ticks
 	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*pool.LowerTick0))
 	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*pool.UpperTick1))
+}
+
+func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves) {
+	if reserves.HasToken() {
+		k.SetPoolReserves(ctx, reserves)
+	} else {
+		k.RemovePoolReserves(ctx, reserves.Key)
+	}
 }
 
 // GetPoolCount get the total number of pools
