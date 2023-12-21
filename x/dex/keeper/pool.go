@@ -32,32 +32,12 @@ func (k Keeper) InitPool(
 ) (pool *types.Pool, err error) {
 	poolID := k.initializePoolMetadata(ctx, pairID, centerTickIndexNormalized, fee)
 
-	k.storePoolID(ctx, poolID, pairID, centerTickIndexNormalized, fee)
+	k.storePoolIDRef(ctx, poolID, pairID, centerTickIndexNormalized, fee)
 
 	return types.NewPool(pairID, centerTickIndexNormalized, fee, poolID)
 }
 
-func (k Keeper) initializePoolMetadata(
-	ctx sdk.Context,
-	pairID *types.PairID,
-	centerTickIndexNormalized int64,
-	fee uint64,
-) uint64 {
-	poolID := k.GetPoolCount(ctx)
-	poolMetadata := types.PoolMetadata{
-		Id:     poolID,
-		PairId: pairID,
-		Tick:   centerTickIndexNormalized,
-		Fee:    fee,
-	}
-
-	k.SetPoolMetadata(ctx, poolMetadata)
-
-	k.incrementPoolCount(ctx)
-	return poolID
-}
-
-func (k Keeper) storePoolID(
+func (k Keeper) storePoolIDRef(
 	ctx sdk.Context,
 	poolID uint64,
 	pairID *types.PairID,
@@ -118,6 +98,7 @@ func (k Keeper) getPoolByPoolID(
 	case lowerTickFound && !upperTickFound:
 		upperTick = types.NewPoolReservesFromCounterpart(lowerTick)
 	case !lowerTickFound && !upperTickFound:
+		// Pool has already been initialized before, пso we can safely assume that pool creation doesn't throw an error
 		return types.MustNewPool(pairID, centerTickIndexNormalized, fee, poolID), true
 	}
 
