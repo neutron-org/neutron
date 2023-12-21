@@ -32,10 +32,7 @@ func (k Keeper) InitPool(
 ) (pool *types.Pool, err error) {
 	poolID := k.initializePoolMetadata(ctx, pairID, centerTickIndexNormalized, fee)
 
-	err = k.storePoolID(ctx, poolID, pairID, centerTickIndexNormalized, fee)
-	if err != nil {
-		return nil, err
-	}
+	k.storePoolID(ctx, poolID, pairID, centerTickIndexNormalized, fee)
 
 	return types.NewPool(pairID, centerTickIndexNormalized, fee, poolID)
 }
@@ -66,14 +63,12 @@ func (k Keeper) storePoolID(
 	pairID *types.PairID,
 	centerTickIndexNormalized int64,
 	fee uint64,
-) error {
+) {
 	poolIDBz := sdk.Uint64ToBigEndian(poolID)
 	poolIDKey := types.PoolIDKey(pairID, centerTickIndexNormalized, fee)
 
 	poolIDStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PoolIDKeyPrefix))
 	poolIDStore.Set(poolIDKey, poolIDBz)
-
-	return nil
 }
 
 func (k Keeper) incrementPoolCount(ctx sdk.Context) {
