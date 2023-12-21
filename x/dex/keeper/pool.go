@@ -62,18 +62,27 @@ func (k Keeper) GetPool(
 	pairID *types.PairID,
 	centerTickIndexNormalized int64,
 	fee uint64,
-) (*types.Pool, bool) {
-	feeInt64 := utils.MustSafeUint64ToInt64(fee)
+) (pool *types.Pool, found bool) {
+	poolID, found := k.GetPoolIDByParams(ctx, pairID, centerTickIndexNormalized, fee)
+	if !found {
+		return nil, false
+	}
 
+	return k.getPoolByPoolID(ctx, poolID, pairID, centerTickIndexNormalized, fee)
+}
+
+func (k Keeper) getPoolByPoolID(
+	ctx sdk.Context,
+	poolID uint64,
+	pairID *types.PairID,
+	centerTickIndexNormalized int64,
+	fee uint64,
+) (pool *types.Pool, found bool) {
+	feeInt64 := utils.MustSafeUint64ToInt64(fee)
 	id0To1 := &types.PoolReservesKey{
 		TradePairId:           types.NewTradePairIDFromMaker(pairID, pairID.Token1),
 		TickIndexTakerToMaker: centerTickIndexNormalized + feeInt64,
 		Fee:                   fee,
-	}
-
-	poolID, found := k.GetPoolIDByParams(ctx, pairID, centerTickIndexNormalized, fee)
-	if !found {
-		return nil, false
 	}
 
 	upperTick, upperTickFound := k.GetPoolReserves(ctx, id0To1)
@@ -85,7 +94,6 @@ func (k Keeper) GetPool(
 	case lowerTickFound && !upperTickFound:
 		upperTick = types.NewPoolReservesFromCounterpart(lowerTick)
 	case !lowerTickFound && !upperTickFound:
-		// Pool has already been initialized before so we can safely assume that pool creation doesn't throw an error
 		return types.MustNewPool(pairID, centerTickIndexNormalized, fee, poolID), true
 	}
 
@@ -102,7 +110,7 @@ func (k Keeper) GetPoolByID(ctx sdk.Context, poolID uint64) (pool *types.Pool, f
 		return pool, false
 	}
 
-	return k.GetPool(ctx, poolMetadata.PairId, poolMetadata.Tick, poolMetadata.Fee)
+	return k.getPoolByPoolID(ctx, poolID, poolMetadata.PairId, poolMetadata.Tick, poolMetadata.Fee)
 }
 
 func (k Keeper) GetPoolIDByParams(
