@@ -20,9 +20,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/x/feeburner/client/cli"
-	"github.com/neutron-org/neutron/x/feeburner/keeper"
-	"github.com/neutron-org/neutron/x/feeburner/types"
+	"github.com/neutron-org/neutron/v2/x/feeburner/client/cli"
+	"github.com/neutron-org/neutron/v2/x/feeburner/keeper"
+	"github.com/neutron-org/neutron/v2/x/feeburner/types"
 )
 
 var (

@@ -1,14 +1,14 @@
 syntax = "proto3";
 package neutron.interchainqueries;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "neutron/interchainqueries/params.proto";
 import "neutron/interchainqueries/genesis.proto";
+import "neutron/interchainqueries/params.proto";
 import "neutron/interchainqueries/tx.proto";
 
-option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/interchainqueries/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -17,25 +17,19 @@ service Query {
     option (google.api.http).get = "/neutron/interchainqueries/params";
   }
 
-  rpc RegisteredQueries(QueryRegisteredQueriesRequest)
-      returns (QueryRegisteredQueriesResponse) {
-    option (google.api.http).get =
-        "/neutron/interchainqueries/registered_queries";
+  rpc RegisteredQueries(QueryRegisteredQueriesRequest) returns (QueryRegisteredQueriesResponse) {
+    option (google.api.http).get = "/neutron/interchainqueries/registered_queries";
   }
 
-  rpc RegisteredQuery(QueryRegisteredQueryRequest)
-      returns (QueryRegisteredQueryResponse) {
-    option (google.api.http).get =
-        "/neutron/interchainqueries/registered_query";
+  rpc RegisteredQuery(QueryRegisteredQueryRequest) returns (QueryRegisteredQueryResponse) {
+    option (google.api.http).get = "/neutron/interchainqueries/registered_query";
   }
 
-  rpc QueryResult(QueryRegisteredQueryResultRequest)
-      returns (QueryRegisteredQueryResultResponse) {
+  rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/query_result";
   }
 
-  rpc LastRemoteHeight(QueryLastRemoteHeight)
-      returns (QueryLastRemoteHeightResponse) {
+  rpc LastRemoteHeight(QueryLastRemoteHeight) returns (QueryLastRemoteHeightResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/remote_height";
   }
 }
@@ -46,7 +40,7 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryRegisteredQueriesRequest {
@@ -56,20 +50,27 @@ message QueryRegisteredQueriesRequest {
 }
 
 message QueryRegisteredQueriesResponse {
-  repeated RegisteredQuery registered_queries = 1
-      [ (gogoproto.nullable) = false ];
+  repeated RegisteredQuery registered_queries = 1 [(gogoproto.nullable) = false];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-message QueryRegisteredQueryRequest { uint64 query_id = 1; }
+message QueryRegisteredQueryRequest {
+  uint64 query_id = 1;
+}
 
-message QueryRegisteredQueryResponse { RegisteredQuery registered_query = 1; }
+message QueryRegisteredQueryResponse {
+  RegisteredQuery registered_query = 1;
+}
 
-message QueryRegisteredQueryResultRequest { uint64 query_id = 1; }
+message QueryRegisteredQueryResultRequest {
+  uint64 query_id = 1;
+}
 
-message QueryRegisteredQueryResultResponse { QueryResult result = 1; }
+message QueryRegisteredQueryResultResponse {
+  QueryResult result = 1;
+}
 
 message Transaction {
   uint64 id = 1;
@@ -77,6 +78,10 @@ message Transaction {
   bytes data = 3;
 }
 
-message QueryLastRemoteHeight { string connection_id = 1; }
+message QueryLastRemoteHeight {
+  string connection_id = 1;
+}
 
-message QueryLastRemoteHeightResponse { uint64 height = 1; }
+message QueryLastRemoteHeightResponse {
+  uint64 height = 1;
+}

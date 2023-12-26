@@ -1,12 +1,12 @@
 syntax = "proto3";
 package neutron.interchainqueries;
 
-import "gogoproto/gogo.proto";
-import "neutron/interchainqueries/params.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
 import "ibc/core/client/v1/client.proto";
+import "neutron/interchainqueries/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/interchainqueries/types";
 
 message RegisteredQuery {
   // The unique id of the registered query.
@@ -59,6 +59,6 @@ message KVKey {
 
 // GenesisState defines the interchainqueries module's genesis state.
 message GenesisState {
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
   repeated RegisteredQuery registered_queries = 2;
 }

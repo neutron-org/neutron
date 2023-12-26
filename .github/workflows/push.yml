@@ -16,5 +16,9 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
+      - name: Proto format
+        run: make check-proto-format
+
       - name: Test
         run: make test
+

@@ -1,9 +1,9 @@
 syntax = "proto3";
 package neutron.dex;
 
-option go_package = "github.com/neutron-org/neutron/x/dex/types";
-
 import "neutron/dex/pair_id.proto";
+
+option go_package = "github.com/neutron-org/neutron/v2/x/dex/types";
 
 message PoolMetadata {
   uint64 id = 1;

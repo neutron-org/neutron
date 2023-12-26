@@ -3,11 +3,12 @@ package neutron.contractmanager;
 
 import "ibc/core/channel/v1/channel.proto";
 
-option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/contractmanager/types";
 
 // Failure message contains information about ACK failures and can be used to
 // replay ACK in case of requirement.
-// Note that Failure means that sudo handler to cosmwasm contract failed for some reason
+// Note that Failure means that sudo handler to cosmwasm contract failed for
+// some reason
 message Failure {
   // Address of the failed contract
   string address = 1;

@@ -8,7 +8,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
-	ibchooks "github.com/neutron-org/neutron/x/ibc-hooks"
+	ibchooks "github.com/neutron-org/neutron/v2/x/ibc-hooks"
 )
 
 var (

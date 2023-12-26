@@ -12,11 +12,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/testutil/apptesting"
-	math_utils "github.com/neutron-org/neutron/utils/math"
-	. "github.com/neutron-org/neutron/x/dex/keeper"
-	. "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v2/testutil/apptesting"
+	math_utils "github.com/neutron-org/neutron/v2/utils/math"
+	. "github.com/neutron-org/neutron/v2/x/dex/keeper"
+	. "github.com/neutron-org/neutron/v2/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 // Test suite

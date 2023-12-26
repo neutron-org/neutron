@@ -12,8 +12,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/x/ibc-hooks/client/cli"
-	"github.com/neutron-org/neutron/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v2/x/ibc-hooks/client/cli"
+	"github.com/neutron-org/neutron/v2/x/ibc-hooks/types"
 
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 

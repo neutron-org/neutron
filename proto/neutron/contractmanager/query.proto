@@ -1,14 +1,14 @@
 syntax = "proto3";
 package neutron.contractmanager;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "neutron/contractmanager/params.proto";
 import "neutron/contractmanager/failure.proto";
+import "neutron/contractmanager/params.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/neutron-org/neutron/x/contractmanager/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/contractmanager/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -24,8 +24,7 @@ service Query {
 
   // Queries Failures by contract address.
   rpc AddressFailures(QueryFailuresRequest) returns (QueryFailuresResponse) {
-    option (google.api.http).get =
-        "/neutron/contractmanager/failures/{address}";
+    option (google.api.http).get = "/neutron/contractmanager/failures/{address}";
   }
 
   // Queries a list of Failures occurred on the network.
@@ -42,7 +41,7 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryFailuresRequest is request type for the Query/Failures RPC method.
@@ -56,7 +55,7 @@ message QueryFailuresRequest {
 
 // QueryFailuresResponse is response type for the Query/Failures RPC method.
 message QueryFailuresResponse {
-  repeated Failure failures = 1 [ (gogoproto.nullable) = false ];
+  repeated Failure failures = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

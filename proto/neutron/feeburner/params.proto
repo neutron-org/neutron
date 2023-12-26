@@ -3,7 +3,7 @@ package neutron.feeburner;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/x/feeburner/types";
+option go_package = "github.com/neutron-org/neutron/v2/x/feeburner/types";
 
 // Params defines the parameters for the module.
 message Params {

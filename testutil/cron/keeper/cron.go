@@ -16,8 +16,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/x/cron/keeper"
-	"github.com/neutron-org/neutron/x/cron/types"
+	"github.com/neutron-org/neutron/v2/x/cron/keeper"
+	"github.com/neutron-org/neutron/v2/x/cron/types"
 )
 
 func CronKeeper(t testing.TB, wasmMsgServer types.WasmMsgServer, accountKeeper types.AccountKeeper) (*keeper.Keeper, sdk.Context) {

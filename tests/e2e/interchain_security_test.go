@@ -9,8 +9,8 @@ import (
 
 	e2e "github.com/cosmos/interchain-security/v3/tests/integration"
 
-	appConsumer "github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil"
+	appConsumer "github.com/neutron-org/neutron/v2/app"
+	"github.com/neutron-org/neutron/v2/testutil"
 )
 
 // Executes the standard group of ccv tests against a consumer and provider app.go implementation.

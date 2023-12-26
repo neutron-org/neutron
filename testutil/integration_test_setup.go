@@ -24,8 +24,8 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	consumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil/consumer"
+	"github.com/neutron-org/neutron/v2/app"
+	"github.com/neutron-org/neutron/v2/testutil/consumer"
 
 	"github.com/stretchr/testify/require"
 )

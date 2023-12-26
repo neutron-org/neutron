@@ -6,7 +6,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 
-	math_utils "github.com/neutron-org/neutron/utils/math"
+	math_utils "github.com/neutron-org/neutron/v2/utils/math"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)

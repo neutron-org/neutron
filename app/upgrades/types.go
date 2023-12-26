@@ -12,11 +12,11 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/x/tokenfactory/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v2/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v2/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )

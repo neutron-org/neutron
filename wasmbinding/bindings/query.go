@@ -3,16 +3,16 @@ package bindings
 import (
 	"encoding/json"
 
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.

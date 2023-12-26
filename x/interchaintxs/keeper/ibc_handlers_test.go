@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -12,11 +12,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/testutil"
-	testkeeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
-	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v2/testutil"
+	testkeeper "github.com/neutron-org/neutron/v2/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v2/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v2/x/contractmanager/types"
+	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 )
 
 func TestHandleAcknowledgement(t *testing.T) {

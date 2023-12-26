@@ -10,7 +10,7 @@ import (
 	ibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/v2/app"
 )
 
 func TestConsumerWhitelistingKeys(t *testing.T) {
