@@ -69,4 +69,4 @@ EXPOSE 26656
 EXPOSE 26657
 EXPOSE 1317
 
-ENTRYPOINT ["neutrond"]
+ENTRYPOINT ["neutrond", "start"]

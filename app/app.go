@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 
+	"cosmossdk.io/math"
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
@@ -161,6 +163,22 @@ import (
 	ibcswaptypes "github.com/neutron-org/neutron/v2/x/ibcswap/types"
 
 	gmpmiddleware "github.com/neutron-org/neutron/v2/x/gmp"
+
+	// Block-sdk imports
+	blocksdkabci "github.com/skip-mev/block-sdk/abci"
+	signer_extraction_adapter "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
+	blocksdk "github.com/skip-mev/block-sdk/block"
+	blocksdkbase "github.com/skip-mev/block-sdk/block/base"
+	base_lane "github.com/skip-mev/block-sdk/lanes/base"
+	mev_lane "github.com/skip-mev/block-sdk/lanes/mev"
+	"github.com/skip-mev/block-sdk/x/auction"
+	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	rewardsaddressprovider "github.com/skip-mev/block-sdk/x/auction/rewards"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+
+	"github.com/skip-mev/block-sdk/abci/checktx"
+	"github.com/skip-mev/block-sdk/block/base"
 )
 
 const (
@@ -215,6 +233,7 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
+		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
@@ -223,6 +242,7 @@ var (
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:                    nil,
+		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
 		wasmtypes.ModuleName:                          {},
@@ -275,10 +295,12 @@ type App struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper       authkeeper.AccountKeeper
-	AdminmoduleKeeper   adminmodulekeeper.Keeper
-	AuthzKeeper         authzkeeper.Keeper
-	BankKeeper          bankkeeper.BaseKeeper
+	AccountKeeper     authkeeper.AccountKeeper
+	AdminmoduleKeeper adminmodulekeeper.Keeper
+	AuthzKeeper       authzkeeper.Keeper
+	BankKeeper        bankkeeper.BaseKeeper
+	// AuctionKeeper is the keeper that handles processing auction transactions
+	AuctionKeeper       auctionkeeper.Keeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
 	CrisisKeeper        crisiskeeper.Keeper
@@ -324,6 +346,13 @@ type App struct {
 
 	// sm is the simulation manager
 	sm *module.SimulationManager
+
+	// Custom checkTx handler
+	checkTxHandler checktx.CheckTx
+	
+	// Lanes
+	Mempool   blocksdk.Mempool
+	MEVLane   auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -374,7 +403,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey,
+		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -595,6 +624,16 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	app.AuctionKeeper = auctionkeeper.NewKeeperWithRewardsAddressProvider(
+		appCodec,
+		keys[auctiontypes.StoreKey],
+		app.AccountKeeper,
+		&app.BankKeeper,
+		// 25% of rewards should be sent to the redistribute address
+		rewardsaddressprovider.NewFixedAddressRewardsAddressProvider(app.AccountKeeper.GetModuleAddress(ccvconsumertypes.ConsumerRedistributeName)),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
 	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
 
 	app.SwapKeeper = ibcswapkeeper.NewKeeper(
@@ -779,6 +818,7 @@ func New(
 		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
 		swapModule,
 		dexModule,
+		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	)
 
@@ -787,6 +827,7 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
+		auctiontypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -819,6 +860,7 @@ func New(
 	)
 
 	app.mm.SetOrderEndBlockers(
+		auctiontypes.ModuleName,
 		crisistypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -858,6 +900,7 @@ func New(
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
 	app.mm.SetOrderInitGenesis(
+		auctiontypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -928,6 +971,54 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
+	app.SetEndBlocker(app.EndBlocker)
+
+	// initialize lanes
+	maxTxs := 0 // no limit
+	basecfg := blocksdkbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxDecoder:       app.GetTxConfig().TxDecoder(),
+		TxEncoder:       app.GetTxConfig().TxEncoder(),
+		SignerExtractor: signer_extraction_adapter.NewDefaultAdapter(),
+		MaxBlockSpace:   sdk.ZeroDec(),
+		MaxTxs:          maxTxs,
+	}
+
+	baseLane := base_lane.NewDefaultLane(basecfg, base.DefaultMatchHandler())
+
+	factory := mev_lane.NewDefaultAuctionFactory(app.GetTxConfig().TxDecoder(), signer_extraction_adapter.NewDefaultAdapter())
+
+	mevcfg := blocksdkbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxDecoder:       app.GetTxConfig().TxDecoder(),
+		TxEncoder:       app.GetTxConfig().TxEncoder(),
+		SignerExtractor: signer_extraction_adapter.NewDefaultAdapter(),
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.2"),
+		MaxTxs:          maxTxs,
+	}
+	mevLane := mev_lane.NewMEVLane(
+		mevcfg,
+		factory,
+		factory.MatchHandler(),
+	)
+	app.MEVLane = mevLane
+	// initialize mempool
+	mempool, err := blocksdk.NewLanedMempool(
+		app.Logger(),
+		[]blocksdk.Lane{
+			mevLane,  // mev-lane is first to prioritize bids being placed at the TOB
+			baseLane, // finally, all the rest of txs...
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// set the mempool first
+	app.SetMempool(mempool)
+	app.Mempool = mempool
+
+	// create the ante-handler
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -942,6 +1033,10 @@ func New(
 			TXCounterStoreKey: keys[wasmtypes.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
 			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
+			AuctionKeeper:     app.AuctionKeeper,
+			TxEncoder:         app.GetTxConfig().TxEncoder(),
+			Mempool:           app.Mempool,
+			MEVLane:           app.MEVLane,
 		},
 		app.Logger(),
 	)
@@ -949,9 +1044,43 @@ func New(
 		panic(err)
 	}
 
-	app.SetAnteHandler(anteHandler)
+	// set ante-handlers
+	opts := []base.LaneOption{
+		base.WithAnteHandler(anteHandler),
+	}
+	baseLane.WithOptions(opts...)
+	mevLane.WithOptions(opts...)
 
 	app.SetEndBlocker(app.EndBlocker)
+
+	handler := blocksdkabci.NewProposalHandler(
+		app.Logger(),
+		app.GetTxConfig().TxDecoder(),
+		app.GetTxConfig().TxEncoder(),
+		mempool,
+	)
+	app.SetPrepareProposal(handler.PrepareProposalHandler())
+	app.SetProcessProposal(handler.ProcessProposalHandler())
+
+	// check-tx
+	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
+		app,
+		app.GetTxConfig().TxDecoder(),
+		mevLane,
+		anteHandler,
+		app.BaseApp.CheckTx,
+		app.ChainID(),
+	)
+
+	// wrap checkTxHandler with mempool parity handler
+	parityCheckTx := checktx.NewMempoolParityCheckTx(
+		app.Logger(),
+		mempool,
+		app.GetTxConfig().TxDecoder(),
+		mevCheckTxHandler.CheckTx(),
+	)
+
+	app.SetCheckTx(parityCheckTx.CheckTx())
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -1021,6 +1150,7 @@ func (app *App) setupUpgradeHandlers() {
 					SlashingKeeper:      app.SlashingKeeper,
 					ParamsKeeper:        app.ParamsKeeper,
 					CapabilityKeeper:    app.CapabilityKeeper,
+					AuctionKeeper:       app.AuctionKeeper,
 					ContractManager:     app.ContractManagerKeeper,
 					AdminModule:         app.AdminmoduleKeeper,
 					ConsensusKeeper:     &app.ConsensusParamsKeeper,
@@ -1032,6 +1162,28 @@ func (app *App) setupUpgradeHandlers() {
 			),
 		)
 	}
+}
+
+// ChainID gets chainID from private fields of BaseApp
+// Should be removed once SDK 0.50.x will be adopted
+func (app *App) ChainID() string {
+	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
+	return field.String()
+}
+
+// CheckTx will check the transaction with the provided checkTxHandler. We override the default
+// handler so that we can verify bid transactions before they are inserted into the mempool.
+// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
+// before inserting the bid transaction into the mempool.
+func (app *App) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
+	res := app.checkTxHandler(req)
+	app.Logger().Info("CheckTx", "response", res)
+	return res
+}
+
+// SetCheckTx sets the checkTxHandler for the app.
+func (app *App) SetCheckTx(handler checktx.CheckTx) {
+	app.checkTxHandler = handler
 }
 
 // Name returns the name of the App

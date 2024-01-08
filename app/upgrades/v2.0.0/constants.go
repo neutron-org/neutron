@@ -5,8 +5,9 @@ import (
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
 	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v2/app/upgrades"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 )
 
 const (
@@ -24,6 +25,7 @@ var Upgrade = upgrades.Upgrade{
 			consensusparamtypes.ModuleName,
 			crisistypes.ModuleName,
 			dextypes.ModuleName,
+			auctiontypes.ModuleName,
 		},
 	},
 }
