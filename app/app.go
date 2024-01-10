@@ -1043,6 +1043,7 @@ func New(
 	if err != nil {
 		panic(err)
 	}
+	app.SetAnteHandler(anteHandler)
 
 	// set ante-handlers
 	opts := []base.LaneOption{
