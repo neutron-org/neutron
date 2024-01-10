@@ -33,7 +33,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.18.0
 	github.com/rs/zerolog v1.30.0
-	github.com/skip-mev/block-sdk v1.3.0-alpha.1.0.20240108220317-cd1d774cbd2d
+	github.com/skip-mev/block-sdk v1.3.0
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
