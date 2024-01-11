@@ -10,10 +10,9 @@ message Params {
   option (gogoproto.goproto_stringer) = false;
   repeated uint64 fee_tiers = 1;
   string max_true_taker_spread = 2 [
-                                    (gogoproto.moretags)   = "yaml:\"max_true_taker_spread\"",
-                                    (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
-                                    (gogoproto.nullable)   = false,
-                                    (gogoproto.jsontag) = "max_true_taker_spread"
-                                    ];
-
+    (gogoproto.moretags) = "yaml:\"max_true_taker_spread\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "max_true_taker_spread"
+  ];
 }

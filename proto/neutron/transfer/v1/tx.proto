@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package neutron.transfer;
 
-option go_package = "github.com/neutron-org/neutron/v2/x/transfer/types";
-
-import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
 import "ibc/core/client/v1/client.proto";
 import "neutron/feerefunder/fee.proto";
+
+option go_package = "github.com/neutron-org/neutron/v2/x/transfer/types";
 
 // Msg defines the ibc/transfer Msg service.
 service Msg {
@@ -20,12 +20,11 @@ message MsgTransfer {
   option (gogoproto.goproto_getters) = false;
 
   // the port on which the packet will be sent
-  string source_port = 1 [ (gogoproto.moretags) = "yaml:\"source_port\"" ];
+  string source_port = 1 [(gogoproto.moretags) = "yaml:\"source_port\""];
   // the channel by which the packet will be sent
-  string source_channel = 2
-      [ (gogoproto.moretags) = "yaml:\"source_channel\"" ];
+  string source_channel = 2 [(gogoproto.moretags) = "yaml:\"source_channel\""];
   // the tokens to be transferred
-  cosmos.base.v1beta1.Coin token = 3 [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin token = 3 [(gogoproto.nullable) = false];
   // the sender address
   string sender = 4;
   // the recipient address on the destination chain
@@ -38,12 +37,11 @@ message MsgTransfer {
   ];
   // Timeout timestamp in absolute nanoseconds since unix epoch.
   // The timeout is disabled when set to 0.
-  uint64 timeout_timestamp = 7
-      [ (gogoproto.moretags) = "yaml:\"timeout_timestamp\"" ];
+  uint64 timeout_timestamp = 7 [(gogoproto.moretags) = "yaml:\"timeout_timestamp\""];
 
   string memo = 8;
 
-  neutron.feerefunder.Fee fee = 9 [ (gogoproto.nullable) = false ];
+  neutron.feerefunder.Fee fee = 9 [(gogoproto.nullable) = false];
 }
 
 // MsgTransferResponse is the modified response type for
