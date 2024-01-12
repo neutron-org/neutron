@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/v2/app/upgrades/nextupgrade"
 	"io"
 	"io/fs"
 	"net/http"
@@ -166,7 +167,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, nextupgrade.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
