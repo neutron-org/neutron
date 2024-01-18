@@ -183,10 +183,14 @@ import (
 
 const (
 	Name = "neutrond"
+	MaxTxsForDefaultLane = 3000
+	MaxTxsForMEVLane = 500
 )
 
 var (
 	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade}
+	MaxBlockspaceForDefaultLane = math.LegacyMustNewDecFromStr("0.9")
+	MaxBlockspaceForMEVLane = math.LegacyMustNewDecFromStr("0.1")
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -974,14 +978,13 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	// initialize lanes
-	maxTxs := 0 // no limit
 	basecfg := blocksdkbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxDecoder:       app.GetTxConfig().TxDecoder(),
 		TxEncoder:       app.GetTxConfig().TxEncoder(),
 		SignerExtractor: signer_extraction_adapter.NewDefaultAdapter(),
-		MaxBlockSpace:   sdk.ZeroDec(),
-		MaxTxs:          maxTxs,
+		MaxBlockSpace:   MaxBlockspaceForDefaultLane,
+		MaxTxs:          MaxTxsForDefaultLane,
 	}
 
 	baseLane := base_lane.NewDefaultLane(basecfg, base.DefaultMatchHandler())
@@ -993,8 +996,8 @@ func New(
 		TxDecoder:       app.GetTxConfig().TxDecoder(),
 		TxEncoder:       app.GetTxConfig().TxEncoder(),
 		SignerExtractor: signer_extraction_adapter.NewDefaultAdapter(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.2"),
-		MaxTxs:          maxTxs,
+		MaxBlockSpace:   MaxBlockspaceForMEVLane,
+		MaxTxs:          MaxTxsForMEVLane,
 	}
 	mevLane := mev_lane.NewMEVLane(
 		mevcfg,
