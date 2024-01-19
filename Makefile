@@ -83,6 +83,10 @@ BUILD_FLAGS_TEST_BINARY := -tags "$(build_tags_test_binary_comma_sep)" -ldflags 
 include contrib/devtools/Makefile
 
 check_version:
+ifneq ($(GO_SYSTEM_VERSION), $(REQUIRE_GO_VERSION))
+	@echo "ERROR: Go version ${REQUIRE_GO_VERSION} is required for $(VERSION) of Neutron."
+	exit 1
+endif
 
 all: install lint test
 
@@ -90,7 +94,7 @@ BUILD_TARGETS := build install
 
 build: BUILD_ARGS=-o $(BUILDDIR)/
 
-$(BUILD_TARGETS): go.sum $(BUILDDIR)/
+$(BUILD_TARGETS): check_version go.sum $(BUILDDIR)/
 ifeq ($(OS),Windows_NT)
 	exit 1
 else
@@ -99,16 +103,6 @@ endif
 
 $(BUILDDIR)/:
 	mkdir -p $(BUILDDIR)/
-
-docker-build:
-	$(DOCKER) buildx build \
-		--build-arg GIT_VERSION=$(VERSION) \
-		--build-arg GIT_COMMIT=$(COMMIT) \
-		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
-		--platform linux/amd64 \
-		-t neutron-amd64 \
-		--load \
-		-f Dockerfile.builder .	
 
 build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) buildx create --name neutronbuilder || true

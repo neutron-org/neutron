@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"cosmossdk.io/math"
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	"github.com/cosmos/interchain-security/v3/testutil/integration"
@@ -166,11 +165,7 @@ import (
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/abci"
-	signer_extraction_adapter "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	blocksdk "github.com/skip-mev/block-sdk/block"
-	blocksdkbase "github.com/skip-mev/block-sdk/block/base"
-	base_lane "github.com/skip-mev/block-sdk/lanes/base"
-	mev_lane "github.com/skip-mev/block-sdk/lanes/mev"
 	"github.com/skip-mev/block-sdk/x/auction"
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
@@ -183,14 +178,10 @@ import (
 
 const (
 	Name = "neutrond"
-	MaxTxsForDefaultLane = 3000
-	MaxTxsForMEVLane = 500
 )
 
 var (
 	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade}
-	MaxBlockspaceForDefaultLane = math.LegacyMustNewDecFromStr("0.9")
-	MaxBlockspaceForMEVLane = math.LegacyMustNewDecFromStr("0.1")
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -977,42 +968,8 @@ func New(
 
 	app.SetEndBlocker(app.EndBlocker)
 
-	// initialize lanes
-	basecfg := blocksdkbase.LaneConfig{
-		Logger:          app.Logger(),
-		TxDecoder:       app.GetTxConfig().TxDecoder(),
-		TxEncoder:       app.GetTxConfig().TxEncoder(),
-		SignerExtractor: signer_extraction_adapter.NewDefaultAdapter(),
-		MaxBlockSpace:   MaxBlockspaceForDefaultLane,
-		MaxTxs:          MaxTxsForDefaultLane,
-	}
-
-	baseLane := base_lane.NewDefaultLane(basecfg, base.DefaultMatchHandler())
-
-	factory := mev_lane.NewDefaultAuctionFactory(app.GetTxConfig().TxDecoder(), signer_extraction_adapter.NewDefaultAdapter())
-
-	mevcfg := blocksdkbase.LaneConfig{
-		Logger:          app.Logger(),
-		TxDecoder:       app.GetTxConfig().TxDecoder(),
-		TxEncoder:       app.GetTxConfig().TxEncoder(),
-		SignerExtractor: signer_extraction_adapter.NewDefaultAdapter(),
-		MaxBlockSpace:   MaxBlockspaceForMEVLane,
-		MaxTxs:          MaxTxsForMEVLane,
-	}
-	mevLane := mev_lane.NewMEVLane(
-		mevcfg,
-		factory,
-		factory.MatchHandler(),
-	)
-	app.MEVLane = mevLane
-	// initialize mempool
-	mempool, err := blocksdk.NewLanedMempool(
-		app.Logger(),
-		[]blocksdk.Lane{
-			mevLane,  // mev-lane is first to prioritize bids being placed at the TOB
-			baseLane, // finally, all the rest of txs...
-		},
-	)
+	mevLane, baseLane := app.CreateLanes()
+	mempool, err := blocksdk.NewLanedMempool(app.Logger(), []blocksdk.Lane{mevLane, baseLane})
 	if err != nil {
 		panic(err)
 	}
@@ -1038,7 +995,6 @@ func New(
 			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
 			AuctionKeeper:     app.AuctionKeeper,
 			TxEncoder:         app.GetTxConfig().TxEncoder(),
-			Mempool:           app.Mempool,
 			MEVLane:           app.MEVLane,
 		},
 		app.Logger(),

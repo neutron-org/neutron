@@ -42,7 +42,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/go/pkg/mod \
     go build \
       -mod=readonly \
-      -tags "netgo,ledger,muslc,skip_ccv_msg_filter" \
+      -tags "netgo,ledger,muslc" \
       -ldflags "-X github.com/cosmos/cosmos-sdk/version.Name="neutron" \
               -X github.com/cosmos/cosmos-sdk/version.AppName="neutrond" \
               -X github.com/cosmos/cosmos-sdk/version.Version=${GIT_VERSION} \
@@ -69,4 +69,4 @@ EXPOSE 26656
 EXPOSE 26657
 EXPOSE 1317
 
-ENTRYPOINT ["neutrond", "start"]
+ENTRYPOINT ["neutrond"]
