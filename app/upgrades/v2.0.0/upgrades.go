@@ -1,10 +1,7 @@
 package v200
 
 import (
-	"cosmossdk.io/math"
-
 	"fmt"
-	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -23,8 +20,6 @@ import (
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
 	"github.com/neutron-org/neutron/v2/app/upgrades"
 	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
@@ -35,7 +30,6 @@ import (
 	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
 )
 
 func CreateUpgradeHandler(
@@ -88,12 +82,6 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
-		ctx.Logger().Info("Setting pob params...")
-		err = setAuctionParams(ctx, keepers.FeeBurnerKeeper, keepers.AuctionKeeper)
-		if err != nil {
-			return nil, err
-		}
-
 		ctx.Logger().Info("Setting sudo callback limit...")
 		err = setContractManagerParams(ctx, keepers.ContractManager)
 		if err != nil {
@@ -127,24 +115,6 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info("Upgrade complete")
 		return vm, nil
 	}
-}
-
-func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, auctionKeeper auctionkeeper.Keeper) error {
-	treasury := feeBurnerKeeper.GetParams(ctx).TreasuryAddress
-	_, data, err := bech32.DecodeAndConvert(treasury)
-	if err != nil {
-		return err
-	}
-
-	auctionParams := auctiontypes.Params{
-		MaxBundleSize:          2,
-		EscrowAccountAddress:   data,
-		ReserveFee:             sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-		MinBidIncrement:        sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1_000_000)},
-		FrontRunningProtection: true,
-		ProposerFee:            math.LegacyNewDecWithPrec(25, 2),
-	}
-	return auctionKeeper.SetParams(ctx, auctionParams)
 }
 
 func setContractManagerParams(ctx sdk.Context, keeper contractmanagerkeeper.Keeper) error {
