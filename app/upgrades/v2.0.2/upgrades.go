@@ -1,8 +1,6 @@
 package v202
 
 import (
-	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
@@ -40,7 +38,6 @@ func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, 
 	if err != nil {
 		return err
 	}
-	fmt.Println("treasury addy", feeBurnerKeeper.GetParams(ctx).TreasuryAddress)
 
 	auctionParams := auctiontypes.Params{
 		MaxBundleSize:          AuctionParamsMaxBundleSize,

@@ -14,8 +14,8 @@ const (
 )
 
 var (
-	MaxBlockspaceForDefaultLane = math.LegacyMustNewDecFromStr("0.9") // maximal fraction of blockMaxBytes / gas that can be used by this lane at any point in time
-	MaxBlockspaceForMEVLane     = math.LegacyMustNewDecFromStr("0.1") // ditto
+	MaxBlockspaceForDefaultLane = math.LegacyMustNewDecFromStr("0.9") // maximal fraction of blockMaxBytes / gas that can be used by this lane at any point in time (90%)
+	MaxBlockspaceForMEVLane     = math.LegacyMustNewDecFromStr("0.1") // ditto (10%)
 )
 
 // CreateLanes creates a LaneMempool containing MEV, default lanes (in that order)
@@ -30,10 +30,11 @@ func (app *App) CreateLanes() (*mev_lane.MEVLane, *blocksdkbase.BaseLane) {
 		MaxTxs:          MaxTxsForDefaultLane,
 	}
 
+	// BaseLane (DefaultLane) is intended to hold all txs that are not matched by any lanes ordered before this
+	// lane.
 	baseLane := base_lane.NewDefaultLane(basecfg, blocksdkbase.DefaultMatchHandler())
 
-	// initialize the MEV lane
-	// factory is used to extract information from bid-tx
+	// initialize the MEV lane, this lane is intended to hold all bid txs
 	factory := mev_lane.NewDefaultAuctionFactory(app.GetTxConfig().TxDecoder(), signer_extraction_adapter.NewDefaultAdapter())
 
 	mevcfg := blocksdkbase.LaneConfig{

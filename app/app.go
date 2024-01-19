@@ -294,7 +294,7 @@ type App struct {
 	AdminmoduleKeeper adminmodulekeeper.Keeper
 	AuthzKeeper       authzkeeper.Keeper
 	BankKeeper        bankkeeper.BaseKeeper
-	// AuctionKeeper is the keeper that handles processing auction transactions
+	// AuctionKeeper handles the processing of bid-txs, the selection of winners per height, and the distribution of rewards.
 	AuctionKeeper       auctionkeeper.Keeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
@@ -342,11 +342,12 @@ type App struct {
 	// sm is the simulation manager
 	sm *module.SimulationManager
 
-	// Custom checkTx handler
+	// Custom checkTx handler -> this check-tx is used to simulate txs that are
+	// wrapped in a bid-tx
 	checkTxHandler checktx.CheckTx
 
-	// Lanes
-	Mempool blocksdk.Mempool
+	// MEVLane is used as a dependency for the x/auction module's antehandler. This references th lane in the app's
+	// LaneMempool.
 	MEVLane auctionante.MEVLane
 }
 
@@ -977,7 +978,6 @@ func New(
 
 	// set the mempool first
 	app.SetMempool(mempool)
-	app.Mempool = mempool
 
 	// then create the ante-handler
 	anteHandler, err := NewAnteHandler(
@@ -1135,12 +1135,10 @@ func (app *App) ChainID() string {
 
 // CheckTx will check the transaction with the provided checkTxHandler. We override the default
 // handler so that we can verify bid transactions before they are inserted into the mempool.
-// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
+// With the Block-SDK CheckTx, we can verify the bid transaction and all of the bundled transactions
 // before inserting the bid transaction into the mempool.
 func (app *App) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
-	res := app.checkTxHandler(req)
-	app.Logger().Info("CheckTx", "response", res)
-	return res
+	return app.checkTxHandler(req)
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
