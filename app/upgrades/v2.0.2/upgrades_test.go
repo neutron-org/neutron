@@ -8,10 +8,12 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
 	v202 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.2"
 	"github.com/neutron-org/neutron/v2/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types")
+)
 
 type UpgradeTestSuite struct {
 	testutil.IBCConnectionTestSuite
@@ -34,16 +36,16 @@ func (suite *UpgradeTestSuite) SetupTest() {
 
 func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 	var (
-		app               = suite.GetNeutronZoneApp(suite.ChainA)
-		ctx               = suite.ChainA.GetContext()
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext()
 	)
 
 	feeParams := feeburnertypes.NewParams(feeburnertypes.DefaultNeutronDenom, treasuryAddress)
-	app.FeeBurnerKeeper.SetParams(ctx, feeParams)
+	suite.Require().NoError(app.FeeBurnerKeeper.SetParams(ctx, feeParams))
 
 	upgrade := upgradetypes.Plan{
-		Name: v202.UpgradeName,
-		Info: "ads",
+		Name:   v202.UpgradeName,
+		Info:   "ads",
 		Height: 100,
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)

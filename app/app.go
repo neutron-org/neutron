@@ -344,10 +344,10 @@ type App struct {
 
 	// Custom checkTx handler
 	checkTxHandler checktx.CheckTx
-	
+
 	// Lanes
-	Mempool   blocksdk.Mempool
-	MEVLane   auctionante.MEVLane
+	Mempool blocksdk.Mempool
+	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -968,6 +968,7 @@ func New(
 
 	app.SetEndBlocker(app.EndBlocker)
 
+	// create the lanes
 	mevLane, baseLane := app.CreateLanes()
 	mempool, err := blocksdk.NewLanedMempool(app.Logger(), []blocksdk.Lane{mevLane, baseLane})
 	if err != nil {
@@ -978,7 +979,7 @@ func New(
 	app.SetMempool(mempool)
 	app.Mempool = mempool
 
-	// create the ante-handler
+	// then create the ante-handler
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -1013,6 +1014,7 @@ func New(
 
 	app.SetEndBlocker(app.EndBlocker)
 
+	// set the block-sdk prepare / process-proposal handlers
 	handler := blocksdkabci.NewProposalHandler(
 		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
@@ -1022,7 +1024,7 @@ func New(
 	app.SetPrepareProposal(handler.PrepareProposalHandler())
 	app.SetProcessProposal(handler.ProcessProposalHandler())
 
-	// check-tx
+	// block-sdk CheckTx handler
 	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
 		app,
 		app.GetTxConfig().TxDecoder(),

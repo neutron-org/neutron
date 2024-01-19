@@ -2,15 +2,17 @@ package v202
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/neutron-org/neutron/v2/app/upgrades"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+
 	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
 )
 
@@ -43,7 +45,7 @@ func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, 
 	auctionParams := auctiontypes.Params{
 		MaxBundleSize:          AuctionParamsMaxBundleSize,
 		EscrowAccountAddress:   data,
-		ReserveFee: AuctionParamsReserveFee,
+		ReserveFee:             AuctionParamsReserveFee,
 		MinBidIncrement:        AuctionParamsMinBidIncrement,
 		FrontRunningProtection: AuctionParamsFrontRunningProtection,
 		ProposerFee:            AuctionParamsProposerFee,
