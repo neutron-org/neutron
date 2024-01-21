@@ -32,7 +32,6 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	globalFeeGenesisState := globalfeetypes.GenesisState{
 		Params: globalfeetypes.Params{
 			MinimumGasPrices: sdk.DecCoins{
-				sdk.NewDecCoinFromDec(sdk.DefaultBondDenom, sdk.MustNewDecFromStr("0")),
 				sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0")),
 			},
 			BypassMinFeeMsgTypes: []string{

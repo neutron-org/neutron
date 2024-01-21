@@ -5,8 +5,11 @@ import (
 
 	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,9 +32,18 @@ func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, 
 }
 
 func TestUserDepositsAllQueryPaginated(t *testing.T) {
+	coordinator := ibctesting.NewCoordinator(t, 2)
+	chainID := ibctesting.GetChainID(1)
+
+	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
+	providerChain := coordinator.GetChain(chainID)
+
+	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp(tmtypes.TM2PB.ValidatorUpdates(providerChain.Vals))
+
 	app := testutil.Setup(t)
-	keeper := app.DexKeeper
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	keeper := app.(*neutronapp.App).DexKeeper
+	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
 	wctx := sdk.WrapSDKContext(ctx)
 	addr := sdk.AccAddress([]byte("test_addr"))
 	msgs := []*types.DepositRecord{
@@ -78,12 +90,12 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	}
 
 	for _, d := range msgs {
-		simulateDeposit(ctx, app, addr, d)
+		simulateDeposit(ctx, app.(*neutronapp.App), addr, d)
 	}
 
 	// Add random noise to make sure only pool denoms are picked up
 	randomCoins := sdk.Coins{sdk.NewInt64Coin("TokenA", 10), sdk.NewInt64Coin("TokenZ", 10)}
-	keepertest.FundAccount(app.BankKeeper, ctx, addr, randomCoins)
+	keepertest.FundAccount(app.(*neutronapp.App).BankKeeper, ctx, addr, randomCoins)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllUserDepositsRequest {
 		return &types.QueryAllUserDepositsRequest{

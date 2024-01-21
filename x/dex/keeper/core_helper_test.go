@@ -5,7 +5,10 @@ import (
 
 	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmttypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
 	neutronapp "github.com/neutron-org/neutron/v2/app"
@@ -29,19 +32,28 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 }
 
 func (s *CoreHelpersTestSuite) SetupTest() {
+	coordinator := ibctesting.NewCoordinator(s.T(), 2)
+	chainID := ibctesting.GetChainID(1)
+
+	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
+	coordinator.Chains[chainID] = ibctesting.NewTestChain(s.T(), coordinator, chainID)
+	providerChain := coordinator.GetChain(chainID)
+
+	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
+
 	app := testutil.Setup(s.T())
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
 
-	accAlice := app.AccountKeeper.NewAccountWithAddress(ctx, s.alice)
-	app.AccountKeeper.SetAccount(ctx, accAlice)
-	accBob := app.AccountKeeper.NewAccountWithAddress(ctx, s.bob)
-	app.AccountKeeper.SetAccount(ctx, accBob)
-	accCarol := app.AccountKeeper.NewAccountWithAddress(ctx, s.carol)
-	app.AccountKeeper.SetAccount(ctx, accCarol)
-	accDan := app.AccountKeeper.NewAccountWithAddress(ctx, s.dan)
-	app.AccountKeeper.SetAccount(ctx, accDan)
+	accAlice := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.alice)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accAlice)
+	accBob := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.bob)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accBob)
+	accCarol := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.carol)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accCarol)
+	accDan := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.dan)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accDan)
 
-	s.app = app
+	s.app = app.(*neutronapp.App)
 	s.ctx = ctx
 	s.alice = sdk.AccAddress([]byte("alice"))
 	s.bob = sdk.AccAddress([]byte("bob"))
