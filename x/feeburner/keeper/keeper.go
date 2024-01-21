@@ -80,7 +80,7 @@ func (k Keeper) GetTotalBurnedNeutronsAmount(ctx sdk.Context) types.TotalBurnedN
 }
 
 // BurnAndDistribute is an important part of tokenomics. It does few things:
-// 1. Burns NTRN fee coins distributed to consumertypes.ConsumerRedistributeName in ICS (https://github.com/cosmos/interchain-security/v4/blob/v0.2.0/x/ccv/consumer/keeper/distribution.go#L17)
+// 1. Burns NTRN fee coins distributed to consumertypes.ConsumerRedistributeName in ICS (https://github.com/cosmos/interchain-security/blob/86046926502f7b0ba795bebcdd1fdc97ac776573/x/ccv/consumer/keeper/distribution.go#L67)
 // 2. Updates total amount of burned NTRN coins
 // 3. Sends non-NTRN fee tokens to reserve contract address
 // Panics if no `consumertypes.ConsumerRedistributeName` module found OR could not burn NTRN tokens
