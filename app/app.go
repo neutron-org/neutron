@@ -1083,6 +1083,7 @@ func (app *App) TestInitChainer(ctx sdk.Context, req abci.RequestInitChain) abci
 		panic(err)
 	}
 
+	// manually set consensus params here, cause there is no way to set it using ibctesting stuff for now
 	app.ConsensusParamsKeeper.Set(ctx, sims.DefaultConsensusParams)
 	app.EnsureBlockGasMeter(ctx)
 
