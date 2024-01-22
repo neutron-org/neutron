@@ -405,8 +405,8 @@ github.com/cosmos/ibc-go/v7 v7.3.1 h1:bil1IjnHdyWDASFYKfwdRiNtFP6WK3osW7QFEAgU4I
 github.com/cosmos/ibc-go/v7 v7.3.1/go.mod h1:wvx4pPBofe5ZdMNV3OFRxSI4auEP5Qfqf8JXLLNV04g=
 github.com/cosmos/ics23/go v0.10.0 h1:iXqLLgp2Lp+EdpIuwXTYIQU+AiHj9mOC2X9ab++bZDM=
 github.com/cosmos/ics23/go v0.10.0/go.mod h1:ZfJSmng/TBNTBkFemHHHj5YY7VAU/MBU980F4VU1NG0=
-github.com/cosmos/interchain-security/v4 v4.0.0-rc0 h1:AP1nssSlOiBZPHycSoR5VA4rrBNOUUaa9vBOzauPtfM=
-github.com/cosmos/interchain-security/v4 v4.0.0-rc0/go.mod h1:h86YbhHmSDHVMDsDipAHi8zugzyTUwZ6EuSCOzp9shI=
+github.com/cosmos/interchain-security/v4 v4.0.0-rc1 h1:bAa8qWs6JSeSuzn9frEceAKbv7HNq57O21Wi/bbpl5Y=
+github.com/cosmos/interchain-security/v4 v4.0.0-rc1/go.mod h1:h86YbhHmSDHVMDsDipAHi8zugzyTUwZ6EuSCOzp9shI=
 github.com/cosmos/keyring v1.2.0 h1:8C1lBP9xhImmIabyXW4c3vFjjLiBdGCmfLUfeZlV1Yo=
 github.com/cosmos/keyring v1.2.0/go.mod h1:fc+wB5KTk9wQ9sDx0kFXB3A0MaeGHM9AwRStKOQ5vOA=
 github.com/cosmos/ledger-cosmos-go v0.12.4 h1:drvWt+GJP7Aiw550yeb3ON/zsrgW0jgh5saFCr7pDnw=

@@ -20,7 +20,7 @@ require (
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.2
 	github.com/cosmos/ibc-go/v7 v7.3.1
 	github.com/cosmos/ics23/go v0.10.0
-	github.com/cosmos/interchain-security/v4 v4.0.0-rc0
+	github.com/cosmos/interchain-security/v4 v4.0.0-rc1
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3

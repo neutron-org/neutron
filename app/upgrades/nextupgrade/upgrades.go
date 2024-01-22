@@ -25,21 +25,28 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		migrateICSOutstandingDowntime(ctx, keepers)
+		if err := migrateICSOutstandingDowntime(ctx, keepers); err != nil {
+			return vm, fmt.Errorf("failed to migrate ICS outstanding downtime: %w", err)
+		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
 }
 
-func migrateICSOutstandingDowntime(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) {
+func migrateICSOutstandingDowntime(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Migrating ICS outstanding downtime...")
 
-	// TODO: discuss the following code with ICS team
 	downtimes := keepers.ConsumerKeeper.GetAllOutstandingDowntimes(ctx)
 	for _, od := range downtimes {
-		keepers.ConsumerKeeper.DeleteOutstandingDowntime(ctx, od.ValidatorConsensusAddress)
+		consAddr, err := sdk.ConsAddressFromBech32(od.ValidatorConsensusAddress)
+		if err != nil {
+			return err
+		}
+		keepers.ConsumerKeeper.DeleteOutstandingDowntime(ctx, consAddr)
 	}
 
 	ctx.Logger().Info("Finished ICS outstanding downtime")
+
+	return nil
 }
