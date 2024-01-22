@@ -21,10 +21,10 @@ import (
 	"github.com/neutron-org/neutron/v2/docs"
 
 	"github.com/neutron-org/neutron/v2/app/upgrades"
-	"github.com/neutron-org/neutron/v2/app/upgrades/v0.3.0"
-	"github.com/neutron-org/neutron/v2/app/upgrades/v0.4.4"
-	"github.com/neutron-org/neutron/v2/app/upgrades/v2.0.0"
-	"github.com/neutron-org/neutron/v2/app/upgrades/v2.0.2"
+	v030 "github.com/neutron-org/neutron/v2/app/upgrades/v0.3.0"
+	v044 "github.com/neutron-org/neutron/v2/app/upgrades/v0.4.4"
+	v200 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.0"
+	v202 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.2"
 
 	"github.com/neutron-org/neutron/v2/x/cron"
 
