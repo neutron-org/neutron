@@ -1,4 +1,4 @@
-package v202_test
+package nextupgrade_test
 
 import (
 	"testing"
@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	v202 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.2"
+	nextupgrade "github.com/neutron-org/neutron/v2/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/v2/testutil"
 )
 
@@ -44,7 +44,7 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 	suite.Require().NoError(app.FeeBurnerKeeper.SetParams(ctx, feeParams))
 
 	upgrade := upgradetypes.Plan{
-		Name:   v202.UpgradeName,
+		Name:   nextupgrade.UpgradeName,
 		Info:   "ads",
 		Height: 100,
 	}
@@ -55,11 +55,11 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 	suite.Require().NoError(err)
 
 	// check that the params are correct
-	params.MaxBundleSize = v202.AuctionParamsMaxBundleSize
-	params.ReserveFee = v202.AuctionParamsReserveFee
-	params.MinBidIncrement = v202.AuctionParamsMinBidIncrement
-	params.FrontRunningProtection = v202.AuctionParamsFrontRunningProtection
-	params.ProposerFee = v202.AuctionParamsProposerFee
+	params.MaxBundleSize = nextupgrade.AuctionParamsMaxBundleSize
+	params.ReserveFee = nextupgrade.AuctionParamsReserveFee
+	params.MinBidIncrement = nextupgrade.AuctionParamsMinBidIncrement
+	params.FrontRunningProtection = nextupgrade.AuctionParamsFrontRunningProtection
+	params.ProposerFee = nextupgrade.AuctionParamsProposerFee
 
 	addr, err := sdk.AccAddressFromBech32(treasuryAddress)
 	suite.Require().NoError(err)
