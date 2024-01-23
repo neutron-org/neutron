@@ -98,7 +98,7 @@ func (k Keeper) getPoolByPoolID(
 	case lowerTickFound && !upperTickFound:
 		upperTick = types.NewPoolReservesFromCounterpart(lowerTick)
 	case !lowerTickFound && !upperTickFound:
-		// Pool has already been initialized before, пso we can safely assume that pool creation doesn't throw an error
+		// Pool has already been initialized before, so we can safely assume that pool creation doesn't throw an error
 		return types.MustNewPool(pairID, centerTickIndexNormalized, fee, poolID), true
 	}
 
