@@ -2,20 +2,20 @@ syntax = "proto3";
 
 package neutron.dex;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "neutron/dex/params.proto";
-import "neutron/dex/limit_order_tranche_user.proto";
-import "neutron/dex/limit_order_tranche.proto";
-import "neutron/dex/deposit_record.proto";
-import "neutron/dex/tick_liquidity.proto";
-import "neutron/dex/pool_reserves.proto";
-import "neutron/dex/tx.proto";
-import "cosmos/base/v1beta1/coin.proto";
 import "google/protobuf/timestamp.proto";
+import "neutron/dex/deposit_record.proto";
+import "neutron/dex/limit_order_tranche.proto";
+import "neutron/dex/limit_order_tranche_user.proto";
+import "neutron/dex/params.proto";
 import "neutron/dex/pool.proto";
 import "neutron/dex/pool_metadata.proto";
+import "neutron/dex/pool_reserves.proto";
+import "neutron/dex/tick_liquidity.proto";
+import "neutron/dex/tx.proto";
 
 // this line is used by starport scaffolding # 1
 
@@ -24,117 +24,114 @@ option go_package = "github.com/neutron-org/neutron/v2/x/dex/types";
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
-  rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/dex/params";
-  
   }
-  
+
   // Queries a LimitOrderTrancheUser by index.
-  rpc LimitOrderTrancheUser (QueryGetLimitOrderTrancheUserRequest) returns (QueryGetLimitOrderTrancheUserResponse) {
+  rpc LimitOrderTrancheUser(QueryGetLimitOrderTrancheUserRequest) returns (QueryGetLimitOrderTrancheUserResponse) {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche_user/{address}/{tranche_key}";
-  
   }
-  
+
   // Queries a list of LimitOrderTrancheMap items.
-  rpc LimitOrderTrancheUserAll (QueryAllLimitOrderTrancheUserRequest) returns (QueryAllLimitOrderTrancheUserResponse) {
+  rpc LimitOrderTrancheUserAll(QueryAllLimitOrderTrancheUserRequest) returns (QueryAllLimitOrderTrancheUserResponse) {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche_user";
-  
   }
 
   // Queries a list of LimitOrderTrancheUser items for a given address.
-	rpc LimitOrderTrancheUserAllByAddress(QueryAllUserLimitOrdersRequest) returns (QueryAllUserLimitOrdersResponse) {
-		option (google.api.http).get = "/neutron/dex/user/limit_orders/{address}";
-	}
-  
-  // Queries a LimitOrderTranche by index.
-  rpc LimitOrderTranche (QueryGetLimitOrderTrancheRequest) returns (QueryGetLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}";
+  rpc LimitOrderTrancheUserAllByAddress(QueryAllUserLimitOrdersRequest) returns (QueryAllUserLimitOrdersResponse) {
+    option (google.api.http).get = "/neutron/dex/user/limit_orders/{address}";
   }
-  
-  // Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination.
-  rpc LimitOrderTrancheAll (QueryAllLimitOrderTrancheRequest) returns (QueryAllLimitOrderTrancheResponse) {
+
+  // Queries a LimitOrderTranche by index.
+  rpc LimitOrderTranche(QueryGetLimitOrderTrancheRequest) returns (QueryGetLimitOrderTrancheResponse) {
+    option (google.api.http).get =
+      "/neutron/dex/limit_order_tranche/{pair_id}/"
+      "{token_in}/{tick_index}/{tranche_key}";
+  }
+
+  // Queries a list of LimitOrderTranche items for a given pairID / TokenIn
+  // combination.
+  rpc LimitOrderTrancheAll(QueryAllLimitOrderTrancheRequest) returns (QueryAllLimitOrderTrancheResponse) {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche/{pair_id}/{token_in}";
   }
-  
+
   // Queries a list of UserDeposits items.
-  rpc UserDepositsAll (QueryAllUserDepositsRequest) returns (QueryAllUserDepositsResponse) {
+  rpc UserDepositsAll(QueryAllUserDepositsRequest) returns (QueryAllUserDepositsResponse) {
     option (google.api.http).get = "/neutron/dex/user/deposits/{address}";
   }
-  
+
   // Queries a list of TickLiquidity items.
-  rpc TickLiquidityAll (QueryAllTickLiquidityRequest) returns (QueryAllTickLiquidityResponse) {
+  rpc TickLiquidityAll(QueryAllTickLiquidityRequest) returns (QueryAllTickLiquidityResponse) {
     option (google.api.http).get = "/neutron/dex/tick_liquidity/{pair_id}/{token_in}";
   }
-  
+
   // Queries a InactiveLimitOrderTranche by index.
-  rpc InactiveLimitOrderTranche (QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}";
+  rpc InactiveLimitOrderTranche(QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
+    option (google.api.http).get =
+      "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/"
+      "{tick_index}/{tranche_key}";
   }
-  
+
   // Queries a list of InactiveLimitOrderTranche items.
-  rpc InactiveLimitOrderTrancheAll (QueryAllInactiveLimitOrderTrancheRequest) returns (QueryAllInactiveLimitOrderTrancheResponse) {
+  rpc InactiveLimitOrderTrancheAll(QueryAllInactiveLimitOrderTrancheRequest) returns (QueryAllInactiveLimitOrderTrancheResponse) {
     option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche";
   }
-  
+
   // Queries a list of PoolReserves items.
-  rpc PoolReservesAll (QueryAllPoolReservesRequest) returns (QueryAllPoolReservesResponse) {
+  rpc PoolReservesAll(QueryAllPoolReservesRequest) returns (QueryAllPoolReservesResponse) {
     option (google.api.http).get = "/neutron/dex/pool_reserves/{pair_id}/{token_in}";
   }
-  
+
   // Queries a PoolReserve by index
-  rpc PoolReserves (QueryGetPoolReservesRequest) returns (QueryGetPoolReservesResponse) {
+  rpc PoolReserves(QueryGetPoolReservesRequest) returns (QueryGetPoolReservesResponse) {
     option (google.api.http).get = "/neutron/dex/pool_reserves/{pair_id}/{token_in}/{tick_index}/{fee}";
   }
-  
-  // Queries the simulated result of a multihop swap 
-  rpc EstimateMultiHopSwap (QueryEstimateMultiHopSwapRequest) returns (QueryEstimateMultiHopSwapResponse) {
+
+  // Queries the simulated result of a multihop swap
+  rpc EstimateMultiHopSwap(QueryEstimateMultiHopSwapRequest) returns (QueryEstimateMultiHopSwapResponse) {
     option (google.api.http).get = "/neutron/dex/estimate_multi_hop_swap";
   }
-  
-  // Queries the simulated result of a multihop swap 
-  rpc EstimatePlaceLimitOrder (QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
+
+  // Queries the simulated result of a multihop swap
+  rpc EstimatePlaceLimitOrder(QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
     option (google.api.http).get = "/neutron/dex/estimate_place_limit_order";
   }
-  
+
   // Queries a pool by pair, tick and fee
-  rpc Pool (QueryPoolRequest) returns (QueryPoolResponse) {
+  rpc Pool(QueryPoolRequest) returns (QueryPoolResponse) {
     option (google.api.http).get = "/neutron/dex/pool/{pair_id}/{tick_index}/{fee}";
-  
   }
-  
+
   // Queries a pool by ID
-  rpc PoolByID (QueryPoolByIDRequest) returns (QueryPoolResponse) {
+  rpc PoolByID(QueryPoolByIDRequest) returns (QueryPoolResponse) {
     option (google.api.http).get = "/neutron/dex/pool/{pool_id}";
-  
   }
 
   // Queries a PoolMetadata by ID
-  rpc PoolMetadata    (QueryGetPoolMetadataRequest) returns (QueryGetPoolMetadataResponse) {
+  rpc PoolMetadata(QueryGetPoolMetadataRequest) returns (QueryGetPoolMetadataResponse) {
     option (google.api.http).get = "/neutron/dex/pool_metadata/{id}";
-  
   }
 
   // Queries a list of PoolMetadata items.
-  rpc PoolMetadataAll (QueryAllPoolMetadataRequest) returns (QueryAllPoolMetadataResponse) {
+  rpc PoolMetadataAll(QueryAllPoolMetadataRequest) returns (QueryAllPoolMetadataResponse) {
     option (google.api.http).get = "/neutron/dex/pool_metadata";
-  
   }
 
-// this line is used by starport scaffolding # 2
-
+  // this line is used by starport scaffolding # 2
 }
+
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
-  
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryGetLimitOrderTrancheUserRequest {
-  string address    = 1;
+  string address = 1;
   string tranche_key = 2;
 }
 
@@ -147,14 +144,14 @@ message QueryAllLimitOrderTrancheUserRequest {
 }
 
 message QueryAllLimitOrderTrancheUserResponse {
-  repeated LimitOrderTrancheUser                  limit_order_tranche_user = 1 [(gogoproto.nullable) = true];
-           cosmos.base.query.v1beta1.PageResponse pagination            = 2;
+  repeated LimitOrderTrancheUser limit_order_tranche_user = 1 [(gogoproto.nullable) = true];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryGetLimitOrderTrancheRequest {
-  string pair_id     = 1;
-  int64  tick_index  = 2;
-  string token_in    = 3;
+  string pair_id = 1;
+  int64 tick_index = 2;
+  string token_in = 3;
   string tranche_key = 4;
 }
 
@@ -163,30 +160,30 @@ message QueryGetLimitOrderTrancheResponse {
 }
 
 message QueryAllLimitOrderTrancheRequest {
-  string                                pair_id     = 1;
-  string                                token_in    = 2;
+  string pair_id = 1;
+  string token_in = 2;
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 message QueryAllLimitOrderTrancheResponse {
-  repeated LimitOrderTranche                      limit_order_tranche = 1 [(gogoproto.nullable) = true];
-           cosmos.base.query.v1beta1.PageResponse pagination        = 2;
+  repeated LimitOrderTranche limit_order_tranche = 1 [(gogoproto.nullable) = true];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryAllUserDepositsRequest {
   string address = 1;
-	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
   bool include_pool_data = 3;
 }
 
 message QueryAllUserDepositsResponse {
   repeated DepositRecord deposits = 1 [(gogoproto.nullable) = true];
-	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryAllUserLimitOrdersRequest {
   string address = 1;
-	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 message QueryAllUserLimitOrdersResponse {
@@ -195,20 +192,20 @@ message QueryAllUserLimitOrdersResponse {
 }
 
 message QueryAllTickLiquidityRequest {
-  string                                pair_id     = 1;
-  string                                token_in    = 2;
+  string pair_id = 1;
+  string token_in = 2;
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 message QueryAllTickLiquidityResponse {
-  repeated TickLiquidity                          tick_liquidity = 1 [(gogoproto.nullable) = true];
-           cosmos.base.query.v1beta1.PageResponse pagination    = 2;
+  repeated TickLiquidity tick_liquidity = 1 [(gogoproto.nullable) = true];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryGetInactiveLimitOrderTrancheRequest {
-  string pair_id     = 1;
-  string token_in    = 2;
-  int64  tick_index  = 3;
+  string pair_id = 1;
+  string token_in = 2;
+  int64 tick_index = 3;
   string tranche_key = 4;
 }
 
@@ -221,26 +218,26 @@ message QueryAllInactiveLimitOrderTrancheRequest {
 }
 
 message QueryAllInactiveLimitOrderTrancheResponse {
-  repeated LimitOrderTranche                      inactive_limit_order_tranche = 1 [(gogoproto.nullable) = true];
-           cosmos.base.query.v1beta1.PageResponse pagination                = 2;
+  repeated LimitOrderTranche inactive_limit_order_tranche = 1 [(gogoproto.nullable) = true];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryAllPoolReservesRequest {
-  string                                pair_id     = 1;
-  string                                token_in    = 2;
+  string pair_id = 1;
+  string token_in = 2;
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 message QueryAllPoolReservesResponse {
-  repeated PoolReserves                           pool_reserves = 1 [(gogoproto.nullable) = true];
-           cosmos.base.query.v1beta1.PageResponse pagination   = 2;
+  repeated PoolReserves pool_reserves = 1 [(gogoproto.nullable) = true];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryGetPoolReservesRequest {
-  string pair_id    = 1;
-  string token_in   = 2;
-  int64  tick_index = 3;
-  uint64 fee       = 4;
+  string pair_id = 1;
+  string token_in = 2;
+  int64 tick_index = 3;
+  uint64 fee = 4;
 }
 
 message QueryGetPoolReservesResponse {
@@ -248,54 +245,97 @@ message QueryGetPoolReservesResponse {
 }
 
 message QueryEstimateMultiHopSwapRequest {
-           string        creator        = 1;
-           string        receiver       = 2;
-  repeated MultiHopRoute routes         = 3;
-           string        amount_in       = 4 [(gogoproto.moretags) = "yaml:\"amount_in\""      , (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false, (gogoproto.jsontag) = "amount_in"      ];
-  string        exit_limit_price = 5 [(gogoproto.moretags) = "yaml:\"exit_limit_price\"", (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec", (gogoproto.nullable) = false, (gogoproto.jsontag) = "exit_limit_price"];
-  
-  // If pickBestRoute == true then all routes are run and the route with the best price is chosen
-  // otherwise, the first succesful route is used.
+  string creator = 1;
+  string receiver = 2;
+  repeated MultiHopRoute routes = 3;
+  string amount_in = 4 [
+    (gogoproto.moretags) = "yaml:\"amount_in\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amount_in"
+  ];
+  string exit_limit_price = 5 [
+    (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "exit_limit_price"
+  ];
+
+  // If pickBestRoute == true then all routes are run and the route with the
+  // best price is chosen otherwise, the first succesful route is used.
   bool pick_best_route = 6;
 }
 
 message QueryEstimateMultiHopSwapResponse {
-  cosmos.base.v1beta1.Coin coin_out = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "coin_out"];
+  cosmos.base.v1beta1.Coin coin_out = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "coin_out"
+  ];
 }
 
 message QueryEstimatePlaceLimitOrderRequest {
-  string         creator          = 1;
-  string         receiver         = 2;
-  string         token_in          = 3;
-  string         token_out         = 4;
-  int64          tick_index_in_to_out = 5;
-  string         amount_in         = 6 [(gogoproto.moretags) = "yaml:\"amount_in\"", (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false, (gogoproto.jsontag) = "amount_in"];
-  LimitOrderType order_type        = 7;
-  
+  string creator = 1;
+  string receiver = 2;
+  string token_in = 3;
+  string token_out = 4;
+  int64 tick_index_in_to_out = 5;
+  string amount_in = 6 [
+    (gogoproto.moretags) = "yaml:\"amount_in\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "amount_in"
+  ];
+  LimitOrderType order_type = 7;
+
   // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
-  google.protobuf.Timestamp expiration_time = 8 [(gogoproto.stdtime)  = true                   , (gogoproto.nullable)   = true                                    ] ;
-  string                    maxAmount_out   = 9 [(gogoproto.moretags) = "yaml:\"max_amount_out\"", (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = true, (gogoproto.jsontag) = "max_amount_out"];
+  google.protobuf.Timestamp expiration_time = 8 [
+    (gogoproto.stdtime) = true,
+    (gogoproto.nullable) = true
+  ];
+  string maxAmount_out = 9 [
+    (gogoproto.moretags) = "yaml:\"max_amount_out\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = true,
+    (gogoproto.jsontag) = "max_amount_out"
+  ];
 }
 
 message QueryEstimatePlaceLimitOrderResponse {
-  
   // Total amount of coin used for the limit order
-  // You can derive makerLimitInCoin using the equation: totalInCoin = swapInCoin + makerLimitInCoin
-  cosmos.base.v1beta1.Coin total_in_coin = 1 [(gogoproto.moretags) = "yaml:\"total_in_coin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "total_in_coin"];
-  
+  // You can derive makerLimitInCoin using the equation: totalInCoin =
+  // swapInCoin + makerLimitInCoin
+  cosmos.base.v1beta1.Coin total_in_coin = 1 [
+    (gogoproto.moretags) = "yaml:\"total_in_coin\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "total_in_coin"
+  ];
+
   // Total amount of the token in that was immediately swapped for swapOutCoin
-  cosmos.base.v1beta1.Coin swap_in_coin = 2 [(gogoproto.moretags) = "yaml:\"swap_in_coin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "swap_in_coin"];
-  
+  cosmos.base.v1beta1.Coin swap_in_coin = 2 [
+    (gogoproto.moretags) = "yaml:\"swap_in_coin\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "swap_in_coin"
+  ];
+
   // Total amount of coin received from the taker portion of the limit order
-  // This is the amount of coin immediately available in the users account after executing the
-  // limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
-  cosmos.base.v1beta1.Coin swap_out_coin = 3 [(gogoproto.moretags) = "yaml:\"swap_out_coin\"", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin", (gogoproto.jsontag) = "swap_out_coin"];
+  // This is the amount of coin immediately available in the users account after
+  // executing the limit order. It does not include any future proceeds from the
+  // maker portion which will have withdrawn in the future
+  cosmos.base.v1beta1.Coin swap_out_coin = 3 [
+    (gogoproto.moretags) = "yaml:\"swap_out_coin\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "swap_out_coin"
+  ];
 }
 
 message QueryPoolRequest {
-  string pair_id    = 1;
-  int64  tick_index = 2;
-  uint64 fee       = 3;
+  string pair_id = 1;
+  int64 tick_index = 2;
+  uint64 fee = 3;
 }
 
 message QueryPoolByIDRequest {
@@ -305,7 +345,6 @@ message QueryPoolByIDRequest {
 message QueryPoolResponse {
   Pool pool = 1 [(gogoproto.nullable) = true];
 }
-
 
 message QueryGetPoolMetadataRequest {
   uint64 id = 1;
@@ -320,9 +359,8 @@ message QueryAllPoolMetadataRequest {
 }
 
 message QueryAllPoolMetadataResponse {
-  repeated PoolMetadata                           pool_metadata = 1 [(gogoproto.nullable) = false];
-           cosmos.base.query.v1beta1.PageResponse pagination   = 2;
+  repeated PoolMetadata pool_metadata = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // this line is used by starport scaffolding # 3
-

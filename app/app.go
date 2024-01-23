@@ -24,6 +24,8 @@ import (
 	v030 "github.com/neutron-org/neutron/v2/app/upgrades/v0.3.0"
 	v044 "github.com/neutron-org/neutron/v2/app/upgrades/v0.4.4"
 	v200 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.0"
+	v202 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.2"
+
 	"github.com/neutron-org/neutron/v2/x/cron"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -93,6 +95,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcporttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
@@ -165,7 +168,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -621,7 +624,7 @@ func New(
 	adminRouterLegacy.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
-		AddRoute(ibchost.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	app.AdminmoduleKeeper = *adminmodulekeeper.NewKeeper(
 		appCodec,
