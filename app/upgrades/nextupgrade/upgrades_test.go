@@ -39,15 +39,15 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 		app = suite.GetNeutronZoneApp(suite.ChainA)
 		ctx = suite.ChainA.GetContext()
 	)
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "nextupgrade",
+		Height: 100,
+	}
 
 	feeParams := feeburnertypes.NewParams(feeburnertypes.DefaultNeutronDenom, treasuryAddress)
 	suite.Require().NoError(app.FeeBurnerKeeper.SetParams(ctx, feeParams))
 
-	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
-		Info:   "ads",
-		Height: 100,
-	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
 
 	// get the auction module's params
