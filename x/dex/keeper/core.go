@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -11,7 +12,6 @@ import (
 	"github.com/neutron-org/neutron/v2/utils"
 	math_utils "github.com/neutron-org/neutron/v2/utils/math"
 	"github.com/neutron-org/neutron/v2/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v2/x/dex/utils"
 )
 
 // NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into math.Ints.
@@ -264,7 +264,7 @@ func (k Keeper) MultiHopSwapCore(
 	if len(routeErrors) == len(routes) {
 		// All routes have failed
 
-		allErr := dexutils.JoinErrors(types.ErrAllMultiHopRoutesFailed, routeErrors...)
+		allErr := errors.Join(append([]error{types.ErrAllMultiHopRoutesFailed}, routeErrors...)...)
 
 		return sdk.Coin{}, allErr
 	}
