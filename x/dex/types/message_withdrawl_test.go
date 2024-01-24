@@ -7,117 +7,117 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v2/testutil/common/sample"
-	. "github.com/neutron-org/neutron/v2/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 func TestMsgWithdrawal_ValidateBasic(t *testing.T) {
 	tests := []struct {
 		name string
-		msg  MsgWithdrawal
+		msg  dextypes.MsgWithdrawal
 		err  error
 	}{
 		{
 			name: "invalid creator",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         "invalid_address",
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "invalid receiver",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        "invalid_address",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "invalid fee indexes length",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "invalid tick indexes length",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "invalid shares to remove length",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []math.Int{},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "no withdraw specs",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				SharesToRemove:  []math.Int{},
 			},
-			err: ErrZeroWithdraw,
+			err: dextypes.ErrZeroWithdraw,
 		},
 		{
 			name: "no withdraw specs",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []math.Int{math.ZeroInt()},
 			},
-			err: ErrZeroWithdraw,
+			err: dextypes.ErrZeroWithdraw,
 		},
 		{
 			name: "invalid tick + fee upper",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{3},
 				TickIndexesAToB: []int64{559678},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: ErrTickOutsideRange,
+			err: dextypes.ErrTickOutsideRange,
 		},
 		{
 			name: "invalid tick + fee lower",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{50},
 				TickIndexesAToB: []int64{-559631},
 				SharesToRemove:  []math.Int{math.OneInt()},
 			},
-			err: ErrTickOutsideRange,
+			err: dextypes.ErrTickOutsideRange,
 		},
 		{
 			name: "valid msg",
-			msg: MsgWithdrawal{
+			msg: dextypes.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},

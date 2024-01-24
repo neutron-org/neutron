@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v2/testutil/common/sample"
-	. "github.com/neutron-org/neutron/v2/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
@@ -15,12 +15,12 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 	ONEINT := math.OneInt()
 	tests := []struct {
 		name string
-		msg  MsgPlaceLimitOrder
+		msg  dextypes.MsgPlaceLimitOrder
 		err  error
 	}{
 		{
 			name: "invalid creator",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          "invalid_address",
 				Receiver:         sample.AccAddress(),
 				TokenIn:          "TokenA",
@@ -28,11 +28,11 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TickIndexInToOut: 0,
 				AmountIn:         math.OneInt(),
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "invalid receiver",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         "invalid_address",
 				TokenIn:          "TokenA",
@@ -40,11 +40,11 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TickIndexInToOut: 0,
 				AmountIn:         math.OneInt(),
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "invalid zero limit order",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
 				TokenIn:          "TokenA",
@@ -52,11 +52,11 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TickIndexInToOut: 0,
 				AmountIn:         math.ZeroInt(),
 			},
-			err: ErrZeroLimitOrder,
+			err: dextypes.ErrZeroLimitOrder,
 		},
 		{
 			name: "zero maxOut",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
 				TokenIn:          "TokenA",
@@ -64,13 +64,13 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TickIndexInToOut: 0,
 				AmountIn:         math.OneInt(),
 				MaxAmountOut:     &ZEROINT,
-				OrderType:        LimitOrderType_FILL_OR_KILL,
+				OrderType:        dextypes.LimitOrderType_FILL_OR_KILL,
 			},
-			err: ErrZeroMaxAmountOut,
+			err: dextypes.ErrZeroMaxAmountOut,
 		},
 		{
 			name: "max out with maker order",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
 				TokenIn:          "TokenA",
@@ -78,39 +78,39 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TickIndexInToOut: 0,
 				AmountIn:         math.OneInt(),
 				MaxAmountOut:     &ONEINT,
-				OrderType:        LimitOrderType_GOOD_TIL_CANCELLED,
+				OrderType:        dextypes.LimitOrderType_GOOD_TIL_CANCELLED,
 			},
-			err: ErrInvalidMaxAmountOutForMaker,
+			err: dextypes.ErrInvalidMaxAmountOutForMaker,
 		},
 		{
 			name: "tick outside range upper",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 700_000,
 				AmountIn:         math.OneInt(),
-				OrderType:        LimitOrderType_GOOD_TIL_CANCELLED,
+				OrderType:        dextypes.LimitOrderType_GOOD_TIL_CANCELLED,
 			},
-			err: ErrTickOutsideRange,
+			err: dextypes.ErrTickOutsideRange,
 		},
 		{
 			name: "tick outside range lower",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
 				TokenIn:          "TokenA",
 				TokenOut:         "TokenB",
 				TickIndexInToOut: -600_000,
 				AmountIn:         math.OneInt(),
-				OrderType:        LimitOrderType_GOOD_TIL_CANCELLED,
+				OrderType:        dextypes.LimitOrderType_GOOD_TIL_CANCELLED,
 			},
-			err: ErrTickOutsideRange,
+			err: dextypes.ErrTickOutsideRange,
 		},
 		{
 			name: "valid msg",
-			msg: MsgPlaceLimitOrder{
+			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
 				TokenIn:          "TokenA",

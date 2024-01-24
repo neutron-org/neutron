@@ -402,6 +402,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	}
 
 	for i, tt := range tests {
+		tt := tt
 		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
 			suite.SetupTest()
 
