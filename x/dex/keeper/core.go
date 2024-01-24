@@ -321,7 +321,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	var pairID *types.PairID
 	pairID, err = types.NewPairIDFromUnsorted(tokenIn, tokenOut)
 	if err != nil {
-		return
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
 	amountLeft, totalIn := amountIn, math.ZeroInt()
@@ -333,7 +333,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		var limitPrice math_utils.PrecDec
 		limitPrice, err = types.CalcPrice(tickIndexInToOut)
 		if err != nil {
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 
 		var orderFilled bool
@@ -345,12 +345,12 @@ func (k Keeper) PlaceLimitOrderCore(
 			&limitPrice,
 		)
 		if err != nil {
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 
 		if orderType.IsFoK() && !orderFilled {
 			err = types.ErrFoKLimitOrderNotFilled
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 
 		totalIn = swapInCoin.Amount
@@ -364,7 +364,7 @@ func (k Keeper) PlaceLimitOrderCore(
 				sdk.Coins{swapOutCoin},
 			)
 			if err != nil {
-				return
+				return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 			}
 		}
 	}
@@ -381,7 +381,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		orderType,
 	)
 	if err != nil {
-		return
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
 	trancheKey = placeTranche.Key.TrancheKey
@@ -425,7 +425,7 @@ func (k Keeper) PlaceLimitOrderCore(
 			sdk.Coins{totalInCoin},
 		)
 		if err != nil {
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 	}
 

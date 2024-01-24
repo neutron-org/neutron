@@ -144,7 +144,7 @@ func TestSubmitTx(t *testing.T) {
 	require.ErrorContains(t, err, "MsgSubmitTx contains more messages than allowed")
 	submitMsg.Msgs = []*codectypes.Any{&cosmosMsg}
 
-	portID := "icacontroller-" + testutil.TestOwnerAddress + ".ica0"
+	portID := "icacontroller-" + testutil.TestOwnerAddress + ICAId
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return("", false)
 	resp, err = icak.SubmitTx(goCtx, &submitMsg)
