@@ -17,7 +17,7 @@ BUILDDIR ?= $(CURDIR)/build
 HTTPS_GIT := https://github.com/neutron-org/neutron.git
 
 GO_SYSTEM_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1-2)
-REQUIRE_GO_VERSION = 1.20
+REQUIRE_GO_VERSION = $(GO_VERSION)
 
 export GO111MODULE = on
 
