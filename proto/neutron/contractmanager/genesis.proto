@@ -2,16 +2,16 @@ syntax = "proto3";
 package neutron.contractmanager;
 
 import "gogoproto/gogo.proto";
-import "neutron/contractmanager/params.proto";
 import "neutron/contractmanager/failure.proto";
+import "neutron/contractmanager/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/neutron-org/neutron/v2/x/contractmanager/types";
 
 // GenesisState defines the contractmanager module's genesis state.
 message GenesisState {
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
   // List of the contract failures
-  repeated Failure failures_list = 2 [ (gogoproto.nullable) = false ];
+  repeated Failure failures_list = 2 [(gogoproto.nullable) = false];
   // this line is used by starport scaffolding # genesis/proto/state
 }

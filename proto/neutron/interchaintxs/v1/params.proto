@@ -1,8 +1,8 @@
 syntax = "proto3";
 package neutron.interchaintxs.v1;
 
-import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v2/x/interchaintxs/types";
 
@@ -12,5 +12,5 @@ message Params {
   // Defines maximum amount of messages to be passed in MsgSubmitTx
   uint64 msg_submit_tx_max_messages = 1;
   // Defines a minimum fee required to register interchain account
-  repeated cosmos.base.v1beta1.Coin register_fee = 2 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin register_fee = 2 [(gogoproto.nullable) = false];
 }

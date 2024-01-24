@@ -1,8 +1,8 @@
 syntax = "proto3";
 package osmosis.tokenfactory.v1beta1;
 
-import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v2/x/tokenfactory/types";
 
@@ -13,5 +13,5 @@ message DenomAuthorityMetadata {
   option (gogoproto.equal) = true;
 
   // Can be empty for no admin, or a valid osmosis address
-  string Admin = 1 [ (gogoproto.moretags) = "yaml:\"admin\"" ];
+  string Admin = 1 [(gogoproto.moretags) = "yaml:\"admin\""];
 }

@@ -202,13 +202,13 @@ proto-gen:
 proto-swagger-gen:
 	@$(protoImage) sh ./scripts/protoc-swagger-gen.sh
 
-PROTO_FORMATTER_IMAGE=tendermintdev/docker-build-proto@sha256:aabcfe2fc19c31c0f198d4cd26393f5e5ca9502d7ea3feafbfe972448fee7cae
+PROTO_FORMATTER_IMAGE=bufbuild/buf:1.28.1
 
 proto-format:
 	@echo "Formatting Protobuf files"
 	$(DOCKER) run --rm -v $(CURDIR):/workspace \
 	--workdir /workspace $(PROTO_FORMATTER_IMAGE) \
-	find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
+	 format proto -w
 
 
 .PHONY: all install install-debug \
@@ -256,3 +256,11 @@ openapi:
 mocks:
 	@echo "Regenerate mocks..."
 	@go generate ./...
+
+format-all: format proto-format
+
+check-proto-format:
+	@echo "Formatting Protobuf files"
+		$(DOCKER) run --rm -v $(CURDIR):/workspace \
+		--workdir /workspace $(PROTO_FORMATTER_IMAGE) \
+		format proto -d --exit-code

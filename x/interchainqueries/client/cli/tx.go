@@ -49,9 +49,6 @@ func RemoveInterchainQueryCmd() *cobra.Command {
 			}
 
 			msg := types.NewMsgRemoveInterchainQuery(sender, queryID)
-			if err = msg.ValidateBasic(); err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
@@ -90,10 +87,6 @@ func SubmitQueryResultCmd() *cobra.Command {
 			msg := types.MsgSubmitQueryResult{QueryId: queryID, Sender: string(sender)}
 			if err := json.Unmarshal(result, &msg.Result); err != nil {
 				return fmt.Errorf("failed to unmarshal query result: %w", err)
-			}
-
-			if err = msg.ValidateBasic(); err != nil {
-				return err
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)

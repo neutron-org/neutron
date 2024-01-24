@@ -1,9 +1,9 @@
 syntax = "proto3";
 package neutron.interchaintxs.v1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "neutron/interchaintxs/v1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v2/x/interchaintxs/types";
@@ -14,9 +14,10 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/interchaintxs/params";
   }
-  rpc InterchainAccountAddress(QueryInterchainAccountAddressRequest)
-      returns (QueryInterchainAccountAddressResponse) {
-    option (google.api.http).get = "/neutron/interchaintxs/{owner_address}/{interchain_account_id}/{connection_id}/interchain_account_address";
+  rpc InterchainAccountAddress(QueryInterchainAccountAddressRequest) returns (QueryInterchainAccountAddressResponse) {
+    option (google.api.http).get =
+      "/neutron/interchaintxs/{owner_address}/{interchain_account_id}/"
+      "{connection_id}/interchain_account_address";
   }
 }
 
@@ -26,7 +27,7 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryInterchainAccountAddressRequest {
