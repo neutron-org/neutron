@@ -5,10 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	cmttypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
-	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
 	neutronapp "github.com/neutron-org/neutron/v2/app"
@@ -32,15 +29,6 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 }
 
 func (s *CoreHelpersTestSuite) SetupTest() {
-	coordinator := ibctesting.NewCoordinator(s.T(), 2)
-	chainID := ibctesting.GetChainID(1)
-
-	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
-	coordinator.Chains[chainID] = ibctesting.NewTestChain(s.T(), coordinator, chainID)
-	providerChain := coordinator.GetChain(chainID)
-
-	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
-
 	app := testutil.Setup(s.T())
 	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
 
@@ -55,10 +43,10 @@ func (s *CoreHelpersTestSuite) SetupTest() {
 
 	s.app = app.(*neutronapp.App)
 	s.ctx = ctx
-	s.alice = sdk.AccAddress([]byte("alice"))
-	s.bob = sdk.AccAddress([]byte("bob"))
-	s.carol = sdk.AccAddress([]byte("carol"))
-	s.dan = sdk.AccAddress([]byte("dan"))
+	s.alice = []byte("alice")
+	s.bob = []byte("bob")
+	s.carol = []byte("carol")
+	s.dan = []byte("dan")
 }
 
 func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB int) {

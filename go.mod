@@ -197,7 +197,6 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v1.0.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.0
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.0
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.47.7-0.20240121171609-bc76fa847843

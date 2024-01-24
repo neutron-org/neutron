@@ -287,7 +287,6 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 
-	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chainID = ibctesting.GetChainID(3)
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
