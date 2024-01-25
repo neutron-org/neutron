@@ -26,7 +26,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Failure message contains information about ACK failures and can be used to
 // replay ACK in case of requirement.
-// Note that Failure means that sudo handler to cosmwasm contract failed for some reason
+// Note that Failure means that sudo handler to cosmwasm contract failed for
+// some reason
 type Failure struct {
 	// Address of the failed contract
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
