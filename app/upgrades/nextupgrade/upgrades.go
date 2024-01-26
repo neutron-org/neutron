@@ -40,7 +40,8 @@ func CreateUpgradeHandler(
 // Sometime long ago we decreased SlashWindow to 36k on pion-1 testnet (the param is untouched on neutron-1 mainnet),
 // from that time MissedBlockCounter is wrong
 // We need to set to a proper value.
-// Proper value is: MissedBlocksCounter = sum_of_missed_blocks_in_bitmap(bitmap)
+// Proper value is: MissedBlocksCounter = sum_of_missed_blocks_in_bitmap(bitmap).
+// Since the param is untouched on neutron-1 mainnet, this method does not change anything during the migration on mainnet.
 func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) {
 	ctx.Logger().Info("Starting recalculating MissedBlocksCounter for validators...")
 	signingInfos := make([]slashingtypes.ValidatorSigningInfo, 0)
