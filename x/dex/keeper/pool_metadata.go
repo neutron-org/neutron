@@ -42,6 +42,26 @@ func (k Keeper) GetPoolMetadataByDenom(
 	return pm, nil
 }
 
+func (k Keeper) initializePoolMetadata(
+	ctx sdk.Context,
+	pairID *types.PairID,
+	centerTickIndexNormalized int64,
+	fee uint64,
+) uint64 {
+	poolID := k.GetPoolCount(ctx)
+	poolMetadata := types.PoolMetadata{
+		Id:     poolID,
+		PairId: pairID,
+		Tick:   centerTickIndexNormalized,
+		Fee:    fee,
+	}
+
+	k.SetPoolMetadata(ctx, poolMetadata)
+
+	k.incrementPoolCount(ctx)
+	return poolID
+}
+
 // RemovePoolMetadata removes a poolMetadata from the store
 func (k Keeper) RemovePoolMetadata(ctx sdk.Context, id uint64) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PoolMetadataKeyPrefix))
