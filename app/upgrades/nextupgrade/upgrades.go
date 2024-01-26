@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/neutron-org/neutron/v2/app/upgrades"
@@ -29,9 +30,47 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("failed to migrate ICS outstanding downtime: %w", err)
 		}
 
+		recalculateSlashingMissedBlocksCounter(ctx, keepers)
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
+}
+
+// Sometime long ago we decreased SlashWindow to 36k, from that time MissedBlockCounter is wrong
+// We need to set to a proper value.
+// Proper value is: MissedBlocksCounter = sum_of_missed_blocks_in_bitmap(bitmap)
+func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) {
+	ctx.Logger().Info("Starting recalculating MissedBlocksCounter for validators...")
+	signingInfos := make([]slashingtypes.ValidatorSigningInfo, 0)
+	consAddresses := make([]sdk.ConsAddress, 0)
+
+	keepers.SlashingKeeper.IterateValidatorSigningInfos(ctx, func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) bool {
+		signingInfos = append(signingInfos, info)
+		consAddresses = append(consAddresses, addr)
+		return false
+	})
+
+	for i, info := range signingInfos {
+		ctx.Logger().Info("Validator", info.Address, "old MissedBlocksCounter", info.MissedBlocksCounter)
+
+		missedBlocksForValidator := int64(0)
+
+		keepers.SlashingKeeper.IterateValidatorMissedBlockBitArray(ctx, consAddresses[i], func(index int64, missed bool) bool {
+			if missed {
+				missedBlocksForValidator++
+			}
+			return false
+		})
+
+		info.MissedBlocksCounter = missedBlocksForValidator
+
+		ctx.Logger().Info("Validator", info.Address, "new MissedBlocksCounter", info.MissedBlocksCounter)
+
+		keepers.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddresses[i], info)
+	}
+
+	ctx.Logger().Info("Finished recalculating MissedBlocksCounter for validators")
 }
 
 func migrateICSOutstandingDowntime(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
