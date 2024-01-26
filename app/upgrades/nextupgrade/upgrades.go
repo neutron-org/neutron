@@ -37,7 +37,8 @@ func CreateUpgradeHandler(
 	}
 }
 
-// Sometime long ago we decreased SlashWindow to 36k, from that time MissedBlockCounter is wrong
+// Sometime long ago we decreased SlashWindow to 36k on pion-1 testnet (the param is untouched on neutron-1 mainnet),
+// from that time MissedBlockCounter is wrong
 // We need to set to a proper value.
 // Proper value is: MissedBlocksCounter = sum_of_missed_blocks_in_bitmap(bitmap)
 func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) {
