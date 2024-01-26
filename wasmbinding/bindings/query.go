@@ -3,9 +3,9 @@ package bindings
 import (
 	"cosmossdk.io/math"
 	"encoding/json"
-	utils_math "github.com/neutron-org/neutron/utils/math"
+	utils_math "github.com/neutron-org/neutron/v2/utils/math"
 	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 	"time"
 
 	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"

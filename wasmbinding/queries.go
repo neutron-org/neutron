@@ -8,8 +8,7 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 	"time"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"

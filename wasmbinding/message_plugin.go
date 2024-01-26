@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	dexkeeper "github.com/neutron-org/neutron/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	dexkeeper "github.com/neutron-org/neutron/v2/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 	"time"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
@@ -105,56 +105,56 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		)
 		return nil, nil, errors.Wrap(err, "failed to decode incoming custom cosmos message")
 	}
-	    // Dispatch the message based on its type by checking each possible field
-		if contractMsg.SubmitTx != nil {
-			return m.submitTx(ctx, contractAddr, contractMsg.SubmitTx)
-		}
-		if contractMsg.RegisterInterchainAccount != nil {
-			return m.registerInterchainAccount(ctx, contractAddr, contractMsg.RegisterInterchainAccount)
-		}
-		if contractMsg.RegisterInterchainQuery != nil {
-			return m.registerInterchainQuery(ctx, contractAddr, contractMsg.RegisterInterchainQuery)
-		}
-		if contractMsg.UpdateInterchainQuery != nil {
-			return m.updateInterchainQuery(ctx, contractAddr, contractMsg.UpdateInterchainQuery)
-		}
-		if contractMsg.RemoveInterchainQuery != nil {
-			return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
-		}
-		if contractMsg.IBCTransfer != nil {
-			return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
-		}
-		if contractMsg.SubmitAdminProposal != nil {
-			return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
-		}
-		if contractMsg.CreateDenom != nil {
-			return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
-		}
-		if contractMsg.MintTokens != nil {
-			return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
-		}
-		if contractMsg.SetBeforeSendHook != nil {
-			return m.setBeforeSendHook(ctx, contractAddr, contractMsg.SetBeforeSendHook)
-		}
-		if contractMsg.ChangeAdmin != nil {
-			return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
-		}
-		if contractMsg.BurnTokens != nil {
-			return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
-		}
-		if contractMsg.AddSchedule != nil {
-			return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
-		}
-		if contractMsg.RemoveSchedule != nil {
-			return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
-		}
-		if contractMsg.ResubmitFailure != nil {
-			return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
-		}
-		if contractMsg.Dex != nil {
-			data, err := m.dispatchDexMsg(ctx, contractAddr, *(contractMsg.Dex))
-			return nil, data, err
-		}
+
+	// Dispatch the message based on its type by checking each possible field
+	if contractMsg.SubmitTx != nil {
+		return m.submitTx(ctx, contractAddr, contractMsg.SubmitTx)
+	}
+	if contractMsg.RegisterInterchainAccount != nil {
+		return m.registerInterchainAccount(ctx, contractAddr, contractMsg.RegisterInterchainAccount)
+	}
+	if contractMsg.RegisterInterchainQuery != nil {
+		return m.registerInterchainQuery(ctx, contractAddr, contractMsg.RegisterInterchainQuery)
+	}
+	if contractMsg.UpdateInterchainQuery != nil {
+		return m.updateInterchainQuery(ctx, contractAddr, contractMsg.UpdateInterchainQuery)
+	}
+	if contractMsg.RemoveInterchainQuery != nil {
+		return m.removeInterchainQuery(ctx, contractAddr, contractMsg.RemoveInterchainQuery)
+	}
+	if contractMsg.IBCTransfer != nil {
+		return m.ibcTransfer(ctx, contractAddr, *contractMsg.IBCTransfer)
+	}
+	if contractMsg.SubmitAdminProposal != nil {
+		return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
+	}
+	if contractMsg.CreateDenom != nil {
+		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
+	}
+	if contractMsg.MintTokens != nil {
+		return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
+	}
+	if contractMsg.SetBeforeSendHook != nil {
+		return m.setBeforeSendHook(ctx, contractAddr, contractMsg.SetBeforeSendHook)
+	}
+	if contractMsg.ChangeAdmin != nil {
+		return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
+	}
+	if contractMsg.BurnTokens != nil {
+		return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
+	}
+	if contractMsg.AddSchedule != nil {
+		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
+	}
+	if contractMsg.RemoveSchedule != nil {
+		return m.removeSchedule(ctx, contractAddr, contractMsg.RemoveSchedule)
+	}
+	if contractMsg.ResubmitFailure != nil {
+		return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
+	}
+	if contractMsg.Dex != nil {
+		data, err := m.dispatchDexMsg(ctx, contractAddr, *(contractMsg.Dex))
+		return nil, data, err
 	}
 
 	// If none of the conditions are met, forward the message to the wrapped handler

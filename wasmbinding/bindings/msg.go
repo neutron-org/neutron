@@ -6,7 +6,7 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v2/x/dex/types"
 	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/v2/x/transfer/types"
