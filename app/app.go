@@ -168,7 +168,6 @@ import (
 	blocksdkabci "github.com/skip-mev/block-sdk/abci"
 	blocksdk "github.com/skip-mev/block-sdk/block"
 	"github.com/skip-mev/block-sdk/x/auction"
-	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 	rewardsaddressprovider "github.com/skip-mev/block-sdk/x/auction/rewards"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
@@ -346,10 +345,6 @@ type App struct {
 	// Custom checkTx handler -> this check-tx is used to simulate txs that are
 	// wrapped in a bid-tx
 	checkTxHandler checktx.CheckTx
-
-	// MEVLane is used as a dependency for the x/auction module's antehandler. This references th lane in the app's
-	// LaneMempool.
-	MEVLane auctionante.MEVLane
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -997,7 +992,7 @@ func New(
 			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
 			AuctionKeeper:     app.AuctionKeeper,
 			TxEncoder:         app.GetTxConfig().TxEncoder(),
-			MEVLane:           app.MEVLane,
+			MEVLane:           mevLane,
 		},
 		app.Logger(),
 	)
@@ -1012,8 +1007,6 @@ func New(
 	}
 	baseLane.WithOptions(opts...)
 	mevLane.WithOptions(opts...)
-
-	app.SetEndBlocker(app.EndBlocker)
 
 	// set the block-sdk prepare / process-proposal handlers
 	handler := blocksdkabci.NewProposalHandler(

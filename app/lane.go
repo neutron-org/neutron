@@ -51,8 +51,5 @@ func (app *App) CreateLanes() (*mev_lane.MEVLane, *blocksdkbase.BaseLane) {
 		factory.MatchHandler(),
 	)
 
-	// set the MEVLane used in the mev-ante-handler on the application
-	app.MEVLane = mevLane
-
 	return mevLane, baseLane
 }
