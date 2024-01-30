@@ -1016,7 +1016,11 @@ func New(
 		mempool,
 	)
 	app.SetPrepareProposal(handler.PrepareProposalHandler())
-	app.SetProcessProposal(handler.ProcessProposalHandler())
+
+	// we use a no-op ProcessProposal, this way, we accept all proposals in avoidance
+	// of liveness failures due to Prepare / Process inconsistency. In other words,
+	// this ProcessProposal always returns ACCEPT.
+	app.SetProcessProposal(baseapp.NoOpProcessProposal())
 
 	// block-sdk CheckTx handler
 	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
