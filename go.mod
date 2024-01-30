@@ -1,6 +1,8 @@
 module github.com/neutron-org/neutron/v2
 
-go 1.20
+go 1.21.1
+
+toolchain go1.21.6
 
 require (
 	cosmossdk.io/core v0.5.1
