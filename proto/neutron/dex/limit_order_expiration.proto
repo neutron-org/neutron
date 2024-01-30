@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/neutron-org/neutron/v2/x/dex/types";
 
 message LimitOrderExpiration {
-  // see limitOrderTranche.proto for details on goodTilDate
+  // see limitOrderTranche.proto for details on expiration_time
   google.protobuf.Timestamp expiration_time = 1 [
     (gogoproto.stdtime) = true,
     (gogoproto.nullable) = false

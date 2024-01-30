@@ -9,11 +9,17 @@ import (
 	"github.com/neutron-org/neutron/v2/x/interchaintxs/types"
 )
 
+const (
+	ICAId        = "id_1"
+	ContractAddr = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
+)
+
 func TestICAOwner(t *testing.T) {
 	var (
 		contractAddress     string
 		interchainAccountID string
 	)
+
 	cfg := app.GetDefaultConfig()
 	cfg.Seal()
 
@@ -26,21 +32,21 @@ func TestICAOwner(t *testing.T) {
 		{
 			desc:                         "valid",
 			expectedErr:                  nil,
-			expectedStringRepresentation: "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh" + types.Delimiter + "id_1",
+			expectedStringRepresentation: ContractAddr + types.Delimiter + ICAId,
 			malleate: func() (types.ICAOwner, error) {
-				contractAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
-				interchainAccountID = "id_1"
+				contractAddress = ContractAddr
+				interchainAccountID = ICAId
 				return types.NewICAOwner(contractAddress, interchainAccountID)
 			},
 		},
 		{
 			desc:        "Delimiter in the middle of the interchain account id",
 			expectedErr: nil,
-			expectedStringRepresentation: "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh" + types.Delimiter +
-				("id_1" + types.Delimiter + "another_data"),
+			expectedStringRepresentation: ContractAddr + types.Delimiter +
+				(ICAId + types.Delimiter + "another_data"),
 			malleate: func() (types.ICAOwner, error) {
-				contractAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
-				interchainAccountID = "id_1" + types.Delimiter + "another_data"
+				contractAddress = ContractAddr
+				interchainAccountID = ICAId + types.Delimiter + "another_data"
 
 				portID := contractAddress + types.Delimiter + interchainAccountID
 
@@ -52,7 +58,7 @@ func TestICAOwner(t *testing.T) {
 			expectedErr: types.ErrInvalidAccountAddress,
 			malleate: func() (types.ICAOwner, error) {
 				contractAddress = "invalid_account_address"
-				interchainAccountID = "id_1"
+				interchainAccountID = ICAId
 				return types.NewICAOwner(contractAddress, interchainAccountID)
 			},
 		},

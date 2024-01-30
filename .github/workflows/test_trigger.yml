@@ -29,7 +29,7 @@ jobs:
           fi
       - name: Repository Dispatch
         if: ${{ env.CONTINUE == 'true' }}
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PAT_TOKEN }}
           repository: neutron-org/neutron-tests

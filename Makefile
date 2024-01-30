@@ -7,7 +7,8 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
-GO_VERSION=1.20.0
+GO_VERSION=1.21
+GOLANGCI_LINT_VERSION=v1.55.2
 BUILDDIR ?= $(CURDIR)/build
 
 # for dockerized protobuf tools
@@ -16,7 +17,7 @@ BUILDDIR ?= $(CURDIR)/build
 HTTPS_GIT := https://github.com/neutron-org/neutron.git
 
 GO_SYSTEM_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1-2)
-REQUIRE_GO_VERSION = 1.20
+REQUIRE_GO_VERSION = $(GO_VERSION)
 
 export GO111MODULE = on
 
@@ -177,12 +178,12 @@ test-sim-multi-seed-short: runsim
 ###############################################################################
 
 lint:
-	golangci-lint run --tests=false
+	golangci-lint run
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*_test.go" | xargs gofmt -d -s
 
 format:
 	@go install mvdan.cc/gofumpt@latest
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.1
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name "*.pb.go" -not -name "*.pb.gw.go" -not -name "*.pulsar.go" -not -path "./crypto/keys/secp256k1/*" | xargs gofumpt -w -l
 	golangci-lint run --fix
 	goimports -w -local github.com/neutron-org .

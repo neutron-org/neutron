@@ -36702,7 +36702,9 @@ paths:
                     replay ACK in case of requirement.
 
                     Note that Failure means that sudo handler to cosmwasm
-                    contract failed for some reason
+                    contract failed for
+
+                    some reason
               pagination:
                 type: object
                 properties:
@@ -37029,7 +37031,9 @@ paths:
                     replay ACK in case of requirement.
 
                     Note that Failure means that sudo handler to cosmwasm
-                    contract failed for some reason
+                    contract failed for
+
+                    some reason
               pagination:
                 type: object
                 properties:
@@ -37356,7 +37360,9 @@ paths:
                     replay ACK in case of requirement.
 
                     Note that Failure means that sudo handler to cosmwasm
-                    contract failed for some reason
+                    contract failed for
+
+                    some reason
               pagination:
                 type: object
                 properties:
@@ -38162,9 +38168,9 @@ paths:
         - name: pick_best_route
           description: >-
             If pickBestRoute == true then all routes are run and the route with
-            the best price is chosen
+            the
 
-            otherwise, the first succesful route is used.
+            best price is chosen otherwise, the first succesful route is used.
           in: query
           required: false
           type: boolean
@@ -38199,7 +38205,9 @@ paths:
                   Total amount of coin used for the limit order
 
                   You can derive makerLimitInCoin using the equation:
-                  totalInCoin = swapInCoin + makerLimitInCoin
+                  totalInCoin =
+
+                  swapInCoin + makerLimitInCoin
               swap_in_coin:
                 type: object
                 properties:
@@ -38238,9 +38246,11 @@ paths:
                   limit order
 
                   This is the amount of coin immediately available in the users
-                  account after executing the
+                  account after
 
-                  limit order. It does not include any future proceeds from the
+                  executing the limit order. It does not include any future
+                  proceeds from the
+
                   maker portion which will have withdrawn in the future
         default:
           description: An unexpected error response.
@@ -38348,18 +38358,17 @@ paths:
                     total_taker_denom:
                       type: string
                       title: >-
-                        GoodTilDate is represented as seconds since  January 1,
-                        year 1, 00:00:00.00 UTC
-                         LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                        LimitOrders with expiration_time set are valid as long
+                        as blockTime <= expiration_time
                     expiration_time:
                       type: string
                       format: date-time
                       title: >-
-                        JIT orders also use goodTilDate to handle deletion but
-                        represent a special case
+                        JIT orders also use expiration_time to handle deletion
+                        but represent a special case
 
-                        All JIT orders have a goodTilDate of 0 and an exception
-                        is made to still still treat these orders as live
+                        All JIT orders have a expiration_time of 0 and an
+                        exception is made to still treat these orders as live
 
                         Order deletion still functions the same and the orders
                         will be deleted at the end of the block
@@ -38507,18 +38516,17 @@ paths:
                   total_taker_denom:
                     type: string
                     title: >-
-                      GoodTilDate is represented as seconds since  January 1,
-                      year 1, 00:00:00.00 UTC
-                       LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                      LimitOrders with expiration_time set are valid as long as
+                      blockTime <= expiration_time
                   expiration_time:
                     type: string
                     format: date-time
                     title: >-
-                      JIT orders also use goodTilDate to handle deletion but
+                      JIT orders also use expiration_time to handle deletion but
                       represent a special case
 
-                      All JIT orders have a goodTilDate of 0 and an exception is
-                      made to still still treat these orders as live
+                      All JIT orders have a expiration_time of 0 and an
+                      exception is made to still treat these orders as live
 
                       Order deletion still functions the same and the orders
                       will be deleted at the end of the block
@@ -38564,7 +38572,7 @@ paths:
         - Query
   /neutron/dex/limit_order_tranche/{pair_id}/{token_in}:
     get:
-      summary: >-
+      summary: |-
         Queries a list of LimitOrderTranche items for a given pairID / TokenIn
         combination.
       operationId: NeutronDexLimitOrderTrancheAll
@@ -38603,18 +38611,17 @@ paths:
                     total_taker_denom:
                       type: string
                       title: >-
-                        GoodTilDate is represented as seconds since  January 1,
-                        year 1, 00:00:00.00 UTC
-                         LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                        LimitOrders with expiration_time set are valid as long
+                        as blockTime <= expiration_time
                     expiration_time:
                       type: string
                       format: date-time
                       title: >-
-                        JIT orders also use goodTilDate to handle deletion but
-                        represent a special case
+                        JIT orders also use expiration_time to handle deletion
+                        but represent a special case
 
-                        All JIT orders have a goodTilDate of 0 and an exception
-                        is made to still still treat these orders as live
+                        All JIT orders have a expiration_time of 0 and an
+                        exception is made to still treat these orders as live
 
                         Order deletion still functions the same and the orders
                         will be deleted at the end of the block
@@ -38770,18 +38777,17 @@ paths:
                   total_taker_denom:
                     type: string
                     title: >-
-                      GoodTilDate is represented as seconds since  January 1,
-                      year 1, 00:00:00.00 UTC
-                       LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                      LimitOrders with expiration_time set are valid as long as
+                      blockTime <= expiration_time
                   expiration_time:
                     type: string
                     format: date-time
                     title: >-
-                      JIT orders also use goodTilDate to handle deletion but
+                      JIT orders also use expiration_time to handle deletion but
                       represent a special case
 
-                      All JIT orders have a goodTilDate of 0 and an exception is
-                      made to still still treat these orders as live
+                      All JIT orders have a expiration_time of 0 and an
+                      exception is made to still treat these orders as live
 
                       Order deletion still functions the same and the orders
                       will be deleted at the end of the block
@@ -39764,19 +39770,18 @@ paths:
                         total_taker_denom:
                           type: string
                           title: >-
-                            GoodTilDate is represented as seconds since  January
-                            1, year 1, 00:00:00.00 UTC
-                             LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                            LimitOrders with expiration_time set are valid as
+                            long as blockTime <= expiration_time
                         expiration_time:
                           type: string
                           format: date-time
                           title: >-
-                            JIT orders also use goodTilDate to handle deletion
-                            but represent a special case
+                            JIT orders also use expiration_time to handle
+                            deletion but represent a special case
 
-                            All JIT orders have a goodTilDate of 0 and an
-                            exception is made to still still treat these orders
-                            as live
+                            All JIT orders have a expiration_time of 0 and an
+                            exception is made to still treat these orders as
+                            live
 
                             Order deletion still functions the same and the
                             orders will be deleted at the end of the block
@@ -44007,7 +44012,9 @@ paths:
                     type: string
                     title: >-
                       FeeCollectorAddress is the address where fees collected
-                      from denom creation are sent to
+                      from denom creation
+
+                      are sent to
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
               method.
@@ -70458,11 +70465,9 @@ definitions:
         title: >-
           Redacted error response of the sudo call. Full error is emitted as an
           event
-    title: >-
+    title: |-
       Failure message contains information about ACK failures and can be used to
-
       replay ACK in case of requirement.
-
       Note that Failure means that sudo handler to cosmwasm contract failed for
       some reason
   neutron.contractmanager.MsgUpdateParamsResponse:
@@ -70510,7 +70515,9 @@ definitions:
             replay ACK in case of requirement.
 
             Note that Failure means that sudo handler to cosmwasm contract
-            failed for some reason
+            failed for
+
+            some reason
       pagination:
         type: object
         properties:
@@ -70758,18 +70765,17 @@ definitions:
       total_taker_denom:
         type: string
         title: >-
-          GoodTilDate is represented as seconds since  January 1, year 1,
-          00:00:00.00 UTC
-           LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+          LimitOrders with expiration_time set are valid as long as blockTime <=
+          expiration_time
       expiration_time:
         type: string
         format: date-time
         title: >-
-          JIT orders also use goodTilDate to handle deletion but represent a
+          JIT orders also use expiration_time to handle deletion but represent a
           special case
 
-          All JIT orders have a goodTilDate of 0 and an exception is made to
-          still still treat these orders as live
+          All JIT orders have a expiration_time of 0 and an exception is made to
+          still treat these orders as live
 
           Order deletion still functions the same and the orders will be deleted
           at the end of the block
@@ -70894,10 +70900,12 @@ definitions:
           order
 
           This is the amount of coin immediately available in the users account
-          after executing the
+          after
 
-          limit order. It does not include any future proceeds from the maker
-          portion which will have withdrawn in the future
+          executing the limit order. It does not include any future proceeds
+          from the
+
+          maker portion which will have withdrawn in the future
   neutron.dex.MsgUpdateParamsResponse:
     type: object
     description: |-
@@ -71082,18 +71090,17 @@ definitions:
             total_taker_denom:
               type: string
               title: >-
-                GoodTilDate is represented as seconds since  January 1, year 1,
-                00:00:00.00 UTC
-                 LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                LimitOrders with expiration_time set are valid as long as
+                blockTime <= expiration_time
             expiration_time:
               type: string
               format: date-time
               title: >-
-                JIT orders also use goodTilDate to handle deletion but represent
-                a special case
+                JIT orders also use expiration_time to handle deletion but
+                represent a special case
 
-                All JIT orders have a goodTilDate of 0 and an exception is made
-                to still still treat these orders as live
+                All JIT orders have a expiration_time of 0 and an exception is
+                made to still treat these orders as live
 
                 Order deletion still functions the same and the orders will be
                 deleted at the end of the block
@@ -71157,18 +71164,17 @@ definitions:
             total_taker_denom:
               type: string
               title: >-
-                GoodTilDate is represented as seconds since  January 1, year 1,
-                00:00:00.00 UTC
-                 LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                LimitOrders with expiration_time set are valid as long as
+                blockTime <= expiration_time
             expiration_time:
               type: string
               format: date-time
               title: >-
-                JIT orders also use goodTilDate to handle deletion but represent
-                a special case
+                JIT orders also use expiration_time to handle deletion but
+                represent a special case
 
-                All JIT orders have a goodTilDate of 0 and an exception is made
-                to still still treat these orders as live
+                All JIT orders have a expiration_time of 0 and an exception is
+                made to still treat these orders as live
 
                 Order deletion still functions the same and the orders will be
                 deleted at the end of the block
@@ -71429,18 +71435,17 @@ definitions:
                 total_taker_denom:
                   type: string
                   title: >-
-                    GoodTilDate is represented as seconds since  January 1, year
-                    1, 00:00:00.00 UTC
-                     LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+                    LimitOrders with expiration_time set are valid as long as
+                    blockTime <= expiration_time
                 expiration_time:
                   type: string
                   format: date-time
                   title: >-
-                    JIT orders also use goodTilDate to handle deletion but
+                    JIT orders also use expiration_time to handle deletion but
                     represent a special case
 
-                    All JIT orders have a goodTilDate of 0 and an exception is
-                    made to still still treat these orders as live
+                    All JIT orders have a expiration_time of 0 and an exception
+                    is made to still treat these orders as live
 
                     Order deletion still functions the same and the orders will
                     be deleted at the end of the block
@@ -71620,9 +71625,8 @@ definitions:
 
           NOTE: The amount field is an Int which implements the custom method
           signatures required by gogoproto.
-        title: >-
+        title: |-
           Total amount of coin used for the limit order
-
           You can derive makerLimitInCoin using the equation: totalInCoin =
           swapInCoin + makerLimitInCoin
       swap_in_coin:
@@ -71657,10 +71661,12 @@ definitions:
           order
 
           This is the amount of coin immediately available in the users account
-          after executing the
+          after
 
-          limit order. It does not include any future proceeds from the maker
-          portion which will have withdrawn in the future
+          executing the limit order. It does not include any future proceeds
+          from the
+
+          maker portion which will have withdrawn in the future
   neutron.dex.QueryGetInactiveLimitOrderTrancheResponse:
     type: object
     properties:
@@ -71691,18 +71697,17 @@ definitions:
           total_taker_denom:
             type: string
             title: >-
-              GoodTilDate is represented as seconds since  January 1, year 1,
-              00:00:00.00 UTC
-               LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+              LimitOrders with expiration_time set are valid as long as
+              blockTime <= expiration_time
           expiration_time:
             type: string
             format: date-time
             title: >-
-              JIT orders also use goodTilDate to handle deletion but represent a
-              special case
+              JIT orders also use expiration_time to handle deletion but
+              represent a special case
 
-              All JIT orders have a goodTilDate of 0 and an exception is made to
-              still still treat these orders as live
+              All JIT orders have a expiration_time of 0 and an exception is
+              made to still treat these orders as live
 
               Order deletion still functions the same and the orders will be
               deleted at the end of the block
@@ -71738,18 +71743,17 @@ definitions:
           total_taker_denom:
             type: string
             title: >-
-              GoodTilDate is represented as seconds since  January 1, year 1,
-              00:00:00.00 UTC
-               LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+              LimitOrders with expiration_time set are valid as long as
+              blockTime <= expiration_time
           expiration_time:
             type: string
             format: date-time
             title: >-
-              JIT orders also use goodTilDate to handle deletion but represent a
-              special case
+              JIT orders also use expiration_time to handle deletion but
+              represent a special case
 
-              All JIT orders have a goodTilDate of 0 and an exception is made to
-              still still treat these orders as live
+              All JIT orders have a expiration_time of 0 and an exception is
+              made to still treat these orders as live
 
               Order deletion still functions the same and the orders will be
               deleted at the end of the block
@@ -71969,18 +71973,17 @@ definitions:
           total_taker_denom:
             type: string
             title: >-
-              GoodTilDate is represented as seconds since  January 1, year 1,
-              00:00:00.00 UTC
-               LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
+              LimitOrders with expiration_time set are valid as long as
+              blockTime <= expiration_time
           expiration_time:
             type: string
             format: date-time
             title: >-
-              JIT orders also use goodTilDate to handle deletion but represent a
-              special case
+              JIT orders also use expiration_time to handle deletion but
+              represent a special case
 
-              All JIT orders have a goodTilDate of 0 and an exception is made to
-              still still treat these orders as live
+              All JIT orders have a expiration_time of 0 and an exception is
+              made to still treat these orders as live
 
               Order deletion still functions the same and the orders will be
               deleted at the end of the block
@@ -74867,7 +74870,9 @@ definitions:
         type: string
         title: >-
           FeeCollectorAddress is the address where fees collected from denom
-          creation are sent to
+          creation
+
+          are sent to
     description: Params defines the parameters for the tokenfactory module.
   osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse:
     type: object
@@ -74954,7 +74959,9 @@ definitions:
             type: string
             title: >-
               FeeCollectorAddress is the address where fees collected from denom
-              creation are sent to
+              creation
+
+              are sent to
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   packetforward.v1.MsgUpdateParamsResponse:
     type: object

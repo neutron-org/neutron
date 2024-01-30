@@ -5,14 +5,15 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
-	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
-	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
 	time "time"
+
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -28,7 +29,7 @@ var _ = time.Kitchen
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type LimitOrderExpiration struct {
-	// see limitOrderTranche.proto for details on goodTilDate
+	// see limitOrderTranche.proto for details on expiration_time
 	ExpirationTime time.Time `protobuf:"bytes,1,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time"`
 	TrancheRef     []byte    `protobuf:"bytes,2,opt,name=tranche_ref,json=trancheRef,proto3" json:"tranche_ref,omitempty"`
 }

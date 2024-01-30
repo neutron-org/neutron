@@ -5,16 +5,18 @@ package types
 
 import (
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
-	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
-	github_com_neutron_org_neutron_v2_utils_math "github.com/neutron-org/neutron/v2/utils/math"
-	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
 	time "time"
+
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
+
+	github_com_neutron_org_neutron_v2_utils_math "github.com/neutron-org/neutron/v2/utils/math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -95,12 +97,9 @@ type LimitOrderTranche struct {
 	ReservesTakerDenom github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=reserves_taker_denom,json=reservesTakerDenom,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"reserves_taker_denom" yaml:"reserves_taker_denom"`
 	TotalMakerDenom    github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=total_maker_denom,json=totalMakerDenom,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"total_maker_denom" yaml:"total_maker_denom"`
 	TotalTakerDenom    github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=total_taker_denom,json=totalTakerDenom,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"total_taker_denom" yaml:"total_taker_denom"`
-	// expiration_time is represented as an RFC 3339 formatted date.
-	// LimitOrders with expiration_time set are valid as long as blockTime <= expiration_time.
-	// JIT orders also use expiration_time to handle deletion, but represent a special case.
-	// All JIT orders have an expiration_time of 0001-01-01T00:00:00Z, and an exception is made to
-	// still treat these orders as live. Order deletion still functions the
-	// same, and the orders will be deleted at the end of the block.
+	// JIT orders also use expiration_time to handle deletion but represent a special case
+	// All JIT orders have a expiration_time of 0 and an exception is made to still treat these orders as live
+	// Order deletion still functions the same and the orders will be deleted at the end of the block
 	ExpirationTime    *time.Time                                           `protobuf:"bytes,6,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
 	PriceTakerToMaker github_com_neutron_org_neutron_v2_utils_math.PrecDec `protobuf:"bytes,7,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v2/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"`
 }

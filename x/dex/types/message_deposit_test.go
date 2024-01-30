@@ -7,181 +7,181 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v2/testutil/common/sample"
-	. "github.com/neutron-org/neutron/v2/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 func TestMsgDeposit_ValidateBasic(t *testing.T) {
 	tests := []struct {
 		name string
-		msg  MsgDeposit
+		msg  dextypes.MsgDeposit
 		err  error
 	}{
 		{
 			name: "invalid creator",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         "invalid_address",
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{false}},
+				Options:         []*dextypes.DepositOptions{{false}},
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "invalid receiver",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        "invalid address",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{false}},
+				Options:         []*dextypes.DepositOptions{{false}},
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "invalid fee indexes length",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []math.Int{},
 				AmountsB:        []math.Int{},
-				Options:         []*DepositOptions{{false}},
+				Options:         []*dextypes.DepositOptions{{false}},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "invalid tick indexes length",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{},
 				AmountsB:        []math.Int{},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*dextypes.DepositOptions{{true}},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "invalid amounts A length",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*dextypes.DepositOptions{{true}},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "invalid amounts B length",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []math.Int{},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{true}},
+				Options:         []*dextypes.DepositOptions{{true}},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "invalid options length",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{1},
 				TickIndexesAToB: []int64{1},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{},
+				Options:         []*dextypes.DepositOptions{},
 			},
-			err: ErrUnbalancedTxArray,
+			err: dextypes.ErrUnbalancedTxArray,
 		},
 		{
 			name: "invalid no deposit",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []math.Int{},
 				AmountsB:        []math.Int{},
-				Options:         []*DepositOptions{},
+				Options:         []*dextypes.DepositOptions{},
 			},
-			err: ErrZeroDeposit,
+			err: dextypes.ErrZeroDeposit,
 		},
 		{
 			name: "invalid duplicate deposit",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{1, 2, 1},
 				TickIndexesAToB: []int64{0, 0, 0},
 				AmountsA:        []math.Int{math.OneInt(), math.OneInt(), math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt(), math.OneInt(), math.OneInt()},
-				Options:         []*DepositOptions{{false}, {false}, {false}},
+				Options:         []*dextypes.DepositOptions{{false}, {false}, {false}},
 			},
-			err: ErrDuplicatePoolDeposit,
+			err: dextypes.ErrDuplicatePoolDeposit,
 		},
 		{
 			name: "invalid no deposit",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.ZeroInt()},
 				AmountsB:        []math.Int{math.ZeroInt()},
-				Options:         []*DepositOptions{{false}},
+				Options:         []*dextypes.DepositOptions{{false}},
 			},
-			err: ErrZeroDeposit,
+			err: dextypes.ErrZeroDeposit,
 		},
 		{
 			name: "invalid tick + fee upper",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{3},
 				TickIndexesAToB: []int64{559678},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{false}},
+				Options:         []*dextypes.DepositOptions{{false}},
 			},
-			err: ErrTickOutsideRange,
+			err: dextypes.ErrTickOutsideRange,
 		},
 		{
 			name: "invalid tick + fee lower",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{50},
 				TickIndexesAToB: []int64{-559631},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{false}},
+				Options:         []*dextypes.DepositOptions{{false}},
 			},
-			err: ErrTickOutsideRange,
+			err: dextypes.ErrTickOutsideRange,
 		},
 		{
 			name: "valid msg",
-			msg: MsgDeposit{
+			msg: dextypes.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []math.Int{math.OneInt()},
 				AmountsB:        []math.Int{math.OneInt()},
-				Options:         []*DepositOptions{{false}},
+				Options:         []*dextypes.DepositOptions{{false}},
 			},
 		},
 	}
