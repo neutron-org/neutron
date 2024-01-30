@@ -1,6 +1,6 @@
 module github.com/neutron-org/neutron/v2
 
-go 1.21.1
+go 1.21.4
 
 toolchain go1.21.6
 
