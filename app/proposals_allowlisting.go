@@ -107,4 +107,5 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyConsumerUnbondingPeriod)}:           {},
 	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeySoftOptOutThreshold)}:               {},
 	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyProviderRewardDenoms)}:              {},
+	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyRetryDelayPeriod)}:                  {},
 }
