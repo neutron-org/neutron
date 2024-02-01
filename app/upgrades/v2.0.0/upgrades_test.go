@@ -6,6 +6,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
 	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
@@ -16,7 +17,7 @@ import (
 
 	"github.com/neutron-org/neutron/v2/app/params"
 
-	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -116,13 +117,13 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 		ctx                 = suite.ChainA.GetContext()
 	)
 
-	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
+	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms))
 
 	// emulate mainnet/testnet state
-	ccvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &[]string{params.DefaultDenom})
+	ccvConsumerSubspace.Set(ctx, ccv.KeyRewardDenoms, &[]string{params.DefaultDenom})
 
 	var denomsBefore []string
-	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denomsBefore)
+	ccvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denomsBefore)
 	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 
 	upgrade := upgradetypes.Plan{
@@ -132,10 +133,10 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
 
-	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
+	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms))
 
 	var denoms []string
-	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+	ccvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denoms)
 	requiredDenoms := []string{params.DefaultDenom, "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"}
 	suite.Require().Equal(requiredDenoms, denoms)
 }

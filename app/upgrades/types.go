@@ -11,6 +11,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
@@ -51,6 +52,7 @@ type UpgradeKeepers struct {
 	ContractManager    contractmanagerkeeper.Keeper
 	AdminModule        adminmodulekeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper
+	ConsumerKeeper     *ccvconsumerkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace

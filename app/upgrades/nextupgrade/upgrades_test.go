@@ -3,7 +3,6 @@ package nextupgrade_test
 import (
 	"testing"
 
-	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
 
 	"github.com/stretchr/testify/suite"
@@ -11,9 +10,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	"github.com/stretchr/testify/require"
+
 	nextupgrade "github.com/neutron-org/neutron/v2/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/v2/testutil"
 )
+
+var consAddr = sdk.ConsAddress("addr1_______________")
 
 type UpgradeTestSuite struct {
 	testutil.IBCConnectionTestSuite
@@ -27,11 +31,10 @@ func TestKeeperTestSuite(t *testing.T) {
 
 func (suite *UpgradeTestSuite) SetupTest() {
 	suite.IBCConnectionTestSuite.SetupTest()
-	app := suite.GetNeutronZoneApp(suite.ChainA)
-	ctx := suite.ChainA.GetContext()
-	subspace, _ := app.ParamsKeeper.GetSubspace(crontypes.StoreKey)
-	pcron := crontypes.DefaultParams()
-	subspace.SetParamSet(ctx, &pcron)
+	suite.Require().NoError(
+		suite.GetNeutronZoneApp(suite.ChainA).FeeBurnerKeeper.SetParams(
+			suite.ChainA.GetContext(), feeburnertypes.NewParams(feeburnertypes.DefaultNeutronDenom, treasuryAddress),
+		))
 }
 
 func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
@@ -44,9 +47,6 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 		Info:   "nextupgrade",
 		Height: 100,
 	}
-
-	feeParams := feeburnertypes.NewParams(feeburnertypes.DefaultNeutronDenom, treasuryAddress)
-	suite.Require().NoError(app.FeeBurnerKeeper.SetParams(ctx, feeParams))
 
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
 
@@ -65,4 +65,35 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 	suite.Require().NoError(err)
 
 	suite.Require().Equal(addr.Bytes(), params.EscrowAccountAddress)
+}
+
+func (suite *UpgradeTestSuite) TestSlashingUpgrade() {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := suite.ChainA.GetContext()
+	t := suite.T()
+	params := slashingtypes.Params{SignedBlocksWindow: 100}
+
+	unrealMissedBlocksCounter := int64(500)
+	// store old signing info and bitmap entries
+	info := slashingtypes.ValidatorSigningInfo{
+		Address:             consAddr.String(),
+		MissedBlocksCounter: unrealMissedBlocksCounter, // set unrealistic value of missed blocks
+	}
+	app.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddr, info)
+
+	for i := int64(0); i < params.SignedBlocksWindow; i++ {
+		// all even blocks are missed
+		require.NoError(t, app.SlashingKeeper.SetMissedBlockBitmapValue(ctx, consAddr, i, i%2 == 0))
+	}
+
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	postUpgradeInfo, ok := app.SlashingKeeper.GetValidatorSigningInfo(ctx, consAddr)
+	require.True(t, ok)
+	require.Equal(t, postUpgradeInfo.MissedBlocksCounter, int64(50))
 }
