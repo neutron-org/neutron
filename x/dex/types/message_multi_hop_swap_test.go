@@ -9,115 +9,115 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v2/testutil/common/sample"
-	. "github.com/neutron-org/neutron/v2/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 func TestMsgMultiHopSwap_ValidateBasic(t *testing.T) {
 	tests := []struct {
 		name string
-		msg  MsgMultiHopSwap
+		msg  dextypes.MsgMultiHopSwap
 		err  error
 	}{
 		{
 			name: "invalid creator address",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:  "invalid_address",
 				Receiver: sample.AccAddress(),
-				Routes: []*MultiHopRoute{
+				Routes: []*dextypes.MultiHopRoute{
 					{Hops: []string{"A", "B", "C"}},
 				},
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "invalid receiver address",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:  sample.AccAddress(),
 				Receiver: "invalid_address",
-				Routes: []*MultiHopRoute{
+				Routes: []*dextypes.MultiHopRoute{
 					{Hops: []string{"A", "B", "C"}},
 				},
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		},
 		{
 			name: "missing route",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*MultiHopRoute{},
+				Routes:         []*dextypes.MultiHopRoute{},
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
-			err: ErrMissingMultihopRoute,
+			err: dextypes.ErrMissingMultihopRoute,
 		},
 		{
 			name: "invalid exit tokens",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),
-				Routes: []*MultiHopRoute{
+				Routes: []*dextypes.MultiHopRoute{
 					{Hops: []string{"A", "B", "C"}},
 					{Hops: []string{"A", "B", "Z"}},
 				},
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
-			err: ErrMultihopExitTokensMismatch,
+			err: dextypes.ErrMultihopExitTokensMismatch,
 		},
 		{
 			name: "invalid amountIn",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				Routes:         []*dextypes.MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
 				AmountIn:       math.NewInt(-1),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
-			err: ErrZeroSwap,
+			err: dextypes.ErrZeroSwap,
 		},
 		{
 			name: "cycles in hops",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),
-				Routes: []*MultiHopRoute{
+				Routes: []*dextypes.MultiHopRoute{
 					{Hops: []string{"A", "B", "C"}},                // normal
 					{Hops: []string{"A", "B", "D", "E", "B", "C"}}, // has cycle
 				},
 				AmountIn:       math.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
-			err: ErrCycleInHops,
+			err: dextypes.ErrCycleInHops,
 		},
 		{
 			name: "zero exit limit price",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				Routes:         []*dextypes.MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
 				AmountIn:       math.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0"),
 			},
-			err: ErrZeroExitPrice,
+			err: dextypes.ErrZeroExitPrice,
 		},
 		{
 			name: "negative exit limit price",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				Routes:         []*dextypes.MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
 				AmountIn:       math.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("-0.5"),
 			},
-			err: ErrZeroExitPrice,
+			err: dextypes.ErrZeroExitPrice,
 		},
 		{
 			name: "valid",
-			msg: MsgMultiHopSwap{
+			msg: dextypes.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				Routes:         []*dextypes.MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
 				AmountIn:       math.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},

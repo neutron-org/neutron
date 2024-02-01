@@ -6,25 +6,25 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v2/testutil/common/sample"
-	. "github.com/neutron-org/neutron/v2/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 )
 
 func TestMsgCancelLimitOrder_ValidateBasic(t *testing.T) {
 	tests := []struct {
 		name string
-		msg  MsgCancelLimitOrder
+		msg  dextypes.MsgCancelLimitOrder
 		err  error
 	}{
 		{
 			name: "invalid creator",
-			msg: MsgCancelLimitOrder{
+			msg: dextypes.MsgCancelLimitOrder{
 				Creator:    "invalid_address",
 				TrancheKey: "ORDER123",
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		}, {
 			name: "valid msg",
-			msg: MsgCancelLimitOrder{
+			msg: dextypes.MsgCancelLimitOrder{
 				Creator:    sample.AccAddress(),
 				TrancheKey: "ORDER123",
 			},

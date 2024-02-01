@@ -13,8 +13,8 @@ import (
 	globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-	consumerante "github.com/cosmos/interchain-security/v3/app/consumer/ante"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
+	consumerante "github.com/cosmos/interchain-security/v4/app/consumer/ante"
+	ibcconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC

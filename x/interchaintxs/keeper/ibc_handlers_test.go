@@ -19,6 +19,8 @@ import (
 	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 )
 
+const ICAId = ".ica0"
+
 func TestHandleAcknowledgement(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -38,7 +40,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 	p := channeltypes.Packet{
 		Sequence:      100,
-		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0",
+		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId,
 		SourceChannel: "channel-0",
 	}
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
@@ -85,7 +87,7 @@ func TestHandleTimeout(t *testing.T) {
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
 	p := channeltypes.Packet{
 		Sequence:      100,
-		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0",
+		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId,
 		SourceChannel: "channel-0",
 	}
 
@@ -118,7 +120,7 @@ func TestHandleChanOpenAck(t *testing.T) {
 	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, func(ctx sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
-	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0"
+	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	channelID := "channel-0"
 	counterpartyChannelID := "channel-1"
