@@ -35,8 +35,8 @@ type KeeperTestHelper struct {
 
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *KeeperTestHelper) Setup() {
-	s.App = testutil.Setup(s.T())
-	ctx := s.App.BaseApp.NewContext(
+	s.App = testutil.Setup(s.T()).(*app.App)
+	ctx := s.App.GetBaseApp().NewContext(
 		false,
 		tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()},
 	)

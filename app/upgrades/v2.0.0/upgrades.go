@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
 	"github.com/neutron-org/neutron/v2/app/params"
 
@@ -19,7 +20,6 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 
 	"github.com/neutron-org/neutron/v2/app/upgrades"
 	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
@@ -260,18 +260,18 @@ func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error 
 func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Migrating reword denoms...")
 
-	if !keepers.CcvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms) {
+	if !keepers.CcvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms) {
 		return fmt.Errorf("key_reward_denoms param not found")
 	}
 
 	var denoms []string
-	keepers.CcvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+	keepers.CcvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denoms)
 
 	// add new axlr usdc denom
 	axlrDenom := "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
 	denoms = append(denoms, axlrDenom)
 
-	keepers.CcvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+	keepers.CcvConsumerSubspace.Set(ctx, ccv.KeyRewardDenoms, &denoms)
 
 	ctx.Logger().Info("Finished migrating reward denoms")
 

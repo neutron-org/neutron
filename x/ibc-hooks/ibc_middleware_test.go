@@ -11,7 +11,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v2/app/params"

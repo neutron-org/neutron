@@ -8,9 +8,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
-	"github.com/cosmos/interchain-security/v3/testutil/integration"
+	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
+	"github.com/cosmos/interchain-security/v4/testutil/integration"
+	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -18,6 +21,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
+	"github.com/neutron-org/neutron/v2/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/v2/docs"
 
 	"github.com/neutron-org/neutron/v2/app/upgrades"
@@ -99,8 +103,7 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-	"github.com/cosmos/interchain-security/v3/legacy_ibc_testing/core"
-	ibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	"github.com/spf13/cast"
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -142,9 +145,9 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 
-	ccvconsumer "github.com/cosmos/interchain-security/v3/x/ccv/consumer"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v3/x/ccv/consumer/keeper"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+	ccvconsumer "github.com/cosmos/interchain-security/v4/x/ccv/consumer"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
@@ -168,7 +171,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, nextupgrade.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -966,16 +969,7 @@ func New(
 	}
 
 	if loadLatest {
-		if err := app.LoadLatestVersion(); err != nil {
-			tmos.Exit(err.Error())
-		}
-
-		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
-
-		// Initialize pinned codes in wasmvm as they are not persisted there
-		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
-			tmos.Exit(fmt.Sprintf("failed initialize pinned codes %s", err))
-		}
+		app.LoadLatest()
 	}
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
@@ -985,6 +979,19 @@ func New(
 	app.ScopedCCVConsumerKeeper = scopedCCVConsumerKeeper
 
 	return app
+}
+
+func (app *App) LoadLatest() {
+	if err := app.LoadLatestVersion(); err != nil {
+		tmos.Exit(err.Error())
+	}
+
+	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+
+	// Initialize pinned codes in wasmvm as they are not persisted there
+	if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
+		tmos.Exit(fmt.Sprintf("failed initialize pinned codes %s", err))
+	}
 }
 
 func (app *App) setupUpgradeStoreLoaders() {
@@ -1024,6 +1031,7 @@ func (app *App) setupUpgradeHandlers() {
 					ContractManager:     app.ContractManagerKeeper,
 					AdminModule:         app.AdminmoduleKeeper,
 					ConsensusKeeper:     &app.ConsensusParamsKeeper,
+					ConsumerKeeper:      &app.ConsumerKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1066,6 +1074,22 @@ func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.Res
 		panic(err)
 	}
 	app.EnsureBlockGasMeter(ctx)
+	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
+	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+}
+
+// InitChainer application update at chain initialization
+// ONLY FOR TESTING PURPOSES
+func (app *App) TestInitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	var genesisState GenesisState
+	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
+		panic(err)
+	}
+
+	// manually set consensus params here, cause there is no way to set it using ibctesting stuff for now
+	app.ConsensusParamsKeeper.Set(ctx, sims.DefaultConsensusParams)
+	app.EnsureBlockGasMeter(ctx)
+
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
@@ -1187,7 +1211,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccvconsumertypes.ParamKeyTable())
+	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 
 	// MOTE: legacy subspaces for migration sdk47 only
 	paramsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable()) //nolint:staticcheck
@@ -1230,7 +1254,7 @@ func (app *App) GetIBCKeeper() *ibckeeper.Keeper {
 }
 
 // GetStakingKeeper implements the TestingApp interface.
-func (app *App) GetStakingKeeper() core.StakingKeeper {
+func (app *App) GetStakingKeeper() ibctestingtypes.StakingKeeper {
 	return app.ConsumerKeeper
 }
 
