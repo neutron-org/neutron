@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	keeper2 "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
 
@@ -194,6 +196,52 @@ func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
 	suite.Equal([][]byte(nil), data)
 }
 
+func (suite *CustomMessengerTestSuite) TestSetDenomMetadataMsg() {
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+	suite.NoError(err)
+
+	fullMsg := bindings.NeutronMsg{
+		CreateDenom: &bindings.CreateDenom{
+			Subdenom: "SUN",
+		},
+	}
+	data, _ := suite.executeCustomMsg(suite.contractAddress, fullMsg)
+	suite.Equal([][]byte(nil), data)
+
+	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
+	metadata := banktypes.Metadata{
+		Description: "very nice description",
+		DenomUnits: []*banktypes.DenomUnit{{
+			Denom:    sunDenom,
+			Exponent: 0,
+			Aliases:  nil,
+		}},
+		Base:    sunDenom,
+		Display: sunDenom,
+		Name:    "noname",
+		Symbol:  sunDenom,
+		URI:     "yuri",
+		URIHash: "sdjalkfjsdklfj",
+	}
+
+	metaMsg := bindings.NeutronMsg{
+		SetDenomMetadata: &bindings.SetDenomMetadata{Metadata: metadata},
+	}
+	data, _ = suite.executeCustomMsg(suite.contractAddress, metaMsg)
+	suite.Equal([][]byte(nil), data)
+
+	metaFromBank, ok := bankKeeper.GetDenomMetaData(suite.ctx, sunDenom)
+	suite.Require().True(ok)
+	suite.Equal(metadata, metaFromBank)
+}
+
 func (suite *CustomMessengerTestSuite) TestMintMsg() {
 	var (
 		neutron = suite.GetNeutronZoneApp(suite.ChainA)
@@ -284,6 +332,82 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 	require.Equal(suite.T(), amount, coin.Amount)
 	require.Contains(suite.T(), coin.Denom, "factory/")
 	require.Equal(suite.T(), moonDenom, coin.Denom)
+}
+
+func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
+	var (
+		neutron       = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx           = suite.ChainA.GetContext()
+		lucky         = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+		forceReceiver = keeper.RandomAccountAddress(suite.T()) // We don't care what this address is
+	)
+
+	codeID := suite.StoreTestCode(suite.ctx, suite.contractOwner, "../testdata/reflect.wasm")
+	suite.contractAddress = suite.InstantiateTestContract(suite.ctx, suite.contractOwner, codeID)
+	suite.Require().NotEmpty(suite.contractAddress)
+
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(20_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+	suite.NoError(err)
+
+	// lucky was broke
+	balances := neutron.BankKeeper.GetAllBalances(suite.ctx, lucky)
+	require.Empty(suite.T(), balances)
+
+	// Create denom for minting
+	fullMsg := bindings.NeutronMsg{
+		CreateDenom: &bindings.CreateDenom{
+			Subdenom: "SUN",
+		},
+	}
+
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
+
+	amount, ok := sdk.NewIntFromString("808010808")
+	require.True(suite.T(), ok)
+
+	fullMsg = bindings.NeutronMsg{
+		MintTokens: &bindings.MintTokens{
+			Denom:         sunDenom,
+			Amount:        amount,
+			MintToAddress: lucky.String(),
+		},
+	}
+
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
+	require.Len(suite.T(), balances, 1)
+	coin := balances[0]
+	require.Equal(suite.T(), amount, coin.Amount)
+	require.Contains(suite.T(), coin.Denom, "factory/")
+	require.Equal(suite.T(), sunDenom, coin.Denom)
+
+	// now perform a force transfer to transfer tokens from a lucky address to a forceReceiver
+	fullMsg = bindings.NeutronMsg{
+		ForceTransfer: &bindings.ForceTransfer{
+			Denom:               sunDenom,
+			Amount:              amount,
+			TransferFromAddress: lucky.String(),
+			TransferToAddress:   forceReceiver.String(),
+		},
+	}
+
+	suite.executeCustomMsg(suite.contractAddress, fullMsg)
+
+	balancesLucky := neutron.BankKeeper.GetAllBalances(ctx, lucky)
+	require.Len(suite.T(), balancesLucky, 0)
+	balancesReceiver := neutron.BankKeeper.GetAllBalances(ctx, forceReceiver)
+	require.Len(suite.T(), balancesReceiver, 1)
+
+	coinReceiver := balancesReceiver[0]
+	require.Equal(suite.T(), amount, coinReceiver.Amount)
+	require.Contains(suite.T(), coinReceiver.Denom, "factory/")
+	require.Equal(suite.T(), sunDenom, coinReceiver.Denom)
 }
 
 func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {

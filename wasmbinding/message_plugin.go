@@ -121,6 +121,7 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.SubmitAdminProposal != nil {
 		return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
 	}
+
 	if contractMsg.CreateDenom != nil {
 		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
 	}
@@ -136,6 +137,13 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.BurnTokens != nil {
 		return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
 	}
+	if contractMsg.ForceTransfer != nil {
+		return m.forceTransfer(ctx, contractAddr, contractMsg.ForceTransfer)
+	}
+	if contractMsg.SetDenomMetadata != nil {
+		return m.setDenomMetadata(ctx, contractAddr, contractMsg.SetDenomMetadata)
+	}
+
 	if contractMsg.AddSchedule != nil {
 		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
 	}
@@ -491,6 +499,66 @@ func PerformCreateDenom(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, 
 	)
 	if err != nil {
 		return errors.Wrap(err, "creating denom")
+	}
+	return nil
+}
+
+// createDenom forces a transfer of a tokenFactory token
+func (m *CustomMessenger) forceTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, forceTransfer *bindings.ForceTransfer) ([]sdk.Event, [][]byte, error) {
+	err := PerformForceTransfer(m.TokenFactory, m.Bank, ctx, contractAddr, forceTransfer)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "perform force transfer")
+	}
+	return nil, nil, nil
+}
+
+// PerformForceTransfer is used with forceTransfer to force a tokenfactory token transfer; validates the msgForceTransfer.
+func PerformForceTransfer(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, forceTransfer *bindings.ForceTransfer) error {
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+
+	msgForceTransfer := tokenfactorytypes.NewMsgForceTransfer(contractAddr.String(), sdk.NewInt64Coin(forceTransfer.Denom, forceTransfer.Amount.Int64()), forceTransfer.TransferFromAddress, forceTransfer.TransferToAddress)
+
+	if err := msgForceTransfer.ValidateBasic(); err != nil {
+		return errors.Wrap(err, "failed validating MsgForceTransfer")
+	}
+
+	// Force Transfer
+	_, err := msgServer.ForceTransfer(
+		sdk.WrapSDKContext(ctx),
+		msgForceTransfer,
+	)
+	if err != nil {
+		return errors.Wrap(err, "forcing transfer")
+	}
+	return nil
+}
+
+// setDenomMetadata sets a metadata for a tokenfactory denom
+func (m *CustomMessenger) setDenomMetadata(ctx sdk.Context, contractAddr sdk.AccAddress, setDenomMetadata *bindings.SetDenomMetadata) ([]sdk.Event, [][]byte, error) {
+	err := PerformSetDenomMetadata(m.TokenFactory, m.Bank, ctx, contractAddr, setDenomMetadata)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "perform force transfer")
+	}
+	return nil, nil, nil
+}
+
+// PerformSetDenomMetadata is used with setDenomMetadata to set a metadata for a tokenfactory denom; validates the msgSetDenomMetadata.
+func PerformSetDenomMetadata(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, setDenomMetadata *bindings.SetDenomMetadata) error {
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+
+	msgSetDenomMetadata := tokenfactorytypes.NewMsgSetDenomMetadata(contractAddr.String(), setDenomMetadata.Metadata)
+
+	if err := msgSetDenomMetadata.ValidateBasic(); err != nil {
+		return errors.Wrap(err, "failed validating MsgSetDenomMetadata")
+	}
+
+	// Set denom metadata
+	_, err := msgServer.SetDenomMetadata(
+		sdk.WrapSDKContext(ctx),
+		msgSetDenomMetadata,
+	)
+	if err != nil {
+		return errors.Wrap(err, "setting denom metadata")
 	}
 	return nil
 }
@@ -896,7 +964,6 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 	}
 
 	err = m.ContractmanagerKeeper.ResubmitFailure(ctx, contractAddr, failure)
-
 	if err != nil {
 		ctx.Logger().Error("failed to resubmitFailure",
 			"from_address", contractAddr.String(),
