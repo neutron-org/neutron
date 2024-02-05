@@ -32,10 +32,10 @@ func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, 
 
 func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	app := testutil.Setup(t)
-	keeper := app.DexKeeper
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	keeper := app.(*neutronapp.App).DexKeeper
+	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
 	wctx := sdk.WrapSDKContext(ctx)
-	addr := sdk.AccAddress([]byte("test_addr"))
+	addr := sdk.AccAddress("test_addr")
 	msgs := []*types.DepositRecord{
 		{
 			PairId:          defaultPairID,
@@ -80,14 +80,14 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	}
 	poolsFromDeposits := make([]*types.Pool, 0)
 	for _, d := range msgs {
-		pool := simulateDeposit(ctx, app, addr, d)
+		pool := simulateDeposit(ctx, app.(*neutronapp.App), addr, d)
 		poolsFromDeposits = append(poolsFromDeposits, pool)
 
 	}
 
 	// Add random noise to make sure only pool denoms are picked up
 	randomCoins := sdk.Coins{sdk.NewInt64Coin("TokenA", 10), sdk.NewInt64Coin("TokenZ", 10)}
-	keepertest.FundAccount(app.BankKeeper, ctx, addr, randomCoins)
+	keepertest.FundAccount(app.(*neutronapp.App).BankKeeper, ctx, addr, randomCoins)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllUserDepositsRequest {
 		return &types.QueryAllUserDepositsRequest{
