@@ -3,13 +3,17 @@ package nextupgrade_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/stretchr/testify/require"
+	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
+
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades/nextupgrade"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	"github.com/stretchr/testify/require"
+
+	nextupgrade "github.com/neutron-org/neutron/v2/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/v2/testutil"
 )
 
@@ -19,12 +23,48 @@ type UpgradeTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
 
+const treasuryAddress = "neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"
+
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(UpgradeTestSuite))
 }
 
 func (suite *UpgradeTestSuite) SetupTest() {
 	suite.IBCConnectionTestSuite.SetupTest()
+	suite.Require().NoError(
+		suite.GetNeutronZoneApp(suite.ChainA).FeeBurnerKeeper.SetParams(
+			suite.ChainA.GetContext(), feeburnertypes.NewParams(feeburnertypes.DefaultNeutronDenom, treasuryAddress),
+		))
+}
+
+func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
+	var (
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext()
+	)
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "nextupgrade",
+		Height: 100,
+	}
+
+	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+
+	// get the auction module's params
+	params, err := app.AuctionKeeper.GetParams(ctx)
+	suite.Require().NoError(err)
+
+	// check that the params are correct
+	params.MaxBundleSize = nextupgrade.AuctionParamsMaxBundleSize
+	params.ReserveFee = nextupgrade.AuctionParamsReserveFee
+	params.MinBidIncrement = nextupgrade.AuctionParamsMinBidIncrement
+	params.FrontRunningProtection = nextupgrade.AuctionParamsFrontRunningProtection
+	params.ProposerFee = nextupgrade.AuctionParamsProposerFee
+
+	addr, err := sdk.AccAddressFromBech32(treasuryAddress)
+	suite.Require().NoError(err)
+
+	suite.Require().Equal(addr.Bytes(), params.EscrowAccountAddress)
 }
 
 func (suite *UpgradeTestSuite) TestSlashingUpgrade() {

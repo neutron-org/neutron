@@ -5,11 +5,18 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
+	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+
 	"github.com/neutron-org/neutron/v2/app/upgrades"
+
+	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
+
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
 
 func CreateUpgradeHandler(
@@ -26,6 +33,12 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
+		ctx.Logger().Info("Setting block-sdk params...")
+		err = setAuctionParams(ctx, keepers.FeeBurnerKeeper, keepers.AuctionKeeper)
+		if err != nil {
+			return nil, err
+		}
+
 		if err := migrateICSOutstandingDowntime(ctx, keepers); err != nil {
 			return vm, fmt.Errorf("failed to migrate ICS outstanding downtime: %w", err)
 		}
@@ -35,6 +48,24 @@ func CreateUpgradeHandler(
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
+}
+
+func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, auctionKeeper auctionkeeper.Keeper) error {
+	treasury := feeBurnerKeeper.GetParams(ctx).TreasuryAddress
+	_, data, err := bech32.DecodeAndConvert(treasury)
+	if err != nil {
+		return err
+	}
+
+	auctionParams := auctiontypes.Params{
+		MaxBundleSize:          AuctionParamsMaxBundleSize,
+		EscrowAccountAddress:   data,
+		ReserveFee:             AuctionParamsReserveFee,
+		MinBidIncrement:        AuctionParamsMinBidIncrement,
+		FrontRunningProtection: AuctionParamsFrontRunningProtection,
+		ProposerFee:            AuctionParamsProposerFee,
+	}
+	return auctionKeeper.SetParams(ctx, auctionParams)
 }
 
 // Sometime long ago we decreased SlashWindow to 36k on pion-1 testnet (the param is untouched on neutron-1 mainnet),

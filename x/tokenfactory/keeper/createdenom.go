@@ -102,7 +102,6 @@ func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err e
 			accAddr, feeCollectorAddr,
 			params.DenomCreationFee,
 		)
-
 		if err != nil {
 			return errors.Wrap(err, "unable to send coins to fee collector")
 		}
