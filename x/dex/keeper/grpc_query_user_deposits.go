@@ -57,7 +57,7 @@ func (k Keeper) UserDepositsAll(
 				}
 
 				if req.IncludePoolData {
-					depositRecord = k.addPoolData(ctx, depositRecord)
+					 k.addPoolData(ctx, depositRecord)
 				}
 
 				depositArr = append(depositArr, depositRecord)
@@ -77,9 +77,11 @@ func (k Keeper) UserDepositsAll(
 
 func (k Keeper) addPoolData(ctx sdk.Context, record *types.DepositRecord) *types.DepositRecord {
 	pool, found := k.GetPool(ctx, record.PairId, record.CenterTickIndex, record.Fee)
-	if found {
-		record.Pool = pool
+	if !found {
+		panic("Pool does not exist")
 	}
+
+	record.Pool = pool
 	supply := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom())
 	record.TotalShares = &supply.Amount
 
