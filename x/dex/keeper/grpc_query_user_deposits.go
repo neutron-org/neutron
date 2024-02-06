@@ -57,7 +57,7 @@ func (k Keeper) UserDepositsAll(
 				}
 
 				if req.IncludePoolData {
-					 k.addPoolData(ctx, depositRecord)
+					k.addPoolData(ctx, depositRecord)
 				}
 
 				depositArr = append(depositArr, depositRecord)

@@ -30,7 +30,7 @@ func CmdListUserDeposits() *cobra.Command {
 			}
 
 			params := &types.QueryAllUserDepositsRequest{
-				Address: reqAddress,
+				Address:         reqAddress,
 				IncludePoolData: includePoolData,
 			}
 
