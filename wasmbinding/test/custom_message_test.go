@@ -198,7 +198,8 @@ func (suite *CustomMessengerTestSuite) TestSetDenomMetadataMsg() {
 			{
 				Denom:    sunDenom,
 				Exponent: 0,
-				Aliases:  []string{"sun"}},
+				Aliases:  []string{"sun"},
+			},
 		},
 		Base:    sunDenom,
 		Display: sunDenom,
@@ -494,11 +495,11 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.NoError(err)
 
 	// huh?
-	//var response bindings.SubmitTxResponse
-	//err = json.Unmarshal(data, &response)
-	//suite.NoError(err)
-	//suite.Equal(uint64(1), response.SequenceId)
-	//suite.Equal("channel-2", response.Channel)
+	// var response bindings.SubmitTxResponse
+	// err = json.Unmarshal(data, &response)
+	// suite.NoError(err)
+	// suite.Equal(uint64(1), response.SequenceId)
+	// suite.Equal("channel-2", response.Channel)
 }
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
@@ -547,7 +548,7 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	suite.NoError(err)
 
 	// huh?
-	//expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
+	// expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
 	//	ProposalId: 1,
 	//})
 	//suite.NoError(err)
@@ -577,7 +578,7 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	suite.NoError(err)
 
 	// huh?
-	//expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
+	// expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
 	//	ProposalId: 2,
 	//})
 	//suite.NoError(err)
@@ -667,9 +668,9 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	suite.NoError(err)
 
 	// Huh?
-	//expected, err := json.Marshal(&bindings.AddScheduleResponse{})
-	//suite.NoError(err)
-	//suite.Equal([][]uint8{expected}, data)
+	// expected, err := json.Marshal(&bindings.AddScheduleResponse{})
+	// suite.NoError(err)
+	// suite.Equal([][]uint8{expected}, data)
 
 	// Craft RemoveSchedule message
 	msg = bindings.NeutronMsg{
@@ -683,9 +684,9 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	suite.NoError(err)
 
 	// huh?
-	//expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
-	//suite.NoError(err)
-	//suite.Equal([][]uint8{expected}, data)
+	// expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
+	// suite.NoError(err)
+	// suite.Equal([][]uint8{expected}, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
@@ -711,9 +712,9 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	suite.NoError(err)
 
 	// huh?
-	//expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
-	//suite.NoError(err)
-	//suite.Equal([][]uint8{expected}, data)
+	// expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
+	// suite.NoError(err)
+	// suite.Equal([][]uint8{expected}, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
@@ -736,9 +737,9 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	suite.NoError(err)
 
 	// huh?
-	//expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
-	//suite.NoError(err)
-	//suite.Equal([][]uint8{expected}, data)
+	// expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
+	// suite.NoError(err)
+	// suite.Equal([][]uint8{expected}, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract() {
@@ -764,7 +765,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	suite.ErrorContains(err, "no failure found to resubmit: not found")
 }
 
-func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data []byte, msg []byte, err error) {
+func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data, msg []byte, err error) {
 	customMsg := types.CosmosMsg{
 		Custom: fullMsg,
 	}
@@ -787,8 +788,7 @@ func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccA
 	return
 }
 
-func (suite *CustomMessengerTestSuite) executeNeutronMsg(contractAddress sdk.AccAddress, fullMsg bindings.NeutronMsg) (data []byte, msg []byte, err error) {
-
+func (suite *CustomMessengerTestSuite) executeNeutronMsg(contractAddress sdk.AccAddress, fullMsg bindings.NeutronMsg) (data, msg []byte, err error) {
 	fullMsgBz, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
