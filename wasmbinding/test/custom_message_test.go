@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	types2 "github.com/CosmWasm/wasmd/x/wasm/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	keeper2 "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
@@ -49,7 +50,7 @@ type CustomMessengerTestSuite struct {
 	messenger       *wasmbinding.CustomMessenger
 	contractOwner   sdk.AccAddress
 	contractAddress sdk.AccAddress
-	contractKeeper  types2.ContractOpsKeeper
+	contractKeeper  wasmtypes.ContractOpsKeeper
 }
 
 func (suite *CustomMessengerTestSuite) SetupTest() {
@@ -104,9 +105,8 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
-	data, _, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
-	suite.Nil(data)
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
@@ -153,7 +153,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 	}
 
 	// Dispatch RegisterInterchainQuery message
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 	suite.Equal(uint64(1), suite.neutron.InterchainQueriesKeeper.GetLastRegisteredQueryKey(suite.ctx))
 }
@@ -171,8 +171,9 @@ func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
 		},
 	}
 
-	data, _, _ := suite.executeNeutronMsg(suite.contractAddress, fullMsg)
-	suite.Nil(data)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	suite.NoError(err)
+	suite.Empty(data)
 }
 
 func (suite *CustomMessengerTestSuite) TestSetDenomMetadataMsg() {
@@ -187,8 +188,8 @@ func (suite *CustomMessengerTestSuite) TestSetDenomMetadataMsg() {
 			Subdenom: "SUN",
 		},
 	}
-	data, _, err := suite.executeNeutronMsg(suite.contractAddress, fullMsg)
-	suite.Nil(data)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	suite.Empty(data)
 	suite.NoError(err)
 
 	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
@@ -233,8 +234,8 @@ func (suite *CustomMessengerTestSuite) TestSetDenomMetadataMsg() {
 }
 	`
 
-	data, _, err = suite.executeCustomMsg(suite.contractAddress, json.RawMessage(metaMsgBz))
-	suite.Nil(data)
+	data, err = suite.executeCustomMsg(suite.contractAddress, json.RawMessage(metaMsgBz))
+	suite.Empty(data)
 	suite.NoError(err)
 
 	metaFromBank, ok := bankKeeper.GetDenomMetaData(suite.ctx, sunDenom)
@@ -266,7 +267,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 		},
 	}
 
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
@@ -282,7 +283,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 		},
 	}
 
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
@@ -293,7 +294,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 	require.Equal(suite.T(), sunDenom, coin.Denom)
 
 	// mint the same denom again
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
@@ -310,7 +311,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 			Subdenom: "MOON",
 		},
 	}
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	moonDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
@@ -324,7 +325,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 		},
 	}
 
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
@@ -360,7 +361,7 @@ func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
 		},
 	}
 
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
@@ -376,7 +377,7 @@ func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
 		},
 	}
 
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	balances = neutron.BankKeeper.GetAllBalances(ctx, lucky)
@@ -396,7 +397,7 @@ func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
 		},
 	}
 
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
 	suite.NoError(err)
 
 	balancesLucky := neutron.BankKeeper.GetAllBalances(ctx, lucky)
@@ -424,9 +425,8 @@ func (suite *CustomMessengerTestSuite) TestUpdateInterchainQuery() {
 	}
 
 	// Dispatch UpdateInterchainQuery message
-	data, _, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
-	suite.Nil(data)
 }
 
 func (suite *CustomMessengerTestSuite) TestUpdateInterchainQueryFailed() {
@@ -440,10 +440,10 @@ func (suite *CustomMessengerTestSuite) TestUpdateInterchainQueryFailed() {
 	}
 
 	// Dispatch UpdateInterchainQuery message
-	data, _, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	expectedErrMsg := "failed to update interchain query: failed to update interchain query: failed to get query by query id: there is no query with id: 1"
 	suite.Require().ErrorContains(err, expectedErrMsg)
-	suite.Nil(data)
+	suite.Empty(data)
 }
 
 func (suite *CustomMessengerTestSuite) TestRemoveInterchainQuery() {
@@ -458,9 +458,8 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQuery() {
 	}
 
 	// Dispatch RemoveInterchainQuery message
-	data, _, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
-	suite.Nil(data)
 }
 
 func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
@@ -472,10 +471,10 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 	}
 
 	// Dispatch RemoveInterchainQuery message
-	data, _, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	expectedErrMsg := "failed to remove interchain query: failed to remove interchain query: failed to get query by query id: there is no query with id: 1"
 	suite.Require().ErrorContains(err, expectedErrMsg)
-	suite.Nil(data)
+	suite.Empty(data)
 }
 
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
@@ -488,25 +487,24 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	err = testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
-	_, _, err = suite.executeNeutronMsg(
+	data, err := suite.executeNeutronMsg(
 		suite.contractAddress,
 		suite.craftMarshaledMsgSubmitTxWithNumMsgs(1),
 	)
 	suite.NoError(err)
 
-	// huh?
-	// var response bindings.SubmitTxResponse
-	// err = json.Unmarshal(data, &response)
-	// suite.NoError(err)
-	// suite.Equal(uint64(1), response.SequenceId)
-	// suite.Equal("channel-2", response.Channel)
+	var response bindings.SubmitTxResponse
+	err = json.Unmarshal(data, &response)
+	suite.NoError(err)
+	suite.Equal(uint64(1), response.SequenceId)
+	suite.Equal("channel-2", response.Channel)
 }
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {
 	err := testutil.SetupICAPath(suite.Path, suite.contractAddress.String())
 	suite.Require().NoError(err)
 
-	_, _, err = suite.executeNeutronMsg(
+	_, err = suite.executeNeutronMsg(
 		suite.contractAddress,
 		suite.craftMarshaledMsgSubmitTxWithNumMsgs(20),
 	)
@@ -544,18 +542,17 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	}
 
 	// Dispatch SubmitAdminProposal message
-	_, _, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	// huh?
-	// expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
-	//	ProposalId: 1,
-	//})
-	//suite.NoError(err)
-	//suite.Equal([][]uint8{expected}, data)
+	expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
+		ProposalId: 1,
+	})
+	suite.NoError(err)
+	suite.Equal(expected, data)
 
 	// Test with other proposer that is not admin should return failure
-	_, _, err = suite.executeNeutronMsg(anotherContract, msg)
+	_, err = suite.executeNeutronMsg(anotherContract, msg)
 	suite.Error(err)
 
 	// Check CancelSubmitAdminProposal
@@ -574,15 +571,14 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	}
 
 	// Dispatch SubmitAdminProposal message
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	// huh?
-	// expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
-	//	ProposalId: 2,
-	//})
-	//suite.NoError(err)
-	//suite.Equal([][]uint8{expected}, data)
+	expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
+		ProposalId: 2,
+	})
+	suite.NoError(err)
+	suite.Equal(expected, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
@@ -664,13 +660,12 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	}
 
 	// Dispatch AddSchedule message
-	_, _, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	// Huh?
-	// expected, err := json.Marshal(&bindings.AddScheduleResponse{})
-	// suite.NoError(err)
-	// suite.Equal([][]uint8{expected}, data)
+	expected, err := json.Marshal(&bindings.AddScheduleResponse{})
+	suite.NoError(err)
+	suite.Equal(expected, data)
 
 	// Craft RemoveSchedule message
 	msg = bindings.NeutronMsg{
@@ -680,13 +675,12 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	}
 
 	// Dispatch AddSchedule message
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	// huh?
-	// expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
-	// suite.NoError(err)
-	// suite.Equal([][]uint8{expected}, data)
+	expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
+	suite.NoError(err)
+	suite.Equal(expected, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
@@ -708,13 +702,12 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	}
 
 	// Dispatch
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	// huh?
-	// expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
-	// suite.NoError(err)
-	// suite.Equal([][]uint8{expected}, data)
+	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
+	suite.NoError(err)
+	suite.Equal(expected, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
@@ -733,13 +726,12 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	}
 
 	// Dispatch
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	// huh?
-	// expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
-	// suite.NoError(err)
-	// suite.Equal([][]uint8{expected}, data)
+	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
+	suite.NoError(err)
+	suite.Equal(expected, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract() {
@@ -761,11 +753,11 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	}
 
 	// Dispatch
-	_, _, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.ErrorContains(err, "no failure found to resubmit: not found")
 }
 
-func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data, msg []byte, err error) {
+func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data []byte, err error) {
 	customMsg := types.CosmosMsg{
 		Custom: fullMsg,
 	}
@@ -780,7 +772,7 @@ func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccA
 		Msgs []types.CosmosMsg `json:"msgs"`
 	}(struct{ Msgs []types.CosmosMsg }{Msgs: []types.CosmosMsg{customMsg}})}
 
-	msg, err = json.Marshal(execMsg)
+	msg, err := json.Marshal(execMsg)
 	suite.NoError(err)
 
 	data, err = suite.contractKeeper.Execute(suite.ctx, contractAddress, suite.contractOwner, msg, nil)
@@ -788,7 +780,7 @@ func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccA
 	return
 }
 
-func (suite *CustomMessengerTestSuite) executeNeutronMsg(contractAddress sdk.AccAddress, fullMsg bindings.NeutronMsg) (data, msg []byte, err error) {
+func (suite *CustomMessengerTestSuite) executeNeutronMsg(contractAddress sdk.AccAddress, fullMsg bindings.NeutronMsg) (data []byte, err error) {
 	fullMsgBz, err := json.Marshal(fullMsg)
 	suite.NoError(err)
 
