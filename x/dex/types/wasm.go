@@ -1,48 +1,79 @@
 package types
 
 import (
-	"cosmossdk.io/math"
+	"encoding/json"
+	"fmt"
+
+	"cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/types/query"
-	math_utils "github.com/neutron-org/neutron/v2/utils/math"
+	"golang.org/x/exp/maps"
 )
 
 /*
 File contains an implementation of query responses custom json marshaller for wasmbinding
 */
 
-import (
-	"encoding/json"
-)
-
 type LimitOrderTrancheBinding struct {
-	Key                *LimitOrderTrancheKey `json:"key,omitempty"`
-	ReservesMakerDenom math.Int              `json:"reserves_maker_denom" yaml:"reserves_maker_denom"`
-	ReservesTakerDenom math.Int              `json:"reserves_taker_denom" yaml:"reserves_taker_denom"`
-	TotalMakerDenom    math.Int              `json:"total_maker_denom" yaml:"total_maker_denom"`
-	TotalTakerDenom    math.Int              `json:"total_taker_denom" yaml:"total_taker_denom"`
-	// JIT orders also use goodTilDate to handle deletion but represent a special case
-	// All JIT orders have a goodTilDate of 0 and an exception is made to still still treat these orders as live
-	// Order deletion still functions the same and the orders will be deleted at the end of the block
-	ExpirationTime    *uint64            `json:"expiration_time,omitempty"`
-	PriceTakerToMaker math_utils.PrecDec `json:"price_taker_to_maker" yaml:"price_taker_to_maker"`
+	LimitOrderTranche
+	ExpirationTime *uint64 `json:"expiration_time,omitempty"`
+}
+
+func (t LimitOrderTranche) ToBinding() LimitOrderTrancheBinding {
+	lo := LimitOrderTrancheBinding{
+		LimitOrderTranche: t,
+	}
+	if t.ExpirationTime != nil && t.ExpirationTime.Unix() >= 0 {
+		ut := uint64(t.ExpirationTime.Unix())
+		lo.ExpirationTime = &ut
+	}
+	return lo
+}
+
+type QueryGetPoolMetadataResponseBinding struct {
+	PoolMetadata PoolMetadata `json:"pool_metadata"`
+}
+
+func (t *QueryGetPoolMetadataResponse) MarshalBinding() ([]byte, error) {
+	b := QueryGetPoolMetadataResponseBinding(*t)
+	return json.Marshal(&b)
+}
+
+func (t *QueryAllTickLiquidityResponse) MarshalBinding() ([]byte, error) {
+	type liq struct {
+		Liquidity struct {
+			LimitOrderTranche *LimitOrderTrancheBinding `json:"limit_order_tranche,omitempty"`
+			PoolReserves      *PoolReserves             `json:"pool_reserves,omitempty"`
+		} `json:"liquidity,omitempty"`
+	}
+	type QueryAllTickLiquidityResponseBinding struct {
+		TickLiquidity []liq               `json:"tick_liquidity,omitempty"`
+		Pagination    *query.PageResponse `json:"pagination,omitempty"`
+	}
+	q := QueryAllTickLiquidityResponseBinding{
+		TickLiquidity: make([]liq, 0, len(t.TickLiquidity)),
+		Pagination:    t.Pagination,
+	}
+	for _, l := range t.TickLiquidity {
+		if lq, ok := l.Liquidity.(*TickLiquidity_LimitOrderTranche); ok {
+			lo := lq.LimitOrderTranche.ToBinding()
+			l1 := liq{}
+			l1.Liquidity.LimitOrderTranche = &lo
+			q.TickLiquidity = append(q.TickLiquidity, l1)
+		} else {
+			l1 := liq{}
+			l1.Liquidity.PoolReserves = l.Liquidity.(*TickLiquidity_PoolReserves).PoolReserves
+			q.TickLiquidity = append(q.TickLiquidity, l1)
+		}
+	}
+	return json.Marshal(&q)
 }
 
 func (t *QueryGetLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
 	type QueryGetLimitOrderTrancheResponseBinding struct {
 		LimitOrderTranche *LimitOrderTrancheBinding `json:"limit_order_tranche,omitempty"`
 	}
-	lo := LimitOrderTrancheBinding{
-		Key:                t.LimitOrderTranche.Key,
-		ReservesMakerDenom: t.LimitOrderTranche.ReservesMakerDenom,
-		ReservesTakerDenom: t.LimitOrderTranche.ReservesTakerDenom,
-		TotalMakerDenom:    t.LimitOrderTranche.TotalMakerDenom,
-		TotalTakerDenom:    t.LimitOrderTranche.TotalTakerDenom,
-		PriceTakerToMaker:  t.LimitOrderTranche.PriceTakerToMaker,
-	}
-	if t.LimitOrderTranche.ExpirationTime != nil && !t.LimitOrderTranche.ExpirationTime.IsZero() {
-		ut := uint64(t.LimitOrderTranche.ExpirationTime.Unix())
-		lo.ExpirationTime = &ut
-	}
+	lo := t.LimitOrderTranche.ToBinding()
 	qr := QueryGetLimitOrderTrancheResponseBinding{
 		LimitOrderTranche: &lo,
 	}
@@ -59,18 +90,7 @@ func (t *QueryAllInactiveLimitOrderTrancheResponse) MarshalBinding() ([]byte, er
 		Pagination:                t.Pagination,
 	}
 	for _, lo := range t.InactiveLimitOrderTranche {
-		newlo := LimitOrderTrancheBinding{
-			Key:                lo.Key,
-			ReservesMakerDenom: lo.ReservesMakerDenom,
-			ReservesTakerDenom: lo.ReservesTakerDenom,
-			TotalMakerDenom:    lo.TotalMakerDenom,
-			TotalTakerDenom:    lo.TotalTakerDenom,
-			PriceTakerToMaker:  lo.PriceTakerToMaker,
-		}
-		if lo.ExpirationTime != nil && !lo.ExpirationTime.IsZero() {
-			ut := uint64(lo.ExpirationTime.Unix())
-			newlo.ExpirationTime = &ut
-		}
+		newlo := lo.ToBinding()
 		qr.InactiveLimitOrderTranche = append(qr.InactiveLimitOrderTranche, &newlo)
 	}
 
@@ -81,18 +101,7 @@ func (t *QueryGetInactiveLimitOrderTrancheResponse) MarshalBinding() ([]byte, er
 	type QueryGetInactiveLimitOrderTrancheResponseBinding struct {
 		InactiveLimitOrderTranche *LimitOrderTrancheBinding `json:"inactive_limit_order_tranche,omitempty"`
 	}
-	lo := LimitOrderTrancheBinding{
-		Key:                t.InactiveLimitOrderTranche.Key,
-		ReservesMakerDenom: t.InactiveLimitOrderTranche.ReservesMakerDenom,
-		ReservesTakerDenom: t.InactiveLimitOrderTranche.ReservesTakerDenom,
-		TotalMakerDenom:    t.InactiveLimitOrderTranche.TotalMakerDenom,
-		TotalTakerDenom:    t.InactiveLimitOrderTranche.TotalTakerDenom,
-		PriceTakerToMaker:  t.InactiveLimitOrderTranche.PriceTakerToMaker,
-	}
-	if t.InactiveLimitOrderTranche.ExpirationTime != nil && !t.InactiveLimitOrderTranche.ExpirationTime.IsZero() {
-		ut := uint64(t.InactiveLimitOrderTranche.ExpirationTime.Unix())
-		lo.ExpirationTime = &ut
-	}
+	lo := t.InactiveLimitOrderTranche.ToBinding()
 	qr := QueryGetInactiveLimitOrderTrancheResponseBinding{
 		InactiveLimitOrderTranche: &lo,
 	}
@@ -109,20 +118,88 @@ func (t *QueryAllLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
 		Pagination:        t.Pagination,
 	}
 	for _, lo := range t.LimitOrderTranche {
-		newlo := LimitOrderTrancheBinding{
-			Key:                lo.Key,
-			ReservesMakerDenom: lo.ReservesMakerDenom,
-			ReservesTakerDenom: lo.ReservesTakerDenom,
-			TotalMakerDenom:    lo.TotalMakerDenom,
-			TotalTakerDenom:    lo.TotalTakerDenom,
-			PriceTakerToMaker:  lo.PriceTakerToMaker,
-		}
-		if lo.ExpirationTime != nil && !lo.ExpirationTime.IsZero() {
-			ut := uint64(lo.ExpirationTime.Unix())
-			newlo.ExpirationTime = &ut
-		}
+		newlo := lo.ToBinding()
 		qr.LimitOrderTranche = append(qr.LimitOrderTranche, &newlo)
 	}
 
 	return json.Marshal(&qr)
+}
+
+type LimitOrderTrancheUserBinding struct {
+	LimitOrderTrancheUser
+	OrderType string `json:"order_type"`
+}
+
+type QueryGetLimitOrderTrancheUserResponseBinding struct {
+	LimitOrderTrancheUser *LimitOrderTrancheUserBinding `json:"limit_order_tranche_user,omitempty"`
+}
+
+func (t *QueryGetLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error) {
+	lou := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *t.LimitOrderTrancheUser}
+	s, ok := LimitOrderType_name[int32(t.LimitOrderTrancheUser.OrderType)]
+	if !ok {
+		return nil, errors.Wrap(ErrInvalidOrderType,
+			fmt.Sprintf(
+				"got \"%d\", expeted one of %v",
+				t.LimitOrderTrancheUser.OrderType,
+				maps.Keys(LimitOrderType_name)),
+		)
+	}
+	lou.OrderType = s
+	r := QueryGetLimitOrderTrancheUserResponseBinding{LimitOrderTrancheUser: &lou}
+	return json.Marshal(&r)
+}
+
+type QueryAllLimitOrderTrancheUserResponseBinding struct {
+	LimitOrderTrancheUser []*LimitOrderTrancheUserBinding `json:"limit_order_tranche_user,omitempty"`
+	Pagination            *query.PageResponse             `json:"pagination,omitempty"`
+}
+
+func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error) {
+	allLimitOrders := QueryAllLimitOrderTrancheUserResponseBinding{
+		LimitOrderTrancheUser: make([]*LimitOrderTrancheUserBinding, 0, len(t.LimitOrderTrancheUser)),
+		Pagination:            t.Pagination,
+	}
+	for _, lo := range t.LimitOrderTrancheUser {
+		newlo := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *lo}
+		s, ok := LimitOrderType_name[int32(lo.OrderType)]
+		if !ok {
+			return nil, errors.Wrap(ErrInvalidOrderType,
+				fmt.Sprintf(
+					"got \"%d\", expeted one of %v",
+					lo.OrderType,
+					maps.Keys(LimitOrderType_name)),
+			)
+		}
+		newlo.OrderType = s
+		allLimitOrders.LimitOrderTrancheUser = append(allLimitOrders.LimitOrderTrancheUser, &newlo)
+	}
+	return json.Marshal(&allLimitOrders)
+}
+
+type QueryAllUserLimitOrdersResponseBinding struct {
+	LimitOrders []*LimitOrderTrancheUserBinding `json:"limit_orders,omitempty"`
+	Pagination  *query.PageResponse             `json:"pagination,omitempty"`
+}
+
+func (t *QueryAllUserLimitOrdersResponse) MarshalBinding() ([]byte, error) {
+	allLimitOrders := QueryAllUserLimitOrdersResponseBinding{
+		LimitOrders: make([]*LimitOrderTrancheUserBinding, 0, len(t.LimitOrders)),
+		Pagination:  t.Pagination,
+	}
+	for _, lo := range t.LimitOrders {
+		newlo := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *lo}
+		s, ok := LimitOrderType_name[int32(lo.OrderType)]
+		if !ok {
+			return nil, errors.Wrap(ErrInvalidOrderType,
+				fmt.Sprintf(
+					"got \"%d\", expeted one of %v",
+					lo.OrderType,
+					maps.Keys(LimitOrderType_name)),
+			)
+		}
+		newlo.OrderType = s
+		allLimitOrders.LimitOrders = append(allLimitOrders.LimitOrders, &newlo)
+	}
+	return json.Marshal(&allLimitOrders)
 }

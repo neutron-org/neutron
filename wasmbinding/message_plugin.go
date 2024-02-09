@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
+	"golang.org/x/exp/maps"
+
 	dexkeeper "github.com/neutron-org/neutron/v2/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
-	"time"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
 
@@ -185,10 +189,10 @@ func handleDexMsg[T sdk.Msg, R any](ctx sdk.Context, msg T, handler func(ctx con
 			"msg", resp,
 			"error", err,
 		)
-		return nil, errors.Wrap(err, "marshal json failed")
+		return nil, errors.Wrap(err, fmt.Sprintf("marshal %T failed", resp))
 	}
 
-	ctx.Logger().Debug(fmt.Sprintf("%T execution completed", handler),
+	ctx.Logger().Debug(fmt.Sprintf("%T execution completed", msg),
 		"from_address", msg.GetSigners()[0].String(),
 		"msg", msg,
 	)
@@ -196,14 +200,14 @@ func handleDexMsg[T sdk.Msg, R any](ctx sdk.Context, msg T, handler func(ctx con
 }
 
 func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAddress, dex bindings.Dex) ([][]byte, error) {
-	if dex.Deposit != nil {
+	switch {
+	case dex.Deposit != nil:
 		dex.Deposit.Creator = contractAddr.String()
 		return handleDexMsg(ctx, dex.Deposit, m.DexMsgServer.Deposit)
-	} else if dex.Withdrawal != nil {
+	case dex.Withdrawal != nil:
 		dex.Withdrawal.Creator = contractAddr.String()
 		return handleDexMsg(ctx, dex.Withdrawal, m.DexMsgServer.Withdrawal)
-	}
-	if dex.PlaceLimitOrder != nil {
+	case dex.PlaceLimitOrder != nil:
 		msg := dextypes.MsgPlaceLimitOrder{
 			Creator:          contractAddr.String(),
 			Receiver:         dex.PlaceLimitOrder.Receiver,
@@ -211,25 +215,32 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 			TokenOut:         dex.PlaceLimitOrder.TokenOut,
 			TickIndexInToOut: dex.PlaceLimitOrder.TickIndexInToOut,
 			AmountIn:         dex.PlaceLimitOrder.AmountIn,
-			OrderType:        dex.PlaceLimitOrder.OrderType,
 			MaxAmountOut:     dex.PlaceLimitOrder.MaxAmountOut,
 		}
+		orderTypeInt, ok := dextypes.LimitOrderType_value[dex.PlaceLimitOrder.OrderType]
+		if !ok {
+			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
+				fmt.Sprintf(
+					"got \"%s\", expeted one of %s",
+					dex.PlaceLimitOrder.OrderType,
+					strings.Join(maps.Keys(dextypes.LimitOrderType_value), ", ")),
+			)
+		}
+		msg.OrderType = dextypes.LimitOrderType(orderTypeInt)
+
 		dex.PlaceLimitOrder.Creator = contractAddr.String()
 		if dex.PlaceLimitOrder.ExpirationTime != nil {
 			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
 			msg.ExpirationTime = &t
 		}
 		return handleDexMsg(ctx, &msg, m.DexMsgServer.PlaceLimitOrder)
-	}
-	if dex.CancelLimitOrder != nil {
+	case dex.CancelLimitOrder != nil:
 		dex.CancelLimitOrder.Creator = contractAddr.String()
 		return handleDexMsg(ctx, dex.CancelLimitOrder, m.DexMsgServer.CancelLimitOrder)
-	}
-	if dex.WithdrawFilledLimitOrder != nil {
+	case dex.WithdrawFilledLimitOrder != nil:
 		dex.WithdrawFilledLimitOrder.Creator = contractAddr.String()
 		return handleDexMsg(ctx, dex.WithdrawFilledLimitOrder, m.DexMsgServer.WithdrawFilledLimitOrder)
-	}
-	if dex.MultiHopSwap != nil {
+	case dex.MultiHopSwap != nil:
 		dex.MultiHopSwap.Creator = contractAddr.String()
 		return handleDexMsg(ctx, dex.MultiHopSwap, m.DexMsgServer.MultiHopSwap)
 	}
@@ -983,7 +994,6 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 	}
 
 	err = m.ContractmanagerKeeper.ResubmitFailure(ctx, contractAddr, failure)
-
 	if err != nil {
 		ctx.Logger().Error("failed to resubmitFailure",
 			"from_address", contractAddr.String(),

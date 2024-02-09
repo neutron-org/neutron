@@ -1,12 +1,14 @@
 package bindings
 
 import (
-	"cosmossdk.io/math"
 	"encoding/json"
+	"time"
+
+	"cosmossdk.io/math"
+
 	utils_math "github.com/neutron-org/neutron/v2/utils/math"
 	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
 	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
-	"time"
 
 	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 
@@ -43,7 +45,6 @@ type NeutronQuery struct {
 	// Contractmanager queries
 	// Query all failures for address
 	Failures *Failures `json:"failures,omitempty"`
-
 	// dex module queries
 	Dex *DexQuery `json:"dex,omitempty"`
 }
@@ -222,7 +223,7 @@ type DexQuery struct {
 	Params *dextypes.QueryParamsRequest `json:"params"`
 	// Queries a LimitOrderTrancheUser by index.
 	LimitOrderTrancheUser *dextypes.QueryGetLimitOrderTrancheUserRequest `json:"limit_order_tranche_user,omitempty"`
-	// Queries a list of LimitOrderTrancheMap items.
+	// Queries a list of LimitOrderTrancheUser items.
 	LimitOrderTrancheUserAll *dextypes.QueryAllLimitOrderTrancheUserRequest `json:"limit_order_tranche_user_all"`
 	// Queries a list of LimitOrderTrancheUser items for a given address.
 	LimitOrderTrancheUserAllByAddress *dextypes.QueryAllUserLimitOrdersRequest `json:"limit_order_tranche_user_all_by_address"`
@@ -257,13 +258,13 @@ type DexQuery struct {
 }
 
 type QueryEstimatePlaceLimitOrderRequest struct {
-	Creator          string                  `json:"creator,omitempty"`
-	Receiver         string                  `json:"receiver,omitempty"`
-	TokenIn          string                  `json:"token_in,omitempty"`
-	TokenOut         string                  `json:"token_out,omitempty"`
-	TickIndexInToOut int64                   `json:"tick_index_in_to_out,omitempty"`
-	AmountIn         math.Int                `json:"amount_in"`
-	OrderType        dextypes.LimitOrderType `json:"order_type,omitempty"`
+	Creator          string   `json:"creator,omitempty"`
+	Receiver         string   `json:"receiver,omitempty"`
+	TokenIn          string   `json:"token_in,omitempty"`
+	TokenOut         string   `json:"token_out,omitempty"`
+	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`
+	AmountIn         math.Int `json:"amount_in"`
+	OrderType        string   `json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
 	MaxAmountOut   *math.Int `json:"maxAmount_out"`

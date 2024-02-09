@@ -2,14 +2,20 @@ package wasmbinding
 
 import (
 	"context"
-	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
+	"golang.org/x/exp/maps"
+
+	"cosmossdk.io/errors"
+
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
+
 	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
-	"time"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
 
@@ -131,26 +137,6 @@ func (qp *QueryPlugin) GetFailures(ctx sdk.Context, address string, pagination *
 	return &bindings.FailuresResponse{Failures: res.Failures}, nil
 }
 
-func dexQuery[T any, R any](ctx sdk.Context, query *T, queryHandler func(ctx context.Context, query *T) (R, error)) ([]byte, error) {
-	resp, err := queryHandler(ctx, query)
-	if err != nil {
-		return nil, errors.Wrapf(err, fmt.Sprintf("failed to query request %T", query))
-	}
-	var data []byte
-
-	if q, ok := any(resp).(bindings.BindingMarshaller); ok {
-		data, err = q.MarshalBinding()
-	} else {
-		data, err = json.Marshal(resp)
-	}
-
-	if err != nil {
-		return nil, errors.Wrapf(err, fmt.Sprintf("failed to marshal response %T", resp))
-	}
-
-	return data, nil
-}
-
 func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) ([]byte, error) {
 	var err error
 	var data []byte
@@ -165,9 +151,18 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) ([]byt
 			TokenOut:         query.EstimatePlaceLimitOrder.TokenOut,
 			TickIndexInToOut: query.EstimatePlaceLimitOrder.TickIndexInToOut,
 			AmountIn:         query.EstimatePlaceLimitOrder.AmountIn,
-			OrderType:        query.EstimatePlaceLimitOrder.OrderType,
 			MaxAmountOut:     query.EstimatePlaceLimitOrder.MaxAmountOut,
 		}
+		orderTypeInt, ok := dextypes.LimitOrderType_value[query.EstimatePlaceLimitOrder.OrderType]
+		if !ok {
+			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
+				fmt.Sprintf(
+					"got \"%s\", expeted one of %s",
+					query.EstimatePlaceLimitOrder.OrderType,
+					strings.Join(maps.Keys(dextypes.LimitOrderType_value), ", ")),
+			)
+		}
+		q.OrderType = dextypes.LimitOrderType(orderTypeInt)
 		if query.EstimatePlaceLimitOrder.ExpirationTime != nil {
 			t := time.Unix(int64(*query.EstimatePlaceLimitOrder.ExpirationTime), 0)
 			q.ExpirationTime = &t
@@ -211,6 +206,26 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) ([]byt
 	}
 
 	return data, err
+}
+
+func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context.Context, query *T) (R, error)) ([]byte, error) {
+	resp, err := queryHandler(ctx, query)
+	if err != nil {
+		return nil, errors.Wrapf(err, fmt.Sprintf("failed to query request %T", query))
+	}
+	var data []byte
+
+	if q, ok := any(resp).(bindings.BindingMarshaller); ok {
+		data, err = q.MarshalBinding()
+	} else {
+		data, err = json.Marshal(resp)
+	}
+
+	if err != nil {
+		return nil, errors.Wrapf(err, fmt.Sprintf("failed to marshal response %T", resp))
+	}
+
+	return data, nil
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {

@@ -6,6 +6,7 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
 	"github.com/neutron-org/neutron/v2/x/dex/types"
 	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
@@ -237,13 +238,13 @@ type Dex struct {
 }
 
 type MsgPlaceLimitOrder struct {
-	Creator          string               `json:"creator,omitempty"`
-	Receiver         string               `json:"receiver,omitempty"`
-	TokenIn          string               `json:"token_in,omitempty"`
-	TokenOut         string               `json:"token_out,omitempty"`
-	TickIndexInToOut int64                `json:"tick_index_in_to_out,omitempty"`
-	AmountIn         math.Int             `json:"amount_in"`
-	OrderType        types.LimitOrderType `json:"order_type,omitempty"`
+	Creator          string   `json:"creator,omitempty"`
+	Receiver         string   `json:"receiver,omitempty"`
+	TokenIn          string   `json:"token_in,omitempty"`
+	TokenOut         string   `json:"token_out,omitempty"`
+	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`
+	AmountIn         math.Int `json:"amount_in"`
+	OrderType        string   `json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
 	MaxAmountOut   *math.Int `json:"max_amount_out"`
