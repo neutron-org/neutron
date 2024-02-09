@@ -537,7 +537,7 @@ func PerformForceTransfer(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contrac
 func (m *CustomMessenger) setDenomMetadata(ctx sdk.Context, contractAddr sdk.AccAddress, setDenomMetadata *bindings.SetDenomMetadata) ([]sdk.Event, [][]byte, error) {
 	err := PerformSetDenomMetadata(m.TokenFactory, ctx, contractAddr, setDenomMetadata)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "perform force transfer")
+		return nil, nil, errors.Wrap(err, "perform set denom metadata")
 	}
 	return nil, nil, nil
 }
