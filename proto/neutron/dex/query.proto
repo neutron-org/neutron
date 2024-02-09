@@ -94,7 +94,7 @@ service Query {
   }
 
   // Queries the simulated result of a PlaceLimit order
-  rpc EstimatePlaceLimitOrder (QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
+  rpc EstimatePlaceLimitOrder(QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
     option (google.api.http).get = "/neutron/dex/estimate_place_limit_order";
   }
 
