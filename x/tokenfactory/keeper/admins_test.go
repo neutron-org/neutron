@@ -112,7 +112,7 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// Test minting to admins own account
-			_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, 10)))
+			_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, tc.amount)))
 			if tc.valid {
 				addr0bal += 10
 				suite.Require().NoError(err)
@@ -174,11 +174,78 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// Test minting to admins own account
-			_, err := suite.msgServer.Burn(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgBurn(tc.admin, sdk.NewInt64Coin(tc.burnDenom, 10)))
+			_, err := suite.msgServer.Burn(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgBurn(tc.admin, sdk.NewInt64Coin(tc.burnDenom, tc.amount)))
 			if tc.valid {
 				addr0bal -= 10
 				suite.Require().NoError(err)
 				suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom).Amount.Int64() == addr0bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom))
+			} else {
+				suite.Require().Error(err)
+				suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom).Amount.Int64() == addr0bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom))
+			}
+		})
+	}
+}
+
+func (suite *KeeperTestSuite) TestForceTransferDenom() {
+	addr0bal := int64(0)
+	addr1bal := int64(0)
+	suite.Setup()
+
+	// Create a denom.
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
+
+	// mint 10 default token for testAcc[0]
+	_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
+	suite.NoError(err)
+	addr0bal += 10
+
+	for _, tc := range []struct {
+		desc          string
+		amount        int64
+		transferDenom string
+		admin         string
+		valid         bool
+	}{
+		{
+			desc:          "denom does not exist",
+			amount:        10,
+			transferDenom: "factory/osmo1t7egva48prqmzl59x5ngv4zx0dtrwewc9m7z44/evmos",
+			admin:         suite.TestAccs[0].String(),
+			valid:         false,
+		},
+		{
+			desc:          "force transfer is not by the admin",
+			amount:        10,
+			transferDenom: suite.defaultDenom,
+			admin:         suite.TestAccs[1].String(),
+			valid:         false,
+		},
+		{
+			desc:          "force transfer amount is bigger than minted amount",
+			amount:        1000,
+			transferDenom: suite.defaultDenom,
+			admin:         suite.TestAccs[0].String(),
+			valid:         false,
+		},
+		{
+			desc:          "success case",
+			amount:        10,
+			transferDenom: suite.defaultDenom,
+			admin:         suite.TestAccs[0].String(),
+			valid:         true,
+		},
+	} {
+		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
+			// Test minting to admins own account
+			_, err := suite.msgServer.ForceTransfer(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgForceTransfer(tc.admin, sdk.NewInt64Coin(tc.transferDenom, tc.amount), suite.TestAccs[0].String(), suite.TestAccs[1].String()))
+			if tc.valid {
+				addr0bal -= 10
+				addr1bal += 10
+
+				suite.Require().NoError(err)
+				suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom).Amount.Int64() == addr0bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom))
+				suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[1], suite.defaultDenom).Amount.Int64() == addr1bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[1], suite.defaultDenom))
 			} else {
 				suite.Require().Error(err)
 				suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom).Amount.Int64() == addr0bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom))
