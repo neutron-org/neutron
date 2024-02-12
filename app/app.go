@@ -498,7 +498,14 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.FeeKeeper = feekeeper.NewKeeper(appCodec, keys[feetypes.StoreKey], memKeys[feetypes.MemStoreKey], app.IBCKeeper.ChannelKeeper, app.BankKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+	app.FeeKeeper = feekeeper.NewKeeper(
+		appCodec,
+		keys[feetypes.StoreKey],
+		memKeys[feetypes.MemStoreKey],
+		app.IBCKeeper.ChannelKeeper,
+		app.BankKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
@@ -664,8 +671,24 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.CronKeeper = *cronkeeper.NewKeeper(appCodec, keys[crontypes.StoreKey], keys[crontypes.MemStoreKey], app.AccountKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-	wasmOpts = append(wasmbinding.RegisterCustomPlugins(&app.InterchainTxsKeeper, &app.InterchainQueriesKeeper, app.TransferKeeper, &app.AdminmoduleKeeper, app.FeeBurnerKeeper, app.FeeKeeper, &app.BankKeeper, app.TokenFactoryKeeper, &app.CronKeeper, &app.ContractManagerKeeper, &app.DexKeeper), wasmOpts...)
+	app.CronKeeper = *cronkeeper.NewKeeper(
+		appCodec,
+		keys[crontypes.StoreKey],
+		keys[crontypes.MemStoreKey],
+		app.AccountKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	wasmOpts = append(wasmbinding.RegisterCustomPlugins(
+		&app.InterchainTxsKeeper,
+		&app.InterchainQueriesKeeper,
+		app.TransferKeeper,
+		&app.AdminmoduleKeeper,
+		app.FeeBurnerKeeper,
+		app.FeeKeeper, &app.BankKeeper,
+		app.TokenFactoryKeeper, &app.CronKeeper,
+		&app.ContractManagerKeeper,
+		&app.DexKeeper,
+	), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
 		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
@@ -782,7 +805,8 @@ func New(
 		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
 		swapModule,
 		dexModule,
-		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
+		// crisis always be last to make sure that it checks for all invariants and not only part of them
+		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
