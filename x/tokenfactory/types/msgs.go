@@ -225,7 +225,7 @@ func (m MsgChangeAdmin) GetSigners() []sdk.AccAddress {
 
 var _ sdk.Msg = &MsgSetDenomMetadata{}
 
-// NewMsgSetDenomMetadata creates a message to create metadata for a denom
+// NewMsgSetDenomMetadata creates a message to set a metadata for a denom
 func NewMsgSetDenomMetadata(sender string, metadata banktypes.Metadata) *MsgSetDenomMetadata {
 	return &MsgSetDenomMetadata{
 		Sender:   sender,
