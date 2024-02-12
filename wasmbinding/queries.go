@@ -137,9 +137,7 @@ func (qp *QueryPlugin) GetFailures(ctx sdk.Context, address string, pagination *
 	return &bindings.FailuresResponse{Failures: res.Failures}, nil
 }
 
-func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) ([]byte, error) {
-	var err error
-	var data []byte
+func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data []byte, err error) {
 	switch {
 	case query.EstimateMultiHopSwap != nil:
 		data, err = dexQuery(ctx, query.EstimateMultiHopSwap, qp.dexKeeper.EstimateMultiHopSwap)
@@ -157,7 +155,7 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) ([]byt
 		if !ok {
 			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
 				fmt.Sprintf(
-					"got \"%s\", expeted one of %s",
+					"got \"%s\", expected one of %s",
 					query.EstimatePlaceLimitOrder.OrderType,
 					strings.Join(maps.Keys(dextypes.LimitOrderType_value), ", ")),
 			)

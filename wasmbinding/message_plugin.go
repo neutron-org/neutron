@@ -165,17 +165,21 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 }
 
-// TODO: add handler name as arg for logging purpose
-// fmt.Sprintf("%T: failed to execute", handler) -> fmt.Sprintf("%Ts: failed to execute", handlerName)
 func handleDexMsg[T sdk.Msg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
 	if err := msg.ValidateBasic(); err != nil {
 		return nil, errors.Wrapf(err, "failed to validate %T", msg)
 	}
 
+	if len(msg.GetSigners()) != 1 {
+		// should never happen
+		panic("should be 1 signer")
+	}
+	signer := msg.GetSigners()[0].String()
+
 	resp, err := handler(ctx, msg)
 	if err != nil {
 		ctx.Logger().Debug(fmt.Sprintf("%T: failed to execute", msg),
-			"from_address", msg.GetSigners()[0].String(),
+			"from_address", signer,
 			"msg", msg,
 			"error", err,
 		)
@@ -185,15 +189,14 @@ func handleDexMsg[T sdk.Msg, R any](ctx sdk.Context, msg T, handler func(ctx con
 	data, err := json.Marshal(resp)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("json.Marshal: failed to marshal %T response to JSON", resp),
-			"from_address", msg.GetSigners()[0].String(),
-			"msg", resp,
+			"from_address", signer,
 			"error", err,
 		)
 		return nil, errors.Wrap(err, fmt.Sprintf("marshal %T failed", resp))
 	}
 
 	ctx.Logger().Debug(fmt.Sprintf("%T execution completed", msg),
-		"from_address", msg.GetSigners()[0].String(),
+		"from_address", signer,
 		"msg", msg,
 	)
 	return [][]byte{data}, nil
@@ -221,7 +224,7 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		if !ok {
 			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
 				fmt.Sprintf(
-					"got \"%s\", expeted one of %s",
+					"got \"%s\", expected one of %s",
 					dex.PlaceLimitOrder.OrderType,
 					strings.Join(maps.Keys(dextypes.LimitOrderType_value), ", ")),
 			)
