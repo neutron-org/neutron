@@ -19,6 +19,11 @@ type LimitOrderTrancheBinding struct {
 	ExpirationTime *uint64 `json:"expiration_time,omitempty"`
 }
 
+type LimitOrderTrancheUserBinding struct {
+	LimitOrderTrancheUser
+	OrderType string `json:"order_type"`
+}
+
 func (t LimitOrderTranche) ToBinding() LimitOrderTrancheBinding {
 	lo := LimitOrderTrancheBinding{
 		LimitOrderTranche: t,
@@ -30,11 +35,11 @@ func (t LimitOrderTranche) ToBinding() LimitOrderTrancheBinding {
 	return lo
 }
 
-type QueryGetPoolMetadataResponseBinding struct {
-	PoolMetadata PoolMetadata `json:"pool_metadata"`
-}
-
 func (t *QueryGetPoolMetadataResponse) MarshalBinding() ([]byte, error) {
+	type QueryGetPoolMetadataResponseBinding struct {
+		PoolMetadata PoolMetadata `json:"pool_metadata"`
+	}
+
 	b := QueryGetPoolMetadataResponseBinding(*t)
 	return json.Marshal(&b)
 }
@@ -125,22 +130,17 @@ func (t *QueryAllLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
 	return json.Marshal(&qr)
 }
 
-type LimitOrderTrancheUserBinding struct {
-	LimitOrderTrancheUser
-	OrderType string `json:"order_type"`
-}
-
-type QueryGetLimitOrderTrancheUserResponseBinding struct {
-	LimitOrderTrancheUser *LimitOrderTrancheUserBinding `json:"limit_order_tranche_user,omitempty"`
-}
-
 func (t *QueryGetLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error) {
+	type QueryGetLimitOrderTrancheUserResponseBinding struct {
+		LimitOrderTrancheUser *LimitOrderTrancheUserBinding `json:"limit_order_tranche_user,omitempty"`
+	}
+
 	lou := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *t.LimitOrderTrancheUser}
 	s, ok := LimitOrderType_name[int32(t.LimitOrderTrancheUser.OrderType)]
 	if !ok {
 		return nil, errors.Wrap(ErrInvalidOrderType,
 			fmt.Sprintf(
-				"got \"%d\", expeted one of %v",
+				"got \"%d\", expected one of %v",
 				t.LimitOrderTrancheUser.OrderType,
 				maps.Keys(LimitOrderType_name)),
 		)
@@ -150,12 +150,12 @@ func (t *QueryGetLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error)
 	return json.Marshal(&r)
 }
 
-type QueryAllLimitOrderTrancheUserResponseBinding struct {
-	LimitOrderTrancheUser []*LimitOrderTrancheUserBinding `json:"limit_order_tranche_user,omitempty"`
-	Pagination            *query.PageResponse             `json:"pagination,omitempty"`
-}
-
 func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error) {
+	type QueryAllLimitOrderTrancheUserResponseBinding struct {
+		LimitOrderTrancheUser []*LimitOrderTrancheUserBinding `json:"limit_order_tranche_user,omitempty"`
+		Pagination            *query.PageResponse             `json:"pagination,omitempty"`
+	}
+
 	allLimitOrders := QueryAllLimitOrderTrancheUserResponseBinding{
 		LimitOrderTrancheUser: make([]*LimitOrderTrancheUserBinding, 0, len(t.LimitOrderTrancheUser)),
 		Pagination:            t.Pagination,
@@ -166,7 +166,7 @@ func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error)
 		if !ok {
 			return nil, errors.Wrap(ErrInvalidOrderType,
 				fmt.Sprintf(
-					"got \"%d\", expeted one of %v",
+					"got \"%d\", expected one of %v",
 					lo.OrderType,
 					maps.Keys(LimitOrderType_name)),
 			)
@@ -177,12 +177,12 @@ func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error)
 	return json.Marshal(&allLimitOrders)
 }
 
-type QueryAllUserLimitOrdersResponseBinding struct {
-	LimitOrders []*LimitOrderTrancheUserBinding `json:"limit_orders,omitempty"`
-	Pagination  *query.PageResponse             `json:"pagination,omitempty"`
-}
-
 func (t *QueryAllUserLimitOrdersResponse) MarshalBinding() ([]byte, error) {
+	type QueryAllUserLimitOrdersResponseBinding struct {
+		LimitOrders []*LimitOrderTrancheUserBinding `json:"limit_orders,omitempty"`
+		Pagination  *query.PageResponse             `json:"pagination,omitempty"`
+	}
+
 	allLimitOrders := QueryAllUserLimitOrdersResponseBinding{
 		LimitOrders: make([]*LimitOrderTrancheUserBinding, 0, len(t.LimitOrders)),
 		Pagination:  t.Pagination,
@@ -193,7 +193,7 @@ func (t *QueryAllUserLimitOrdersResponse) MarshalBinding() ([]byte, error) {
 		if !ok {
 			return nil, errors.Wrap(ErrInvalidOrderType,
 				fmt.Sprintf(
-					"got \"%d\", expeted one of %v",
+					"got \"%d\", expected one of %v",
 					lo.OrderType,
 					maps.Keys(LimitOrderType_name)),
 			)
