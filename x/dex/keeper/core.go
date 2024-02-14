@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -235,17 +236,20 @@ func (k Keeper) MultiHopSwapCore(
 		write   func()
 		coinOut sdk.Coin
 		route   []string
+		dust    sdk.Coins
 	}
 	bestRoute.coinOut = sdk.Coin{Amount: math.ZeroInt()}
 
 	for _, route := range routes {
-		routeCoinOut, writeRoute, err := k.RunMultihopRoute(
+		routeCoinDust, routeCoinOut, writeRoute, err := k.RunMultihopRoute(
 			ctx,
 			*route,
 			initialInCoin,
 			exitLimitPrice,
 			stepCache,
 		)
+		fmt.Printf("routeCoinDust: %+v\n", routeCoinDust)
+		fmt.Printf("routeCoinOut: %+v\n", routeCoinOut)
 		if err != nil {
 			routeErrors = append(routeErrors, err)
 			continue
@@ -255,6 +259,7 @@ func (k Keeper) MultiHopSwapCore(
 			bestRoute.coinOut = routeCoinOut
 			bestRoute.write = writeRoute
 			bestRoute.route = route.Hops
+			bestRoute.dust = routeCoinDust
 		}
 		if !pickBestRoute {
 			break
@@ -270,6 +275,12 @@ func (k Keeper) MultiHopSwapCore(
 	}
 
 	bestRoute.write()
+	// solution #1:
+	// - extract all dust from each route path
+	// - for each dust change pool values to reflect this (???? how? do we need this?)
+	// - for each dust send tokens back to the caller address
+	// cons:
+	// - user can have a lot of dust on this account after exchange
 	err = k.bankKeeper.SendCoinsFromAccountToModule(
 		ctx,
 		callerAddr,
@@ -289,6 +300,21 @@ func (k Keeper) MultiHopSwapCore(
 	if err != nil {
 		return sdk.Coin{}, err
 	}
+
+	// send dust to the user.
+	// note that dust can be multiple coins collected from multiple hops.
+	if !bestRoute.dust.IsZero() {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(
+			ctx,
+			types.ModuleName,
+			receiverAddr,
+			bestRoute.dust,
+		)
+		if err != nil {
+			return sdk.Coin{}, err // TODO: format error
+		}
+	}
+
 	ctx.EventManager().EmitEvent(types.CreateMultihopSwapEvent(
 		callerAddr,
 		receiverAddr,
@@ -302,7 +328,7 @@ func (k Keeper) MultiHopSwapCore(
 	return bestRoute.coinOut, nil
 }
 
-// Handles MsgPlaceLimitOrder, initializing (tick, pair) data structures if needed, calculating and
+// PlaceLimitOrderCore handles MsgPlaceLimitOrder, initializing (tick, pair) data structures if needed, calculating and
 // storing information for a new limit order at a specific tick.
 func (k Keeper) PlaceLimitOrderCore(
 	goCtx context.Context,
@@ -446,7 +472,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	return trancheKey, totalInCoin, swapInCoin, swapOutCoin, nil
 }
 
-// Handles MsgCancelLimitOrder, removing a specified number of shares from a limit order
+// CancelLimitOrderCore handles MsgCancelLimitOrder, removing a specified number of shares from a limit order
 // and returning the respective amount in terms of the reserve to the user.
 func (k Keeper) CancelLimitOrderCore(
 	goCtx context.Context,
@@ -513,7 +539,7 @@ func (k Keeper) CancelLimitOrderCore(
 	return nil
 }
 
-// Handles MsgWithdrawFilledLimitOrder, calculates and sends filled liqudity from module to user
+// WithdrawFilledLimitOrderCore handles MsgWithdrawFilledLimitOrder, calculates and sends filled liquidity from module to user
 // for a limit order based on amount wished to receive.
 func (k Keeper) WithdrawFilledLimitOrderCore(
 	goCtx context.Context,

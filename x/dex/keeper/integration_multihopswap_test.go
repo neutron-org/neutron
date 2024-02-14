@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v2/utils/math"
@@ -68,6 +69,49 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRoute() {
 	s.assertDexBalanceWithDenom("TokenB", 100)
 	s.assertDexBalanceWithDenom("TokenC", 100)
 	s.assertDexBalanceWithDenom("TokenD", 0)
+}
+
+func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
+	s.fundAliceBalances(6000000, 0)
+
+	// GIVEN liquidity in pools A<>B, B<>C, C<>D,
+	s.SetupMultiplePools(
+		// tick 109999 with fee 1 will be traded for A -> B at 110000
+		NewPoolSetup("TokenA", "TokenB", 0, 1000000, 109999, 1),
+		NewPoolSetup("TokenB", "TokenC", 0, 1000000, -1, 1),
+		NewPoolSetup("TokenC", "TokenD", 0, 1000000, -1, 1),
+	)
+
+	// tick -110000 ~= 59841.22218557191867154759205905 to 1 ()
+
+	// WHEN alice multihopswaps A<>B => B<>C => C<>D,
+	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
+	msg := types.NewMsgMultiHopSwap(
+		s.alice.String(),
+		s.alice.String(),
+		route,
+		math.NewInt(int64(60000)),
+		math_utils.MustNewPrecDecFromStr("0.000013"),
+		false,
+	)
+	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	if err != nil {
+		fmt.Printf("Error: %+v\n\n\n", err.Error())
+	}
+	s.Assert().Nil(err)
+
+	// THEN alice gets out 1 TokenD
+
+	// X - 60_000 (swap in) + 159 (dust)
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(5_999_999_940_159))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(0))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(0))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(1))
+
+	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(59_841))
+	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000_000_000))
+	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000_000_000))
+	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(999_999_999_999))
 }
 
 func (s *DexTestSuite) TestMultiHopSwapInsufficientLiquiditySingleRoute() {

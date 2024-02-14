@@ -2,6 +2,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 	"time"
@@ -907,6 +908,9 @@ func (s *DexTestSuite) multiHopSwaps(
 		pickBest,
 	)
 	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	if err != nil {
+		fmt.Printf("Error: %+v\n\n\n", err.Error())
+	}
 	s.Assert().Nil(err)
 }
 
