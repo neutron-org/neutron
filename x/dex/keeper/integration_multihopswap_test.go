@@ -72,17 +72,15 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRoute() {
 }
 
 func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
-	s.fundAliceBalances(6000000, 0)
+	s.fundAliceBalances(200, 0) // 200_000_000 TokenA
 
 	// GIVEN liquidity in pools A<>B, B<>C, C<>D,
 	s.SetupMultiplePools(
 		// tick 109999 with fee 1 will be traded for A -> B at 110000
-		NewPoolSetup("TokenA", "TokenB", 0, 1000000, 109999, 1),
-		NewPoolSetup("TokenB", "TokenC", 0, 1000000, -1, 1),
-		NewPoolSetup("TokenC", "TokenD", 0, 1000000, -1, 1),
+		NewPoolSetup("TokenA", "TokenB", 0, 1, 109999, 1), // tick 110000 = 59841.22218557191867154759205905
+		NewPoolSetup("TokenB", "TokenC", 0, 1, -1, 1),
+		NewPoolSetup("TokenC", "TokenD", 0, 1, -1, 1),
 	)
-
-	// tick -110000 ~= 59841.22218557191867154759205905 to 1 ()
 
 	// WHEN alice multihopswaps A<>B => B<>C => C<>D,
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
@@ -90,10 +88,52 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
 		s.alice.String(),
 		s.alice.String(),
 		route,
-		math.NewInt(int64(60000)),
-		math_utils.MustNewPrecDecFromStr("0.000013"),
+		math.NewInt(int64(60_000)),
+		math_utils.MustNewPrecDecFromStr("0.000000013"),
 		false,
+	) // 60_000_000A (59960904 real) -> 1_002B -> 8_185C -> 20_000D
+	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	if err != nil {
+		fmt.Printf("Error: %+v\n\n\n", err.Error())
+	}
+	s.Assert().Nil(err)
+
+	// THEN alice gets out 1 TokenD
+
+	// 200_000_000 - 60_000 (swap in) + 159 (dust)
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(199_940_159)) // alice balance - spent + received dust
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(0))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(0))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(1)) // received TokenD after swap
+
+	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(59_841))
+	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(999_999))
+}
+
+// this is a case where Pool.Swap() (B <-> C) gives up not the full available tokens amount and leaves 1,
+// and because of that swap fails overall (1 token * 403 price > 2 allowed for order to be filled)
+func (s *DexTestSuite) TestBugWithLiquidityCheck() {
+	s.fundAliceBalances(200, 0) // 200_000_000 TokenA
+
+	// GIVEN liquidity in pools A<>B, B<>C, C<>D,
+	s.SetupMultiplePools(
+		// tick 109999 with fee 1 will be traded for A -> B at 110000
+		NewPoolSetup("TokenA", "TokenB", 0, 1, 109999, 1), // tick 110000 = 59841.22218557191867154759205905
+		NewPoolSetup("TokenB", "TokenC", 0, 1, -60001, 1), // tick -100000 = 0.00004542263 || OR tick -60000 = 0.00247949586
+		NewPoolSetup("TokenC", "TokenD", 0, 1, 69999, 1),  // tick 70000 = 1096.24942956
 	)
+
+	// WHEN alice multihopswaps A<>B => B<>C => C<>D,
+	msg := types.NewMsgMultiHopSwap(
+		s.alice.String(),
+		s.alice.String(),
+		[][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}},
+		math.NewInt(int64(60_000_000)),
+		math_utils.MustNewPrecDecFromStr("0.0000013"),
+		false,
+	) // 60_000_000A (59960904 real) -> 1_002B -> 22_015_000C -> 20_000D
 	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
 	if err != nil {
 		fmt.Printf("Error: %+v\n\n\n", err.Error())
@@ -103,15 +143,16 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
 	// THEN alice gets out 1 TokenD
 
 	// X - 60_000 (swap in) + 159 (dust)
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(5_999_999_940_159))
+	// 22015 / 1096.24942956 = 20; 20 * 1096.24942956 = 21_924.9885912; 22015 - 21_924 = 91 dust
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(199_940_159))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(0))
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(0))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(1))
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(1))
 
 	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(59_841))
-	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000_000_000))
-	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000_000_000))
-	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(999_999_999_999))
+	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(999_999))
 }
 
 func (s *DexTestSuite) TestMultiHopSwapInsufficientLiquiditySingleRoute() {

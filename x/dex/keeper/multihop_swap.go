@@ -3,7 +3,6 @@ package keeper
 import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v2/utils/math"
@@ -126,7 +125,6 @@ func (k Keeper) RunMultihopRoute(
 			inCoin,
 			stepCache,
 		)
-		//fmt.Printf("\nMultihop step pair %+v, left: %+v\n", step.tradePairID, leftIn)
 		inCoin = currentOutCoin
 		if err != nil {
 			return sdk.Coins{}, sdk.Coin{}, nil, sdkerrors.Wrapf(
@@ -141,7 +139,6 @@ func (k Keeper) RunMultihopRoute(
 
 		currentPrice = math_utils.NewPrecDecFromInt(currentOutCoin.Amount).
 			Quo(math_utils.NewPrecDecFromInt(initialInCoin.Amount))
-		//fmt.Printf("Current price: %+v", currentPrice.String())
 	}
 
 	if exitLimitPrice.GT(currentPrice) {
@@ -171,11 +168,9 @@ func (k Keeper) SwapFullAmountIn(
 		return sdk.Coin{}, sdk.Coin{}, err
 	}
 	if !orderFilled {
-		fmt.Printf("Unfullfilled order: %+v\n\n", tradePairID)
 		return sdk.Coin{}, sdk.Coin{}, types.ErrInsufficientLiquidity
 	}
 
-	fmt.Printf("SwapFullAmountIn: pairID %+v taker %+v maker %+v\n", tradePairID, swapAmountTakerDenom, swapAmountMakerDenom)
 	leftIn = sdk.Coin.Sub(sdk.NewCoin(swapAmountTakerDenom.Denom, amountIn), swapAmountTakerDenom)
 	return leftIn, swapAmountMakerDenom, err
 }

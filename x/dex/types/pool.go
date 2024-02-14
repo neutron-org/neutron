@@ -2,6 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v2/utils/math"
@@ -92,14 +93,20 @@ func (p *Pool) Swap(
 	}
 
 	// outAmount will be the smallest value of:
-	// a.) The available reserves1
-	// b.) The most the user could get out given maxAmountIn0 (maxOutGivenIn1)
-	// c.) The maximum amount the user wants out (maxAmountOut1)
+	// a) The available reserves1
+	// b) The most the user could get out given maxAmountIn0 (maxOutGivenIn1)
+	// c) The maximum amount the user wants out (maxAmountOut1)
 	amountMakerOut = utils.MinIntArr(possibleAmountsMakerOut)
+
 	amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
 		Quo(makerReserves.PriceTakerToMaker).
 		TruncateInt()
-
+	fmt.Printf("Pool.Swap(): amountMakerOut (%+v) / makerReserves.PriceTakerToMaker (%+v)  \n", amountMakerOut, makerReserves.PriceTakerToMaker)
+	fmt.Printf("maxAmountTakerIn: %+v, amountTakerIn: %+v\n", maxAmountTakerIn, amountTakerIn)
+	// Example to consider?
+	// 1002 * 8.16857918187234166384256826 = truncate(8184.9163402361) = 8184
+	// amountTakerIn = 8184 / 8.16857918187234166384256826 = truncate(1001.887821343751) = 1001
+	// 1002 != 1001
 	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
 	makerReserves.ReservesMakerDenom = makerReserves.ReservesMakerDenom.Sub(amountMakerOut)
 

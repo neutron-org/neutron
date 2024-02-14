@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -248,8 +247,6 @@ func (k Keeper) MultiHopSwapCore(
 			exitLimitPrice,
 			stepCache,
 		)
-		fmt.Printf("routeCoinDust: %+v\n", routeCoinDust)
-		fmt.Printf("routeCoinOut: %+v\n", routeCoinOut)
 		if err != nil {
 			routeErrors = append(routeErrors, err)
 			continue
@@ -275,12 +272,6 @@ func (k Keeper) MultiHopSwapCore(
 	}
 
 	bestRoute.write()
-	// solution #1:
-	// - extract all dust from each route path
-	// - for each dust change pool values to reflect this (???? how? do we need this?)
-	// - for each dust send tokens back to the caller address
-	// cons:
-	// - user can have a lot of dust on this account after exchange
 	err = k.bankKeeper.SendCoinsFromAccountToModule(
 		ctx,
 		callerAddr,

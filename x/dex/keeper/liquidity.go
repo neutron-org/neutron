@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v2/utils/math"
@@ -33,11 +34,13 @@ func (k Keeper) Swap(
 	for {
 		liq := liqIter.Next()
 		if liq == nil {
+			fmt.Println("liq == nil")
 			break
 		}
 
 		// break as soon as we iterated past limitPrice
 		if limitPrice != nil && liq.Price().LT(*limitPrice) {
+			fmt.Println("past limit price")
 			break
 		}
 
@@ -61,6 +64,7 @@ func (k Keeper) Swap(
 
 		remainingTakerDenom = remainingTakerDenom.Sub(inAmount)
 		totalMakerDenom = totalMakerDenom.Add(outAmount)
+		fmt.Printf("swap inamount: %+v outamount: %+v remaining: %+v\n", inAmount, outAmount, remainingTakerDenom)
 
 		// break if remainingTakerDenom will yield less than 1 tokenOut at current price
 		// this avoids unnecessary iteration since outAmount will always be 0 going forward
@@ -70,6 +74,7 @@ func (k Keeper) Swap(
 		// but due to rounding and inaccuracy of fixed decimal math, it is possible
 		// for liq.swap to use the full the amount of taker liquidity and have a leftover
 		// amount of the taker Denom > than 1 token worth of maker denom
+		fmt.Printf("Check liq.Price(): %+v, remainingTakerDenom: %+v\n", liq.Price(), remainingTakerDenom)
 		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
@@ -139,6 +144,8 @@ func isUnfairTruePrice(
 	truePrice := math_utils.NewPrecDecFromInt(outAmount).QuoInt(inAmount)
 	priceDiffFromExpected := truePrice.Sub(bookPrice)
 	pctDiff := priceDiffFromExpected.Quo(bookPrice)
+
+	fmt.Printf("InAmount: %+v OutAmount: %+v Book price: %+v True price: %+v\n", inAmount, outAmount, bookPrice, truePrice)
 
 	return pctDiff.GT(maxTrueTakerSpread)
 }
