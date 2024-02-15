@@ -8,6 +8,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
+	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
 
 	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
@@ -48,6 +49,9 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		// interchaintxs
 		"/neutron.interchaintxs.v1.Query/Params":                   &interchaintxstypes.QueryParamsResponse{},
 		"/neutron.interchaintxs.v1.Query/InterchainAccountAddress": &interchaintxstypes.QueryInterchainAccountAddressResponse{},
+
+		// cron
+		"/neutron.cron.Query/Params": &crontypes.QueryParamsResponse{},
 
 		// interchainqueries
 		"/neutron.interchainqueries.Query/Params":            &interchainqueriestypes.QueryParamsResponse{},
