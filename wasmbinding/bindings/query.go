@@ -243,7 +243,7 @@ type DexQuery struct {
 	PoolReserves *dextypes.QueryGetPoolReservesRequest `json:"pool_reserves"`
 	// Queries the simulated result of a multihop swap
 	EstimateMultiHopSwap *dextypes.QueryEstimateMultiHopSwapRequest `json:"estimate_multi_hop_swap"`
-	// // Queries the simulated result of a PlaceLimit order
+	// Queries the simulated result of a PlaceLimit order
 	EstimatePlaceLimitOrder *QueryEstimatePlaceLimitOrderRequest `json:"estimate_place_limit_order"`
 	// Queries a pool by pair, tick and fee
 	Pool *dextypes.QueryPoolRequest `json:"pool"`

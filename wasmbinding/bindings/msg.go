@@ -8,7 +8,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
 	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 	transferwrappertypes "github.com/neutron-org/neutron/v2/x/transfer/types"
@@ -250,12 +250,12 @@ type ResubmitFailureResponse struct {
 }
 
 type Dex struct {
-	Deposit                  *types.MsgDeposit                  `json:"deposit"`
-	Withdrawal               *types.MsgWithdrawal               `json:"withdrawal"`
-	PlaceLimitOrder          *MsgPlaceLimitOrder                `json:"place_limit_order"`
-	WithdrawFilledLimitOrder *types.MsgWithdrawFilledLimitOrder `json:"withdraw_filled_limit_order"`
-	CancelLimitOrder         *types.MsgCancelLimitOrder         `json:"cancel_limit_order"`
-	MultiHopSwap             *types.MsgMultiHopSwap             `json:"multi_hop_swap"`
+	Deposit                  *dextypes.MsgDeposit                  `json:"deposit"`
+	Withdrawal               *dextypes.MsgWithdrawal               `json:"withdrawal"`
+	PlaceLimitOrder          *MsgPlaceLimitOrder                   `json:"place_limit_order"`
+	WithdrawFilledLimitOrder *dextypes.MsgWithdrawFilledLimitOrder `json:"withdraw_filled_limit_order"`
+	CancelLimitOrder         *dextypes.MsgCancelLimitOrder         `json:"cancel_limit_order"`
+	MultiHopSwap             *dextypes.MsgMultiHopSwap             `json:"multi_hop_swap"`
 }
 
 type MsgPlaceLimitOrder struct {
