@@ -40,35 +40,35 @@ func (t *QueryGetPoolMetadataResponse) MarshalBinding() ([]byte, error) {
 		PoolMetadata PoolMetadata `json:"pool_metadata"`
 	}
 
-	b := QueryGetPoolMetadataResponseBinding(*t)
-	return json.Marshal(&b)
+	metadata := QueryGetPoolMetadataResponseBinding(*t)
+	return json.Marshal(&metadata)
 }
 
 func (t *QueryAllTickLiquidityResponse) MarshalBinding() ([]byte, error) {
-	type liq struct {
+	type tickLiquidity struct {
 		Liquidity struct {
 			LimitOrderTranche *LimitOrderTrancheBinding `json:"limit_order_tranche,omitempty"`
 			PoolReserves      *PoolReserves             `json:"pool_reserves,omitempty"`
 		} `json:"liquidity,omitempty"`
 	}
 	type QueryAllTickLiquidityResponseBinding struct {
-		TickLiquidity []liq               `json:"tick_liquidity,omitempty"`
+		TickLiquidity []tickLiquidity     `json:"tick_liquidity,omitempty"`
 		Pagination    *query.PageResponse `json:"pagination,omitempty"`
 	}
 	q := QueryAllTickLiquidityResponseBinding{
-		TickLiquidity: make([]liq, 0, len(t.TickLiquidity)),
+		TickLiquidity: make([]tickLiquidity, 0, len(t.TickLiquidity)),
 		Pagination:    t.Pagination,
 	}
-	for _, l := range t.TickLiquidity {
-		if lq, ok := l.Liquidity.(*TickLiquidity_LimitOrderTranche); ok {
+	for _, tl := range t.TickLiquidity {
+		if lq, ok := tl.Liquidity.(*TickLiquidity_LimitOrderTranche); ok {
 			lo := lq.LimitOrderTranche.ToBinding()
-			l1 := liq{}
-			l1.Liquidity.LimitOrderTranche = &lo
-			q.TickLiquidity = append(q.TickLiquidity, l1)
+			tlNew := tickLiquidity{}
+			tlNew.Liquidity.LimitOrderTranche = &lo
+			q.TickLiquidity = append(q.TickLiquidity, tlNew)
 		} else {
-			l1 := liq{}
-			l1.Liquidity.PoolReserves = l.Liquidity.(*TickLiquidity_PoolReserves).PoolReserves
-			q.TickLiquidity = append(q.TickLiquidity, l1)
+			tlNew := tickLiquidity{}
+			tlNew.Liquidity.PoolReserves = tl.Liquidity.(*TickLiquidity_PoolReserves).PoolReserves
+			q.TickLiquidity = append(q.TickLiquidity, tlNew)
 		}
 	}
 	return json.Marshal(&q)
@@ -79,10 +79,10 @@ func (t *QueryGetLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
 		LimitOrderTranche *LimitOrderTrancheBinding `json:"limit_order_tranche,omitempty"`
 	}
 	lo := t.LimitOrderTranche.ToBinding()
-	qr := QueryGetLimitOrderTrancheResponseBinding{
+	q := QueryGetLimitOrderTrancheResponseBinding{
 		LimitOrderTranche: &lo,
 	}
-	return json.Marshal(&qr)
+	return json.Marshal(&q)
 }
 
 func (t *QueryAllInactiveLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
@@ -90,16 +90,16 @@ func (t *QueryAllInactiveLimitOrderTrancheResponse) MarshalBinding() ([]byte, er
 		InactiveLimitOrderTranche []*LimitOrderTrancheBinding `json:"inactive_limit_order_tranche,omitempty"`
 		Pagination                *query.PageResponse         `json:"pagination,omitempty"`
 	}
-	qr := QueryAllInactiveLimitOrderTrancheResponseBindings{
+	q := QueryAllInactiveLimitOrderTrancheResponseBindings{
 		InactiveLimitOrderTranche: make([]*LimitOrderTrancheBinding, 0, len(t.InactiveLimitOrderTranche)),
 		Pagination:                t.Pagination,
 	}
 	for _, lo := range t.InactiveLimitOrderTranche {
-		newlo := lo.ToBinding()
-		qr.InactiveLimitOrderTranche = append(qr.InactiveLimitOrderTranche, &newlo)
+		loNew := lo.ToBinding()
+		q.InactiveLimitOrderTranche = append(q.InactiveLimitOrderTranche, &loNew)
 	}
 
-	return json.Marshal(&qr)
+	return json.Marshal(&q)
 }
 
 func (t *QueryGetInactiveLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
@@ -107,10 +107,10 @@ func (t *QueryGetInactiveLimitOrderTrancheResponse) MarshalBinding() ([]byte, er
 		InactiveLimitOrderTranche *LimitOrderTrancheBinding `json:"inactive_limit_order_tranche,omitempty"`
 	}
 	lo := t.InactiveLimitOrderTranche.ToBinding()
-	qr := QueryGetInactiveLimitOrderTrancheResponseBinding{
+	q := QueryGetInactiveLimitOrderTrancheResponseBinding{
 		InactiveLimitOrderTranche: &lo,
 	}
-	return json.Marshal(&qr)
+	return json.Marshal(&q)
 }
 
 func (t *QueryAllLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
@@ -118,16 +118,16 @@ func (t *QueryAllLimitOrderTrancheResponse) MarshalBinding() ([]byte, error) {
 		LimitOrderTranche []*LimitOrderTrancheBinding `json:"limit_order_tranche,omitempty"`
 		Pagination        *query.PageResponse         `json:"pagination,omitempty"`
 	}
-	qr := QueryAllLimitOrderTrancheResponseBinding{
+	q := QueryAllLimitOrderTrancheResponseBinding{
 		LimitOrderTranche: make([]*LimitOrderTrancheBinding, 0, len(t.LimitOrderTranche)),
 		Pagination:        t.Pagination,
 	}
 	for _, lo := range t.LimitOrderTranche {
-		newlo := lo.ToBinding()
-		qr.LimitOrderTranche = append(qr.LimitOrderTranche, &newlo)
+		loNew := lo.ToBinding()
+		q.LimitOrderTranche = append(q.LimitOrderTranche, &loNew)
 	}
 
-	return json.Marshal(&qr)
+	return json.Marshal(&q)
 }
 
 func (t *QueryGetLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error) {
@@ -146,8 +146,8 @@ func (t *QueryGetLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error)
 		)
 	}
 	lou.OrderType = s
-	r := QueryGetLimitOrderTrancheUserResponseBinding{LimitOrderTrancheUser: &lou}
-	return json.Marshal(&r)
+	q := QueryGetLimitOrderTrancheUserResponseBinding{LimitOrderTrancheUser: &lou}
+	return json.Marshal(&q)
 }
 
 func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error) {
@@ -161,7 +161,7 @@ func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error)
 		Pagination:            t.Pagination,
 	}
 	for _, lo := range t.LimitOrderTrancheUser {
-		newlo := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *lo}
+		loNew := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *lo}
 		s, ok := LimitOrderType_name[int32(lo.OrderType)]
 		if !ok {
 			return nil, errors.Wrap(ErrInvalidOrderType,
@@ -171,8 +171,8 @@ func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error)
 					maps.Keys(LimitOrderType_name)),
 			)
 		}
-		newlo.OrderType = s
-		allLimitOrders.LimitOrderTrancheUser = append(allLimitOrders.LimitOrderTrancheUser, &newlo)
+		loNew.OrderType = s
+		allLimitOrders.LimitOrderTrancheUser = append(allLimitOrders.LimitOrderTrancheUser, &loNew)
 	}
 	return json.Marshal(&allLimitOrders)
 }
@@ -188,7 +188,7 @@ func (t *QueryAllUserLimitOrdersResponse) MarshalBinding() ([]byte, error) {
 		Pagination:  t.Pagination,
 	}
 	for _, lo := range t.LimitOrders {
-		newlo := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *lo}
+		loNew := LimitOrderTrancheUserBinding{LimitOrderTrancheUser: *lo}
 		s, ok := LimitOrderType_name[int32(lo.OrderType)]
 		if !ok {
 			return nil, errors.Wrap(ErrInvalidOrderType,
@@ -198,8 +198,8 @@ func (t *QueryAllUserLimitOrdersResponse) MarshalBinding() ([]byte, error) {
 					maps.Keys(LimitOrderType_name)),
 			)
 		}
-		newlo.OrderType = s
-		allLimitOrders.LimitOrders = append(allLimitOrders.LimitOrders, &newlo)
+		loNew.OrderType = s
+		allLimitOrders.LimitOrders = append(allLimitOrders.LimitOrders, &loNew)
 	}
 	return json.Marshal(&allLimitOrders)
 }
