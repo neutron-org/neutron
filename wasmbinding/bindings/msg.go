@@ -64,7 +64,7 @@ type NeutronMsg struct {
 	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
 
 	// dex module bindings
-	Dex *Dex `json:"dex"`
+	Dex *Dex `json:"dex,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.

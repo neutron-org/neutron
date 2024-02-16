@@ -1,8 +1,9 @@
 package bindings
 
 import (
-	"cosmossdk.io/math"
 	"encoding/json"
+
+	"cosmossdk.io/math"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
 	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
