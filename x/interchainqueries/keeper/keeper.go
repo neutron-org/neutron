@@ -11,9 +11,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-	tendermintLightClientTypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	"github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 )

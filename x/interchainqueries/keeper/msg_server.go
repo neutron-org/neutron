@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
-	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	ibccommitmenttypes "github.com/cosmos/ibc-go/v7/modules/core/23-commitment/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	ics23 "github.com/cosmos/ics23/go"
 
 	"github.com/neutron-org/neutron/v2/x/interchainqueries/types"

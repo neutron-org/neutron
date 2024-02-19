@@ -5,7 +5,7 @@ import (
 
 	"github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
 
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/require"
 

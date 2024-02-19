@@ -5,13 +5,13 @@ import (
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	"github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
 	iqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"

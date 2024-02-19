@@ -411,8 +411,8 @@ github.com/cosmos/iavl v0.20.1/go.mod h1:WO7FyvaZJoH65+HFOsDir7xU9FWk2w9cHXNW1XH
 github.com/cosmos/iavl v1.0.0/go.mod h1:CmTGqMnRnucjxbjduneZXT+0vPgNElYvdefjX2q9tYc=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.2 h1:6zjj+yIpMbCTRI2eJ2fXuflElENs3mrUSLH/TSWL8fk=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.2/go.mod h1:UvDmcGIWJPIytq+Q78/ff5NTOsuX/7IrNgEugTW5i0s=
-github.com/cosmos/ibc-go/v7 v7.3.2 h1:FeUDcBX7VYY0e0iRmcVkPPUjYfAqIc//QuHXo8JHz9c=
-github.com/cosmos/ibc-go/v7 v7.3.2/go.mod h1:IMeOXb7gwpZ+/nOG5BuUkdW4weM1ezvN4PQPws4uzOI=
+github.com/cosmos/ibc-go/v8 v7.3.2 h1:FeUDcBX7VYY0e0iRmcVkPPUjYfAqIc//QuHXo8JHz9c=
+github.com/cosmos/ibc-go/v8 v7.3.2/go.mod h1:IMeOXb7gwpZ+/nOG5BuUkdW4weM1ezvN4PQPws4uzOI=
 github.com/cosmos/ibc-go/v8 v8.0.0/go.mod h1:C6IiJom0F3cIQCD5fKwVPDrDK9j/xTu563AWuOmXois=
 github.com/cosmos/ibc-go/v8 v8.1.0 h1:pf1106wl0Cf+p1+FjXzV6odlS9DnqVunPVWCH1Uz+lQ=
 github.com/cosmos/ibc-go/v8 v8.1.0/go.mod h1:o1ipS95xpdjqNcB8Drq0eI3Sn4FRLigjll42ec1ECuU=
@@ -1274,6 +1274,7 @@ go.uber.org/multierr v1.3.0/go.mod h1:VgVr7evmIr6uPjLBxg28wmKNXyqE9akIJ5XnfpiKl+
 go.uber.org/multierr v1.6.0/go.mod h1:cdWPpRnG4AhwMwsgIHip0KRBQjJy5kYEpYjJxpXp9iU=
 go.uber.org/multierr v1.10.0 h1:S0h4aNzvfcFsC3dRF1jLoaov7oRaKqRGC/pUEJ2yvPQ=
 go.uber.org/multierr v1.10.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
+go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
 go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee/go.mod h1:vJERXedbb3MVM5f9Ejo0C68/HhF8uaILCdgjnY+goOA=
 go.uber.org/zap v1.9.1/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
 go.uber.org/zap v1.10.0/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=

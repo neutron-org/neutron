@@ -6,7 +6,7 @@ package types
 import (
 	fmt "fmt"
 	proto "github.com/cosmos/gogoproto/proto"
-	_ "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	_ "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	io "io"
 	math "math"
 	math_bits "math/bits"

@@ -10,7 +10,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
-	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	iqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 )

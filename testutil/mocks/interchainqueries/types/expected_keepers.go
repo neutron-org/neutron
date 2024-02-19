@@ -9,7 +9,7 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types1 "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	types1 "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	gomock "github.com/golang/mock/gomock"
 )
 

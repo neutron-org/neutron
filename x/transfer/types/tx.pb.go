@@ -10,7 +10,7 @@ import (
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
-	types1 "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	types1 "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	types2 "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"

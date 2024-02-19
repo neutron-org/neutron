@@ -8,7 +8,7 @@ import (
 	"github.com/neutron-org/neutron/v2/app/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
 	"github.com/neutron-org/neutron/v2/x/interchaintxs/keeper"

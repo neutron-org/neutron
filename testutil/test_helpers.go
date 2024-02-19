@@ -10,7 +10,7 @@ import (
 
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -19,16 +19,16 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
 	appparams "github.com/neutron-org/neutron/v2/app/params"
 	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/v4/app/provider"
 	e2e "github.com/cosmos/interchain-security/v4/testutil/integration"
 

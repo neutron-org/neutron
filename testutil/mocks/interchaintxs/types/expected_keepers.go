@@ -11,9 +11,9 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	types1 "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types2 "github.com/cosmos/ibc-go/modules/capability/types"
-	types3 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	types4 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	types3 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	types4 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	exported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	gomock "github.com/golang/mock/gomock"
 
 	types5 "github.com/neutron-org/neutron/v2/x/feerefunder/types"

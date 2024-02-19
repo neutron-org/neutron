@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cmttypes "github.com/cometbft/cometbft/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
 	"github.com/stretchr/testify/require"
 
