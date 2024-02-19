@@ -48,6 +48,8 @@ SUBDAO_PROPOSAL_CONTRACT=$CONTRACTS_BINARIES_DIR/cwd_subdao_proposal_single.wasm
 CW4_VOTING_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_voting.wasm
 CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
+NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
+
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
 ### PARAMETERS SECTION
@@ -137,6 +139,8 @@ SECURITY_SUBDAO_PROPOSAL_LABEL="neutron.subdaos.security.proposals.single"
 SECURITY_SUBDAO_PRE_PROPOSE_LABEL="neutron.subdaos.security.proposals.single.pre_propose"
 SECURITY_SUBDAO_VOTE_LABEL="neutron.subdaos.security.voting"
 
+NEUTRON_CHAIN_MANAGER_LABEL="neutron.chain.manager"
+
 echo "Initializing dao contract in genesis..."
 
 function store_binary() {
@@ -171,6 +175,8 @@ SUBDAO_PRE_PROPOSE_BINARY_ID=$(store_binary             "$SUBDAO_PRE_PROPOSE_CON
 SUBDAO_PROPOSAL_BINARY_ID=$(store_binary                "$SUBDAO_PROPOSAL_CONTRACT")
 CW4_VOTING_CONTRACT_BINARY_ID=$(store_binary            "$CW4_VOTING_CONTRACT")
 CW4_GROUP_CONTRACT_BINARY_ID=$(store_binary             "$CW4_GROUP_CONTRACT")
+
+NEUTRON_CHAIN_MANAGER_BINARY_ID=$(store_binary          "$NEUTRON_CHAIN_MANAGER_CONTRACT")
 
 # WARNING!
 # The following code is needed to pre-generate the contract addresses
@@ -220,6 +226,8 @@ GRANTS_SUBDAO_PROPOSAL_CONTRACT_ADDRESS=$(genaddr      "$SUBDAO_PROPOSAL_BINARY_
 GRANTS_SUBDAO_PRE_PROPOSE_CONTRACT_ADDRESS=$(genaddr   "$SUBDAO_PRE_PROPOSE_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 GRANTS_SUBDAO_TIMELOCK_CONTRACT_ADDRESS=$(genaddr      "$SUBDAO_TIMELOCK_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 GRANTS_SUBDAO_GROUP_CONTRACT_ADDRESS=$(genaddr         "$CW4_GROUP_CONTRACT_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
+
+NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS=$(genaddr       "$NEUTRON_CHAIN_MANAGER_BINARY_ID") && (( INSTANCE_ID_COUNTER++ ))
 
 function check_json() {
   MSG=$1
@@ -604,6 +612,14 @@ GRANTS_SUBDAO_CORE_INIT_MSG='{
   "security_dao": "'"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS"'"
 }'
 
+# CHAIN MANAGER
+NEUTRON_CHAIN_MANAGER_INIT_MSG='{
+  "initial_strategy": {
+    "address":       "'"$DAO_CONTRACT_ADDRESS"'",
+    "permissions": []
+  }
+}'
+
 echo "Instantiate contracts"
 
 function init_contract() {
@@ -621,12 +637,13 @@ function init_contract() {
 # If you're to do any changes, please do it consistently in both sections
 init_contract "$NEUTRON_VAULT_CONTRACT_BINARY_ID"            "$NEUTRON_VAULT_INIT"             "$NEUTRON_VAULT_LABEL"
 init_contract "$NEUTRON_INVESTORS_VAULT_CONTRACT_BINARY_ID"  "$NEUTRON_INVESTORS_VAULT_INIT"   "$NEUTRON_INVESTORS_VAULT_LABEL"
-init_contract "$NEUTRON_VESTING_INVESTORS_BINARY_ID"         "$NEUTRON_VESTING_INVESTORS_INIT"  "$NEUTRON_VESTING_INVESTORS_LABEL"
+init_contract "$NEUTRON_VESTING_INVESTORS_BINARY_ID"         "$NEUTRON_VESTING_INVESTORS_INIT" "$NEUTRON_VESTING_INVESTORS_LABEL"
 init_contract "$DAO_CONTRACT_BINARY_ID"                      "$DAO_INIT"                       "$DAO_CORE_LABEL"
 init_contract "$RESERVE_CONTRACT_BINARY_ID"                  "$RESERVE_INIT"                   "$RESERVE_LABEL"
 init_contract "$DISTRIBUTION_CONTRACT_BINARY_ID"             "$DISTRIBUTION_INIT"              "$DISTRIBUTION_LABEL"
 init_contract "$SUBDAO_CORE_BINARY_ID"                       "$SECURITY_SUBDAO_CORE_INIT_MSG"  "$SECURITY_SUBDAO_CORE_LABEL"
 init_contract "$SUBDAO_CORE_BINARY_ID"                       "$GRANTS_SUBDAO_CORE_INIT_MSG"    "$GRANTS_SUBDAO_CORE_LABEL"
+init_contract "$NEUTRON_CHAIN_MANAGER_BINARY_ID"             "$NEUTRON_CHAIN_MANAGER_INIT_MSG" "$NEUTRON_CHAIN_MANAGER_LABEL"
 
 ADD_SUBDAOS_MSG='{
   "update_sub_daos": {
@@ -702,7 +719,7 @@ function convert_bech32_base64_esc() {
 DAO_CONTRACT_ADDRESS_B64=$(convert_bech32_base64_esc "$DAO_CONTRACT_ADDRESS")
 echo $DAO_CONTRACT_ADDRESS_B64
 
-set_genesis_param admins                                 "[\"$DAO_CONTRACT_ADDRESS\"]"                    # admin module
+set_genesis_param admins                                 "[\"$NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS\"]"  # admin module
 set_genesis_param treasury_address                       "\"$DAO_CONTRACT_ADDRESS\""                      # feeburner
 set_genesis_param fee_collector_address                  "\"$DAO_CONTRACT_ADDRESS\""                      # tokenfactory
 set_genesis_param security_address                       "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\","    # cron
