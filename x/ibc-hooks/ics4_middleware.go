@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 
 	"github.com/neutron-org/neutron/v2/x/ibc-hooks/types"

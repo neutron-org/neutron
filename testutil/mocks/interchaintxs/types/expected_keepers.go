@@ -10,7 +10,7 @@ import (
 	types "github.com/CosmWasm/wasmd/x/wasm/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	types1 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types2 "github.com/cosmos/cosmos-sdk/x/capability/types"
+	types2 "github.com/cosmos/ibc-go/modules/capability/types"
 	types3 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	types4 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
