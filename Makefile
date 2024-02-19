@@ -200,8 +200,21 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@$(protoImage) sh ./scripts/protocgen.sh
 
+DEPS=github.com/cosmos/cosmos-sdk github.com/CosmWasm/wasmd github.com/cosmos/admin-module github.com/cosmos/interchain-security/v4 github.com/cosmos/gaia/v11 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7
 proto-swagger-gen:
-	@$(protoImage) sh ./scripts/protoc-swagger-gen.sh
+	@mkdir -p tmp_deps
+
+#copy some deps to use their proto files to generate swagger
+	@for dep in $(DEPS); do \
+  		path=$$(go list -f '{{ .Dir }}' -m $$dep); \
+  		rsync -r $$path tmp_deps; \
+	done
+
+	@$(DOCKER) build proto/ -t swagger-gen
+	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace swagger-gen sh ./scripts/protoc-swagger-gen.sh
+
+	@rm -rf tmp-swagger-gen
+	@rm -rf tmp_deps
 
 PROTO_FORMATTER_IMAGE=bufbuild/buf:1.28.1
 
@@ -250,9 +263,6 @@ start-docker-container:
 
 stop-docker-container:
 	@docker stop neutron
-
-openapi:
-	ignite generate openapi
 
 mocks:
 	@echo "Regenerate mocks..."
