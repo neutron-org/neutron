@@ -207,3 +207,33 @@ func TestCalcGreatestMatchingRatio1SidedPool1SidedToken1B(t *testing.T) {
 	assert.Equal(t, math.NewInt(0), trueAmount0)
 	assert.Equal(t, math.NewInt(10), trueAmount1)
 }
+
+// This failing test shows that if we swap 1 to many tokens,
+// we'll get 0A to xB tokens in result.
+// This is incorrect!
+func TestSwapRoundingWithExpensiveToCheap(t *testing.T) {
+	pool, err := dextypes.NewPool(
+		&dextypes.PairID{
+			Token0: "Bitcoin",
+			Token1: "USDC",
+		},
+		-110_001, // -110000 ~= 0.00001671088 = 59841.2531237
+		1,
+		1,
+	)
+	assert.NoError(t, err)
+
+	pool.Deposit(math.NewInt(1000), math.NewInt(100_000), math.ZeroInt(), true)
+
+	amountTakerIn, amountMakerOut := pool.Swap(
+		&dextypes.TradePairID{
+			TakerDenom: "Bitcoin",
+			MakerDenom: "USDC",
+		},
+		math.NewInt(1),
+		nil,
+	)
+
+	assert.Equal(t, amountTakerIn, math.NewInt(1))
+	assert.Equal(t, amountMakerOut, math.NewInt(59841))
+}
