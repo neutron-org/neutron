@@ -69,7 +69,7 @@ func (k Keeper) Swap(
 		// NOTE: In theory this check should be: price * remainingTakerDenom < 1
 		// but due to rounding and inaccuracy of fixed decimal math, it is possible
 		// for liq.swap to use the full the amount of taker liquidity and have a leftover
-		// amount amount of the taker Denom > than 1 token worth of maker denom
+		// amount of the taker Denom > than 1 token worth of maker denom
 		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
@@ -113,6 +113,7 @@ func (k Keeper) SwapWithCache(
 		limitPrice,
 	)
 
+	// TODO: should we check for err != nil before writeCache() call?
 	writeCache()
 
 	return totalIn, totalOut, orderFilled, err
