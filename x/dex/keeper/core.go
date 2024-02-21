@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -279,7 +280,7 @@ func (k Keeper) MultiHopSwapCore(
 		sdk.Coins{initialInCoin},
 	)
 	if err != nil {
-		return sdk.Coin{}, err
+		return sdk.Coin{}, fmt.Errorf("failed to send dust back to user: %w", err)
 	}
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(
