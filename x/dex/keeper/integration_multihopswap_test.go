@@ -391,3 +391,40 @@ func (s *DexTestSuite) TestMultiHopSwapEventsEmitted() {
 	// 8 tickUpdateEvents are emitted 4x for pool setup 4x for two swaps
 	s.AssertNEventValuesEmitted(types.TickUpdateEventKey, 8)
 }
+
+// this is a case where Pool.Swap() (B <-> C) gives up not the full available tokens amount and leaves 1,
+// and because of that swap fails overall (1 token * 403 price > 2 allowed for order to be filled)
+func (s *DexTestSuite) TestRoundingWithLiquidityCheck() {
+	s.fundAliceBalances(200, 0) // 200_000_000 TokenA
+
+	// GIVEN liquidity in pools A<>B, B<>C, C<>D,
+	s.SetupMultiplePools(
+		// tick 109999 with fee 1 will be traded for A -> B at 110000
+		NewPoolSetup("TokenA", "TokenB", 0, 1, 109999, 1), // tick 110000 = 59841.22218557191867154759205905
+		NewPoolSetup("TokenB", "TokenC", 0, 1, -60001, 1), // OR tick -60000 = 0.00247949586
+		NewPoolSetup("TokenC", "TokenD", 0, 1, 69999, 1),  // tick 70000 = 1096.24942956
+	)
+
+	// WHEN alice multihopswaps A<>B => B<>C => C<>D,
+	msg := types.NewMsgMultiHopSwap(
+		s.alice.String(),
+		s.alice.String(),
+		[][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}},
+		math.NewInt(int64(60_000_000)),
+		math_utils.MustNewPrecDecFromStr("0.0000013"),
+		false,
+	) // 60_000_000A (59960904 real) -> 1_002B -> 404_141C -> 368D
+	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+
+	s.Assert().Nil(err)
+
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(140_000_000 /*+39_096*/)) // TODO: plus dust when pr merged
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenB", math.NewInt(0))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenC", math.NewInt(0))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenD", math.NewInt(368))
+
+	s.assertDexBalanceWithDenomInt("TokenA", math.NewInt(60_000_000))
+	s.assertDexBalanceWithDenomInt("TokenB", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenC", math.NewInt(1_000_000))
+	s.assertDexBalanceWithDenomInt("TokenD", math.NewInt(1_000_000-368))
+}
