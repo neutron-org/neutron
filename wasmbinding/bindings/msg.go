@@ -258,6 +258,8 @@ type Dex struct {
 	MultiHopSwap             *dextypes.MsgMultiHopSwap             `json:"multi_hop_swap"`
 }
 
+// MsgPlaceLimitOrder is a copy dextypes.MsgPlaceLimitOrder with altered ExpirationTime field,
+// it's a preferable way to pass timestamp as unixtime to contracts
 type MsgPlaceLimitOrder struct {
 	Creator          string   `json:"creator,omitempty"`
 	Receiver         string   `json:"receiver,omitempty"`

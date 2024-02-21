@@ -255,6 +255,8 @@ type DexQuery struct {
 	PoolMetadataAll *dextypes.QueryAllPoolMetadataRequest `json:"pool_metadata_all"`
 }
 
+// QueryEstimatePlaceLimitOrderRequest is a copy dextypes.QueryEstimatePlaceLimitOrderRequest with altered ExpirationTime field,
+// it's a preferable way to pass timestamp as unixtime to contracts
 type QueryEstimatePlaceLimitOrderRequest struct {
 	Creator          string   `json:"creator,omitempty"`
 	Receiver         string   `json:"receiver,omitempty"`
@@ -265,5 +267,5 @@ type QueryEstimatePlaceLimitOrderRequest struct {
 	OrderType        string   `json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
-	MaxAmountOut   *math.Int `json:"maxAmount_out"`
+	MaxAmountOut   *math.Int `json:"max_amount_out"`
 }
