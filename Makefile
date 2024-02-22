@@ -200,7 +200,14 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@$(protoImage) sh ./scripts/protocgen.sh
 
-DEPS=github.com/cosmos/cosmos-sdk github.com/CosmWasm/wasmd github.com/cosmos/admin-module github.com/cosmos/interchain-security/v4 github.com/cosmos/gaia/v11 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7
+DEPS=github.com/cosmos/cosmos-sdk \
+	github.com/CosmWasm/wasmd \
+	github.com/cosmos/admin-module \
+	github.com/cosmos/interchain-security/v4 \
+	github.com/cosmos/gaia/v11 \
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 \
+	github.com/skip-mev/block-sdk
+
 proto-swagger-gen:
 	@mkdir -p tmp_deps
 
