@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"github.com/stretchr/testify/require"
 	"math"
 	"time"
 
@@ -695,4 +696,50 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 		ExpirationTime:   &yesterday,
 	})
 	s.Assert().ErrorIs(err, types.ErrExpirationTimeInPast)
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderJITFillsFailsOn1TokenBecauseUnfairPrice() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 20)
+
+	s.SetupMultiplePools(
+		// tick 109_999 with fee 1 will be traded for A -> B at 110_000
+		NewPoolSetup("TokenA", "TokenB", 1_000, 1_000, -110_001, 1), // tick 110000 = 59841.22218557191867154759205905
+	)
+
+	// GIVEN Alice submits JIT limitOrder for 10 tokenA at tick 0
+	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, "TokenA")
+	_, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+		Creator:          s.alice.String(),
+		Receiver:         s.alice.String(),
+		TokenIn:          tradePairID.TakerDenom,
+		TokenOut:         tradePairID.MakerDenom,
+		TickIndexInToOut: tradePairID.TickIndexTakerToMaker(int64(115_000)),
+		AmountIn:         sdkmath.NewInt(10),
+		OrderType:        types.LimitOrderType_FILL_OR_KILL, // test on fill_or_kill since we want order to be filled right away through one swap
+	})
+	require.NoError(s.T(), err)
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderJITFillsFailsOn1TokenBecause1TokenLeft() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 20)
+
+	s.SetupMultiplePools(
+		// tick -110_001 with fee 1 will be traded for A -> B at -110_000
+		NewPoolSetup("TokenA", "TokenB", 1_000, 1_000_000, -110_001, 1), // tick -110000 = 59841.22218557191867154759205905
+	)
+
+	// GIVEN Alice submits JIT limitOrder for 10 tokenA at tick 0
+	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, "TokenA")
+	_, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+		Creator:          s.alice.String(),
+		Receiver:         s.alice.String(),
+		TokenIn:          tradePairID.TakerDenom,
+		TokenOut:         tradePairID.MakerDenom,
+		TickIndexInToOut: tradePairID.TickIndexTakerToMaker(int64(115_000)),
+		AmountIn:         sdkmath.NewInt(10_000_000),
+		OrderType:        types.LimitOrderType_FILL_OR_KILL, // test on fill_or_kill since we want order to be filled right away through one swap
+	})
+	require.NoError(s.T(), err)
 }

@@ -374,10 +374,10 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	account sdk.AccAddress,
 	tokenIn string,
 	tick, amountIn int,
-	maxAmoutOut int,
+	maxAmountOut int,
 ) string {
 	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
-	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut)).Mul(denomMultiple)
+	maxAmountOutInt := sdkmath.NewInt(int64(maxAmountOut)).Mul(denomMultiple)
 
 	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
@@ -677,7 +677,7 @@ func (s *DexTestSuite) assertDepositFails(
 }
 
 func (s *DexTestSuite) assertDepositReponse(
-	depositResponse, expectedDepositResponse DepositReponse,
+	depositResponse, expectedDepositResponse DepositResponse,
 ) {
 	for i := range expectedDepositResponse.amountsA {
 		s.Assert().Equal(
@@ -693,7 +693,7 @@ func (s *DexTestSuite) assertDepositReponse(
 	}
 }
 
-type DepositReponse struct {
+type DepositResponse struct {
 	amountsA []sdkmath.Int
 	amountsB []sdkmath.Int
 }

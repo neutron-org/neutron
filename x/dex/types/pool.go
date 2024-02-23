@@ -97,16 +97,19 @@ func (p *Pool) Swap(
 	// c.) The maximum amount the user wants out (maxAmountOut1)
 	amountMakerOut = utils.MinIntArr(possibleAmountsMakerOut)
 
+	// NOTE: this is one of the possible solutions, and probably incorrect.
+	// because we change swap mechanism and possibly allow for attacks
+
 	// inMount will be:
 	// a) if we took the `maxOutGivenTakerIn` && price is greater than one, then just maxAmountTakerIn;
 	// b) else just do backward calculation from out -> to with truncating down.
-	if amountMakerOut == maxOutGivenTakerIn && makerReserves.PriceTakerToMaker.GT(math_utils.OnePrecDec()) {
-		amountTakerIn = maxAmountTakerIn // avoid possibility of cutting one token out
-	} else {
-		amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
-			Quo(makerReserves.PriceTakerToMaker).
-			TruncateInt()
-	}
+	//if amountMakerOut == maxOutGivenTakerIn && makerReserves.PriceTakerToMaker.GT(math_utils.OnePrecDec()) {
+	//	amountTakerIn = maxAmountTakerIn // avoid possibility of cutting one token out
+	//} else {
+	amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
+		Quo(makerReserves.PriceTakerToMaker).
+		TruncateInt()
+	//}
 
 	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
 	makerReserves.ReservesMakerDenom = makerReserves.ReservesMakerDenom.Sub(amountMakerOut)

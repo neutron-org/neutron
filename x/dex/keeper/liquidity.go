@@ -97,6 +97,7 @@ func (k Keeper) Swap(
 		), orderFilled, nil
 }
 
+// what's the point of this function if we just write cache every time?
 func (k Keeper) SwapWithCache(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
