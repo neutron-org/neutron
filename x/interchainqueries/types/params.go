@@ -24,9 +24,9 @@ var (
 // ParamKeyTable the param key table for launch module
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable(
-		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, DefaultQuerySubmitTimeout, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, DefaultQuerySubmitTimeout, func(_ interface{}) error { return nil }),
 		paramtypes.NewParamSetPair(KeyQueryDeposit, sdk.Coins{}, validateCoins),
-		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, DefaultTxQueryRemovalLimit, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, DefaultTxQueryRemovalLimit, func(_ interface{}) error { return nil }),
 	)
 }
 
@@ -47,9 +47,9 @@ func DefaultParams() Params {
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, &p.QuerySubmitTimeout, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, &p.QuerySubmitTimeout, func(_ interface{}) error { return nil }),
 		paramtypes.NewParamSetPair(KeyQueryDeposit, &p.QueryDeposit, validateCoins),
-		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, &p.TxQueryRemovalLimit, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, &p.TxQueryRemovalLimit, func(_ interface{}) error { return nil }),
 	}
 }
 

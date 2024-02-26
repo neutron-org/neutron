@@ -15,7 +15,7 @@ func CmdQueryTotalBurnedNeutronsAmount() *cobra.Command {
 		Use:   "total-burned-neutrons-amount",
 		Short: "shows total amount of burned neutrons",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)

@@ -156,7 +156,7 @@ func (k Keeper) SwapFullAmountIn(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
 	amountIn math.Int,
-) (leftIn sdk.Coin, totalOut sdk.Coin, err error) {
+) (leftIn, totalOut sdk.Coin, err error) {
 	swapAmountTakerDenom, swapAmountMakerDenom, orderFilled, err := k.Swap(
 		ctx,
 		tradePairID,

@@ -22,7 +22,7 @@ func (k Keeper) Schedules(c context.Context, req *types.QuerySchedulesRequest) (
 
 	scheduleStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 
-	pageRes, err := query.Paginate(scheduleStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(scheduleStore, req.Pagination, func(_, value []byte) error {
 		var schedule types.Schedule
 		k.cdc.MustUnmarshal(value, &schedule)
 

@@ -43,7 +43,7 @@ func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresReque
 		failureStore = prefix.NewStore(store, types.ContractFailuresKey)
 	}
 
-	pageRes, err := query.Paginate(failureStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(failureStore, req.Pagination, func(_, value []byte) error {
 		var failure types.Failure
 		if err := k.cdc.Unmarshal(value, &failure); err != nil {
 			return err

@@ -33,7 +33,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, icaKeeper, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, icaKeeper, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	goCtx := sdk.WrapSDKContext(ctx)
@@ -97,7 +97,7 @@ func TestSubmitTx(t *testing.T) {
 	refundKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	channelKeeper := mock_types.NewMockChannelKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, refundKeeper, icaKeeper, channelKeeper, bankKeeper, func(ctx sdk.Context) string {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, refundKeeper, icaKeeper, channelKeeper, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	goCtx := sdk.WrapSDKContext(ctx)

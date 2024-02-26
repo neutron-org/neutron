@@ -16,7 +16,7 @@ func CmdListInactiveLimitOrderTranche() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-filled-limit-order-tranche",
 		Short: "list all InactiveLimitOrderTranche",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			pageReq, err := client.ReadPageRequest(cmd.Flags())

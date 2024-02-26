@@ -36,7 +36,7 @@ func (k Keeper) TickLiquidityAll(
 	store := ctx.KVStore(k.storeKey)
 	tickLiquidityStore := prefix.NewStore(store, types.TickLiquidityPrefix(tradePairID))
 
-	pageRes, err := query.Paginate(tickLiquidityStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(tickLiquidityStore, req.Pagination, func(_, value []byte) error {
 		tickLiquidity := &types.TickLiquidity{}
 		if err := k.cdc.Unmarshal(value, tickLiquidity); err != nil {
 			return err
