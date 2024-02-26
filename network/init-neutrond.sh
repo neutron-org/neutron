@@ -614,10 +614,8 @@ GRANTS_SUBDAO_CORE_INIT_MSG='{
 
 # CHAIN MANAGER
 NEUTRON_CHAIN_MANAGER_INIT_MSG='{
-  "initial_strategy": {
-    "address":       "'"$DAO_CONTRACT_ADDRESS"'",
-    "permissions": []
-  }
+  "initial_strategy_address": "'"$DAO_CONTRACT_ADDRESS"'",
+  "initial_strategy":         "AllowAll"
 }'
 
 echo "Instantiate contracts"
