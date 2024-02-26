@@ -12,9 +12,9 @@ import (
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 
-	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
 
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )

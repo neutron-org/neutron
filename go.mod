@@ -1,4 +1,4 @@
-module github.com/neutron-org/neutron/v2
+module github.com/neutron-org/neutron/v3
 
 go 1.21.4
 

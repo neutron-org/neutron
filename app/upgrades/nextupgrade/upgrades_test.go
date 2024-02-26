@@ -3,7 +3,7 @@ package nextupgrade_test
 import (
 	"testing"
 
-	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
 
 	"github.com/stretchr/testify/suite"
 
@@ -13,8 +13,8 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/stretchr/testify/require"
 
-	nextupgrade "github.com/neutron-org/neutron/v2/app/upgrades/nextupgrade"
-	"github.com/neutron-org/neutron/v2/testutil"
+	nextupgrade "github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
+	"github.com/neutron-org/neutron/v3/testutil"
 )
 
 var consAddr = sdk.ConsAddress("addr1_______________")

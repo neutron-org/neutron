@@ -7,9 +7,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/utils"
-	"github.com/neutron-org/neutron/v2/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v2/x/dex/utils"
+	"github.com/neutron-org/neutron/v3/utils"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v3/x/dex/utils"
 )
 
 func (k Keeper) UserDepositsAll(

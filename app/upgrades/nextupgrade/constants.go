@@ -7,7 +7,7 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
 
 const (
