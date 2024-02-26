@@ -1,4 +1,4 @@
-package nextupgrade_test
+package v300_test
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/stretchr/testify/require"
 
-	nextupgrade "github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
+	v300 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.0"
 	"github.com/neutron-org/neutron/v3/testutil"
 )
 
@@ -43,8 +43,8 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 		ctx = suite.ChainA.GetContext()
 	)
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
-		Info:   "nextupgrade",
+		Name:   v300.UpgradeName,
+		Info:   "v300 upgrade",
 		Height: 100,
 	}
 
@@ -55,11 +55,11 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 	suite.Require().NoError(err)
 
 	// check that the params are correct
-	params.MaxBundleSize = nextupgrade.AuctionParamsMaxBundleSize
-	params.ReserveFee = nextupgrade.AuctionParamsReserveFee
-	params.MinBidIncrement = nextupgrade.AuctionParamsMinBidIncrement
-	params.FrontRunningProtection = nextupgrade.AuctionParamsFrontRunningProtection
-	params.ProposerFee = nextupgrade.AuctionParamsProposerFee
+	params.MaxBundleSize = v300.AuctionParamsMaxBundleSize
+	params.ReserveFee = v300.AuctionParamsReserveFee
+	params.MinBidIncrement = v300.AuctionParamsMinBidIncrement
+	params.FrontRunningProtection = v300.AuctionParamsFrontRunningProtection
+	params.ProposerFee = v300.AuctionParamsProposerFee
 
 	addr, err := sdk.AccAddressFromBech32(treasuryAddress)
 	suite.Require().NoError(err)
@@ -87,7 +87,7 @@ func (suite *UpgradeTestSuite) TestSlashingUpgrade() {
 	}
 
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
+		Name:   v300.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
