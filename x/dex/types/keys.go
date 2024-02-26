@@ -221,6 +221,7 @@ const (
 	MultihopSwapEventAmountIn  = "AmountIn"
 	MultihopSwapEventAmountOut = "AmountOut"
 	MultihopSwapEventRoute     = "Route"
+	MultihopSwapEventDust      = "Dust"
 )
 
 // Place LimitOrder Event Attributes

@@ -241,7 +241,7 @@ func (k Keeper) MultiHopSwapCore(
 	bestRoute.coinOut = sdk.Coin{Amount: math.ZeroInt()}
 
 	for _, route := range routes {
-		routeCoinDust, routeCoinOut, writeRoute, err := k.RunMultihopRoute(
+		routeDust, routeCoinOut, writeRoute, err := k.RunMultihopRoute(
 			ctx,
 			*route,
 			initialInCoin,
@@ -257,7 +257,7 @@ func (k Keeper) MultiHopSwapCore(
 			bestRoute.coinOut = routeCoinOut
 			bestRoute.write = writeRoute
 			bestRoute.route = route.Hops
-			bestRoute.dust = routeCoinDust
+			bestRoute.dust = routeDust
 		}
 		if !pickBestRoute {
 			break
@@ -280,7 +280,7 @@ func (k Keeper) MultiHopSwapCore(
 		sdk.Coins{initialInCoin},
 	)
 	if err != nil {
-		return sdk.Coin{}, fmt.Errorf("failed to send dust back to user: %w", err)
+		return sdk.Coin{}, err
 	}
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(
@@ -303,7 +303,7 @@ func (k Keeper) MultiHopSwapCore(
 			bestRoute.dust,
 		)
 		if err != nil {
-			return sdk.Coin{}, err // TODO: format error
+			return sdk.Coin{}, fmt.Errorf("failed to send dust back to user: %w", err)
 		}
 	}
 
@@ -315,6 +315,7 @@ func (k Keeper) MultiHopSwapCore(
 		initialInCoin.Amount,
 		bestRoute.coinOut.Amount,
 		bestRoute.route,
+		bestRoute.dust,
 	))
 
 	return bestRoute.coinOut, nil

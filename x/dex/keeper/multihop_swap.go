@@ -3,6 +3,7 @@ package keeper
 import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v2/utils/math"
@@ -46,7 +47,7 @@ func (k Keeper) HopsToRouteData(
 type StepResult struct {
 	Ctx     *types.BranchableCache
 	CoinOut sdk.Coin
-	LeftIn  sdk.Coin
+	Dust    sdk.Coin
 	Err     error
 }
 
@@ -74,7 +75,7 @@ func (k Keeper) MultihopStep(
 	val, ok := stepCache[cacheKey]
 	if ok {
 		ctxBranchCopy := val.Ctx.Branch()
-		return val.LeftIn, val.CoinOut, ctxBranchCopy, val.Err
+		return val.Dust, val.CoinOut, ctxBranchCopy, val.Err
 	}
 
 	// Due to rounding on swap it is possible to leak tokens at each hop.
@@ -82,14 +83,14 @@ func (k Keeper) MultihopStep(
 	// To solve this without sending user dust we would have to pre-calculate the route such that
 	// the amount in will be used completely at each step.
 
-	leftIn, coinOut, err := k.SwapFullAmountIn(bCtx.Ctx, step.tradePairID, inCoin.Amount)
+	dust, coinOut, err := k.SwapFullAmountIn(bCtx.Ctx, step.tradePairID, inCoin.Amount)
 	ctxBranch := bCtx.Branch()
-	stepCache[cacheKey] = StepResult{Ctx: bCtx, CoinOut: coinOut, LeftIn: leftIn, Err: err}
+	stepCache[cacheKey] = StepResult{Ctx: bCtx, CoinOut: coinOut, Dust: dust, Err: err}
 	if err != nil {
 		return sdk.Coin{}, sdk.Coin{}, bCtx, err
 	}
 
-	return leftIn, coinOut, ctxBranch, nil
+	return dust, coinOut, ctxBranch, nil
 }
 
 func (k Keeper) RunMultihopRoute(
@@ -106,11 +107,11 @@ func (k Keeper) RunMultihopRoute(
 	currentPrice := math_utils.OnePrecDec()
 
 	var currentOutCoin sdk.Coin
-	var leftIn sdk.Coin
+	var currentDust sdk.Coin
 	inCoin := initialInCoin
 	bCacheCtx := types.NewBranchableCache(ctx)
 
-	var dust sdk.Coins
+	var dustAcc sdk.Coins
 
 	for _, step := range routeData {
 		// If we can't hit the best possible price we can greedily abort
@@ -119,7 +120,7 @@ func (k Keeper) RunMultihopRoute(
 			return sdk.Coins{}, sdk.Coin{}, bCacheCtx.WriteCache, types.ErrExitLimitPriceHit
 		}
 
-		leftIn, currentOutCoin, bCacheCtx, err = k.MultihopStep(
+		currentDust, currentOutCoin, bCacheCtx, err = k.MultihopStep(
 			bCacheCtx,
 			step,
 			inCoin,
@@ -134,8 +135,8 @@ func (k Keeper) RunMultihopRoute(
 			)
 		}
 
-		// Add what hasn't been swapped to dust
-		dust = dust.Add(leftIn)
+		// Add what hasn't been swapped to dustAcc
+		dustAcc = dustAcc.Add(currentDust)
 
 		currentPrice = math_utils.NewPrecDecFromInt(currentOutCoin.Amount).
 			Quo(math_utils.NewPrecDecFromInt(initialInCoin.Amount))
@@ -145,7 +146,7 @@ func (k Keeper) RunMultihopRoute(
 		return sdk.Coins{}, sdk.Coin{}, nil, types.ErrExitLimitPriceHit
 	}
 
-	return dust, currentOutCoin, bCacheCtx.WriteCache, nil
+	return dustAcc, currentOutCoin, bCacheCtx.WriteCache, nil
 }
 
 // SwapFullAmountIn swaps full amount of given `amountIn` to the `tradePairID` taker denom.
@@ -156,7 +157,7 @@ func (k Keeper) SwapFullAmountIn(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,
 	amountIn math.Int,
-) (leftIn, totalOut sdk.Coin, err error) {
+) (dust, totalOut sdk.Coin, err error) {
 	swapAmountTakerDenom, swapAmountMakerDenom, orderFilled, err := k.Swap(
 		ctx,
 		tradePairID,
@@ -171,6 +172,10 @@ func (k Keeper) SwapFullAmountIn(
 		return sdk.Coin{}, sdk.Coin{}, types.ErrInsufficientLiquidity
 	}
 
-	leftIn = sdk.Coin.Sub(sdk.NewCoin(swapAmountTakerDenom.Denom, amountIn), swapAmountTakerDenom)
-	return leftIn, swapAmountMakerDenom, err
+	dust = sdk.Coin.Sub(sdk.NewCoin(swapAmountTakerDenom.Denom, amountIn), swapAmountTakerDenom)
+	if dust.IsNegative() {
+		return sdk.Coin{}, sdk.Coin{}, fmt.Errorf("dust coins are negative")
+	}
+
+	return dust, swapAmountMakerDenom, err
 }
