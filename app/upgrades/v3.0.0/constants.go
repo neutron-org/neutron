@@ -12,7 +12,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "nextupgrade"
+	UpgradeName = "v3.0.0"
 
 	AuctionParamsMaxBundleSize          = 2
 	AuctionParamsFrontRunningProtection = true
