@@ -93,7 +93,7 @@ service Query {
     option (google.api.http).get = "/neutron/dex/estimate_multi_hop_swap";
   }
 
-  // Queries the simulated result of a multihop swap
+  // Queries the simulated result of a PlaceLimit order
   rpc EstimatePlaceLimitOrder(QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
     option (google.api.http).get = "/neutron/dex/estimate_place_limit_order";
   }

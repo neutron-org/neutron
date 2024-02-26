@@ -2114,7 +2114,7 @@ type QueryClient interface {
 	PoolReserves(ctx context.Context, in *QueryGetPoolReservesRequest, opts ...grpc.CallOption) (*QueryGetPoolReservesResponse, error)
 	// Queries the simulated result of a multihop swap
 	EstimateMultiHopSwap(ctx context.Context, in *QueryEstimateMultiHopSwapRequest, opts ...grpc.CallOption) (*QueryEstimateMultiHopSwapResponse, error)
-	// Queries the simulated result of a multihop swap
+	// Queries the simulated result of a PlaceLimit order
 	EstimatePlaceLimitOrder(ctx context.Context, in *QueryEstimatePlaceLimitOrderRequest, opts ...grpc.CallOption) (*QueryEstimatePlaceLimitOrderResponse, error)
 	// Queries a pool by pair, tick and fee
 	Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
@@ -2325,7 +2325,7 @@ type QueryServer interface {
 	PoolReserves(context.Context, *QueryGetPoolReservesRequest) (*QueryGetPoolReservesResponse, error)
 	// Queries the simulated result of a multihop swap
 	EstimateMultiHopSwap(context.Context, *QueryEstimateMultiHopSwapRequest) (*QueryEstimateMultiHopSwapResponse, error)
-	// Queries the simulated result of a multihop swap
+	// Queries the simulated result of a PlaceLimit order
 	EstimatePlaceLimitOrder(context.Context, *QueryEstimatePlaceLimitOrderRequest) (*QueryEstimatePlaceLimitOrderResponse, error)
 	// Queries a pool by pair, tick and fee
 	Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error)
