@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"fmt"
+
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v2/utils/math"
