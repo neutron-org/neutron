@@ -234,7 +234,8 @@ func (ac appCreator) newApp(
 	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
 	if chainID == "" {
 		// fallback to genesis chain-id
-		appGenesis, err := tmtypes.GenesisDocFromFile(filepath.Join(homeDir, "config", "genesis.json"))
+		genDocFile := filepath.Join(homeDir, cast.ToString(appOpts.Get("genesis_file")))
+		appGenesis, err := tmtypes.GenesisDocFromFile(genDocFile)
 		if err != nil {
 			panic(err)
 		}
@@ -243,7 +244,7 @@ func (ac appCreator) newApp(
 	}
 
 	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
-		cast.ToString(appOpts.Get(flags.FlagHome)),
+		homeDir,
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		ac.encCfg,
 		appOpts,
