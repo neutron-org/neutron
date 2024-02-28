@@ -85,7 +85,7 @@ func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.U
 	})
 
 	for i, info := range signingInfos {
-		ctx.Logger().Info("Validator", info.Address, "old MissedBlocksCounter", info.MissedBlocksCounter)
+		ctx.Logger().Info("MissedBlocks recalculating", "Validator", info.Address, "old MissedBlocksCounter", info.MissedBlocksCounter)
 
 		missedBlocksForValidator := int64(0)
 
@@ -98,7 +98,7 @@ func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.U
 
 		info.MissedBlocksCounter = missedBlocksForValidator
 
-		ctx.Logger().Info("Validator", info.Address, "new MissedBlocksCounter", info.MissedBlocksCounter)
+		ctx.Logger().Info("MissedBlocks recalculating", "Validator", info.Address, "new MissedBlocksCounter", info.MissedBlocksCounter)
 
 		keepers.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddresses[i], info)
 	}
