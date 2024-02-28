@@ -2,6 +2,25 @@
 
 set -eo pipefail
 
+go mod tidy
+
+mkdir -p tmp_deps
+
+#copy some deps to use their proto files to generate swagger
+declare -a deps=("github.com/cosmos/cosmos-sdk"
+                "github.com/CosmWasm/wasmd"
+                "github.com/cosmos/admin-module"
+                "github.com/cosmos/interchain-security/v4"
+                "github.com/cosmos/gaia/v11"
+                "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7"
+                "github.com/skip-mev/block-sdk")
+
+for dep in "${deps[@]}"
+do
+    path=$(go list -f '{{ .Dir }}' -m $dep); \
+    cp -r $path tmp_deps; \
+done
+
 proto_dirs=$(find ./proto ./tmp_deps -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
 
@@ -24,3 +43,6 @@ swagger-combine ./tmp-swagger-gen/FINAL.json -o ./tmp-swagger-gen/tmp_swagger.ya
 
 # extends out the *ref instances to their full value
 swagger-merger --input ./tmp-swagger-gen/tmp_swagger.yaml -o ./docs/static/swagger.yaml
+
+rm -rf tmp-swagger-gen
+rm -rf tmp_deps

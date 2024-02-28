@@ -209,19 +209,8 @@ DEPS=github.com/cosmos/cosmos-sdk \
 	github.com/skip-mev/block-sdk
 
 proto-swagger-gen:
-	@mkdir -p tmp_deps
-
-#copy some deps to use their proto files to generate swagger
-	@for dep in $(DEPS); do \
-  		path=$$(go list -f '{{ .Dir }}' -m $$dep); \
-  		rsync -r $$path tmp_deps; \
-	done
-
 	@$(DOCKER) build proto/ -t swagger-gen
-	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace swagger-gen sh ./scripts/protoc-swagger-gen.sh
-
-	@rm -rf tmp-swagger-gen
-	@rm -rf tmp_deps
+	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace swagger-gen ./scripts/protoc-swagger-gen.sh
 
 PROTO_FORMATTER_IMAGE=bufbuild/buf:1.28.1
 

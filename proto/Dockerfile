@@ -8,7 +8,8 @@ RUN apk add --no-cache \
   git \
   make \
   python3 \
-  jq
+  jq \
+  bash
 
 RUN npm install -g swagger-combine
 RUN npm install -g swagger-merger
