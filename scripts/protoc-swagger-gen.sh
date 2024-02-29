@@ -38,6 +38,15 @@ jq 'del(.definitions["cosmos.autocli.v1.ServiceCommandDescriptor"].properties.su
 rm -rf ./tmp-swagger-gen/cosmos/tx/v1beta1/service.swagger.json
 rm -rf ./tmp-swagger-gen/cosmos/autocli/v1/query.swagger.json
 
+# remove unnecessary modules and their proto files
+rm -rf tmp-swagger-gen/cosmos/staking
+rm -rf tmp-swagger-gen/cosmos/distribution
+rm -rf tmp-swagger-gen/cosmos/distribution
+rm -rf tmp-swagger-gen/cosmos/gov
+rm -rf tmp-swagger-gen/cosmos/mint
+rm -rf tmp-swagger-gen/cosmos/group
+rm -rf tmp-swagger-gen/interchainsecurity/ccv/provider
+
 # Convert all *.swagger.json files into a single folder _all
 files=$(find ./tmp-swagger-gen -name '*.swagger.json' -print0 | xargs -0)
 mkdir -p ./tmp-swagger-gen/_all
