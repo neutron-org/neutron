@@ -34,8 +34,10 @@ output = {
 }
 
 # Combine all individual files calls into 1 massive file.
-# Combine all individual files calls into 1 massive file.
-for file in os.listdir(all_dir):
+files = os.listdir(all_dir)
+files.sort()
+
+for file in files:
     if not file.endswith(".json"):
         continue
 
