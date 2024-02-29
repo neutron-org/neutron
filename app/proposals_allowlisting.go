@@ -18,14 +18,14 @@ import (
 	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {

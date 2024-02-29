@@ -5,17 +5,17 @@ import (
 
 	"cosmossdk.io/math"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
-	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 
-	"github.com/neutron-org/neutron/v2/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.

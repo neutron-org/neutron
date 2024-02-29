@@ -8,8 +8,8 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	"github.com/golang/mock/gomock"
 
-	icqtestkeeper "github.com/neutron-org/neutron/v2/testutil/interchainqueries/keeper"
-	mock_types "github.com/neutron-org/neutron/v2/testutil/mocks/interchainqueries/types"
+	icqtestkeeper "github.com/neutron-org/neutron/v3/testutil/interchainqueries/keeper"
+	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/interchainqueries/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -28,9 +28,9 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
 
-	"github.com/neutron-org/neutron/v2/testutil"
-	iqkeeper "github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/testutil"
+	iqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 // CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow

@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v2/app/params"
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/app/params"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
@@ -18,11 +18,11 @@ import (
 	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
 	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v2/app"
-	"github.com/neutron-org/neutron/v2/testutil"
-	"github.com/neutron-org/neutron/v2/wasmbinding/bindings"
-	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	ictxtypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	ictxtypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 type CustomQuerierTestSuite struct {

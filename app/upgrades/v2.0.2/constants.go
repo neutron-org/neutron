@@ -1,7 +1,7 @@
 package v202
 
 import (
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
 
 const (
