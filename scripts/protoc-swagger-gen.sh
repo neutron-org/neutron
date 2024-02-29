@@ -35,6 +35,35 @@ done
 jq 'del(.definitions["cosmos.tx.v1beta1.ModeInfo.Multi"].properties.mode_infos.items["$ref"])' ./tmp-swagger-gen/cosmos/tx/v1beta1/service.swagger.json > ./tmp-swagger-gen/cosmos/tx/v1beta1/fixed_service.swagger.json
 jq 'del(.definitions["cosmos.autocli.v1.ServiceCommandDescriptor"].properties.sub_commands)' ./tmp-swagger-gen/cosmos/autocli/v1/query.swagger.json > ./tmp-swagger-gen/cosmos/autocli/v1/fixed_query.swagger.json
 
+rm -rf ./tmp-swagger-gen/cosmos/tx/v1beta1/service.swagger.json
+rm -rf ./tmp-swagger-gen/cosmos/autocli/v1/query.swagger.json
+
+# Convert all *.swagger.json files into a single folder _all
+files=$(find ./tmp-swagger-gen -name '*.swagger.json' -print0 | xargs -0)
+mkdir -p ./tmp-swagger-gen/_all
+counter=0
+for f in $files; do
+  echo "[+] $f"
+
+  # check gaia first before cosmos
+  if [[ "$f" =~ "gaia" ]]; then
+    cp $f ./tmp-swagger-gen/_all/gaia-$counter.json
+  elif [[ "$f" =~ "router" ]]; then
+    cp $f ./tmp-swagger-gen/_all/pfm-$counter.json
+  elif [[ "$f" =~ "cosmwasm" ]]; then
+    cp $f ./tmp-swagger-gen/_all/cosmwasm-$counter.json
+  elif [[ "$f" =~ "osmosis" ]]; then
+    cp $f ./tmp-swagger-gen/_all/osmosis-$counter.json
+  elif [[ "$f" =~ "juno" ]]; then
+    cp $f ./tmp-swagger-gen/_all/juno-$counter.json
+  elif [[ "$f" =~ "cosmos" ]]; then
+    cp $f ./tmp-swagger-gen/_all/cosmos-$counter.json
+  else
+    cp $f ./tmp-swagger-gen/_all/other-$counter.json
+  fi
+  counter=$((counter++))
+done
+
 # merges all the above into FINAL.json
 python3 ./scripts/swagger_merger.py
 

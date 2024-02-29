@@ -8,7 +8,7 @@ import os
 current_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.dirname(current_dir)
 
-all_dir = os.path.join(project_root, "tmp-swagger-gen")
+all_dir = os.path.join(project_root, "tmp-swagger-gen", "_all")
 
 # get the go.mod file Version
 version = ""
@@ -34,20 +34,20 @@ output = {
 }
 
 # Combine all individual files calls into 1 massive file.
-for root, dirs, files in os.walk(all_dir):
-    for file in files:
-        if not file.endswith(".json"):
-            continue
+# Combine all individual files calls into 1 massive file.
+for file in os.listdir(all_dir):
+    if not file.endswith(".json"):
+        continue
 
-        # read file all_dir / file
-        with open(os.path.join(root, file), "r") as f:
-            data = json.load(f)
+    # read file all_dir / file
+    with open(os.path.join(all_dir, file), "r") as f:
+        data = json.load(f)
 
-        for key in data["paths"]:
-            output["paths"][key] = data["paths"][key]
+    for key in data["paths"]:
+        output["paths"][key] = data["paths"][key]
 
-        for key in data["definitions"]:
-            output["definitions"][key] = data["definitions"][key]
+    for key in data["definitions"]:
+        output["definitions"][key] = data["definitions"][key]
 
 
 # loop through all paths, then alter any keys which are "operationId" to be a random string of 20 characters
