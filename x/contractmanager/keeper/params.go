@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v2/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
 
 // GetParams get all parameters as types.Params

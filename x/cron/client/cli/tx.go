@@ -7,7 +7,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/neutron-org/neutron/v2/x/cron/types"
+	"github.com/neutron-org/neutron/v3/x/cron/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

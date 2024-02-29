@@ -9,11 +9,13 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
 
-	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
@@ -48,6 +50,9 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		// interchaintxs
 		"/neutron.interchaintxs.v1.Query/Params":                   &interchaintxstypes.QueryParamsResponse{},
 		"/neutron.interchaintxs.v1.Query/InterchainAccountAddress": &interchaintxstypes.QueryInterchainAccountAddressResponse{},
+
+		// cron
+		"/neutron.cron.Query/Params": &crontypes.QueryParamsResponse{},
 
 		// interchainqueries
 		"/neutron.interchainqueries.Query/Params":            &interchainqueriestypes.QueryParamsResponse{},
