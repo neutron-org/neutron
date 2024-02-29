@@ -67,4 +67,4 @@ for path in output["paths"]:
 with open(
         os.path.join(project_root, "tmp-swagger-gen", "FINAL.json"), "w"
 ) as f:
-    json.dump(output, f, indent=2)
+    json.dump(output, f, indent=2, sort_keys=True)
