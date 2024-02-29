@@ -61,7 +61,8 @@ for f in $files; do
   else
     cp $f ./tmp-swagger-gen/_all/other-$counter.json
   fi
-  counter=$((counter++))
+
+  counter=$(expr $counter + 1)
 done
 
 # merges all the above into FINAL.json
@@ -73,5 +74,5 @@ swagger-combine ./tmp-swagger-gen/FINAL.json -o ./tmp-swagger-gen/tmp_swagger.ya
 # extends out the *ref instances to their full value
 swagger-merger --input ./tmp-swagger-gen/tmp_swagger.yaml -o ./docs/static/swagger.yaml
 
-rm -rf tmp-swagger-gen
+#rm -rf tmp-swagger-gen
 rm -rf tmp_deps
