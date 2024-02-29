@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   title: Neutron
-  version: v2
+  version: v3
 consumes:
   - application/json
 produces:
