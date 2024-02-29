@@ -41,7 +41,6 @@ rm -rf ./tmp-swagger-gen/cosmos/autocli/v1/query.swagger.json
 # remove unnecessary modules and their proto files
 rm -rf tmp-swagger-gen/cosmos/staking
 rm -rf tmp-swagger-gen/cosmos/distribution
-rm -rf tmp-swagger-gen/cosmos/distribution
 rm -rf tmp-swagger-gen/cosmos/gov
 rm -rf tmp-swagger-gen/cosmos/mint
 rm -rf tmp-swagger-gen/cosmos/group
