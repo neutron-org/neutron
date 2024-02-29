@@ -44,7 +44,7 @@ rm -rf tmp-swagger-gen/cosmos/distribution
 rm -rf tmp-swagger-gen/cosmos/gov
 rm -rf tmp-swagger-gen/cosmos/mint
 rm -rf tmp-swagger-gen/cosmos/group
-rm -rf tmp-swagger-gen/interchainsecurity/ccv/provider
+rm -rf tmp-swagger-gen/interchain_security/ccv/provider
 
 # Convert all *.swagger.json files into a single folder _all
 files=$(find ./tmp-swagger-gen -name '*.swagger.json' -print0 | xargs -0)
