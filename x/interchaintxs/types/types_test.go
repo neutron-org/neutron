@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v2/app"
-	"github.com/neutron-org/neutron/v2/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 const (

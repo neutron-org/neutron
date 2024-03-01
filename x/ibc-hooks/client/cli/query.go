@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/neutron-org/neutron/v2/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v3/x/ibc-hooks/utils"
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/neutron-org/neutron/v2/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -11,7 +11,7 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
 
-	types1 "github.com/neutron-org/neutron/v2/x/contractmanager/types"
+	types1 "github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
 
 // MockWasmKeeper is a mock of WasmKeeper interface.

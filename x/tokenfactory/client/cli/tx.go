@@ -14,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

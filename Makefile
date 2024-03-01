@@ -201,7 +201,8 @@ proto-gen:
 	@$(protoImage) sh ./scripts/protocgen.sh
 
 proto-swagger-gen:
-	@$(protoImage) sh ./scripts/protoc-swagger-gen.sh
+	@$(DOCKER) build proto/ -t swagger-gen
+	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace swagger-gen ./scripts/protoc-swagger-gen.sh
 
 PROTO_FORMATTER_IMAGE=bufbuild/buf:1.28.1
 
@@ -250,9 +251,6 @@ start-docker-container:
 
 stop-docker-container:
 	@docker stop neutron
-
-openapi:
-	ignite generate openapi
 
 mocks:
 	@echo "Regenerate mocks..."

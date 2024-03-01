@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	dexmoduletypes "github.com/neutron-org/neutron/v2/x/dex/types"
+	dexmoduletypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func NewACoin(amt math.Int) sdk.Coin {

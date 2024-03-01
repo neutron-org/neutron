@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/neutron-org/neutron/v2/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v3/x/ibc-hooks/utils"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
@@ -14,7 +14,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v2/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
 )
 
 type ContractAck struct {

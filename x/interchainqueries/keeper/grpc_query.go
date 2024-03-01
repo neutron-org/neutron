@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 var _ types.QueryServer = Keeper{}

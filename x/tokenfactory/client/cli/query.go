@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

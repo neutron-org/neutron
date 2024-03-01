@@ -8,10 +8,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
 
 func CreateUpgradeHandler(
