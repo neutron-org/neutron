@@ -108,8 +108,8 @@ func (k Keeper) RunMultihopRoute(
 	}
 	currentPrice := math_utils.OnePrecDec()
 
-	var currentOutCoin sdk.Coin
-	var currentDust sdk.Coin
+	var stepOutCoin sdk.Coin
+	var stepDust sdk.Coin
 	inCoin := initialInCoin
 	bCacheCtx := types.NewBranchableCache(ctx)
 
@@ -122,13 +122,13 @@ func (k Keeper) RunMultihopRoute(
 			return sdk.Coins{}, sdk.Coin{}, bCacheCtx.WriteCache, types.ErrExitLimitPriceHit
 		}
 
-		currentDust, currentOutCoin, bCacheCtx, err = k.MultihopStep(
+		stepDust, stepOutCoin, bCacheCtx, err = k.MultihopStep(
 			bCacheCtx,
 			step,
 			inCoin,
 			stepCache,
 		)
-		inCoin = currentOutCoin
+		inCoin = stepOutCoin
 		if err != nil {
 			return sdk.Coins{}, sdk.Coin{}, nil, sdkerrors.Wrapf(
 				err,
@@ -138,9 +138,9 @@ func (k Keeper) RunMultihopRoute(
 		}
 
 		// Add what hasn't been swapped to dustAcc
-		dustAcc = dustAcc.Add(currentDust)
+		dustAcc = dustAcc.Add(stepDust)
 
-		currentPrice = math_utils.NewPrecDecFromInt(currentOutCoin.Amount).
+		currentPrice = math_utils.NewPrecDecFromInt(stepOutCoin.Amount).
 			Quo(math_utils.NewPrecDecFromInt(initialInCoin.Amount))
 	}
 
@@ -148,7 +148,7 @@ func (k Keeper) RunMultihopRoute(
 		return sdk.Coins{}, sdk.Coin{}, nil, types.ErrExitLimitPriceHit
 	}
 
-	return dustAcc, currentOutCoin, bCacheCtx.WriteCache, nil
+	return dustAcc, stepOutCoin, bCacheCtx.WriteCache, nil
 }
 
 // SwapFullAmountIn swaps full amount of given `amountIn` to the `tradePairID` taker denom.
