@@ -9,7 +9,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 )
 
 // GenesisState is the genesis state of the blockchain represented here as a map of raw json

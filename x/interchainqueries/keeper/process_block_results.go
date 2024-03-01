@@ -17,7 +17,7 @@ import (
 	"github.com/cosmos/ibc-go/v7/modules/core/exported"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v2/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 // deterministicResponseDeliverTx strips non-deterministic fields from

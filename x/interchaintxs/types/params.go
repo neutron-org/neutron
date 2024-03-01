@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	"gopkg.in/yaml.v2"
 )

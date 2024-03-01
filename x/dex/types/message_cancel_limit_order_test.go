@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v2/testutil/common/sample"
-	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/testutil/common/sample"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func TestMsgCancelLimitOrder_ValidateBasic(t *testing.T) {

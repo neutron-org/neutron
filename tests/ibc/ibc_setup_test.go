@@ -18,9 +18,9 @@ import (
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v2/app/params"
-	"github.com/neutron-org/neutron/v2/testutil"
-	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
+	appparams "github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v3/testutil"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 var (

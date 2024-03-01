@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v2/x/interchaintxs/keeper"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -19,10 +19,10 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
-	"github.com/neutron-org/neutron/v2/testutil"
-	testkeeper "github.com/neutron-org/neutron/v2/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v2/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v2/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/testutil"
+	testkeeper "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 const TestFeeCollectorAddr = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"
