@@ -90,7 +90,7 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
 		math.NewInt(int64(60_000)),
 		math_utils.MustNewPrecDecFromStr("0.000000013"),
 		false,
-	) // 60_000_000A (59960904 real) -> 1_002B -> 8_185C -> 20_000D
+	) // 60_000A (59841 real) -> 1B -> 1C -> 1D
 	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
 	s.Assert().Nil(err)
 
@@ -350,7 +350,7 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteFindBestRoute() {
 
 	// THEN swap succeeds through route A<>B, B<>E, E<>X
 
-	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(2))
+	s.assertAccountBalanceWithDenomInt(s.alice, "TokenA", math.NewInt(2)) // dust left
 	s.assertAccountBalanceWithDenomInt(s.alice, "TokenX", math.NewInt(134_943_366))
 	s.assertLiquidityAtTickWithDenomInt(
 		&types.PairID{Token0: "TokenA", Token1: "TokenB"},

@@ -283,28 +283,16 @@ func (k Keeper) MultiHopSwapCore(
 		return sdk.Coin{}, err
 	}
 
+	// send both dust and coinOut to receiver
+	// note that dust can be multiple coins collected from multiple hops.
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,
 		receiverAddr,
-		sdk.Coins{bestRoute.coinOut},
+		bestRoute.dust.Add(bestRoute.coinOut),
 	)
 	if err != nil {
-		return sdk.Coin{}, err
-	}
-
-	// send dust to the user.
-	// note that dust can be multiple coins collected from multiple hops.
-	if !bestRoute.dust.IsZero() {
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(
-			ctx,
-			types.ModuleName,
-			receiverAddr,
-			bestRoute.dust,
-		)
-		if err != nil {
-			return sdk.Coin{}, fmt.Errorf("failed to send dust back to user: %w", err)
-		}
+		return sdk.Coin{}, fmt.Errorf("failed to send out coin and dust to the receiver: %w", err)
 	}
 
 	ctx.EventManager().EmitEvent(types.CreateMultihopSwapEvent(
