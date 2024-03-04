@@ -1,15 +1,17 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/errors"
+	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/cometbft/cometbft/libs/log"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
@@ -73,7 +75,7 @@ func (k Keeper) GetTotalBurnedNeutronsAmount(ctx sdk.Context) types.TotalBurnedN
 	}
 
 	if totalBurnedNeutronsAmount.Coin.Denom == "" {
-		totalBurnedNeutronsAmount.Coin = sdk.NewCoin(k.GetParams(ctx).NeutronDenom, sdk.NewInt(0))
+		totalBurnedNeutronsAmount.Coin = sdk.NewCoin(k.GetParams(ctx).NeutronDenom, math.NewInt(0))
 	}
 
 	return totalBurnedNeutronsAmount
@@ -139,6 +141,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 // FundCommunityPool is method to satisfy DistributionKeeper interface for packet-forward-middleware Keeper.
 // The original method sends coins to a community pool of a chain.
 // The current method sends coins to a Fee Collector module which collects fee on consumer chain.
-func (k Keeper) FundCommunityPool(ctx sdk.Context, amount sdk.Coins, sender sdk.AccAddress) error {
+func (k Keeper) FundCommunityPool(ctx context.Context, amount sdk.Coins, sender sdk.AccAddress) error {
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, authtypes.FeeCollectorName, amount)
 }

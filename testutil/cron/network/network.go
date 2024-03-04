@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	pruningtypes "cosmossdk.io/store/pruning/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/x/genutil"

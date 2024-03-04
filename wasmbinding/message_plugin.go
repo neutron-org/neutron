@@ -15,12 +15,12 @@ import (
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
+	softwareUpgrade "cosmossdk.io/x/upgrade/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	softwareUpgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"

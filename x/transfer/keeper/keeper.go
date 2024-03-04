@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -70,12 +70,12 @@ func NewKeeper(
 	ics4Wrapper porttypes.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
 	feeKeeper wrappedtypes.FeeRefunderKeeper,
-	sudoKeeper wrappedtypes.WasmKeeper,
+	sudoKeeper wrappedtypes.WasmKeeper, authority string,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		channelKeeper: channelKeeper,
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
-			authKeeper, bankKeeper, scopedKeeper),
+			authKeeper, bankKeeper, scopedKeeper, authority),
 		FeeKeeper:  feeKeeper,
 		SudoKeeper: sudoKeeper,
 	}

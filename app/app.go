@@ -9,9 +9,12 @@ import (
 	"path/filepath"
 	"reflect"
 
+	"cosmossdk.io/log"
+	db "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
-	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
+	//globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 	"github.com/cosmos/interchain-security/v4/testutil/integration"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
@@ -33,12 +36,19 @@ import (
 
 	"github.com/neutron-org/neutron/v2/x/cron"
 
+	"cosmossdk.io/x/evidence"
+	evidencekeeper "cosmossdk.io/x/evidence/keeper"
+	evidencetypes "cosmossdk.io/x/evidence/types"
+	"cosmossdk.io/x/feegrant"
+	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
+	feegrantmodule "cosmossdk.io/x/feegrant/module"
+	"cosmossdk.io/x/upgrade"
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
-	"github.com/cometbft/cometbft/libs/log"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -69,12 +79,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	"github.com/cosmos/cosmos-sdk/x/evidence"
-	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
-	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
-	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -82,10 +86,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/gaia/v11/x/globalfee"
+	//"github.com/cosmos/gaia/v11/x/globalfee"
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -150,11 +151,11 @@ import (
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	storetypes "cosmossdk.io/store/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
 	"github.com/neutron-org/neutron/v2/x/dex"
 	dexkeeper "github.com/neutron-org/neutron/v2/x/dex/keeper"
@@ -167,15 +168,15 @@ import (
 	gmpmiddleware "github.com/neutron-org/neutron/v2/x/gmp"
 
 	// Block-sdk imports
-	blocksdkabci "github.com/skip-mev/block-sdk/abci"
-	blocksdk "github.com/skip-mev/block-sdk/block"
-	"github.com/skip-mev/block-sdk/x/auction"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
-	rewardsaddressprovider "github.com/skip-mev/block-sdk/x/auction/rewards"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
+	blocksdk "github.com/skip-mev/block-sdk/v2/block"
+	"github.com/skip-mev/block-sdk/v2/x/auction"
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+	rewardsaddressprovider "github.com/skip-mev/block-sdk/v2/x/auction/rewards"
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
-	"github.com/skip-mev/block-sdk/abci/checktx"
-	"github.com/skip-mev/block-sdk/block/base"
+	"github.com/skip-mev/block-sdk/v2/abci/checktx"
+	"github.com/skip-mev/block-sdk/v2/block/base"
 )
 
 const (
@@ -231,7 +232,7 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		auction.AppModuleBasic{},
-		globalfee.AppModule{},
+		//globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
 	)
@@ -368,7 +369,7 @@ func (app *App) GetTestEvidenceKeeper() integration.TestEvidenceKeeper {
 // New returns a reference to an initialized blockchain app
 func New(
 	logger log.Logger,
-	db dbm.DB,
+	db db.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	skipUpgradeHeights map[int64]bool,
@@ -390,7 +391,7 @@ func New(
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 
-	keys := sdk.NewKVStoreKeys(
+	keys := storetypes.NewKVStoreKeys(
 		authzkeeper.StoreKey, authtypes.StoreKey, banktypes.StoreKey, slashingtypes.StoreKey,
 		paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, icacontrollertypes.StoreKey,
@@ -399,8 +400,8 @@ func New(
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
 	)
-	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
+	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
+	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
 
 	app := &App{
 		BaseApp:           bApp,
@@ -417,8 +418,8 @@ func New(
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-	bApp.SetParamStore(&app.ConsensusParamsKeeper)
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), runtime.EventService{})
+	bApp.SetParamStore(&app.ConsensusParamsKeeper.ParamsStore)
 
 	// add capability keeper and ScopeToModule for ibc module
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
@@ -435,45 +436,48 @@ func New(
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
-		keys[authtypes.StoreKey],
+		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
+		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
-		keys[authz.ModuleName], appCodec, app.MsgServiceRouter(), app.AccountKeeper,
+		runtime.NewKVStoreService(keys[authz.ModuleName]), appCodec, app.MsgServiceRouter(), app.AccountKeeper,
 	)
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
-		keys[banktypes.StoreKey],
+		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		app.AccountKeeper,
 		app.BlockedAddrs(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		logger,
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec,
 		legacyAmino,
-		keys[slashingtypes.StoreKey],
+		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
 		&app.ConsumerKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.CrisisKeeper = *crisiskeeper.NewKeeper(
 		appCodec,
-		keys[crisistypes.StoreKey],
+		runtime.NewKVStoreService(keys[crisistypes.StoreKey]),
 		invCheckPeriod,
 		&app.BankKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 	)
 
-	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
+	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
 	app.UpgradeKeeper = *upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
-		keys[upgradetypes.StoreKey],
+		runtime.NewKVStoreService(keys[upgradetypes.StoreKey]),
 		appCodec,
 		homePath,
 		app.BaseApp,
@@ -493,21 +497,23 @@ func New(
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
-		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
-		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
@@ -556,12 +562,13 @@ func New(
 		app.GetSubspace(ibctransfertypes.ModuleName),
 		app.HooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
 		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
 		&app.BankKeeper,
 		scopedTransferKeeper,
 		app.FeeKeeper,
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
@@ -570,7 +577,8 @@ func New(
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
-		appCodec, keys[evidencetypes.StoreKey], &app.ConsumerKeeper, app.SlashingKeeper,
+		appCodec, runtime.NewKVStoreService(keys[evidencetypes.StoreKey]), &app.ConsumerKeeper, app.SlashingKeeper,
+		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()), runtime.ProvideCometInfoService(),
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
@@ -581,7 +589,7 @@ func New(
 		app.GetSubspace(ccvconsumertypes.ModuleName),
 		scopedCCVConsumerKeeper,
 		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.PortKeeper,
 		app.IBCKeeper.ConnectionKeeper,
 		app.IBCKeeper.ClientKeeper,
 		app.SlashingKeeper,
@@ -591,6 +599,9 @@ func New(
 		// Since the keeper is only used to send reward to provider chain
 		app.IBCKeeper,
 		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
@@ -605,7 +616,7 @@ func New(
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
 
-	app.BankKeeper.BaseSendKeeper = *app.BankKeeper.BaseSendKeeper.SetHooks(
+	app.BankKeeper.BaseSendKeeper = app.BankKeeper.BaseSendKeeper.SetHooks(
 		banktypes.NewMultiBankHooks(
 			app.TokenFactoryKeeper.Hooks(),
 		))
@@ -703,14 +714,14 @@ func New(
 
 	app.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
-		keys[wasmtypes.StoreKey],
+		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 		app.AccountKeeper,
 		&app.BankKeeper,
 		nil,
 		nil,
 		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
 		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.PortKeeper,
 		scopedWasmKeeper,
 		app.TransferKeeper,
 		app.MsgServiceRouter(),
@@ -790,9 +801,9 @@ func New(
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.ConsumerKeeper, app.GetSubspace(slashingtypes.ModuleName)),
-		upgrade.NewAppModule(&app.UpgradeKeeper),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.ConsumerKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
+		upgrade.NewAppModule(&app.UpgradeKeeper, address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.ConsumerKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -809,7 +820,7 @@ func New(
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
-		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
+		//globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
 		swapModule,
 		dexModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
@@ -848,7 +859,7 @@ func New(
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
-		globalfee.ModuleName,
+		//globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 	)
@@ -881,7 +892,7 @@ func New(
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
-		globalfee.ModuleName,
+		//globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
 		// dexmodule must be the last endBlock module to run
@@ -921,7 +932,7 @@ func New(
 		ibchookstypes.ModuleName, // after auth keeper
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
-		globalfee.ModuleName,
+		//globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 	)
@@ -991,10 +1002,10 @@ func New(
 			WasmConfig:        &wasmConfig,
 			TXCounterStoreKey: keys[wasmtypes.StoreKey],
 			ConsumerKeeper:    app.ConsumerKeeper,
-			GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
-			AuctionKeeper:     app.AuctionKeeper,
-			TxEncoder:         app.GetTxConfig().TxEncoder(),
-			MEVLane:           mevLane,
+			//GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
+			AuctionKeeper: app.AuctionKeeper,
+			TxEncoder:     app.GetTxConfig().TxEncoder(),
+			MEVLane:       mevLane,
 		},
 		app.Logger(),
 	)
@@ -1108,20 +1119,20 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
-					AccountKeeper:       app.AccountKeeper,
-					FeeBurnerKeeper:     app.FeeBurnerKeeper,
-					CronKeeper:          app.CronKeeper,
-					IcqKeeper:           app.InterchainQueriesKeeper,
-					TokenFactoryKeeper:  app.TokenFactoryKeeper,
-					SlashingKeeper:      app.SlashingKeeper,
-					ParamsKeeper:        app.ParamsKeeper,
-					CapabilityKeeper:    app.CapabilityKeeper,
-					AuctionKeeper:       app.AuctionKeeper,
-					ContractManager:     app.ContractManagerKeeper,
-					AdminModule:         app.AdminmoduleKeeper,
-					ConsensusKeeper:     &app.ConsensusParamsKeeper,
-					ConsumerKeeper:      &app.ConsumerKeeper,
-					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
+					AccountKeeper:      app.AccountKeeper,
+					FeeBurnerKeeper:    app.FeeBurnerKeeper,
+					CronKeeper:         app.CronKeeper,
+					IcqKeeper:          app.InterchainQueriesKeeper,
+					TokenFactoryKeeper: app.TokenFactoryKeeper,
+					SlashingKeeper:     app.SlashingKeeper,
+					ParamsKeeper:       app.ParamsKeeper,
+					CapabilityKeeper:   app.CapabilityKeeper,
+					AuctionKeeper:      app.AuctionKeeper,
+					ContractManager:    app.ContractManagerKeeper,
+					AdminModule:        app.AdminmoduleKeeper,
+					ConsensusKeeper:    &app.ConsensusParamsKeeper,
+					ConsumerKeeper:     &app.ConsumerKeeper,
+					//GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,
@@ -1318,7 +1329,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
+	//paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 

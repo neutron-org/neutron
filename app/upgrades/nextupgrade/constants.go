@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	storetypes "cosmossdk.io/store/types"
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	"github.com/neutron-org/neutron/v2/app/upgrades"
 )
