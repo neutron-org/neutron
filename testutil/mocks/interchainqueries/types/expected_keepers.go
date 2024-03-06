@@ -5,11 +5,11 @@
 package mock_types
 
 import (
+	context "context"
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types1 "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	types0 "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -37,10 +37,10 @@ func (m *MockAccountKeeper) EXPECT() *MockAccountKeeperMockRecorder {
 }
 
 // GetAccount mocks base method.
-func (m *MockAccountKeeper) GetAccount(ctx types.Context, addr types.AccAddress) types0.AccountI {
+func (m *MockAccountKeeper) GetAccount(ctx context.Context, addr types.AccAddress) types.AccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", ctx, addr)
-	ret0, _ := ret[0].(types0.AccountI)
+	ret0, _ := ret[0].(types.AccountI)
 	return ret0
 }
 
@@ -74,7 +74,7 @@ func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 }
 
 // SendCoinsFromAccountToModule mocks base method.
-func (m *MockBankKeeper) SendCoinsFromAccountToModule(ctx types.Context, senderAddr types.AccAddress, recipientModule string, amt types.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr types.AccAddress, recipientModule string, amt types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromAccountToModule", ctx, senderAddr, recipientModule, amt)
 	ret0, _ := ret[0].(error)
@@ -88,7 +88,7 @@ func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(ctx, senderAd
 }
 
 // SendCoinsFromModuleToAccount mocks base method.
-func (m *MockBankKeeper) SendCoinsFromModuleToAccount(ctx types.Context, senderModule string, recipientAddr types.AccAddress, amt types.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr types.AccAddress, amt types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromModuleToAccount", ctx, senderModule, recipientAddr, amt)
 	ret0, _ := ret[0].(error)
@@ -102,7 +102,7 @@ func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToAccount(ctx, senderMo
 }
 
 // SpendableCoins mocks base method.
-func (m *MockBankKeeper) SpendableCoins(ctx types.Context, addr types.AccAddress) types.Coins {
+func (m *MockBankKeeper) SpendableCoins(ctx context.Context, addr types.AccAddress) types.Coins {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpendableCoins", ctx, addr)
 	ret0, _ := ret[0].(types.Coins)
@@ -139,7 +139,7 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 }
 
 // HasContractInfo mocks base method.
-func (m *MockContractManagerKeeper) HasContractInfo(ctx types.Context, contractAddress types.AccAddress) bool {
+func (m *MockContractManagerKeeper) HasContractInfo(ctx context.Context, contractAddress types.AccAddress) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasContractInfo", ctx, contractAddress)
 	ret0, _ := ret[0].(bool)
@@ -153,7 +153,7 @@ func (mr *MockContractManagerKeeperMockRecorder) HasContractInfo(ctx, contractAd
 }
 
 // SudoKVQueryResult mocks base method.
-func (m *MockContractManagerKeeper) SudoKVQueryResult(ctx types.Context, contractAddress types.AccAddress, queryID uint64) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoKVQueryResult(ctx context.Context, contractAddress types.AccAddress, queryID uint64) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SudoKVQueryResult", ctx, contractAddress, queryID)
 	ret0, _ := ret[0].([]byte)
@@ -168,7 +168,7 @@ func (mr *MockContractManagerKeeperMockRecorder) SudoKVQueryResult(ctx, contract
 }
 
 // SudoTxQueryResult mocks base method.
-func (m *MockContractManagerKeeper) SudoTxQueryResult(ctx types.Context, contractAddress types.AccAddress, queryID uint64, height types1.Height, data []byte) ([]byte, error) {
+func (m *MockContractManagerKeeper) SudoTxQueryResult(ctx context.Context, contractAddress types.AccAddress, queryID uint64, height types0.Height, data []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SudoTxQueryResult", ctx, contractAddress, queryID, height, data)
 	ret0, _ := ret[0].([]byte)
