@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
@@ -16,7 +17,7 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 var (
 	KeyMsgSubmitTxMaxMessages     = []byte("MsgSubmitTxMaxMessages")
 	DefaultMsgSubmitTxMaxMessages = uint64(16)
-	DefaultRegisterFee            = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
+	DefaultRegisterFee            = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000)))
 )
 
 func ParamKeyTable() paramtypes.KeyTable {

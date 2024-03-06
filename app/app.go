@@ -12,7 +12,6 @@ import (
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	//globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
@@ -362,9 +361,10 @@ func (app *App) GetTestSlashingKeeper() integration.TestSlashingKeeper {
 	return app.SlashingKeeper
 }
 
-func (app *App) GetTestEvidenceKeeper() integration.TestEvidenceKeeper {
-	return app.EvidenceKeeper
-}
+//TODO:
+//func (app *App) GetTestEvidenceKeeper() integration.TestEvidenceKeeper {
+//	return app.EvidenceKeeper
+//}
 
 // New returns a reference to an initialized blockchain app
 func New(
@@ -667,7 +667,7 @@ func New(
 	adminRouterLegacy := govv1beta1.NewRouter()
 	adminRouterLegacy.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
+		//AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	app.AdminmoduleKeeper = *adminmodulekeeper.NewKeeper(
@@ -950,8 +950,8 @@ func New(
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, nil, app.GetSubspace(slashingtypes.ModuleName)),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, nil, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.ConsumerKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -998,10 +998,10 @@ func New(
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			IBCKeeper:         app.IBCKeeper,
-			WasmConfig:        &wasmConfig,
-			TXCounterStoreKey: keys[wasmtypes.StoreKey],
-			ConsumerKeeper:    app.ConsumerKeeper,
+			IBCKeeper:             app.IBCKeeper,
+			WasmConfig:            &wasmConfig,
+			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
+			ConsumerKeeper:        app.ConsumerKeeper,
 			//GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
 			AuctionKeeper: app.AuctionKeeper,
 			TxEncoder:     app.GetTxConfig().TxEncoder(),
@@ -1042,7 +1042,6 @@ func New(
 		mevLane,
 		anteHandler,
 		app.BaseApp.CheckTx,
-		app.ChainID(),
 	)
 
 	// wrap checkTxHandler with mempool parity handler
@@ -1153,7 +1152,7 @@ func (app *App) ChainID() string {
 // handler so that we can verify bid transactions before they are inserted into the mempool.
 // With the Block-SDK CheckTx, we can verify the bid transaction and all of the bundled transactions
 // before inserting the bid transaction into the mempool.
-func (app *App) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
+func (app *App) CheckTx(req *abci.RequestCheckTx) (*abci.ResponseCheckTx, error) {
 	return app.checkTxHandler(req)
 }
 
@@ -1169,45 +1168,49 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 func (app *App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
 
 // BeginBlocker application updates every begin block
-func (app *App) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	return app.mm.BeginBlock(ctx, req)
+func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+	return app.mm.BeginBlock(ctx)
 }
 
 // EndBlocker application updates every end block
-func (app *App) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
-	return app.mm.EndBlock(ctx, req)
+func (app *App) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+	return app.mm.EndBlock(ctx)
 }
 
 func (app *App) EnsureBlockGasMeter(ctx sdk.Context) {
 	// TrancheKey generation and LimitOrderExpirationPurge both rely on a BlockGas meter.
 	// check that it works at startup
 	cp := app.GetConsensusParams(ctx)
-	if cp == nil || cp.Block == nil || cp.Block.MaxGas <= 0 {
+	if cp.Block == nil || cp.Block.MaxGas <= 0 {
 		panic("BlockGas meter must be initialized. Genesis must provide value for Block.MaxGas")
 	}
 }
 
 // InitChainer application update at chain initialization
-func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
-		panic(err)
+		return nil, err
 	}
+
 	app.EnsureBlockGasMeter(ctx)
-	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
+	if err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap()); err != nil {
+		return nil, err
+	}
+
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 // InitChainer application update at chain initialization
 // ONLY FOR TESTING PURPOSES
-func (app *App) TestInitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *App) TestInitChainer(ctx sdk.Context, req abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
 
 	// manually set consensus params here, cause there is no way to set it using ibctesting stuff for now
-	app.ConsensusParamsKeeper.Set(ctx, sims.DefaultConsensusParams)
+	//TODO: app.ConsensusParamsKeeper.Set(ctx, sims.DefaultConsensusParams)
 	app.EnsureBlockGasMeter(ctx)
 
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
@@ -1333,8 +1336,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 
-	// MOTE: legacy subspaces for migration sdk47 only
-	paramsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable()) //nolint:staticcheck
+	// MOTE: legacy subspaces for migration sdk47 only //nolint:staticcheck
 	paramsKeeper.Subspace(crontypes.StoreKey).WithKeyTable(crontypes.ParamKeyTable())
 	paramsKeeper.Subspace(feeburnertypes.StoreKey).WithKeyTable(feeburnertypes.ParamKeyTable())
 	paramsKeeper.Subspace(feetypes.StoreKey).WithKeyTable(feetypes.ParamKeyTable())
@@ -1388,8 +1390,8 @@ func (app *App) GetConsumerKeeper() ccvconsumerkeeper.Keeper {
 	return app.ConsumerKeeper
 }
 
-func (app *App) RegisterNodeService(clientCtx client.Context) {
-	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
+	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
 
 // overrideWasmVariables overrides the wasm variables to:

@@ -1,11 +1,11 @@
 package app
 
 import (
+	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
-	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/log"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cometbft/cometbft/libs/log"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -24,10 +24,10 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 
-	IBCKeeper         *ibckeeper.Keeper
-	ConsumerKeeper    ibcconsumerkeeper.Keeper
-	WasmConfig        *wasmTypes.WasmConfig
-	TXCounterStoreKey storetypes.StoreKey
+	IBCKeeper             *ibckeeper.Keeper
+	ConsumerKeeper        ibcconsumerkeeper.Keeper
+	WasmConfig            *wasmTypes.WasmConfig
+	TXCounterStoreService corestoretypes.KVStoreService
 
 	// dependencies for the x/auction ante-handler
 	AuctionKeeper auctionkeeper.Keeper
@@ -51,8 +51,8 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	if options.WasmConfig == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "wasm config is required for ante builder")
 	}
-	if options.TXCounterStoreKey == nil {
-		return nil, errors.Wrap(sdkerrors.ErrLogic, "tx counter key is required for ante builder")
+	if options.TXCounterStoreService == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "tx counter store service is required for ante builder")
 	}
 	if options.GlobalFeeSubspace.Name() == "" {
 		return nil, errors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
@@ -69,7 +69,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
-		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreKey),
+		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		consumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
 		ante.NewValidateBasicDecorator(),

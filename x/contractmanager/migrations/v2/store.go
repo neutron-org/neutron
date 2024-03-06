@@ -21,7 +21,7 @@ func migrateFailures(ctx sdk.Context, storeKey storetypes.StoreKey) error {
 	// fetch list of all old failure keys
 	failureKeys := make([][]byte, 0)
 	iteratorStore := prefix.NewStore(ctx.KVStore(storeKey), types.ContractFailuresKey)
-	iterator := sdk.KVStorePrefixIterator(iteratorStore, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(iteratorStore, []byte{})
 
 	for ; iterator.Valid(); iterator.Next() {
 		failureKeys = append(failureKeys, iterator.Key())

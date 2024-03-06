@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
@@ -16,7 +17,7 @@ var (
 	KeyQuerySubmitTimeout                = []byte("QuerySubmitTimeout")
 	DefaultQuerySubmitTimeout            = uint64(1036800) // One month, with block_time = 2.5s
 	KeyQueryDeposit                      = []byte("QueryDeposit")
-	DefaultQueryDeposit        sdk.Coins = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(1_000_000))))
+	DefaultQueryDeposit        sdk.Coins = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000))))
 	KeyTxQueryRemovalLimit               = []byte("TxQueryRemovalLimit")
 	DefaultTxQueryRemovalLimit           = uint64(10_000)
 )
