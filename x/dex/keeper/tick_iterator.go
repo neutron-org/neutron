@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -9,7 +10,7 @@ import (
 )
 
 type TickIterator struct {
-	iter sdk.Iterator
+	iter storetypes.Iterator
 	cdc  codec.BinaryCodec
 }
 

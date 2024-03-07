@@ -20,12 +20,12 @@ const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
 func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 	tests := []struct {
 		name        string
-		malleate    func() sdktypes.Msg
+		malleate    func() sdktypes.HasValidateBasic
 		expectedErr error
 	}{
 		{
 			"invalid query type",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -39,7 +39,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid transactions filter format",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "&)(^Y(*&(*&(&(*",
@@ -53,7 +53,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"too many keys",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "[]",
@@ -67,7 +67,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid update period",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -81,7 +81,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -95,7 +95,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -109,7 +109,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty connection id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "",
 					TransactionsFilter: "{}",
@@ -123,7 +123,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty keys",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -137,7 +137,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty key path",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -151,7 +151,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty key id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -165,7 +165,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"nil key",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -179,7 +179,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"duplicated keys",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -193,7 +193,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"valid",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -221,12 +221,12 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 func TestMsgSubmitQueryResultValidate(t *testing.T) {
 	tests := []struct {
 		name        string
-		malleate    func() sdktypes.Msg
+		malleate    func() sdktypes.HasValidateBasic
 		expectedErr error
 	}{
 		{
 			"valid",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   TestAddress,
@@ -254,7 +254,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty result",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   TestAddress,
@@ -266,7 +266,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty kv results and block result",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   TestAddress,
@@ -283,7 +283,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"zero query id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  0,
 					Sender:   TestAddress,
@@ -311,7 +311,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   "",
@@ -339,7 +339,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   "invalid_sender",
@@ -367,7 +367,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty client id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   TestAddress,
@@ -402,12 +402,12 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 	tests := []struct {
 		name        string
-		malleate    func() sdktypes.Msg
+		malleate    func() sdktypes.HasValidateBasic
 		expectedErr error
 	}{
 		{
 			"valid kv",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
 					NewKeys: []*iqtypes.KVKey{{
@@ -422,7 +422,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"valid tx",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:               1,
 					NewUpdatePeriod:       10,
@@ -434,7 +434,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"both keys and filter sent",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
 					NewKeys: []*iqtypes.KVKey{{
@@ -450,7 +450,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty keys, update_period and tx filter",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:               1,
 					NewKeys:               nil,
@@ -463,7 +463,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty key path",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
 					NewKeys:         []*iqtypes.KVKey{{Key: []byte("key1"), Path: ""}},
@@ -475,7 +475,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty key id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
 					NewKeys:         []*iqtypes.KVKey{{Key: []byte(""), Path: "path"}},
@@ -487,7 +487,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"too many keys",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
 					NewKeys:         craftKVKeys(200),
@@ -499,7 +499,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"invalid query id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 0,
 					NewKeys: []*iqtypes.KVKey{{
@@ -514,7 +514,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
 					NewKeys: []*iqtypes.KVKey{{
@@ -529,7 +529,7 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
 					NewKeys: []*iqtypes.KVKey{{
@@ -558,12 +558,12 @@ func TestMsgUpdateQueryRequestValidate(t *testing.T) {
 func TestMsgRemoveQueryRequestValidate(t *testing.T) {
 	tests := []struct {
 		name        string
-		malleate    func() sdktypes.Msg
+		malleate    func() sdktypes.HasValidateBasic
 		expectedErr error
 	}{
 		{
 			"valid",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  TestAddress,
@@ -573,7 +573,7 @@ func TestMsgRemoveQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"invalid query id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 0,
 					Sender:  TestAddress,
@@ -583,7 +583,7 @@ func TestMsgRemoveQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  "",
@@ -593,7 +593,7 @@ func TestMsgRemoveQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  "invalid-sender",
@@ -617,11 +617,11 @@ func TestMsgRemoveQueryRequestValidate(t *testing.T) {
 func TestMsgRegisterInterchainQueryGetSigners(t *testing.T) {
 	tests := []struct {
 		name     string
-		malleate func() sdktypes.Msg
+		malleate func() sdktypes.LegacyMsg
 	}{
 		{
 			"valid_signer",
-			func() sdktypes.Msg {
+			func() sdktypes.LegacyMsg {
 				return &iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
@@ -644,11 +644,11 @@ func TestMsgRegisterInterchainQueryGetSigners(t *testing.T) {
 func TestMsgSubmitQueryResultGetSigners(t *testing.T) {
 	tests := []struct {
 		name     string
-		malleate func() sdktypes.Msg
+		malleate func() sdktypes.LegacyMsg
 	}{
 		{
 			"valid_signer",
-			func() sdktypes.Msg {
+			func() sdktypes.LegacyMsg {
 				return &iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
 					Sender:   TestAddress,
@@ -685,11 +685,11 @@ func TestMsgSubmitQueryResultGetSigners(t *testing.T) {
 func TestMsgUpdateQueryGetSigners(t *testing.T) {
 	tests := []struct {
 		name     string
-		malleate func() sdktypes.Msg
+		malleate func() sdktypes.LegacyMsg
 	}{
 		{
 			"valid_signer",
-			func() sdktypes.Msg {
+			func() sdktypes.LegacyMsg {
 				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					Sender: TestAddress,
 				}
@@ -707,11 +707,11 @@ func TestMsgUpdateQueryGetSigners(t *testing.T) {
 func TestMsgRemoveQueryGetSigners(t *testing.T) {
 	tests := []struct {
 		name     string
-		malleate func() sdktypes.Msg
+		malleate func() sdktypes.LegacyMsg
 	}{
 		{
 			"valid_signer",
-			func() sdktypes.Msg {
+			func() sdktypes.LegacyMsg {
 				return &iqtypes.MsgRemoveInterchainQueryRequest{
 					Sender: TestAddress,
 				}

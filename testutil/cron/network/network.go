@@ -6,6 +6,7 @@ import (
 	"time"
 
 	pruningtypes "cosmossdk.io/store/pruning/types"
+	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -19,7 +20,6 @@ import (
 
 	"github.com/neutron-org/neutron/v2/app"
 
-	tmdb "github.com/cometbft/cometbft-db"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -80,7 +80,7 @@ func DefaultConfig() network.Config {
 			}
 
 			return app.New(
-				val.GetCtx().Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
+				val.GetCtx().Logger, db.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
 				sims.EmptyAppOptions{},
 				nil,

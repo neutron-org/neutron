@@ -20,10 +20,10 @@ import (
 	"github.com/neutron-org/neutron/v2/x/interchainqueries/types"
 )
 
-// deterministicResponseDeliverTx strips non-deterministic fields from
-// ResponseDeliverTx and returns another ResponseDeliverTx.
-func deterministicResponseDeliverTx(response *abci.ResponseDeliverTx) *abci.ResponseDeliverTx {
-	return &abci.ResponseDeliverTx{
+// deterministicExecTxResult strips non-deterministic fields from
+// ExecTxResult and returns another ExecTxResult.
+func deterministicExecTxResult(response *abci.ExecTxResult) *abci.ExecTxResult {
+	return &abci.ExecTxResult{
 		Code:      response.Code,
 		Data:      response.Data,
 		GasWanted: response.GasWanted,
@@ -164,7 +164,7 @@ type TransactionVerifier struct{}
 // * transaction is included in block - header.DataHash merkle root contains transactions hash;
 // * transactions was executed successfully - transaction's responseDeliveryTx.Code == 0;
 // * transaction's responseDeliveryTx is legitimate - nextHeaderLastResultsDataHash merkle root contains
-// deterministicResponseDeliverTx(ResponseDeliveryTx).Bytes()
+// deterministicExecTxResult(ResponseDeliveryTx).Bytes()
 func (v TransactionVerifier) VerifyTransaction(
 	header *tendermintLightClientTypes.Header,
 	nextHeader *tendermintLightClientTypes.Header,
@@ -186,7 +186,7 @@ func (v TransactionVerifier) VerifyTransaction(
 		return errors.Wrapf(types.ErrInvalidType, "failed to convert proto proof to merkle proof: %v", err)
 	}
 
-	responseTx := deterministicResponseDeliverTx(tx.Response)
+	responseTx := deterministicExecTxResult(tx.Response)
 
 	responseTxBz, err := responseTx.Marshal()
 	if err != nil {

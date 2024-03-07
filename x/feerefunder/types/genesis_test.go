@@ -3,6 +3,7 @@ package types_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v2/app/params"
@@ -24,11 +25,11 @@ func TestGenesisState_Validate(t *testing.T) {
 	cfg := app.GetDefaultConfig()
 	cfg.Seal()
 
-	validRecvFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(0)))
-	validAckFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(types.DefaultFees.AckFee.AmountOf(params.DefaultDenom).Int64()+1)))
-	validTimeoutFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(types.DefaultFees.TimeoutFee.AmountOf(params.DefaultDenom).Int64()+1)))
+	validRecvFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(0)))
+	validAckFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(types.DefaultFees.AckFee.AmountOf(params.DefaultDenom).Int64()+1)))
+	validTimeoutFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(types.DefaultFees.TimeoutFee.AmountOf(params.DefaultDenom).Int64()+1)))
 
-	invalidRecvFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1)))
+	invalidRecvFee := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1)))
 
 	validPacketID := types.NewPacketID("port", "channel-1", 64)
 

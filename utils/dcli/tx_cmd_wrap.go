@@ -26,7 +26,7 @@ type TxCliDesc struct {
 
 	NumArgs int
 	// Contract: len(args) = NumArgs
-	ParseAndBuildMsg  func(clientCtx client.Context, args []string, flags *pflag.FlagSet) (sdk.Msg, error)
+	ParseAndBuildMsg  func(clientCtx client.Context, args []string, flags *pflag.FlagSet) (sdk.HasValidateBasic, error)
 	TxSignerFieldName string
 
 	Flags FlagDesc
@@ -36,20 +36,20 @@ type TxCliDesc struct {
 	CustomFieldParsers map[string]CustomFieldParserFn
 }
 
-func AddTxCmd[M sdk.Msg](cmd *cobra.Command, f func() (*TxCliDesc, M)) {
+func AddTxCmd[M sdk.HasValidateBasic](cmd *cobra.Command, f func() (*TxCliDesc, M)) {
 	desc, _ := f()
 	subCmd := BuildTxCli[M](desc)
 	cmd.AddCommand(subCmd)
 }
 
-func BuildTxCli[M sdk.Msg](desc *TxCliDesc) *cobra.Command {
+func BuildTxCli[M sdk.HasValidateBasic](desc *TxCliDesc) *cobra.Command {
 	desc.TxSignerFieldName = strings.ToLower(desc.TxSignerFieldName)
 	if desc.NumArgs == 0 {
 		// NumArgs = NumFields - 1, since 1 field is from the msg
 		desc.NumArgs = ParseNumFields[M]() - 1 - len(desc.CustomFlagOverrides) - len(desc.CustomFieldParsers)
 	}
 	if desc.ParseAndBuildMsg == nil {
-		desc.ParseAndBuildMsg = func(clientCtx client.Context, args []string, flags *pflag.FlagSet) (sdk.Msg, error) {
+		desc.ParseAndBuildMsg = func(clientCtx client.Context, args []string, flags *pflag.FlagSet) (sdk.HasValidateBasic, error) {
 			flagAdvice := FlagAdvice{
 				IsTx:                true,
 				TxSenderFieldName:   desc.TxSignerFieldName,

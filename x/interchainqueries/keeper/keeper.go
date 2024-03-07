@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
+	"cosmossdk.io/log"
 
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
@@ -117,7 +117,7 @@ func (k Keeper) GetAllRegisteredQueries(ctx sdk.Context) []*types.RegisteredQuer
 		queries []*types.RegisteredQuery
 	)
 
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {

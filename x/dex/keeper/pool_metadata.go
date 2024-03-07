@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 
 	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v2/x/dex/types"
@@ -71,7 +72,7 @@ func (k Keeper) RemovePoolMetadata(ctx sdk.Context, id uint64) {
 // GetAllPoolMetadata returns all poolMetadata
 func (k Keeper) GetAllPoolMetadata(ctx sdk.Context) (list []types.PoolMetadata) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PoolMetadataKeyPrefix))
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
 	defer iterator.Close()
 

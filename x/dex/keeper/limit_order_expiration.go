@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v2/x/dex/types"
@@ -92,7 +93,7 @@ func (k Keeper) GetAllLimitOrderExpiration(ctx sdk.Context) (list []*types.Limit
 		ctx.KVStore(k.storeKey),
 		types.KeyPrefix(types.LimitOrderExpirationKeyPrefix),
 	)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
 	defer iterator.Close()
 
@@ -110,7 +111,7 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 		ctx.KVStore(k.storeKey),
 		types.KeyPrefix(types.LimitOrderExpirationKeyPrefix),
 	)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	inGoodTilSegment := false
 
 	archivedTranches := make(map[string]bool)

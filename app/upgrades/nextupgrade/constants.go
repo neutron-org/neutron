@@ -26,7 +26,7 @@ var (
 			Added: []string{auctiontypes.ModuleName},
 		},
 	}
-	AuctionParamsReserveFee      = sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(500_000)}
-	AuctionParamsMinBidIncrement = sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(100_000)}
+	AuctionParamsReserveFee      = sdk.Coin{Denom: "untrn", Amount: math.NewInt(500_000)}
+	AuctionParamsMinBidIncrement = sdk.Coin{Denom: "untrn", Amount: math.NewInt(100_000)}
 	AuctionParamsProposerFee     = math.LegacyNewDecWithPrec(25, 2)
 )

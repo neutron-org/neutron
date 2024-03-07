@@ -165,7 +165,7 @@ func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, errors.Wrap(err, "failed to validate ibcTransferMsg")
 	}
 
-	response, err := m.transferKeeper.Transfer(sdk.WrapSDKContext(ctx), &ibcTransferMsg)
+	response, err := m.transferKeeper.Transfer(ctx, &ibcTransferMsg)
 	if err != nil {
 		ctx.Logger().Debug("transferServer.Transfer: failed to transfer",
 			"from_address", contractAddr.String(),
@@ -233,7 +233,7 @@ func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contract
 		return nil, errors.Wrap(err, "failed to validate incoming UpdateInterchainQuery message")
 	}
 
-	response, err := m.Icqmsgserver.UpdateInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Icqmsgserver.UpdateInterchainQuery(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update interchain query")
 	}
@@ -279,7 +279,7 @@ func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contract
 		return nil, errors.Wrap(err, "failed to validate incoming RemoveInterchainQuery message")
 	}
 
-	response, err := m.Icqmsgserver.RemoveInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Icqmsgserver.RemoveInterchainQuery(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to remove interchain query")
 	}
@@ -422,7 +422,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposalLegacy(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Adminserver.SubmitProposalLegacy(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit proposal")
 	}
@@ -439,7 +439,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
 	var (
 		msg    *admintypes.MsgSubmitProposal
-		sdkMsg sdk.Msg
+		sdkMsg sdk.LegacyMsg
 	)
 
 	cdc := m.AdminKeeper.Codec()
@@ -465,7 +465,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), msg)
+	response, err := m.Adminserver.SubmitProposal(ctx, msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit proposal")
 	}
@@ -494,7 +494,7 @@ func PerformCreateDenom(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractA
 
 	// Create denom
 	_, err := msgServer.CreateDenom(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		msgCreateDenom,
 	)
 	if err != nil {
@@ -524,7 +524,7 @@ func PerformForceTransfer(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contrac
 
 	// Force Transfer
 	_, err := msgServer.ForceTransfer(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		msgForceTransfer,
 	)
 	if err != nil {
@@ -554,7 +554,7 @@ func PerformSetDenomMetadata(f *tokenfactorykeeper.Keeper, ctx sdk.Context, cont
 
 	// Set denom metadata
 	_, err := msgServer.SetDenomMetadata(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		msgSetDenomMetadata,
 	)
 	if err != nil {
@@ -596,7 +596,7 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 
 	// Mint through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err = msgServer.Mint(sdk.WrapSDKContext(ctx), sdkMsg)
+	_, err = msgServer.Mint(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "minting coins from message")
 	}
@@ -617,7 +617,7 @@ func PerformSetBeforeSendHook(f *tokenfactorykeeper.Keeper, ctx sdk.Context, con
 
 	// SetBeforeSendHook through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err := msgServer.SetBeforeSendHook(sdk.WrapSDKContext(ctx), sdkMsg)
+	_, err := msgServer.SetBeforeSendHook(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "set before send from message")
 	}
@@ -648,7 +648,7 @@ func ChangeAdmin(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 	}
 
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err = msgServer.ChangeAdmin(sdk.WrapSDKContext(ctx), changeAdminMsg)
+	_, err = msgServer.ChangeAdmin(ctx, changeAdminMsg)
 	if err != nil {
 		return errors.Wrap(err, "failed changing admin from message")
 	}
@@ -679,7 +679,7 @@ func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 
 	// Burn through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err := msgServer.Burn(sdk.WrapSDKContext(ctx), sdkMsg)
+	_, err := msgServer.Burn(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "burning coins from message")
 	}
@@ -737,7 +737,7 @@ func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitTx message")
 	}
 
-	response, err := m.Ictxmsgserver.SubmitTx(sdk.WrapSDKContext(ctx), &tx)
+	response, err := m.Ictxmsgserver.SubmitTx(ctx, &tx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit interchain transaction")
 	}
@@ -787,7 +787,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")
 	}
 
-	response, err := m.Ictxmsgserver.RegisterInterchainAccount(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Ictxmsgserver.RegisterInterchainAccount(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to register interchain account")
 	}
@@ -848,7 +848,7 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainQuery message")
 	}
 
-	response, err := m.Icqmsgserver.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Icqmsgserver.RegisterInterchainQuery(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to register interchain query")
 	}
