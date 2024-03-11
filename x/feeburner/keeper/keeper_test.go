@@ -12,11 +12,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	mock_types "github.com/neutron-org/neutron/v2/testutil/mocks/feeburner/types"
-	"github.com/neutron-org/neutron/v2/x/feeburner/keeper"
+	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/feeburner/types"
+	"github.com/neutron-org/neutron/v3/x/feeburner/keeper"
 
-	feekeeperutil "github.com/neutron-org/neutron/v2/testutil/feeburner/keeper"
-	feetypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
+	feekeeperutil "github.com/neutron-org/neutron/v3/testutil/feeburner/keeper"
+	feetypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
 )
 
 func TestKeeper_RecordBurnedFees(t *testing.T) {

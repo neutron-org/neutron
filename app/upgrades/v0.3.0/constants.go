@@ -4,7 +4,7 @@ import (
 	store "cosmossdk.io/store/types"
 	ccvprovider "github.com/cosmos/interchain-security/v4/x/ccv/provider/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
 
 const (

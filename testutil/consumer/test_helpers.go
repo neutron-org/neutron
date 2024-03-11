@@ -20,7 +20,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 
-	"github.com/neutron-org/neutron/v2/app"
+	"github.com/neutron-org/neutron/v3/app"
 )
 
 // This function creates consumer module genesis state that is used as starting point for modifications
@@ -98,7 +98,7 @@ func ModifyGenesisBlockGas(val network.Validator) error {
 		return errors.Wrap(err, "failed to read genesis from the file")
 	}
 
-	//TODO: genDoc.ConsensusParams.Block.MaxGas = 35_000_000
+	// TODO: genDoc.ConsensusParams.Block.MaxGas = 35_000_000
 
 	err = genutil.ExportGenesisFile(genDoc, genFile)
 	if err != nil {

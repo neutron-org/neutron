@@ -25,15 +25,15 @@ import (
 	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v2/app/params"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	appparams "github.com/neutron-org/neutron/v3/app/params"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	appProvider "github.com/cosmos/interchain-security/v4/app/provider"
 	e2e "github.com/cosmos/interchain-security/v4/testutil/integration"
 
-	"github.com/neutron-org/neutron/v2/app"
-	ictxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/app"
+	ictxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 
 	providertypes "github.com/cosmos/interchain-security/v4/x/ccv/provider/types"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
@@ -61,8 +61,8 @@ var (
 )
 
 func init() {
-	//ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	//app.GetDefaultConfig()
+	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
+	// app.GetDefaultConfig()
 }
 
 type IBCConnectionTestSuite struct {

@@ -11,7 +11,7 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -23,15 +23,15 @@ import (
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	v6 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/migrations/v6"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
-	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
-	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
-	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func CreateUpgradeHandler(

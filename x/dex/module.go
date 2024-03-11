@@ -17,9 +17,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v2/x/dex/client/cli"
-	"github.com/neutron-org/neutron/v2/x/dex/keeper"
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/client/cli"
+	"github.com/neutron-org/neutron/v3/x/dex/keeper"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 var (
@@ -116,12 +116,12 @@ type AppModule struct {
 }
 
 func (am AppModule) IsOnePerModuleType() {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am AppModule) IsAppModule() {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

@@ -10,7 +10,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	//globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
+	// globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v4/app/consumer/ante"
@@ -80,7 +80,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// In this case you should be sure that you
 		// implemented upgrade to set default `ParamStoreKeyMinGasPrices` global fee param with at least one record
 		// otherwise you will get panic
-		//globalfeeante.NewFeeDecorator(nil, options.GlobalFeeSubspace, nil),
+		// globalfeeante.NewFeeDecorator(nil, options.GlobalFeeSubspace, nil),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators

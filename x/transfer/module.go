@@ -15,8 +15,8 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	wrapkeeper "github.com/neutron-org/neutron/v2/x/transfer/keeper"
-	neutrontypes "github.com/neutron-org/neutron/v2/x/transfer/types"
+	wrapkeeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
+	neutrontypes "github.com/neutron-org/neutron/v3/x/transfer/types"
 )
 
 /*

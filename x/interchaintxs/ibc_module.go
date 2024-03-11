@@ -9,7 +9,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v2/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
 )
 
 var _ porttypes.IBCModule = IBCModule{}

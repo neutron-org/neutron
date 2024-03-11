@@ -7,7 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // Core tests w/ GTC limitOrders //////////////////////////////////////////////
@@ -593,7 +593,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {
 
 	// WHEN we move to block N+1
 	s.nextBlockWithTime(time.Now())
-	//TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	// TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
@@ -634,7 +634,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpires() {
 
 	// When two days go by and multiple blocks are created (ie. purge is run)
 	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
-	//TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	// TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
 	// Alice can withdraw the entirety of the unfilled limitOrder

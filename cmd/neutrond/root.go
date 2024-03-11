@@ -40,8 +40,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v2/app"
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -113,7 +113,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome, encodingConfig.TxConfig.SigningContext().ValidatorAddressCodec()),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
-		//addGenesisWasmMsgCmd(app.DefaultNodeHome),
+		// addGenesisWasmMsgCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debugCmd,
 		ConfigCmd(),
@@ -149,9 +149,9 @@ func queryCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		//TODO: authcmd.GetAccountCmd(),
+		// TODO: authcmd.GetAccountCmd(),
 		rpc.ValidatorCommand(),
-		//TODO: rpc.BlockCommand(),
+		// TODO: rpc.BlockCommand(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
 	)

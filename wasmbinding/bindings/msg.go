@@ -8,9 +8,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	transferwrappertypes "github.com/neutron-org/neutron/v2/x/transfer/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/v3/x/transfer/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -61,6 +62,9 @@ type NeutronMsg struct {
 	// Contractmanager types
 	/// A contract that has failed acknowledgement can resubmit it
 	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
+
+	// dex module bindings
+	Dex *Dex `json:"dex,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -243,4 +247,28 @@ type ResubmitFailure struct {
 
 type ResubmitFailureResponse struct {
 	FailureId uint64 `json:"failure_id"`
+}
+
+type Dex struct {
+	Deposit                  *dextypes.MsgDeposit                  `json:"deposit"`
+	Withdrawal               *dextypes.MsgWithdrawal               `json:"withdrawal"`
+	PlaceLimitOrder          *MsgPlaceLimitOrder                   `json:"place_limit_order"`
+	WithdrawFilledLimitOrder *dextypes.MsgWithdrawFilledLimitOrder `json:"withdraw_filled_limit_order"`
+	CancelLimitOrder         *dextypes.MsgCancelLimitOrder         `json:"cancel_limit_order"`
+	MultiHopSwap             *dextypes.MsgMultiHopSwap             `json:"multi_hop_swap"`
+}
+
+// MsgPlaceLimitOrder is a copy dextypes.MsgPlaceLimitOrder with altered ExpirationTime field,
+// it's a preferable way to pass timestamp as unixtime to contracts
+type MsgPlaceLimitOrder struct {
+	Creator          string   `json:"creator,omitempty"`
+	Receiver         string   `json:"receiver,omitempty"`
+	TokenIn          string   `json:"token_in,omitempty"`
+	TokenOut         string   `json:"token_out,omitempty"`
+	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`
+	AmountIn         math.Int `json:"amount_in"`
+	OrderType        string   `json:"order_type,omitempty"`
+	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
+	MaxAmountOut   *math.Int `json:"max_amount_out"`
 }

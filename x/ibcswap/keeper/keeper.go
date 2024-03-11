@@ -17,8 +17,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	dextypes "github.com/neutron-org/neutron/v2/x/dex/types"
-	"github.com/neutron-org/neutron/v2/x/ibcswap/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/ibcswap/types"
 )
 
 // Keeper defines the swap middleware keeper.

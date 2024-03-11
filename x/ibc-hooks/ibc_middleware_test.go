@@ -15,10 +15,10 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v2/app/params"
-	"github.com/neutron-org/neutron/v2/testutil"
-	"github.com/neutron-org/neutron/v2/x/ibc-hooks/testutils"
-	"github.com/neutron-org/neutron/v2/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v3/x/ibc-hooks/testutils"
+	"github.com/neutron-org/neutron/v3/x/ibc-hooks/utils"
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"

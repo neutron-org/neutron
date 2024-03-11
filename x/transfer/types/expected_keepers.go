@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 type WasmKeeper interface {

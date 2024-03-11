@@ -1,4 +1,4 @@
-package nextupgrade
+package v300
 
 import (
 	"context"
@@ -13,9 +13,9 @@ import (
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 
-	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
 
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
@@ -92,7 +92,7 @@ func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.U
 	}
 
 	for i, info := range signingInfos {
-		ctx.Logger().Info("Validator", info.Address, "old MissedBlocksCounter", info.MissedBlocksCounter)
+		ctx.Logger().Info("MissedBlocks recalculating", "Validator", info.Address, "old MissedBlocksCounter", info.MissedBlocksCounter)
 
 		missedBlocksForValidator := int64(0)
 
@@ -107,7 +107,7 @@ func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.U
 
 		info.MissedBlocksCounter = missedBlocksForValidator
 
-		ctx.Logger().Info("Validator", info.Address, "new MissedBlocksCounter", info.MissedBlocksCounter)
+		ctx.Logger().Info("MissedBlocks recalculating", "Validator", info.Address, "new MissedBlocksCounter", info.MissedBlocksCounter)
 
 		if err := keepers.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddresses[i], info); err != nil {
 			return err

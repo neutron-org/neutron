@@ -9,9 +9,9 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v2/app"
-	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v2/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/app"
+	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 const TestAddress = "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"

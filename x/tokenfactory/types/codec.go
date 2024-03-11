@@ -41,7 +41,7 @@ func init() {
 	// Register all Amino interfaces and concrete types on the authz Amino codec so that this can later be
 	// used to properly serialize MsgGrant and MsgExec instances
 	sdk.RegisterLegacyAminoCodec(amino)
-	//TODO: RegisterCodec(authzcodec.Amino)
+	// TODO: RegisterCodec(authzcodec.Amino)
 
 	amino.Seal()
 }

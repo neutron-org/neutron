@@ -5,15 +5,15 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v2/app"
+	"github.com/neutron-org/neutron/v3/app"
 
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v2/testutil/contractmanager/network"
-	"github.com/neutron-org/neutron/v2/x/feerefunder/client/cli"
-	"github.com/neutron-org/neutron/v2/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/testutil/contractmanager/network"
+	"github.com/neutron-org/neutron/v3/x/feerefunder/client/cli"
+	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 func feeRefunderNetwork(t *testing.T, feeInfo types.Fee) *network.Network {

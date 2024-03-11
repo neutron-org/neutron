@@ -17,9 +17,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v2/app"
-	"github.com/neutron-org/neutron/v2/testutil"
-	dexmoduletypes "github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/testutil"
+	dexmoduletypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 type KeeperTestHelper struct {
@@ -104,9 +104,9 @@ func (s *KeeperTestHelper) CreateTestContextWithMultiStore() (sdk.Context, store
 
 // CreateTestContext creates a test context.
 func (s *KeeperTestHelper) Commit() {
-	//TODO: s.App.EndBlock(abci.RequestEndBlock{Height: s.Ctx.BlockHeight()})
-	//oldHeight := s.Ctx.BlockHeight()
-	//oldHeader := s.Ctx.BlockHeader()
+	// TODO: s.App.EndBlock(abci.RequestEndBlock{Height: s.Ctx.BlockHeight()})
+	// oldHeight := s.Ctx.BlockHeight()
+	// oldHeader := s.Ctx.BlockHeader()
 	if _, err := s.App.Commit(); err != nil {
 		panic(err)
 	}

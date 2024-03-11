@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	feekeeperutil "github.com/neutron-org/neutron/v2/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/v2/x/feeburner/types"
+	feekeeperutil "github.com/neutron-org/neutron/v3/testutil/feeburner/keeper"
+	"github.com/neutron-org/neutron/v3/x/feeburner/types"
 )
 
 func TestGrpcQuery_TotalBurnedNeutronsAmount(t *testing.T) {
