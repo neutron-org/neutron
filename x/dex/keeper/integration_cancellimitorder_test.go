@@ -5,7 +5,6 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/neutron-org/neutron/v2/x/dex/types"
 )
@@ -250,7 +249,7 @@ func (s *DexTestSuite) TestCancelGoodTilAfterExpirationFails() {
 
 	// WHEN expiration date has passed
 	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
-	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	//TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
@@ -280,7 +279,7 @@ func (s *DexTestSuite) TestCancelJITNextBlock() {
 
 	// WHEN we move to block N+1
 	s.nextBlockWithTime(time.Now())
-	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	//TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)

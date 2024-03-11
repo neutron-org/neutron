@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	types2 "cosmossdk.io/store/types"
+
 	"github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,7 +33,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(ctx sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
-	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 
 	resACK := channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Result{Result: []byte("Result")},
@@ -57,14 +59,14 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 
 	// success contract SudoResponse
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck)
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 
 	// error contract SudoResponse
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("error sudoResponse"))
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
@@ -81,7 +83,7 @@ func TestHandleTimeout(t *testing.T) {
 	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(ctx sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
-	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
@@ -98,14 +100,14 @@ func TestHandleTimeout(t *testing.T) {
 	require.ErrorContains(t, err, "failed to get ica owner from port")
 
 	// contract success
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck)
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
 
 	// contract error
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("SudoTimeout error"))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -34,8 +35,8 @@ func TestKeeperCheckFees(t *testing.T) {
 	err := k.SetParams(ctx, types.Params{
 		MinFee: types.Fee{
 			RecvFee:    nil,
-			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
-			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
+			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
+			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 		},
 	})
 	require.NoError(t, err)
@@ -50,8 +51,8 @@ func TestKeeperCheckFees(t *testing.T) {
 			desc: "SingleProperDenomInsufficient",
 			fees: &types.Fee{
 				RecvFee:    nil,
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(1))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(1))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
 			},
 			err: sdkerrors.ErrInsufficientFee,
 		},
@@ -59,17 +60,17 @@ func TestKeeperCheckFees(t *testing.T) {
 			desc: "SufficientTimeout-InsufficientAck",
 			fees: &types.Fee{
 				RecvFee:    nil,
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(1))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 			},
 			err: sdkerrors.ErrInsufficientFee,
 		},
 		{
 			desc: "NonNilRecvFee",
 			fees: &types.Fee{
-				RecvFee:    sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
+				RecvFee:    sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 			},
 			err: sdkerrors.ErrInvalidCoins,
 		},
@@ -77,8 +78,8 @@ func TestKeeperCheckFees(t *testing.T) {
 			desc: "SingleDenomSufficient",
 			fees: &types.Fee{
 				RecvFee:    nil,
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 			},
 			err: nil,
 		},
@@ -86,8 +87,8 @@ func TestKeeperCheckFees(t *testing.T) {
 			desc: "MultipleDenomsOneIsEnough",
 			fees: &types.Fee{
 				RecvFee:    nil,
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)), sdk.NewCoin("denom2", sdk.NewInt(1))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)), sdk.NewCoin("denom2", sdk.NewInt(1))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101)), sdk.NewCoin("denom2", math.NewInt(1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101)), sdk.NewCoin("denom2", math.NewInt(1))),
 			},
 			err: nil,
 		},
@@ -95,8 +96,8 @@ func TestKeeperCheckFees(t *testing.T) {
 			desc: "NoProperDenom",
 			fees: &types.Fee{
 				RecvFee:    nil,
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom3", sdk.NewInt(1))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom3", sdk.NewInt(1))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom3", math.NewInt(1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom3", math.NewInt(1))),
 			},
 			err: sdkerrors.ErrInsufficientFee,
 		},
@@ -104,8 +105,8 @@ func TestKeeperCheckFees(t *testing.T) {
 			desc: "ProperDenomPlusRandomAckOne",
 			fees: &types.Fee{
 				RecvFee:    nil,
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)), sdk.NewCoin("denom3", sdk.NewInt(1))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101)), sdk.NewCoin("denom3", math.NewInt(1))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 			},
 			err: sdkerrors.ErrInvalidCoins,
 		},
@@ -113,8 +114,8 @@ func TestKeeperCheckFees(t *testing.T) {
 			desc: "ProperDenomPlusRandomTimeoutOne",
 			fees: &types.Fee{
 				RecvFee:    nil,
-				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101)), sdk.NewCoin("denom3", sdk.NewInt(1))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101)), sdk.NewCoin("denom3", math.NewInt(1))),
 			},
 			err: sdkerrors.ErrInvalidCoins,
 		},
@@ -143,8 +144,8 @@ func TestKeeperLockFees(t *testing.T) {
 	err := k.SetParams(ctx, types.Params{
 		MinFee: types.Fee{
 			RecvFee:    nil,
-			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
-			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(100)), sdk.NewCoin("denom2", sdk.NewInt(100))),
+			AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
+			TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(100)), sdk.NewCoin("denom2", math.NewInt(100))),
 		},
 	})
 	require.NoError(t, err)
@@ -165,8 +166,8 @@ func TestKeeperLockFees(t *testing.T) {
 
 	validFee := types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", sdk.NewInt(101))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("denom1", math.NewInt(101))),
 	}
 	channelKeeper.EXPECT().GetChannel(ctx, packet.PortId, packet.ChannelId).Return(channeltypes.Channel{}, true)
 	bankKeeper.EXPECT().SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, validFee.Total()).Return(fmt.Errorf("bank error"))
@@ -201,8 +202,8 @@ func TestDistributeAcknowledgementFee(t *testing.T) {
 
 	validFee := types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(2001))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(1001))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(2001))),
 	}
 	packet := types.PacketID{
 		ChannelId: "channel-0",
@@ -267,8 +268,8 @@ func TestDistributeTimeoutFee(t *testing.T) {
 
 	validFee := types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(2001))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(1001))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(2001))),
 	}
 	packet := types.PacketID{
 		ChannelId: "channel-0",
@@ -328,8 +329,8 @@ func TestFeeInfo(t *testing.T) {
 	k, ctx := testutil_keeper.FeeKeeper(t, nil, nil)
 	validFee := types.Fee{
 		RecvFee:    nil,
-		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
-		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", sdk.NewInt(1001))),
+		AckFee:     sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(1001))),
+		TimeoutFee: sdk.NewCoins(sdk.NewCoin("untrn", math.NewInt(1001))),
 	}
 	for i := uint64(0); i < 1000; i++ {
 		packet := types.PacketID{

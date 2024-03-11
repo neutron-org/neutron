@@ -501,12 +501,13 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	regQuery2, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
 	suite.Require().NoError(err)
 
-	resp := suite.ChainB.App.Query(abci.RequestQuery{
+	resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 		Height: suite.ChainB.LastHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
 	})
+	suite.Require().NoError(err)
 
 	msg := iqtypes.MsgSubmitQueryResult{
 		QueryId:  regQuery1.Id,

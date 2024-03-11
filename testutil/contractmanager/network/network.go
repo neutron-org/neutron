@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	pruningtypes "cosmossdk.io/store/pruning/types"
-	tmdb "github.com/cometbft/cometbft-db"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -78,7 +78,7 @@ func DefaultConfig() network.Config {
 			}
 
 			return app.New(
-				val.GetCtx().Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
+				val.GetCtx().Logger, db.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
 				sims.EmptyAppOptions{},
 				nil,

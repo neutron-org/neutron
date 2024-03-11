@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/cometbft/cometbft/abci/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -64,7 +65,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 			receiver = suite.ChainB.SenderAccount.GetAddress().String() // must be explicitly changed in malleate
 			status = testutils.Status{}
 
-			amount = sdk.NewInt(100) // must be explicitly changed in malleate
+			amount = math.NewInt(100) // must be explicitly changed in malleate
 			seq := uint64(1)
 
 			trace = transfertypes.ParseDenomTrace(params.DefaultDenom)
@@ -197,7 +198,7 @@ func (suite *HooksTestSuite) TestFundsAreTransferredToTheContract() {
 	// Check that the contract has no funds
 	localDenom := utils.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
 	balance := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
-	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
+	suite.Require().Equal(math.NewInt(0), balance.Amount)
 
 	// Execute the contract via IBC
 	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"echo": {"msg": "test"} } } }`, addr))
@@ -211,7 +212,7 @@ func (suite *HooksTestSuite) TestFundsAreTransferredToTheContract() {
 
 	// Check that the token has now been transferred to the contract
 	balance = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
-	suite.Require().Equal(sdk.NewInt(1), balance.Amount)
+	suite.Require().Equal(math.NewInt(1), balance.Amount)
 }
 
 // If the wasm call wails, the contract acknowledgement should be an error and the funds returned
@@ -225,7 +226,7 @@ func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
 	// Check that the contract has no funds
 	localDenom := utils.MustExtractDenomFromPacketOnRecv(suite.makeMockPacket("", "", 0))
 	balance := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
-	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
+	suite.Require().Equal(math.NewInt(0), balance.Amount)
 
 	// Execute the contract via IBC with a message that the contract will reject
 	ackBytes := suite.receivePacket(addr.String(), fmt.Sprintf(`{"wasm": {"contract": "%s", "msg": {"not_echo": {"msg": "test"} } } }`, addr))
@@ -239,7 +240,7 @@ func (suite *HooksTestSuite) TestFundsAreReturnedOnFailedContractExec() {
 	// Check that the token has now been transferred to the contract
 	balance = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), addr, localDenom)
 	fmt.Println(balance)
-	suite.Require().Equal(sdk.NewInt(0), balance.Amount)
+	suite.Require().Equal(math.NewInt(0), balance.Amount)
 }
 
 func (suite *HooksTestSuite) TestPacketsThatShouldBeSkipped() {
@@ -305,7 +306,7 @@ func (suite *HooksTestSuite) GetEndpoints(direction Direction) (sender, receiver
 	return sender, receiver
 }
 
-func (suite *HooksTestSuite) RelayPacket(packet channeltypes.Packet, direction Direction) (*sdk.Result, []byte) {
+func (suite *HooksTestSuite) RelayPacket(packet channeltypes.Packet, direction Direction) (*types.ExecTxResult, []byte) {
 	sender, receiver := suite.GetEndpoints(direction)
 
 	err := receiver.UpdateClient()

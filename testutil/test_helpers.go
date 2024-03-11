@@ -8,15 +8,15 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
+	db2 "github.com/cosmos/cosmos-db"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
@@ -236,7 +236,8 @@ func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
 	// - client config
 	trustingPeriodFraction := suite.ProviderApp.GetProviderKeeper().GetTrustingPeriodFraction(suite.ChainProvider.GetContext())
 
-	providerUnbondingPeriod := suite.ProviderApp.GetTestStakingKeeper().UnbondingTime(suite.ChainProvider.GetContext())
+	providerUnbondingPeriod, err := suite.ProviderApp.GetTestStakingKeeper().UnbondingTime(suite.ChainProvider.GetContext())
+	suite.Require().NoError(err)
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = providerUnbondingPeriod
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(providerUnbondingPeriod, trustingPeriodFraction)
 	consumerUnbondingPeriod := consumerKeeper.GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
@@ -399,7 +400,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		encoding := app.MakeEncodingConfig()
-		db := dbm.NewMemDB()
+		db := db2.NewMemDB()
 		testApp := app.New(
 			log.NewNopLogger(),
 			db,

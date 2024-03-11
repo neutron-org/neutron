@@ -361,10 +361,9 @@ func (app *App) GetTestSlashingKeeper() integration.TestSlashingKeeper {
 	return app.SlashingKeeper
 }
 
-//TODO:
-//func (app *App) GetTestEvidenceKeeper() integration.TestEvidenceKeeper {
-//	return app.EvidenceKeeper
-//}
+func (app *App) GetTestEvidenceKeeper() evidencekeeper.Keeper {
+	return app.EvidenceKeeper
+}
 
 // New returns a reference to an initialized blockchain app
 func New(
@@ -1203,7 +1202,7 @@ func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.
 
 // InitChainer application update at chain initialization
 // ONLY FOR TESTING PURPOSES
-func (app *App) TestInitChainer(ctx sdk.Context, req abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+func (app *App) TestInitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)

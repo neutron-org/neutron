@@ -87,7 +87,7 @@ func (desc TxCliDesc) BuildCommandCustomFn() *cobra.Command {
 				return err
 			}
 
-			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg.(sdk.Msg))
 		},
 	}
 	if desc.Example != "" {

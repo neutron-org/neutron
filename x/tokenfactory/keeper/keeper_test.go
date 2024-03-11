@@ -76,7 +76,7 @@ func (suite *KeeperTestSuite) CreateDefaultDenom(ctx sdktypes.Context) {
 }
 
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contractAddress sdktypes.AccAddress) {
-	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(TopUpCoinsAmount)))
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(TopUpCoinsAmount)))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 	suite.Require().NoError(err)

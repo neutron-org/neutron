@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -613,19 +614,20 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					Denom:   params.DefaultDenom,
 				},
 			)
-			expectedCoin := sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(0)))
+			expectedCoin := sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(0)))
 
 			suite.Require().NoError(balanceErr)
 			suite.Require().NotNil(balance)
 			suite.Require().Equal(&expectedCoin, balance.Balance)
 
 			clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-			resp := suite.ChainB.App.Query(abci.RequestQuery{
+			resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 				Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 				Height: suite.ChainB.LastHeader.Header.Height - 1,
 				Data:   clientKey,
 				Prove:  true,
 			})
+			suite.Require().NoError(err)
 
 			queryType := iqtypes.InterchainQueryType(query.GetQueryType())
 			switch {
@@ -679,7 +681,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 						Denom:   params.DefaultDenom,
 					},
 				)
-				expectedCoin := sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(1_000_000)))
+				expectedCoin := sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000)))
 
 				suite.Require().NoError(balanceErr)
 				suite.Require().NotNil(balance)
@@ -765,12 +767,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string, ctx sdk.Context) {
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  1,
@@ -814,12 +817,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -864,12 +868,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -917,12 +922,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -967,12 +973,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1017,12 +1024,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   []byte("non-registered key"),
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1067,7 +1075,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
@@ -1119,12 +1127,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1169,12 +1178,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1218,12 +1228,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1271,12 +1282,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// pretend like we have a very new query result
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber(), 9999)))
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1327,12 +1339,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				// pretend like we have a very new query result with updated revision height
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.UpdateLastRemoteHeight(ctx, res.Id, ibcclienttypes.NewHeight(suite.ChainA.LastHeader.GetHeight().GetRevisionNumber()+1, 1)))
 
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1381,12 +1394,13 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
 
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
-				resp := suite.ChainB.App.Query(abci.RequestQuery{
+				resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 					Height: suite.ChainB.LastHeader.Header.Height - 1,
 					Data:   keyWithSpecialBytes,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1736,7 +1750,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 }
 
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdk.Context, sender, contractAddress sdk.AccAddress) {
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(1_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000))))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 	suite.Require().NoError(err)

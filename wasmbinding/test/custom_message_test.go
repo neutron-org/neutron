@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -95,13 +96,13 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 			InterchainAccountId: testutil.TestInterchainID,
-			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))),
+			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))),
 		},
 	}
 
 	bankKeeper := suite.neutron.BankKeeper
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))))
+	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
@@ -134,7 +135,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 
 	// Top up contract balance
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -160,7 +161,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 
 func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -178,7 +179,7 @@ func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
 
 func (suite *CustomMessengerTestSuite) TestSetDenomMetadataMsg() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -251,7 +252,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 	)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(20_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(20_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -272,7 +273,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 
 	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
 
-	amount, ok := sdk.NewIntFromString("808010808")
+	amount, ok := math.NewIntFromString("808010808")
 	require.True(suite.T(), ok)
 
 	fullMsg = bindings.NeutronMsg{
@@ -345,7 +346,7 @@ func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
 	)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(20_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(20_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -366,7 +367,7 @@ func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
 
 	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
 
-	amount, ok := sdk.NewIntFromString("808010808")
+	amount, ok := math.NewIntFromString("808010808")
 	require.True(suite.T(), ok)
 
 	fullMsg = bindings.NeutronMsg{
@@ -479,7 +480,7 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -805,8 +806,8 @@ func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numM
 			Timeout:             2000,
 			Fee: feetypes.Fee{
 				RecvFee:    sdk.NewCoins(),
-				AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1000))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1000))),
 			},
 		},
 	}

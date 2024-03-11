@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/neutron-org/neutron/v2/x/tokenfactory/types"
@@ -31,7 +30,7 @@ func (suite *KeeperTestSuite) TestGenesis() {
 		},
 	}
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	context := app.BaseApp.NewContext(false, tmproto.Header{})
+	context := app.BaseApp.NewContext(false)
 	// Test both with bank denom metadata set, and not set.
 	for i, denom := range genesisState.FactoryDenoms {
 		// hacky, sets bank metadata to exist if i != 0, to cover both cases.

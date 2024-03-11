@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v2/app/params"
@@ -58,12 +59,13 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	err := neutron.InterchainQueriesKeeper.SaveQuery(ctx, registeredQuery)
 	suite.Require().NoError(err)
 
-	chainBResp := suite.ChainB.App.Query(abci.RequestQuery{
+	chainBResp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 		Height: suite.ChainB.LastHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
 	})
+	suite.Require().NoError(err)
 
 	expectedQueryResult := &icqtypes.QueryResult{
 		KvResults: []*icqtypes.StorageValue{{
@@ -207,10 +209,10 @@ func (suite *CustomQuerierTestSuite) TestMinIbcFee() {
 		feerefundertypes.Fee{
 			RecvFee: sdk.Coins{},
 			AckFee: sdk.Coins{
-				sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1000)},
+				sdk.Coin{Denom: "untrn", Amount: math.NewInt(1000)},
 			},
 			TimeoutFee: sdk.Coins{
-				sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1000)},
+				sdk.Coin{Denom: "untrn", Amount: math.NewInt(1000)},
 			},
 		},
 		resp.MinFee,
@@ -262,7 +264,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 	suite.Require().NotEmpty(contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := neutron.BankKeeper
 	err = bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
 	suite.NoError(err)

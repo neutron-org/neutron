@@ -12,7 +12,6 @@ import (
 	mock_types "github.com/neutron-org/neutron/v2/testutil/mocks/interchainqueries/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmprotoversion "github.com/cometbft/cometbft/proto/tendermint/version"
@@ -40,7 +39,7 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 		valSet      *tmproto.ValidatorSet
 		trustedVals *tmproto.ValidatorSet
 	)
-	require.NotNil(chain.T, tmValSet)
+	require.NotNil(chain.TB, tmValSet)
 
 	vsetHash := tmValSet.Hash()
 
@@ -65,22 +64,22 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 	blockID := ibctesting.MakeBlockID(hhash, 3, tmhash.Sum([]byte("part_set")))
 	voteSet := tmtypes.NewVoteSet(chainID, blockHeight, 1, tmproto.PrecommitType, tmValSet)
 
-	commit, err := tmtypes.MakeCommit(blockID, blockHeight, 1, voteSet, signers, timestamp)
-	require.NoError(chain.T, err)
+	commit, err := tmtypes.MakeExtCommit(blockID, blockHeight, 1, voteSet, signers, timestamp, false)
+	require.NoError(chain.TB, err)
 
 	signedHeader := &tmproto.SignedHeader{
 		Header: tmHeader.ToProto(),
-		Commit: commit.ToProto(),
+		Commit: commit.ToCommit().ToProto(),
 	}
 
 	if tmValSet != nil { //nolint:staticcheck // this checks if a pointer is nil, suggesting that it can be nil but we have this test all over the place
 		valSet, err = tmValSet.ToProto()
-		require.NoError(chain.T, err)
+		require.NoError(chain.TB, err)
 	}
 
 	if tmTrustedVals != nil {
 		trustedVals, err = tmTrustedVals.ToProto()
-		require.NoError(chain.T, err)
+		require.NoError(chain.TB, err)
 	}
 
 	// The trusted fields may be nil. They may be filled before relaying messages to a client.
@@ -97,7 +96,7 @@ func NextBlock(chain *ibctesting.TestChain) {
 	// set the last header to the current header
 	// use nil trusted fields
 	ph, err := tmtypes.HeaderFromProto(chain.LastHeader.Header)
-	require.NoError(chain.T, err)
+	require.NoError(chain.TB, err)
 
 	var signers []tmtypes.PrivValidator
 	for _, val := range chain.Vals.Validators {
@@ -117,7 +116,7 @@ func NextBlock(chain *ibctesting.TestChain) {
 		NextValidatorsHash: chain.Vals.Hash(),
 	}
 
-	chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
+	//TODO: chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
 }
 
 // CommitBlock commits a block on the provided indexes and then increments the global time.
@@ -154,7 +153,7 @@ func UpdateClient(endpoint *ibctesting.Endpoint) (err error) {
 		endpoint.ClientID, header,
 		endpoint.Chain.SenderAccount.GetAddress().String(),
 	)
-	require.NoError(endpoint.Chain.T, err)
+	require.NoError(endpoint.Chain.TB, err)
 
 	_, err = endpoint.Chain.SendMsgs(msg)
 

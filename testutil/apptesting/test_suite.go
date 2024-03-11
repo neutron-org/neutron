@@ -4,14 +4,15 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"time"
 
+	log2 "cosmossdk.io/log"
+	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
 	"cosmossdk.io/store/rootmulti"
-	dbm "github.com/cometbft/cometbft-db"
-	abci "github.com/cometbft/cometbft/abci/types"
+	"cosmossdk.io/store/types"
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	"github.com/cometbft/cometbft/libs/log"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
+	db2 "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
@@ -38,9 +39,8 @@ func (s *KeeperTestHelper) Setup() {
 	s.App = testutil.Setup(s.T()).(*app.App)
 	ctx := s.App.GetBaseApp().NewContext(
 		false,
-		tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()},
 	)
-	s.Ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+	s.Ctx = ctx.WithBlockGasMeter(types.NewInfiniteGasMeter())
 
 	s.GoCtx = sdk.WrapSDKContext(s.Ctx)
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
@@ -93,28 +93,30 @@ func (s *KeeperTestHelper) CreateTestContext() sdk.Context {
 }
 
 // CreateTestContextWithMultiStore creates a test context and returns it together with multi store.
-func (s *KeeperTestHelper) CreateTestContextWithMultiStore() (sdk.Context, sdk.CommitMultiStore) {
-	db := dbm.NewMemDB()
-	logger := log.NewNopLogger()
+func (s *KeeperTestHelper) CreateTestContextWithMultiStore() (sdk.Context, store.CommitMultiStore) {
+	db := db2.NewMemDB()
+	logger := log2.NewNopLogger()
 
-	ms := rootmulti.NewStore(db, logger)
+	ms := rootmulti.NewStore(db, logger, metrics.NewNoOpMetrics())
 
 	return sdk.NewContext(ms, tmtypes.Header{}, false, logger), ms
 }
 
 // CreateTestContext creates a test context.
 func (s *KeeperTestHelper) Commit() {
-	s.App.EndBlock(abci.RequestEndBlock{Height: s.Ctx.BlockHeight()})
-	oldHeight := s.Ctx.BlockHeight()
-	oldHeader := s.Ctx.BlockHeader()
-	s.App.Commit()
-	newHeader := tmtypes.Header{
-		Height:  oldHeight + 1,
-		ChainID: oldHeader.ChainID,
-		Time:    oldHeader.Time.Add(time.Minute),
+	//TODO: s.App.EndBlock(abci.RequestEndBlock{Height: s.Ctx.BlockHeight()})
+	//oldHeight := s.Ctx.BlockHeight()
+	//oldHeader := s.Ctx.BlockHeader()
+	if _, err := s.App.Commit(); err != nil {
+		panic(err)
 	}
-	s.App.BeginBlock(abci.RequestBeginBlock{Header: newHeader})
-	s.Ctx = s.App.GetBaseApp().NewContext(false, newHeader)
+	//newHeader := tmtypes.Header{
+	//	Height:  oldHeight + 1,
+	//	ChainID: oldHeader.ChainID,
+	//	Time:    oldHeader.Time.Add(time.Minute),
+	//}
+	//TODO: s.App.BeginBlock(abci.RequestBeginBlock{Header: newHeader})
+	s.Ctx = s.App.GetBaseApp().NewContext(false)
 }
 
 // FundAcc funds target address with specified amount.

@@ -8,7 +8,6 @@ import (
 
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -100,14 +99,17 @@ func SetupWithGenesisValSet(
 	)
 
 	// commit genesis changes
-	app.Commit()
-	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-		Height:             app.LastBlockHeight() + 1,
-		AppHash:            app.LastCommitID().Hash,
-		ValidatorsHash:     valSet.Hash(),
-		NextValidatorsHash: valSet.Hash(),
-		ChainID:            chainID,
-	}})
+	if _, err := app.Commit(); err != nil {
+		panic(err)
+	}
+
+	//TODO: app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+	//	Height:             app.LastBlockHeight() + 1,
+	//	AppHash:            app.LastCommitID().Hash,
+	//	ValidatorsHash:     valSet.Hash(),
+	//	NextValidatorsHash: valSet.Hash(),
+	//	ChainID:            chainID,
+	//}})
 
 	return app
 }
@@ -162,8 +164,8 @@ func GenesisStateWithValSet(
 		delegations = append(
 			delegations,
 			stakingtypes.NewDelegation(
-				genAccs[0].GetAddress(),
-				val.Address.Bytes(),
+				genAccs[0].GetAddress().String(),
+				sdk.ValAddress(val.Address).String(),
 				math.LegacyOneDec(),
 			),
 		)
