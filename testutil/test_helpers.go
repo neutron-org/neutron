@@ -61,8 +61,8 @@ var (
 )
 
 func init() {
-	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	app.GetDefaultConfig()
+	//ibctesting.DefaultTestingAppInit = SetupTestingApp()
+	//app.GetDefaultConfig()
 }
 
 type IBCConnectionTestSuite struct {
@@ -276,13 +276,15 @@ func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
 
 // NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
-	coordinator := ibctesting.NewCoordinator(t, 3)
+	coordinator := ibctesting.NewCoordinator(t, 0)
 	chainID := ibctesting.GetChainID(1)
 
 	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
+	_ = app.GetDefaultConfig()
+	sdk.SetAddrCacheEnabled(false)
 	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chainID = ibctesting.GetChainID(2)
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,

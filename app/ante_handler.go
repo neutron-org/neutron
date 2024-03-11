@@ -54,9 +54,9 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	if options.TXCounterStoreService == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "tx counter store service is required for ante builder")
 	}
-	if options.GlobalFeeSubspace.Name() == "" {
-		return nil, errors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
-	}
+	//if options.GlobalFeeSubspace.Name() == "" {
+	//	return nil, errors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
+	//}
 	if options.MEVLane == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "mev lane is required for AnteHandler")
 	}
