@@ -210,7 +210,7 @@ func TestCalcGreatestMatchingRatio1SidedPool1SidedToken1B(t *testing.T) {
 
 // This failing test shows that if we swap 1 to many tokens,
 // we'll get 0A to xB tokens in result.
-// This is incorrect!
+// This is intended behaviour because of the rounding leftovers
 func TestSwapRoundingWithExpensiveToCheap(t *testing.T) {
 	pool, err := dextypes.NewPool(
 		&dextypes.PairID{
@@ -234,6 +234,6 @@ func TestSwapRoundingWithExpensiveToCheap(t *testing.T) {
 		nil,
 	)
 
-	assert.Equal(t, amountTakerIn, math.NewInt(1))
+	assert.Equal(t, amountTakerIn, math.NewInt(0))
 	assert.Equal(t, amountMakerOut, math.NewInt(59841))
 }

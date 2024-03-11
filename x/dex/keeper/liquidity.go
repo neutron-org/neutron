@@ -42,12 +42,11 @@ func (k Keeper) Swap(
 		}
 
 		inAmount, outAmount := liq.Swap(remainingTakerDenom, remainingMakerDenom)
-
 		// If (due to rounding) the actual price given to the maker is demonstrably unfair
 		// we do not save the results of the swap and we exit.
 		// While the decrease in price quality for the maker is semi-linear with the amount
 		// being swapped, it is possible that the next swap could yield a "fair" price.
-		// Nonethless, once the remainingTakerDenom gets small enough to start causing unfair swaps
+		// Nonetheless, once the remainingTakerDenom gets small enough to start causing unfair swaps
 		// it is much simpler to just abort.
 		if inAmount.IsZero() || isUnfairTruePrice(params.MaxTrueTakerSpread, inAmount, outAmount, liq) {
 			// If they've already swapped just end the swap
@@ -69,8 +68,9 @@ func (k Keeper) Swap(
 		// NOTE: In theory this check should be: price * remainingTakerDenom < 1
 		// but due to rounding and inaccuracy of fixed decimal math, it is possible
 		// for liq.swap to use the full the amount of taker liquidity and have a leftover
-		// amount of the taker Denom > than 1 token worth of maker denom
-		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
+		// There is also special check that if one in token left, order considered filled
+		// to avoid bug when swap rounding always leaves 1 token unswapped.
+		if remainingTakerDenom.LTE(math.OneInt()) || liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
 		}
@@ -97,7 +97,6 @@ func (k Keeper) Swap(
 		), orderFilled, nil
 }
 
-// what's the point of this function if we just write cache every time?
 func (k Keeper) SwapWithCache(
 	ctx sdk.Context,
 	tradePairID *types.TradePairID,

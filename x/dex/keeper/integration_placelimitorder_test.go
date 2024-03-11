@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
-	"github.com/stretchr/testify/require"
 	"math"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -698,16 +699,15 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 	s.Assert().ErrorIs(err, types.ErrExpirationTimeInPast)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderJITFillsFailsOn1TokenBecauseUnfairPrice() {
+func (s *DexTestSuite) TestPlaceLimitOrderFOKFailsOnRoundingBecauseUnfairPrice() {
 	s.fundAliceBalances(10, 0)
-	s.fundBobBalances(0, 20)
 
 	s.SetupMultiplePools(
 		// tick 109_999 with fee 1 will be traded for A -> B at 110_000
 		NewPoolSetup("TokenA", "TokenB", 1_000, 1_000, -110_001, 1), // tick 110000 = 59841.22218557191867154759205905
 	)
 
-	// GIVEN Alice submits JIT limitOrder for 10 tokenA at tick 0
+	// GIVEN Alice submits FOK limitOrder for 10 tokenA at tick 0
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, "TokenA")
 	_, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          s.alice.String(),
@@ -718,10 +718,10 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITFillsFailsOn1TokenBecauseUnfairPric
 		AmountIn:         sdkmath.NewInt(10),
 		OrderType:        types.LimitOrderType_FILL_OR_KILL, // test on fill_or_kill since we want order to be filled right away through one swap
 	})
-	require.NoError(s.T(), err)
+	require.EqualErrorf(s.T(), err, "Swap amount too small; creates unfair spread for liquidity providers", "errors should be same")
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderJITFillsFailsOn1TokenBecause1TokenLeft() {
+func (s *DexTestSuite) TestPlaceLimitOrderFOKWorksIfOneTokenLeftOnRounding() {
 	s.fundAliceBalances(10, 0)
 	s.fundBobBalances(0, 20)
 
@@ -730,7 +730,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITFillsFailsOn1TokenBecause1TokenLeft
 		NewPoolSetup("TokenA", "TokenB", 1_000, 1_000_000, -110_001, 1), // tick -110000 = 59841.22218557191867154759205905
 	)
 
-	// GIVEN Alice submits JIT limitOrder for 10 tokenA at tick 0
+	// GIVEN Alice submits FOK limitOrder for 10_000_000 tokenA at tick 0
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, "TokenA")
 	_, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          s.alice.String(),
