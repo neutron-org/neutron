@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -46,6 +47,25 @@ func (k Keeper) LimitOrderTrancheUserAll(
 	}, nil
 }
 
+func (k Keeper) CalcWithdrawAmount(ctx sdk.Context, trancheUser types.LimitOrderTrancheUser) (amount math.Int, err error) {
+	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
+
+	tranche, _, found := k.FindLimitOrderTranche(
+		ctx,
+		&types.LimitOrderTrancheKey{
+			TradePairId:           tradePairID,
+			TickIndexTakerToMaker: tickIndex,
+			TrancheKey:            trancheUser.TrancheKey,
+		},
+	)
+
+	if found != true {
+		return math.ZeroInt(), status.Error(codes.NotFound, "Tranche not found")
+	}
+	_, amountOut := tranche.Withdraw(&trancheUser)
+
+	return amountOut.TruncateInt(), nil
+}
 func (k Keeper) LimitOrderTrancheUser(c context.Context,
 	req *types.QueryGetLimitOrderTrancheUserRequest,
 ) (*types.QueryGetLimitOrderTrancheUserResponse, error) {
@@ -53,7 +73,7 @@ func (k Keeper) LimitOrderTrancheUser(c context.Context,
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-	val, found := k.GetLimitOrderTrancheUser(
+	trancheUser, found := k.GetLimitOrderTrancheUser(
 		ctx,
 		req.Address,
 		req.TrancheKey,
@@ -62,7 +82,16 @@ func (k Keeper) LimitOrderTrancheUser(c context.Context,
 		return nil, status.Error(codes.NotFound, "not found")
 	}
 
-	return &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: val}, nil
+	resp := &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: trancheUser}
+	if req.CalcWithdrawableAmount {
+		withdrawAmt, err := k.CalcWithdrawAmount(ctx, *trancheUser)
+		if err != nil {
+			return nil, err
+		}
+		resp.WithdrawableAmount = &withdrawAmt
+	}
+
+	return resp, nil
 }
 
 func (k Keeper) LimitOrderTrancheUserAllByAddress(

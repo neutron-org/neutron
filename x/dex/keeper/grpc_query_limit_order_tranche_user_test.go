@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
@@ -53,6 +54,63 @@ func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {
 		{
 			desc: "InvalidRequest",
 			err:  status.Error(codes.InvalidArgument, "invalid request"),
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			response, err := keeper.LimitOrderTrancheUser(wctx, tc.request)
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t,
+					nullify.Fill(tc.response),
+					nullify.Fill(response),
+				)
+			}
+		})
+	}
+}
+
+func TestLimitOrderTrancheUserQuerySingleWithdrawableAmount(t *testing.T) {
+	keeper, ctx := keepertest.DexKeeper(t)
+	wctx := sdk.WrapSDKContext(ctx)
+	msgs := createNLimitOrderTrancheUser(keeper, ctx, 2)
+	tranches := createNLimitOrderTranches(keeper, ctx, 2)
+
+	tranches[0].TotalMakerDenom = math.NewInt(100)
+	tranches[0].TotalTakerDenom = math.NewInt(50)
+	tranches[0].ReservesTakerDenom = math.NewInt(50)
+
+	keeper.SetLimitOrderTranche(ctx, tranches[0])
+
+	tranches[1].TotalMakerDenom = math.NewInt(100)
+	keeper.SetLimitOrderTranche(ctx, tranches[1])
+
+	ZERO := math.ZeroInt()
+	FIFTY := math.NewInt(50)
+	for _, tc := range []struct {
+		desc     string
+		request  *types.QueryGetLimitOrderTrancheUserRequest
+		response *types.QueryGetLimitOrderTrancheUserResponse
+		err      error
+	}{
+		{
+			desc: "First",
+			request: &types.QueryGetLimitOrderTrancheUserRequest{
+				TrancheKey:             msgs[0].TrancheKey,
+				Address:                msgs[0].Address,
+				CalcWithdrawableAmount: true,
+			},
+			response: &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: msgs[0], WithdrawableAmount: &FIFTY},
+		},
+		{
+			desc: "Second",
+			request: &types.QueryGetLimitOrderTrancheUserRequest{
+				TrancheKey:             msgs[1].TrancheKey,
+				Address:                msgs[1].Address,
+				CalcWithdrawableAmount: true,
+			},
+			response: &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: msgs[1], WithdrawableAmount: &ZERO},
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {

@@ -133,10 +133,17 @@ message QueryParamsResponse {
 message QueryGetLimitOrderTrancheUserRequest {
   string address = 1;
   string tranche_key = 2;
+  bool calc_withdrawable_amount = 3;
 }
 
 message QueryGetLimitOrderTrancheUserResponse {
   LimitOrderTrancheUser limit_order_tranche_user = 1 [(gogoproto.nullable) = true];
+  string withdrawable_amount = 2 [
+    (gogoproto.moretags) = "yaml:\"withdrawable_amount\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = true,
+    (gogoproto.jsontag) = "withdrawable_amount"
+  ];
 }
 
 message QueryAllLimitOrderTrancheUserRequest {
