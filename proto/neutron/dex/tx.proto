@@ -92,6 +92,7 @@ enum LimitOrderType {
 }
 
 message MsgPlaceLimitOrder {
+  // TODO: fix wire numbers
   string creator = 1;
   string receiver = 2;
   string token_in = 3;
@@ -114,6 +115,12 @@ message MsgPlaceLimitOrder {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "max_amount_out"
+  ];
+  string price_in_to_out = 11 [
+    (gogoproto.moretags) = "yaml:\"price_in_to_out\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = true,
+    (gogoproto.jsontag) = "price_in_to_out"
   ];
 }
 
