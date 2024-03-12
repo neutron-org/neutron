@@ -47,7 +47,7 @@ func (k Keeper) LimitOrderTrancheUserAll(
 	}, nil
 }
 
-func (k Keeper) CalcWithdrawAmount(ctx sdk.Context, trancheUser types.LimitOrderTrancheUser) (amount math.Int, err error) {
+func (k Keeper) CalcWithdrawableShares(ctx sdk.Context, trancheUser types.LimitOrderTrancheUser) (amount math.Int, err error) {
 	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
 
 	tranche, _, found := k.FindLimitOrderTranche(
@@ -59,13 +59,14 @@ func (k Keeper) CalcWithdrawAmount(ctx sdk.Context, trancheUser types.LimitOrder
 		},
 	)
 
-	if found != true {
+	if !found {
 		return math.ZeroInt(), status.Error(codes.NotFound, "Tranche not found")
 	}
-	_, amountOut := tranche.Withdraw(&trancheUser)
+	withdrawableShares, _ := tranche.Withdraw(&trancheUser)
 
-	return amountOut.TruncateInt(), nil
+	return withdrawableShares, nil
 }
+
 func (k Keeper) LimitOrderTrancheUser(c context.Context,
 	req *types.QueryGetLimitOrderTrancheUserRequest,
 ) (*types.QueryGetLimitOrderTrancheUserResponse, error) {
@@ -83,12 +84,12 @@ func (k Keeper) LimitOrderTrancheUser(c context.Context,
 	}
 
 	resp := &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: trancheUser}
-	if req.CalcWithdrawableAmount {
-		withdrawAmt, err := k.CalcWithdrawAmount(ctx, *trancheUser)
+	if req.CalcWithdrawableShares {
+		withdrawAmt, err := k.CalcWithdrawableShares(ctx, *trancheUser)
 		if err != nil {
 			return nil, err
 		}
-		resp.WithdrawableAmount = &withdrawAmt
+		resp.WithdrawableShares = &withdrawAmt
 	}
 
 	return resp, nil

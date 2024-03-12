@@ -61,7 +61,7 @@ func CmdShowLimitOrderTrancheUser() *cobra.Command {
 			params := &types.QueryGetLimitOrderTrancheUserRequest{
 				Address:                args[0],
 				TrancheKey:             args[1],
-				CalcWithdrawableAmount: calcWithdraw,
+				CalcWithdrawableShares: calcWithdraw,
 			}
 
 			res, err := queryClient.LimitOrderTrancheUser(context.Background(), params)

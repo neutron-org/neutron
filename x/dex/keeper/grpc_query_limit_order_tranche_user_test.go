@@ -71,7 +71,7 @@ func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {
 	}
 }
 
-func TestLimitOrderTrancheUserQuerySingleWithdrawableAmount(t *testing.T) {
+func TestLimitOrderTrancheUserQuerySingleWithdrawableShares(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
 	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNLimitOrderTrancheUser(keeper, ctx, 2)
@@ -99,18 +99,18 @@ func TestLimitOrderTrancheUserQuerySingleWithdrawableAmount(t *testing.T) {
 			request: &types.QueryGetLimitOrderTrancheUserRequest{
 				TrancheKey:             msgs[0].TrancheKey,
 				Address:                msgs[0].Address,
-				CalcWithdrawableAmount: true,
+				CalcWithdrawableShares: true,
 			},
-			response: &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: msgs[0], WithdrawableAmount: &FIFTY},
+			response: &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: msgs[0], WithdrawableShares: &FIFTY},
 		},
 		{
 			desc: "Second",
 			request: &types.QueryGetLimitOrderTrancheUserRequest{
 				TrancheKey:             msgs[1].TrancheKey,
 				Address:                msgs[1].Address,
-				CalcWithdrawableAmount: true,
+				CalcWithdrawableShares: true,
 			},
-			response: &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: msgs[1], WithdrawableAmount: &ZERO},
+			response: &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: msgs[1], WithdrawableShares: &ZERO},
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
