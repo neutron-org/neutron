@@ -45,18 +45,23 @@ func CmdListLimitOrderTrancheUser() *cobra.Command {
 
 func CmdShowLimitOrderTrancheUser() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "show-limit-order-tranche-user [address] [tranche-key]",
+		Use:     "show-limit-order-tranche-user [address] [tranche-key] ?(--calc-withdraw)",
 		Short:   "shows a LimitOrderTrancheUser",
-		Example: "show-limit-order-tranche-user TRANCHEKEY123 alice",
+		Example: "show-limit-order-tranche-user alice TRANCHEKEY123",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)
 
+			calcWithdraw, err := cmd.Flags().GetBool(FlagCalcWithdraw)
+			if err != nil {
+				return err
+			}
 			params := &types.QueryGetLimitOrderTrancheUserRequest{
-				Address:    args[0],
-				TrancheKey: args[1],
+				Address:                args[0],
+				TrancheKey:             args[1],
+				CalcWithdrawableAmount: calcWithdraw,
 			}
 
 			res, err := queryClient.LimitOrderTrancheUser(context.Background(), params)
@@ -69,6 +74,7 @@ func CmdShowLimitOrderTrancheUser() *cobra.Command {
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
+	cmd.Flags().AddFlagSet(FlagSetCalcWithdrawableAmount())
 
 	return cmd
 }
