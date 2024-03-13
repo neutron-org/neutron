@@ -1,7 +1,11 @@
-package v300
+package v301
 
 import (
+	"cosmossdk.io/math"
 	"fmt"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	transferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -45,7 +49,14 @@ func CreateUpgradeHandler(
 
 		recalculateSlashingMissedBlocksCounter(ctx, keepers)
 
+		if ctx.ChainID() == "neutron-1" {
+			if err := removeDiscrepancies(ctx, keepers.BankKeeper, keepers.TransferKeeper); err != nil {
+				return vm, fmt.Errorf("failed to remove discrepancy: %w", err)
+			}
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
+
 		return vm, nil
 	}
 }
@@ -119,6 +130,43 @@ func migrateICSOutstandingDowntime(ctx sdk.Context, keepers *upgrades.UpgradeKee
 	}
 
 	ctx.Logger().Info("Finished ICS outstanding downtime")
+
+	return nil
+}
+
+// There is a discrepancy happens due to bug in PFM module.
+// Check all disrepencies you can with a tool - https://github.com/strangelove-ventures/escrow-checker, only one found for `neutron-1`
+// ```
+// Discrepancy found!
+// Counterparty Chain ID: osmosis-1
+// Escrow Account Address: neutron1fp9wuhq58pz53wxvv3tnrxkw8m8s6swpf2fkv9
+// Asset Base Denom: stuatom
+// Asset IBC Denom: ibc/B7864B03E1B9FD4F049243E92ABD691586F682137037A9F3FCA5222815620B3C
+// Escrow Balance: 10481
+// Counterparty Total Supply: 2447077ibc/8FCFAF3AE6BA4C5BDFF85B41449FBACE547E2BAC23895E839230404FB0EC3837
+// ^^^
+// bug was already fixed in releases v2.0.3/v3.0.0
+// the aim of the function is to remove the discrepancy
+func removeDiscrepancies(ctx sdk.Context, bankKeeper bankkeeper.Keeper, transferKeeper transferkeeper.Keeper) error {
+	coin := sdk.Coin{
+		Denom:  "ibc/B7864B03E1B9FD4F049243E92ABD691586F682137037A9F3FCA5222815620B3C",
+		Amount: math.NewInt(2436596),
+	}
+	EscrowAddress := sdk.MustAccAddressFromBech32("neutron1fp9wuhq58pz53wxvv3tnrxkw8m8s6swpf2fkv9")
+	coins := sdk.NewCoins(coin)
+
+	if err := bankKeeper.MintCoins(ctx, transfertypes.ModuleName, coins); err != nil {
+		return err
+	}
+
+	if err := bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, EscrowAddress, coins); err != nil {
+		return err
+	}
+
+	// For ibc-go v7+ you will also need to update the transfer module's store for the total escrow amounts.
+	currentTotalEscrow := transferKeeper.GetTotalEscrowForDenom(ctx, coin.GetDenom())
+	newTotalEscrow := currentTotalEscrow.Add(coin)
+	transferKeeper.SetTotalEscrowForDenom(ctx, newTotalEscrow)
 
 	return nil
 }

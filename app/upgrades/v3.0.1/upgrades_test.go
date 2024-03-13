@@ -1,4 +1,4 @@
-package v300_test
+package v301_test
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/stretchr/testify/require"
 
-	v300 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.0"
+	v300 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.1"
 	"github.com/neutron-org/neutron/v3/testutil"
 )
 
