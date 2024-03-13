@@ -218,9 +218,9 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	//github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.0
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.1-0.20240222150313-41be244e33e8
-	github.com/cosmos/cosmos-sdk => ../cosmos-sdk
+	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240226131019-8efae68de5cc
 	//github.com/cosmos/gaia/v11 => github.com/reecepbcups/globalfee v0.0.1-alpha.2
-	github.com/cosmos/interchain-security/v4 => ../interchain-security
+	github.com/cosmos/interchain-security/v4 => github.com/cosmos/interchain-security/v4 v4.0.0-20240312080329-0a34bb63f5ae
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
