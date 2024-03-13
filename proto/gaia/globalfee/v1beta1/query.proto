@@ -3,7 +3,7 @@ package gaia.globalfee.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "gaia/globalfee/v1beta1/genesis.proto";
+import "gaia/globalfee/v1beta1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v3/x/globalfee/types";
 

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"cosmossdk.io/math"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,39 +26,39 @@ func Test_validateMinGasPrices(t *testing.T) {
 			false,
 		},
 		"DecCoins conversion fails, fail": {
-			sdk.Coins{sdk.NewCoin("photon", sdk.OneInt())},
+			sdk.Coins{sdk.NewCoin("photon", math.OneInt())},
 			true,
 		},
 		"coins amounts are zero, pass": {
 			sdk.DecCoins{
-				sdk.NewDecCoin("atom", sdk.ZeroInt()),
-				sdk.NewDecCoin("photon", sdk.ZeroInt()),
+				sdk.NewDecCoin("atom", math.ZeroInt()),
+				sdk.NewDecCoin("photon", math.ZeroInt()),
 			},
 			false,
 		},
 		"duplicate coins denoms, fail": {
 			sdk.DecCoins{
-				sdk.NewDecCoin("photon", sdk.OneInt()),
-				sdk.NewDecCoin("photon", sdk.OneInt()),
+				sdk.NewDecCoin("photon", math.OneInt()),
+				sdk.NewDecCoin("photon", math.OneInt()),
 			},
 			true,
 		},
 		"coins are not sorted by denom alphabetically, fail": {
 			sdk.DecCoins{
-				sdk.NewDecCoin("photon", sdk.OneInt()),
-				sdk.NewDecCoin("atom", sdk.OneInt()),
+				sdk.NewDecCoin("photon", math.OneInt()),
+				sdk.NewDecCoin("atom", math.OneInt()),
 			},
 			true,
 		},
 		"negative amount, fail": {
 			sdk.DecCoins{
-				sdk.DecCoin{Denom: "photon", Amount: sdk.OneDec().Neg()},
+				sdk.DecCoin{Denom: "photon", Amount: math.LegacyOneDec().Neg()},
 			},
 			true,
 		},
 		"invalid denom, fail": {
 			sdk.DecCoins{
-				sdk.DecCoin{Denom: "photon!", Amount: sdk.OneDec().Neg()},
+				sdk.DecCoin{Denom: "photon!", Amount: math.LegacyOneDec().Neg()},
 			},
 			true,
 		},
