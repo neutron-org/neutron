@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"cosmossdk.io/math"
-
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	transferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	consumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
+	ccvtypes "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -49,6 +50,8 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("failed to migrate ICS outstanding downtime: %w", err)
 		}
 
+		setICSParams(ctx, keepers.ConsumerKeeper)
+
 		recalculateSlashingMissedBlocksCounter(ctx, keepers)
 
 		if ctx.ChainID() == "neutron-1" {
@@ -79,6 +82,28 @@ func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, 
 		ProposerFee:            AuctionParamsProposerFee,
 	}
 	return auctionKeeper.SetParams(ctx, auctionParams)
+}
+
+func setICSParams(ctx sdk.Context, consumerKeeper *consumerkeeper.Keeper) {
+	newParams := ccvtypes.NewParams(
+		consumerKeeper.GetEnabled(ctx),
+		consumerKeeper.GetBlocksPerDistributionTransmission(ctx),
+		consumerKeeper.GetDistributionTransmissionChannel(ctx),
+		consumerKeeper.GetProviderFeePoolAddrStr(ctx),
+		consumerKeeper.GetCCVTimeoutPeriod(ctx),
+		consumerKeeper.GetTransferTimeoutPeriod(ctx),
+		consumerKeeper.GetConsumerRedistributionFrac(ctx),
+		consumerKeeper.GetHistoricalEntries(ctx),
+		consumerKeeper.GetUnbondingPeriod(ctx),
+		consumerKeeper.GetSoftOptOutThreshold(ctx),
+		consumerKeeper.GetRewardDenoms(ctx),
+		consumerKeeper.GetProviderRewardDenoms(ctx),
+
+		// Currently it's an empty string, we need to set to default value
+		ccvtypes.DefaultRetryDelayPeriod,
+	)
+
+	consumerKeeper.SetParams(ctx, newParams)
 }
 
 // Sometime long ago we decreased SlashWindow to 36k on pion-1 testnet (the param is untouched on neutron-1 mainnet),
