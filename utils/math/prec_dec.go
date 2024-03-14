@@ -13,7 +13,7 @@ import (
 )
 
 // NOTE: This file is nearly direct copy from cosmossdk.io/math/dec.go @v1.01
-// The Precesion has been changed from 18 to 26
+// The Precesion has been changed from 18 to 27
 
 // NOTE: never use new(Dec) or else we will panic unmarshalling into the
 // nil embedded big.Int
@@ -23,11 +23,11 @@ type PrecDec struct {
 
 const (
 	// number of decimal places
-	Precision = 26
+	Precision = 27
 
 	// bits required to represent the above precision
 	// Ceiling[Log2[10^Precision - 1]]
-	PrecDecimalPrecisionBits = 87
+	PrecDecimalPrecisionBits = 90
 
 	// decimalTruncateBits is the minimum number of bits removed
 	// by a truncate operation. It is equal to

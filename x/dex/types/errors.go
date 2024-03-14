@@ -189,4 +189,15 @@ var (
 		1154,
 		"Swap amount too small; creates unfair spread for liquidity providers",
 	)
+
+	ErrCalcTickFromPrice = sdkerrors.Register(
+		ModuleName,
+		1155,
+		"Cannot convert price to int64 tick value",
+	)
+	ErrPriceOutsideRange = sdkerrors.Register(
+		ModuleName,
+		1156,
+		"Invalid price; 0.00000000000000000000000050 < PRICE > 2020125331305056766451886.728",
+	)
 )
