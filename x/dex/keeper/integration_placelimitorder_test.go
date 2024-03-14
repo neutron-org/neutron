@@ -7,6 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
@@ -299,6 +300,40 @@ func (s *DexTestSuite) TestLimitOrderPartialFillDepositCancel() {
 	s.assertAliceBalances(120, 80)
 	s.assertBobBalances(80, 120)
 	s.assertDexBalances(0, 0)
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderWithPrice0To1() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 100)
+
+	// GIVEN
+	// Alice place LO at price ~10.0
+	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenA", math_utils.NewPrecDec(10), 10)
+
+	// WHEN bob swaps through all of Alice's LO
+	s.bobLimitSells("TokenB", -23078, 100, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.aliceWithdrawsLimitSell(trancheKey0)
+
+	// THEN alice gets out ~100 TOKENB and bob pays ~100 TOKENA
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_967))
+	s.assertBobBalancesInt(sdkmath.NewInt(10000000), sdkmath.NewInt(23))
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
+	s.fundAliceBalances(0, 100)
+	s.fundBobBalances(25, 0)
+	var price = math_utils.MustNewPrecDecFromStr("0.25")
+	// GIVEN
+	// Alice place LO at price ~.25
+	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenB", price, 100)
+
+	// WHEN bob swaps through all of Alice's LO
+	s.limitSellsWithPrice(s.bob, "TokenA", price, 25)
+	s.aliceWithdrawsLimitSell(trancheKey0)
+
+	// THEN alice gets out ~25 TOKENA and bob pays ~25 TOKENB
+	s.assertAliceBalancesInt(sdkmath.NewInt(25000000), sdkmath.ZeroInt())
+	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(25000000))
 }
 
 // Fill Or Kill limit orders ///////////////////////////////////////////////////////////

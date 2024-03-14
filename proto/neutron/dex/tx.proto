@@ -118,7 +118,7 @@ message MsgPlaceLimitOrder {
   ];
   string price_in_to_out = 11 [
     (gogoproto.moretags) = "yaml:\"price_in_to_out\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v3/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "price_in_to_out"
   ];
