@@ -2,6 +2,7 @@ package globalfee
 
 import (
 	"context"
+	storetypes "cosmossdk.io/store/types"
 	"encoding/json"
 	"fmt"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -82,13 +83,17 @@ type AppModule struct {
 	keeper keeper.Keeper
 	AppModuleBasic
 	paramSpace paramstypes.Subspace
+	cdc        codec.BinaryCodec
+	storeKey   storetypes.StoreKey
 }
 
 // NewAppModule constructor
-func NewAppModule(keeper keeper.Keeper, paramSpace paramstypes.Subspace) *AppModule {
+func NewAppModule(keeper keeper.Keeper, paramSpace paramstypes.Subspace, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) *AppModule {
 	return &AppModule{
 		keeper:     keeper,
 		paramSpace: paramSpace,
+		cdc:        cdc,
+		storeKey:   storeKey,
 	}
 }
 
@@ -113,9 +118,13 @@ func (a AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), a.keeper)
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(a.keeper))
 
-	m := keeper.NewMigrator(a.paramSpace)
+	m := keeper.NewMigrator(a.cdc, a.paramSpace, a.storeKey)
 	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/globalfee from version 1 to 2: %v", err))
+	}
+
+	if err := cfg.RegisterMigration(types.ModuleName, 2, m.Migrate2to3); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/globalfee from version 2 to 3: %v", err))
 	}
 }
 
