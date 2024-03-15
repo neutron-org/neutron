@@ -19,7 +19,7 @@ import "neutron/dex/tx.proto";
 
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/neutron-org/neutron/v2/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -93,7 +93,7 @@ service Query {
     option (google.api.http).get = "/neutron/dex/estimate_multi_hop_swap";
   }
 
-  // Queries the simulated result of a multihop swap
+  // Queries the simulated result of a PlaceLimit order
   rpc EstimatePlaceLimitOrder(QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
     option (google.api.http).get = "/neutron/dex/estimate_place_limit_order";
   }
@@ -256,7 +256,7 @@ message QueryEstimateMultiHopSwapRequest {
   ];
   string exit_limit_price = 5 [
     (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v2/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v3/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "exit_limit_price"
   ];

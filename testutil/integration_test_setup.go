@@ -24,7 +24,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/v2/testutil/consumer"
+	"github.com/neutron-org/neutron/v3/testutil/consumer"
 
 	"github.com/stretchr/testify/require"
 )

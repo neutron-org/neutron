@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	math_utils "github.com/neutron-org/neutron/v2/utils/math"
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 var _ = strconv.Itoa(0)

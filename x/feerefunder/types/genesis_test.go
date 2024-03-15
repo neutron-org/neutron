@@ -5,13 +5,13 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
-	"github.com/neutron-org/neutron/v2/app"
+	"github.com/neutron-org/neutron/v3/app"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v2/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 const (
