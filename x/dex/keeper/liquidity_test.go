@@ -41,62 +41,6 @@ func (s *DexTestSuite) TestSwap1To0NoLiquidity() {
 	s.assertCurr1To0(math.MinInt64)
 }
 
-func (s *DexTestSuite) TestSwapZeroInFailsLowTick() {
-	// GIVEN liquidity tokenA at tick -20,002
-	s.addDeposit(NewDeposit(10000, 0, -20_000, 2))
-
-	// WHEN swap 7 tokenB
-
-	// THEN swap would give an InAmount and outAmount of 0 and fail
-	// Floor(7 * 1.0001^-20,000) = 0
-	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdkmath.NewInt(7))
-}
-
-func (s *DexTestSuite) TestSwapUnfairPriceFailsLowTick() {
-	// GIVEN liquidity tokenA at tick -20,002
-	s.addDeposit(NewDeposit(10000, 0, -20_000, 2))
-
-	// WHEN swap 8 tokenB
-
-	// THEN swap fails because maker is selling at an unfair true price
-	// AmountOut = Floor(8 * 1.0001^-20,000) = 1
-	// AmountIn = Floor(1 * 1.0001^20000) = 7
-	// TruePrice = AmountOut/AmountIn = 1/7 = .142857
-	// BookPrice = 0.135348817 (thus maker is getting a price 5.5% worse than expected)
-	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdkmath.NewInt(8))
-}
-
-func (s *DexTestSuite) TestSwapUnfairPriceFailsHighTick() {
-	// GIVEN liquidity tokenA at tick 159,680
-	s.addDeposit(NewDeposit(2000, 0, 159681, 1))
-
-	// WHEN swap 200 tokenB
-
-	// THEN swap fails because maker is selling at an unfair true price
-	// AmountOut = Floor(200 * 1.0001^159,680) = 1,719,877,698
-	// AmountIn = Floor(1,719,877,697 * 1.0001^-159,680) = 199
-	// TruePrice = AmountOut/AmountIn = 1,719,877,698/199 = 8,642,601
-	// BookPrice = 8,599,388 (thus maker is getting a price .502% worse than expected)
-	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdk.NewInt(200))
-}
-
-func (s *DexTestSuite) TestSwapUnfairPriceAbortEarly() {
-	// GIVEN liquidity tokenA at tick 159,681 and 159,680
-	s.addDeposits(
-		NewDeposit(2580, 0, 159682, 1),
-		NewDeposit(2000, 0, 159681, 1),
-	)
-
-	// WHEN swap 700 BIgTokenB
-	tokenIn, tokenOut, orderFilled, err := s.swapInt("TokenB", "TokenA", sdk.NewInt(499))
-
-	// THEN swap works on the first tick, but aborts on the second tick because of Unfair price condition
-	s.NoError(err)
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(299), tokenOut, sdkmath.NewInt(2580000000))
-	s.False(orderFilled)
-	s.assertTickBalancesInt(sdkmath.NewInt(2_000_000_000), sdkmath.NewInt(299))
-}
-
 // swaps against LPs only /////////////////////////////////////////////////////
 
 func (s *DexTestSuite) TestSwap0To1PartialFillLP() {

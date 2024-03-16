@@ -36,11 +36,11 @@ func (s *DexTestSuite) TestPlaceLimitOrderInSpread1To0() {
 	s.assertCurr1To0(-1)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderDustPool() {
-	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(100), sdkmath.ZeroInt())
-	s.fundAccountBalancesInt(s.bob, sdkmath.ZeroInt(), sdkmath.NewInt(10_001))
+func (s *DexTestSuite) TestPlaceLimitOrderDustPoolWithMoreLiq() {
+	s.fundAccountBalancesInt(s.alice, sdkmath.ZeroInt(), sdkmath.NewInt(100))
+	s.fundAccountBalancesInt(s.bob, sdkmath.NewInt(1000), sdkmath.ZeroInt())
 
-	// Given dust tick @ price ~.36 follow by tick
+	// GIVEN dust tick @ price ~.36 followed by tick with liqudity
 	s.bobDeposits(&Deposit{
 		AmountA:   sdkmath.OneInt(),
 		AmountB:   sdkmath.ZeroInt(),
@@ -48,18 +48,58 @@ func (s *DexTestSuite) TestPlaceLimitOrderDustPool() {
 		Fee:       uint64(1),
 	},
 		&Deposit{
-			AmountA:   sdkmath.NewInt(10_000),
+			AmountA:   sdkmath.NewInt(400),
 			AmountB:   sdkmath.ZeroInt(),
 			TickIndex: 11000,
 			Fee:       uint64(1),
 		},
 	)
-
-	// WHEN
-	// place limit order for B; it trades through the dust and completes the order using the larger pool
+	// WHEN place limit order for B
 	_, err := s.limitSellsInt(s.alice, "TokenB", -12000, sdkmath.NewInt(100), types.LimitOrderType_FILL_OR_KILL)
+
+	// THEN it trades through the dust and completes the order using the larger pool
 	s.NoError(err)
-	s.assertAliceBalancesInt(sdkmath.NewInt(10_001), sdkmath.NewInt(1))
+	s.assertAliceBalancesInt(sdkmath.NewInt(301), sdkmath.NewInt(1))
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderFreeDust() {
+	s.fundAccountBalancesInt(s.alice, sdkmath.ZeroInt(), sdkmath.NewInt(2))
+	s.fundAccountBalancesInt(s.bob, sdkmath.NewInt(10), sdkmath.ZeroInt())
+
+	// GIVEN dust at multiple ticks
+	s.bobDeposits(&Deposit{
+		AmountA:   sdkmath.OneInt(),
+		AmountB:   sdkmath.ZeroInt(),
+		TickIndex: 11001,
+		Fee:       uint64(1),
+	},
+		&Deposit{
+			AmountA:   sdkmath.OneInt(),
+			AmountB:   sdkmath.ZeroInt(),
+			TickIndex: 11002,
+			Fee:       uint64(1),
+		},
+		&Deposit{
+			AmountA:   sdkmath.OneInt(),
+			AmountB:   sdkmath.ZeroInt(),
+			TickIndex: 11003,
+			Fee:       uint64(1),
+		},
+		&Deposit{
+			AmountA:   sdkmath.OneInt(),
+			AmountB:   sdkmath.ZeroInt(),
+			TickIndex: 11004,
+			Fee:       uint64(1),
+		},
+	)
+	// WHEN place limit order for B
+	_, err := s.limitSellsInt(s.alice, "TokenB", -12000, sdkmath.NewInt(4), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+
+	// THEN it trades through all the dust for free
+	// NOTE: This is a very weird case but it is the expected beahvior. Being able to do this ensures that it
+	// is easy to remove dust from the dex. This is not optimal behavior for makers, but the alternatives are worse.
+	s.NoError(err)
+	s.assertAliceBalancesInt(sdkmath.NewInt(4), sdkmath.NewInt(2))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderInSpread0To1() {
@@ -532,43 +572,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderIoCUnfairPriceFails() {
-	s.fundAliceBalances(10, 0)
-	s.fundBobBalances(0, 1)
-	// GIVEN LP of 1 TokenB at tick -20
-	s.bobDeposits(NewDeposit(0, 1, -20, 1))
-	// WHEN alice submits IoC limitOrder for 2 tokenA
-	_, err := s.limitSellsInt(s.alice, "TokenA", 10, sdkmath.NewInt(2), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN alice's LimitOrder failswith SwapAmountTooSmall
-	s.ErrorIs(err, types.ErrSwapAmountTooSmall)
-
-	// Nothing is changed
-	s.assertAliceBalances(10, 0)
-	s.assertLiquidityAtTick(0, 1, -20, 1)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIoCUnfairPriceAbortsEarly() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 2)
-	// GIVEN LP of 1 TokenB at ticks -20 & -21
-	s.bobDeposits(
-		NewDeposit(0, 1, -21, 1),
-		NewDeposit(0, 1, -20, 1),
-	)
-	// WHEN alice submits IoC limitOrder for 999_004 small TokenA
-	_, err := s.limitSellsInt(s.alice, "TokenA", 10, sdkmath.NewInt(998_004), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN alice's LimitOrder swaps through the first tick, but does not swap the second tick due to unfair pricing
-	s.NoError(err)
-
-	// The first tick swapped and the second tick is not
-	s.assertLiquidityAtTickInt(sdkmath.NewInt(998_002), sdkmath.ZeroInt(), -21, 1)
-	s.assertLiquidityAtTick(0, 1, -20, 1)
-	// only the first swap is deducted from alices balance
-	s.assertAliceBalancesInt(sdkmath.NewInt(1998), sdkmath.NewInt(1_000_000))
-}
-
 // Just In Time Limit Orders //////////////////////////////////////////////////
 
 func (s *DexTestSuite) TestPlaceLimitOrderJITFills() {
@@ -723,28 +726,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 		ExpirationTime:   &yesterday,
 	})
 	s.Assert().ErrorIs(err, types.ErrExpirationTimeInPast)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderFOKFailsOnRoundingBecauseUnfairPrice() {
-	s.fundAliceBalances(10, 0)
-
-	s.SetupMultiplePools(
-		// tick 109_999 with fee 1 will be traded for A -> B at 110_000
-		NewPoolSetup("TokenA", "TokenB", 1_000, 1_000, -110_001, 1), // tick 110000 = 59841.22218557191867154759205905
-	)
-
-	// GIVEN Alice submits FOK limitOrder for 10 tokenA at tick 0
-	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, "TokenA")
-	_, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
-		Creator:          s.alice.String(),
-		Receiver:         s.alice.String(),
-		TokenIn:          tradePairID.TakerDenom,
-		TokenOut:         tradePairID.MakerDenom,
-		TickIndexInToOut: tradePairID.TickIndexTakerToMaker(int64(115_000)),
-		AmountIn:         sdkmath.NewInt(10),
-		OrderType:        types.LimitOrderType_FILL_OR_KILL, // test on fill_or_kill since we want order to be filled right away through one swap
-	})
-	require.EqualErrorf(s.T(), err, "Swap amount too small; creates unfair spread for liquidity providers", "errors should be same")
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFOKWorksIfOneTokenLeftOnRounding() {
