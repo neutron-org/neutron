@@ -36,6 +36,32 @@ func (s *DexTestSuite) TestPlaceLimitOrderInSpread1To0() {
 	s.assertCurr1To0(-1)
 }
 
+func (s *DexTestSuite) TestPlaceLimitOrderDustPool() {
+	s.fundAccountBalancesInt(s.alice, sdkmath.NewInt(100), sdkmath.ZeroInt())
+	s.fundAccountBalancesInt(s.bob, sdkmath.ZeroInt(), sdkmath.NewInt(10_001))
+
+	// Given dust tick @ price ~.36 follow by tick
+	s.bobDeposits(&Deposit{
+		AmountA:   sdkmath.OneInt(),
+		AmountB:   sdkmath.ZeroInt(),
+		TickIndex: 11001,
+		Fee:       uint64(1),
+	},
+		&Deposit{
+			AmountA:   sdkmath.NewInt(10_000),
+			AmountB:   sdkmath.ZeroInt(),
+			TickIndex: 11000,
+			Fee:       uint64(1),
+		},
+	)
+
+	// WHEN
+	// place limit order for B; it trades through the dust and completes the order using the larger pool
+	_, err := s.limitSellsInt(s.alice, "TokenB", -12000, sdkmath.NewInt(100), types.LimitOrderType_FILL_OR_KILL)
+	s.NoError(err)
+	s.assertAliceBalancesInt(sdkmath.NewInt(10_001), sdkmath.NewInt(1))
+}
+
 func (s *DexTestSuite) TestPlaceLimitOrderInSpread0To1() {
 	s.fundAliceBalances(50, 50)
 
