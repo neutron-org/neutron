@@ -1,4 +1,4 @@
-package v300
+package v301
 
 import (
 	"cosmossdk.io/math"
@@ -12,10 +12,10 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v3.0.0"
+	UpgradeName = "v3.0.1"
 
-	AuctionParamsMaxBundleSize          = 2
-	AuctionParamsFrontRunningProtection = true
+	AuctionParamsMaxBundleSize          = 4
+	AuctionParamsFrontRunningProtection = false
 )
 
 var (
