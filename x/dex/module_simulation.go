@@ -4,7 +4,6 @@ import (
 	"math/rand"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
@@ -70,7 +69,7 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 }
 
 // RegisterStoreDecoder registers a decoder
-func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
+func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {}
 
 // WeightedOperations returns the all the gov module operations with their respective weights.
 func (am AppModule) WeightedOperations(
@@ -79,7 +78,7 @@ func (am AppModule) WeightedOperations(
 	operations := make([]simtypes.WeightedOperation, 0)
 
 	var weightMsgDeposit int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgDeposit, &weightMsgDeposit, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgDeposit, &weightMsgDeposit, nil,
 		func(_ *rand.Rand) {
 			weightMsgDeposit = defaultWeightMsgDeposit
 		},
@@ -90,7 +89,7 @@ func (am AppModule) WeightedOperations(
 	))
 
 	var weightMsgWithdrawal int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgWithdrawal, &weightMsgWithdrawal, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgWithdrawal, &weightMsgWithdrawal, nil,
 		func(_ *rand.Rand) {
 			weightMsgWithdrawal = defaultWeightMsgWithdrawal
 		},
@@ -102,7 +101,6 @@ func (am AppModule) WeightedOperations(
 
 	var weightMsgPlaceLimitOrder int
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc,
 		opWeightMsgPlaceLimitOrder,
 		&weightMsgPlaceLimitOrder,
 		nil,
@@ -117,7 +115,6 @@ func (am AppModule) WeightedOperations(
 
 	var weightMsgWithdrawFilledLimitOrder int
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc,
 		opWeightMsgWithdrawFilledLimitOrder,
 		&weightMsgWithdrawFilledLimitOrder,
 		nil,
@@ -135,7 +132,6 @@ func (am AppModule) WeightedOperations(
 
 	var weightMsgCancelLimitOrder int
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc,
 		opWeightMsgCancelLimitOrder,
 		&weightMsgCancelLimitOrder,
 		nil,
@@ -150,7 +146,6 @@ func (am AppModule) WeightedOperations(
 
 	var weightMsgMultiHopSwap int
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc,
 		opWeightMsgMultiHopSwap,
 		&weightMsgMultiHopSwap,
 		nil,

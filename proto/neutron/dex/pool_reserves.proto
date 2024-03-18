@@ -16,7 +16,7 @@ message PoolReserves {
   PoolReservesKey key = 1;
   string reserves_maker_denom = 2 [
     (gogoproto.moretags) = "yaml:\"reserves_maker_denom\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.jsontag) = "reserves_maker_denom",
     (gogoproto.nullable) = false
   ];

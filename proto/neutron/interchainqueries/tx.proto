@@ -93,7 +93,7 @@ message Block {
 }
 
 message TxValue {
-  tendermint.abci.ResponseDeliverTx response = 1;
+  tendermint.abci.ExecTxResult response = 1;
 
   // is the Merkle Proof which proves existence of response in block with height
   // next_block_header.Height

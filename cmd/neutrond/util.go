@@ -11,11 +11,9 @@ import (
 
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
-	tmlog "github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
-	serverlog "github.com/cosmos/cosmos-sdk/server/log"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -99,8 +97,8 @@ func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate s
 		}
 	}
 
-	logger := log.NewLogger(tmlog.NewSyncWriter(os.Stdout), opts...).With(log.ModuleKey, "server")
-	serverCtx.Logger = serverlog.CometLoggerWrapper{Logger: logger}
+	logger, err := server.CreateSDKLogger(serverCtx, cmd.OutOrStdout())
+	serverCtx.Logger = logger.With(log.ModuleKey, "server")
 
 	return server.SetCmdServerContext(cmd, serverCtx)
 }

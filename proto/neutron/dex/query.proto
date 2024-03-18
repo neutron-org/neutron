@@ -250,7 +250,7 @@ message QueryEstimateMultiHopSwapRequest {
   repeated MultiHopRoute routes = 3;
   string amount_in = 4 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];
@@ -282,7 +282,7 @@ message QueryEstimatePlaceLimitOrderRequest {
   int64 tick_index_in_to_out = 5;
   string amount_in = 6 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];
@@ -295,7 +295,7 @@ message QueryEstimatePlaceLimitOrderRequest {
   ];
   string maxAmount_out = 9 [
     (gogoproto.moretags) = "yaml:\"max_amount_out\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "max_amount_out"
   ];

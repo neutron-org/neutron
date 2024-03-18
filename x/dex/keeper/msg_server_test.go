@@ -7,8 +7,6 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
@@ -31,7 +29,7 @@ type DexTestSuite struct {
 
 var defaultPairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
 
-var denomMultiple = sdk.NewInt(1000000)
+var denomMultiple = sdkmath.NewInt(1000000)
 
 var defaultTradePairID0To1 = &types.TradePairID{
 	TakerDenom: "TokenA",
@@ -1574,9 +1572,9 @@ func (s *DexTestSuite) calcExpectedBalancesAfterWithdrawOnePool(
 func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 	newCtx := s.Ctx.WithBlockTime(blockTime)
 	s.Ctx = newCtx
-	s.GoCtx = sdk.WrapSDKContext(newCtx)
-	s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-		Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
-		Time: blockTime,
-	}})
+	s.GoCtx = newCtx
+	//TODO: s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+	//	Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
+	//	Time: blockTime,
+	//}})
 }

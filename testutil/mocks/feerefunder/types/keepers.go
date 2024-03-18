@@ -5,11 +5,11 @@
 package mock_types
 
 import (
+	context "context"
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/cosmos-sdk/x/auth/types"
-	types1 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	types0 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -37,10 +37,10 @@ func (m *MockAccountKeeper) EXPECT() *MockAccountKeeperMockRecorder {
 }
 
 // GetAccount mocks base method.
-func (m *MockAccountKeeper) GetAccount(ctx types.Context, addr types.AccAddress) types0.AccountI {
+func (m *MockAccountKeeper) GetAccount(ctx context.Context, addr types.AccAddress) types.AccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", ctx, addr)
-	ret0, _ := ret[0].(types0.AccountI)
+	ret0, _ := ret[0].(types.AccountI)
 	return ret0
 }
 
@@ -74,7 +74,7 @@ func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 }
 
 // HasBalance mocks base method.
-func (m *MockBankKeeper) HasBalance(ctx types.Context, addr types.AccAddress, amt types.Coin) bool {
+func (m *MockBankKeeper) HasBalance(ctx context.Context, addr types.AccAddress, amt types.Coin) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasBalance", ctx, addr, amt)
 	ret0, _ := ret[0].(bool)
@@ -88,7 +88,7 @@ func (mr *MockBankKeeperMockRecorder) HasBalance(ctx, addr, amt interface{}) *go
 }
 
 // SendCoins mocks base method.
-func (m *MockBankKeeper) SendCoins(ctx types.Context, fromAddr, toAddr types.AccAddress, amt types.Coins) error {
+func (m *MockBankKeeper) SendCoins(ctx context.Context, fromAddr, toAddr types.AccAddress, amt types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoins", ctx, fromAddr, toAddr, amt)
 	ret0, _ := ret[0].(error)
@@ -102,7 +102,7 @@ func (mr *MockBankKeeperMockRecorder) SendCoins(ctx, fromAddr, toAddr, amt inter
 }
 
 // SendCoinsFromAccountToModule mocks base method.
-func (m *MockBankKeeper) SendCoinsFromAccountToModule(ctx types.Context, senderAddr types.AccAddress, recipientModule string, amt types.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr types.AccAddress, recipientModule string, amt types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromAccountToModule", ctx, senderAddr, recipientModule, amt)
 	ret0, _ := ret[0].(error)
@@ -116,7 +116,7 @@ func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(ctx, senderAd
 }
 
 // SendCoinsFromModuleToAccount mocks base method.
-func (m *MockBankKeeper) SendCoinsFromModuleToAccount(ctx types.Context, senderModule string, recipientAddr types.AccAddress, amt types.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr types.AccAddress, amt types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromModuleToAccount", ctx, senderModule, recipientAddr, amt)
 	ret0, _ := ret[0].(error)
@@ -153,10 +153,10 @@ func (m *MockChannelKeeper) EXPECT() *MockChannelKeeperMockRecorder {
 }
 
 // GetChannel mocks base method.
-func (m *MockChannelKeeper) GetChannel(ctx types.Context, srcPort, srcChan string) (types1.Channel, bool) {
+func (m *MockChannelKeeper) GetChannel(ctx types.Context, srcPort, srcChan string) (types0.Channel, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetChannel", ctx, srcPort, srcChan)
-	ret0, _ := ret[0].(types1.Channel)
+	ret0, _ := ret[0].(types0.Channel)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }

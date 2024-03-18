@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
+	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -217,7 +218,7 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
 	)
 }
 
-func GoodTilPurgeHitLimitEvent(gas sdk.Gas) sdk.Event {
+func GoodTilPurgeHitLimitEvent(gas types.Gas) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(GoodTilPurgeHitGasLimitEventGas, strconv.FormatUint(gas, 10)),

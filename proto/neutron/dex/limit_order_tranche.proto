@@ -18,25 +18,25 @@ message LimitOrderTranche {
   LimitOrderTrancheKey key = 1;
   string reserves_maker_denom = 2 [
     (gogoproto.moretags) = "yaml:\"reserves_maker_denom\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserves_maker_denom"
   ];
   string reserves_taker_denom = 3 [
     (gogoproto.moretags) = "yaml:\"reserves_taker_denom\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserves_taker_denom"
   ];
   string total_maker_denom = 4 [
     (gogoproto.moretags) = "yaml:\"total_maker_denom\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "total_maker_denom"
   ];
   string total_taker_denom = 5 [
     (gogoproto.moretags) = "yaml:\"total_taker_denom\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "total_taker_denom"
   ];

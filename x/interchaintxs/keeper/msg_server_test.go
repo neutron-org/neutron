@@ -5,10 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
+
 	"github.com/neutron-org/neutron/v3/app/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
 	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 	"github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
@@ -61,7 +63,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
 	require.Nil(t, resp)
 
-	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
+	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000)))
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})

@@ -1,11 +1,13 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -21,7 +23,9 @@ import (
 // Sudo method:
 // https://github.com/neutron-org/neutron/blob/eb8b5ae50907439ff9af0527a42ef0cb448a78b5/x/contractmanager/ibc_middleware.go#L42.
 // Another good way could be passing here some constant value.
-func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload []byte, errMsg string) types.Failure {
+func (k Keeper) AddContractFailure(ctx context.Context, address string, sudoPayload []byte, errMsg string) types.Failure {
+	c := sdk.UnwrapSDKContext(ctx)
+
 	failure := types.Failure{
 		Address:     address,
 		SudoPayload: sudoPayload,
@@ -30,15 +34,17 @@ func (k Keeper) AddContractFailure(ctx sdk.Context, address string, sudoPayload 
 	nextFailureID := k.GetNextFailureIDKey(ctx, failure.GetAddress())
 	failure.Id = nextFailureID
 
-	store := ctx.KVStore(k.storeKey)
+	store := c.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&failure)
 	store.Set(types.GetFailureKey(failure.GetAddress(), nextFailureID), bz)
 	return failure
 }
 
-func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetFailureKeyPrefix(address))
-	iterator := sdk.KVStoreReversePrefixIterator(store, []byte{})
+func (k Keeper) GetNextFailureIDKey(ctx context.Context, address string) uint64 {
+	c := sdk.UnwrapSDKContext(ctx)
+
+	store := prefix.NewStore(c.KVStore(k.storeKey), types.GetFailureKeyPrefix(address))
+	iterator := storetypes.KVStoreReversePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	if iterator.Valid() {
@@ -52,9 +58,11 @@ func (k Keeper) GetNextFailureIDKey(ctx sdk.Context, address string) uint64 {
 }
 
 // GetAllFailures returns all failures
-func (k Keeper) GetAllFailures(ctx sdk.Context) (list []types.Failure) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ContractFailuresKey)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+func (k Keeper) GetAllFailures(ctx context.Context) (list []types.Failure) {
+	c := sdk.UnwrapSDKContext(ctx)
+
+	store := prefix.NewStore(c.KVStore(k.storeKey), types.ContractFailuresKey)
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {

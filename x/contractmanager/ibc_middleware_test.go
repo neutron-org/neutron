@@ -3,6 +3,7 @@ package contractmanager_test
 import (
 	"testing"
 
+	types2 "cosmossdk.io/store/types"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -38,7 +39,7 @@ func TestSudo(t *testing.T) {
 	contractAddress := sdk.AccAddress{}
 
 	//  success during Sudo
-	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
 	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {
 		st := cachedCtx.KVStore(storeKey)
@@ -49,7 +50,7 @@ func TestSudo(t *testing.T) {
 	require.Equal(t, ShouldBeWritten, st.Get(ShouldBeWrittenKey("sudo")))
 
 	//  error during Sudo
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
 	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg, contractmanagerkeeper.RedactError(wasmtypes.ErrExecuteFailed).Error())
 	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {
@@ -61,7 +62,7 @@ func TestSudo(t *testing.T) {
 	require.Nil(t, st.Get(ShouldNotBeWrittenKey))
 
 	// ou of gas during Sudo
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
 	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg, contractmanagerkeeper.RedactError(types.ErrSudoOutOfGas).Error())
 	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
@@ -12,12 +13,11 @@ import (
 
 func TestGrpcQuery_TotalBurnedNeutronsAmount(t *testing.T) {
 	feeKeeper, ctx := feekeeperutil.FeeburnerKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
 
-	feeKeeper.RecordBurnedFees(ctx, sdk.NewCoin(types.DefaultNeutronDenom, sdk.NewInt(100)))
+	feeKeeper.RecordBurnedFees(ctx, sdk.NewCoin(types.DefaultNeutronDenom, math.NewInt(100)))
 
 	request := types.QueryTotalBurnedNeutronsAmountRequest{}
-	response, err := feeKeeper.TotalBurnedNeutronsAmount(wctx, &request)
+	response, err := feeKeeper.TotalBurnedNeutronsAmount(ctx, &request)
 	require.NoError(t, err)
-	require.Equal(t, &types.QueryTotalBurnedNeutronsAmountResponse{TotalBurnedNeutronsAmount: types.TotalBurnedNeutronsAmount{Coin: sdk.Coin{Denom: types.DefaultNeutronDenom, Amount: sdk.NewInt(100)}}}, response)
+	require.Equal(t, &types.QueryTotalBurnedNeutronsAmountResponse{TotalBurnedNeutronsAmount: types.TotalBurnedNeutronsAmount{Coin: sdk.Coin{Denom: types.DefaultNeutronDenom, Amount: math.NewInt(100)}}}, response)
 }

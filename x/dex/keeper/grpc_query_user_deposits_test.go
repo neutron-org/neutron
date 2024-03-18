@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
@@ -33,7 +32,7 @@ func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, 
 func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	app := testutil.Setup(t)
 	keeper := app.(*neutronapp.App).DexKeeper
-	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
+	ctx := app.(*neutronapp.App).BaseApp.NewContext(false)
 	wctx := sdk.WrapSDKContext(ctx)
 	addr := sdk.AccAddress("test_addr")
 	msgs := []*types.DepositRecord{

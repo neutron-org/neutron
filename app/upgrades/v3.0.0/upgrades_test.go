@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/stretchr/testify/require"
@@ -91,9 +91,9 @@ func (suite *UpgradeTestSuite) TestSlashingUpgrade() {
 		Info:   "some text here",
 		Height: 100,
 	}
-	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
 
-	postUpgradeInfo, ok := app.SlashingKeeper.GetValidatorSigningInfo(ctx, consAddr)
-	require.True(t, ok)
+	postUpgradeInfo, err := app.SlashingKeeper.GetValidatorSigningInfo(ctx, consAddr)
+	require.NoError(t, err)
 	require.Equal(t, postUpgradeInfo.MissedBlocksCounter, int64(50))
 }

@@ -36,13 +36,13 @@ message MsgDeposit {
   string token_b = 4;
   repeated string amounts_a = 5 [
     (gogoproto.moretags) = "yaml:\"amounts_a\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amounts_a"
   ];
   repeated string amounts_b = 6 [
     (gogoproto.moretags) = "yaml:\"amounts_b\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amounts_b"
   ];
@@ -54,13 +54,13 @@ message MsgDeposit {
 message MsgDepositResponse {
   repeated string reserve0_deposited = 1 [
     (gogoproto.moretags) = "yaml:\"reserve0_deposited\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve0_deposited"
   ];
   repeated string reserve1_deposited = 2 [
     (gogoproto.moretags) = "yaml:\"reserve1_deposited\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve1_deposited"
   ];
@@ -73,7 +73,7 @@ message MsgWithdrawal {
   string token_b = 4;
   repeated string shares_to_remove = 5 [
     (gogoproto.moretags) = "yaml:\"shares_to_remove\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_to_remove"
   ];
@@ -99,7 +99,7 @@ message MsgPlaceLimitOrder {
   int64 tick_index_in_to_out = 5;
   string amount_in = 7 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];
@@ -111,7 +111,7 @@ message MsgPlaceLimitOrder {
   ];
   string max_amount_out = 10 [
     (gogoproto.moretags) = "yaml:\"max_amount_out\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "max_amount_out"
   ];
@@ -162,7 +162,7 @@ message MsgMultiHopSwap {
   repeated MultiHopRoute routes = 3;
   string amount_in = 4 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];

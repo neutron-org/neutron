@@ -1,22 +1,22 @@
 package app
 
 import (
+	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
+	"cosmossdk.io/log"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cometbft/cometbft/libs/log"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	gaiaerrors "github.com/cosmos/gaia/v11/types/errors"
-	globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
-	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-	consumerante "github.com/cosmos/interchain-security/v4/app/consumer/ante"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
-	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	// globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
+	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
+	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -24,10 +24,10 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 
-	IBCKeeper         *ibckeeper.Keeper
-	ConsumerKeeper    ibcconsumerkeeper.Keeper
-	WasmConfig        *wasmTypes.WasmConfig
-	TXCounterStoreKey storetypes.StoreKey
+	IBCKeeper             *ibckeeper.Keeper
+	ConsumerKeeper        ibcconsumerkeeper.Keeper
+	WasmConfig            *wasmTypes.WasmConfig
+	TXCounterStoreService corestoretypes.KVStoreService
 
 	// dependencies for the x/auction ante-handler
 	AuctionKeeper auctionkeeper.Keeper
@@ -40,25 +40,25 @@ type HandlerOptions struct {
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
-		return nil, errors.Wrap(gaiaerrors.ErrLogic, "account keeper is required for AnteHandler")
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
 	}
 	if options.BankKeeper == nil {
-		return nil, errors.Wrap(gaiaerrors.ErrLogic, "bank keeper is required for AnteHandler")
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for AnteHandler")
 	}
 	if options.SignModeHandler == nil {
-		return nil, errors.Wrap(gaiaerrors.ErrLogic, "sign mode handler is required for ante builder")
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
 	}
 	if options.WasmConfig == nil {
-		return nil, errors.Wrap(gaiaerrors.ErrLogic, "wasm config is required for ante builder")
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "wasm config is required for ante builder")
 	}
-	if options.TXCounterStoreKey == nil {
-		return nil, errors.Wrap(gaiaerrors.ErrLogic, "tx counter key is required for ante builder")
+	if options.TXCounterStoreService == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "tx counter store service is required for ante builder")
 	}
-	if options.GlobalFeeSubspace.Name() == "" {
-		return nil, errors.Wrap(gaiaerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
-	}
+	//if options.GlobalFeeSubspace.Name() == "" {
+	//	return nil, errors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
+	//}
 	if options.MEVLane == nil {
-		return nil, errors.Wrap(gaiaerrors.ErrLogic, "mev lane is required for AnteHandler")
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "mev lane is required for AnteHandler")
 	}
 
 	sigGasConsumer := options.SigGasConsumer
@@ -69,7 +69,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
-		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreKey),
+		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		consumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
 		ante.NewValidateBasicDecorator(),
@@ -80,7 +80,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// In this case you should be sure that you
 		// implemented upgrade to set default `ParamStoreKeyMinGasPrices` global fee param with at least one record
 		// otherwise you will get panic
-		globalfeeante.NewFeeDecorator(options.GlobalFeeSubspace, nil),
+		// globalfeeante.NewFeeDecorator(nil, options.GlobalFeeSubspace, nil),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators

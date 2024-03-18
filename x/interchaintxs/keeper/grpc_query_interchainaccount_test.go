@@ -6,7 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	types2 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	types2 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 

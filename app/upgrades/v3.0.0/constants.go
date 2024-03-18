@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	storetypes "cosmossdk.io/store/types"
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
@@ -26,7 +26,7 @@ var (
 			Added: []string{auctiontypes.ModuleName},
 		},
 	}
-	AuctionParamsReserveFee      = sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(500_000)}
-	AuctionParamsMinBidIncrement = sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(100_000)}
+	AuctionParamsReserveFee      = sdk.Coin{Denom: "untrn", Amount: math.NewInt(500_000)}
+	AuctionParamsMinBidIncrement = sdk.Coin{Denom: "untrn", Amount: math.NewInt(100_000)}
 	AuctionParamsProposerFee     = math.LegacyNewDecWithPrec(25, 2)
 )

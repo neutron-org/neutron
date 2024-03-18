@@ -1,25 +1,27 @@
 package v200
 
 import (
+	"context"
 	"fmt"
 
+	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	"github.com/neutron-org/neutron/v3/app/params"
 
+	storetypes "cosmossdk.io/store/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/gaia/v11/x/globalfee/types"
-	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
+	//"github.com/cosmos/gaia/v11/x/globalfee/types"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	v6 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/migrations/v6"
 
 	"github.com/neutron-org/neutron/v3/app/upgrades"
 	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
@@ -39,7 +41,9 @@ func CreateUpgradeHandler(
 	storeKeys upgrades.StoreKeys,
 	codec codec.Codec,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+	return func(c context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		ctx := sdk.UnwrapSDKContext(c)
+
 		ctx.Logger().Info("Migrating channel capability...")
 		// https://github.com/cosmos/ibc-go/blob/v7.0.1/docs/migrations/v5-to-v6.md#upgrade-proposal
 		if err := v6.MigrateICS27ChannelCapability(ctx, codec, storeKeys.GetKey(capabilitytypes.StoreKey), keepers.CapabilityKeeper, interchaintxstypes.ModuleName); err != nil {
@@ -88,12 +92,12 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
-		ctx.Logger().Info("Migrating globalminfees module parameters...")
-		err = migrateGlobalFees(ctx, keepers)
-		if err != nil {
-			ctx.Logger().Error("failed to migrate GlobalFees", "err", err)
-			return vm, err
-		}
+		//ctx.Logger().Info("Migrating globalminfees module parameters...")
+		//err = migrateGlobalFees(ctx, keepers)
+		//if err != nil {
+		//	ctx.Logger().Error("failed to migrate GlobalFees", "err", err)
+		//	return vm, err
+		//}
 
 		ctx.Logger().Info("Updating ccv reward denoms...")
 		err = migrateRewardDenoms(ctx, keepers)
@@ -193,7 +197,7 @@ func migrateInterchainQueriesParams(ctx sdk.Context, paramsKeepers paramskeeper.
 	subspace, _ := paramsKeepers.GetSubspace(icqtypes.StoreKey)
 	subspace.GetParamSet(ctx, &currParams)
 
-	currParams.QueryDeposit = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000)))
+	currParams.QueryDeposit = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000)))
 
 	if err := currParams.Validate(); err != nil {
 		return err
@@ -227,35 +231,35 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 	return nil
 }
 
-func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
-	ctx.Logger().Info("Implementing GlobalFee Params...")
-
-	// The average gas cost for an average transaction on Neutron should not go beyond 5 cents.
-	// Users have three designated coins that can be used for gas: NTRN, ATOM, and axlUSDC
-	// Assuming average transaction gas on Neutron consumer is ~250000 approximately, ATOM 30D TWAP is $8.4 and NTRN 30D TWAP is $0.36
-	// we set minimum-gas-prices as per this formula:
-	// ((0.05 * 10^(6)) / TOKEN_30d_TWAP) / AVG_GAS_PRICE
-	requiredGlobalFees := sdk.DecCoins{
-		sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0.56")),
-		sdk.NewDecCoinFromDec(AtomDenom, sdk.MustNewDecFromStr("0.02")),
-		sdk.NewDecCoinFromDec(AxelarUsdcDenom, sdk.MustNewDecFromStr("0.2")),
-	}
-	requiredGlobalFees = requiredGlobalFees.Sort()
-
-	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMinGasPrices, &requiredGlobalFees)
-
-	ctx.Logger().Info("Global fees was set successfully")
-
-	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyBypassMinFeeMsgTypes, &[]string{})
-
-	ctx.Logger().Info("Bypass min fee msg types was set successfully")
-
-	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage, &types.DefaultmaxTotalBypassMinFeeMsgGasUsage)
-
-	ctx.Logger().Info("Max total bypass min fee msg gas usage set successfully")
-
-	return nil
-}
+//func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
+//	ctx.Logger().Info("Implementing GlobalFee Params...")
+//
+//	// The average gas cost for an average transaction on Neutron should not go beyond 5 cents.
+//	// Users have three designated coins that can be used for gas: NTRN, ATOM, and axlUSDC
+//	// Assuming average transaction gas on Neutron consumer is ~250000 approximately, ATOM 30D TWAP is $8.4 and NTRN 30D TWAP is $0.36
+//	// we set minimum-gas-prices as per this formula:
+//	// ((0.05 * 10^(6)) / TOKEN_30d_TWAP) / AVG_GAS_PRICE
+//	requiredGlobalFees := sdk.DecCoins{
+//		sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0.56")),
+//		sdk.NewDecCoinFromDec(AtomDenom, sdk.MustNewDecFromStr("0.02")),
+//		sdk.NewDecCoinFromDec(AxelarUsdcDenom, sdk.MustNewDecFromStr("0.2")),
+//	}
+//	requiredGlobalFees = requiredGlobalFees.Sort()
+//
+//	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMinGasPrices, &requiredGlobalFees)
+//
+//	ctx.Logger().Info("Global fees was set successfully")
+//
+//	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyBypassMinFeeMsgTypes, &[]string{})
+//
+//	ctx.Logger().Info("Bypass min fee msg types was set successfully")
+//
+//	keepers.GlobalFeeSubspace.Set(ctx, types.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage, &types.DefaultmaxTotalBypassMinFeeMsgGasUsage)
+//
+//	ctx.Logger().Info("Max total bypass min fee msg gas usage set successfully")
+//
+//	return nil
+//}
 
 func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Migrating reword denoms...")
@@ -288,7 +292,7 @@ func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error
 	return nil
 }
 
-func migrateConsensusParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, keeper *consensuskeeper.Keeper) {
+func migrateConsensusParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, keeper *consensuskeeper.Keeper) error {
 	baseAppLegacySS := paramsKeepers.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
-	baseapp.MigrateParams(ctx, baseAppLegacySS, keeper)
+	return baseapp.MigrateParams(ctx, baseAppLegacySS, keeper.ParamsStore)
 }

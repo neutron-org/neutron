@@ -13,7 +13,7 @@ import (
 	"io"
 	"net/http"
 
-	types_0 "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	types_0 "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"

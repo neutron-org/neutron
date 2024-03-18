@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -22,20 +23,20 @@ func (suite *KeeperTestSuite) TestMsgCreateDenom() {
 	suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
 
 	balance := suite.WalletBalance(suite.ChainA.GetContext(), suite.TestAccs[0].String())
-	suite.Require().Equal(sdk.NewInt(TopUpCoinsAmount), balance)
+	suite.Require().Equal(math.NewInt(TopUpCoinsAmount), balance)
 
 	feeCollectorBalance := suite.WalletBalance(suite.ChainA.GetContext(), FeeCollectorAddress)
-	suite.Require().Equal(sdk.NewInt(0), feeCollectorBalance)
+	suite.Require().Equal(math.NewInt(0), feeCollectorBalance)
 
 	res, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 	suite.Require().NoError(err)
 	suite.Require().NotEmpty(res.GetNewTokenDenom())
 
 	balance = suite.WalletBalance(suite.ChainA.GetContext(), suite.TestAccs[0].String())
-	suite.Require().Equal(sdk.NewInt(0), balance)
+	suite.Require().Equal(math.NewInt(0), balance)
 
 	feeCollectorBalance = suite.WalletBalance(suite.ChainA.GetContext(), FeeCollectorAddress)
-	suite.Require().Equal(sdk.NewInt(TopUpCoinsAmount), feeCollectorBalance)
+	suite.Require().Equal(math.NewInt(TopUpCoinsAmount), feeCollectorBalance)
 
 	// Make sure that the admin is set correctly
 	denom := strings.Split(res.GetNewTokenDenom(), "/")

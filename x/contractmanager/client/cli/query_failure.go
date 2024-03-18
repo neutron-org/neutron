@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -86,7 +87,8 @@ func CmdFailureDetails() *cobra.Command {
 				fmt.Sprintf("%s.%s='%s'", wasmtypes.EventTypeSudo, wasmtypes.AttributeKeyContractAddr, address),
 				fmt.Sprintf("%s.%s='%d'", wasmtypes.EventTypeSudo, contractmanagertypes.AttributeKeySudoFailureID, failureID),
 			}
-			result, err := tx.QueryTxsByEvents(clientCtx, searchEvents, 1, 1, "") // only a single tx for a pair address+failure_id is expected
+			// TODO: search events
+			result, err := tx.QueryTxsByEvents(clientCtx, 1, 1, strings.Join(searchEvents, ","), "") // only a single tx for a pair address+failure_id is expected
 			if err != nil {
 				return err
 			}

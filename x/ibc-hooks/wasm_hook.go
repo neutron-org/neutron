@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/math"
+
 	"github.com/neutron-org/neutron/v3/x/ibc-hooks/utils"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	"github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
 )
@@ -87,7 +89,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 		return ack
 	}
 
-	amount, ok := sdk.NewIntFromString(data.GetAmount())
+	amount, ok := math.NewIntFromString(data.GetAmount())
 	if !ok {
 		// This should never happen, as it should've been caught in the underlaying call to OnRecvPacket,
 		// but returning here for completeness

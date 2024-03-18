@@ -42,12 +42,12 @@ func ParseSdkIntFromString(s, separator string) ([]math.Int, error) {
 	return parsedInts, nil
 }
 
-func ParseSdkDecFromString(s, separator string) ([]sdk.Dec, error) {
-	var parsedDec []sdk.Dec
+func ParseSdkDecFromString(s, separator string) ([]math.LegacyDec, error) {
+	var parsedDec []math.LegacyDec
 	for _, weightStr := range strings.Split(s, separator) {
 		weightStr = strings.TrimSpace(weightStr)
 
-		parsed, err := sdk.NewDecFromStr(weightStr)
+		parsed, err := math.LegacyNewDecFromStr(weightStr)
 		if err != nil {
 			return parsedDec, err
 		}
