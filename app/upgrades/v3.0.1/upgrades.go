@@ -26,6 +26,10 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
 
+// CreateUpgradeHandler is an upgrade major version 2 -> 3
+// Upgrade v3.0.0 was applied on pion-1 chain and later renamed to v3.0.1
+// Upgrade v3.0.1 is in a nutshell the same v3.0.0 but with additional storage migrations
+// specially for neutron-1 chain - setICSParams and removeDiscrepancies
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
