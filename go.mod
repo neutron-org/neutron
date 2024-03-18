@@ -25,7 +25,7 @@ require (
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/v8 v8.1.0
 	github.com/cosmos/ics23/go v0.10.0
-	github.com/cosmos/interchain-security/v4 v4.0.0
+	github.com/cosmos/interchain-security/v5 v5.0.0-alpha1
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
@@ -42,7 +42,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a
 	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917
 	google.golang.org/grpc v1.61.1
@@ -220,7 +220,6 @@ replace (
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.1-0.20240222150313-41be244e33e8
 	github.com/cosmos/cosmos-sdk => ../cosmos-sdk
 	//github.com/cosmos/gaia/v11 => github.com/reecepbcups/globalfee v0.0.1-alpha.2
-	github.com/cosmos/interchain-security/v4 => ../interchain-security
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )

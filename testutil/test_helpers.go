@@ -13,7 +13,7 @@ import (
 	db2 "github.com/cosmos/cosmos-db"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -22,21 +22,21 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
-	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
+	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
 	appparams "github.com/neutron-org/neutron/v3/app/params"
 	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	appProvider "github.com/cosmos/interchain-security/v4/app/provider"
-	e2e "github.com/cosmos/interchain-security/v4/testutil/integration"
+	appProvider "github.com/cosmos/interchain-security/v5/app/provider"
+	e2e "github.com/cosmos/interchain-security/v5/testutil/integration"
 
 	"github.com/neutron-org/neutron/v3/app"
 	ictxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 
-	providertypes "github.com/cosmos/interchain-security/v4/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	cmttypes "github.com/cometbft/cometbft/types"
 )

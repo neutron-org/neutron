@@ -7,7 +7,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
@@ -18,7 +18,7 @@ import (
 
 	"github.com/neutron-org/neutron/v3/app/params"
 
-	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

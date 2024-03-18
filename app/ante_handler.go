@@ -13,8 +13,8 @@ import (
 	// globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	consumerante "github.com/cosmos/interchain-security/v4/app/consumer/ante"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
+	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
+	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 )
