@@ -549,6 +549,22 @@ func (s *DexTestSuite) TestSwapExhaustsLOAndLP() {
 	s.AssertNEventValuesEmitted(types.TickUpdateEventKey, 6)
 }
 
+func (s *DexTestSuite) TestSwapExpensiveToCheapFails() {
+	// GIVEN 100 tokenB LP @ tick -110001 fee 1
+	s.addDeposit(NewDeposit(0, 100, -110001, 1))
+
+	// WHEN swap 100 of tokenA
+	// tokenIn, tokenOut := s.swapSuccess("TokenA", "TokenB", 1)
+	tokenIn, tokenOut, _, err := s.swapInt("TokenA", "TokenB", sdk.NewInt(1))
+	// TODO: this swap should indeed return the error since we have 0TokenA to swap!
+	s.Assert().NoError(err)
+
+	// TODO: THEN swap should return TODO BIGTokenA in and ~TODO BIGTokenB out
+	s.Assert().Equal("TokenA", tokenIn.Denom)
+	s.Assert().Equal("TokenB", tokenOut.Denom)
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(0), tokenOut, sdkmath.NewInt(59841))
+}
+
 // Test helpers ///////////////////////////////////////////////////////////////
 
 func (s *DexTestSuite) addDeposit(deposit *Deposit) {
