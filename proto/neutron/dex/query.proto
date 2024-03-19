@@ -69,13 +69,13 @@ service Query {
   // Queries a InactiveLimitOrderTranche by index.
   rpc InactiveLimitOrderTranche(QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
     option (google.api.http).get =
-      "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/"
+      "/neutron/dex/inactive_limit_order_tranche/{pair_id}/{token_in}/"
       "{tick_index}/{tranche_key}";
   }
 
   // Queries a list of InactiveLimitOrderTranche items.
   rpc InactiveLimitOrderTrancheAll(QueryAllInactiveLimitOrderTrancheRequest) returns (QueryAllInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche";
+    option (google.api.http).get = "/neutron/dex/inactive_limit_order_tranche";
   }
 
   // Queries a list of PoolReserves items.
