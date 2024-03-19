@@ -132,8 +132,8 @@ func TestLimitOrderTrancheUserAllByAddress(t *testing.T) {
 	address := sample.AccAddress()
 	msgs := createNLimitOrderTrancheUserWithAddress(keeper, ctx, address, 5)
 
-	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllUserLimitOrdersRequest {
-		return &types.QueryAllUserLimitOrdersRequest{
+	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllLimitOrderTrancheUserByAddressRequest {
+		return &types.QueryAllLimitOrderTrancheUserByAddressRequest{
 			Address: address,
 			Pagination: &query.PageRequest{
 				Key:        next,
