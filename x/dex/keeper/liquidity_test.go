@@ -600,26 +600,6 @@ func (s *DexTestSuite) swapInt(
 	)
 }
 
-func (s *DexTestSuite) swapIntFails(
-	targetErr error,
-	tokenIn string,
-	tokenOut string,
-	maxAmountIn sdkmath.Int,
-) {
-	tradePairID, err := types.NewTradePairID(tokenIn, tokenOut)
-	s.Assert().NoError(err)
-	coinIn, coinOut, _, err := s.App.DexKeeper.Swap(
-		s.Ctx,
-		tradePairID,
-		maxAmountIn,
-		nil,
-		nil,
-	)
-	s.Assert().Equal(coinIn, sdk.Coin{})
-	s.Assert().Equal(coinOut, sdk.Coin{})
-	s.ErrorIs(err, targetErr)
-}
-
 func (s *DexTestSuite) swapSuccess(
 	tokenIn string,
 	tokenOut string,

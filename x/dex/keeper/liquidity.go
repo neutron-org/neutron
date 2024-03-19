@@ -123,16 +123,3 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 		panic("Invalid liquidity type")
 	}
 }
-
-func isUnfairTruePrice(
-	maxTrueTakerSpread math_utils.PrecDec,
-	inAmount, outAmount math.Int,
-	liq types.Liquidity,
-) bool {
-	bookPrice := liq.Price()
-	truePrice := math_utils.NewPrecDecFromInt(outAmount).QuoInt(inAmount)
-	priceDiffFromExpected := truePrice.Sub(bookPrice)
-	pctDiff := priceDiffFromExpected.Quo(bookPrice)
-
-	return pctDiff.GT(maxTrueTakerSpread)
-}

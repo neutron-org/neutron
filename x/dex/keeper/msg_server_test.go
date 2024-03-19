@@ -72,11 +72,11 @@ func (s *DexTestSuite) SetupTest() {
 // Fund accounts
 
 func (s *DexTestSuite) fundAccountBalancesInt(account sdk.AccAddress, aBalance, bBalance sdkmath.Int) {
-
 	balances := sdk.NewCoins(testutils.NewACoin(aBalance), testutils.NewBCoin(bBalance))
 
 	testutils.FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
 }
+
 func (s *DexTestSuite) fundAccountBalances(account sdk.AccAddress, aBalance, bBalance int64) {
 	aBalanceInt := sdkmath.NewInt(aBalance).Mul(denomMultiple)
 	bBalanceInt := sdkmath.NewInt(bBalance).Mul(denomMultiple)
