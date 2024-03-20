@@ -184,9 +184,4 @@ var (
 		1153,
 		"Can only provide a single deposit amount for each tick, fee pair",
 	)
-	ErrSwapAmountTooSmall = sdkerrors.Register(
-		ModuleName,
-		1154,
-		"Swap amount too small; creates unfair spread for liquidity providers",
-	)
 )

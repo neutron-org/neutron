@@ -149,7 +149,8 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *m
 	}
 	outAmount = utils.MinIntArr(possibleOutAmounts)
 
-	inAmount = math_utils.NewPrecDecFromInt(outAmount).Quo(t.PriceTakerToMaker).TruncateInt()
+	// TODO: make sure its not possible for inAmount> maxAmountTakerIn
+	inAmount = math_utils.NewPrecDecFromInt(outAmount).Quo(t.PriceTakerToMaker).Ceil().TruncateInt()
 
 	*fillTokenIn = fillTokenIn.Add(inAmount)
 	*totalTokenIn = totalTokenIn.Add(inAmount)

@@ -98,6 +98,7 @@ func (p *Pool) Swap(
 	amountMakerOut = utils.MinIntArr(possibleAmountsMakerOut)
 	amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
 		Quo(makerReserves.PriceTakerToMaker).
+		Ceil().
 		TruncateInt()
 
 	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
