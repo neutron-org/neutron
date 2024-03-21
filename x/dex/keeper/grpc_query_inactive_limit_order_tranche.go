@@ -26,7 +26,7 @@ func (k Keeper) InactiveLimitOrderTrancheAll(
 	store := ctx.KVStore(k.storeKey)
 	inactiveLimitOrderTrancheStore := prefix.NewStore(store, types.KeyPrefix(types.InactiveLimitOrderTrancheKeyPrefix))
 
-	pageRes, err := query.Paginate(inactiveLimitOrderTrancheStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(inactiveLimitOrderTrancheStore, req.Pagination, func(_, value []byte) error {
 		inactiveLimitOrderTranche := &types.LimitOrderTranche{}
 		if err := k.cdc.Unmarshal(value, inactiveLimitOrderTranche); err != nil {
 			return err
