@@ -71,12 +71,16 @@ func (s *DexTestSuite) SetupTest() {
 
 // Fund accounts
 
+func (s *DexTestSuite) fundAccountBalancesInt(account sdk.AccAddress, aBalance, bBalance sdkmath.Int) {
+	balances := sdk.NewCoins(testutils.NewACoin(aBalance), testutils.NewBCoin(bBalance))
+
+	testutils.FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
+}
+
 func (s *DexTestSuite) fundAccountBalances(account sdk.AccAddress, aBalance, bBalance int64) {
 	aBalanceInt := sdkmath.NewInt(aBalance).Mul(denomMultiple)
 	bBalanceInt := sdkmath.NewInt(bBalance).Mul(denomMultiple)
-	balances := sdk.NewCoins(testutils.NewACoin(aBalanceInt), testutils.NewBCoin(bBalanceInt))
-
-	testutils.FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
+	s.fundAccountBalancesInt(account, aBalanceInt, bBalanceInt)
 	s.assertAccountBalances(account, aBalance, bBalance)
 }
 
@@ -374,10 +378,10 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	account sdk.AccAddress,
 	tokenIn string,
 	tick, amountIn int,
-	maxAmoutOut int,
+	maxAmountOut int,
 ) string {
 	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
-	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut)).Mul(denomMultiple)
+	maxAmountOutInt := sdkmath.NewInt(int64(maxAmountOut)).Mul(denomMultiple)
 
 	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
@@ -677,7 +681,7 @@ func (s *DexTestSuite) assertDepositFails(
 }
 
 func (s *DexTestSuite) assertDepositReponse(
-	depositResponse, expectedDepositResponse DepositReponse,
+	depositResponse, expectedDepositResponse DepositResponse,
 ) {
 	for i := range expectedDepositResponse.amountsA {
 		s.Assert().Equal(
@@ -693,7 +697,7 @@ func (s *DexTestSuite) assertDepositReponse(
 	}
 }
 
-type DepositReponse struct {
+type DepositResponse struct {
 	amountsA []sdkmath.Int
 	amountsB []sdkmath.Int
 }

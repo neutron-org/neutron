@@ -15,7 +15,6 @@ func (k Keeper) Swap(
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
-	params := k.GetParams(ctx)
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math.Int
 	if useMaxOut {
@@ -27,7 +26,7 @@ func (k Keeper) Swap(
 	totalMakerDenom := math.ZeroInt()
 	orderFilled = false
 
-	// verify that amount left is not zero and that there are additional valid ticks to check
+	// verify that there are additional valid ticks to check
 	liqIter := k.NewLiquidityIterator(ctx, tradePairID)
 	defer liqIter.Close()
 	for {
@@ -43,20 +42,12 @@ func (k Keeper) Swap(
 
 		inAmount, outAmount := liq.Swap(remainingTakerDenom, remainingMakerDenom)
 
-		// If (due to rounding) the actual price given to the maker is demonstrably unfair
-		// we do not save the results of the swap and we exit.
-		// While the decrease in price quality for the maker is semi-linear with the amount
-		// being swapped, it is possible that the next swap could yield a "fair" price.
-		// Nonethless, once the remainingTakerDenom gets small enough to start causing unfair swaps
-		// it is much simpler to just abort.
-		if inAmount.IsZero() || isUnfairTruePrice(params.MaxTrueTakerSpread, inAmount, outAmount, liq) {
-			// If they've already swapped just end the swap
-			if remainingTakerDenom.LT(maxAmountTakerDenom) {
-				break
-			}
-			// If they have not swapped anything return informative error
-			return sdk.Coin{}, sdk.Coin{}, false, types.ErrSwapAmountTooSmall
-		}
+		// NOTE: it is possible for inAmount to be 0 and outAmount > 0.
+		// While giving free tokens is a bit weird, this is the optimal behavior.
+		// Allowing dust to remain in the dex increases gas prices and opens up a DOS vector.
+		// Rounding in favor of makers in this case, only incentivizes this same DOS attack.
+		// So the only reasonable option is to round in favor of the taker.
+
 		k.SaveLiquidity(ctx, liq)
 
 		remainingTakerDenom = remainingTakerDenom.Sub(inAmount)
@@ -69,8 +60,10 @@ func (k Keeper) Swap(
 		// NOTE: In theory this check should be: price * remainingTakerDenom < 1
 		// but due to rounding and inaccuracy of fixed decimal math, it is possible
 		// for liq.swap to use the full the amount of taker liquidity and have a leftover
-		// amount amount of the taker Denom > than 1 token worth of maker denom
-		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
+		// There is also special check that if one in token left, order considered filled
+		// to avoid bug when swap rounding always leaves 1 token unswapped.
+
+		if remainingTakerDenom.LTE(math.OneInt()) || liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
 		}
@@ -113,6 +106,7 @@ func (k Keeper) SwapWithCache(
 		limitPrice,
 	)
 
+	// TODO: should we check for err != nil before writeCache() call?
 	writeCache()
 
 	return totalIn, totalOut, orderFilled, err
@@ -128,17 +122,4 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 	default:
 		panic("Invalid liquidity type")
 	}
-}
-
-func isUnfairTruePrice(
-	maxTrueTakerSpread math_utils.PrecDec,
-	inAmount, outAmount math.Int,
-	liq types.Liquidity,
-) bool {
-	bookPrice := liq.Price()
-	truePrice := math_utils.NewPrecDecFromInt(outAmount).QuoInt(inAmount)
-	priceDiffFromExpected := truePrice.Sub(bookPrice)
-	pctDiff := priceDiffFromExpected.Quo(bookPrice)
-
-	return pctDiff.GT(maxTrueTakerSpread)
 }
