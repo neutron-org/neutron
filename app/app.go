@@ -29,7 +29,7 @@ import (
 	v044 "github.com/neutron-org/neutron/v3/app/upgrades/v0.4.4"
 	v200 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.0"
 	v202 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.2"
-	v300 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.0"
+	v301 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.1"
 
 	"github.com/neutron-org/neutron/v3/x/cron"
 
@@ -183,7 +183,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v300.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v301.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -1134,6 +1134,8 @@ func (app *App) setupUpgradeHandlers() {
 				&upgrades.UpgradeKeepers{
 					AccountKeeper:       app.AccountKeeper,
 					FeeBurnerKeeper:     app.FeeBurnerKeeper,
+					BankKeeper:          app.BankKeeper,
+					TransferKeeper:      app.TransferKeeper.Keeper,
 					CronKeeper:          app.CronKeeper,
 					IcqKeeper:           app.InterchainQueriesKeeper,
 					TokenFactoryKeeper:  app.TokenFactoryKeeper,
