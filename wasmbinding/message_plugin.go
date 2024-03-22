@@ -541,7 +541,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
 	var (
 		msg    *admintypes.MsgSubmitProposal
-		sdkMsg sdk.LegacyMsg
+		sdkMsg sdk.Msg
 	)
 
 	cdc := m.AdminKeeper.Codec()
@@ -550,11 +550,11 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
 	}
 
-	signers := sdkMsg.GetSigners()
+	signers, _, err := cdc.GetMsgV1Signers(sdkMsg)
 	if len(signers) != 1 {
 		return nil, errors.Wrap(sdkerrors.ErrorInvalidSigner, "should be 1 signer")
 	}
-	if !signers[0].Equals(authority) {
+	if !sdk.AccAddress(signers[0]).Equals(authority) {
 		return nil, errors.Wrap(sdkerrors.ErrUnauthorized, "authority in incoming msg is not equal to admin module")
 	}
 

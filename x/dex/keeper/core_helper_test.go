@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
@@ -29,7 +30,7 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 
 func (s *CoreHelpersTestSuite) SetupTest() {
 	app := testutil.Setup(s.T())
-	ctx := app.(*neutronapp.App).BaseApp.NewContext(false)
+	ctx := app.(*neutronapp.App).BaseApp.NewUncachedContext(false, cmtproto.Header{})
 
 	accAlice := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accAlice)

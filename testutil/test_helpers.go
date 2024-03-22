@@ -62,7 +62,7 @@ var (
 
 func init() {
 	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	// app.GetDefaultConfig()
+	app.GetDefaultConfig()
 }
 
 type IBCConnectionTestSuite struct {
@@ -136,6 +136,7 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
 	}
 
+	ct := suite.ChainProvider.GetContext()
 	// move chains to the next block
 	suite.ChainProvider.NextBlock()
 	suite.ChainA.NextBlock()
@@ -144,14 +145,14 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper.
 	prop1 := GetTestConsumerAdditionProp(suite.ChainA)
 	err := providerKeeper.CreateConsumerClient(
-		suite.ChainProvider.GetContext(),
+		ct,
 		prop1,
 	)
 	suite.Require().NoError(err)
 
 	prop2 := GetTestConsumerAdditionProp(suite.ChainB)
 	err = providerKeeper.CreateConsumerClient(
-		suite.ChainProvider.GetContext(),
+		ct,
 		prop2,
 	)
 	suite.Require().NoError(err)

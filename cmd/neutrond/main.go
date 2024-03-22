@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	config := app.GetDefaultConfig()
-	config.Seal()
+	app.GetDefaultConfig()
+	//config.Seal()
 
 	rootCmd, _ := NewRootCmd()
 

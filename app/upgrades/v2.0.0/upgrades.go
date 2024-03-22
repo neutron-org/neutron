@@ -99,13 +99,6 @@ func CreateUpgradeHandler(
 		//	return vm, err
 		//}
 
-		ctx.Logger().Info("Updating ccv reward denoms...")
-		err = migrateRewardDenoms(ctx, keepers)
-		if err != nil {
-			ctx.Logger().Error("failed to update reward denoms", "err", err)
-			return vm, err
-		}
-
 		ctx.Logger().Info("migrating adminmodule...")
 		err = migrateAdminModule(ctx, keepers)
 		if err != nil {
@@ -264,6 +257,10 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Migrating reword denoms...")
 
+	keepers.CcvConsumerSubspace.IterateKeys(ctx, func(key []byte) bool {
+		fmt.Println(key)
+		return false
+	})
 	if !keepers.CcvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms) {
 		return fmt.Errorf("key_reward_denoms param not found")
 	}
