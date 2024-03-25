@@ -62,6 +62,7 @@ sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' "$CHAIN_DIR/config
 sed -i -e 's/index_all_keys = false/index_all_keys = true/g' "$CHAIN_DIR/config/config.toml"
 sed -i -e 's/enable = false/enable = true/g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's/swagger = false/swagger = true/g' "$CHAIN_DIR/config/app.toml"
+sed -i -e "s/minimum-gas-prices = \"\"/minimum-gas-prices = \"0.0025$STAKEDENOM,0.0025ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2\"/g" "$CHAIN_DIR/config/app.toml"
 sed -i -e 's/enabled = false/enabled = true/g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' "$CHAIN_DIR/config/app.toml"
 
