@@ -9,12 +9,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	// globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	globalfeeante "github.com/neutron-org/neutron/v3/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 )
@@ -26,6 +26,7 @@ type HandlerOptions struct {
 
 	IBCKeeper             *ibckeeper.Keeper
 	ConsumerKeeper        ibcconsumerkeeper.Keeper
+	GlobalFeeKeeper       globalfeekeeper.Keeper
 	WasmConfig            *wasmTypes.WasmConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 
@@ -33,9 +34,6 @@ type HandlerOptions struct {
 	AuctionKeeper auctionkeeper.Keeper
 	TxEncoder     sdk.TxEncoder
 	MEVLane       auctionante.MEVLane
-
-	// globalFee
-	GlobalFeeSubspace paramtypes.Subspace
 }
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
@@ -54,9 +52,6 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	if options.TXCounterStoreService == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "tx counter store service is required for ante builder")
 	}
-	//if options.GlobalFeeSubspace.Name() == "" {
-	//	return nil, errors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
-	//}
 	if options.MEVLane == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "mev lane is required for AnteHandler")
 	}
@@ -80,7 +75,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		// In this case you should be sure that you
 		// implemented upgrade to set default `ParamStoreKeyMinGasPrices` global fee param with at least one record
 		// otherwise you will get panic
-		// globalfeeante.NewFeeDecorator(nil, options.GlobalFeeSubspace, nil),
+		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
