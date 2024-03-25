@@ -9,8 +9,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
-
 	"github.com/neutron-org/neutron/v3/app/params"
 
 	storetypes "cosmossdk.io/store/types"
@@ -253,31 +251,6 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 //
 //	return nil
 //}
-
-func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
-	ctx.Logger().Info("Migrating reword denoms...")
-
-	keepers.CcvConsumerSubspace.IterateKeys(ctx, func(key []byte) bool {
-		fmt.Println(key)
-		return false
-	})
-	if !keepers.CcvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms) {
-		return fmt.Errorf("key_reward_denoms param not found")
-	}
-
-	var denoms []string
-	keepers.CcvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denoms)
-
-	// add new axlr usdc denom
-	axlrDenom := "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
-	denoms = append(denoms, axlrDenom)
-
-	keepers.CcvConsumerSubspace.Set(ctx, ccv.KeyRewardDenoms, &denoms)
-
-	ctx.Logger().Info("Finished migrating reward denoms")
-
-	return nil
-}
 
 func migrateAdminModule(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
 	ctx.Logger().Info("Migrating admin module...")

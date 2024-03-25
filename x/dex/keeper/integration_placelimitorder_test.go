@@ -642,8 +642,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpires() {
 	s.assertAliceBalances(10, 0)
 }
 
-//TODO: enable test, the reason why i've disabled it, i can not omit endblocker run
-
 func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpiresNotPurged() {
 	// This is testing the case where the limitOrder has expired but has not yet been purged
 	s.fundAliceBalances(10, 0)

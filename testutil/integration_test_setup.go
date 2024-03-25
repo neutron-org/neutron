@@ -98,19 +98,6 @@ func SetupWithGenesisValSet(
 		},
 	)
 
-	// commit genesis changes
-	//if _, err := app.Commit(); err != nil {
-	//	panic(err)
-	//}
-
-	//TODO: app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-	//	Height:             app.LastBlockHeight() + 1,
-	//	AppHash:            app.LastCommitID().Hash,
-	//	ValidatorsHash:     valSet.Hash(),
-	//	NextValidatorsHash: valSet.Hash(),
-	//	ChainID:            chainID,
-	//}})
-
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{
 		Height:             app.LastBlockHeight() + 1,
 		Time:               time.Now(),
