@@ -48,13 +48,6 @@ func (s *IntegrationTestSuite) SetupTestGlobalFeeStoreAndMinGasPrice(minGasPrice
 	s.app.GlobalFeeKeeper.SetParams(s.ctx, *globalFeeParams)
 	s.ctx = s.ctx.WithMinGasPrices(minGasPrice).WithIsCheckTx(true)
 
-	// setup staking bond denom to "uatom"
-	// since it's "stake" per default
-	//params := s.app.StakingKeeper.GetParams(s.ctx)
-	//params.BondDenom = testBondDenom
-	//err := s.app.StakingKeeper.SetParams(s.ctx, params)
-	//s.Require().NoError(err)
-
 	// build fee decorator
 	feeDecorator := gaiafeeante.NewFeeDecorator(s.app.GlobalFeeKeeper)
 

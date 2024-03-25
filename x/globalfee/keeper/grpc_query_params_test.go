@@ -1,20 +1,22 @@
 package keeper_test
 
 import (
+	"cosmossdk.io/math"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"testing"
 
 	testkeeper "github.com/neutron-org/neutron/v3/testutil/globalfee/keeper"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v3/x/globalfee/types"
 )
 
 func TestParamsQuery(t *testing.T) {
-	keeper, ctx := testkeeper.CronKeeper(t, nil, nil)
-	wctx := sdk.WrapSDKContext(ctx)
+	keeper, ctx := testkeeper.GLobalFeeKeeper(t)
+	wctx := ctx
 	params := types.DefaultParams()
+	params.MinimumGasPrices = sdktypes.NewDecCoins(sdktypes.NewDecCoin("untrn", math.NewInt(1)))
 	err := keeper.SetParams(ctx, params)
 	require.NoError(t, err)
 
