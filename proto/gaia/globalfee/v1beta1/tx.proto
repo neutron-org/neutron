@@ -12,6 +12,8 @@ option go_package = "github.com/neutron-org/neutron/v3/x/globalfee/types";
 
 // Msg defines the Msg service.
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+  
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
