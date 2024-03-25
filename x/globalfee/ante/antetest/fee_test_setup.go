@@ -1,6 +1,7 @@
 package antetest
 
 import (
+	"github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/neutron-org/neutron/v3/testutil"
 
 	"github.com/stretchr/testify/suite"
@@ -15,7 +16,6 @@ import (
 
 	neutronapp "github.com/neutron-org/neutron/v3/app"
 	gaiaparams "github.com/neutron-org/neutron/v3/app/params"
-	"github.com/neutron-org/neutron/v3/x/globalfee"
 	gaiafeeante "github.com/neutron-org/neutron/v3/x/globalfee/ante"
 	globfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 )
@@ -33,8 +33,8 @@ var testBondDenom = "uatom"
 
 func (s *IntegrationTestSuite) SetupTest() {
 	neutronapp.GetDefaultConfig()
-	app := testutil.Setup(s.T())
-	ctx := app.GetBaseApp().NewContext(false)
+	s.app = testutil.Setup(s.T()).(*neutronapp.App)
+	ctx := s.app.GetBaseApp().NewUncachedContext(false, types.Header{})
 
 	encodingConfig := gaiaparams.MakeEncodingConfig()
 	encodingConfig.Amino.RegisterConcrete(&testdata.TestMsg{}, "testdata.TestMsg", nil)
@@ -45,8 +45,7 @@ func (s *IntegrationTestSuite) SetupTest() {
 }
 
 func (s *IntegrationTestSuite) SetupTestGlobalFeeStoreAndMinGasPrice(minGasPrice []sdk.DecCoin, globalFeeParams *globfeetypes.Params) (gaiafeeante.FeeDecorator, sdk.AnteHandler) {
-	subspace := s.app.GetSubspace(globalfee.ModuleName)
-	subspace.SetParamSet(s.ctx, globalFeeParams)
+	s.app.GlobalFeeKeeper.SetParams(s.ctx, *globalFeeParams)
 	s.ctx = s.ctx.WithMinGasPrices(minGasPrice).WithIsCheckTx(true)
 
 	// setup staking bond denom to "uatom"
@@ -57,7 +56,7 @@ func (s *IntegrationTestSuite) SetupTestGlobalFeeStoreAndMinGasPrice(minGasPrice
 	//s.Require().NoError(err)
 
 	// build fee decorator
-	feeDecorator := gaiafeeante.NewFeeDecorator(subspace)
+	feeDecorator := gaiafeeante.NewFeeDecorator(s.app.GlobalFeeKeeper)
 
 	// chain fee decorator to antehandler
 	antehandler := sdk.ChainAnteDecorators(feeDecorator)
@@ -94,6 +93,7 @@ func (s *IntegrationTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums
 			ChainID:       chainID,
 			AccountNumber: accNums[i],
 			Sequence:      accSeqs[i],
+			PubKey:        priv.PubKey(),
 		}
 		sigV2, err := tx.SignWithPrivKey(
 			s.ctx,

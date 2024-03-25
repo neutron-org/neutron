@@ -3,6 +3,8 @@ package app
 import (
 	"fmt"
 	nextupgrade "github.com/neutron-org/neutron/v3/app/upgrades/NextUpgrade"
+	"github.com/neutron-org/neutron/v3/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 	"io"
 	"io/fs"
 	"net/http"
@@ -16,8 +18,8 @@ import (
 	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
-	"github.com/cosmos/interchain-security/v4/testutil/integration"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	"github.com/cosmos/interchain-security/v5/testutil/integration"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -147,9 +149,9 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 
-	ccvconsumer "github.com/cosmos/interchain-security/v4/x/ccv/consumer"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	storetypes "cosmossdk.io/store/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
@@ -165,6 +167,7 @@ import (
 	ibcswapkeeper "github.com/neutron-org/neutron/v3/x/ibcswap/keeper"
 	ibcswaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
 
+	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 	gmpmiddleware "github.com/neutron-org/neutron/v3/x/gmp"
 
 	// Block-sdk imports
@@ -232,7 +235,7 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		auction.AppModuleBasic{},
-		// globalfee.AppModule{},
+		globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
 	)
@@ -318,6 +321,7 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
+	GlobalFeeKeeper     globalfeekeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -399,6 +403,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
+		globalfeetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -543,6 +548,8 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
+
+	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 
 	// PFMKeeper must be created before TransferKeeper
 	app.PFMKeeper = pfmkeeper.NewKeeper(
@@ -1356,7 +1363,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
 
-	// paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
+	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 

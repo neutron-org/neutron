@@ -158,7 +158,7 @@ func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 func (am AppModule) BeginBlock(_ sdk.Context) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
-	am.keeper.ExecuteReadySchedules(ctx)
-	return []abci.ValidatorUpdate{}
+func (am AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
+	am.keeper.ExecuteReadySchedules(sdk.UnwrapSDKContext(ctx))
+	return []abci.ValidatorUpdate{}, nil
 }

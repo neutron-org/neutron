@@ -3,6 +3,7 @@ package globalfee
 import (
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
+	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 	"testing"
 	"time"
 
@@ -129,8 +130,8 @@ func TestInitExportGenesis(t *testing.T) {
 	}
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
-			ctx, encCfg, subspace := setupTestStore(t)
-			m := NewAppModule(subspace)
+			ctx, encCfg, subspace, keeper, globalfeestore := setupTestStore(t)
+			m := NewAppModule(keeper, subspace, encCfg.Marshaler, globalfeestore)
 			m.InitGenesis(ctx, encCfg.Marshaler, []byte(spec.src))
 			gotJSON := m.ExportGenesis(ctx, encCfg.Marshaler)
 			var got types.GenesisState
@@ -140,14 +141,16 @@ func TestInitExportGenesis(t *testing.T) {
 	}
 }
 
-func setupTestStore(t *testing.T) (sdk.Context, gaiaparams.EncodingConfig, paramstypes.Subspace) {
+func setupTestStore(t *testing.T) (sdk.Context, gaiaparams.EncodingConfig, paramstypes.Subspace, globalfeekeeper.Keeper, *storetypes.KVStoreKey) {
 	t.Helper()
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics2.NewNoOpMetrics())
 	encCfg := gaiaparams.MakeEncodingConfig()
 	keyParams := storetypes.NewKVStoreKey(paramstypes.StoreKey)
+	globalfeeKeyStore := storetypes.NewKVStoreKey(types.StoreKey)
 	tkeyParams := storetypes.NewTransientStoreKey(paramstypes.TStoreKey)
 	ms.MountStoreWithDB(keyParams, storetypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(globalfeeKeyStore, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, storetypes.StoreTypeTransient, db)
 	require.NoError(t, ms.LoadLatestVersion())
 
@@ -162,5 +165,6 @@ func setupTestStore(t *testing.T) (sdk.Context, gaiaparams.EncodingConfig, param
 		tkeyParams,
 		paramstypes.ModuleName,
 	)
-	return ctx, encCfg, subspace
+	keeper := globalfeekeeper.NewKeeper(encCfg.Marshaler, globalfeeKeyStore, "")
+	return ctx, encCfg, subspace, keeper, globalfeeKeyStore
 }

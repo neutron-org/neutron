@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"time"
 
 	log2 "cosmossdk.io/log"
 	"cosmossdk.io/store"
@@ -37,12 +38,10 @@ type KeeperTestHelper struct {
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *KeeperTestHelper) Setup() {
 	s.App = testutil.Setup(s.T()).(*app.App)
-	ctx := s.App.GetBaseApp().NewContext(
-		false,
-	)
+	ctx := s.App.GetBaseApp().NewUncachedContext(false, tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()})
 	s.Ctx = ctx.WithBlockGasMeter(types.NewInfiniteGasMeter())
 
-	s.GoCtx = sdk.WrapSDKContext(s.Ctx)
+	s.GoCtx = s.Ctx
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,

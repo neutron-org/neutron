@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -32,7 +33,7 @@ func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, 
 func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	app := testutil.Setup(t)
 	keeper := app.(*neutronapp.App).DexKeeper
-	ctx := app.(*neutronapp.App).BaseApp.NewContext(false)
+	ctx := app.(*neutronapp.App).BaseApp.NewUncachedContext(false, tmproto.Header{})
 	wctx := sdk.WrapSDKContext(ctx)
 	addr := sdk.AccAddress("test_addr")
 	msgs := []*types.DepositRecord{

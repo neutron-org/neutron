@@ -2,6 +2,8 @@
 package keeper_test
 
 import (
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/stretchr/testify/require"
 	"math"
 	"testing"
 	"time"
@@ -1573,6 +1575,15 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 	newCtx := s.Ctx.WithBlockTime(blockTime)
 	s.Ctx = newCtx
 	s.GoCtx = newCtx
+	_, err := s.App.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height: s.App.LastBlockHeight() + 1,
+		Time:   blockTime,
+		//NextValidatorsHash: s.App.GetValidatorSet(s.Ctx).,
+	})
+	require.NoError(s.T(), err)
+
+	_, err = s.App.Commit()
+	require.NoError(s.T(), err)
 	//TODO: s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
 	//	Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
 	//	Time: blockTime,

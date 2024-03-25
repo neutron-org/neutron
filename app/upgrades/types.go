@@ -11,7 +11,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"

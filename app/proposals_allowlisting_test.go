@@ -6,7 +6,7 @@ import (
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
-	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
+	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v3/app"

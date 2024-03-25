@@ -12,10 +12,10 @@ import (
 
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 
-	icstestingutils "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
-	icstestutil "github.com/cosmos/interchain-security/v4/testutil/integration"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	icstestingutils "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
+	icstestutil "github.com/cosmos/interchain-security/v5/testutil/integration"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 	"github.com/stretchr/testify/suite"
 
 	appparams "github.com/neutron-org/neutron/v3/app/params"

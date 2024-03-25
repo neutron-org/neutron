@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	"github.com/neutron-org/neutron/v3/app/params"
 
@@ -98,13 +98,6 @@ func CreateUpgradeHandler(
 		//	ctx.Logger().Error("failed to migrate GlobalFees", "err", err)
 		//	return vm, err
 		//}
-
-		ctx.Logger().Info("Updating ccv reward denoms...")
-		err = migrateRewardDenoms(ctx, keepers)
-		if err != nil {
-			ctx.Logger().Error("failed to update reward denoms", "err", err)
-			return vm, err
-		}
 
 		ctx.Logger().Info("migrating adminmodule...")
 		err = migrateAdminModule(ctx, keepers)
@@ -264,6 +257,10 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Migrating reword denoms...")
 
+	keepers.CcvConsumerSubspace.IterateKeys(ctx, func(key []byte) bool {
+		fmt.Println(key)
+		return false
+	})
 	if !keepers.CcvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms) {
 		return fmt.Errorf("key_reward_denoms param not found")
 	}

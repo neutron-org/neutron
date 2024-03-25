@@ -7,8 +7,6 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
-
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
@@ -17,8 +15,6 @@ import (
 	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
 	"github.com/neutron-org/neutron/v3/app/params"
-
-	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -109,37 +105,6 @@ func (suite *UpgradeTestSuite) SetupTest() {
 //	suite.Require().Equal(requiredTotalBypassMinFeeMsgGasUsage, actualTotalBypassMinFeeMsgGasUsage)
 //}
 
-func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
-	var (
-		app                 = suite.GetNeutronZoneApp(suite.ChainA)
-		ccvConsumerSubspace = app.GetSubspace(ccvconsumertypes.ModuleName)
-		ctx                 = suite.ChainA.GetContext()
-	)
-
-	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms))
-
-	// emulate mainnet/testnet state
-	ccvConsumerSubspace.Set(ctx, ccv.KeyRewardDenoms, &[]string{params.DefaultDenom})
-
-	var denomsBefore []string
-	ccvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denomsBefore)
-	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
-
-	upgrade := upgradetypes.Plan{
-		Name:   v200.UpgradeName,
-		Info:   "some text here",
-		Height: 100,
-	}
-	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
-
-	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms))
-
-	var denoms []string
-	ccvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denoms)
-	requiredDenoms := []string{params.DefaultDenom, "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"}
-	suite.Require().Equal(requiredDenoms, denoms)
-}
-
 func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	var (
 		app = suite.GetNeutronZoneApp(suite.ChainA)
@@ -158,7 +123,8 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 		Info:   "some text here",
 		Height: 100,
 	}
-	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	err = app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	suite.Require().NoError(err)
 
 	id, err := app.AdminmoduleKeeper.GetProposalID(ctx)
 	suite.Require().NoError(err)
