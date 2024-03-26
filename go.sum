@@ -223,8 +223,6 @@ github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/CosmWasm/wasmd v0.50.0 h1:NVaGqCSTRfb9UTDHJwT6nQIWcb6VjlQl88iI+u1+qjE=
-github.com/CosmWasm/wasmd v0.50.0/go.mod h1:UjmShW4l9YxaMytwJZ7IB7MWzHiynSZP3DdWrG0FRtk=
 github.com/CosmWasm/wasmvm v1.5.2 h1:+pKB1Mz9GZVt1vadxB+EDdD1FOz3dMNjIKq/58/lrag=
 github.com/CosmWasm/wasmvm v1.5.2/go.mod h1:Q0bSEtlktzh7W2hhEaifrFp1Erx11ckQZmjq8FLCyys=
 github.com/DataDog/datadog-go v3.2.0+incompatible h1:qSG2N4FghB1He/r2mFrWKCaL7dXCilEuNEeAn20fdD4=
@@ -811,6 +809,8 @@ github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240226131019-8efae68de5cc h
 github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240226131019-8efae68de5cc/go.mod h1:UbShFs6P8Ly29xxJvkNGaNaL/UGj5a686NRtb1Cqra0=
 github.com/neutron-org/interchain-security/v5 v5.0.0-20240319145305-bf0abfba3230 h1:ua4avhGdG0SxLRTWXJNm9AeykCY3T025JLvWuvQ4t0A=
 github.com/neutron-org/interchain-security/v5 v5.0.0-20240319145305-bf0abfba3230/go.mod h1:c4oYjNwdfPKAhxzkwzTkkWROXKeUNPvc4VJHyNWrRU8=
+github.com/neutron-org/wasmd v0.45.1-0.20240304172302-564e5d10417a h1:uH2grrTCu2xMIdlzoPUAhZ1HVM4jgay3oFxw07gXmIc=
+github.com/neutron-org/wasmd v0.45.1-0.20240304172302-564e5d10417a/go.mod h1:MeEiOLBR9HoKCB/sR7jw22Puxf34/znekoRQvZIAZzg=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=

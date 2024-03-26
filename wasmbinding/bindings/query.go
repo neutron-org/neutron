@@ -13,7 +13,7 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" // linter:staticcheck
 
 	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )

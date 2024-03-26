@@ -3,7 +3,6 @@ package keeper_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -16,7 +15,7 @@ import (
 
 func TestPoolMetadataQuerySingle(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
+	wctx := ctx
 	msgs := createNPoolMetadata(keeper, ctx, 2)
 	tests := []struct {
 		desc     string
@@ -62,7 +61,7 @@ func TestPoolMetadataQuerySingle(t *testing.T) {
 
 func TestPoolMetadataQueryPaginated(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
+	wctx := ctx
 	msgs := createNPoolMetadata(keeper, ctx, 5)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllPoolMetadataRequest {
