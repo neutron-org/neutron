@@ -145,7 +145,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	// Use overrideReceiver so that users cannot ibcswap through arbitrary addresses.
-	// Instead generate a unique address for each user based on their channel and origin-address
+	// Instead, generate a unique address for each user based on their channel and origin-address
 	originalCreator := m.Swap.Creator
 	overrideReceiver, err := packetforward.GetReceiver(packet.DestinationChannel, data.Sender)
 	if err != nil {

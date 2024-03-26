@@ -79,11 +79,11 @@ func (k Keeper) Swap(
 	// If not all tokenIn is swapped and a temporary creator address has been used
 	// return the unused portion to the original creator address
 	if amountUnused.IsPositive() && originalCreator != msg.Creator {
-		overrrideCreatorAddr := sdk.MustAccAddressFromBech32(msg.Creator)
+		overrideCreatorAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 		originalCreatorAddr := sdk.MustAccAddressFromBech32(originalCreator)
 		unusedCoin := sdk.NewCoin(msg.TokenIn, amountUnused)
 
-		err := k.bankKeeper.SendCoins(ctx, overrrideCreatorAddr, originalCreatorAddr, sdk.Coins{unusedCoin})
+		err := k.bankKeeper.SendCoins(ctx, overrideCreatorAddr, originalCreatorAddr, sdk.Coins{unusedCoin})
 		if err != nil {
 			return nil, err
 		}

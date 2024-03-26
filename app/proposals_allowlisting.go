@@ -95,6 +95,8 @@ var WhitelistedParams = map[paramChangeKey]struct{}{
 	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMinGasPrices)}:                    {},
 	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyBypassMinFeeMsgTypes)}:            {},
 	{Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage)}: {},
+	// packet-forward-middleware
+	{Subspace: pfmtypes.ModuleName, Key: string(pfmtypes.KeyFeePercentage)}: {}, // TODO: needed?
 	// ICS consumer
 	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyRewardDenoms)}:                      {},
 	{Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyEnabled)}:                           {},
