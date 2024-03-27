@@ -37,7 +37,7 @@ func CreateUpgradeHandler(
 	_ upgrades.StoreKeys,
 	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")
 		vm, err := mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {
@@ -131,7 +131,7 @@ func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.U
 
 		missedBlocksForValidator := int64(0)
 
-		keepers.SlashingKeeper.IterateValidatorMissedBlockBitArray(ctx, consAddresses[i], func(index int64, missed bool) bool {
+		keepers.SlashingKeeper.IterateValidatorMissedBlockBitArray(ctx, consAddresses[i], func(_ int64, missed bool) bool {
 			if missed {
 				missedBlocksForValidator++
 			}

@@ -92,14 +92,14 @@ func (p *Pool) Swap(
 	}
 
 	// outAmount will be the smallest value of:
-	// a.) The available reserves1
-	// b.) The most the user could get out given maxAmountIn0 (maxOutGivenIn1)
-	// c.) The maximum amount the user wants out (maxAmountOut1)
+	// a) The available reserves1
+	// b) The most the user could get out given maxAmountIn0 (maxOutGivenIn1)
+	// c) The maximum amount the user wants out (maxAmountOut1)
 	amountMakerOut = utils.MinIntArr(possibleAmountsMakerOut)
+
 	amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
 		Quo(makerReserves.PriceTakerToMaker).
 		TruncateInt()
-
 	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
 	makerReserves.ReservesMakerDenom = makerReserves.ReservesMakerDenom.Sub(amountMakerOut)
 
