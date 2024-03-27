@@ -1,11 +1,73 @@
 package types_test
 
-// This will continue to fail until we upgrade away from sdk.Dec
-// func TestPriceMath(t *testing.T) {
-// 	tick := 352437
-// 	amount := sdk.MustNewDecFromStr("1000000000000000000000")
-// 	basePrice := utils.BasePrice()
-// 	expected := amount.Quo(basePrice.Power(uint64(tick))).TruncateInt()
-// 	result := types.MustCalcPrice(int64(tick)).Mul(amount).TruncateInt()
-// 	assert.Equal(t, expected.Int64(), result.Int64())
-// }
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/v3/x/dex/types"
+)
+
+func TestCalcTickIndexFromPrice(t *testing.T) {
+	for _, tc := range []struct {
+		desc string
+		tick int64
+	}{
+		{
+			desc: "0",
+			tick: 0,
+		},
+		{
+			desc: "10",
+			tick: 10,
+		},
+		{
+			desc: "-10",
+			tick: -10,
+		},
+		{
+			desc: "100000",
+			tick: 100000,
+		},
+		{
+			desc: "-100000",
+			tick: -100000,
+		},
+		{
+			desc: "-100000",
+			tick: -100000,
+		},
+		{
+			desc: "-100000",
+			tick: -100000,
+		},
+		{
+			desc: "MaxTickExp",
+			tick: int64(types.MaxTickExp),
+		},
+		{
+			desc: "MinTickExp",
+			tick: int64(types.MaxTickExp) * -1,
+		},
+		{
+			desc: "GT MaxTickExp",
+			tick: int64(types.MaxTickExp) + 1,
+		},
+		{
+			desc: "LT TickExp",
+			tick: -1*int64(types.MaxTickExp) - 1,
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			price, err1 := types.CalcPrice(tc.tick)
+			val, err2 := types.CalcTickIndexFromPrice(price)
+			if errors.Is(err1, types.ErrTickOutsideRange) {
+				require.ErrorIs(t, err2, types.ErrPriceOutsideRange)
+			} else {
+				require.NoError(t, err2)
+				require.Equal(t, tc.tick, val)
+			}
+		})
+	}
+}

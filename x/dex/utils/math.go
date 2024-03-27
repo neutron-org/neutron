@@ -66,3 +66,25 @@ func MustSafeUint64ToInt64(in uint64) (out int64) {
 
 	return safeInt64
 }
+
+func Log(val math_utils.PrecDec, base math_utils.PrecDec) (math_utils.PrecDec, error) {
+	valueFloat64, err := val.Float64()
+	if err != nil {
+		return math_utils.ZeroPrecDec(), fmt.Errorf("error converting value to float64: %v", err)
+	}
+
+	baseFloat64, err := base.Float64()
+	if err != nil {
+		return math_utils.ZeroPrecDec(), fmt.Errorf("error converting base to float64: %v", err)
+	}
+
+	logValue := math.Log(valueFloat64)
+	logBase := math.Log(baseFloat64)
+	log := logValue / logBase
+
+	logAsPrecDec, err := math_utils.NewPrecDecFromStr(strconv.FormatFloat(log, 'f', -1, 64))
+	if err != nil {
+		return math_utils.ZeroPrecDec(), fmt.Errorf("error converting float64 value to string: %v", err)
+	}
+	return logAsPrecDec, nil
+}
