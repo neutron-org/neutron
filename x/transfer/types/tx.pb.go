@@ -92,7 +92,7 @@ var xxx_messageInfo_MsgTransfer proto.InternalMessageInfo
 type MsgTransferResponse struct {
 	// channel's sequence_id for outgoing ibc packet. Unique per a channel.
 	SequenceId uint64 `protobuf:"varint,1,opt,name=sequence_id,json=sequenceId,proto3" json:"sequence_id,omitempty"`
-	// channel src channel on neutron side trasaction was submitted from
+	// channel src channel on neutron side transaction was submitted from
 	Channel string `protobuf:"bytes,2,opt,name=channel,proto3" json:"channel,omitempty"`
 }
 
