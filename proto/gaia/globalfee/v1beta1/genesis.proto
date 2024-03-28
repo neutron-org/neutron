@@ -1,8 +1,8 @@
 syntax = "proto3";
 package gaia.globalfee.v1beta1;
 
-import "gogoproto/gogo.proto";
 import "gaia/globalfee/v1beta1/params.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v3/x/globalfee/types";
 
@@ -14,5 +14,3 @@ message GenesisState {
     (gogoproto.jsontag) = "params,omitempty"
   ];
 }
-
-
