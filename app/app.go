@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"reflect"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -1167,13 +1166,6 @@ func (app *App) setupUpgradeHandlers() {
 			),
 		)
 	}
-}
-
-// ChainID gets chainID from private fields of BaseApp
-// Should be removed once SDK 0.50.x will be adopted
-func (app *App) ChainID() string {
-	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
-	return field.String()
 }
 
 // CheckTx will check the transaction with the provided checkTxHandler. We override the default
