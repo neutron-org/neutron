@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 
-ARG GO_VERSION="1.20.0"
+ARG GO_VERSION="1.21"
 ARG RUNNER_IMAGE="gcr.io/distroless/static"
 
 # --------------------------------------------------------
 # Builder
 # --------------------------------------------------------
 
-FROM golang:${GO_VERSION}-alpine as builder
+FROM golang:${GO_VERSION}-alpine3.18 as builder
 
 ARG GIT_VERSION
 ARG GIT_COMMIT
@@ -21,7 +21,7 @@ RUN apk add --no-cache \
 
 # Download go dependencies
 WORKDIR /neutron
-COPY go.mod go.sum ./
+COPY . .
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/go/pkg/mod \
     go mod download
@@ -34,8 +34,6 @@ RUN WASMVM_VERSION=$(go list -m github.com/CosmWasm/wasmvm | cut -d ' ' -f 2) &&
     wget https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/checksums.txt -O /tmp/checksums.txt && \
     sha256sum /lib/libwasmvm_muslc.a | grep $(cat /tmp/checksums.txt | grep libwasmvm_muslc.$(uname -m) | cut -d ' ' -f 1)
 
-# Copy the remaining files
-COPY . .
 
 # Build neutrond binary
 RUN --mount=type=cache,target=/root/.cache/go-build \
