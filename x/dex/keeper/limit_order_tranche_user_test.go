@@ -21,8 +21,8 @@ func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int)
 			TrancheKey:            strconv.Itoa(i),
 			Address:               strconv.Itoa(i),
 			TradePairId:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
-			TickIndexTakerToMaker: 0,
-			SharesOwned:           math.ZeroInt(),
+			TickIndexTakerToMaker: int64(i),
+			SharesOwned:           math.NewInt(100),
 			SharesWithdrawn:       math.ZeroInt(),
 			SharesCancelled:       math.ZeroInt(),
 		}
