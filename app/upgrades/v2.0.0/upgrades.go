@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	"github.com/neutron-org/neutron/v3/app/params"
 
 	storetypes "cosmossdk.io/store/types"
@@ -17,7 +18,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	//"github.com/cosmos/gaia/v11/x/globalfee/types"
+
+	// "github.com/cosmos/gaia/v11/x/globalfee/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	v6 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/migrations/v6"
 
@@ -90,9 +92,9 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
-		//ctx.Logger().Info("Migrating globalminfees module parameters...")
-		//err = migrateGlobalFees(ctx, keepers)
-		//if err != nil {
+		// ctx.Logger().Info("Migrating globalminfees module parameters...")
+		// err = migrateGlobalFees(ctx, keepers)
+		// if err != nil {
 		//	ctx.Logger().Error("failed to migrate GlobalFees", "err", err)
 		//	return vm, err
 		//}
@@ -105,7 +107,11 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Migrating consensus params...")
-		migrateConsensusParams(ctx, keepers.ParamsKeeper, keepers.ConsensusKeeper)
+		err = migrateConsensusParams(ctx, keepers.ParamsKeeper, keepers.ConsensusKeeper)
+		if err != nil {
+			ctx.Logger().Error("failed to migrate consensus params", "err", err)
+			return vm, err
+		}
 
 		ctx.Logger().Info("Upgrade complete")
 		return vm, nil
@@ -222,7 +228,7 @@ func setInterchainTxsParams(ctx sdk.Context, paramsKeepers paramskeeper.Keeper, 
 	return nil
 }
 
-//func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
+// func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error { //nolint:unparam
 //	ctx.Logger().Info("Implementing GlobalFee Params...")
 //
 //	// The average gas cost for an average transaction on Neutron should not go beyond 5 cents.

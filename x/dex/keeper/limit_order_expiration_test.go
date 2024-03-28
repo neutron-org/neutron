@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
-	storetypes "cosmossdk.io/store/types"
 	"strconv"
 	"time"
+
+	storetypes "cosmossdk.io/store/types"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"

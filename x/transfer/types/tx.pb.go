@@ -6,19 +6,21 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+
 	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
-	types1 "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	types2 "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	types1 "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	io "io"
-	math "math"
-	math_bits "math/bits"
+
+	types2 "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

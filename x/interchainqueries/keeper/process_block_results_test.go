@@ -2,9 +2,10 @@ package keeper_test
 
 import (
 	"fmt"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"testing"
 	"time"
+
+	abci "github.com/cometbft/cometbft/abci/types"
 
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	"github.com/golang/mock/gomock"
@@ -19,7 +20,7 @@ import (
 	tmtypes "github.com/cometbft/cometbft/types"
 	tmversion "github.com/cometbft/cometbft/version"
 	"github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
@@ -133,7 +134,7 @@ func NextBlock(chain *ibctesting.TestChain) {
 // CONTRACT: the passed in list of indexes must not contain duplicates
 func CommitBlock(coord *ibctesting.Coordinator, chains ...*ibctesting.TestChain) {
 	for _, chain := range chains {
-		//chain.NextBlock()
+		// chain.NextBlock()
 		NextBlock(chain)
 	}
 	coord.IncrementTime()

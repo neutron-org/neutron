@@ -1,7 +1,7 @@
 package main
 
 // TODO:
-//func addGenesisWasmMsgCmd(defaultNodeHome string) *cobra.Command {
+// func addGenesisWasmMsgCmd(defaultNodeHome string) *cobra.Command {
 //	txCmd := &cobra.Command{
 //		Use:                        "add-wasm-message",
 //		Short:                      "Wasm genesis subcommands",

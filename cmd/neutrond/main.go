@@ -10,7 +10,7 @@ import (
 
 func main() {
 	app.GetDefaultConfig()
-	//config.Seal()
+	// config.Seal()
 
 	rootCmd, _ := NewRootCmd()
 

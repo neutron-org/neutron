@@ -54,7 +54,7 @@ func SetupAddr(index int) sdk.AccAddress {
 	prefixBz := make([]byte, 8)
 	_, _ = rand.Read(prefixBz)
 	prefix := string(prefixBz)
-	addr := sdk.AccAddress([]byte(fmt.Sprintf("addr%s%8d", prefix, index)))
+	addr := sdk.AccAddress(fmt.Sprintf("addr%s%8d", prefix, index))
 	return addr
 }
 
@@ -109,7 +109,7 @@ func (s *KeeperTestHelper) Commit() {
 	if _, err := s.App.Commit(); err != nil {
 		panic(err)
 	}
-	//newHeader := tmtypes.Header{
+	// newHeader := tmtypes.Header{
 	//	Height:  oldHeight + 1,
 	//	ChainID: oldHeader.ChainID,
 	//	Time:    oldHeader.Time.Add(time.Minute),

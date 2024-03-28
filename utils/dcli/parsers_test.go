@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	dcli "github.com/neutron-org/neutron/v3/utils/dcli"
+	"github.com/neutron-org/neutron/v3/utils/dcli"
 )
 
 type testingStruct struct {

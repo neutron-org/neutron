@@ -2,11 +2,12 @@
 package keeper_test
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/stretchr/testify/require"
 	"math"
 	"testing"
 	"time"
+
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -1578,14 +1579,14 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 	_, err := s.App.FinalizeBlock(&abci.RequestFinalizeBlock{
 		Height: s.App.LastBlockHeight() + 1,
 		Time:   blockTime,
-		//NextValidatorsHash: s.App.GetValidatorSet(s.Ctx).,
+		// NextValidatorsHash: s.App.GetValidatorSet(s.Ctx).,
 	})
 	require.NoError(s.T(), err)
 
 	_, err = s.App.Commit()
 	require.NoError(s.T(), err)
-	//TODO: s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+	// TODO: s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
 	//	Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
 	//	Time: blockTime,
-	//}})
+	// }})
 }
