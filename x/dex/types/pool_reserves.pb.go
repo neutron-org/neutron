@@ -4,16 +4,14 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
+	github_com_neutron_org_neutron_v3_utils_math "github.com/neutron-org/neutron/v3/utils/math"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	cosmossdk_io_math "cosmossdk.io/math"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
-
-	github_com_neutron_org_neutron_v3_utils_math "github.com/neutron-org/neutron/v3/utils/math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
