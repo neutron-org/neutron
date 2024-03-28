@@ -134,7 +134,6 @@ func NextBlock(chain *ibctesting.TestChain) {
 // CONTRACT: the passed in list of indexes must not contain duplicates
 func CommitBlock(coord *ibctesting.Coordinator, chains ...*ibctesting.TestChain) {
 	for _, chain := range chains {
-		// chain.NextBlock()
 		NextBlock(chain)
 	}
 	coord.IncrementTime()

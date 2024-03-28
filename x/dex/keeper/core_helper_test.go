@@ -30,6 +30,10 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 
 func (s *CoreHelpersTestSuite) SetupTest() {
 	app := testutil.Setup(s.T())
+	// `NewUncachedContext` like a `NewContext` calls `sdk.NewContext` under the hood. But the reason why we switched to NewUncachedContext
+	// is NewContext tries to pass `app.finalizeBlockState.ms` as first argument while  app.finalizeBlockState is nil at this stage,
+	// and we get nil pointer exception
+	// when NewUncachedContext passes `app.cms` (multistore) as an argument to `sdk.NewContext`
 	ctx := app.(*neutronapp.App).BaseApp.NewUncachedContext(false, cmtproto.Header{})
 
 	accAlice := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.alice)
