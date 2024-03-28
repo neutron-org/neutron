@@ -69,7 +69,8 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, _ []string) error {
 	/* Handle slashing state. */
 
 	// reset start height on signing infos
-	err := app.SlashingKeeper.IterateValidatorSigningInfos(
+
+	return app.SlashingKeeper.IterateValidatorSigningInfos(
 		ctx,
 		func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
 			info.StartHeight = 0
@@ -80,10 +81,6 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, _ []string) error {
 			return false
 		},
 	)
-	if err != nil {
-		return fmt.Errorf("failed to iteratve over SignInfos: %w", err)
-	}
-	return nil
 }
 
 // GetValidatorSet returns a slice of bonded validators.

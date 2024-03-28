@@ -14,35 +14,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/config"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
-
-// ServerContextKey defines the context key used to retrieve a server.Context from
-// a command's Context.
-const ServerContextKey = sdk.ContextKey("sdk-context")
-
-// server context
-type Context struct {
-	Viper  *viper.Viper
-	Config *cmtcfg.Config
-	Logger log.Logger
-}
-
-func NewDefaultContext() *Context {
-	return NewContext(
-		viper.New(),
-		cmtcfg.DefaultConfig(),
-		log.NewLogger(os.Stdout),
-	)
-}
-
-func NewContext(v *viper.Viper, config *cmtcfg.Config, logger log.Logger) *Context {
-	return &Context{v, config, logger}
-}
 
 // NOTE: The functions below are copy-pasted from cosmos-sdk@v0.50.5 (see https://github.com/cosmos/cosmos-sdk/blob/v0.50.5/server/util.go#L102)
 // Reason for this is that we want to remove cosmos-sdk override of commit_timeout to 5s (https://github.com/cosmos/cosmos-sdk/blob/v0.50.5/server/util.go#L252-L254)
@@ -76,8 +52,8 @@ func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate s
 // is used to read and parse the application configuration. Command handlers can
 // fetch the server Context to get the CometBFT configuration or to get access
 // to Viper.
-func InterceptConfigsAndCreateContext(cmd *cobra.Command, customAppConfigTemplate string, customAppConfig interface{}, cmtConfig *cmtcfg.Config) (*Context, error) {
-	serverCtx := NewDefaultContext()
+func InterceptConfigsAndCreateContext(cmd *cobra.Command, customAppConfigTemplate string, customAppConfig interface{}, cmtConfig *cmtcfg.Config) (*server.Context, error) {
+	serverCtx := server.NewDefaultContext()
 
 	// Get the executable name and configure the viper instance so that environmental
 	// variables are checked based off that name. The underscore character is used
@@ -118,7 +94,7 @@ func InterceptConfigsAndCreateContext(cmd *cobra.Command, customAppConfigTemplat
 
 // CreateSDKLogger creates a the default SDK logger.
 // It reads the log level and format from the server context.
-func CreateSDKLogger(ctx *Context, out io.Writer) (log.Logger, error) {
+func CreateSDKLogger(ctx *server.Context, out io.Writer) (log.Logger, error) {
 	var opts []log.Option
 	if ctx.Viper.GetString(flags.FlagLogFormat) == flags.OutputFormatJSON {
 		opts = append(opts, log.OutputJSONOption())
@@ -151,26 +127,15 @@ func CreateSDKLogger(ctx *Context, out io.Writer) (log.Logger, error) {
 	return log.NewLogger(out, opts...), nil
 }
 
-// GetServerContextFromCmd returns a Context from a command or an empty Context
-// if it has not been set.
-func GetServerContextFromCmd(cmd *cobra.Command) *Context {
-	if v := cmd.Context().Value(ServerContextKey); v != nil {
-		serverCtxPtr := v.(*Context)
-		return serverCtxPtr
-	}
-
-	return NewDefaultContext()
-}
-
 // SetCmdServerContext sets a command's Context value to the provided argument.
 // If the context has not been set, set the given context as the default.
-func SetCmdServerContext(cmd *cobra.Command, serverCtx *Context) error {
-	v := cmd.Context().Value(ServerContextKey)
+func SetCmdServerContext(cmd *cobra.Command, serverCtx *server.Context) error {
+	v := cmd.Context().Value(server.ServerContextKey)
 	if v == nil {
 		v = serverCtx
 	}
 
-	serverCtxPtr := v.(*Context)
+	serverCtxPtr := v.(*server.Context)
 	*serverCtxPtr = *serverCtx
 
 	return nil
