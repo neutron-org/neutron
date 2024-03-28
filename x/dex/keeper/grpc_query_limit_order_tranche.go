@@ -36,7 +36,7 @@ func (k Keeper) LimitOrderTrancheAll(
 
 	pageRes, err := query.FilteredPaginate(
 		limitOrderTrancheStore,
-		req.Pagination, func(key, value []byte, accum bool) (hit bool, err error) {
+		req.Pagination, func(_, value []byte, accum bool) (hit bool, err error) {
 			var tick types.TickLiquidity
 
 			if err := k.cdc.Unmarshal(value, &tick); err != nil {

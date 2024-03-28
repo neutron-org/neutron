@@ -1,7 +1,14 @@
-package v300
+package v301
 
 import (
 	"fmt"
+
+	"cosmossdk.io/math"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	transferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	consumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
+	ccvtypes "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,6 +26,10 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
 
+// CreateUpgradeHandler is an upgrade major version 2 -> 3
+// Upgrade v3.0.0 was applied on pion-1 chain and later renamed to v3.0.1
+// Upgrade v3.0.1 is in a nutshell the same v3.0.0 but with additional storage migrations
+// specially for neutron-1 chain - setICSParams and removeDiscrepancies
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
@@ -26,7 +37,7 @@ func CreateUpgradeHandler(
 	_ upgrades.StoreKeys,
 	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Starting module migrations...")
 		vm, err := mm.RunMigrations(ctx, configurator, vm)
 		if err != nil {
@@ -43,9 +54,18 @@ func CreateUpgradeHandler(
 			return vm, fmt.Errorf("failed to migrate ICS outstanding downtime: %w", err)
 		}
 
+		setICSParams(ctx, keepers.ConsumerKeeper)
+
 		recalculateSlashingMissedBlocksCounter(ctx, keepers)
 
+		if ctx.ChainID() == "neutron-1" {
+			if err := removeDiscrepancies(ctx, keepers.BankKeeper, keepers.TransferKeeper); err != nil {
+				return vm, fmt.Errorf("failed to remove discrepancy: %w", err)
+			}
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
+
 		return vm, nil
 	}
 }
@@ -66,6 +86,28 @@ func setAuctionParams(ctx sdk.Context, feeBurnerKeeper *feeburnerkeeper.Keeper, 
 		ProposerFee:            AuctionParamsProposerFee,
 	}
 	return auctionKeeper.SetParams(ctx, auctionParams)
+}
+
+func setICSParams(ctx sdk.Context, consumerKeeper *consumerkeeper.Keeper) {
+	newParams := ccvtypes.NewParams(
+		consumerKeeper.GetEnabled(ctx),
+		consumerKeeper.GetBlocksPerDistributionTransmission(ctx),
+		consumerKeeper.GetDistributionTransmissionChannel(ctx),
+		consumerKeeper.GetProviderFeePoolAddrStr(ctx),
+		consumerKeeper.GetCCVTimeoutPeriod(ctx),
+		consumerKeeper.GetTransferTimeoutPeriod(ctx),
+		consumerKeeper.GetConsumerRedistributionFrac(ctx),
+		consumerKeeper.GetHistoricalEntries(ctx),
+		consumerKeeper.GetUnbondingPeriod(ctx),
+		consumerKeeper.GetSoftOptOutThreshold(ctx),
+		consumerKeeper.GetRewardDenoms(ctx),
+		consumerKeeper.GetProviderRewardDenoms(ctx),
+
+		// Currently it's an empty string, we need to set to default value
+		ccvtypes.DefaultRetryDelayPeriod,
+	)
+
+	consumerKeeper.SetParams(ctx, newParams)
 }
 
 // Sometime long ago we decreased SlashWindow to 36k on pion-1 testnet (the param is untouched on neutron-1 mainnet),
@@ -89,7 +131,7 @@ func recalculateSlashingMissedBlocksCounter(ctx sdk.Context, keepers *upgrades.U
 
 		missedBlocksForValidator := int64(0)
 
-		keepers.SlashingKeeper.IterateValidatorMissedBlockBitArray(ctx, consAddresses[i], func(index int64, missed bool) bool {
+		keepers.SlashingKeeper.IterateValidatorMissedBlockBitArray(ctx, consAddresses[i], func(_ int64, missed bool) bool {
 			if missed {
 				missedBlocksForValidator++
 			}
@@ -119,6 +161,43 @@ func migrateICSOutstandingDowntime(ctx sdk.Context, keepers *upgrades.UpgradeKee
 	}
 
 	ctx.Logger().Info("Finished ICS outstanding downtime")
+
+	return nil
+}
+
+// There is a discrepancy happens due to bug in PFM module.
+// Check all disrepencies you can with a tool - https://github.com/strangelove-ventures/escrow-checker, only one found for `neutron-1`
+// ```
+// Discrepancy found!
+// Counterparty Chain ID: osmosis-1
+// Escrow Account Address: neutron1fp9wuhq58pz53wxvv3tnrxkw8m8s6swpf2fkv9
+// Asset Base Denom: stuatom
+// Asset IBC Denom: ibc/B7864B03E1B9FD4F049243E92ABD691586F682137037A9F3FCA5222815620B3C
+// Escrow Balance: 10481
+// Counterparty Total Supply: 2447077ibc/8FCFAF3AE6BA4C5BDFF85B41449FBACE547E2BAC23895E839230404FB0EC3837
+// ^^^
+// bug was already fixed in releases v2.0.3/v3.0.0
+// the aim of the function is to remove the discrepancy
+func removeDiscrepancies(ctx sdk.Context, bankKeeper bankkeeper.Keeper, transferKeeper transferkeeper.Keeper) error {
+	coin := sdk.Coin{
+		Denom:  "ibc/B7864B03E1B9FD4F049243E92ABD691586F682137037A9F3FCA5222815620B3C",
+		Amount: math.NewInt(2436596),
+	}
+	EscrowAddress := sdk.MustAccAddressFromBech32("neutron1fp9wuhq58pz53wxvv3tnrxkw8m8s6swpf2fkv9")
+	coins := sdk.NewCoins(coin)
+
+	if err := bankKeeper.MintCoins(ctx, transfertypes.ModuleName, coins); err != nil {
+		return err
+	}
+
+	if err := bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, EscrowAddress, coins); err != nil {
+		return err
+	}
+
+	// For ibc-go v7+ you will also need to update the transfer module's store for the total escrow amounts.
+	currentTotalEscrow := transferKeeper.GetTotalEscrowForDenom(ctx, coin.GetDenom())
+	newTotalEscrow := currentTotalEscrow.Add(coin)
+	transferKeeper.SetTotalEscrowForDenom(ctx, newTotalEscrow)
 
 	return nil
 }

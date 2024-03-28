@@ -72,7 +72,12 @@ func CreateMultihopSwapEvent(
 	amountIn math.Int,
 	amountOut math.Int,
 	route []string,
+	dust sdk.Coins,
 ) sdk.Event {
+	dustStrings := make([]string, 0, dust.Len())
+	for _, item := range dust {
+		dustStrings = append(dustStrings, item.String())
+	}
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, MultihopSwapEventKey),
@@ -83,6 +88,7 @@ func CreateMultihopSwapEvent(
 		sdk.NewAttribute(MultihopSwapEventAmountIn, amountIn.String()),
 		sdk.NewAttribute(MultihopSwapEventAmountOut, amountOut.String()),
 		sdk.NewAttribute(MultihopSwapEventRoute, strings.Join(route, ",")),
+		sdk.NewAttribute(MultihopSwapEventDust, strings.Join(dustStrings, ",")),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
