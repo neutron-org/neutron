@@ -130,10 +130,9 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 	amountOutTokenOut := math_utils.NewPrecDecFromInt(amountOutTokenIn).Quo(t.PriceTakerToMaker)
 
 	return amountOutTokenIn, amountOutTokenOut
-
 }
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
 
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
 	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
 	reservesTokenOutDec := math_utils.NewPrecDecFromInt(t.ReservesTakerDenom)
 	t.ReservesTakerDenom = reservesTokenOutDec.Sub(amountOutTokenOut).TruncateInt()
