@@ -62,7 +62,7 @@ func (k Keeper) CalcWithdrawableShares(ctx sdk.Context, trancheUser types.LimitO
 	if !found {
 		return math.ZeroInt(), status.Error(codes.NotFound, "Tranche not found")
 	}
-	withdrawableShares, _ := tranche.Withdraw(&trancheUser)
+	withdrawableShares, _ := tranche.CalcWithdrawAmount(&trancheUser)
 
 	return withdrawableShares, nil
 }

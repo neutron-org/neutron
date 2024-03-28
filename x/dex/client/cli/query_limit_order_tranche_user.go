@@ -47,7 +47,7 @@ func CmdShowLimitOrderTrancheUser() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "show-limit-order-tranche-user [address] [tranche-key] ?(--calc-withdraw)",
 		Short:   "shows a LimitOrderTrancheUser",
-		Example: "show-limit-order-tranche-user alice TRANCHEKEY123",
+		Example: "show-limit-order-tranche-user neutron1dqd0wsqldr89m4d9trk2arv35twz7a5erjj6td  TRANCHEKEY123",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)
