@@ -5,10 +5,9 @@ import (
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -26,7 +25,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			"wrong connection id",
 			func() {
 				ctx := suite.ChainA.GetContext()
-				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: "test"})
+				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeight{ConnectionId: "test"})
 				suite.Require().Error(err)
 			},
 		},
@@ -35,7 +34,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			func() {
 				ctx := suite.ChainA.GetContext()
 
-				oldHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
+				oldHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
 				suite.Require().NoError(err)
 				suite.Require().Greater(oldHeight.Height, uint64(0))
 
@@ -45,7 +44,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 					suite.NoError(suite.Path.EndpointA.UpdateClient())
 				}
 
-				updatedHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx), &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
+				updatedHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
 				suite.Require().Equal(updatedHeight.Height, oldHeight.Height+N) // check that last remote height really equals oldHeight+N
 				suite.Require().NoError(err)
 			},
@@ -465,7 +464,7 @@ func (suite *KeeperTestSuite) TestRegisteredQueries() {
 				suite.NoError(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.SaveQuery(suite.ChainA.GetContext(), &q))
 			}
 
-			resp, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.RegisteredQueries(sdk.WrapSDKContext(suite.ChainA.GetContext()), tt.req)
+			resp, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.RegisteredQueries(suite.ChainA.GetContext(), tt.req)
 			suite.NoError(err)
 
 			suite.Equal(tt.expectedQueryResponse, resp.RegisteredQueries)
@@ -493,12 +492,12 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	suite.TopUpWallet(ctx, senderAddress, contractAddress)
 
 	msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
-	regQuery1, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+	regQuery1, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 	suite.Require().NoError(err)
 
 	// Top up contract address with native coins for deposit
 	suite.TopUpWallet(ctx, senderAddress, contractAddress)
-	regQuery2, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+	regQuery2, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 	suite.Require().NoError(err)
 
 	resp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
@@ -528,10 +527,10 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 		},
 	}
 
-	_, err = msgSrv.SubmitQueryResult(sdk.WrapSDKContext(ctx), &msg)
+	_, err = msgSrv.SubmitQueryResult(ctx, &msg)
 	suite.NoError(err)
 
-	queryResultResponse, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdk.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+	queryResultResponse, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryRegisteredQueryResultRequest{
 		QueryId: regQuery1.Id,
 	})
 	suite.NoError(err)
@@ -548,12 +547,12 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	}
 	suite.Equal(len(expectKvResults), len(queryKvResult))
 
-	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdk.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryRegisteredQueryResultRequest{
 		QueryId: regQuery2.Id,
 	})
 	suite.ErrorContains(err, "no query result")
 
-	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(sdk.WrapSDKContext(ctx), &iqtypes.QueryRegisteredQueryResultRequest{
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryRegisteredQueryResultRequest{
 		QueryId: regQuery2.Id + 1,
 	})
 	suite.ErrorContains(err, "invalid query id")

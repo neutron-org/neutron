@@ -1,8 +1,10 @@
 package ante
 
 import (
-	"cosmossdk.io/math"
 	"fmt"
+
+	"cosmossdk.io/math"
+
 	tmstrings "github.com/cometbft/cometbft/libs/strings"
 	"github.com/neutron-org/neutron/v3/app/params"
 	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
@@ -164,9 +166,7 @@ func (mfd FeeDecorator) GetTxFeeRequired(ctx sdk.Context, tx sdk.FeeTx) (sdk.Coi
 // sorted in ascending order.
 // Note that ParamStoreKeyMinGasPrices type requires coins sorted.
 func (mfd FeeDecorator) GetGlobalFee(ctx sdk.Context, feeTx sdk.FeeTx) sdk.Coins {
-	var (
-		globalMinGasPrices sdk.DecCoins
-	)
+	var globalMinGasPrices sdk.DecCoins
 
 	globalMinFeeParams := mfd.GlobalMinFeeKeeper.GetParams(ctx)
 	globalMinGasPrices = globalMinFeeParams.MinimumGasPrices

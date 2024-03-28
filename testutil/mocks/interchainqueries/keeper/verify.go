@@ -13,6 +13,7 @@ import (
 	exported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	_7_tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	gomock "github.com/golang/mock/gomock"
+
 	types1 "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 

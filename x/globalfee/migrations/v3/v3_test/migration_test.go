@@ -1,10 +1,11 @@
 package v3_test
 
 import (
+	"testing"
+
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
 	v3 "github.com/neutron-org/neutron/v3/x/globalfee/migrations/v3"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 

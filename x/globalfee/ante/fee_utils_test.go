@@ -1,8 +1,9 @@
 package ante
 
 import (
-	"cosmossdk.io/math"
 	"testing"
+
+	"cosmossdk.io/math"
 
 	"github.com/stretchr/testify/require"
 

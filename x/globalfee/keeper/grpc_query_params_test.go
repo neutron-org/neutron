@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"cosmossdk.io/math"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	"testing"
 
 	testkeeper "github.com/neutron-org/neutron/v3/testutil/globalfee/keeper"
 

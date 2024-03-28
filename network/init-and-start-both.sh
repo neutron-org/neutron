@@ -14,7 +14,7 @@ export GRPCWEB=8091
 export STAKEDENOM=untrn
 
 "$script_full_path"/init.sh
-#"$script_full_path"/init-neutrond.sh
+"$script_full_path"/init-neutrond.sh
 "$script_full_path"/start.sh
 
 export BINARY=gaiad

@@ -1,9 +1,10 @@
 package v2_test
 
 import (
+	"testing"
+
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 

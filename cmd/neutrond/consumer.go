@@ -40,11 +40,11 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				sdkPublicKey, err := cryptocodec.FromTmPubKeyInterface(pk)
+				sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
 				if err != nil {
 					return err
 				}
-				tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(sdkPublicKey)
+				tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
 				if err != nil {
 					return err
 				}

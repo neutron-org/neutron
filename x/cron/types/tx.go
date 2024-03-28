@@ -24,7 +24,7 @@ func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 }
 
 func (msg *MsgUpdateParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
 func (msg *MsgUpdateParams) ValidateBasic() error {

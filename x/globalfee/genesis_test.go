@@ -1,11 +1,12 @@
 package globalfee
 
 import (
+	"testing"
+	"time"
+
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
 	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

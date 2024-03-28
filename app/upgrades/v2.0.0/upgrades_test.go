@@ -7,6 +7,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
 	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
 	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
@@ -64,7 +65,7 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1weweewe"), codeIDBefore)
 }
 
-//func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
+// func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
 //	var (
 //		app               = suite.GetNeutronZoneApp(suite.ChainA)
 //		globalFeeSubspace = app.GetSubspace(globalfee.ModuleName)
@@ -155,7 +156,8 @@ func (suite *UpgradeTestSuite) TestTokenFactoryUpgrade() {
 		Info:   "some text here",
 		Height: 100,
 	}
-	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	err := app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	suite.Require().NoError(err)
 
 	var denomGas uint64
 	tokenFactorySubspace.Get(ctx, tokenfactorytypes.KeyDenomCreationGasConsume, &denomGas)
@@ -190,7 +192,8 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 		Info:   "some text here",
 		Height: 100,
 	}
-	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	err := app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	suite.Require().NoError(err)
 
 	lastCodeID := app.InterchainTxsKeeper.GetICARegistrationFeeFirstCodeID(ctx)
 	// ensure that wasm module stores next code id
@@ -202,7 +205,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	// register w/o actual fees
 	jsonStringBeforeUpgrade := `{"register": {"connection_id":"connection-1","interchain_account_id":"test-2"}}`
 	byteEncodedMsgBeforeUpgrade := []byte(jsonStringBeforeUpgrade)
-	_, err := contractKeeper.Execute(ctx, contractAddressBeforeUpgrade, sdk.AccAddress("neutron1_ica"), byteEncodedMsgBeforeUpgrade, nil)
+	_, err = contractKeeper.Execute(ctx, contractAddressBeforeUpgrade, sdk.AccAddress("neutron1_ica"), byteEncodedMsgBeforeUpgrade, nil)
 	suite.Require().NoError(err)
 
 	// register with fees

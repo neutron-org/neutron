@@ -3,6 +3,8 @@ package ibcswap
 import (
 	"encoding/json"
 
+	"cosmossdk.io/core/appmodule"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -20,7 +22,7 @@ import (
 
 var (
 	_ module.AppModuleBasic      = AppModuleBasic{}
-	_ module.AppModule           = AppModule{}
+	_ appmodule.AppModule        = AppModule{}
 	_ module.AppModuleSimulation = AppModule{}
 )
 

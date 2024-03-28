@@ -29,8 +29,6 @@ type IntegrationTestSuite struct {
 	txBuilder client.TxBuilder
 }
 
-var testBondDenom = "uatom"
-
 func (s *IntegrationTestSuite) SetupTest() {
 	neutronapp.GetDefaultConfig()
 	s.app = testutil.Setup(s.T()).(*neutronapp.App)
@@ -45,7 +43,8 @@ func (s *IntegrationTestSuite) SetupTest() {
 }
 
 func (s *IntegrationTestSuite) SetupTestGlobalFeeStoreAndMinGasPrice(minGasPrice []sdk.DecCoin, globalFeeParams *globfeetypes.Params) (gaiafeeante.FeeDecorator, sdk.AnteHandler) {
-	s.app.GlobalFeeKeeper.SetParams(s.ctx, *globalFeeParams)
+	err := s.app.GlobalFeeKeeper.SetParams(s.ctx, *globalFeeParams)
+	s.Require().NoError(err)
 	s.ctx = s.ctx.WithMinGasPrices(minGasPrice).WithIsCheckTx(true)
 
 	// build fee decorator
@@ -57,7 +56,7 @@ func (s *IntegrationTestSuite) SetupTestGlobalFeeStoreAndMinGasPrice(minGasPrice
 	return feeDecorator, antehandler
 }
 
-func (s *IntegrationTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums []uint64, accSeqs []uint64, chainID string) (xauthsigning.Tx, error) {
+func (s *IntegrationTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums, accSeqs []uint64, chainID string) (xauthsigning.Tx, error) {
 	var sigsV2 []signing.SignatureV2
 	signMode, err := xauthsigning.APISignModeToInternal(s.clientCtx.TxConfig.SignModeHandler().DefaultMode())
 	if err != nil {

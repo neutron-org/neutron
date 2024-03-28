@@ -48,7 +48,8 @@ func (suite *UpgradeTestSuite) TestAuctionUpgrade() {
 		Height: 100,
 	}
 
-	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	err := app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
+	suite.Require().NoError(err)
 
 	// get the auction module's params
 	params, err := app.AuctionKeeper.GetParams(ctx)
@@ -79,7 +80,8 @@ func (suite *UpgradeTestSuite) TestSlashingUpgrade() {
 		Address:             consAddr.String(),
 		MissedBlocksCounter: unrealMissedBlocksCounter, // set unrealistic value of missed blocks
 	}
-	app.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddr, info)
+	err := app.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddr, info)
+	suite.Require().NoError(err)
 
 	for i := int64(0); i < params.SignedBlocksWindow; i++ {
 		// all even blocks are missed

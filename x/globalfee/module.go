@@ -2,9 +2,11 @@ package globalfee
 
 import (
 	"context"
-	storetypes "cosmossdk.io/store/types"
 	"encoding/json"
 	"fmt"
+
+	storetypes "cosmossdk.io/store/types"
+
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -101,7 +103,10 @@ func (a AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, messa
 	var genesisState types.GenesisState
 	marshaler.MustUnmarshalJSON(message, &genesisState)
 
-	a.keeper.SetParams(ctx, genesisState.Params)
+	err := a.keeper.SetParams(ctx, genesisState.Params)
+	if err != nil {
+		panic(err)
+	}
 	return nil
 }
 
@@ -144,9 +149,9 @@ func (a AppModule) ConsensusVersion() uint64 {
 }
 
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
-func (am AppModule) IsOnePerModuleType() { // marker
+func (a AppModule) IsOnePerModuleType() { // marker
 }
 
 // IsAppModule implements the appmodule.AppModule interface.
-func (am AppModule) IsAppModule() { // marker
+func (a AppModule) IsAppModule() { // marker
 }

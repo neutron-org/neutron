@@ -1,14 +1,15 @@
 package antetest
 
 import (
+	"testing"
+
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/admin-module/x/adminmodule/types"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"

@@ -28,7 +28,7 @@ import (
 	appparams "github.com/neutron-org/neutron/v3/app/params"
 	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	appProvider "github.com/cosmos/interchain-security/v5/app/provider"
 	e2e "github.com/cosmos/interchain-security/v5/testutil/integration"
 
@@ -84,7 +84,7 @@ type IBCConnectionTestSuite struct {
 	TransferPath *ibctesting.Path
 }
 
-func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal {
+func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal { //nolint:staticcheck
 	prop := providertypes.NewConsumerAdditionProposal(
 		chain.ChainID,
 		"description",
@@ -100,7 +100,7 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		ccv.DefaultCCVTimeoutPeriod,
 		ccv.DefaultTransferTimeoutPeriod,
 		ccv.DefaultConsumerUnbondingPeriod,
-	).(*providertypes.ConsumerAdditionProposal)
+	).(*providertypes.ConsumerAdditionProposal) //nolint:staticcheck
 
 	return prop
 }
