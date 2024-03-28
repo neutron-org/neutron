@@ -189,7 +189,6 @@ func TickUpdateEvent(
 		sdk.NewAttribute(TickUpdateEventToken1, token1),
 		sdk.NewAttribute(TickUpdateEventTokenIn, makerDenom),
 		sdk.NewAttribute(TickUpdateEventTickIndex, strconv.FormatInt(tickIndex, 10)),
-		sdk.NewAttribute(TickUpdateEventFee, strconv.FormatInt(int64(0), 10)),
 		sdk.NewAttribute(TickUpdateEventReserves, reserves.String()),
 	}
 	attrs = append(attrs, otherAttrs...)
