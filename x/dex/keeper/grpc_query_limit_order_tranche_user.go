@@ -27,7 +27,7 @@ func (k Keeper) LimitOrderTrancheUserAll(
 	store := ctx.KVStore(k.storeKey)
 	limitOrderTrancheUserStore := prefix.NewStore(store, types.KeyPrefix(types.LimitOrderTrancheUserKeyPrefix))
 
-	pageRes, err := query.Paginate(limitOrderTrancheUserStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(limitOrderTrancheUserStore, req.Pagination, func(_, value []byte) error {
 		limitOrderTrancheUser := &types.LimitOrderTrancheUser{}
 		if err := k.cdc.Unmarshal(value, limitOrderTrancheUser); err != nil {
 			return err
@@ -112,7 +112,7 @@ func (k Keeper) LimitOrderTrancheUserAllByAddress(
 	addressPrefix := types.LimitOrderTrancheUserAddressPrefix(addr.String())
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), addressPrefix)
 
-	pageRes, err := query.Paginate(store, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(store, req.Pagination, func(_, value []byte) error {
 		trancheUser := &types.LimitOrderTrancheUser{}
 		if err := k.cdc.Unmarshal(value, trancheUser); err != nil {
 			return err
