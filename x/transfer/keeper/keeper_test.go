@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/stretchr/testify/suite"
 
@@ -32,14 +32,14 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	msgSrv := suite.GetNeutronZoneApp(suite.ChainA).TransferKeeper
 
 	ctx := suite.ChainA.GetContext()
-	resp, err := msgSrv.Transfer(sdktypes.WrapSDKContext(ctx), &types.MsgTransfer{
+	resp, err := msgSrv.Transfer(ctx, &types.MsgTransfer{
 		Sender: "nonbech32",
 	})
 	suite.Nil(resp)
 	suite.ErrorContains(err, "failed to parse address")
 
 	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(sdktypes.WrapSDKContext(ctx), &types.MsgTransfer{
+	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
 		SourcePort:    "transfer",
 		SourceChannel: "nonexistent channel",
 		Sender:        testutil.TestOwnerAddress,
@@ -48,7 +48,7 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	suite.ErrorIs(err, channeltypes.ErrSequenceSendNotFound)
 
 	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(sdktypes.WrapSDKContext(ctx), &types.MsgTransfer{
+	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
 		SourcePort:    "nonexistent port",
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        testutil.TestOwnerAddress,
@@ -58,7 +58,7 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 
 	// sender is a non contract account
 	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(sdktypes.WrapSDKContext(ctx), &types.MsgTransfer{
+	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        testutil.TestOwnerAddress,
@@ -71,7 +71,7 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	suite.TopUpWallet(ctx, senderAddress, sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress))
 	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(sdktypes.WrapSDKContext(ctx), &types.MsgTransfer{
+	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        testutil.TestOwnerAddress,
@@ -96,7 +96,7 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 	suite.Require().NotEmpty(contractAddress)
 
 	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(sdktypes.WrapSDKContext(ctx), &types.MsgTransfer{
+	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        contractAddress.String(),
@@ -112,7 +112,7 @@ func (suite KeeperTestSuite) TestTransfer() { //nolint:govet // it's a test so i
 
 	suite.TopUpWallet(ctx, senderAddress, contractAddress)
 	ctx = suite.ChainA.GetContext()
-	resp, err = msgSrv.Transfer(sdktypes.WrapSDKContext(ctx), &types.MsgTransfer{
+	resp, err = msgSrv.Transfer(ctx, &types.MsgTransfer{
 		SourcePort:    suite.TransferPath.EndpointA.ChannelConfig.PortID,
 		SourceChannel: suite.TransferPath.EndpointA.ChannelID,
 		Sender:        contractAddress.String(),

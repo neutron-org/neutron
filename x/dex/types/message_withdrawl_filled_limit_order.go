@@ -35,7 +35,7 @@ func (msg *MsgWithdrawFilledLimitOrder) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgWithdrawFilledLimitOrder) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
 func (msg *MsgWithdrawFilledLimitOrder) ValidateBasic() error {

@@ -57,7 +57,7 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 }
 
 func (msg MsgSubmitQueryResult) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
 func (msg MsgSubmitQueryResult) GetSigners() []sdk.AccAddress {
@@ -129,7 +129,7 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 }
 
 func (msg MsgRegisterInterchainQuery) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
 func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
@@ -188,7 +188,7 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 }
 
 func (msg MsgUpdateInterchainQueryRequest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
 func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
@@ -220,7 +220,7 @@ func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 }
 
 func (msg *MsgUpdateParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
 func (msg *MsgUpdateParams) ValidateBasic() error {

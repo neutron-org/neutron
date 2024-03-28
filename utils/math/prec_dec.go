@@ -524,7 +524,7 @@ func (d PrecDec) IsInteger() bool {
 	return new(big.Int).Rem(d.i, precisionReuse).Sign() == 0
 }
 
-// format decimal state
+// Format decimal state
 func (d PrecDec) Format(s fmt.State) {
 	_, err := s.Write([]byte(d.String()))
 	if err != nil {

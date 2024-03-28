@@ -43,7 +43,7 @@ func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
 }
 
 func (msg MsgRemoveInterchainQueryRequest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
 func (msg MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {

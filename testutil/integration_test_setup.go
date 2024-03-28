@@ -89,7 +89,7 @@ func SetupWithGenesisValSet(
 	require.NoError(t, err)
 
 	// init chain will set the validator set and initialize the genesis accounts
-	app.InitChain(
+	_, err = app.InitChain(
 		&abci.RequestInitChain{
 			ChainId:         chainID,
 			Validators:      []abci.ValidatorUpdate{},
@@ -97,19 +97,17 @@ func SetupWithGenesisValSet(
 			AppStateBytes:   stateBytes,
 		},
 	)
+	require.NoError(t, err)
 
-	// commit genesis changes
-	if _, err := app.Commit(); err != nil {
-		panic(err)
-	}
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height:             app.LastBlockHeight() + 1,
+		Time:               time.Now(),
+		NextValidatorsHash: valSet.Hash(),
+	})
+	require.NoError(t, err)
 
-	//TODO: app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-	//	Height:             app.LastBlockHeight() + 1,
-	//	AppHash:            app.LastCommitID().Hash,
-	//	ValidatorsHash:     valSet.Hash(),
-	//	NextValidatorsHash: valSet.Hash(),
-	//	ChainID:            chainID,
-	//}})
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	return app
 }
@@ -133,7 +131,7 @@ func GenesisStateWithValSet(
 	initValPowers := []abci.ValidatorUpdate{}
 
 	for _, val := range valSet.Validators {
-		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+		pk, err := cryptocodec.FromCmtPubKeyInterface(val.PubKey)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert pubkey: %w", err)
 		}

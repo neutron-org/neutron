@@ -10,6 +10,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	// globalfeeante "github.com/cosmos/gaia/v11/x/globalfee/ante"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
@@ -54,7 +55,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	if options.TXCounterStoreService == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "tx counter store service is required for ante builder")
 	}
-	//if options.GlobalFeeSubspace.Name() == "" {
+	// if options.GlobalFeeSubspace.Name() == "" {
 	//	return nil, errors.Wrap(sdkerrors.ErrNotFound, "globalfee param store is required for AnteHandler")
 	//}
 	if options.MEVLane == nil {

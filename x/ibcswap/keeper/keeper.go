@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -71,6 +71,7 @@ func (k Keeper) Swap(
 	}
 
 	msgSwapRes := &dextypes.MsgPlaceLimitOrderResponse{}
+	// TODO: replace the Data field with MsgResponses?
 	if err := proto.Unmarshal(res.Data, msgSwapRes); err != nil {
 		return nil, err
 	}

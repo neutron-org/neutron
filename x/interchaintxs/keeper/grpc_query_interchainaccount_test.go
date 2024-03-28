@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	types2 "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	"github.com/golang/mock/gomock"
@@ -21,13 +20,12 @@ func TestKeeper_InterchainAccountAddress(t *testing.T) {
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	keeper, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, icaKeeper, nil, nil, nil)
-	wctx := sdk.WrapSDKContext(ctx)
 
-	resp, err := keeper.InterchainAccountAddress(wctx, nil)
+	resp, err := keeper.InterchainAccountAddress(ctx, nil)
 	require.ErrorIs(t, err, sdkerrors.ErrInvalidRequest)
 	require.Nil(t, resp)
 
-	resp, err = keeper.InterchainAccountAddress(wctx, &types.QueryInterchainAccountAddressRequest{
+	resp, err = keeper.InterchainAccountAddress(ctx, &types.QueryInterchainAccountAddressRequest{
 		OwnerAddress:        "nonbetch32",
 		InterchainAccountId: "test1",
 		ConnectionId:        "connection-0",
@@ -37,7 +35,7 @@ func TestKeeper_InterchainAccountAddress(t *testing.T) {
 
 	portID := fmt.Sprintf("%s%s.%s", types2.ControllerPortPrefix, testutil.TestOwnerAddress, "test1")
 	icaKeeper.EXPECT().GetInterchainAccountAddress(ctx, "connection-0", portID).Return("", false)
-	resp, err = keeper.InterchainAccountAddress(wctx, &types.QueryInterchainAccountAddressRequest{
+	resp, err = keeper.InterchainAccountAddress(ctx, &types.QueryInterchainAccountAddressRequest{
 		OwnerAddress:        testutil.TestOwnerAddress,
 		InterchainAccountId: "test1",
 		ConnectionId:        "connection-0",
@@ -47,7 +45,7 @@ func TestKeeper_InterchainAccountAddress(t *testing.T) {
 
 	portID = fmt.Sprintf("%s%s.%s", types2.ControllerPortPrefix, testutil.TestOwnerAddress, "test1")
 	icaKeeper.EXPECT().GetInterchainAccountAddress(ctx, "connection-0", portID).Return("neutron1interchainaccountaddress", true)
-	resp, err = keeper.InterchainAccountAddress(wctx, &types.QueryInterchainAccountAddressRequest{
+	resp, err = keeper.InterchainAccountAddress(ctx, &types.QueryInterchainAccountAddressRequest{
 		OwnerAddress:        testutil.TestOwnerAddress,
 		InterchainAccountId: "test1",
 		ConnectionId:        "connection-0",

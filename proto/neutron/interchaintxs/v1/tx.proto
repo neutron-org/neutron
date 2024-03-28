@@ -16,6 +16,8 @@ option go_package = "github.com/neutron-org/neutron/v3/x/interchaintxs/types";
 
 // Msg defines the Msg service.
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   rpc RegisterInterchainAccount(MsgRegisterInterchainAccount) returns (MsgRegisterInterchainAccountResponse) {}
   rpc SubmitTx(MsgSubmitTx) returns (MsgSubmitTxResponse) {}
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);

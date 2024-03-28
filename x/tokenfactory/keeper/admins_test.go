@@ -25,20 +25,20 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 	suite.Require().Equal(suite.TestAccs[0].String(), queryRes.AuthorityMetadata.Admin)
 
 	// Test minting to admins own account
-	_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
+	_, err = suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
 	addr0bal += 10
 	suite.Require().NoError(err)
 	suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom).Amount.Int64() == addr0bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom))
 
 	// Test burning from own account
-	_, err = suite.msgServer.Burn(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgBurn(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 5)))
+	_, err = suite.msgServer.Burn(suite.ChainA.GetContext(), types.NewMsgBurn(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 5)))
 	addr0bal -= 5
 	suite.Require().NoError(err)
 	suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom).Amount.Int64() == addr0bal, suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[0], suite.defaultDenom))
 	suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[1], suite.defaultDenom).Amount.Int64() == addr1bal)
 
 	// Test Change Admin
-	_, err = suite.msgServer.ChangeAdmin(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgChangeAdmin(suite.TestAccs[0].String(), suite.defaultDenom, suite.TestAccs[1].String()))
+	_, err = suite.msgServer.ChangeAdmin(suite.ChainA.GetContext(), types.NewMsgChangeAdmin(suite.TestAccs[0].String(), suite.defaultDenom, suite.TestAccs[1].String()))
 	suite.Require().NoError(err)
 	denom = strings.Split(suite.defaultDenom, "/")
 	queryRes, err = suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
@@ -49,17 +49,17 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 	suite.Require().Equal(suite.TestAccs[1].String(), queryRes.AuthorityMetadata.Admin)
 
 	// Make sure old admin can no longer do actions
-	_, err = suite.msgServer.Burn(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgBurn(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 5)))
+	_, err = suite.msgServer.Burn(suite.ChainA.GetContext(), types.NewMsgBurn(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 5)))
 	suite.Require().Error(err)
 
 	// Make sure the new admin works
-	_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[1].String(), sdk.NewInt64Coin(suite.defaultDenom, 5)))
+	_, err = suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[1].String(), sdk.NewInt64Coin(suite.defaultDenom, 5)))
 	addr1bal += 5
 	suite.Require().NoError(err)
 	suite.Require().True(suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetBalance(suite.ChainA.GetContext(), suite.TestAccs[1], suite.defaultDenom).Amount.Int64() == addr1bal)
 
 	// Try setting admin to empty
-	_, err = suite.msgServer.ChangeAdmin(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgChangeAdmin(suite.TestAccs[1].String(), suite.defaultDenom, ""))
+	_, err = suite.msgServer.ChangeAdmin(suite.ChainA.GetContext(), types.NewMsgChangeAdmin(suite.TestAccs[1].String(), suite.defaultDenom, ""))
 	suite.Require().NoError(err)
 	denom = strings.Split(suite.defaultDenom, "/")
 	queryRes, err = suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
@@ -112,7 +112,7 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// Test minting to admins own account
-			_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, tc.amount)))
+			_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, tc.amount)))
 			if tc.valid {
 				addr0bal += 10
 				suite.Require().NoError(err)
@@ -132,7 +132,7 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 
 	// mint 10 default token for testAcc[0]
-	_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
+	_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
 	suite.NoError(err)
 	addr0bal += 10
 
@@ -174,7 +174,7 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// Test minting to admins own account
-			_, err := suite.msgServer.Burn(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgBurn(tc.admin, sdk.NewInt64Coin(tc.burnDenom, tc.amount)))
+			_, err := suite.msgServer.Burn(suite.ChainA.GetContext(), types.NewMsgBurn(tc.admin, sdk.NewInt64Coin(tc.burnDenom, tc.amount)))
 			if tc.valid {
 				addr0bal -= 10
 				suite.Require().NoError(err)
@@ -196,7 +196,7 @@ func (suite *KeeperTestSuite) TestForceTransferDenom() {
 	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 
 	// mint 10 default token for testAcc[0]
-	_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
+	_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(suite.defaultDenom, 10)))
 	suite.NoError(err)
 	addr0bal += 10
 
@@ -238,7 +238,7 @@ func (suite *KeeperTestSuite) TestForceTransferDenom() {
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// Test minting to admins own account
-			_, err := suite.msgServer.ForceTransfer(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgForceTransfer(tc.admin, sdk.NewInt64Coin(tc.transferDenom, tc.amount), suite.TestAccs[0].String(), suite.TestAccs[1].String()))
+			_, err := suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(tc.admin, sdk.NewInt64Coin(tc.transferDenom, tc.amount), suite.TestAccs[0].String(), suite.TestAccs[1].String()))
 			if tc.valid {
 				addr0bal -= 10
 				addr1bal += 10
@@ -303,15 +303,15 @@ func (suite *KeeperTestSuite) TestChangeAdminDenom() {
 			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 			suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
 
-			res, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
+			res, err := suite.msgServer.CreateDenom(suite.ChainA.GetContext(), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 			suite.Require().NoError(err)
 
 			testDenom := res.GetNewTokenDenom()
 
-			_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(testDenom, 10)))
+			_, err = suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(testDenom, 10)))
 			suite.Require().NoError(err)
 
-			_, err = suite.msgServer.ChangeAdmin(sdk.WrapSDKContext(suite.ChainA.GetContext()), tc.msgChangeAdmin(testDenom))
+			_, err = suite.msgServer.ChangeAdmin(suite.ChainA.GetContext(), tc.msgChangeAdmin(testDenom))
 			if tc.expectedChangeAdminPass {
 				suite.Require().NoError(err)
 			} else {
@@ -335,7 +335,7 @@ func (suite *KeeperTestSuite) TestChangeAdminDenom() {
 
 			// we test mint to test if admin authority is performed properly after admin change.
 			if tc.msgMint != nil {
-				_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), tc.msgMint(testDenom))
+				_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), tc.msgMint(testDenom))
 				if tc.expectedMintPass {
 					suite.Require().NoError(err)
 				} else {

@@ -53,7 +53,7 @@ func (qp *QueryPlugin) GetInterchainAccountAddress(ctx sdk.Context, req *binding
 		ConnectionId:        req.ConnectionID,
 	}
 
-	grpcResp, err := qp.icaControllerKeeper.InterchainAccountAddress(sdk.WrapSDKContext(ctx), &grpcReq)
+	grpcResp, err := qp.icaControllerKeeper.InterchainAccountAddress(ctx, &grpcReq)
 	if err != nil {
 		return nil, err
 	}

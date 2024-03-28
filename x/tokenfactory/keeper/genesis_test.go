@@ -30,7 +30,7 @@ func (suite *KeeperTestSuite) TestGenesis() {
 		},
 	}
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	context := app.BaseApp.NewContext(false)
+	context := suite.ChainA.GetContext()
 	// Test both with bank denom metadata set, and not set.
 	for i, denom := range genesisState.FactoryDenoms {
 		// hacky, sets bank metadata to exist if i != 0, to cover both cases.

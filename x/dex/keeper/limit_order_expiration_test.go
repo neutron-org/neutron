@@ -4,8 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v3/x/dex/keeper"

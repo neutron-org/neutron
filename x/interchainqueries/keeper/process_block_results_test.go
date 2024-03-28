@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	"github.com/golang/mock/gomock"
 
@@ -18,7 +20,7 @@ import (
 	tmtypes "github.com/cometbft/cometbft/types"
 	tmversion "github.com/cometbft/cometbft/version"
 	"github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
@@ -93,6 +95,16 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 }
 
 func NextBlock(chain *ibctesting.TestChain) {
+	_, err := chain.App.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height:             chain.CurrentHeader.Height,
+		Time:               chain.CurrentHeader.GetTime(),
+		NextValidatorsHash: chain.NextVals.Hash(),
+	})
+	require.NoError(chain.TB, err)
+
+	_, err = chain.App.Commit()
+	require.NoError(chain.TB, err)
+
 	// set the last header to the current header
 	// use nil trusted fields
 	ph, err := tmtypes.HeaderFromProto(chain.LastHeader.Header)
@@ -115,8 +127,6 @@ func NextBlock(chain *ibctesting.TestChain) {
 		ValidatorsHash:     chain.Vals.Hash(),
 		NextValidatorsHash: chain.Vals.Hash(),
 	}
-
-	// TODO: chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
 }
 
 // CommitBlock commits a block on the provided indexes and then increments the global time.
@@ -124,7 +134,6 @@ func NextBlock(chain *ibctesting.TestChain) {
 // CONTRACT: the passed in list of indexes must not contain duplicates
 func CommitBlock(coord *ibctesting.Coordinator, chains ...*ibctesting.TestChain) {
 	for _, chain := range chains {
-		chain.App.Commit()
 		NextBlock(chain)
 	}
 	coord.IncrementTime()
@@ -246,7 +255,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				}
 				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
 					RevisionNumber: 0,
-					RevisionHeight: 29,
+					RevisionHeight: 28,
 				})
 				suite.Require().NoError(err)
 

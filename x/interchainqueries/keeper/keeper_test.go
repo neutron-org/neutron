@@ -16,7 +16,7 @@ import (
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -144,14 +144,14 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 
 		msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-		res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+		res, err := msgSrv.RegisterInterchainQuery(ctx, &msg)
 
 		if tt.expectedErr != nil {
 			suite.Require().ErrorIs(err, tt.expectedErr)
 			suite.Require().Nil(res)
 		} else {
 			query, _ := keeper.Keeper.RegisteredQuery(
-				suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, sdk.WrapSDKContext(ctx),
+				suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx,
 				&iqtypes.QueryRegisteredQueryRequest{QueryId: 1})
 
 			suite.Require().Equal(iqtypes.DefaultQueryDeposit, query.RegisteredQuery.Deposit)
@@ -431,11 +431,11 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			msgSrv := keeper.NewMsgServerImpl(iqkeeper)
 
 			tt.query.Sender = contractAddress.String()
-			resRegister, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &tt.query)
+			resRegister, err := msgSrv.RegisterInterchainQuery(ctx, &tt.query)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(resRegister)
 
-			resUpdate, err := msgSrv.UpdateInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+			resUpdate, err := msgSrv.UpdateInterchainQuery(ctx, &msg)
 
 			if tt.expectedErr != nil {
 				suite.Require().ErrorIs(err, tt.expectedErr)
@@ -603,12 +603,12 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 			msgSrv := keeper.NewMsgServerImpl(iqkeeper)
 			query.Sender = contractAddress.String()
 
-			resRegister, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &query)
+			resRegister, err := msgSrv.RegisterInterchainQuery(ctx, &query)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(resRegister)
 
 			balance, balanceErr := bankKeeper.Balance(
-				sdk.WrapSDKContext(ctx),
+				ctx,
 				&banktypes.QueryBalanceRequest{
 					Address: contractAddress.String(),
 					Denom:   params.DefaultDenom,
@@ -651,7 +651,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				}
 			}
 
-			respRm, err := msgSrv.RemoveInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+			respRm, err := msgSrv.RemoveInterchainQuery(ctx, &msg)
 			// TxQueriesCleanup is supposed to be called in the app's EndBlock, but suite.ChainA.NextBlock()
 			// passes an incorrect context to the EndBlock and thus Keeper's store is empty. So we
 			// have to call it here manually and directly pass the right context into it.
@@ -675,7 +675,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				}
 			} else {
 				balance, balanceErr := bankKeeper.Balance(
-					sdk.WrapSDKContext(ctx),
+					ctx,
 					&banktypes.QueryBalanceRequest{
 						Address: contractAddress.String(),
 						Denom:   params.DefaultDenom,
@@ -811,7 +811,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -862,7 +862,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -916,7 +916,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -967,7 +967,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1019,7 +1019,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointA.UpdateClient())
@@ -1069,7 +1069,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1081,6 +1081,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 					Data:   clientKey,
 					Prove:  true,
 				})
+				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
 					QueryId:  res.Id,
@@ -1120,7 +1121,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1172,7 +1173,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1222,7 +1223,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1273,7 +1274,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1327,7 +1328,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1387,7 +1388,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-				res, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &registerMsg)
+				res, err := msgSrv.RegisterInterchainQuery(ctx, &registerMsg)
 				suite.Require().NoError(err)
 
 				// suite.NoError(suite.Path.EndpointB.UpdateClient())
@@ -1451,7 +1452,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 			msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
 
-			res, err := msgSrv.SubmitQueryResult(sdk.WrapSDKContext(ctx), &msg)
+			res, err := msgSrv.SubmitQueryResult(ctx, &msg)
 
 			if tt.expectedError != nil {
 				suite.Require().ErrorIs(err, tt.expectedError)
@@ -1721,7 +1722,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 	suite.Require().NoError(err)
 	msgSrv := keeper.NewMsgServerImpl(iqkeeper)
 
-	resRegister, err := msgSrv.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &iqtypes.MsgRegisterInterchainQuery{
+	resRegister, err := msgSrv.RegisterInterchainQuery(ctx, &iqtypes.MsgRegisterInterchainQuery{
 		QueryType:          string(iqtypes.InterchainQueryTypeKV),
 		Keys:               nil,
 		TransactionsFilter: "",
@@ -1741,7 +1742,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 
 	newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 	suite.Require().NotEmpty(newContractAddress)
-	resp, err := msgSrv.RemoveInterchainQuery(sdk.WrapSDKContext(ctx), &iqtypes.MsgRemoveInterchainQueryRequest{
+	resp, err := msgSrv.RemoveInterchainQuery(ctx, &iqtypes.MsgRemoveInterchainQueryRequest{
 		QueryId: 1,
 		Sender:  newContractAddress.String(),
 	})

@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -21,7 +20,6 @@ var _ = strconv.IntSize
 
 func TestFailureQuerySingle(t *testing.T) {
 	k, ctx := keepertest.ContractManagerKeeper(t, nil)
-	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNFailure(k, ctx, 2, 2)
 	for _, tc := range []struct {
 		desc     string
@@ -63,7 +61,7 @@ func TestFailureQuerySingle(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			response, err := k.AddressFailures(wctx, tc.request)
+			response, err := k.AddressFailures(ctx, tc.request)
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 			} else {
@@ -79,7 +77,6 @@ func TestFailureQuerySingle(t *testing.T) {
 
 func TestFailureQueryPaginated(t *testing.T) {
 	k, ctx := keepertest.ContractManagerKeeper(t, nil)
-	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNFailure(k, ctx, 5, 3)
 	flattenItems := flattenFailures(msgs)
 
@@ -96,7 +93,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(flattenItems); i += step {
-			resp, err := k.Failures(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := k.Failures(ctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -109,7 +106,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(flattenItems); i += step {
-			resp, err := k.Failures(wctx, request(next, 0, uint64(step), false))
+			resp, err := k.Failures(ctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Failures), step)
 			require.Subset(t,
@@ -120,7 +117,7 @@ func TestFailureQueryPaginated(t *testing.T) {
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
-		resp, err := k.Failures(wctx, request(nil, 0, 0, true))
+		resp, err := k.Failures(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
 		require.Equal(t, len(flattenItems), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
@@ -129,11 +126,11 @@ func TestFailureQueryPaginated(t *testing.T) {
 		)
 	})
 	t.Run("MoreThanLimit", func(t *testing.T) {
-		_, err := k.Failures(wctx, request(nil, 0, keeper.FailuresQueryMaxLimit+1, true))
+		_, err := k.Failures(ctx, request(nil, 0, keeper.FailuresQueryMaxLimit+1, true))
 		require.ErrorContains(t, err, "limit is more than maximum allowed")
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := k.Failures(wctx, nil)
+		_, err := k.Failures(ctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
 	})
 }

@@ -54,7 +54,7 @@ func (msg *MsgRegisterInterchainAccount) Type() string {
 }
 
 func (msg *MsgRegisterInterchainAccount) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
 //----------------------------------------------------------------
@@ -101,7 +101,7 @@ func (msg *MsgSubmitTx) Type() string {
 }
 
 func (msg *MsgSubmitTx) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
 // PackTxMsgAny marshals the sdk.Msg payload to a protobuf Any type
@@ -151,7 +151,7 @@ func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 }
 
 func (msg *MsgUpdateParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
 func (msg *MsgUpdateParams) ValidateBasic() error {
