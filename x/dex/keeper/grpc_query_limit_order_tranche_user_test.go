@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -18,7 +17,6 @@ import (
 
 func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNLimitOrderTrancheUser(keeper, ctx, 2)
 	for _, tc := range []struct {
 		desc     string
@@ -56,7 +54,7 @@ func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			response, err := keeper.LimitOrderTrancheUser(wctx, tc.request)
+			response, err := keeper.LimitOrderTrancheUser(ctx, tc.request)
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 			} else {
@@ -72,7 +70,6 @@ func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {
 
 func TestLimitOrderTrancheUserQueryPaginated(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNLimitOrderTrancheUser(keeper, ctx, 5)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllLimitOrderTrancheUserRequest {
@@ -88,7 +85,7 @@ func TestLimitOrderTrancheUserQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.LimitOrderTrancheUserAll(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := keeper.LimitOrderTrancheUserAll(ctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.LimitOrderTrancheUser), step)
 			require.Subset(t,
@@ -101,7 +98,7 @@ func TestLimitOrderTrancheUserQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.LimitOrderTrancheUserAll(wctx, request(next, 0, uint64(step), false))
+			resp, err := keeper.LimitOrderTrancheUserAll(ctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.LimitOrderTrancheUser), step)
 			require.Subset(t,
@@ -112,7 +109,7 @@ func TestLimitOrderTrancheUserQueryPaginated(t *testing.T) {
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
-		resp, err := keeper.LimitOrderTrancheUserAll(wctx, request(nil, 0, 0, true))
+		resp, err := keeper.LimitOrderTrancheUserAll(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
 		require.Equal(t, len(msgs), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
@@ -121,14 +118,13 @@ func TestLimitOrderTrancheUserQueryPaginated(t *testing.T) {
 		)
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := keeper.LimitOrderTrancheUserAll(wctx, nil)
+		_, err := keeper.LimitOrderTrancheUserAll(ctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
 	})
 }
 
 func TestLimitOrderTrancheUserAllByAddress(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
 	address := sample.AccAddress()
 	msgs := createNLimitOrderTrancheUserWithAddress(keeper, ctx, address, 5)
 
@@ -146,7 +142,7 @@ func TestLimitOrderTrancheUserAllByAddress(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.LimitOrderTrancheUserAllByAddress(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := keeper.LimitOrderTrancheUserAllByAddress(ctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.LimitOrders), step)
 			require.Subset(t,
@@ -159,7 +155,7 @@ func TestLimitOrderTrancheUserAllByAddress(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.LimitOrderTrancheUserAllByAddress(wctx, request(next, 0, uint64(step), false))
+			resp, err := keeper.LimitOrderTrancheUserAllByAddress(ctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.LimitOrders), step)
 			require.Subset(t,
@@ -170,7 +166,7 @@ func TestLimitOrderTrancheUserAllByAddress(t *testing.T) {
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
-		resp, err := keeper.LimitOrderTrancheUserAllByAddress(wctx, request(nil, 0, 0, true))
+		resp, err := keeper.LimitOrderTrancheUserAllByAddress(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
 		require.Equal(t, len(msgs), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
@@ -179,7 +175,7 @@ func TestLimitOrderTrancheUserAllByAddress(t *testing.T) {
 		)
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := keeper.LimitOrderTrancheUserAllByAddress(wctx, nil)
+		_, err := keeper.LimitOrderTrancheUserAllByAddress(ctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
 	})
 }

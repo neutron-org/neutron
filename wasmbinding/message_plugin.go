@@ -34,7 +34,7 @@ import (
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
 	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
@@ -174,7 +174,7 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 func handleDexMsg[T sdk.LegacyMsg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
-	//TODO: is this even legal to do?
+	// TODO: is this even legal to do?
 	validatableMsg := any(msg).(sdk.HasValidateBasic)
 	if err := validatableMsg.ValidateBasic(); err != nil {
 		return nil, errors.Wrapf(err, "failed to validate %T", msg)
@@ -492,7 +492,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		}
 	case proposal.UpgradeProposal != nil:
 		p := proposal.UpgradeProposal
-		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
+		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{ //nolint:staticcheck
 			Title:       p.Title,
 			Description: p.Description,
 			Plan: softwareUpgrade.Plan{
@@ -507,7 +507,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		}
 	case proposal.ClientUpdateProposal != nil:
 		p := proposal.ClientUpdateProposal
-		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{
+		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{ //nolint:staticcheck
 			Title:              p.Title,
 			Description:        p.Description,
 			SubjectClientId:    p.SubjectClientId,
@@ -541,7 +541,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
 	var (
 		msg    *admintypes.MsgSubmitProposal
-		sdkMsg sdk.LegacyMsg
+		sdkMsg sdk.Msg
 	)
 
 	cdc := m.AdminKeeper.Codec()
@@ -550,11 +550,14 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
 	}
 
-	signers := sdkMsg.GetSigners()
+	signers, _, err := cdc.GetMsgV1Signers(sdkMsg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get signers from incoming sdk message")
+	}
 	if len(signers) != 1 {
 		return nil, errors.Wrap(sdkerrors.ErrorInvalidSigner, "should be 1 signer")
 	}
-	if !signers[0].Equals(authority) {
+	if !sdk.AccAddress(signers[0]).Equals(authority) {
 		return nil, errors.Wrap(sdkerrors.ErrUnauthorized, "authority in incoming msg is not equal to admin module")
 	}
 
