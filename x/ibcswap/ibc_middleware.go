@@ -418,11 +418,5 @@ func validateSwapPacket(packet channeltypes.Packet, transferData transfertypes.F
 		return sdkerrors.Wrap(types.ErrInvalidSwapMetadata, "Transfer amount must be >= AmountIn")
 	}
 
-	if sm.ContainsPFM() {
-		return sdkerrors.Wrap(
-			types.ErrInvalidSwapMetadata,
-			"ibcswap middleware cannot be used in conjunction with packet-forward-middleware",
-		)
-	}
 	return nil
 }
