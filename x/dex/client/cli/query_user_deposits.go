@@ -29,9 +29,15 @@ func CmdListUserDeposits() *cobra.Command {
 				return err
 			}
 
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
 			params := &types.QueryAllUserDepositsRequest{
 				Address:         reqAddress,
 				IncludePoolData: includePoolData,
+				Pagination:      pageReq,
 			}
 
 			res, err := queryClient.UserDepositsAll(cmd.Context(), params)
