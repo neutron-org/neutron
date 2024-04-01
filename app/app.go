@@ -1,7 +1,16 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"github.com/neutron-org/neutron/v3/utils"
+	"github.com/skip-mev/slinky/abci/proposals"
+	compression "github.com/skip-mev/slinky/abci/strategies/codec"
+	"github.com/skip-mev/slinky/abci/strategies/currencypair"
+	"github.com/skip-mev/slinky/abci/ve"
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
+	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 	"io"
 	"io/fs"
 	"net/http"
@@ -57,6 +66,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
+
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -177,6 +187,9 @@ import (
 
 	"github.com/skip-mev/block-sdk/v2/abci/checktx"
 	"github.com/skip-mev/block-sdk/v2/block/base"
+
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )
 
 const (
@@ -338,6 +351,13 @@ type App struct {
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
 	WasmKeeper wasmkeeper.Keeper
+
+	// slinky
+	MarketMapKeeper *marketmapkeeper.Keeper
+	OracleKeeper    *oraclekeeper.Keeper
+	// processes
+	//oraclePrometheusServer *promserver.PrometheusServer
+	oracleClient oracleclient.OracleClient
 
 	// mm is the module manager
 	mm *module.Manager
@@ -1055,12 +1075,83 @@ func New(
 		app.GetTxConfig().TxEncoder(),
 		mempool,
 	)
-	app.SetPrepareProposal(handler.PrepareProposalHandler())
 
-	// we use a no-op ProcessProposal, this way, we accept all proposals in avoidance
-	// of liveness failures due to Prepare / Process inconsistency. In other words,
-	// this ProcessProposal always returns ACCEPT.
-	app.SetProcessProposal(baseapp.NoOpProcessProposal())
+	// Read general config from app-opts, and construct oracle service.
+	cfg, err := oracleconfig.ReadConfigFromAppOpts(appOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	// set hooks
+	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
+	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
+	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
+	// latency in VerifyVoteExtension requests and more.
+	oracleMetrics, err := servicemetrics.NewMetricsFromConfig(cfg, app.ChainID())
+	if err != nil {
+		panic(err)
+	}
+
+	// Create the oracle service.
+	app.oracleClient, err = oracleclient.NewClientFromConfig(
+		cfg,
+		app.Logger().With("client", "oracle"),
+		oracleMetrics,
+	)
+	if err != nil {
+		panic(err) // TODO: panic?
+	}
+
+	// Connect to the oracle service (default timeout of 5 seconds).
+	go func() {
+		if err := app.oracleClient.Start(context.Background()); err != nil { // TODO: change background to something cancellable across the app
+			app.Logger().Error("failed to start oracle client", "err", err)
+			panic(err)
+		}
+
+		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
+	}()
+
+	// If the oracle is enabled, then create the oracle service and connect to it.
+	// Start the prometheus server if required
+	//if cfg.MetricsEnabled {
+	//	//logger, err := zap.NewProduction()
+	//	//if err != nil {
+	//	//	panic(err)
+	//	//}
+	//
+	//	app.oraclePrometheusServer, err = promserver.NewPrometheusServer(cfg.PrometheusServerAddress, logger)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//
+	//	// start the prometheus server
+	//	go app.oraclePrometheusServer.Start()
+	//}
+
+	// Create special kind of store to implement GetPubKeyByConsAddr with ConsumerKeeper (as we don't have StakingKeeper)
+	consumerValidatorStore := utils.NewConsumerValidatorStore(&app.ConsumerKeeper)
+
+	// Create the proposal handler that will be used to fill proposals with
+	// transactions and oracle data.
+	proposalHandler := proposals.NewProposalHandler(
+		app.Logger(),
+		handler.PrepareProposalHandler(),
+		baseapp.NoOpProcessProposal(),
+		ve.NewDefaultValidateVoteExtensionsFn(consumerValidatorStore), // TODO: figure out this
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		oracleMetrics,
+	)
+	app.SetPrepareProposal(proposalHandler.PrepareProposalHandler())
+	app.SetProcessProposal(proposalHandler.ProcessProposalHandler())
 
 	// block-sdk CheckTx handler
 	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
