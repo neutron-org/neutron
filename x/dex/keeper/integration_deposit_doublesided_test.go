@@ -228,9 +228,9 @@ func (s *DexTestSuite) TestDepositValueAccural() {
 
 	for i := 0; i < 100; i++ {
 		if i%2 == 0 {
-			s.bobLimitSells("TokenB", -10, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+			s.bobLimitSells("TokenB", -11, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		} else {
-			s.bobLimitSells("TokenA", 10, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+			s.bobLimitSells("TokenA", 11, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		}
 	}
 	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)

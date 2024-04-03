@@ -184,4 +184,9 @@ var (
 		1153,
 		"Can only provide a single deposit amount for each tick, fee pair",
 	)
+	ErrLimitPriceNotSatisfied = sdkerrors.Register(
+		ModuleName,
+		1154,
+		"Trade cannot be filled at the specified LimitPrice",
+	)
 )

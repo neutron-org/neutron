@@ -326,46 +326,35 @@ func (k Keeper) PlaceLimitOrderCore(
 
 	amountLeft, totalIn := amountIn, math.ZeroInt()
 
-	// For everything except just-in-time (JIT) orders try to execute as a swap first
-	if !orderType.IsJIT() {
-		// This is ok because tokenOut is provided to the constructor of PairID above
-		takerTradePairID := pairID.MustTradePairIDFromMaker(tokenOut)
-		var limitPrice math_utils.PrecDec
-		limitPrice, err = types.CalcPrice(tickIndexInToOut)
-		if err != nil {
-			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-		}
+	// This is ok because tokenOut is provided to the constructor of PairID above
+	takerTradePairID := pairID.MustTradePairIDFromMaker(tokenOut)
+	var limitPrice math_utils.PrecDec
+	limitPrice, err = types.CalcPrice(tickIndexInToOut)
+	if err != nil {
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+	}
 
-		var orderFilled bool
-		swapInCoin, swapOutCoin, orderFilled, err = k.SwapWithCache(
+	if orderType.IsTakerOnly() {
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, orderType)
+	} else {
+		swapInCoin, swapOutCoin, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice)
+	}
+	if err != nil {
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+	}
+
+	totalIn = swapInCoin.Amount
+	amountLeft = amountLeft.Sub(swapInCoin.Amount)
+
+	if swapOutCoin.IsPositive() {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(
 			ctx,
-			takerTradePairID,
-			amountIn,
-			maxAmountOut,
-			&limitPrice,
+			types.ModuleName,
+			receiverAddr,
+			sdk.Coins{swapOutCoin},
 		)
 		if err != nil {
 			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-		}
-
-		if orderType.IsFoK() && !orderFilled {
-			err = types.ErrFoKLimitOrderNotFilled
-			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-		}
-
-		totalIn = swapInCoin.Amount
-		amountLeft = amountLeft.Sub(swapInCoin.Amount)
-
-		if swapOutCoin.IsPositive() {
-			err = k.bankKeeper.SendCoinsFromModuleToAccount(
-				ctx,
-				types.ModuleName,
-				receiverAddr,
-				sdk.Coins{swapOutCoin},
-			)
-			if err != nil {
-				return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-			}
 		}
 	}
 

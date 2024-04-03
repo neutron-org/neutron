@@ -114,3 +114,66 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 		panic("Invalid liquidity type")
 	}
 }
+
+func (k Keeper) TakerLimitOrderSwap(
+	ctx sdk.Context,
+	tradePairID types.TradePairID,
+	amountIn math.Int,
+	maxAmountOut *math.Int,
+	limitPrice math_utils.PrecDec,
+	orderType types.LimitOrderType) (totalInCoin, totalOutCoin sdk.Coin, err error) {
+
+	totalInCoin, totalOutCoin, orderFilled, err := k.SwapWithCache(
+		ctx,
+		&tradePairID,
+		amountIn,
+		maxAmountOut,
+		&limitPrice,
+	)
+
+	if orderType.IsFoK() && !orderFilled {
+		return sdk.Coin{}, sdk.Coin{}, types.ErrFoKLimitOrderNotFilled
+	}
+
+	if totalInCoin.Amount.IsZero() {
+		return sdk.Coin{}, sdk.Coin{}, types.ErrInsufficientLiquidity
+	}
+
+	truePrice := math_utils.NewPrecDecFromInt(totalOutCoin.Amount).QuoInt(totalInCoin.Amount)
+
+	if truePrice.LT(limitPrice) {
+		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+	}
+
+	return totalInCoin, totalOutCoin, nil
+
+}
+
+func (k Keeper) MakerLimitOrderSwap(
+	ctx sdk.Context,
+	tradePairID types.TradePairID,
+	amountIn math.Int,
+	limitPrice math_utils.PrecDec) (totalInCoin, totalOutCoin sdk.Coin, err error) {
+
+	totalInCoin, totalOutCoin, _, err = k.SwapWithCache(
+		ctx,
+		&tradePairID,
+		amountIn,
+		nil,
+		&limitPrice,
+	)
+
+	if totalInCoin.Amount.IsPositive() {
+		remainingIn := amountIn.Sub(totalInCoin.Amount)
+		expectedOutMakerPortion := limitPrice.MulInt(remainingIn).Ceil()
+		totalExpectedOut := expectedOutMakerPortion.Add(math_utils.NewPrecDecFromInt(totalOutCoin.Amount))
+		truePrice := totalExpectedOut.QuoInt(amountIn)
+
+		if truePrice.LT(limitPrice) {
+			return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+		}
+	}
+
+	return totalInCoin, totalOutCoin, nil
+
+}
