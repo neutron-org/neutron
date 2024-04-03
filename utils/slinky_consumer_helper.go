@@ -2,8 +2,10 @@ package utils
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"fmt"
+
+	"cosmossdk.io/math"
+
 	cmtprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	types2 "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -90,58 +92,57 @@ type ValidatorWithOnlyBondedTokens struct {
 }
 
 func (v ValidatorWithOnlyBondedTokens) IsJailed() bool {
-
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetMoniker() string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetStatus() stakingtypes.BondStatus {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) IsBonded() bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) IsUnbonded() bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) IsUnbonding() bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetOperator() string {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) ConsPubKey() (types2.PubKey, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) TmConsPublicKey() (cmtprotocrypto.PublicKey, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetConsAddr() ([]byte, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetTokens() math.Int {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -149,47 +150,47 @@ func (v ValidatorWithOnlyBondedTokens) GetBondedTokens() math.Int {
 	return math.NewInt(v.v.Power)
 }
 
-func (v ValidatorWithOnlyBondedTokens) GetConsensusPower(m math.Int) int64 {
-	//TODO implement me
+func (v ValidatorWithOnlyBondedTokens) GetConsensusPower(_ math.Int) int64 {
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetCommission() math.LegacyDec {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetMinSelfDelegation() math.Int {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (v ValidatorWithOnlyBondedTokens) GetDelegatorShares() math.LegacyDec {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
-func (v ValidatorWithOnlyBondedTokens) TokensFromShares(dec math.LegacyDec) math.LegacyDec {
-	//TODO implement me
+func (v ValidatorWithOnlyBondedTokens) TokensFromShares(_ math.LegacyDec) math.LegacyDec {
+	// TODO implement me
 	panic("implement me")
 }
 
-func (v ValidatorWithOnlyBondedTokens) TokensFromSharesTruncated(dec math.LegacyDec) math.LegacyDec {
-	//TODO implement me
+func (v ValidatorWithOnlyBondedTokens) TokensFromSharesTruncated(_ math.LegacyDec) math.LegacyDec {
+	// TODO implement me
 	panic("implement me")
 }
 
-func (v ValidatorWithOnlyBondedTokens) TokensFromSharesRoundUp(dec math.LegacyDec) math.LegacyDec {
-	//TODO implement me
+func (v ValidatorWithOnlyBondedTokens) TokensFromSharesRoundUp(_ math.LegacyDec) math.LegacyDec {
+	// TODO implement me
 	panic("implement me")
 }
 
-func (v ValidatorWithOnlyBondedTokens) SharesFromTokens(amt math.Int) (math.LegacyDec, error) {
-	//TODO implement me
+func (v ValidatorWithOnlyBondedTokens) SharesFromTokens(_ math.Int) (math.LegacyDec, error) {
+	// TODO implement me
 	panic("implement me")
 }
 
-func (v ValidatorWithOnlyBondedTokens) SharesFromTokensTruncated(amt math.Int) (math.LegacyDec, error) {
-	//TODO implement me
+func (v ValidatorWithOnlyBondedTokens) SharesFromTokensTruncated(_ math.Int) (math.LegacyDec, error) {
+	// TODO implement me
 	panic("implement me")
 }

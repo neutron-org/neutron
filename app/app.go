@@ -3,7 +3,13 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/neutron-org/neutron/v3/utils"
+	"io"
+	"io/fs"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
+
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
 	"github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
@@ -13,12 +19,8 @@ import (
 	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
-	"io"
-	"io/fs"
-	"net/http"
-	"os"
-	"path/filepath"
-	"time"
+
+	"github.com/neutron-org/neutron/v3/utils"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -361,7 +363,7 @@ type App struct {
 	MarketMapKeeper *marketmapkeeper.Keeper
 	OracleKeeper    *oraclekeeper.Keeper
 	// processes
-	//oraclePrometheusServer *promserver.PrometheusServer
+	// oraclePrometheusServer *promserver.PrometheusServer
 	oracleClient oracleclient.OracleClient
 
 	// mm is the module manager
@@ -1132,7 +1134,7 @@ func New(
 
 	// If the oracle is enabled, then create the oracle service and connect to it.
 	// Start the prometheus server if required
-	//if cfg.MetricsEnabled {
+	// if cfg.MetricsEnabled {
 	//	//logger, err := zap.NewProduction()
 	//	//if err != nil {
 	//	//	panic(err)
