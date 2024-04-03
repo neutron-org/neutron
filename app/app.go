@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/skip-mev/slinky/x/oracle"
 	"io"
 	"io/fs"
 	"net/http"
@@ -194,9 +195,10 @@ import (
 	"github.com/skip-mev/block-sdk/v2/block/base"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	marketmapkeepertypes "github.com/skip-mev/slinky/x/marketmap/types"
+	marketmap "github.com/skip-mev/slinky/x/marketmap/module"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
-	oraclekeepertypes "github.com/skip-mev/slinky/x/oracle/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 const (
@@ -255,6 +257,8 @@ var (
 		// globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
+		oracle.AppModuleBasic{},
+		marketmap.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -273,6 +277,8 @@ var (
 		crontypes.ModuleName:                          nil,
 		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner},
 		ibcswaptypes.ModuleName:                       {authtypes.Burner},
+		oracletypes.ModuleName:                        nil,
+		marketmaptypes.ModuleName:                     nil,
 	}
 )
 
@@ -426,6 +432,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
+		oracletypes.StoreKey, marketmaptypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -512,7 +519,7 @@ func New(
 	)
 
 	// ... other modules keepers
-	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper
+	// pre-initialize ConsumerKeeper to satisfy ibckeeper.NewKeeper
 	// which would panic on nil or zero keeper
 	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe
 	// communication over IBC is not affected by these changes
@@ -740,16 +747,21 @@ func New(
 	)
 
 	app.MarketMapKeeper = marketmapkeeper.NewKeeper(
-		runtime.NewKVStoreService(keys[marketmapkeepertypes.StoreKey]),
+		runtime.NewKVStoreService(keys[marketmaptypes.StoreKey]),
 		appCodec,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName),
 	)
+	marketmapModule := marketmap.NewAppModule(appCodec, app.MarketMapKeeper)
 
-	oracleKeeper := oraclekeeper.NewKeeper(runtime.NewKVStoreService(keys[oraclekeepertypes.StoreKey]),
+	oracleKeeper := oraclekeeper.NewKeeper(runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
 		app.MarketMapKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName))
 	app.OracleKeeper = &oracleKeeper // TODO: why link to oracleKeeper?
+	oracleModule := oracle.NewAppModule(appCodec, *app.OracleKeeper)
+
+	// set hooks
+	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
 
 	app.CronKeeper = *cronkeeper.NewKeeper(
 		appCodec,
@@ -885,6 +897,8 @@ func New(
 		// globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
 		swapModule,
 		dexModule,
+		marketmapModule,
+		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
@@ -922,6 +936,8 @@ func New(
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
@@ -955,6 +971,8 @@ func New(
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
@@ -995,6 +1013,8 @@ func New(
 		ibchookstypes.ModuleName, // after auth keeper
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
@@ -1030,6 +1050,8 @@ func New(
 		feeBurnerModule,
 		cronModule,
 		dexModule,
+		//marketmapModule, TODO: ?
+		//oracleModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -1100,9 +1122,6 @@ func New(
 	if err != nil {
 		panic(err)
 	}
-
-	// set hooks
-	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
 
 	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
 	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
@@ -1194,10 +1213,9 @@ func New(
 
 	// Create the aggregation function that will be used to aggregate oracle data
 	// from each validator.
-	validatorStore2 := utils.NewConsumerValidatorStoreForAggregation(&app.ConsumerKeeper)
 	aggregatorFn := voteweighted.MedianFromContext(
 		app.Logger(),
-		validatorStore2,
+		validatorStore,
 		voteweighted.DefaultPowerThreshold,
 	)
 
@@ -1314,6 +1332,7 @@ func (app *App) setupUpgradeHandlers() {
 					AdminModule:        app.AdminmoduleKeeper,
 					ConsensusKeeper:    &app.ConsensusParamsKeeper,
 					ConsumerKeeper:     &app.ConsumerKeeper,
+					MarketmapKeeper:    app.MarketMapKeeper,
 					// GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1510,6 +1529,9 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
+
+	// TODO: this registration is only for legacy params?
+	// TODO: no params for oracle module?
 
 	// paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 

@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 
 	"cosmossdk.io/math"
 
@@ -14,11 +15,13 @@ import (
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	"github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	"github.com/skip-mev/slinky/abci/ve"
-	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 )
 
 // Implement `ve.ValidatorStore` for `ConsumerValidatorStore` in order to pass in through to ValidateVoteExtensionsFn
 var _ ve.ValidatorStore = (*ConsumerValidatorStore)(nil)
+
+// Implement `voteweighted.ValidatorStore` for `ConsumerValidatorStoreForAggregation` in order to pass in through to ValidateVoteExtensionsFn
+var _ voteweighted.ValidatorStore = (*ConsumerValidatorStore)(nil)
 
 type ConsumerValidatorStore struct {
 	k *ccvconsumerkeeper.Keeper
@@ -52,20 +55,7 @@ func (c ConsumerValidatorStore) GetPubKeyByConsAddr(ctx context.Context, consAdd
 	return tmPubKey, nil
 }
 
-// Implement `voteweighted.ValidatorStore` for `ConsumerValidatorStoreForAggregation` in order to pass in through to ValidateVoteExtensionsFn
-var _ voteweighted.ValidatorStore = (*ConsumerValidatorStoreForAggregation)(nil)
-
-type ConsumerValidatorStoreForAggregation struct {
-	k *ccvconsumerkeeper.Keeper
-}
-
-func NewConsumerValidatorStoreForAggregation(keeper *ccvconsumerkeeper.Keeper) ConsumerValidatorStoreForAggregation {
-	return ConsumerValidatorStoreForAggregation{
-		k: keeper,
-	}
-}
-
-func (c ConsumerValidatorStoreForAggregation) ValidatorByConsAddr(ctx context.Context, consAddr sdk.ConsAddress) (stakingtypes.ValidatorI, error) {
+func (c ConsumerValidatorStore) ValidatorByConsAddr(ctx context.Context, consAddr sdk.ConsAddress) (stakingtypes.ValidatorI, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	val, found := c.k.GetCCValidator(sdkCtx, consAddr)
 	if !found {
@@ -76,7 +66,7 @@ func (c ConsumerValidatorStoreForAggregation) ValidatorByConsAddr(ctx context.Co
 	return ValidatorWithOnlyBondedTokens{v: &val}, nil
 }
 
-func (c ConsumerValidatorStoreForAggregation) TotalBondedTokens(ctx context.Context) (math.Int, error) {
+func (c ConsumerValidatorStore) TotalBondedTokens(ctx context.Context) (math.Int, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	validators := c.k.GetAllCCValidator(sdkCtx)
 	totalPower := int64(0)
