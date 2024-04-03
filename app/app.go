@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/neutron-org/neutron/v3/utils"
+	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
 	"github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
 	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 	"io"
@@ -16,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -189,7 +192,9 @@ import (
 	"github.com/skip-mev/block-sdk/v2/block/base"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	marketmapkeepertypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	oraclekeepertypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 const (
@@ -732,6 +737,18 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	app.MarketMapKeeper = marketmapkeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[marketmapkeepertypes.StoreKey]),
+		appCodec,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName),
+	)
+
+	oracleKeeper := oraclekeeper.NewKeeper(runtime.NewKVStoreService(keys[oraclekeepertypes.StoreKey]),
+		appCodec,
+		app.MarketMapKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName))
+	app.OracleKeeper = &oracleKeeper // TODO: why link to oracleKeeper?
+
 	app.CronKeeper = *cronkeeper.NewKeeper(
 		appCodec,
 		keys[crontypes.StoreKey],
@@ -1084,12 +1101,13 @@ func New(
 
 	// set hooks
 	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
+
 	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
 	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
 	// latency in VerifyVoteExtension requests and more.
 	oracleMetrics, err := servicemetrics.NewMetricsFromConfig(cfg, app.ChainID())
 	if err != nil {
-		panic(err)
+		panic(err) // TODO: panic?
 	}
 
 	// Create the oracle service.
@@ -1106,7 +1124,7 @@ func New(
 	go func() {
 		if err := app.oracleClient.Start(context.Background()); err != nil { // TODO: change background to something cancellable across the app
 			app.Logger().Error("failed to start oracle client", "err", err)
-			panic(err)
+			panic(err) // TODO: panic?
 		}
 
 		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
@@ -1130,7 +1148,7 @@ func New(
 	//}
 
 	// Create special kind of store to implement GetPubKeyByConsAddr with ConsumerKeeper (as we don't have StakingKeeper)
-	consumerValidatorStore := utils.NewConsumerValidatorStore(&app.ConsumerKeeper)
+	validatorStore := utils.NewConsumerValidatorStore(&app.ConsumerKeeper)
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
@@ -1138,7 +1156,7 @@ func New(
 		app.Logger(),
 		handler.PrepareProposalHandler(),
 		baseapp.NoOpProcessProposal(),
-		ve.NewDefaultValidateVoteExtensionsFn(consumerValidatorStore), // TODO: figure out this
+		ve.NewDefaultValidateVoteExtensionsFn(validatorStore),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
@@ -1171,6 +1189,51 @@ func New(
 	)
 
 	app.SetCheckTx(parityCheckTx.CheckTx())
+
+	// Create the aggregation function that will be used to aggregate oracle data
+	// from each validator.
+	validatorStore2 := utils.NewConsumerValidatorStoreForAggregation(&app.ConsumerKeeper)
+	aggregatorFn := voteweighted.MedianFromContext(
+		app.Logger(),
+		validatorStore2,
+		voteweighted.DefaultPowerThreshold,
+	)
+
+	// Create the pre-finalize block hook that will be used to apply oracle data
+	// to the state before any transactions are executed (in finalize block).
+	oraclePreBlockHandler := oraclepreblock.NewOraclePreBlockHandler(
+		app.Logger(),
+		aggregatorFn,
+		app.OracleKeeper,
+		oracleMetrics,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+	)
+	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
+
+	// Create the vote extensions handler that will be used to extend and verify
+	// vote extensions (i.e. oracle data).
+	voteExtensionsHandler := ve.NewVoteExtensionHandler(
+		app.Logger(),
+		app.oracleClient,
+		time.Second,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		oraclePreBlockHandler.PreBlocker(),
+		oracleMetrics,
+	)
+	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
+	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
