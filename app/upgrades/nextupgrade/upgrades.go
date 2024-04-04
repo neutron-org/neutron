@@ -47,10 +47,8 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 		return err
 	}
 
+	// TODO: should be authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String()
 	marketAuthority := "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
-	//  or  for pion
-	// TODO: if pion-1, set "neutron1kvxlf27r0h7mzjqgdydqdf76dtlyvwz6u9q8tysfae53ajv8urtq4fdkv"
-
 	marketmapParams := marketmaptypes.Params{
 		MarketAuthority: marketAuthority,
 		Version:         params.Version,
