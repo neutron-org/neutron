@@ -16,7 +16,7 @@ require (
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
-	github.com/cometbft/cometbft v0.38.5
+	github.com/cometbft/cometbft v0.38.6
 	github.com/cosmos/admin-module v0.0.0-20220204080909-475a98e03f31
 	github.com/cosmos/cosmos-db v1.0.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.4
@@ -84,7 +84,7 @@ require (
 	github.com/cockroachdb/pebble v1.1.0 // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
-	github.com/cometbft/cometbft-db v0.10.0 // indirect
+	github.com/cometbft/cometbft-db v0.11.0 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
@@ -215,7 +215,7 @@ require (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240304172302-564e5d10417a
-	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.1-0.20240222150313-41be244e33e8
+	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240226131019-8efae68de5cc
 	github.com/cosmos/interchain-security/v5 => github.com/neutron-org/interchain-security/v5 v5.0.0-20240319145305-bf0abfba3230
 	//github.com/cosmos/ibc-go/v8 => ../ibc-go
