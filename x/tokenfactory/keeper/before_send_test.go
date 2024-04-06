@@ -18,7 +18,7 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 	}{
 		{
 			name:     "Test bank hook tracking contract ",
-			wasmFile: "./data/bank_hook_test.wasm",
+			wasmFile: "./testdata/bank_hook_test.wasm",
 		},
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
