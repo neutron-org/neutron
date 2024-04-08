@@ -49,7 +49,7 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 				},
 			)
 			cosmwasmAddress, _, err := contractKeeper.Instantiate(
-				suite.ChainA.GetContext(), codeID, suite.TestAccs[0], suite.TestAccs[0], []byte(initMsg), "", sdk.NewCoins(),
+				suite.ChainA.GetContext(), codeID, suite.TestAccs[0], suite.TestAccs[0], initMsg, "", sdk.NewCoins(),
 			)
 			suite.Require().NoError(err, "test: %v", tc.name)
 
@@ -63,9 +63,9 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 			_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), tokenToSend))
 			suite.Require().NoError(err)
 
-			query_resp, err := suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(suite.ChainA.GetContext(), cosmwasmAddress, []byte(`{"total_supply_at":{}}`))
+			queryResp, err := suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(suite.ChainA.GetContext(), cosmwasmAddress, []byte(`{"total_supply_at":{}}`))
 			suite.Require().NoError(err)
-			suite.Require().Equal("\"100\"", string(query_resp))
+			suite.Require().Equal("\"100\"", string(queryResp))
 		})
 	}
 }

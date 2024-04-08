@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/neutron-org/neutron/v3/app/params"
 	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
@@ -112,7 +113,7 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 		{
 			desc:      "error: try minting non-tokenfactory denom",
 			amount:    10,
-			mintDenom: "untrn",
+			mintDenom: params.DefaultDenom,
 			admin:     suite.TestAccs[0].String(),
 			valid:     false,
 		},
@@ -181,7 +182,7 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 		{
 			desc:      "fail case - burn non-tokenfactory denom",
 			amount:    10,
-			burnDenom: "untrn",
+			burnDenom: params.DefaultDenom,
 			admin:     suite.TestAccs[0].String(),
 			valid:     false,
 		},
