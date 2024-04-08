@@ -368,6 +368,7 @@ type App struct {
 	// slinky
 	MarketMapKeeper *marketmapkeeper.Keeper
 	OracleKeeper    *oraclekeeper.Keeper
+
 	// processes
 	// oraclePrometheusServer *promserver.PrometheusServer
 	oracleClient oracleclient.OracleClient
@@ -757,10 +758,9 @@ func New(
 		appCodec,
 		app.MarketMapKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName))
-	app.OracleKeeper = &oracleKeeper // TODO: why link to oracleKeeper?
+	app.OracleKeeper = &oracleKeeper
 	oracleModule := oracle.NewAppModule(appCodec, *app.OracleKeeper)
 
-	// set hooks
 	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
 
 	app.CronKeeper = *cronkeeper.NewKeeper(
@@ -1216,6 +1216,7 @@ func New(
 	aggregatorFn := voteweighted.MedianFromContext(
 		app.Logger(),
 		validatorStore,
+		//voteweighted.CCVConsumerCompatKeeper{ccvKeeper: }, // TDOO
 		voteweighted.DefaultPowerThreshold,
 	)
 

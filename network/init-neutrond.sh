@@ -719,8 +719,8 @@ set_genesis_param proposer_fee                          "\"0.25\""              
 set_genesis_param escrow_account_address                "\"$DAO_CONTRACT_ADDRESS_B64\","                  # builder(POB)
 set_genesis_param sudo_call_gas_limit                   "\"1000000\""                                     # contractmanager
 set_genesis_param max_gas                               "\"1000000000\""                                  # consensus_params
-set_genesis_param vote_extensions_enable_height         "\"10\""                                          # consensus_params
-set_genesis_param market_authority                      "\"$DAO_CONTRACT_ADDRESS\","                      # marketmap
+set_genesis_param vote_extensions_enable_height         "\"1\""                                           # consensus_params
+set_genesis_param market_authority                      "\"neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z\","                      # marketmap
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2

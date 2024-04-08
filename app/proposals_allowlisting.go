@@ -10,6 +10,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
@@ -71,7 +73,10 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*crisistypes.MsgUpdateParams,
 		*minttypes.MsgUpdateParams,
 		*pfmtypes.MsgUpdateParams,
-		*authtypes.MsgUpdateParams:
+		*authtypes.MsgUpdateParams,
+		*marketmaptypes.MsgUpdateMarketMap,
+		*oracletypes.MsgAddCurrencyPairs,    // TODO: probably remove since it does not work with included Marketmapmodule
+		*oracletypes.MsgRemoveCurrencyPairs: // TODO: check
 		return true
 	}
 	return false
