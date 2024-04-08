@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	keepertest "github.com/neutron-org/neutron/v3/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/feeburner/nullify"
 	"github.com/neutron-org/neutron/v3/x/feeburner"
 	"github.com/neutron-org/neutron/v3/x/feeburner/types"
 )

@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	v3 "github.com/neutron-org/neutron/v3/x/globalfee/migrations/v3"
 
 	v2 "github.com/neutron-org/neutron/v3/x/globalfee/migrations/v2"

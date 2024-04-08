@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
+
 	v3 "github.com/neutron-org/neutron/v3/x/globalfee/migrations/v3"
 
 	"github.com/stretchr/testify/require"

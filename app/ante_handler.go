@@ -14,10 +14,11 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	globalfeeante "github.com/neutron-org/neutron/v3/x/globalfee/ante"
-	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+
+	globalfeeante "github.com/neutron-org/neutron/v3/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC

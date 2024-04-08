@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/log"
-	metrics2 "cosmossdk.io/store/metrics"
+	"cosmossdk.io/store/metrics"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
-	db2 "github.com/cosmos/cosmos-db"
+	db "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"cosmossdk.io/store"
@@ -21,12 +21,12 @@ import (
 	"github.com/neutron-org/neutron/v3/x/globalfee/types"
 )
 
-func GLobalFeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func GlobalFeeKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 
-	db := db2.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics2.NewNoOpMetrics())
-	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
+	memDB := db.NewMemDB()
+	stateStore := store.NewCommitMultiStore(memDB, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, memDB)
 	require.NoError(t, stateStore.LoadLatestVersion())
 
 	registry := codectypes.NewInterfaceRegistry()

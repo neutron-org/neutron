@@ -3,16 +3,18 @@ package ante
 import (
 	"fmt"
 
+	gaiaerrors "github.com/neutron-org/neutron/v3/x/globalfee/types"
+
 	"cosmossdk.io/math"
 
 	tmstrings "github.com/cometbft/cometbft/libs/strings"
+
 	"github.com/neutron-org/neutron/v3/app/params"
 	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 
 	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	gaiaerrors "github.com/neutron-org/neutron/v3/types/errors"
 )
 
 // FeeWithBypassDecorator checks if the transaction's fee is at least as large

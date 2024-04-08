@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	nextupgrade "github.com/neutron-org/neutron/v3/app/upgrades/NextUpgrade"
+	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
 	"github.com/neutron-org/neutron/v3/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 

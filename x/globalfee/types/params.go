@@ -11,8 +11,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	gaiaerrors "github.com/neutron-org/neutron/v3/types/errors"
 )
 
 var (
@@ -84,7 +82,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func validateMinimumGasPrices(i interface{}) error {
 	v, ok := i.(sdk.DecCoins)
 	if !ok {
-		return errorsmod.Wrapf(gaiaerrors.ErrInvalidType, "type: %T, expected sdk.DecCoins", i)
+		return errorsmod.Wrapf(ErrInvalidType, "type: %T, expected sdk.DecCoins", i)
 	}
 
 	dec := DecCoins(v)
@@ -97,7 +95,7 @@ type BypassMinFeeMsgTypes []string
 func validateBypassMinFeeMsgTypes(i interface{}) error {
 	bypassMinFeeMsgTypes, ok := i.([]string)
 	if !ok {
-		return errorsmod.Wrapf(gaiaerrors.ErrInvalidType, "type: %T, expected []sdk.Msg", i)
+		return errorsmod.Wrapf(ErrInvalidType, "type: %T, expected []sdk.Msg", i)
 	}
 
 	for _, msgType := range bypassMinFeeMsgTypes {
@@ -116,7 +114,7 @@ func validateBypassMinFeeMsgTypes(i interface{}) error {
 func validateMaxTotalBypassMinFeeMsgGasUsage(i interface{}) error {
 	_, ok := i.(uint64)
 	if !ok {
-		return errorsmod.Wrapf(gaiaerrors.ErrInvalidType, "type: %T, expected uint64", i)
+		return errorsmod.Wrapf(ErrInvalidType, "type: %T, expected uint64", i)
 	}
 
 	return nil

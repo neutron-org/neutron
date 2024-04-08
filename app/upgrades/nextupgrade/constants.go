@@ -2,6 +2,7 @@ package nextupgrade
 
 import (
 	"cosmossdk.io/store/types"
+
 	"github.com/neutron-org/neutron/v3/app/upgrades"
 	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 )

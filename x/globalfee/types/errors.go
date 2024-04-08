@@ -1,4 +1,4 @@
-package errors
+package types
 
 import (
 	errorsmod "cosmossdk.io/errors"

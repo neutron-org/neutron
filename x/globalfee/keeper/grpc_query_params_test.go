@@ -14,7 +14,7 @@ import (
 )
 
 func TestParamsQuery(t *testing.T) {
-	keeper, ctx := testkeeper.GLobalFeeKeeper(t)
+	keeper, ctx := testkeeper.GlobalFeeKeeper(t)
 	wctx := ctx
 	params := types.DefaultParams()
 	params.MinimumGasPrices = sdktypes.NewDecCoins(sdktypes.NewDecCoin("untrn", math.NewInt(1)))

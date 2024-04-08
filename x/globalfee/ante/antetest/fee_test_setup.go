@@ -2,6 +2,7 @@ package antetest
 
 import (
 	"github.com/cometbft/cometbft/proto/tendermint/types"
+
 	"github.com/neutron-org/neutron/v3/testutil"
 
 	"github.com/stretchr/testify/suite"

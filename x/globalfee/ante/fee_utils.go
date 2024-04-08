@@ -3,9 +3,9 @@ package ante
 import (
 	errorsmod "cosmossdk.io/errors"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	gaiaerrors "github.com/neutron-org/neutron/v3/x/globalfee/types"
 
-	gaiaerrors "github.com/neutron-org/neutron/v3/types/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // ContainZeroCoins returns true if the given coins are empty or contain zero coins,

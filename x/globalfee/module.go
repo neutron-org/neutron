@@ -21,6 +21,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
 	"github.com/neutron-org/neutron/v3/x/globalfee/client/cli"
 	"github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 	"github.com/neutron-org/neutron/v3/x/globalfee/types"

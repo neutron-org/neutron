@@ -15,6 +15,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	gaiafeeante "github.com/neutron-org/neutron/v3/x/globalfee/ante"
 	globfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 )

@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/math"
 	metrics2 "cosmossdk.io/store/metrics"
+
 	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 
 	"github.com/stretchr/testify/assert"
