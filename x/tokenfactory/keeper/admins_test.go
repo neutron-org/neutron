@@ -109,6 +109,13 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 			admin:     suite.TestAccs[0].String(),
 			valid:     true,
 		},
+		{
+			desc:      "error: try minting non-tokenfactory denom",
+			amount:    10,
+			mintDenom: "untrn",
+			admin:     suite.TestAccs[0].String(),
+			valid:     false,
+		},
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// Test minting to admins own account
@@ -170,6 +177,13 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 			burnDenom: suite.defaultDenom,
 			admin:     suite.TestAccs[0].String(),
 			valid:     true,
+		},
+		{
+			desc:      "fail case - burn non-tokenfactory denom",
+			amount:    10,
+			burnDenom: "untrn",
+			admin:     suite.TestAccs[0].String(),
+			valid:     false,
 		},
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
