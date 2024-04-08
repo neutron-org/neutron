@@ -1,4 +1,4 @@
-package v300
+package nextupgrade
 
 import (
 	storetypes "cosmossdk.io/store/types"
@@ -10,7 +10,8 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v4.0.0" // TODO
+	UpgradeName        = "nextupgrade"
+	AdminModuleAddress = "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z"
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 		UpgradeName:          UpgradeName,
 		CreateUpgradeHandler: CreateUpgradeHandler,
 		StoreUpgrades: storetypes.StoreUpgrades{
-			Added: []string{marketmaptypes.ModuleName, oracletypes.ModuleName}, // TODO: more stores added?
+			Added: []string{marketmaptypes.ModuleName, oracletypes.ModuleName},
 		},
 	}
 )

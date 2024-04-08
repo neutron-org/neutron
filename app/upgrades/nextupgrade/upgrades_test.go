@@ -1,6 +1,9 @@
-package v300_test
+package nextupgrade_test
 
 import (
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -17,13 +20,23 @@ func TestKeeperTestSuite(t *testing.T) {
 }
 
 func (suite *UpgradeTestSuite) SetupTest() {
-	//suite.IBCConnectionTestSuite.SetupTest()
-	//suite.Require().NoError(
-	//suite.GetNeutronZoneApp(suite.ChainA).FeeBurnerKeeper.SetParams(
-	//	suite.ChainA.GetContext(), feeburnertypes.NewParams(feeburnertypes.DefaultNeutronDenom),
-	//))
+	suite.IBCConnectionTestSuite.SetupTest()
 }
 
 func (suite *UpgradeTestSuite) TestOracleUpgrade() {
-	// TODO
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := suite.ChainA.GetContext()
+	t := suite.T()
+
+	upgrade := upgradetypes.Plan{
+		Name:   nextupgrade.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
+
+	params, err := app.MarketMapKeeper.GetParams(ctx)
+	suite.Require().NoError(err)
+	suite.Require().Equal(params.MarketAuthority, "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
+	suite.Require().Equal(params.Version, 0)
 }

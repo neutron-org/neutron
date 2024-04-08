@@ -1,4 +1,4 @@
-package v300
+package nextupgrade
 
 import (
 	"context"
@@ -47,10 +47,8 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 		return err
 	}
 
-	// TODO: should be authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String()
-	marketAuthority := "neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"
 	marketmapParams := marketmaptypes.Params{
-		MarketAuthority: marketAuthority,
+		MarketAuthority: AdminModuleAddress,
 		Version:         params.Version,
 	}
 	return marketmapKeeper.SetParams(ctx, marketmapParams)
