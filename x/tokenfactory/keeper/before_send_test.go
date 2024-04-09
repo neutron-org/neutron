@@ -17,8 +17,9 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 		wasmFile string
 	}{
 		{
-			name:     "Test bank hook tracking contract ",
-			wasmFile: "./testdata/bank_hook_test.wasm",
+			name: "Test bank hook tracking contract ",
+			// https://github.com/neutron-org/neutron-dev-contracts/tree/feat/balance-tracker-contract/contracts/balance-tracker
+			wasmFile: "./testdata/balance_tracker.wasm",
 		},
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
