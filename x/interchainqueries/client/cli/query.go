@@ -70,7 +70,7 @@ func CmdQueryRegisteredQueries() *cobra.Command {
 		Use:   "registered-queries",
 		Short: "queries all the interchain queries in the module",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)

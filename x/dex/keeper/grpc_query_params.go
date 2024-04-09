@@ -10,6 +10,7 @@ import (
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
+// Returns dex params to the caller
 func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
