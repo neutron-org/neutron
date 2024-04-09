@@ -83,6 +83,6 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 
-	// Check that the unused balance is credited to the original creator
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
+	// Check that nothing is credited to the original creator
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
 }
