@@ -2,6 +2,9 @@ package app
 
 import (
 	"fmt"
+	ibcwasmkeeper "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/keeper"
+	ibcwasmtypes "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/types"
+	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
 	"io"
 	"io/fs"
 	"net/http"
@@ -11,8 +14,8 @@ import (
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec/address"
-
 	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
+	wasmvm "github.com/CosmWasm/wasmvm"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 	"github.com/cosmos/interchain-security/v5/testutil/integration"
@@ -90,6 +93,7 @@ import (
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	ibcwasm "github.com/cosmos/ibc-go/modules/light-clients/08-wasm"
 	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
 	icacontroller "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
@@ -106,6 +110,7 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+
 	"github.com/spf13/cast"
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -180,11 +185,12 @@ import (
 )
 
 const (
-	Name = "neutrond"
+	Name                       = "neutrond"
+	DefaultContractMemoryLimit = uint32(32)
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v300.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v300.Upgrade, nextupgrade.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -235,6 +241,7 @@ var (
 		// globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
+		ibcwasm.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -337,7 +344,8 @@ type App struct {
 
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	WasmKeeper wasmkeeper.Keeper
+	WasmKeeper       wasmkeeper.Keeper
+	WasmClientKeeper ibcwasmkeeper.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -399,6 +407,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
+		ibcwasmtypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -735,6 +744,21 @@ func New(
 		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
 	wasmOpts = append(wasmOpts, queryPlugins)
 
+	// instantiate the Wasm VM with the chosen parameters
+	wasmer, err := wasmvm.NewVM(
+		wasmDir,
+		supportedFeatures,
+		DefaultContractMemoryLimit, // default of 32
+		wasmConfig.ContractDebugMode,
+		wasmConfig.MemoryCacheSize,
+	)
+	if err != nil {
+		panic(fmt.Sprintln("failed to instantiate wasmVM: ", err))
+	}
+	// create an Option slice (or append to an existing one)
+	// with the option to use a custom Wasm VM instance
+	wasmOpts = append(wasmOpts, wasmkeeper.WithWasmEngine(wasmer))
+
 	app.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -755,6 +779,15 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		wasmOpts...,
 	)
+	app.WasmClientKeeper = ibcwasmkeeper.NewKeeperWithVM(
+		appCodec,
+		runtime.NewKVStoreService(keys[ibcwasmtypes.StoreKey]),
+		app.IBCKeeper.ClientKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		wasmer, // pass the Wasm VM instance to `08-wasm` keeper constructor
+		app.GRPCQueryRouter(),
+	)
+
 	wasmHooks.ContractKeeper = &app.WasmKeeper
 
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
