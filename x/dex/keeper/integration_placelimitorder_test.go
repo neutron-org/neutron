@@ -491,7 +491,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCNoLiq() {
 	s.fundAliceBalances(10, 0)
 	// GIVEN no liquidity
 	// Thenalice IoC limitOrder fails
-	s.assertAliceLimitSellFails(types.ErrInsufficientLiquidity, "TokenA", 0, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", 0, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPFills() {
@@ -534,7 +534,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	// GIVEN LP of 5 tokenB at tick -1
 	s.bobDeposits(NewDeposit(0, 5, -1, 1))
 	// THEN alice IoC limitOrder for 10 tokenA below current 0To1 price fails
-	s.assertAliceLimitSellFails(types.ErrInsufficientLiquidity, "TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 // Just In Time Limit Orders //////////////////////////////////////////////////

@@ -34,11 +34,6 @@ var (
 		1112,
 		"Cannot cancel additional liquidity from limit order tranche:",
 	) // "%d", tranche.TrancheKey
-	ErrInsufficientLiquidity = sdkerrors.Register(
-		ModuleName,
-		1114,
-		"Not enough liquidity to complete trade",
-	)
 	ErrTickOutsideRange = sdkerrors.Register(
 		ModuleName,
 		1117,

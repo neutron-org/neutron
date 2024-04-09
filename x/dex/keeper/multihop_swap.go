@@ -31,7 +31,7 @@ func (k Keeper) HopsToRouteData(
 		}
 		price, found := k.GetCurrPrice(ctx, tradePairID)
 		if !found {
-			return routeArr, types.ErrInsufficientLiquidity
+			return routeArr, types.ErrLimitPriceNotSatisfied
 		}
 		priceAcc = priceAcc.Mul(price)
 		routeArr[index] = MultihopStep{
@@ -159,7 +159,7 @@ func (k Keeper) SwapFullAmountIn(ctx sdk.Context,
 		return sdk.Coin{}, err
 	}
 	if !orderFilled {
-		return sdk.Coin{}, types.ErrInsufficientLiquidity
+		return sdk.Coin{}, types.ErrLimitPriceNotSatisfied
 	}
 
 	return swapAmountMakerDenom, err

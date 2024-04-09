@@ -136,7 +136,7 @@ func (k Keeper) TakerLimitOrderSwap(
 	}
 
 	if totalInCoin.Amount.IsZero() {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrInsufficientLiquidity
+		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
 	}
 
 	truePrice := math_utils.NewPrecDecFromInt(totalOutCoin.Amount).QuoInt(totalInCoin.Amount)
