@@ -38,5 +38,5 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	params, err := app.MarketMapKeeper.GetParams(ctx)
 	suite.Require().NoError(err)
 	suite.Require().Equal(params.MarketAuthority, "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
-	suite.Require().Equal(params.Version, 0)
+	suite.Require().Equal(params.Version, uint64(0))
 }

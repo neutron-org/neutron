@@ -63,6 +63,9 @@ var (
 func init() {
 	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
 	app.GetDefaultConfig()
+	// Disable cache since enabled cache triggers test errors when `AccAddress.String()`
+	// gets called before setting neutron bech32 prefix
+	sdk.SetAddrCacheEnabled(false)
 }
 
 type IBCConnectionTestSuite struct {
@@ -424,6 +427,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 
 		genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
 
+		// TODO: why isn't it in the `testApp.TestInitChainer`?
 		// NOTE ibc-go/v7/testing.SetupWithGenesisValSet requires a staking module
 		// genesisState or it panics. Feed a minimum one.
 		genesisState[stakingtypes.ModuleName] = encoding.Marshaler.MustMarshalJSON(

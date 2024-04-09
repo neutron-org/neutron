@@ -296,6 +296,9 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	// TODO: this is a hack to make unit tests pass. Remove that after marketmap module fixes DefaultParams() call
+	marketmaptypes.DefaultMarketAuthority = "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z"
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -371,7 +374,7 @@ type App struct {
 	OracleKeeper    *oraclekeeper.Keeper
 
 	// processes
-	// oraclePrometheusServer *promserver.PrometheusServer
+	//oraclePrometheusServer *promserver.PrometheusServer
 	oracleClient oracleclient.OracleClient
 
 	// mm is the module manager
@@ -1051,7 +1054,7 @@ func New(
 		feeBurnerModule,
 		cronModule,
 		dexModule,
-		//marketmapModule, TODO: ?
+		//marketmapModule,
 		//oracleModule,
 	)
 	app.sm.RegisterStoreDecoders()

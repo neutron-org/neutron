@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	cmttypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/require"
@@ -18,11 +17,11 @@ func TestConsumerWhitelistingKeys(t *testing.T) {
 	chainID := ibctesting.GetChainID(1)
 
 	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
+
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
 	_ = app.GetDefaultConfig()
-	types.SetAddrCacheEnabled(false)
 	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chain := ibctesting.NewTestChain(t, coordinator, "test")
 
