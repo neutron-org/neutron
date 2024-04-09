@@ -1129,7 +1129,7 @@ func New(
 	// latency in VerifyVoteExtension requests and more.
 	oracleMetrics, err := servicemetrics.NewMetricsFromConfig(cfg, app.ChainID())
 	if err != nil {
-		panic(err) // TODO: panic?
+		panic(err)
 	}
 
 	// Create the oracle service.
@@ -1139,14 +1139,15 @@ func New(
 		oracleMetrics,
 	)
 	if err != nil {
-		panic(err) // TODO: panic?
+		panic(err)
 	}
 
 	// Connect to the oracle service (default timeout of 5 seconds).
 	go func() {
-		if err := app.oracleClient.Start(context.Background()); err != nil { // TODO: change background to something cancellable across the app
+		// TODO: change background to something cancellable across the app?
+		if err := app.oracleClient.Start(context.Background()); err != nil {
 			app.Logger().Error("failed to start oracle client", "err", err)
-			panic(err) // TODO: panic?
+			panic(err) // TODO: panic? since it's in the goroutine
 		}
 
 		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
@@ -1157,12 +1158,12 @@ func New(
 	// if cfg.MetricsEnabled {
 	//	//logger, err := zap.NewProduction()
 	//	//if err != nil {
-	//	//	panic(err)
+	//	//	panic(err) // TODO: panic?
 	//	//}
 	//
 	//	app.oraclePrometheusServer, err = promserver.NewPrometheusServer(cfg.PrometheusServerAddress, logger)
 	//	if err != nil {
-	//		panic(err)
+	//		panic(err) // TODO: panic?
 	//	}
 	//
 	//	// start the prometheus server
