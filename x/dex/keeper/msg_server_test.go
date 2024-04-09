@@ -485,6 +485,7 @@ func NewDepositInt(amountA, amountB sdkmath.Int, tickIndex, fee int) *Deposit {
 		Fee:       uint64(fee),
 	}
 }
+
 func NewDeposit(amountA, amountB, tickIndex, fee int) *Deposit {
 	return NewDepositInt(sdkmath.NewInt(int64(amountA)).Mul(denomMultiple), sdkmath.NewInt(int64(amountB)).Mul(denomMultiple), tickIndex, fee)
 }

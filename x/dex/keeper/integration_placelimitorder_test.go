@@ -313,7 +313,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithDustHitsPriceLimit() {
 	)
 	// THEN alice IoC limitOrder with limitPrice 20005 fails
 	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", 20005, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderWithDust() {

@@ -331,7 +331,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
-	amountLeft, totalIn := amountIn, math.ZeroInt()
+	amountLeft := amountIn
 
 	// This is ok because tokenOut is provided to the constructor of PairID above
 	takerTradePairID := pairID.MustTradePairIDFromMaker(tokenOut)
@@ -350,7 +350,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
-	totalIn = swapInCoin.Amount
+	totalIn := swapInCoin.Amount
 	amountLeft = amountLeft.Sub(swapInCoin.Amount)
 
 	if swapOutCoin.IsPositive() {

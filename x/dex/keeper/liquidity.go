@@ -121,8 +121,8 @@ func (k Keeper) TakerLimitOrderSwap(
 	amountIn math.Int,
 	maxAmountOut *math.Int,
 	limitPrice math_utils.PrecDec,
-	orderType types.LimitOrderType) (totalInCoin, totalOutCoin sdk.Coin, err error) {
-
+	orderType types.LimitOrderType,
+) (totalInCoin, totalOutCoin sdk.Coin, err error) {
 	totalInCoin, totalOutCoin, orderFilled, err := k.SwapWithCache(
 		ctx,
 		&tradePairID,
@@ -130,6 +130,9 @@ func (k Keeper) TakerLimitOrderSwap(
 		maxAmountOut,
 		&limitPrice,
 	)
+	if err != nil {
+		return sdk.Coin{}, sdk.Coin{}, err
+	}
 
 	if orderType.IsFoK() && !orderFilled {
 		return sdk.Coin{}, sdk.Coin{}, types.ErrFoKLimitOrderNotFilled
@@ -146,15 +149,14 @@ func (k Keeper) TakerLimitOrderSwap(
 	}
 
 	return totalInCoin, totalOutCoin, nil
-
 }
 
 func (k Keeper) MakerLimitOrderSwap(
 	ctx sdk.Context,
 	tradePairID types.TradePairID,
 	amountIn math.Int,
-	limitPrice math_utils.PrecDec) (totalInCoin, totalOutCoin sdk.Coin, err error) {
-
+	limitPrice math_utils.PrecDec,
+) (totalInCoin, totalOutCoin sdk.Coin, err error) {
 	totalInCoin, totalOutCoin, _, err = k.SwapWithCache(
 		ctx,
 		&tradePairID,
@@ -162,6 +164,9 @@ func (k Keeper) MakerLimitOrderSwap(
 		nil,
 		&limitPrice,
 	)
+	if err != nil {
+		return sdk.Coin{}, sdk.Coin{}, err
+	}
 
 	if totalInCoin.Amount.IsPositive() {
 		remainingIn := amountIn.Sub(totalInCoin.Amount)
@@ -175,5 +180,4 @@ func (k Keeper) MakerLimitOrderSwap(
 	}
 
 	return totalInCoin, totalOutCoin, nil
-
 }
