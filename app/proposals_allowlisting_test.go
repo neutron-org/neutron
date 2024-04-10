@@ -17,7 +17,6 @@ func TestConsumerWhitelistingKeys(t *testing.T) {
 	chainID := ibctesting.GetChainID(1)
 
 	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
-
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
