@@ -22,8 +22,9 @@ const (
 var _ sdk.Msg = &MsgCreateDenom{}
 
 // NewMsgCreateDenom creates a msg to create a new denom
-func NewMsgCreateDenom(subdenom string) *MsgCreateDenom {
+func NewMsgCreateDenom(sender, subdenom string) *MsgCreateDenom {
 	return &MsgCreateDenom{
+		Sender:   sender,
 		Subdenom: subdenom,
 	}
 }
@@ -47,12 +48,14 @@ var _ sdk.Msg = &MsgMint{}
 // NewMsgMint creates a message to mint tokens
 func NewMsgMint(sender string, amount sdk.Coin) *MsgMint {
 	return &MsgMint{
+		Sender: sender,
 		Amount: amount,
 	}
 }
 
 func NewMsgMintTo(sender string, amount sdk.Coin, mintToAddress string) *MsgMint {
 	return &MsgMint{
+		Sender:        sender,
 		Amount:        amount,
 		MintToAddress: mintToAddress,
 	}
@@ -81,6 +84,7 @@ var _ sdk.Msg = &MsgBurn{}
 // NewMsgBurn creates a message to burn tokens
 func NewMsgBurn(sender string, amount sdk.Coin) *MsgBurn {
 	return &MsgBurn{
+		Sender: sender,
 		Amount: amount,
 	}
 }
@@ -88,6 +92,7 @@ func NewMsgBurn(sender string, amount sdk.Coin) *MsgBurn {
 // NewMsgBurn creates a message to burn tokens
 func NewMsgBurnFrom(sender string, amount sdk.Coin, _ string) *MsgBurn {
 	return &MsgBurn{
+		Sender: sender,
 		Amount: amount,
 	}
 }
@@ -116,6 +121,7 @@ var _ sdk.Msg = &MsgForceTransfer{}
 // NewMsgForceTransfer creates a transfer funds from one account to another
 func NewMsgForceTransfer(sender string, amount sdk.Coin, fromAddr, toAddr string) *MsgForceTransfer {
 	return &MsgForceTransfer{
+		Sender:              sender,
 		Amount:              amount,
 		TransferFromAddress: fromAddr,
 		TransferToAddress:   toAddr,
@@ -154,6 +160,7 @@ var _ sdk.Msg = &MsgChangeAdmin{}
 // NewMsgChangeAdmin creates a message to burn tokens
 func NewMsgChangeAdmin(sender, denom, newAdmin string) *MsgChangeAdmin {
 	return &MsgChangeAdmin{
+		Sender:   sender,
 		Denom:    denom,
 		NewAdmin: newAdmin,
 	}
@@ -188,6 +195,7 @@ var _ sdk.Msg = &MsgSetDenomMetadata{}
 // NewMsgSetDenomMetadata creates a message to set a metadata for a denom
 func NewMsgSetDenomMetadata(sender string, metadata banktypes.Metadata) *MsgSetDenomMetadata {
 	return &MsgSetDenomMetadata{
+		Sender:   sender,
 		Metadata: metadata,
 	}
 }
@@ -222,6 +230,7 @@ var _ sdk.Msg = &MsgSetBeforeSendHook{}
 // NewMsgSetBeforeSendHook creates a message to set a new before send hook
 func NewMsgSetBeforeSendHook(sender, denom, contractAddr string) *MsgSetBeforeSendHook {
 	return &MsgSetBeforeSendHook{
+		Sender:       sender,
 		Denom:        denom,
 		ContractAddr: contractAddr,
 	}
