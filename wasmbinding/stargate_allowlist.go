@@ -8,6 +8,8 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
 
@@ -85,5 +87,15 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/neutron.dex.Query/PoolByID":                          &dextypes.QueryPoolResponse{},
 		"/neutron.dex.Query/PoolMetadata":                      &dextypes.QueryGetPoolMetadataResponse{},
 		"/neutron.dex.Query/PoolMetadataAll":                   &dextypes.QueryAllPoolMetadataResponse{},
+
+		// oracle
+		"/slinky.oracle.v1.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
+		"/slinky.oracle.v1.Query/GetPrice":            &oracletypes.GetPriceResponse{},
+		"/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
+
+		// marketmaup
+		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.GetMarketMapResponse{},
+		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.GetLastUpdatedResponse{},
+		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
 	}
 }
