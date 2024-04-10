@@ -22,8 +22,6 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	"github.com/neutron-org/neutron/v3/utils"
-
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -1150,7 +1148,7 @@ func New(
 		// TODO: change background to something cancellable across the app?
 		if err := app.oracleClient.Start(context.Background()); err != nil {
 			app.Logger().Error("failed to start oracle client", "err", err)
-			panic(err) // TODO: panic? since it's in the goroutine
+			panic(err)
 		}
 
 		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
@@ -1173,8 +1171,8 @@ func New(
 	//	go app.oraclePrometheusServer.Start()
 	//}
 
-	// Create special kind of store to implement GetPubKeyByConsAddr with ConsumerKeeper (as we don't have StakingKeeper)
-	validatorStore := utils.NewConsumerValidatorStore(&app.ConsumerKeeper)
+	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
+	ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
@@ -1182,7 +1180,7 @@ func New(
 		app.Logger(),
 		handler.PrepareProposalHandler(),
 		baseapp.NoOpProcessProposal(),
-		ve.NewDefaultValidateVoteExtensionsFn(validatorStore),
+		ve.NewDefaultValidateVoteExtensionsFn(ccvconsumerCompatKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
@@ -1220,8 +1218,7 @@ func New(
 	// from each validator.
 	aggregatorFn := voteweighted.MedianFromContext(
 		app.Logger(),
-		validatorStore,
-		//voteweighted.CCVConsumerCompatKeeper{ccvKeeper: }, // TDOO
+		ccvconsumerCompatKeeper,
 		voteweighted.DefaultPowerThreshold,
 	)
 
