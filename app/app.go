@@ -372,7 +372,6 @@ type App struct {
 	OracleKeeper    *oraclekeeper.Keeper
 
 	// processes
-	//oraclePrometheusServer *promserver.PrometheusServer
 	oracleClient oracleclient.OracleClient
 
 	// mm is the module manager
@@ -1153,23 +1152,6 @@ func New(
 
 		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
 	}()
-
-	// If the oracle is enabled, then create the oracle service and connect to it.
-	// Start the prometheus server if required
-	// if cfg.MetricsEnabled {
-	//	//logger, err := zap.NewProduction()
-	//	//if err != nil {
-	//	//	panic(err) // TODO: panic?
-	//	//}
-	//
-	//	app.oraclePrometheusServer, err = promserver.NewPrometheusServer(cfg.PrometheusServerAddress, logger)
-	//	if err != nil {
-	//		panic(err) // TODO: panic?
-	//	}
-	//
-	//	// start the prometheus server
-	//	go app.oraclePrometheusServer.Start()
-	//}
 
 	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
 	ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
