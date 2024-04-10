@@ -74,10 +74,6 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		// We are providing nil as a StakingKeeper arg because we do not have staking module
-		// In this case you should be sure that you
-		// implemented upgrade to set default `ParamStoreKeyMinGasPrices` global fee param with at least one record
-		// otherwise you will get panic
 		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
 
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
