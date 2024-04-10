@@ -783,7 +783,7 @@ func New(
 		appCodec,
 		runtime.NewKVStoreService(keys[ibcwasmtypes.StoreKey]),
 		app.IBCKeeper.ClientKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		wasmer, // pass the Wasm VM instance to `08-wasm` keeper constructor
 		app.GRPCQueryRouter(),
 	)
