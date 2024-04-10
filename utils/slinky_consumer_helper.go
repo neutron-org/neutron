@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+
 	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 
 	"cosmossdk.io/math"

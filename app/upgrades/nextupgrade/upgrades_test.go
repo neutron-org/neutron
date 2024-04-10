@@ -1,10 +1,12 @@
 package nextupgrade_test
 
 import (
-	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
 
 	"github.com/stretchr/testify/suite"
 

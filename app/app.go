@@ -3,14 +3,16 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
-	"github.com/skip-mev/slinky/x/oracle"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/skip-mev/slinky/x/oracle"
+
+	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
 
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
 	"github.com/skip-mev/slinky/abci/proposals"
@@ -1051,8 +1053,8 @@ func New(
 		feeBurnerModule,
 		cronModule,
 		dexModule,
-		//marketmapModule,
-		//oracleModule,
+		// marketmapModule,
+		// oracleModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
