@@ -17,6 +17,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
@@ -74,6 +75,7 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*crisistypes.MsgUpdateParams,
 		*minttypes.MsgUpdateParams,
 		*pfmtypes.MsgUpdateParams,
+		*auctiontypes.MsgUpdateParams,
 		*authtypes.MsgUpdateParams:
 		return true
 	}
