@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	keepertest "github.com/neutron-org/neutron/v3/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/dex/nullify"
 	"github.com/neutron-org/neutron/v3/x/dex"
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )

@@ -4,13 +4,14 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
+
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	keepertest "github.com/neutron-org/neutron/v3/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
 	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )

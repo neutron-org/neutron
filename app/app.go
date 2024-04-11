@@ -12,8 +12,6 @@ import (
 
 	"github.com/skip-mev/slinky/x/oracle"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
-
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
 	"github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
@@ -23,6 +21,10 @@ import (
 	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
+
+	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
+	"github.com/neutron-org/neutron/v3/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -182,6 +184,7 @@ import (
 	ibcswapkeeper "github.com/neutron-org/neutron/v3/x/ibcswap/keeper"
 	ibcswaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
 
+	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 	gmpmiddleware "github.com/neutron-org/neutron/v3/x/gmp"
 
 	// Block-sdk imports
@@ -255,7 +258,7 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		auction.AppModuleBasic{},
-		// globalfee.AppModule{},
+		globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
 		oracle.AppModuleBasic{},
@@ -348,6 +351,7 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
+	GlobalFeeKeeper     globalfeekeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -436,7 +440,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		oracletypes.StoreKey, marketmaptypes.StoreKey,
+		globalfeetypes.StoreKey, oracletypes.StoreKey, marketmaptypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -581,6 +585,8 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
+
+	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 
 	// PFMKeeper must be created before TransferKeeper
 	app.PFMKeeper = pfmkeeper.NewKeeper(
@@ -1090,13 +1096,13 @@ func New(
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
 			IBCKeeper:             app.IBCKeeper,
+			GlobalFeeKeeper:       app.GlobalFeeKeeper,
 			WasmConfig:            &wasmConfig,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 			ConsumerKeeper:        app.ConsumerKeeper,
-			// GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
-			AuctionKeeper: app.AuctionKeeper,
-			TxEncoder:     app.GetTxConfig().TxEncoder(),
-			MEVLane:       mevLane,
+			AuctionKeeper:         app.AuctionKeeper,
+			TxEncoder:             app.GetTxConfig().TxEncoder(),
+			MEVLane:               mevLane,
 		},
 		app.Logger(),
 	)
@@ -1517,7 +1523,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
 
-	// paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
+	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 
