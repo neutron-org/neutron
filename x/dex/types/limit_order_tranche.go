@@ -98,12 +98,18 @@ func (t LimitOrderTranche) Price() math_utils.PrecDec {
 func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
 	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
 	ratioFilled := amountFilled.QuoInt(t.TotalMakerDenom)
-	return ratioFilled
+
+	// Cap ratio filled at 100% so that makers cannot over withdraw
+	return math_utils.MinPrecDec(ratioFilled, math_utils.OnePrecDec())
 }
 
 func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
 	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
-	return math_utils.NewPrecDecFromInt(t.TotalMakerDenom).Sub(amountFilled)
+	trueAmountUnfilled := math_utils.NewPrecDecFromInt(t.TotalMakerDenom).Sub(amountFilled)
+
+	// It is possible for a tranche to be overfilled due to rounding. Thus we cap the unfilled amount at 0
+	withdrawableAmount := math_utils.MaxPrecDec(math_utils.ZeroPrecDec(), trueAmountUnfilled)
+	return withdrawableAmount
 }
 
 func (t LimitOrderTranche) HasLiquidity() bool {
