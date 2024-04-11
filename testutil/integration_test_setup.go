@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -22,37 +21,15 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	consumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil/consumer"
+	"github.com/neutron-org/neutron/v3/testutil/consumer"
 
 	"github.com/stretchr/testify/require"
 )
 
-func setup(withGenesis bool) (*app.App, app.GenesisState) {
-	encoding := app.MakeEncodingConfig()
-	db := dbm.NewMemDB()
-	testApp := app.New(
-		log.NewNopLogger(),
-		db,
-		nil,
-		true,
-		map[int64]bool{},
-		app.DefaultNodeHome,
-		0,
-		encoding,
-		sims.EmptyAppOptions{},
-		nil,
-	)
-	if withGenesis {
-		return testApp, app.NewDefaultGenesisState(encoding.Marshaler)
-	}
-
-	return testApp, app.GenesisState{}
-}
-
-func Setup(t *testing.T) *app.App {
+func Setup(t *testing.T) ibctesting.TestingApp {
 	t.Helper()
 
 	privVal := mock.NewPV()
@@ -76,7 +53,9 @@ func Setup(t *testing.T) *app.App {
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100000000000000))),
 	}
 
-	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
+	ibctesting.DefaultTestingAppInit = SetupTestingApp(tmtypes.TM2PB.ValidatorUpdates(valSet))
+
+	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, "", balance)
 
 	return app
 }
@@ -89,11 +68,16 @@ func SetupWithGenesisValSet(
 	t *testing.T,
 	valSet *tmtypes.ValidatorSet,
 	genAccs []authtypes.GenesisAccount,
+	chainID string,
 	balances ...banktypes.Balance,
-) *app.App {
+) ibctesting.TestingApp {
 	t.Helper()
 
-	app, genesisState := setup(true)
+	app, genesisState := ibctesting.DefaultTestingAppInit()
+
+	// ensure baseapp has a chain-id set before running InitChain
+	baseapp.SetChainID(chainID)(app.GetBaseApp())
+
 	genesisState, err := GenesisStateWithValSet(
 		app.AppCodec(),
 		genesisState,
@@ -108,6 +92,7 @@ func SetupWithGenesisValSet(
 	// init chain will set the validator set and initialize the genesis accounts
 	app.InitChain(
 		abci.RequestInitChain{
+			ChainId:         chainID,
 			Validators:      []abci.ValidatorUpdate{},
 			ConsensusParams: sims.DefaultConsensusParams,
 			AppStateBytes:   stateBytes,
@@ -121,6 +106,7 @@ func SetupWithGenesisValSet(
 		AppHash:            app.LastCommitID().Hash,
 		ValidatorsHash:     valSet.Hash(),
 		NextValidatorsHash: valSet.Hash(),
+		ChainID:            chainID,
 	}})
 
 	return app
@@ -231,8 +217,8 @@ func GenesisStateWithValSet(
 	}
 
 	consumerGenesisState := consumer.CreateMinimalConsumerTestGenesis()
-	consumerGenesisState.InitialValSet = initValPowers
-	consumerGenesisState.ProviderConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).
+	consumerGenesisState.Provider.InitialValSet = initValPowers
+	consumerGenesisState.Provider.ConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).
 		Hash()
 	consumerGenesisState.Params.Enabled = true
 	genesisState[consumertypes.ModuleName] = codec.MustMarshalJSON(consumerGenesisState)

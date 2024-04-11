@@ -6,7 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // TODO: In an ideal world, there should be enough lower level testing that the swap tests

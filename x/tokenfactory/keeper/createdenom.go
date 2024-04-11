@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 // ConvertToBaseToken converts a fee amount in a whitelisted fee token to the base fee token amount
@@ -102,7 +102,6 @@ func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err e
 			accAddr, feeCollectorAddr,
 			params.DenomCreationFee,
 		)
-
 		if err != nil {
 			return errors.Wrap(err, "unable to send coins to fee collector")
 		}

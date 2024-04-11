@@ -5,14 +5,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func CmdListUserDeposits() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "list-user-deposits [address]",
+		Use:     "list-user-deposits [address] ?(--include-pool-data)",
 		Short:   "list all users deposits",
-		Example: "list-user-deposits alice",
+		Example: "list-user-deposits alice --include-pool-data",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			reqAddress := args[0]
@@ -24,8 +24,14 @@ func CmdListUserDeposits() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
+			includePoolData, err := cmd.Flags().GetBool(FlagIncludePoolData)
+			if err != nil {
+				return err
+			}
+
 			params := &types.QueryAllUserDepositsRequest{
-				Address: reqAddress,
+				Address:         reqAddress,
+				IncludePoolData: includePoolData,
 			}
 
 			res, err := queryClient.UserDepositsAll(cmd.Context(), params)
@@ -39,6 +45,7 @@ func CmdListUserDeposits() *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
+	cmd.Flags().AddFlagSet(FlagSetIncludePoolData())
 
 	return cmd
 }

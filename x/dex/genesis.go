@@ -3,9 +3,9 @@ package dex
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/x/dex/keeper"
+	"github.com/neutron-org/neutron/v3/x/dex/keeper"
 
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

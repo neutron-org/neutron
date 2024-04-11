@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/iancoleman/orderedmap"
 
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // PacketMetadata wraps the SwapMetadata. The root key in the incoming ICS20 transfer packet's memo needs to be set to the same

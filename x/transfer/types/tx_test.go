@@ -8,8 +8,8 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/stretchr/testify/require"
 
-	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	"github.com/neutron-org/neutron/x/transfer/types"
+	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/x/transfer/types"
 )
 
 const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"

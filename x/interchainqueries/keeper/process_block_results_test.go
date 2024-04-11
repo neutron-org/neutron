@@ -8,8 +8,8 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	"github.com/golang/mock/gomock"
 
-	icqtestkeeper "github.com/neutron-org/neutron/testutil/interchainqueries/keeper"
-	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchainqueries/types"
+	icqtestkeeper "github.com/neutron-org/neutron/v3/testutil/interchainqueries/keeper"
+	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/interchainqueries/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -22,15 +22,15 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctmtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	ibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	"github.com/stretchr/testify/require"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
 
-	"github.com/neutron-org/neutron/testutil"
-	iqkeeper "github.com/neutron-org/neutron/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/testutil"
+	iqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 // CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow

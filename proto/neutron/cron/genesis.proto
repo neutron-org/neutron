@@ -6,11 +6,11 @@ import "neutron/cron/params.proto";
 import "neutron/cron/schedule.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/neutron-org/neutron/x/cron/types";
+option go_package = "github.com/neutron-org/neutron/v3/x/cron/types";
 
 // GenesisState defines the cron module's genesis state.
 message GenesisState {
-  repeated Schedule scheduleList = 2 [ (gogoproto.nullable) = false ];
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  repeated Schedule scheduleList = 2 [(gogoproto.nullable) = false];
+  Params params = 1 [(gogoproto.nullable) = false];
   // this line is used by starport scaffolding # genesis/proto/state
 }

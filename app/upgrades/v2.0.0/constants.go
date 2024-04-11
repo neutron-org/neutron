@@ -5,8 +5,8 @@ import (
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
-	"github.com/neutron-org/neutron/app/upgrades"
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 const (

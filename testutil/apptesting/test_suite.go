@@ -16,9 +16,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil"
-	dexmoduletypes "github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/testutil"
+	dexmoduletypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 type KeeperTestHelper struct {
@@ -35,8 +35,8 @@ type KeeperTestHelper struct {
 
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *KeeperTestHelper) Setup() {
-	s.App = testutil.Setup(s.T())
-	ctx := s.App.BaseApp.NewContext(
+	s.App = testutil.Setup(s.T()).(*app.App)
+	ctx := s.App.GetBaseApp().NewContext(
 		false,
 		tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()},
 	)

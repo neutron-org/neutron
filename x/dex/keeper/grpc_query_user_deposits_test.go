@@ -11,14 +11,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	neutronapp "github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil"
-	keepertest "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/testutil"
+	keepertest "github.com/neutron-org/neutron/v3/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
-func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, deposit *types.DepositRecord) {
-	// NOTE: For simplicyt sake, we are not actually doing a deposit, we are just initializing
+func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, deposit *types.DepositRecord) *types.Pool {
+	// NOTE: For simplicity sake, we are not actually doing a deposit, we are just initializing
 	// the pool and adding the poolDenom to the users account
 	pool, err := app.DexKeeper.InitPool(ctx, deposit.PairId, deposit.CenterTickIndex, deposit.Fee)
 	if err != nil {
@@ -26,14 +26,16 @@ func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, 
 	}
 	coin := sdk.NewCoin(pool.GetPoolDenom(), deposit.SharesOwned)
 	keepertest.FundAccount(app.BankKeeper, ctx, addr, sdk.Coins{coin})
+
+	return pool
 }
 
 func TestUserDepositsAllQueryPaginated(t *testing.T) {
 	app := testutil.Setup(t)
-	keeper := app.DexKeeper
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	keeper := app.(*neutronapp.App).DexKeeper
+	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
 	wctx := sdk.WrapSDKContext(ctx)
-	addr := sdk.AccAddress([]byte("test_addr"))
+	addr := sdk.AccAddress("test_addr")
 	msgs := []*types.DepositRecord{
 		{
 			PairId:          defaultPairID,
@@ -76,14 +78,16 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 			Fee:             1,
 		},
 	}
-
+	poolsFromDeposits := make([]*types.Pool, 0)
 	for _, d := range msgs {
-		simulateDeposit(ctx, app, addr, d)
+		pool := simulateDeposit(ctx, app.(*neutronapp.App), addr, d)
+		poolsFromDeposits = append(poolsFromDeposits, pool)
+
 	}
 
 	// Add random noise to make sure only pool denoms are picked up
 	randomCoins := sdk.Coins{sdk.NewInt64Coin("TokenA", 10), sdk.NewInt64Coin("TokenZ", 10)}
-	keepertest.FundAccount(app.BankKeeper, ctx, addr, randomCoins)
+	keepertest.FundAccount(app.(*neutronapp.App).BankKeeper, ctx, addr, randomCoins)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllUserDepositsRequest {
 		return &types.QueryAllUserDepositsRequest{
@@ -135,6 +139,40 @@ func TestUserDepositsAllQueryPaginated(t *testing.T) {
 		require.Equal(t, len(msgs), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
 			msgs,
+			resp.Deposits,
+		)
+	})
+	t.Run("WithPoolData", func(t *testing.T) {
+		req := request(nil, 0, 2, false)
+		req.IncludePoolData = true
+		resp, err := keeper.UserDepositsAll(wctx, req)
+		require.NoError(t, err)
+		require.Equal(t, len(resp.Deposits), 2)
+		expectedShares := math.NewInt(10)
+		expectedRespWithPoolData := []*types.DepositRecord{
+			{
+				PairId:          defaultPairID,
+				SharesOwned:     math.NewInt(10),
+				CenterTickIndex: 2,
+				LowerTickIndex:  1,
+				UpperTickIndex:  3,
+				Fee:             1,
+				Pool:            poolsFromDeposits[0],
+				TotalShares:     &expectedShares,
+			},
+			{
+				PairId:          defaultPairID,
+				SharesOwned:     math.NewInt(10),
+				CenterTickIndex: 3,
+				LowerTickIndex:  2,
+				UpperTickIndex:  4,
+				Fee:             1,
+				Pool:            poolsFromDeposits[1],
+				TotalShares:     &expectedShares,
+			},
+		}
+		require.ElementsMatch(t,
+			expectedRespWithPoolData,
 			resp.Deposits,
 		)
 	})

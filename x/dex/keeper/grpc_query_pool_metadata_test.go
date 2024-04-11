@@ -9,9 +9,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/testutil/dex/nullify"
-	"github.com/neutron-org/neutron/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v3/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v3/testutil/dex/nullify"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func TestPoolMetadataQuerySingle(t *testing.T) {

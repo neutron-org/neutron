@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 func (k Keeper) CheckFees(ctx sdk.Context, fees types.Fee) error {

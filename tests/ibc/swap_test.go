@@ -5,8 +5,8 @@ import (
 
 	"cosmossdk.io/math"
 
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
-	swaptypes "github.com/neutron-org/neutron/x/ibcswap/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	swaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
 )
 
 // TestIBCSwapMiddleware_Success asserts that the IBC swap middleware works as intended with Neutron running as a

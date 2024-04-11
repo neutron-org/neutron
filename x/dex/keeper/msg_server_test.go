@@ -12,11 +12,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/testutil/apptesting"
-	math_utils "github.com/neutron-org/neutron/utils/math"
-	. "github.com/neutron-org/neutron/x/dex/keeper"
-	. "github.com/neutron-org/neutron/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/testutil/apptesting"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v3/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // Test suite
@@ -29,16 +29,16 @@ type DexTestSuite struct {
 	dan       sdk.AccAddress
 }
 
-var defaultPairID *types.PairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
+var defaultPairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
 
 var denomMultiple = sdk.NewInt(1000000)
 
-var defaultTradePairID0To1 *types.TradePairID = &types.TradePairID{
+var defaultTradePairID0To1 = &types.TradePairID{
 	TakerDenom: "TokenA",
 	MakerDenom: "TokenB",
 }
 
-var defaultTradePairID1To0 *types.TradePairID = &types.TradePairID{
+var defaultTradePairID1To0 = &types.TradePairID{
 	TakerDenom: "TokenB",
 	MakerDenom: "TokenA",
 }
@@ -50,12 +50,12 @@ func TestDexTestSuite(t *testing.T) {
 func (s *DexTestSuite) SetupTest() {
 	s.Setup()
 
-	s.alice = sdk.AccAddress([]byte("alice"))
-	s.bob = sdk.AccAddress([]byte("bob"))
-	s.carol = sdk.AccAddress([]byte("carol"))
-	s.dan = sdk.AccAddress([]byte("dan"))
+	s.alice = []byte("alice")
+	s.bob = []byte("bob")
+	s.carol = []byte("carol")
+	s.dan = []byte("dan")
 
-	s.msgServer = NewMsgServerImpl(s.App.DexKeeper)
+	s.msgServer = dexkeeper.NewMsgServerImpl(s.App.DexKeeper)
 }
 
 // NOTE: In order to simulate more realistic trade volume and avoid inadvertent failures due to ErrInvalidPositionSpread
@@ -74,9 +74,9 @@ func (s *DexTestSuite) SetupTest() {
 func (s *DexTestSuite) fundAccountBalances(account sdk.AccAddress, aBalance, bBalance int64) {
 	aBalanceInt := sdkmath.NewInt(aBalance).Mul(denomMultiple)
 	bBalanceInt := sdkmath.NewInt(bBalance).Mul(denomMultiple)
-	balances := sdk.NewCoins(NewACoin(aBalanceInt), NewBCoin(bBalanceInt))
+	balances := sdk.NewCoins(testutils.NewACoin(aBalanceInt), testutils.NewBCoin(bBalanceInt))
 
-	FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
+	testutils.FundAccount(s.App.BankKeeper, s.Ctx, account, balances)
 	s.assertAccountBalances(account, aBalance, bBalance)
 }
 
@@ -84,7 +84,7 @@ func (s *DexTestSuite) fundAccountBalancesWithDenom(
 	addr sdk.AccAddress,
 	amounts sdk.Coins,
 ) {
-	FundAccount(s.App.BankKeeper, s.Ctx, addr, amounts)
+	testutils.FundAccount(s.App.BankKeeper, s.Ctx, addr, amounts)
 }
 
 func (s *DexTestSuite) fundAliceBalances(a, b int64) {
@@ -376,7 +376,7 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	tick, amountIn int,
 	maxAmoutOut int,
 ) string {
-	tokenIn, tokenOut := GetInOutTokens(tokenIn, "TokenA", "TokenB")
+	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
 	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut)).Mul(denomMultiple)
 
 	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{

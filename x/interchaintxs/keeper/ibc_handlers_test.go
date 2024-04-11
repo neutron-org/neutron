@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -12,12 +12,14 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/testutil"
-	testkeeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
-	feetypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/testutil"
+	testkeeper "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
+
+const ICAId = ".ica0"
 
 func TestHandleAcknowledgement(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -38,7 +40,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 	p := channeltypes.Packet{
 		Sequence:      100,
-		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0",
+		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId,
 		SourceChannel: "channel-0",
 	}
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
@@ -85,7 +87,7 @@ func TestHandleTimeout(t *testing.T) {
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
 	p := channeltypes.Packet{
 		Sequence:      100,
-		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0",
+		SourcePort:    icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId,
 		SourceChannel: "channel-0",
 	}
 
@@ -118,7 +120,7 @@ func TestHandleChanOpenAck(t *testing.T) {
 	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, func(ctx sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
-	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ".ica0"
+	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	channelID := "channel-0"
 	counterpartyChannelID := "channel-1"

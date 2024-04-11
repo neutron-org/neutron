@@ -11,7 +11,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -20,9 +20,9 @@ import (
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/testutil"
-	"github.com/neutron-org/neutron/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
@@ -402,6 +402,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	}
 
 	for i, tt := range tests {
+		tt := tt
 		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
 			suite.SetupTest()
 

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/v3/app"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -18,10 +18,10 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/testutil/contractmanager/network"
-	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
-	"github.com/neutron-org/neutron/x/contractmanager/client/cli"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v3/testutil/contractmanager/network"
+	"github.com/neutron-org/neutron/v3/testutil/contractmanager/nullify"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/client/cli"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
 
 func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.Failure) {
@@ -82,6 +82,7 @@ func TestAddressFailures(t *testing.T) {
 			err:  status.Error(codes.NotFound, "not found"),
 		},
 	} {
+		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
 				tc.idIndex,

@@ -1,35 +1,35 @@
 syntax = "proto3";
 package neutron.dex;
 
-option go_package = "github.com/neutron-org/neutron/x/dex/types";
 import "gogoproto/gogo.proto";
 import "neutron/dex/trade_pair_id.proto";
 
+option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
+
 message PoolReservesKey {
-	TradePairID trade_pair_id = 1;
-	int64 tick_index_taker_to_maker = 2;
-	uint64 fee = 3;
+  TradePairID trade_pair_id = 1;
+  int64 tick_index_taker_to_maker = 2;
+  uint64 fee = 3;
 }
 
 message PoolReserves {
   PoolReservesKey key = 1;
   string reserves_maker_denom = 2 [
-                 (gogoproto.moretags)   = "yaml:\"reserves_maker_denom\"",
-                 (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-                 (gogoproto.jsontag) = "reserves_maker_denom",
-                 (gogoproto.nullable)   = false
-                 ];
+    (gogoproto.moretags) = "yaml:\"reserves_maker_denom\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.jsontag) = "reserves_maker_denom",
+    (gogoproto.nullable) = false
+  ];
   string price_taker_to_maker = 3 [
-                (gogoproto.moretags)   = "yaml:\"price_taker_to_maker\"",
-                (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
-                (gogoproto.nullable)   = false,
-                (gogoproto.jsontag) = "price_taker_to_maker"
-                ];
+    (gogoproto.moretags) = "yaml:\"price_taker_to_maker\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v3/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "price_taker_to_maker"
+  ];
   string price_opposite_taker_to_maker = 4 [
-                (gogoproto.moretags)   = "yaml:\"price_opposite_taker_to_maker\"",
-                (gogoproto.customtype) = "github.com/neutron-org/neutron/utils/math.PrecDec",
-                (gogoproto.nullable)   = false,
-                (gogoproto.jsontag) = "price_opposite_taker_to_maker"
-                ];
+    (gogoproto.moretags) = "yaml:\"price_opposite_taker_to_maker\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v3/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "price_opposite_taker_to_maker"
+  ];
 }
-

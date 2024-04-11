@@ -1,14 +1,16 @@
 syntax = "proto3";
 package neutron.dex;
 
-option go_package = "github.com/neutron-org/neutron/x/dex/types";
 import "gogoproto/gogo.proto";
 import "neutron/dex/pool_reserves.proto";
 
-// NOTE: This struct is never actually stored in the KV store. It is merely a convenience wrapper for holding both sides of a pool.
+option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
+
+// NOTE: This struct is never actually stored in the KV store. It is merely a
+// convenience wrapper for holding both sides of a pool.
 
 message Pool {
-    uint64 id = 1;
-    PoolReserves lower_tick0 = 2;
-    PoolReserves upper_tick1 = 3;
+  uint64 id = 1;
+  PoolReserves lower_tick0 = 2;
+  PoolReserves upper_tick1 = 3;
 }

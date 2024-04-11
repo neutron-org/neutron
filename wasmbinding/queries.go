@@ -1,15 +1,27 @@
 package wasmbinding
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
+	"time"
+
+	"golang.org/x/exp/maps"
+
 	"cosmossdk.io/errors"
+
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 
-	"github.com/neutron-org/neutron/wasmbinding/bindings"
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
-	icatypes "github.com/neutron-org/neutron/x/interchaintxs/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+
+	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	icatypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*bindings.QueryRegisteredQueryResultResponse, error) {
@@ -123,6 +135,95 @@ func (qp *QueryPlugin) GetFailures(ctx sdk.Context, address string, pagination *
 	}
 
 	return &bindings.FailuresResponse{Failures: res.Failures}, nil
+}
+
+func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data []byte, err error) {
+	switch {
+	case query.EstimateMultiHopSwap != nil:
+		data, err = dexQuery(ctx, query.EstimateMultiHopSwap, qp.dexKeeper.EstimateMultiHopSwap)
+	case query.EstimatePlaceLimitOrder != nil:
+		q := dextypes.QueryEstimatePlaceLimitOrderRequest{
+			Creator:          query.EstimatePlaceLimitOrder.Creator,
+			Receiver:         query.EstimatePlaceLimitOrder.Receiver,
+			TokenIn:          query.EstimatePlaceLimitOrder.TokenIn,
+			TokenOut:         query.EstimatePlaceLimitOrder.TokenOut,
+			TickIndexInToOut: query.EstimatePlaceLimitOrder.TickIndexInToOut,
+			AmountIn:         query.EstimatePlaceLimitOrder.AmountIn,
+			MaxAmountOut:     query.EstimatePlaceLimitOrder.MaxAmountOut,
+		}
+		orderTypeInt, ok := dextypes.LimitOrderType_value[query.EstimatePlaceLimitOrder.OrderType]
+		if !ok {
+			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
+				fmt.Sprintf(
+					"got \"%s\", expected one of %s",
+					query.EstimatePlaceLimitOrder.OrderType,
+					strings.Join(maps.Keys(dextypes.LimitOrderType_value), ", ")),
+			)
+		}
+		q.OrderType = dextypes.LimitOrderType(orderTypeInt)
+		if query.EstimatePlaceLimitOrder.ExpirationTime != nil {
+			t := time.Unix(int64(*query.EstimatePlaceLimitOrder.ExpirationTime), 0)
+			q.ExpirationTime = &t
+		}
+		data, err = dexQuery(ctx, &q, qp.dexKeeper.EstimatePlaceLimitOrder)
+	case query.InactiveLimitOrderTranche != nil:
+		data, err = dexQuery(ctx, query.InactiveLimitOrderTranche, qp.dexKeeper.InactiveLimitOrderTranche)
+	case query.InactiveLimitOrderTrancheAll != nil:
+		data, err = dexQuery(ctx, query.InactiveLimitOrderTrancheAll, qp.dexKeeper.InactiveLimitOrderTrancheAll)
+	case query.LimitOrderTrancheUser != nil:
+		data, err = dexQuery(ctx, query.LimitOrderTrancheUser, qp.dexKeeper.LimitOrderTrancheUser)
+	case query.LimitOrderTranche != nil:
+		data, err = dexQuery(ctx, query.LimitOrderTranche, qp.dexKeeper.LimitOrderTranche)
+	case query.LimitOrderTrancheAll != nil:
+		data, err = dexQuery(ctx, query.LimitOrderTrancheAll, qp.dexKeeper.LimitOrderTrancheAll)
+	case query.LimitOrderTrancheUserAll != nil:
+		data, err = dexQuery(ctx, query.LimitOrderTrancheUserAll, qp.dexKeeper.LimitOrderTrancheUserAll)
+	case query.Params != nil:
+		data, err = dexQuery(ctx, query.Params, qp.dexKeeper.Params)
+	case query.Pool != nil:
+		data, err = dexQuery(ctx, query.Pool, qp.dexKeeper.Pool)
+	case query.PoolByID != nil:
+		data, err = dexQuery(ctx, query.PoolByID, qp.dexKeeper.PoolByID)
+	case query.LimitOrderTrancheUserAllByAddress != nil:
+		data, err = dexQuery(ctx, query.LimitOrderTrancheUserAllByAddress, qp.dexKeeper.LimitOrderTrancheUserAllByAddress)
+	case query.PoolMetadata != nil:
+		data, err = dexQuery(ctx, query.PoolMetadata, qp.dexKeeper.PoolMetadata)
+	case query.PoolMetadataAll != nil:
+		data, err = dexQuery(ctx, query.PoolMetadataAll, qp.dexKeeper.PoolMetadataAll)
+	case query.PoolReservesAll != nil:
+		data, err = dexQuery(ctx, query.PoolReservesAll, qp.dexKeeper.PoolReservesAll)
+	case query.PoolReserves != nil:
+		data, err = dexQuery(ctx, query.PoolReserves, qp.dexKeeper.PoolReserves)
+	case query.TickLiquidityAll != nil:
+		data, err = dexQuery(ctx, query.TickLiquidityAll, qp.dexKeeper.TickLiquidityAll)
+	case query.UserDepositsAll != nil:
+		data, err = dexQuery(ctx, query.UserDepositsAll, qp.dexKeeper.UserDepositsAll)
+
+	default:
+		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.dex query type"}
+	}
+
+	return data, err
+}
+
+func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context.Context, query *T) (R, error)) ([]byte, error) {
+	resp, err := queryHandler(ctx, query)
+	if err != nil {
+		return nil, errors.Wrapf(err, fmt.Sprintf("failed to query request %T", query))
+	}
+	var data []byte
+
+	if q, ok := any(resp).(bindings.BindingMarshaller); ok {
+		data, err = q.MarshalBinding()
+	} else {
+		data, err = json.Marshal(resp)
+	}
+
+	if err != nil {
+		return nil, errors.Wrapf(err, fmt.Sprintf("failed to marshal response %T", resp))
+	}
+
+	return data, nil
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {

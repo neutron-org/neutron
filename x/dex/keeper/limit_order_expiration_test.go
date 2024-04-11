@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/x/dex/keeper"
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/keeper"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func createNLimitOrderExpiration(

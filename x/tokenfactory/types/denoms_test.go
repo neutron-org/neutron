@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func TestDecomposeDenoms(t *testing.T) {

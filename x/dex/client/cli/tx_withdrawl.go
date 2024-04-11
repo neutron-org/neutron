@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func CmdWithdrawal() *cobra.Command {
@@ -78,9 +78,6 @@ func CmdWithdrawal() *cobra.Command {
 				TicksIndexesInt,
 				FeesUint,
 			)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

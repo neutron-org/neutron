@@ -1,7 +1,7 @@
 package v044
 
 import (
-	"github.com/neutron-org/neutron/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
 
 const (

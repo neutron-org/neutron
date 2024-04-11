@@ -7,7 +7,7 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 
-	"github.com/neutron-org/neutron/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
 
 	// ibc-go
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"

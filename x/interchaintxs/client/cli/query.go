@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

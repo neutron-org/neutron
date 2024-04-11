@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	. "github.com/neutron-org/neutron/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func TestValidatePoolDenom(t *testing.T) {
@@ -49,8 +49,8 @@ func TestValidatePoolDenom(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			validateError := ValidatePoolDenom(tc.denom)
-			id, err := ParsePoolIDFromDenom(tc.denom)
+			validateError := dextypes.ValidatePoolDenom(tc.denom)
+			id, err := dextypes.ParsePoolIDFromDenom(tc.denom)
 			if tc.valid {
 				require.NoError(t, err)
 				require.NoError(t, validateError)

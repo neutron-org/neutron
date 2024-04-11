@@ -1,7 +1,6 @@
 package ibc_test
 
 import (
-	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -12,20 +11,20 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
-	icsibctesting "github.com/cosmos/interchain-security/v3/legacy_ibc_testing/testing"
 
-	icstestingutils "github.com/cosmos/interchain-security/v3/testutil/ibc_testing"
-	icstestutil "github.com/cosmos/interchain-security/v3/testutil/integration"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
-	ccv "github.com/cosmos/interchain-security/v3/x/ccv/types"
+	icstestingutils "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
+	icstestutil "github.com/cosmos/interchain-security/v4/testutil/integration"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/testutil"
-	dextypes "github.com/neutron-org/neutron/x/dex/types"
+	appparams "github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v3/testutil"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 var (
-	nativeDenom            = sdk.DefaultBondDenom
+	nativeDenom            = appparams.DefaultDenom
 	ibcTransferAmount      = math.NewInt(100_000)
 	genesisWalletAmount, _ = math.NewIntFromString("10000000000000000000")
 )
@@ -33,18 +32,18 @@ var (
 type IBCTestSuite struct {
 	suite.Suite
 
-	coordinator   *icsibctesting.Coordinator
-	providerChain *icsibctesting.TestChain
+	coordinator   *ibctesting.Coordinator
+	providerChain *ibctesting.TestChain
 	providerApp   icstestutil.ProviderApp
-	neutronChain  *icsibctesting.TestChain // aka chainA
+	neutronChain  *ibctesting.TestChain // aka chainA
 	neutronApp    icstestutil.ConsumerApp
 	bundleB       *icstestingutils.ConsumerBundle
 	bundleC       *icstestingutils.ConsumerBundle
 
-	neutronCCVPath      *icsibctesting.Path
-	neutronTransferPath *icsibctesting.Path
-	neutronChainBPath   *icsibctesting.Path
-	chainBChainCPath    *icsibctesting.Path
+	neutronCCVPath      *ibctesting.Path
+	neutronTransferPath *ibctesting.Path
+	neutronChainBPath   *ibctesting.Path
+	chainBChainCPath    *ibctesting.Path
 
 	providerAddr           sdk.AccAddress
 	neutronAddr            sdk.AccAddress
@@ -56,8 +55,11 @@ func TestIBCTestSuite(t *testing.T) {
 }
 
 func (s *IBCTestSuite) SetupTest() {
+	// we need to redefine this variable to make tests work cause we use untrn as default bond denom in neutron
+	sdk.DefaultBondDenom = appparams.DefaultDenom
+
 	// Create coordinator
-	s.coordinator = icsibctesting.NewCoordinator(s.T(), 0)
+	s.coordinator = ibctesting.NewCoordinator(s.T(), 0)
 	s.providerChain, s.providerApp = icstestingutils.AddProvider[icstestutil.ProviderApp](
 		s.T(),
 		s.coordinator,
@@ -65,7 +67,7 @@ func (s *IBCTestSuite) SetupTest() {
 	)
 
 	// Setup neutron as a consumer chain
-	neutronBundle := s.addConsumerChain(testutil.SetupTestingApp(), 1)
+	neutronBundle := s.addConsumerChain(testutil.SetupValSetAppIniter, 1)
 	s.neutronChain = neutronBundle.Chain
 	s.neutronApp = neutronBundle.App
 	s.neutronCCVPath = neutronBundle.Path
@@ -73,7 +75,7 @@ func (s *IBCTestSuite) SetupTest() {
 
 	// Setup consumer chainB
 	// NOTE: using neutron Setup for chain B, otherwise the consumer chain doesn't have the packetForwarding middleware
-	s.bundleB = s.addConsumerChain(testutil.SetupTestingApp(), 2)
+	s.bundleB = s.addConsumerChain(testutil.SetupValSetAppIniter, 2)
 	// Setup consumer chainC
 	s.bundleC = s.addConsumerChain(icstestingutils.ConsumerAppIniter, 3)
 
@@ -102,7 +104,7 @@ func (s *IBCTestSuite) SetupTest() {
 }
 
 func (s *IBCTestSuite) addConsumerChain(
-	appIniter icsibctesting.AppIniter,
+	appIniter icstestingutils.ValSetAppIniter,
 	chainIdx int,
 ) *icstestingutils.ConsumerBundle {
 	bundle := icstestingutils.AddConsumer[icstestutil.ProviderApp, icstestutil.ConsumerApp](
@@ -113,11 +115,17 @@ func (s *IBCTestSuite) addConsumerChain(
 	)
 	providerKeeper := s.providerApp.GetProviderKeeper()
 	consumerKeeper := bundle.GetKeeper()
-	genesisState, found := providerKeeper.GetConsumerGenesis(
+	consumerGenesisState, found := providerKeeper.GetConsumerGenesis(
 		s.providerCtx(),
 		bundle.Chain.ChainID,
 	)
 	s.Require().True(found, "consumer genesis not found")
+
+	genesisState := ccvconsumertypes.GenesisState{
+		Params:   consumerGenesisState.Params,
+		Provider: consumerGenesisState.Provider,
+		NewChain: consumerGenesisState.NewChain,
+	}
 	consumerKeeper.InitGenesis(bundle.GetCtx(), &genesisState)
 	bundle.Path = s.setupCCVChannel(bundle)
 	bundle.TransferPath = s.setupTransferChannel(
@@ -131,8 +139,8 @@ func (s *IBCTestSuite) addConsumerChain(
 	return bundle
 }
 
-func (s *IBCTestSuite) setupCCVChannel(bundle *icstestingutils.ConsumerBundle) *icsibctesting.Path {
-	ccvPath := icsibctesting.NewPath(bundle.Chain, s.providerChain)
+func (s *IBCTestSuite) setupCCVChannel(bundle *icstestingutils.ConsumerBundle) *ibctesting.Path {
+	ccvPath := ibctesting.NewPath(bundle.Chain, s.providerChain)
 
 	providerKeeper := s.providerApp.GetProviderKeeper()
 	neutronKeeper := bundle.GetKeeper()
@@ -166,12 +174,13 @@ func (s *IBCTestSuite) setupCCVChannel(bundle *icstestingutils.ConsumerBundle) *
 
 func (s *IBCTestSuite) setupConsumerToConsumerTransferChannel(
 	bundleA, bundleB *icstestingutils.ConsumerBundle,
-) *icsibctesting.Path {
-	path := icsibctesting.NewPath(bundleA.Chain, bundleB.Chain)
+) *ibctesting.Path {
+	path := ibctesting.NewPath(bundleA.Chain, bundleB.Chain)
 
 	// Set the correct client unbonding period
-	clientConfig := icsibctesting.NewTendermintConfig()
-	clientConfig.UnbondingPeriod = ccvconsumertypes.DefaultConsumerUnbondingPeriod
+	clientConfig := ibctesting.NewTendermintConfig()
+	clientConfig.UnbondingPeriod = ccv.DefaultConsumerUnbondingPeriod
+	clientConfig.TrustingPeriod = clientConfig.UnbondingPeriod * 2 / 3
 	path.EndpointA.ClientConfig = clientConfig
 	path.EndpointB.ClientConfig = clientConfig
 
@@ -186,12 +195,12 @@ func (s *IBCTestSuite) setupConsumerToConsumerTransferChannel(
 }
 
 func (s *IBCTestSuite) setupTransferChannel(
-	ccvPath *icsibctesting.Path,
+	ccvPath *ibctesting.Path,
 	appA icstestutil.ConsumerApp,
-	chainA, chainB *icsibctesting.TestChain,
-) *icsibctesting.Path {
+	chainA, chainB *ibctesting.TestChain,
+) *ibctesting.Path {
 	// transfer path will use the same connection as ibc path
-	transferPath := icsibctesting.NewPath(chainA, chainB)
+	transferPath := ibctesting.NewPath(chainA, chainB)
 	transferPath.EndpointA.ChannelConfig.PortID = transfertypes.PortID
 	transferPath.EndpointB.ChannelConfig.PortID = transfertypes.PortID
 	transferPath.EndpointA.ChannelConfig.Version = transfertypes.Version
@@ -231,8 +240,8 @@ func (s *IBCTestSuite) providerCtx() sdk.Context {
 // Helper Methods /////////////////////////////////////////////////////////////
 
 func (s *IBCTestSuite) IBCTransfer(
-	path *icsibctesting.Path,
-	sourceEndpoint *icsibctesting.Endpoint,
+	path *ibctesting.Path,
+	sourceEndpoint *ibctesting.Endpoint,
 	fromAddr sdk.AccAddress,
 	toAddr sdk.AccAddress,
 	transferDenom string,
@@ -284,7 +293,7 @@ func (s *IBCTestSuite) IBCTransferProviderToNeutron(
 
 func (s *IBCTestSuite) getBalance(
 	bk icstestutil.TestBankKeeper,
-	chain *icsibctesting.TestChain,
+	chain *ibctesting.TestChain,
 	addr sdk.AccAddress,
 	denom string,
 ) sdk.Coin {
@@ -294,7 +303,7 @@ func (s *IBCTestSuite) getBalance(
 
 func (s *IBCTestSuite) assertBalance(
 	bk icstestutil.TestBankKeeper,
-	chain *icsibctesting.TestChain,
+	chain *ibctesting.TestChain,
 	addr sdk.AccAddress,
 	denom string,
 	expectedAmt math.Int,
@@ -363,26 +372,4 @@ func (s *IBCTestSuite) neutronDeposit(
 	// execute deposit msg
 	_, err := s.neutronChain.SendMsgs(msgDeposit)
 	s.Assert().NoError(err, "Deposit Failed")
-}
-
-func (s *IBCTestSuite) RelayAllPacketsAToB(path *icsibctesting.Path) error {
-	sentPackets := path.EndpointA.Chain.SentPackets
-	chainB := path.EndpointB.Chain
-	if len(sentPackets) == 0 {
-		return fmt.Errorf("No packets to send")
-	}
-
-	for _, packet := range sentPackets {
-		// Skip if packet has already been sent
-		ack, _ := chainB.App.GetIBCKeeper().ChannelKeeper.
-			GetPacketAcknowledgement(chainB.GetContext(), packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
-		if ack != nil {
-			continue
-		}
-		err := path.RelayPacket(packet)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

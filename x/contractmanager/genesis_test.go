@@ -3,16 +3,16 @@ package contractmanager_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
 
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/testutil/contractmanager/nullify"
-	"github.com/neutron-org/neutron/x/contractmanager"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
+	keepertest "github.com/neutron-org/neutron/v3/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v3/testutil/contractmanager/nullify"
+	"github.com/neutron-org/neutron/v3/x/contractmanager"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
 
 func TestGenesis(t *testing.T) {

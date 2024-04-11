@@ -8,9 +8,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	neutronapp "github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil"
-	"github.com/neutron-org/neutron/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // Test Suite ///////////////////////////////////////////////////////////////
@@ -30,23 +30,23 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 
 func (s *CoreHelpersTestSuite) SetupTest() {
 	app := testutil.Setup(s.T())
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
 
-	accAlice := app.AccountKeeper.NewAccountWithAddress(ctx, s.alice)
-	app.AccountKeeper.SetAccount(ctx, accAlice)
-	accBob := app.AccountKeeper.NewAccountWithAddress(ctx, s.bob)
-	app.AccountKeeper.SetAccount(ctx, accBob)
-	accCarol := app.AccountKeeper.NewAccountWithAddress(ctx, s.carol)
-	app.AccountKeeper.SetAccount(ctx, accCarol)
-	accDan := app.AccountKeeper.NewAccountWithAddress(ctx, s.dan)
-	app.AccountKeeper.SetAccount(ctx, accDan)
+	accAlice := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.alice)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accAlice)
+	accBob := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.bob)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accBob)
+	accCarol := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.carol)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accCarol)
+	accDan := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.dan)
+	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accDan)
 
-	s.app = app
+	s.app = app.(*neutronapp.App)
 	s.ctx = ctx
-	s.alice = sdk.AccAddress([]byte("alice"))
-	s.bob = sdk.AccAddress([]byte("bob"))
-	s.carol = sdk.AccAddress([]byte("carol"))
-	s.dan = sdk.AccAddress([]byte("dan"))
+	s.alice = []byte("alice")
+	s.bob = []byte("bob")
+	s.carol = []byte("carol")
+	s.dan = []byte("dan")
 }
 
 func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB int) {

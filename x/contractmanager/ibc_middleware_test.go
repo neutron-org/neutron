@@ -8,10 +8,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	test_keeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/testutil/mocks/contractmanager/types"
-	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/x/contractmanager/types"
+	test_keeper "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/contractmanager/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
 
 var (

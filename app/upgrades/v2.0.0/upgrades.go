@@ -7,8 +7,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
-	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -19,17 +20,16 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/app/upgrades"
-	contractmanagerkeeper "github.com/neutron-org/neutron/x/contractmanager/keeper"
-	contractmanagertypes "github.com/neutron-org/neutron/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/x/cron/types"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func CreateUpgradeHandler(
@@ -260,18 +260,18 @@ func migrateGlobalFees(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error 
 func migrateRewardDenoms(ctx sdk.Context, keepers *upgrades.UpgradeKeepers) error {
 	ctx.Logger().Info("Migrating reword denoms...")
 
-	if !keepers.CcvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms) {
+	if !keepers.CcvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms) {
 		return fmt.Errorf("key_reward_denoms param not found")
 	}
 
 	var denoms []string
-	keepers.CcvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+	keepers.CcvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denoms)
 
 	// add new axlr usdc denom
 	axlrDenom := "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
 	denoms = append(denoms, axlrDenom)
 
-	keepers.CcvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+	keepers.CcvConsumerSubspace.Set(ctx, ccv.KeyRewardDenoms, &denoms)
 
 	ctx.Logger().Info("Finished migrating reward denoms")
 

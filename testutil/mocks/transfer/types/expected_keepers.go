@@ -12,7 +12,7 @@ import (
 	types1 "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
 
-	types2 "github.com/neutron-org/neutron/x/feerefunder/types"
+	types2 "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 // MockWasmKeeper is a mock of WasmKeeper interface.

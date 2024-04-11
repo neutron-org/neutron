@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/x/cron/types"
+	"github.com/neutron-org/neutron/v3/x/cron/types"
 )
 
 func (k Keeper) Schedules(c context.Context, req *types.QuerySchedulesRequest) (*types.QuerySchedulesResponse, error) {

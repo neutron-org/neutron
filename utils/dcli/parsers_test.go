@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/neutron-org/neutron/utils/dcli"
+	dcli "github.com/neutron-org/neutron/v3/utils/dcli"
 )
 
 type testingStruct struct {
@@ -150,6 +150,7 @@ func TestParseFieldFromArg(t *testing.T) {
 	}
 
 	for name, tc := range tests {
+		tc := tc
 		t.Run(name, func(t *testing.T) {
 			val := reflect.ValueOf(&tc.testingStruct).Elem()
 			typ := reflect.TypeOf(&tc.testingStruct).Elem()
@@ -157,7 +158,7 @@ func TestParseFieldFromArg(t *testing.T) {
 			fVal := val.Field(tc.fieldIndex)
 			fType := typ.Field(tc.fieldIndex)
 
-			err := ParseFieldFromArg(fVal, fType, tc.arg)
+			err := dcli.ParseFieldFromArg(fVal, fType, tc.arg)
 
 			if !tc.expectingErr {
 				require.Equal(t, tc.expectedStruct, tc.testingStruct)

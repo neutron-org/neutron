@@ -18,8 +18,8 @@ import (
 
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
-	keeper "github.com/neutron-org/neutron/x/transfer/keeper"
-	"github.com/neutron-org/neutron/x/transfer/types"
+	keeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
+	"github.com/neutron-org/neutron/v3/x/transfer/types"
 )
 
 func TransferKeeper(t testing.TB, managerKeeper types.WasmKeeper, refunderKeeper types.FeeRefunderKeeper, channelKeeper types.ChannelKeeper, authKeeper types.AccountKeeper) (*keeper.KeeperTransferWrapper, sdk.Context, *storetypes.KVStoreKey) {

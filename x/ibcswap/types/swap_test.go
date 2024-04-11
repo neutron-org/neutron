@@ -9,10 +9,10 @@ import (
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/app"
-	"github.com/neutron-org/neutron/testutil/common/sample"
-	"github.com/neutron-org/neutron/x/dex/types"
-	. "github.com/neutron-org/neutron/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/testutil/common/sample"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
 )
 
 func init() {
@@ -21,8 +21,8 @@ func init() {
 
 // TestPacketMetadata_Marshal asserts that the marshaling of the swap metadata works as intended.
 func TestPacketMetadata_Marshal(t *testing.T) {
-	pm := PacketMetadata{
-		&SwapMetadata{
+	pm := dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "test-1",
 				Receiver:         "test-1",
@@ -54,8 +54,8 @@ func TestPacketMetadata_MarshalWithNext(t *testing.T) {
 	nextBz, err := json.Marshal(forwardMedata)
 	require.NoError(t, err)
 
-	pm := PacketMetadata{
-		&SwapMetadata{
+	pm := dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "test-1",
 				Receiver:         "test-1",
@@ -66,7 +66,7 @@ func TestPacketMetadata_MarshalWithNext(t *testing.T) {
 				OrderType:        types.LimitOrderType_FILL_OR_KILL,
 				// MaxAmountOut: math.NewInt(456),
 			},
-			Next: NewJSONObject(false, nextBz, orderedmap.OrderedMap{}),
+			Next: dextypes.NewJSONObject(false, nextBz, orderedmap.OrderedMap{}),
 		},
 	}
 	_, err = json.Marshal(pm)
@@ -76,7 +76,7 @@ func TestPacketMetadata_MarshalWithNext(t *testing.T) {
 // TestPacketMetadata_Unmarshal asserts that unmarshaling works as intended.
 func TestPacketMetadata_Unmarshal(t *testing.T) {
 	metadata := "{\n  \"swap\": {\n    \"creator\": \"test-1\",\n \"TickIndexInToOut\": 0,\n \"orderType\": 1,\n   \"receiver\": \"test-1\",\n    \"tokenIn\": \"token-a\",\n    \"tokenOut\": \"token-b\",\n    \"AmountIn\": \"123\",\n    \"next\": \"\"\n  }\n}"
-	pm := &PacketMetadata{}
+	pm := &dextypes.PacketMetadata{}
 	err := json.Unmarshal([]byte(metadata), pm)
 	require.NoError(t, err)
 }
@@ -84,7 +84,7 @@ func TestPacketMetadata_Unmarshal(t *testing.T) {
 // TestPacketMetadata_UnmarshalStringNext asserts that unmarshaling works as intended when next is escaped json string.
 func TestPacketMetadata_UnmarshalStringNext(t *testing.T) {
 	metadata := "{\n  \"swap\": {\n    \"creator\": \"test-1\",\n    \"receiver\": \"test-1\",\n    \"tokenIn\": \"token-a\",\n    \"tokenOut\": \"token-b\",\n    \"AmountIn\": \"123\",\n  \"TickIndexInToOut\": 0,\n \"orderType\": 1,\n  \"next\": \" {\\\"forward\\\":{\\\"receiver\\\":\\\"cosmos1f4cur2krsua2th9kkp7n0zje4stea4p9tu70u8\\\",\\\"port\\\":\\\"transfer\\\",\\\"channel\\\":\\\"channel-0\\\",\\\"timeout\\\":0,\\\"next\\\":{\\\"forward\\\":{\\\"receiver\\\":\\\"cosmos1l505zhahp24v5jsmps9vs5asah759fdce06sfp\\\",\\\"port\\\":\\\"transfer\\\",\\\"channel\\\":\\\"channel-0\\\",\\\"timeout\\\":0}}}}\"\n  }\n}"
-	pm := &PacketMetadata{}
+	pm := &dextypes.PacketMetadata{}
 	err := json.Unmarshal([]byte(metadata), pm)
 	require.NoError(t, err)
 }
@@ -92,14 +92,14 @@ func TestPacketMetadata_UnmarshalStringNext(t *testing.T) {
 // TestPacketMetadata_UnmarshalJSONNext asserts that unmarshaling works as intended when next is a raw json object.
 func TestPacketMetadata_UnmarshalJSONNext(t *testing.T) {
 	metadata := "{\"swap\":{\"creator\":\"test-1\",\"receiver\":\"test-1\",\"tokenIn\":\"token-a\",\"tokenOut\":\"token-b\",\"AmountIn\":\"123\",\"TickIndexInToOut\":0, \"orderType\": 1, \"tokenIn\":\"token-in\",\"next\":{\"forward\":{\"receiver\":\"cosmos14zde8usc4ur04y3aqnufzzmv2uqdpwwttr5uwv\",\"port\":\"transfer\",\"channel\":\"channel-0\"}}}}"
-	pm := &PacketMetadata{}
+	pm := &dextypes.PacketMetadata{}
 	err := json.Unmarshal([]byte(metadata), pm)
 	require.NoError(t, err)
 }
 
 func TestSwapMetadata_ValidatePass(t *testing.T) {
-	pm := PacketMetadata{
-		&SwapMetadata{
+	pm := dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
@@ -119,8 +119,8 @@ func TestSwapMetadata_ValidatePass(t *testing.T) {
 }
 
 func TestSwapMetadata_ValidateFail(t *testing.T) {
-	pm := PacketMetadata{
-		&SwapMetadata{
+	pm := dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "",
 				Receiver:         "test-1",
@@ -137,8 +137,8 @@ func TestSwapMetadata_ValidateFail(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, pm.Swap.Validate())
 
-	pm = PacketMetadata{
-		&SwapMetadata{
+	pm = dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "creator",
 				Receiver:         "",
@@ -155,8 +155,8 @@ func TestSwapMetadata_ValidateFail(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, pm.Swap.Validate())
 
-	pm = PacketMetadata{
-		&SwapMetadata{
+	pm = dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "creator",
 				Receiver:         "test-1",
@@ -173,8 +173,8 @@ func TestSwapMetadata_ValidateFail(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, pm.Swap.Validate())
 
-	pm = PacketMetadata{
-		&SwapMetadata{
+	pm = dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "creator",
 				Receiver:         "receiver",
@@ -191,8 +191,8 @@ func TestSwapMetadata_ValidateFail(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, pm.Swap.Validate())
 
-	pm = PacketMetadata{
-		&SwapMetadata{
+	pm = dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "creator",
 				Receiver:         "receiver",
@@ -209,8 +209,8 @@ func TestSwapMetadata_ValidateFail(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, pm.Swap.Validate())
 
-	pm = PacketMetadata{
-		&SwapMetadata{
+	pm = dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "creator",
 				Receiver:         "receiver",
@@ -227,8 +227,8 @@ func TestSwapMetadata_ValidateFail(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, pm.Swap.Validate())
 
-	pm = PacketMetadata{
-		&SwapMetadata{
+	pm = dextypes.PacketMetadata{
+		&dextypes.SwapMetadata{
 			MsgPlaceLimitOrder: &types.MsgPlaceLimitOrder{
 				Creator:          "creator",
 				Receiver:         "receiver",

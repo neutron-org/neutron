@@ -14,13 +14,13 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v7/modules/core/23-commitment/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
-	ccvprovidertypes "github.com/cosmos/interchain-security/v3/x/ccv/provider/types"
-	"github.com/cosmos/interchain-security/v3/x/ccv/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	ccvprovidertypes "github.com/cosmos/interchain-security/v4/x/ccv/provider/types"
+	"github.com/cosmos/interchain-security/v4/x/ccv/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/v3/app"
 )
 
 // This function creates consumer module genesis state that is used as starting point for modifications
@@ -30,14 +30,14 @@ func CreateMinimalConsumerTestGenesis() *ccvconsumertypes.GenesisState {
 	genesisState := ccvconsumertypes.DefaultGenesisState()
 	genesisState.Params.Enabled = true
 	genesisState.NewChain = true
-	genesisState.ProviderClientState = ccvprovidertypes.DefaultParams().TemplateClient
-	genesisState.ProviderClientState.ChainId = app.Name
-	genesisState.ProviderClientState.LatestHeight = ibcclienttypes.Height{RevisionNumber: 0, RevisionHeight: 1}
-	genesisState.ProviderClientState.TrustingPeriod, _ = types.CalculateTrustPeriod(genesisState.Params.UnbondingPeriod, ccvprovidertypes.DefaultTrustingPeriodFraction)
+	genesisState.Provider.ClientState = ccvprovidertypes.DefaultParams().TemplateClient
+	genesisState.Provider.ClientState.ChainId = app.Name
+	genesisState.Provider.ClientState.LatestHeight = ibcclienttypes.Height{RevisionNumber: 0, RevisionHeight: 1}
+	genesisState.Provider.ClientState.TrustingPeriod, _ = types.CalculateTrustPeriod(genesisState.Params.UnbondingPeriod, ccvprovidertypes.DefaultTrustingPeriodFraction)
 
-	genesisState.ProviderClientState.UnbondingPeriod = genesisState.Params.UnbondingPeriod
-	genesisState.ProviderClientState.MaxClockDrift = ccvprovidertypes.DefaultMaxClockDrift
-	genesisState.ProviderConsensusState = &ibctmtypes.ConsensusState{
+	genesisState.Provider.ClientState.UnbondingPeriod = genesisState.Params.UnbondingPeriod
+	genesisState.Provider.ClientState.MaxClockDrift = ccvprovidertypes.DefaultMaxClockDrift
+	genesisState.Provider.ConsensusState = &ibctmtypes.ConsensusState{
 		Timestamp: time.Now().UTC(),
 		Root:      ibccommitmenttypes.MerkleRoot{Hash: []byte("dummy")},
 	}
@@ -64,8 +64,8 @@ func ModifyConsumerGenesis(val network.Validator) error {
 	}
 
 	consumerGenesisState := CreateMinimalConsumerTestGenesis()
-	consumerGenesisState.InitialValSet = initialValset
-	consumerGenesisState.ProviderConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).Hash()
+	consumerGenesisState.Provider.InitialValSet = initialValset
+	consumerGenesisState.Provider.ConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).Hash()
 
 	if err := consumerGenesisState.Validate(); err != nil {
 		return errors.Wrap(err, "invalid consumer genesis")

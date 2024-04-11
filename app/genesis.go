@@ -9,7 +9,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 )
 
 // GenesisState is the genesis state of the blockchain represented here as a map of raw json
@@ -32,7 +32,6 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	globalFeeGenesisState := globalfeetypes.GenesisState{
 		Params: globalfeetypes.Params{
 			MinimumGasPrices: sdk.DecCoins{
-				sdk.NewDecCoinFromDec(sdk.DefaultBondDenom, sdk.MustNewDecFromStr("0")),
 				sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0")),
 			},
 			BypassMinFeeMsgTypes: []string{

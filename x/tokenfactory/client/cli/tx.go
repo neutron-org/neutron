@@ -1,8 +1,11 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -11,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -28,9 +31,10 @@ func GetTxCmd() *cobra.Command {
 		NewCreateDenomCmd(),
 		NewMintCmd(),
 		NewBurnCmd(),
-		// NewForceTransferCmd(),
+		NewForceTransferCmd(),
 		NewChangeAdminCmd(),
 		NewSetBeforeSendHook(),
+		NewSetDenomMetadataCmd(),
 	)
 
 	return cmd
@@ -136,39 +140,82 @@ func NewBurnCmd() *cobra.Command {
 	return cmd
 }
 
-// // NewForceTransferCmd broadcast MsgForceTransfer
-// func NewForceTransferCmd() *cobra.Command {
-// 	cmd := &cobra.Command{
-// 		Use:   "force-transfer [amount] [transfer-from-address] [transfer-to-address] [flags]",
-// 		Short: "Force transfer tokens from one address to another address. Must have admin authority to do so.",
-// 		Args:  cobra.ExactArgs(3),
-// 		RunE: func(cmd *cobra.Command, args []string) error {
-// 			clientCtx, err := client.GetClientTxContext(cmd)
-// 			if err != nil {
-// 				return err
-// 			}
+// NewForceTransferCmd broadcast MsgForceTransfer
+func NewForceTransferCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "force-transfer [amount] [transfer-from-address] [transfer-to-address] [flags]",
+		Short: "Force transfer tokens from one address to another address. Must have admin authority to do so.",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 
-// 			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags()).WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever)
+			txf, err := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+			if err != nil {
+				return err
+			}
 
-// 			amount, err := sdk.ParseCoinNormalized(args[0])
-// 			if err != nil {
-// 				return err
-// 			}
+			amount, err := sdk.ParseCoinNormalized(args[0])
+			if err != nil {
+				return err
+			}
 
-// 			msg := types.NewMsgForceTransfer(
-// 				clientCtx.GetFromAddress().String(),
-// 				amount,
-// 				args[1],
-// 				args[2],
-// 			)
+			msg := types.NewMsgForceTransfer(
+				clientCtx.GetFromAddress().String(),
+				amount,
+				args[1],
+				args[2],
+			)
 
-// 			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
-// 		},
-// 	}
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf.WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever), msg)
+		},
+	}
 
-// 	flags.AddTxFlagsToCmd(cmd)
-// 	return cmd
-// }
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// NewSetDenomMetadataCmd broadcast MsgSetDenomMetadata msg
+func NewSetDenomMetadataCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-denom-metadata [metadata-file] [flags]",
+		Short: "Sets a bank metadata for a token denom. Must have admin authority to do so.",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			txf, err := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			metadataBytes, err := os.ReadFile(args[1])
+			if err != nil {
+				return err
+			}
+
+			var metadata banktypes.Metadata
+			if err = json.Unmarshal(metadataBytes, &metadata); err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSetDenomMetadata(
+				clientCtx.GetFromAddress().String(),
+				metadata,
+			)
+
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf.WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
 
 // NewChangeAdminCmd broadcast MsgChangeAdmin
 func NewChangeAdminCmd() *cobra.Command {

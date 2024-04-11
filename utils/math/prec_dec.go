@@ -593,11 +593,12 @@ func (d PrecDec) Float64() (float64, error) {
 // MustFloat64 returns the float64 representation of a PrecDec.
 // Would panic if the conversion failed.
 func (d PrecDec) MustFloat64() float64 {
-	if value, err := strconv.ParseFloat(d.String(), 64); err != nil {
+	value, err := strconv.ParseFloat(d.String(), 64)
+	if err != nil {
 		panic(err)
-	} else {
-		return value
 	}
+
+	return value
 }
 
 //     ____

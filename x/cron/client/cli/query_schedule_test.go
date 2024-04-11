@@ -12,10 +12,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/testutil/cron/network"
-	"github.com/neutron-org/neutron/testutil/cron/nullify"
-	"github.com/neutron-org/neutron/x/cron/client/cli"
-	"github.com/neutron-org/neutron/x/cron/types"
+	"github.com/neutron-org/neutron/v3/testutil/cron/network"
+	"github.com/neutron-org/neutron/v3/testutil/cron/nullify"
+	"github.com/neutron-org/neutron/v3/x/cron/client/cli"
+	"github.com/neutron-org/neutron/v3/x/cron/types"
 )
 
 // Prevent strconv unused error
@@ -74,6 +74,7 @@ func TestShowSchedule(t *testing.T) {
 			err:  status.Error(codes.NotFound, "not found"),
 		},
 	} {
+		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
 				tc.name,

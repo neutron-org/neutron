@@ -2,16 +2,16 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/utils"
-	math_utils "github.com/neutron-org/neutron/utils/math"
-	"github.com/neutron-org/neutron/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/x/dex/utils"
+	"github.com/neutron-org/neutron/v3/utils"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into math.Ints.
@@ -264,7 +264,7 @@ func (k Keeper) MultiHopSwapCore(
 	if len(routeErrors) == len(routes) {
 		// All routes have failed
 
-		allErr := dexutils.JoinErrors(types.ErrAllMultiHopRoutesFailed, routeErrors...)
+		allErr := errors.Join(append([]error{types.ErrAllMultiHopRoutesFailed}, routeErrors...)...)
 
 		return sdk.Coin{}, allErr
 	}
@@ -321,7 +321,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	var pairID *types.PairID
 	pairID, err = types.NewPairIDFromUnsorted(tokenIn, tokenOut)
 	if err != nil {
-		return
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
 	amountLeft, totalIn := amountIn, math.ZeroInt()
@@ -333,7 +333,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		var limitPrice math_utils.PrecDec
 		limitPrice, err = types.CalcPrice(tickIndexInToOut)
 		if err != nil {
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 
 		var orderFilled bool
@@ -345,12 +345,12 @@ func (k Keeper) PlaceLimitOrderCore(
 			&limitPrice,
 		)
 		if err != nil {
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 
 		if orderType.IsFoK() && !orderFilled {
 			err = types.ErrFoKLimitOrderNotFilled
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 
 		totalIn = swapInCoin.Amount
@@ -364,7 +364,7 @@ func (k Keeper) PlaceLimitOrderCore(
 				sdk.Coins{swapOutCoin},
 			)
 			if err != nil {
-				return
+				return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 			}
 		}
 	}
@@ -381,7 +381,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		orderType,
 	)
 	if err != nil {
-		return
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
 	trancheKey = placeTranche.Key.TrancheKey
@@ -425,7 +425,7 @@ func (k Keeper) PlaceLimitOrderCore(
 			sdk.Coins{totalInCoin},
 		)
 		if err != nil {
-			return
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}
 	}
 

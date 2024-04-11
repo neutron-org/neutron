@@ -6,8 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/testutil/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/x/interchaintxs/types"
+	testkeeper "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 func TestParamsQuery(t *testing.T) {

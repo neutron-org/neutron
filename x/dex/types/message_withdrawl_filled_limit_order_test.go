@@ -5,26 +5,26 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/testutil/common/sample"
-	. "github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/testutil/common/sample"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func TestMsgWithdrawFilledLimitOrder_ValidateBasic(t *testing.T) {
 	tests := []struct {
 		name string
-		msg  MsgWithdrawFilledLimitOrder
+		msg  dextypes.MsgWithdrawFilledLimitOrder
 		err  error
 	}{
 		{
 			name: "invalid creator",
-			msg: MsgWithdrawFilledLimitOrder{
+			msg: dextypes.MsgWithdrawFilledLimitOrder{
 				Creator:    "invalid_address",
 				TrancheKey: "ORDER123",
 			},
-			err: ErrInvalidAddress,
+			err: dextypes.ErrInvalidAddress,
 		}, {
 			name: "valid msg",
-			msg: MsgWithdrawFilledLimitOrder{
+			msg: dextypes.MsgWithdrawFilledLimitOrder{
 				Creator:    sample.AccAddress(),
 				TrancheKey: "ORDER123",
 			},

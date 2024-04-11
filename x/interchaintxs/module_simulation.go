@@ -8,8 +8,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	interchaintxssimulation "github.com/neutron-org/neutron/x/interchaintxs/simulation"
-	"github.com/neutron-org/neutron/x/interchaintxs/types"
+	interchaintxssimulation "github.com/neutron-org/neutron/v3/x/interchaintxs/simulation"
+	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
 // avoid unused import issue

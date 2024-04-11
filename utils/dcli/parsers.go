@@ -13,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/pflag"
 
-	utils "github.com/neutron-org/neutron/utils"
+	utils "github.com/neutron-org/neutron/v3/utils"
 )
 
 // Parses arguments 1-1 from args

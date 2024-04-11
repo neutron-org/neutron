@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -49,9 +49,6 @@ func RemoveInterchainQueryCmd() *cobra.Command {
 			}
 
 			msg := types.NewMsgRemoveInterchainQuery(sender, queryID)
-			if err = msg.ValidateBasic(); err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
@@ -90,10 +87,6 @@ func SubmitQueryResultCmd() *cobra.Command {
 			msg := types.MsgSubmitQueryResult{QueryId: queryID, Sender: string(sender)}
 			if err := json.Unmarshal(result, &msg.Result); err != nil {
 				return fmt.Errorf("failed to unmarshal query result: %w", err)
-			}
-
-			if err = msg.ValidateBasic(); err != nil {
-				return err
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)

@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // SetPoolMetadata set a specific poolMetadata in the store
@@ -40,6 +40,26 @@ func (k Keeper) GetPoolMetadataByDenom(
 		return pm, types.ErrInvalidPoolDenom
 	}
 	return pm, nil
+}
+
+func (k Keeper) initializePoolMetadata(
+	ctx sdk.Context,
+	pairID *types.PairID,
+	centerTickIndexNormalized int64,
+	fee uint64,
+) uint64 {
+	poolID := k.GetPoolCount(ctx)
+	poolMetadata := types.PoolMetadata{
+		Id:     poolID,
+		PairId: pairID,
+		Tick:   centerTickIndexNormalized,
+		Fee:    fee,
+	}
+
+	k.SetPoolMetadata(ctx, poolMetadata)
+
+	k.incrementPoolCount(ctx)
+	return poolID
 }
 
 // RemovePoolMetadata removes a poolMetadata from the store

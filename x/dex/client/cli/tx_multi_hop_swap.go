@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	math_utils "github.com/neutron-org/neutron/utils/math"
-	"github.com/neutron-org/neutron/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 var _ = strconv.Itoa(0)
@@ -62,9 +62,6 @@ func CmdMultiHopSwap() *cobra.Command {
 				exitLimitPriceDec,
 				pickBest,
 			)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

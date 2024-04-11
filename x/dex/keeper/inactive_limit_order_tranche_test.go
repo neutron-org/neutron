@@ -8,10 +8,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/testutil/dex/nullify"
-	"github.com/neutron-org/neutron/x/dex/keeper"
-	"github.com/neutron-org/neutron/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v3/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v3/testutil/dex/nullify"
+	"github.com/neutron-org/neutron/v3/x/dex/keeper"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func createNInactiveLimitOrderTranche(

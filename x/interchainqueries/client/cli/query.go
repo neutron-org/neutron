@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 const (
@@ -40,7 +40,7 @@ func GetQueryCmd(_ string) *cobra.Command {
 func CmdQueryRegisteredQuery() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "registered-query [id]",
-		Short: "queries all the interchain queries in the module",
+		Short: "queries registered interchain query by id",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)

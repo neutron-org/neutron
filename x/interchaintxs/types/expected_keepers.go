@@ -9,7 +9,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)

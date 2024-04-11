@@ -3,11 +3,11 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/app"
+	"github.com/neutron-org/neutron/v3/app"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/x/cron/types"
+	"github.com/neutron-org/neutron/v3/x/cron/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

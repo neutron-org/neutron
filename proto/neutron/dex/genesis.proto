@@ -3,24 +3,23 @@ syntax = "proto3";
 package neutron.dex;
 
 import "gogoproto/gogo.proto";
-import "neutron/dex/params.proto";
-import "neutron/dex/limit_order_tranche_user.proto";
 import "neutron/dex/limit_order_tranche.proto";
-import "neutron/dex/tick_liquidity.proto";
+import "neutron/dex/limit_order_tranche_user.proto";
+import "neutron/dex/params.proto";
 import "neutron/dex/pool_metadata.proto";
+import "neutron/dex/tick_liquidity.proto";
 
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/neutron-org/neutron/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
 
 // GenesisState defines the dex module's genesis state.
 message GenesisState {
-           Params                params                        = 1 [(gogoproto.nullable) = false];
-  repeated TickLiquidity         tick_liquidity_list             = 2 [(gogoproto.nullable) = true ];
-  repeated LimitOrderTranche     inactive_limit_order_tranche_list = 3 [(gogoproto.nullable) = true ];
-  repeated LimitOrderTrancheUser limit_order_tranche_user_list     = 4 [(gogoproto.nullable) = true ];
-  repeated PoolMetadata pool_metadata_list  = 5 [(gogoproto.nullable) = false];
-           uint64       pool_count = 6;
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated TickLiquidity tick_liquidity_list = 2 [(gogoproto.nullable) = true];
+  repeated LimitOrderTranche inactive_limit_order_tranche_list = 3 [(gogoproto.nullable) = true];
+  repeated LimitOrderTrancheUser limit_order_tranche_user_list = 4 [(gogoproto.nullable) = true];
+  repeated PoolMetadata pool_metadata_list = 5 [(gogoproto.nullable) = false];
+  uint64 pool_count = 6;
   // this line is used by starport scaffolding # genesis/proto/state
 }
-

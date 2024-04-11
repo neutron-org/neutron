@@ -6,17 +6,18 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
-	crontypes "github.com/neutron-org/neutron/x/cron/types"
-	feeburnertypes "github.com/neutron-org/neutron/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
-	"github.com/neutron-org/neutron/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
-	ccvconsumertypes "github.com/cosmos/interchain-security/v3/x/ccv/consumer/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -24,8 +25,8 @@ import (
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/stretchr/testify/suite"
 
-	v110 "github.com/neutron-org/neutron/app/upgrades/v2.0.0"
-	"github.com/neutron-org/neutron/testutil"
+	v200 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.0"
+	"github.com/neutron-org/neutron/v3/testutil"
 )
 
 type UpgradeTestSuite struct {
@@ -80,7 +81,7 @@ func (suite *UpgradeTestSuite) TestGlobalFeesUpgrade() {
 	suite.Require().True(globalFeeSubspace.Has(ctx, globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage))
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -116,26 +117,26 @@ func (suite *UpgradeTestSuite) TestRewardDenomsUpgrade() {
 		ctx                 = suite.ChainA.GetContext()
 	)
 
-	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
+	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms))
 
 	// emulate mainnet/testnet state
-	ccvConsumerSubspace.Set(ctx, ccvconsumertypes.KeyRewardDenoms, &[]string{params.DefaultDenom})
+	ccvConsumerSubspace.Set(ctx, ccv.KeyRewardDenoms, &[]string{params.DefaultDenom})
 
 	var denomsBefore []string
-	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denomsBefore)
+	ccvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denomsBefore)
 	suite.Require().Equal(denomsBefore, []string{params.DefaultDenom})
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
 	app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade)
 
-	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccvconsumertypes.KeyRewardDenoms))
+	suite.Require().True(ccvConsumerSubspace.Has(ctx, ccv.KeyRewardDenoms))
 
 	var denoms []string
-	ccvConsumerSubspace.Get(ctx, ccvconsumertypes.KeyRewardDenoms, &denoms)
+	ccvConsumerSubspace.Get(ctx, ccv.KeyRewardDenoms, &denoms)
 	requiredDenoms := []string{params.DefaultDenom, "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"}
 	suite.Require().Equal(requiredDenoms, denoms)
 }
@@ -154,7 +155,7 @@ func (suite *UpgradeTestSuite) TestAdminModuleUpgrade() {
 	suite.Require().Error(err)
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -185,7 +186,7 @@ func (suite *UpgradeTestSuite) TestTokenFactoryUpgrade() {
 	suite.Require().Equal(denomFeeBefore, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(100_000_000))))
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -220,7 +221,7 @@ func (suite *UpgradeTestSuite) TestRegisterInterchainAccountCreationFee() {
 	contractAddressBeforeUpgrade := suite.InstantiateTestContract(ctx, sdk.AccAddress("neutron1_ica"), codeIDBefore)
 
 	upgrade := upgradetypes.Plan{
-		Name:   v110.UpgradeName,
+		Name:   v200.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
