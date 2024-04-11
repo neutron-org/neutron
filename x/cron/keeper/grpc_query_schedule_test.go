@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	testutil_keeper "github.com/neutron-org/neutron/v3/testutil/cron/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/cron/nullify"
 	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
 	"github.com/neutron-org/neutron/v3/x/cron/types"
 )

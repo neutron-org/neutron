@@ -12,14 +12,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	"github.com/neutron-org/neutron/v3/testutil/cron/network"
-	"github.com/neutron-org/neutron/v3/testutil/cron/nullify"
 	"github.com/neutron-org/neutron/v3/x/cron/client/cli"
 	"github.com/neutron-org/neutron/v3/x/cron/types"
 )
-
-// Prevent strconv unused error
-var _ = strconv.IntSize
 
 func networkWithScheduleObjects(t *testing.T, n int) (*network.Network, []types.Schedule) {
 	t.Helper()
