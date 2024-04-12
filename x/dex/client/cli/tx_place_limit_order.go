@@ -10,8 +10,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 	"github.com/spf13/cobra"
+
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )

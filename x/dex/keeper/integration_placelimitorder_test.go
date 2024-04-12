@@ -7,6 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 
 	"github.com/neutron-org/neutron/v3/x/dex/types"
@@ -322,7 +323,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice0To1() {
 func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
 	s.fundAliceBalances(0, 200)
 	s.fundBobBalances(10, 0)
-	var price = math_utils.MustNewPrecDecFromStr("0.25")
+	price := math_utils.MustNewPrecDecFromStr("0.25")
 	// GIVEN
 	// Alice place LO at price ~.25
 	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenB", price, 200)

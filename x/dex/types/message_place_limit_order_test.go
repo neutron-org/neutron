@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 	"github.com/stretchr/testify/require"
+
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 
 	"github.com/neutron-org/neutron/v3/testutil/common/sample"
 	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"

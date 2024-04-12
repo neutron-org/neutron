@@ -36,7 +36,7 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 	}
 
 	if price.LT(math_utils.OnePrecDec()) {
-		//Log precision is bad on small numbers so we invert first
+		// Log precision is bad on small numbers so we invert first
 		tick, err := utils.Log(math_utils.OnePrecDec().Quo(price), utils.BasePrice())
 		if err != nil {
 			return 0, sdkerrors.Wrap(ErrCalcTickFromPrice, err.Error())
