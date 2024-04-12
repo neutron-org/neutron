@@ -74,7 +74,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		{
 			"not a contract address",
 			false,
-			func(sender string) {
+			func(_ string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
@@ -89,7 +89,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		{
 			"invalid bech32 sender address",
 			false,
-			func(sender string) {
+			func(_ string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
@@ -379,7 +379,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		},
 		{
 			"failed due to auth error",
-			func(sender string) {
+			func(_ string) {
 				var (
 					ctx           = suite.ChainA.GetContext()
 					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
@@ -550,7 +550,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		},
 		{
 			"failed due to auth error",
-			func(sender string) {
+			func(_ string) {
 				var (
 					ctx           = suite.ChainA.GetContext()
 					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())

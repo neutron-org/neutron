@@ -12,7 +12,6 @@ import (
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
-
 	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"

@@ -45,11 +45,6 @@ import (
 	"github.com/neutron-org/neutron/v3/docs"
 
 	"github.com/neutron-org/neutron/v3/app/upgrades"
-	v030 "github.com/neutron-org/neutron/v3/app/upgrades/v0.3.0"
-	v044 "github.com/neutron-org/neutron/v3/app/upgrades/v0.4.4"
-	v200 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.0"
-	v202 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.2"
-	v300 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.0"
 
 	"github.com/neutron-org/neutron/v3/x/cron"
 
@@ -210,7 +205,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v300.Upgrade, nextupgrade.Upgrade}
+	Upgrades = []upgrades.Upgrade{nextupgrade.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -661,7 +656,7 @@ func New(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
 		app.AccountKeeper,
-		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+		&app.BankKeeper,
 		&app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -1326,7 +1321,7 @@ func (app *App) setupUpgradeHandlers() {
 					ConsensusKeeper:    &app.ConsensusParamsKeeper,
 					ConsumerKeeper:     &app.ConsumerKeeper,
 					MarketmapKeeper:    app.MarketMapKeeper,
-					// GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
+					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,
