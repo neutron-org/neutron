@@ -25,6 +25,8 @@ service Msg {
 }
 
 message MsgRegisterInterchainQuery {
+  option (cosmos.msg.v1.signer) = "sender";
+
   // defines a query type: `kv` or `tx` now
   string query_type = 1;
 
@@ -112,12 +114,14 @@ message TxValue {
 message MsgSubmitQueryResultResponse {}
 
 message MsgRemoveInterchainQueryRequest {
+  option (cosmos.msg.v1.signer) = "sender";
   uint64 query_id = 1;
   string sender = 2; // is the signer of the message
 }
 message MsgRemoveInterchainQueryResponse {}
 
 message MsgUpdateInterchainQueryRequest {
+  option (cosmos.msg.v1.signer) = "sender";
   uint64 query_id = 1;
   repeated KVKey new_keys = 2;
   uint64 new_update_period = 3;
