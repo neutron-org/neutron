@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 	"github.com/spf13/cobra"
 
 	"github.com/neutron-org/neutron/v3/x/dex/types"
@@ -18,7 +19,7 @@ import (
 func CmdPlaceLimitOrder() *cobra.Command {
 	cmd := &cobra.Command{
 		//nolint:lll
-		Use:     "place-limit-order [receiver] [token-in] [token-out] [tick-index] [amount-in] ?[order-type] ?[expirationTime] ?(--max-amout-out)",
+		Use:     "place-limit-order [receiver] [token-in] [token-out] [tick-index] [amount-in] ?[order-type] ?[expirationTime] ?(--max-amout-out) ?(--price)",
 		Short:   "Broadcast message PlaceLimitOrder",
 		Example: "place-limit-order alice tokenA tokenB [-10] tokenA 50 GOOD_TIL_TIME '01/02/2006 15:04:05' --max-amount-out 20 --from alice",
 		Args:    cobra.RangeArgs(5, 7),
@@ -65,16 +66,29 @@ func CmdPlaceLimitOrder() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			var maxAmountOutIntP *math.Int
+
+			var maxAmountOutInt math.Int
 			if maxAmountOutArg != "" {
-				maxAmountOutInt, ok := math.NewIntFromString(maxAmountOutArg)
+				maxAmountOutInt, ok = math.NewIntFromString(maxAmountOutArg)
 				if !ok {
 					return sdkerrors.Wrapf(
 						types.ErrIntOverflowTx,
 						"Integer overflow for max-amount-out",
 					)
 				}
-				maxAmountOutIntP = &maxAmountOutInt
+			}
+
+			priceArg, err := cmd.Flags().GetString(FlagPrice)
+			if err != nil {
+				return err
+			}
+
+			var priceDec math_utils.PrecDec
+			if maxAmountOutArg != "" {
+				priceDec, err = math_utils.NewPrecDecFromStr(priceArg)
+				if err != nil {
+					return err
+				}
 			}
 
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -91,7 +105,8 @@ func CmdPlaceLimitOrder() *cobra.Command {
 				amountInInt,
 				orderType,
 				goodTil,
-				maxAmountOutIntP,
+				&maxAmountOutInt,
+				&priceDec,
 			)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -100,6 +115,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 
 	flags.AddTxFlagsToCmd(cmd)
 	cmd.Flags().AddFlagSet(FlagSetMaxAmountOut())
+	cmd.Flags().AddFlagSet(FlagSetPrice())
 
 	return cmd
 }
