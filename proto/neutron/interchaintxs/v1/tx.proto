@@ -39,7 +39,12 @@ message MsgRegisterInterchainAccount {
 
 // MsgRegisterInterchainAccountResponse is the response type for
 // MsgRegisterInterchainAccount.
-message MsgRegisterInterchainAccountResponse {}
+message MsgRegisterInterchainAccountResponse {
+  option (gogoproto.goproto_getters) = false;
+
+  string channel_id = 1;
+  string port_id = 2;
+}
 
 // MsgSubmitTx defines the payload for Msg/SubmitTx
 message MsgSubmitTx {

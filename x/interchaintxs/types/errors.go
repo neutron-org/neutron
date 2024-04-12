@@ -16,4 +16,5 @@ var (
 	ErrInvalidTimeout            = errors.Register(ModuleName, 1107, "invalid timeout")
 	ErrInvalidPayerFee           = errors.Register(ModuleName, 1108, "invalid payer feerefunder")
 	ErrLongInterchainAccountID   = errors.Register(ModuleName, 1109, "interchain account id is too long")
+	ErrInvalidType               = errors.Register(ModuleName, 1110, "invalid type")
 )
