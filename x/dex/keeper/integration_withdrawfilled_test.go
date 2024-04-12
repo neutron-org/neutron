@@ -4,6 +4,7 @@ import (
 	"math"
 
 	sdkmath "cosmossdk.io/math"
+
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
@@ -261,7 +262,6 @@ func (s *DexTestSuite) TestWithdrawOverfilled() {
 	s.Equal(sdkmath.NewInt(25), tranche.ReservesTakerDenom)
 	// Alice cannot withdraw again
 	s.aliceWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
-
 }
 
 func (s *DexTestSuite) TestWithdrawFilledOverfilledMulti() {
@@ -313,5 +313,4 @@ func (s *DexTestSuite) TestWithdrawFilledOverfilledMulti() {
 
 	// Alice cannot withdraw again
 	s.bobWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
-
 }
