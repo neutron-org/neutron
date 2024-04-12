@@ -6,6 +6,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 )
 
 const TypeMsgPlaceLimitOrder = "place_limit_order"
@@ -22,6 +23,7 @@ func NewMsgPlaceLimitOrder(
 	orderType LimitOrderType,
 	goodTil *time.Time,
 	maxAmountOut *math.Int,
+	price *math_utils.PrecDec,
 ) *MsgPlaceLimitOrder {
 	return &MsgPlaceLimitOrder{
 		Creator:          creator,
@@ -33,6 +35,7 @@ func NewMsgPlaceLimitOrder(
 		OrderType:        orderType,
 		ExpirationTime:   goodTil,
 		MaxAmountOut:     maxAmountOut,
+		PriceInToOut:     price,
 	}
 }
 
@@ -92,6 +95,14 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 
 	if IsTickOutOfRange(msg.TickIndexInToOut) {
 		return ErrTickOutsideRange
+	}
+
+	if msg.PriceInToOut != nil && IsPriceOutOfRange(*msg.PriceInToOut) {
+		return ErrPriceOutsideRange
+	}
+
+	if msg.PriceInToOut != nil && msg.TickIndexInToOut != 0 {
+		return ErrInvalidPriceAndTick
 	}
 
 	return nil

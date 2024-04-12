@@ -200,4 +200,10 @@ var (
 		1156,
 		"Invalid price; 0.00000000000000000000000050 < PRICE > 2020125331305056766451886.728",
 	)
+
+	ErrInvalidPriceAndTick = sdkerrors.Register(
+		ModuleName,
+		1157,
+		"Cannot specify PriceInToOut and TickIndexInToOut",
+	)
 )
