@@ -9,6 +9,9 @@ import (
 	icacontrollerkeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
 
 	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
+
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )
 
 type QueryPlugin struct {
@@ -19,10 +22,12 @@ type QueryPlugin struct {
 	tokenFactoryKeeper    *tokenfactorykeeper.Keeper
 	contractmanagerKeeper *contractmanagerkeeper.Keeper
 	dexKeeper             *dexkeeper.Keeper
+	oracleKeeper          *oraclekeeper.Keeper
+	marketmapKeeper       *marketmapkeeper.Keeper
 }
 
 // NewQueryPlugin returns a reference to a new QueryPlugin.
-func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper, feeBurnerKeeper *feeburnerkeeper.Keeper, feeRefunderKeeper *feerefunderkeeper.Keeper, tfk *tokenfactorykeeper.Keeper, contractmanagerKeeper *contractmanagerkeeper.Keeper, dexKeeper *dexkeeper.Keeper) *QueryPlugin {
+func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper, feeBurnerKeeper *feeburnerkeeper.Keeper, feeRefunderKeeper *feerefunderkeeper.Keeper, tfk *tokenfactorykeeper.Keeper, contractmanagerKeeper *contractmanagerkeeper.Keeper, dexKeeper *dexkeeper.Keeper, oracleKeeper *oraclekeeper.Keeper, marketmapKeeper *marketmapkeeper.Keeper) *QueryPlugin {
 	return &QueryPlugin{
 		icaControllerKeeper:   icaControllerKeeper,
 		icqKeeper:             icqKeeper,
@@ -31,5 +36,7 @@ func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *
 		tokenFactoryKeeper:    tfk,
 		contractmanagerKeeper: contractmanagerKeeper,
 		dexKeeper:             dexKeeper,
+		oracleKeeper:          oracleKeeper,
+		marketmapKeeper:       marketmapKeeper,
 	}
 }

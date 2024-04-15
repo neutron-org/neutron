@@ -22,6 +22,8 @@ import (
 	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 	icatypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )
 
 func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*bindings.QueryRegisteredQueryResultResponse, error) {
@@ -206,6 +208,38 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 	return data, err
 }
 
+func (qp *QueryPlugin) SlinkyQuery(ctx sdk.Context, query bindings.SlinkyQuery) ([]byte, error) {
+	marketmapQueryServer := marketmapkeeper.NewQueryServer(qp.marketmapKeeper)
+	oracleQueryServer := oraclekeeper.NewQueryServer(*qp.oracleKeeper)
+
+	// handle query processing and marshaling
+	processResponse := func(resp interface{}, err error) ([]byte, error) {
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to process request %T", query)
+		}
+		if q, ok := resp.(bindings.BindingMarshaller); ok {
+			return q.MarshalBinding()
+		}
+		return json.Marshal(resp)
+	}
+
+	switch {
+	case query.GetAllCurrencyPairs != nil:
+		return processResponse(oracleQueryServer.GetAllCurrencyPairs(ctx, query.GetAllCurrencyPairs))
+	case query.GetPrice != nil:
+		return processResponse(oracleQueryServer.GetPrice(ctx, query.GetPrice))
+	case query.GetPrices != nil:
+		return processResponse(oracleQueryServer.GetPrices(ctx, query.GetPrices))
+	case query.Params != nil:
+		return processResponse(marketmapQueryServer.Params(ctx, query.Params))
+	case query.GetLastUpdated != nil:
+		return processResponse(marketmapQueryServer.LastUpdated(ctx, query.GetLastUpdated))
+	case query.GetMarketMap != nil:
+		return processResponse(marketmapQueryServer.MarketMap(ctx, query.GetMarketMap))
+	default:
+		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.dex query type"}
+	}
+}
 func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context.Context, query *T) (R, error)) ([]byte, error) {
 	resp, err := queryHandler(ctx, query)
 	if err != nil {

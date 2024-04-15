@@ -16,6 +16,8 @@ import (
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
 	transfer "github.com/neutron-org/neutron/v3/x/transfer/keeper"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )
 
 // RegisterCustomPlugins returns wasmkeeper.Option that we can use to connect handlers for implemented custom queries and messages to the App
@@ -31,8 +33,10 @@ func RegisterCustomPlugins(
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
 	dexKeeper *dexkeeper.Keeper,
+	oracleKeeper *oraclekeeper.Keeper,
+	markemapKeeper *marketmapkeeper.Keeper,
 ) []wasmkeeper.Option {
-	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, contractmanagerKeeper, dexKeeper)
+	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, contractmanagerKeeper, dexKeeper, oracleKeeper, markemapKeeper)
 
 	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
 		Custom: CustomQuerier(wasmQueryPlugin),
