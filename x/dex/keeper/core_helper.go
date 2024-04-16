@@ -8,6 +8,7 @@ import (
 
 	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/utils"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,6 +73,37 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 	}
 
 	return nil
+}
+
+func (k Keeper) IsBehindEnemyLines(ctx sdk.Context, tradePairID *types.TradePairID, tickIndex int64) bool {
+	opTradePairId := tradePairID.Reversed()
+	oppositeTick, found := k.GetCurrTickIndexTakerToMaker(ctx, opTradePairId)
+
+	if found && tickIndex*-1 > oppositeTick {
+		return true
+	}
+
+	return false
+}
+
+func (k Keeper) IsPoolBehindEnemyLines(ctx sdk.Context, pairID *types.PairID, tickIndex int64, fee uint64, amount0, amount1 math.Int) bool {
+	if amount0.IsPositive() {
+		tradePairID0 := types.NewTradePairIDFromMaker(pairID, pairID.Token0)
+		tick0 := tickIndex*-1 + utils.MustSafeUint64ToInt64(fee)
+		if k.IsBehindEnemyLines(ctx, tradePairID0, tick0) {
+			return true
+		}
+	}
+
+	if amount1.IsPositive() {
+		tradePairID1 := types.NewTradePairIDFromMaker(pairID, pairID.Token1)
+		tick1 := tickIndex + utils.MustSafeUint64ToInt64(fee)
+		if k.IsBehindEnemyLines(ctx, tradePairID1, tick1) {
+			return true
+		}
+	}
+
+	return false
 }
 
 ///////////////////////////////////////////////////////////////////////////////

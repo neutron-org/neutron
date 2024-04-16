@@ -672,7 +672,6 @@ func (s *DexTestSuite) assertDepositFails(
 		Fees:            fees,
 		Options:         options,
 	})
-	s.Assert().NotNil(err)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 

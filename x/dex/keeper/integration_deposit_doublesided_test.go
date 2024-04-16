@@ -98,50 +98,6 @@ func (s *DexTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick1To0Adjusted() 
 	s.assertCurr0To1(4)
 }
 
-func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbBelow() {
-	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
-
-	// GIVEN
-	// deposit 10 of token A at tick 0 fee 1
-	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
-	s.assertAliceBalances(40, 50)
-	s.assertDexBalances(10, 0)
-	s.assertPoolLiquidity(10, 0, 0, 1)
-
-	// WHEN
-	// depositing below enemy lines at tick -5
-	// THEN
-	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
-
-	s.aliceDeposits(NewDeposit(10, 11, -5, 1))
-
-	// buying liquidity behind enemy lines doesn't break anything
-	s.bobLimitSells("TokenA", 0, 10, types.LimitOrderType_FILL_OR_KILL)
-}
-
-func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbAbove() {
-	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
-
-	// GIVEN
-	// deposit 10 of token A at tick 0 fee 1
-	s.aliceDeposits(NewDeposit(0, 10, 0, 1))
-	s.assertAliceBalances(50, 40)
-	s.assertDexBalances(0, 10)
-	s.assertPoolLiquidity(0, 10, 0, 1)
-
-	// WHEN
-	// depositing above enemy lines at tick 5
-	// THEN
-	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
-
-	s.aliceDeposits(NewDeposit(11, 10, 5, 1))
-
-	// buying liquidity behind enemy lines doesn't break anything
-	s.bobLimitSells("TokenB", 0, 10, types.LimitOrderType_FILL_OR_KILL)
-}
-
 func (s *DexTestSuite) TestDepositDoubleSidedFirstSharesMintedTotal() {
 	s.fundAliceBalances(50, 50)
 
