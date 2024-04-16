@@ -1,4 +1,4 @@
-package v303
+package v304
 
 import (
 	"github.com/neutron-org/neutron/v3/app/upgrades"
@@ -6,7 +6,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v3.0.3"
+	UpgradeName = "v3.0.4"
 )
 
 var Upgrade = upgrades.Upgrade{
