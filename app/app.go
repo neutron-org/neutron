@@ -605,6 +605,7 @@ func New(
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
+		maccPerms,
 		app.AccountKeeper,
 		&app.BankKeeper,
 		&app.WasmKeeper,
