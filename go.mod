@@ -19,8 +19,8 @@ require (
 	github.com/cosmos/cosmos-sdk v0.47.10
 	github.com/cosmos/gaia/v11 v11.0.0-00010101000000-000000000000
 	github.com/cosmos/gogoproto v1.4.10
-	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.2
-	github.com/cosmos/ibc-go/v7 v7.3.2
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.3
+	github.com/cosmos/ibc-go/v7 v7.4.0
 	github.com/cosmos/ics23/go v0.10.0
 	github.com/cosmos/interchain-security/v4 v4.0.0
 	github.com/gogo/protobuf v1.3.3
