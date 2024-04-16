@@ -97,7 +97,9 @@ message MsgPlaceLimitOrder {
   string receiver = 2;
   string token_in = 3;
   string token_out = 4;
-  int64 tick_index_in_to_out = 5;
+
+  // DEPRECATED: tick_index_in_to_out will be removed in future release; price_in_to_out should be used instead.
+  int64 tick_index_in_to_out = 5 [deprecated = true];
   string amount_in = 7 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
