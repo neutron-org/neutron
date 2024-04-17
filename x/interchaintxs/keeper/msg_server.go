@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -59,15 +58,7 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 
 	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
 
-	icakeeper, ok := k.icaControllerKeeper.(icacontrollerkeeper.Keeper)
-	if !ok {
-		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to cast ictxtypes.ICAControllerKeeper to icacontrollerkeeper.Keeper")
-		return nil, errors.Wrap(ictxtypes.ErrInvalidType, "failed to cast interface ictxtypes.ICAControllerKeeper to type icacontrollerkeeper.Keeper")
-	}
-
-	msgServer := icacontrollerkeeper.NewMsgServerImpl(&icakeeper)
-
-	_, err = msgServer.RegisterInterchainAccount(ctx, &icacontrollertypes.MsgRegisterInterchainAccount{
+	resp, err := k.icaControllerMsgServer.RegisterInterchainAccount(ctx, &icacontrollertypes.MsgRegisterInterchainAccount{
 		Owner:        icaOwner.String(),
 		ConnectionId: msg.ConnectionId,
 		Version:      "", // FIXME: empty version string doesn't look good
@@ -79,8 +70,8 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 	}
 
 	return &ictxtypes.MsgRegisterInterchainAccountResponse{
-		// ChannelID: resp.ChannelId,
-		// PortID:    resp.PortId,
+		ChannelId: resp.ChannelId,
+		PortId:    resp.PortId,
 	}, nil
 }
 
@@ -161,19 +152,11 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, errors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
 	}
 
-	icakeeper, ok := k.icaControllerKeeper.(icacontrollerkeeper.Keeper)
-	if !ok {
-		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to cast ictxtypes.ICAControllerKeeper to icacontrollerkeeper.Keeper")
-		return nil, errors.Wrap(ictxtypes.ErrInvalidType, "failed to cast interface ictxtypes.ICAControllerKeeper to type icacontrollerkeeper.Keeper")
-	}
-
-	msgServer := icacontrollerkeeper.NewMsgServerImpl(&icakeeper)
-
-	resp, err := msgServer.SendTx(ctx, &icacontrollertypes.MsgSendTx{
+	resp, err := k.icaControllerMsgServer.SendTx(ctx, &icacontrollertypes.MsgSendTx{
 		Owner:           icaOwner.String(),
 		ConnectionId:    msg.ConnectionId,
 		PacketData:      packetData,
-		RelativeTimeout: msg.Timeout,
+		RelativeTimeout: uint64(time.Duration(msg.Timeout) * time.Second),
 	})
 	if err != nil {
 		// usually we use DEBUG level for such errors, but in this case we have checked full input before running SendTX, so error here may be critical

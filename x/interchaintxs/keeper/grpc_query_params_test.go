@@ -10,7 +10,7 @@ import (
 )
 
 func TestParamsQuery(t *testing.T) {
-	keeper, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil)
+	keeper, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, nil)
 	params := types.DefaultParams()
 	err := keeper.SetParams(ctx, params)
 	require.NoError(t, err)
