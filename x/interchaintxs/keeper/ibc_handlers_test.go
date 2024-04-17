@@ -29,7 +29,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
@@ -78,7 +78,7 @@ func TestHandleTimeout(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
@@ -117,7 +117,7 @@ func TestHandleChanOpenAck(t *testing.T) {
 	defer ctrl.Finish()
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId

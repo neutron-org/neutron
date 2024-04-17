@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
+
 	"github.com/neutron-org/neutron/v3/app"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
@@ -19,7 +21,6 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v3/testutil/contractmanager/network"
-	"github.com/neutron-org/neutron/v3/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/v3/x/contractmanager/client/cli"
 	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
