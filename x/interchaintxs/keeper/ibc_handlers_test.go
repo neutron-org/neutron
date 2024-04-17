@@ -122,7 +122,7 @@ func TestHandleChanOpenAck(t *testing.T) {
 	})
 	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
-	channelID := "channel-0"
+	const channelID = "channel-0"
 	counterpartyChannelID := "channel-1"
 
 	err := icak.HandleChanOpenAck(ctx, "", channelID, counterpartyChannelID, "1")

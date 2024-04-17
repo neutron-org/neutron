@@ -90,20 +90,20 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
 	require.Nil(t, resp)
 
-	channelId := "channel-0"
+	channelID := "channel-0"
 	portID := "icacontroller-" + testutil.TestOwnerAddress + ICAId
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
 	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestFeeCollectorAddr), msgRegAcc.RegisterFee)
 	icaMsgServer.EXPECT().RegisterInterchainAccount(ctx, msgRegICA).Return(&icacontrollertypes.MsgRegisterInterchainAccountResponse{
-		ChannelId: channelId,
+		ChannelId: channelID,
 		PortId:    portID,
 	}, nil)
 	resp, err = icak.RegisterInterchainAccount(ctx, &msgRegAcc)
 	require.NoError(t, err)
 	require.Equal(t, types.MsgRegisterInterchainAccountResponse{
-		ChannelId: channelId,
+		ChannelId: channelID,
 		PortId:    portID,
 	}, *resp)
 }
