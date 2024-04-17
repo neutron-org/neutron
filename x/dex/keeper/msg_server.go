@@ -26,6 +26,11 @@ func (k MsgServer) Deposit(
 	goCtx context.Context,
 	msg *types.MsgDeposit,
 ) (*types.MsgDepositResponse, error) {
+	err := k.AssertNotPaused(goCtx)
+	if err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -64,6 +69,11 @@ func (k MsgServer) Withdrawal(
 	goCtx context.Context,
 	msg *types.MsgWithdrawal,
 ) (*types.MsgWithdrawalResponse, error) {
+	err := k.AssertNotPaused(goCtx)
+	if err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -94,12 +104,17 @@ func (k MsgServer) PlaceLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgPlaceLimitOrder,
 ) (*types.MsgPlaceLimitOrderResponse, error) {
+	err := k.AssertNotPaused(goCtx)
+	if err != nil {
+		return nil, err
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
-	err := msg.ValidateGoodTilExpiration(ctx.BlockTime())
+	err = msg.ValidateGoodTilExpiration(ctx.BlockTime())
 	if err != nil {
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
@@ -130,9 +145,13 @@ func (k MsgServer) WithdrawFilledLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgWithdrawFilledLimitOrder,
 ) (*types.MsgWithdrawFilledLimitOrderResponse, error) {
+	err := k.AssertNotPaused(goCtx)
+	if err != nil {
+		return nil, err
+	}
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
-	err := k.WithdrawFilledLimitOrderCore(
+	err = k.WithdrawFilledLimitOrderCore(
 		goCtx,
 		msg.TrancheKey,
 		callerAddr,
@@ -148,9 +167,14 @@ func (k MsgServer) CancelLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgCancelLimitOrder,
 ) (*types.MsgCancelLimitOrderResponse, error) {
+	err := k.AssertNotPaused(goCtx)
+	if err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
-	err := k.CancelLimitOrderCore(
+	err = k.CancelLimitOrderCore(
 		goCtx,
 		msg.TrancheKey,
 		callerAddr,
@@ -166,6 +190,10 @@ func (k MsgServer) MultiHopSwap(
 	goCtx context.Context,
 	msg *types.MsgMultiHopSwap,
 ) (*types.MsgMultiHopSwapResponse, error) {
+	err := k.AssertNotPaused(goCtx)
+	if err != nil {
+		return nil, err
+	}
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -200,4 +228,14 @@ func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 	}
 
 	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+func (k MsgServer) AssertNotPaused(goCtx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	paused := k.GetParams(ctx).Paused
+
+	if paused {
+		return types.ErrDexPaused
+	}
+	return nil
 }

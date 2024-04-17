@@ -15,4 +15,5 @@ message Params {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "max_true_taker_spread"
   ];
+  bool paused = 3;
 }
