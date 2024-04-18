@@ -32,7 +32,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 		paramtypes.NewParamSetPair(
 			KeyReserveAddress,
 			DefaultReserveAddress,
-			func(i interface{}) error { return nil },
+			func(_ interface{}) error { return nil },
 		),
 		paramtypes.NewParamSetPair(
 			KeyTreasuryAddress,
@@ -67,7 +67,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(
 			KeyReserveAddress,
 			&p.ReserveAddress,
-			func(i interface{}) error { return nil },
+			func(_ interface{}) error { return nil },
 		),
 		paramtypes.NewParamSetPair(
 			KeyTreasuryAddress,
