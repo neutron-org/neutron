@@ -32,6 +32,16 @@ func NewMsgCreateDenom(sender, subdenom string) *MsgCreateDenom {
 func (m MsgCreateDenom) Route() string { return RouterKey }
 func (m MsgCreateDenom) Type() string  { return TypeMsgCreateDenom }
 func (m MsgCreateDenom) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
+
+	_, err = GetTokenDenom(m.Sender, m.Subdenom)
+	if err != nil {
+		return errorsmod.Wrap(ErrInvalidDenom, err.Error())
+	}
+
 	return nil
 }
 
@@ -40,7 +50,8 @@ func (m MsgCreateDenom) GetSignBytes() []byte {
 }
 
 func (m MsgCreateDenom) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
+	sender, _ := sdk.AccAddressFromBech32(m.Sender)
+	return []sdk.AccAddress{sender}
 }
 
 var _ sdk.Msg = &MsgMint{}
@@ -64,6 +75,11 @@ func NewMsgMintTo(sender string, amount sdk.Coin, mintToAddress string) *MsgMint
 func (m MsgMint) Route() string { return RouterKey }
 func (m MsgMint) Type() string  { return TypeMsgMint }
 func (m MsgMint) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
+
 	if !m.Amount.IsValid() || m.Amount.Amount.Equal(math.ZeroInt()) {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidCoins, m.Amount.String())
 	}
@@ -76,7 +92,8 @@ func (m MsgMint) GetSignBytes() []byte {
 }
 
 func (m MsgMint) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
+	sender, _ := sdk.AccAddressFromBech32(m.Sender)
+	return []sdk.AccAddress{sender}
 }
 
 var _ sdk.Msg = &MsgBurn{}
@@ -100,6 +117,10 @@ func NewMsgBurnFrom(sender string, amount sdk.Coin, _ string) *MsgBurn {
 func (m MsgBurn) Route() string { return RouterKey }
 func (m MsgBurn) Type() string  { return TypeMsgBurn }
 func (m MsgBurn) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
 
 	if !m.Amount.IsValid() || m.Amount.Amount.Equal(math.ZeroInt()) {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidCoins, m.Amount.String())
@@ -113,7 +134,8 @@ func (m MsgBurn) GetSignBytes() []byte {
 }
 
 func (m MsgBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
+	sender, _ := sdk.AccAddressFromBech32(m.Sender)
+	return []sdk.AccAddress{sender}
 }
 
 var _ sdk.Msg = &MsgForceTransfer{}
@@ -131,7 +153,12 @@ func NewMsgForceTransfer(sender string, amount sdk.Coin, fromAddr, toAddr string
 func (m MsgForceTransfer) Route() string { return RouterKey }
 func (m MsgForceTransfer) Type() string  { return TypeMsgForceTransfer }
 func (m MsgForceTransfer) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(m.TransferFromAddress)
+	_, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
+
+	_, err = sdk.AccAddressFromBech32(m.TransferFromAddress)
 	if err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid address (%s)", err)
 	}
@@ -152,7 +179,8 @@ func (m MsgForceTransfer) GetSignBytes() []byte {
 }
 
 func (m MsgForceTransfer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
+	sender, _ := sdk.AccAddressFromBech32(m.Sender)
+	return []sdk.AccAddress{sender}
 }
 
 var _ sdk.Msg = &MsgChangeAdmin{}
@@ -169,7 +197,12 @@ func NewMsgChangeAdmin(sender, denom, newAdmin string) *MsgChangeAdmin {
 func (m MsgChangeAdmin) Route() string { return RouterKey }
 func (m MsgChangeAdmin) Type() string  { return TypeMsgChangeAdmin }
 func (m MsgChangeAdmin) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(m.NewAdmin)
+	_, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
+
+	_, err = sdk.AccAddressFromBech32(m.NewAdmin)
 	if err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid address (%s)", err)
 	}
@@ -187,7 +220,8 @@ func (m MsgChangeAdmin) GetSignBytes() []byte {
 }
 
 func (m MsgChangeAdmin) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
+	sender, _ := sdk.AccAddressFromBech32(m.Sender)
+	return []sdk.AccAddress{sender}
 }
 
 var _ sdk.Msg = &MsgSetDenomMetadata{}
@@ -203,8 +237,12 @@ func NewMsgSetDenomMetadata(sender string, metadata banktypes.Metadata) *MsgSetD
 func (m MsgSetDenomMetadata) Route() string { return RouterKey }
 func (m MsgSetDenomMetadata) Type() string  { return TypeMsgSetDenomMetadata }
 func (m MsgSetDenomMetadata) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
 
-	err := m.Metadata.Validate()
+	err = m.Metadata.Validate()
 	if err != nil {
 		return err
 	}
@@ -222,7 +260,8 @@ func (m MsgSetDenomMetadata) GetSignBytes() []byte {
 }
 
 func (m MsgSetDenomMetadata) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
+	sender, _ := sdk.AccAddressFromBech32(m.Sender)
+	return []sdk.AccAddress{sender}
 }
 
 var _ sdk.Msg = &MsgSetBeforeSendHook{}
@@ -239,14 +278,19 @@ func NewMsgSetBeforeSendHook(sender, denom, contractAddr string) *MsgSetBeforeSe
 func (m MsgSetBeforeSendHook) Route() string { return RouterKey }
 func (m MsgSetBeforeSendHook) Type() string  { return TypeMsgSetBeforeSendHook }
 func (m MsgSetBeforeSendHook) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
+
 	if m.ContractAddr != "" {
-		_, err := sdk.AccAddressFromBech32(m.ContractAddr)
+		_, err = sdk.AccAddressFromBech32(m.ContractAddr)
 		if err != nil {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid cosmwasm contract address (%s)", err)
 		}
 	}
 
-	_, _, err := DeconstructDenom(m.Denom)
+	_, _, err = DeconstructDenom(m.Denom)
 	if err != nil {
 		return ErrInvalidDenom
 	}
@@ -259,5 +303,6 @@ func (m MsgSetBeforeSendHook) GetSignBytes() []byte {
 }
 
 func (m MsgSetBeforeSendHook) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
+	sender, _ := sdk.AccAddressFromBech32(m.Sender)
+	return []sdk.AccAddress{sender}
 }
