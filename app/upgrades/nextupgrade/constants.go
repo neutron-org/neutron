@@ -1,9 +1,11 @@
 package nextupgrade
 
 import (
-	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/store/types"
 	ibcwasmtypes "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/types"
 	"github.com/neutron-org/neutron/v3/app/upgrades"
+
+	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 )
 
 const (
@@ -14,7 +16,10 @@ const (
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
-	StoreUpgrades: storetypes.StoreUpgrades{
-		Added: []string{ibcwasmtypes.StoreKey},
+	StoreUpgrades: types.StoreUpgrades{
+		Added: []string{
+			globalfeetypes.ModuleName,
+			ibcwasmtypes.StoreKey,
+		},
 	},
 }

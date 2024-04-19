@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
@@ -22,6 +23,7 @@ import (
 	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 )
 
 // Upgrade defines a struct containing necessary fields that a SoftwareUpgradeProposal
@@ -42,6 +44,8 @@ type Upgrade struct {
 type UpgradeKeepers struct {
 	// keepers
 	AccountKeeper      authkeeper.AccountKeeper
+	BankKeeper         bankkeeper.Keeper
+	TransferKeeper     transferkeeper.Keeper
 	IcqKeeper          icqkeeper.Keeper
 	CronKeeper         cronkeeper.Keeper
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper

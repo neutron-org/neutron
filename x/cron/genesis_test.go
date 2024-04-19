@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	"github.com/neutron-org/neutron/v3/testutil/cron/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/cron/nullify"
 	"github.com/neutron-org/neutron/v3/x/cron"
 	"github.com/neutron-org/neutron/v3/x/cron/types"
 )

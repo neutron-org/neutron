@@ -948,6 +948,8 @@ github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrf
 github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
+github.com/skip-mev/block-sdk v1.4.0 h1:j2wEooUDA74ed+FjCDI3I/aPArdYxKLG5asb6C+so2M=
+github.com/skip-mev/block-sdk v1.4.0/go.mod h1:Yv+gQqRh41bCbWC0Bpau8DBE7UwxxPfGmNVbtVrgWAo=
 github.com/skip-mev/block-sdk/v2 v2.1.1 h1:Audcf6Dtev16JRewV8M8GfjEDDsu6ayxlz9GHAt8tXs=
 github.com/skip-mev/block-sdk/v2 v2.1.1/go.mod h1:AOjFICNrPpq/Cq1f97CcC7ljWhxCzmfmyz4/Ir8/xFM=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=

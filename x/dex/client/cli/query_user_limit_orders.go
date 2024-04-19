@@ -24,8 +24,14 @@ func CmdListUserLimitOrders() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
 			params := &types.QueryAllUserLimitOrdersRequest{
-				Address: reqAddress,
+				Address:    reqAddress,
+				Pagination: pageReq,
 			}
 
 			res, err := queryClient.LimitOrderTrancheUserAllByAddress(cmd.Context(), params)

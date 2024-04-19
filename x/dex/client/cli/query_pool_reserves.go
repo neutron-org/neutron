@@ -29,16 +29,16 @@ func CmdListPoolReserves() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryAllPoolReservesRequest{
-				PairId:  reqPairID,
-				TokenIn: reqTokenIn,
-			}
-
 			pageReq, err := client.ReadPageRequest(cmd.Flags())
 			if err != nil {
 				return err
 			}
-			params.Pagination = pageReq
+
+			params := &types.QueryAllPoolReservesRequest{
+				PairId:     reqPairID,
+				TokenIn:    reqTokenIn,
+				Pagination: pageReq,
+			}
 
 			res, err := queryClient.PoolReservesAll(cmd.Context(), params)
 			if err != nil {
@@ -49,6 +49,7 @@ func CmdListPoolReserves() *cobra.Command {
 		},
 	}
 
+	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
