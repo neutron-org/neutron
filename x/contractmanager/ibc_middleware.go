@@ -59,7 +59,7 @@ func (k SudoLimitWrapper) Sudo(ctx context.Context, contractAddress sdk.AccAddre
 	}
 
 	c.GasMeter().ConsumeGas(cacheCtx.GasMeter().GasConsumedToLimit(), "consume gas from cached context")
-	return
+	return resp, err
 }
 
 func (k SudoLimitWrapper) Logger(ctx sdk.Context) log.Logger {

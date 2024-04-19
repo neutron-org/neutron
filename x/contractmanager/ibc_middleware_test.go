@@ -41,7 +41,7 @@ func TestSudo(t *testing.T) {
 	//  success during Sudo
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
-	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {
+	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, _ sdk.AccAddress, _ []byte) {
 		st := cachedCtx.KVStore(storeKey)
 		st.Set(ShouldBeWrittenKey("sudo"), ShouldBeWritten)
 	}).Return(nil, nil)
@@ -53,7 +53,7 @@ func TestSudo(t *testing.T) {
 	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
 	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg, contractmanagerkeeper.RedactError(wasmtypes.ErrExecuteFailed).Error())
-	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {
+	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, _ sdk.AccAddress, _ []byte) {
 		st := cachedCtx.KVStore(storeKey)
 		st.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 	}).Return(nil, wasmtypes.ErrExecuteFailed)
@@ -65,7 +65,7 @@ func TestSudo(t *testing.T) {
 	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	cmKeeper.EXPECT().GetParams(ctx).Return(types.Params{SudoCallGasLimit: 10000})
 	cmKeeper.EXPECT().AddContractFailure(ctx, contractAddress.String(), msg, contractmanagerkeeper.RedactError(types.ErrSudoOutOfGas).Error())
-	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, senderAddress sdk.AccAddress, msg []byte) {
+	wmKeeper.EXPECT().Sudo(gomock.AssignableToTypeOf(ctx), contractAddress, msg).Do(func(cachedCtx sdk.Context, _ sdk.AccAddress, _ []byte) {
 		st := cachedCtx.KVStore(storeKey)
 		st.Set(ShouldNotBeWrittenKey, ShouldNotBeWritten)
 		cachedCtx.GasMeter().ConsumeGas(10001, "heavy calculations")

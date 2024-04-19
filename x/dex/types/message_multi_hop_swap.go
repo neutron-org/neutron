@@ -54,7 +54,7 @@ func (msg *MsgMultiHopSwap) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgMultiHopSwap) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
 func (msg *MsgMultiHopSwap) ValidateBasic() error {
