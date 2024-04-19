@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	keepertest "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/interchaintxs/nullify"
 	"github.com/neutron-org/neutron/v3/x/interchaintxs"
 	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )

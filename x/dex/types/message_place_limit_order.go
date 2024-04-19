@@ -55,7 +55,7 @@ func (msg *MsgPlaceLimitOrder) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgPlaceLimitOrder) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
 func (msg *MsgPlaceLimitOrder) ValidateBasic() error {

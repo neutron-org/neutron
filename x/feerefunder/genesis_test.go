@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil/interchainqueries/nullify"
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	"github.com/neutron-org/neutron/v3/x/feerefunder"
 	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )

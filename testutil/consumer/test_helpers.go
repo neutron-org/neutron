@@ -11,7 +11,7 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
@@ -52,7 +52,7 @@ func ModifyConsumerGenesis(val network.Validator) error {
 		return errors.Wrap(err, "failed to read genesis from the file")
 	}
 
-	tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(val.PubKey)
+	tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(val.PubKey)
 	if err != nil {
 		return errors.Wrap(err, "invalid public key")
 	}
@@ -98,7 +98,7 @@ func ModifyGenesisBlockGas(val network.Validator) error {
 		return errors.Wrap(err, "failed to read genesis from the file")
 	}
 
-	// TODO: genDoc.ConsensusParams.Block.MaxGas = 35_000_000
+	genDoc.Consensus.Params.Block.MaxGas = 35_000_000
 
 	err = genutil.ExportGenesisFile(genDoc, genFile)
 	if err != nil {

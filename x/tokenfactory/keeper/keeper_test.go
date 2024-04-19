@@ -71,7 +71,7 @@ func (suite *KeeperTestSuite) CreateDefaultDenom(ctx sdktypes.Context) {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	suite.TopUpWallet(ctx, senderAddress, suite.TestAccs[0])
 
-	res, _ := suite.msgServer.CreateDenom(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
+	res, _ := suite.msgServer.CreateDenom(suite.ChainA.GetContext(), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 	suite.defaultDenom = res.GetNewTokenDenom()
 }
 
@@ -85,7 +85,7 @@ func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contract
 func (suite *KeeperTestSuite) WalletBalance(ctx sdktypes.Context, address string) math.Int {
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	balance, err := bankKeeper.Balance(
-		sdktypes.WrapSDKContext(ctx),
+		ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: address,
 			Denom:   params.DefaultDenom,

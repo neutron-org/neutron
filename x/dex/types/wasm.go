@@ -177,7 +177,7 @@ func (t *QueryAllLimitOrderTrancheUserResponse) MarshalBinding() ([]byte, error)
 	return json.Marshal(&allLimitOrders)
 }
 
-func (t *QueryAllUserLimitOrdersResponse) MarshalBinding() ([]byte, error) {
+func (t *QueryAllLimitOrderTrancheUserByAddressResponse) MarshalBinding() ([]byte, error) {
 	type QueryAllUserLimitOrdersResponseBinding struct {
 		LimitOrders []*LimitOrderTrancheUserBinding `json:"limit_orders,omitempty"`
 		Pagination  *query.PageResponse             `json:"pagination,omitempty"`

@@ -23,7 +23,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	// If we do not alter globalfee module genesis state, then we will get panic during tests run.
 
 	genesisState := ModuleBasics.DefaultGenesis(cdc)
-	//globalFeeGenesisState := globalfeetypes.GenesisState{
+	// globalFeeGenesisState := globalfeetypes.GenesisState{
 	//	Params: globalfeetypes.Params{
 	//		MinimumGasPrices: sdk.DecCoins{
 	//			sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0")),
@@ -36,11 +36,11 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	//		MaxTotalBypassMinFeeMsgGasUsage: globalfeetypes.DefaultmaxTotalBypassMinFeeMsgGasUsage,
 	//	},
 	//}
-	//globalFeeGenesisStateBytes, err := json.Marshal(globalFeeGenesisState)
-	//if err != nil {
+	// globalFeeGenesisStateBytes, err := json.Marshal(globalFeeGenesisState)
+	// if err != nil {
 	//	panic("cannot marshal globalfee genesis state for tests")
 	//}
-	//genesisState["globalfee"] = globalFeeGenesisStateBytes
+	// genesisState["globalfee"] = globalFeeGenesisStateBytes
 
 	return genesisState
 }
