@@ -2158,9 +2158,9 @@ var (
 
 	pattern_Query_TickLiquidityAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"neutron", "dex", "tick_liquidity", "pair_id", "token_in"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_InactiveLimitOrderTranche_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"neutron", "dex", "filled_limit_order_tranche", "pair_id", "token_in", "tick_index", "tranche_key"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_InactiveLimitOrderTranche_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"neutron", "dex", "inactive_limit_order_tranche", "pair_id", "token_in", "tick_index", "tranche_key"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_InactiveLimitOrderTrancheAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "dex", "filled_limit_order_tranche"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_InactiveLimitOrderTrancheAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "dex", "inactive_limit_order_tranche"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_PoolReservesAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"neutron", "dex", "pool_reserves", "pair_id", "token_in"}, "", runtime.AssumeColonVerbOpt(false)))
 
