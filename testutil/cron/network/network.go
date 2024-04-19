@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
 	"time"
 
@@ -37,7 +38,7 @@ type (
 )
 
 func init() {
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
 }
 
 // New creates instance with fully configured cosmos network.

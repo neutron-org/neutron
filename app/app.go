@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	appconfig "github.com/neutron-org/neutron/v3/app/config"
 	"io"
 	"io/fs"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 	"github.com/skip-mev/slinky/x/oracle"
 
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
-	"github.com/skip-mev/slinky/abci/proposals"
+	slinkyproposals "github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
@@ -295,8 +296,9 @@ func init() {
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
 
+	appconfig.GetDefaultConfig()
 	// TODO: this is a hack to make unit tests pass. Remove that after marketmap module fixes DefaultParams() call
-	marketmaptypes.DefaultMarketAuthority = "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z"
+	marketmaptypes.DefaultMarketAuthority = authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String()
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -1054,8 +1056,6 @@ func New(
 		feeBurnerModule,
 		cronModule,
 		dexModule,
-		// marketmapModule,
-		// oracleModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -1080,7 +1080,7 @@ func New(
 	// set the mempool first
 	app.SetMempool(mempool)
 
-	// then create the ante-handler
+	// then create the ante-blockSdkProposalHandler
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -1114,7 +1114,7 @@ func New(
 	mevLane.WithOptions(opts...)
 
 	// set the block-sdk prepare / process-proposal handlers
-	handler := blocksdkabci.NewProposalHandler(
+	blockSdkProposalHandler := blocksdkabci.NewProposalHandler(
 		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
 		app.GetTxConfig().TxEncoder(),
@@ -1161,9 +1161,9 @@ func New(
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
-	proposalHandler := proposals.NewProposalHandler(
+	oracleProposalHandler := slinkyproposals.NewProposalHandler(
 		app.Logger(),
-		handler.PrepareProposalHandler(),
+		blockSdkProposalHandler.PrepareProposalHandler(),
 		baseapp.NoOpProcessProposal(),
 		ve.NewDefaultValidateVoteExtensionsFn(ccvconsumerCompatKeeper),
 		compression.NewCompressionVoteExtensionCodec(
@@ -1177,10 +1177,10 @@ func New(
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		oracleMetrics,
 	)
-	app.SetPrepareProposal(proposalHandler.PrepareProposalHandler())
-	app.SetProcessProposal(proposalHandler.ProcessProposalHandler())
+	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
+	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
 
-	// block-sdk CheckTx handler
+	// block-sdk CheckTx blockSdkProposalHandler
 	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
 		app,
 		app.GetTxConfig().TxDecoder(),
@@ -1189,7 +1189,7 @@ func New(
 		app.BaseApp.CheckTx,
 	)
 
-	// wrap checkTxHandler with mempool parity handler
+	// wrap checkTxHandler with mempool parity blockSdkProposalHandler
 	parityCheckTx := checktx.NewMempoolParityCheckTx(
 		app.Logger(),
 		mempool,
@@ -1226,7 +1226,7 @@ func New(
 	)
 	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
 
-	// Create the vote extensions handler that will be used to extend and verify
+	// Create the vote extensions blockSdkProposalHandler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
 		app.Logger(),
@@ -1307,20 +1307,20 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
-					AccountKeeper:      app.AccountKeeper,
-					FeeBurnerKeeper:    app.FeeBurnerKeeper,
-					CronKeeper:         app.CronKeeper,
-					IcqKeeper:          app.InterchainQueriesKeeper,
-					TokenFactoryKeeper: app.TokenFactoryKeeper,
-					SlashingKeeper:     app.SlashingKeeper,
-					ParamsKeeper:       app.ParamsKeeper,
-					CapabilityKeeper:   app.CapabilityKeeper,
-					AuctionKeeper:      app.AuctionKeeper,
-					ContractManager:    app.ContractManagerKeeper,
-					AdminModule:        app.AdminmoduleKeeper,
-					ConsensusKeeper:    &app.ConsensusParamsKeeper,
-					ConsumerKeeper:     &app.ConsumerKeeper,
-					MarketmapKeeper:    app.MarketMapKeeper,
+					AccountKeeper:       app.AccountKeeper,
+					FeeBurnerKeeper:     app.FeeBurnerKeeper,
+					CronKeeper:          app.CronKeeper,
+					IcqKeeper:           app.InterchainQueriesKeeper,
+					TokenFactoryKeeper:  app.TokenFactoryKeeper,
+					SlashingKeeper:      app.SlashingKeeper,
+					ParamsKeeper:        app.ParamsKeeper,
+					CapabilityKeeper:    app.CapabilityKeeper,
+					AuctionKeeper:       app.AuctionKeeper,
+					ContractManager:     app.ContractManagerKeeper,
+					AdminModule:         app.AdminmoduleKeeper,
+					ConsensusKeeper:     &app.ConsensusParamsKeeper,
+					ConsumerKeeper:      &app.ConsumerKeeper,
+					MarketmapKeeper:     app.MarketMapKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},

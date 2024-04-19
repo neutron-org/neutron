@@ -2,6 +2,7 @@ package antetest
 
 import (
 	"github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"github.com/neutron-org/neutron/v3/testutil"
 
@@ -31,7 +32,7 @@ type IntegrationTestSuite struct {
 }
 
 func (s *IntegrationTestSuite) SetupTest() {
-	neutronapp.GetDefaultConfig()
+	config.GetDefaultConfig()
 	s.app = testutil.Setup(s.T()).(*neutronapp.App)
 	ctx := s.app.GetBaseApp().NewUncachedContext(false, types.Header{})
 

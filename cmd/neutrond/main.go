@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/neutron-org/neutron/v3/app/config"
 	"os"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
@@ -9,7 +10,7 @@ import (
 )
 
 func main() {
-	config := app.GetDefaultConfig()
+	config := config.GetDefaultConfig()
 	config.Seal()
 
 	rootCmd, _ := NewRootCmd()

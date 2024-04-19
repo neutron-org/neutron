@@ -1,9 +1,8 @@
 package keeper_test
 
 import (
+	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
-
-	"github.com/neutron-org/neutron/v3/app"
 
 	"github.com/stretchr/testify/require"
 
@@ -12,7 +11,7 @@ import (
 )
 
 func TestParamsQuery(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	keeper, ctx := testkeeper.FeeburnerKeeper(t)
 	params := types.DefaultParams()

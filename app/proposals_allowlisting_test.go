@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
 
 	cmttypes "github.com/cometbft/cometbft/types"
@@ -20,7 +21,7 @@ func TestConsumerWhitelistingKeys(t *testing.T) {
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chain := ibctesting.NewTestChain(t, coordinator, "test")
 

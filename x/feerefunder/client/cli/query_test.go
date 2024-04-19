@@ -1,11 +1,10 @@
 package cli_test
 
 import (
+	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
 
 	"cosmossdk.io/math"
-
-	"github.com/neutron-org/neutron/v3/app"
 
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,7 +36,7 @@ func feeRefunderNetwork(t *testing.T, feeInfo types.Fee) *network.Network {
 }
 
 func TestQueryFeeInfo(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	feeInfo := types.Fee{
 		RecvFee:    sdk.NewCoins(),

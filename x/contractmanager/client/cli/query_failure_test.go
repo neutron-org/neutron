@@ -3,12 +3,11 @@ package cli_test
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/neutron-org/neutron/v3/app/config"
 	"strconv"
 	"testing"
 
 	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
-
-	"github.com/neutron-org/neutron/v3/app"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -52,7 +51,7 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 }
 
 func TestAddressFailures(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	net, objs := networkWithFailureObjects(t, 2)
 

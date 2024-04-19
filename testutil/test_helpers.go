@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/neutron-org/neutron/v3/app/config"
 	"os"
 	"testing"
 	"time"
@@ -62,7 +63,7 @@ var (
 
 func init() {
 	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
 	// Disable cache since enabled cache triggers test errors when `AccAddress.String()`
 	// gets called before setting neutron bech32 prefix
 	sdk.SetAddrCacheEnabled(false)
@@ -287,7 +288,7 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 	sdk.SetAddrCacheEnabled(false)
 	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chainID = ibctesting.GetChainID(2)
