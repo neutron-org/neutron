@@ -8,10 +8,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v2/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v2/testutil/dex/nullify"
-	"github.com/neutron-org/neutron/v2/x/dex/keeper"
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v3/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v3/testutil/dex/nullify"
+	"github.com/neutron-org/neutron/v3/x/dex/keeper"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int) []*types.LimitOrderTrancheUser {
@@ -21,8 +21,8 @@ func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int)
 			TrancheKey:            strconv.Itoa(i),
 			Address:               strconv.Itoa(i),
 			TradePairId:           &types.TradePairID{MakerDenom: "TokenA", TakerDenom: "TokenB"},
-			TickIndexTakerToMaker: 0,
-			SharesOwned:           math.ZeroInt(),
+			TickIndexTakerToMaker: int64(i),
+			SharesOwned:           math.NewInt(100),
 			SharesWithdrawn:       math.ZeroInt(),
 			SharesCancelled:       math.ZeroInt(),
 		}

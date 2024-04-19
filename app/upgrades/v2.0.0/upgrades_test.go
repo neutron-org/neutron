@@ -8,14 +8,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
-	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
-	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
 
@@ -25,8 +25,8 @@ import (
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/stretchr/testify/suite"
 
-	v200 "github.com/neutron-org/neutron/v2/app/upgrades/v2.0.0"
-	"github.com/neutron-org/neutron/v2/testutil"
+	v200 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.0"
+	"github.com/neutron-org/neutron/v3/testutil"
 )
 
 type UpgradeTestSuite struct {

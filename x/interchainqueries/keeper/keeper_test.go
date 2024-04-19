@@ -11,7 +11,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -20,9 +20,9 @@ import (
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v2/testutil"
-	"github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
 var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
@@ -73,7 +73,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		{
 			"not a contract address",
 			false,
-			func(sender string) {
+			func(_ string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
@@ -88,7 +88,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 		{
 			"invalid bech32 sender address",
 			false,
-			func(sender string) {
+			func(_ string) {
 				msg = iqtypes.MsgRegisterInterchainQuery{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
@@ -378,7 +378,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		},
 		{
 			"failed due to auth error",
-			func(sender string) {
+			func(_ string) {
 				var (
 					ctx           = suite.ChainA.GetContext()
 					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
@@ -549,7 +549,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		},
 		{
 			"failed due to auth error",
-			func(sender string) {
+			func(_ string) {
 				var (
 					ctx           = suite.ChainA.GetContext()
 					contractOwner = wasmKeeper.RandomAccountAddress(suite.T())
@@ -762,7 +762,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 	}{
 		{
 			"invalid query id",
-			func(sender string, ctx sdk.Context) {
+			func(sender string, _ sdk.Context) {
 				// now we don't care what is really under the value, we just need to be sure that we can verify KV proofs
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				resp := suite.ChainB.App.Query(abci.RequestQuery{

@@ -10,10 +10,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	keepertest "github.com/neutron-org/neutron/v2/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v2/testutil/contractmanager/nullify"
-	"github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v2/x/contractmanager/types"
+	keepertest "github.com/neutron-org/neutron/v3/testutil/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v3/testutil/contractmanager/nullify"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
 
 // Prevent strconv unused error

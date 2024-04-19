@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )
 
 const FailuresQueryMaxLimit uint64 = query.DefaultLimit
@@ -43,7 +43,7 @@ func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresReque
 		failureStore = prefix.NewStore(store, types.ContractFailuresKey)
 	}
 
-	pageRes, err := query.Paginate(failureStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(failureStore, req.Pagination, func(_, value []byte) error {
 		var failure types.Failure
 		if err := k.cdc.Unmarshal(value, &failure); err != nil {
 			return err

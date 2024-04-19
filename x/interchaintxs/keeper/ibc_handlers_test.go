@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -12,11 +12,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v2/testutil"
-	testkeeper "github.com/neutron-org/neutron/v2/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v2/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v2/x/contractmanager/types"
-	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v3/testutil"
+	testkeeper "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
 const ICAId = ".ica0"
@@ -28,7 +28,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -78,7 +78,7 @@ func TestHandleTimeout(t *testing.T) {
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
@@ -117,7 +117,7 @@ func TestHandleChanOpenAck(t *testing.T) {
 	defer ctrl.Finish()
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId

@@ -1,17 +1,25 @@
 package wasmbinding
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
+	"golang.org/x/exp/maps"
+
+	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v2/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
@@ -28,16 +36,16 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 
-	"github.com/neutron-org/neutron/v2/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v2/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v2/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v2/x/transfer/types"
+	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v3/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v2/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(
@@ -49,6 +57,7 @@ func CustomMessageDecorator(
 	tokenFactoryKeeper *tokenfactorykeeper.Keeper,
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
+	dexKeeper *dexkeeper.Keeper,
 ) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
@@ -63,6 +72,7 @@ func CustomMessageDecorator(
 			CronKeeper:            cronKeeper,
 			AdminKeeper:           adminKeeper,
 			ContractmanagerKeeper: contractmanagerKeeper,
+			DexMsgServer:          dexkeeper.NewMsgServerImpl(*dexKeeper),
 		}
 	}
 }
@@ -79,6 +89,7 @@ type CustomMessenger struct {
 	CronKeeper            *cronkeeper.Keeper
 	AdminKeeper           *adminmodulekeeper.Keeper
 	ContractmanagerKeeper *contractmanagerkeeper.Keeper
+	DexMsgServer          dextypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -121,6 +132,7 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.SubmitAdminProposal != nil {
 		return m.submitAdminProposal(ctx, contractAddr, &contractMsg.SubmitAdminProposal.AdminProposal)
 	}
+
 	if contractMsg.CreateDenom != nil {
 		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
 	}
@@ -136,6 +148,13 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.BurnTokens != nil {
 		return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
 	}
+	if contractMsg.ForceTransfer != nil {
+		return m.forceTransfer(ctx, contractAddr, contractMsg.ForceTransfer)
+	}
+	if contractMsg.SetDenomMetadata != nil {
+		return m.setDenomMetadata(ctx, contractAddr, contractMsg.SetDenomMetadata)
+	}
+
 	if contractMsg.AddSchedule != nil {
 		return m.addSchedule(ctx, contractAddr, contractMsg.AddSchedule)
 	}
@@ -145,9 +164,98 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	if contractMsg.ResubmitFailure != nil {
 		return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
 	}
+	if contractMsg.Dex != nil {
+		data, err := m.dispatchDexMsg(ctx, contractAddr, *(contractMsg.Dex))
+		return nil, data, err
+	}
 
 	// If none of the conditions are met, forward the message to the wrapped handler
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+}
+
+func handleDexMsg[T sdk.Msg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrapf(err, "failed to validate %T", msg)
+	}
+
+	if len(msg.GetSigners()) != 1 {
+		// should never happen
+		panic("should be 1 signer")
+	}
+	signer := msg.GetSigners()[0].String()
+
+	resp, err := handler(ctx, msg)
+	if err != nil {
+		ctx.Logger().Debug(fmt.Sprintf("%T: failed to execute", msg),
+			"from_address", signer,
+			"msg", msg,
+			"error", err,
+		)
+		return nil, errors.Wrapf(err, "failed to execute %T", msg)
+	}
+
+	data, err := json.Marshal(resp)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("json.Marshal: failed to marshal %T response to JSON", resp),
+			"from_address", signer,
+			"error", err,
+		)
+		return nil, errors.Wrap(err, fmt.Sprintf("marshal %T failed", resp))
+	}
+
+	ctx.Logger().Debug(fmt.Sprintf("%T execution completed", msg),
+		"from_address", signer,
+		"msg", msg,
+	)
+	return [][]byte{data}, nil
+}
+
+func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAddress, dex bindings.Dex) ([][]byte, error) {
+	switch {
+	case dex.Deposit != nil:
+		dex.Deposit.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.Deposit, m.DexMsgServer.Deposit)
+	case dex.Withdrawal != nil:
+		dex.Withdrawal.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.Withdrawal, m.DexMsgServer.Withdrawal)
+	case dex.PlaceLimitOrder != nil:
+		msg := dextypes.MsgPlaceLimitOrder{
+			Creator:          contractAddr.String(),
+			Receiver:         dex.PlaceLimitOrder.Receiver,
+			TokenIn:          dex.PlaceLimitOrder.TokenIn,
+			TokenOut:         dex.PlaceLimitOrder.TokenOut,
+			TickIndexInToOut: dex.PlaceLimitOrder.TickIndexInToOut,
+			AmountIn:         dex.PlaceLimitOrder.AmountIn,
+			MaxAmountOut:     dex.PlaceLimitOrder.MaxAmountOut,
+		}
+		orderTypeInt, ok := dextypes.LimitOrderType_value[dex.PlaceLimitOrder.OrderType]
+		if !ok {
+			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
+				fmt.Sprintf(
+					"got \"%s\", expected one of %s",
+					dex.PlaceLimitOrder.OrderType,
+					strings.Join(maps.Keys(dextypes.LimitOrderType_value), ", ")),
+			)
+		}
+		msg.OrderType = dextypes.LimitOrderType(orderTypeInt)
+
+		if dex.PlaceLimitOrder.ExpirationTime != nil {
+			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
+			msg.ExpirationTime = &t
+		}
+		return handleDexMsg(ctx, &msg, m.DexMsgServer.PlaceLimitOrder)
+	case dex.CancelLimitOrder != nil:
+		dex.CancelLimitOrder.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.CancelLimitOrder, m.DexMsgServer.CancelLimitOrder)
+	case dex.WithdrawFilledLimitOrder != nil:
+		dex.WithdrawFilledLimitOrder.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.WithdrawFilledLimitOrder, m.DexMsgServer.WithdrawFilledLimitOrder)
+	case dex.MultiHopSwap != nil:
+		dex.MultiHopSwap.Creator = contractAddr.String()
+		return handleDexMsg(ctx, dex.MultiHopSwap, m.DexMsgServer.MultiHopSwap)
+	}
+
+	return nil, sdkerrors.ErrUnknownRequest
 }
 
 func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, error) {
@@ -467,7 +575,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 
 // createDenom creates a new token denom
 func (m *CustomMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) ([]sdk.Event, [][]byte, error) {
-	err := PerformCreateDenom(m.TokenFactory, m.Bank, ctx, contractAddr, createDenom)
+	err := PerformCreateDenom(m.TokenFactory, ctx, contractAddr, createDenom)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "perform create denom")
 	}
@@ -475,7 +583,7 @@ func (m *CustomMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 // PerformCreateDenom is used with createDenom to create a token denom; validates the msgCreateDenom.
-func PerformCreateDenom(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) error {
+func PerformCreateDenom(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) error {
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
 
 	msgCreateDenom := tokenfactorytypes.NewMsgCreateDenom(contractAddr.String(), createDenom.Subdenom)
@@ -491,6 +599,66 @@ func PerformCreateDenom(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, 
 	)
 	if err != nil {
 		return errors.Wrap(err, "creating denom")
+	}
+	return nil
+}
+
+// createDenom forces a transfer of a tokenFactory token
+func (m *CustomMessenger) forceTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, forceTransfer *bindings.ForceTransfer) ([]sdk.Event, [][]byte, error) {
+	err := PerformForceTransfer(m.TokenFactory, ctx, contractAddr, forceTransfer)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "perform force transfer")
+	}
+	return nil, nil, nil
+}
+
+// PerformForceTransfer is used with forceTransfer to force a tokenfactory token transfer; validates the msgForceTransfer.
+func PerformForceTransfer(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, forceTransfer *bindings.ForceTransfer) error {
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+
+	msgForceTransfer := tokenfactorytypes.NewMsgForceTransfer(contractAddr.String(), sdk.NewInt64Coin(forceTransfer.Denom, forceTransfer.Amount.Int64()), forceTransfer.TransferFromAddress, forceTransfer.TransferToAddress)
+
+	if err := msgForceTransfer.ValidateBasic(); err != nil {
+		return errors.Wrap(err, "failed validating MsgForceTransfer")
+	}
+
+	// Force Transfer
+	_, err := msgServer.ForceTransfer(
+		sdk.WrapSDKContext(ctx),
+		msgForceTransfer,
+	)
+	if err != nil {
+		return errors.Wrap(err, "forcing transfer")
+	}
+	return nil
+}
+
+// setDenomMetadata sets a metadata for a tokenfactory denom
+func (m *CustomMessenger) setDenomMetadata(ctx sdk.Context, contractAddr sdk.AccAddress, setDenomMetadata *bindings.SetDenomMetadata) ([]sdk.Event, [][]byte, error) {
+	err := PerformSetDenomMetadata(m.TokenFactory, ctx, contractAddr, setDenomMetadata)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "perform set denom metadata")
+	}
+	return nil, nil, nil
+}
+
+// PerformSetDenomMetadata is used with setDenomMetadata to set a metadata for a tokenfactory denom; validates the msgSetDenomMetadata.
+func PerformSetDenomMetadata(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, setDenomMetadata *bindings.SetDenomMetadata) error {
+	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
+
+	msgSetDenomMetadata := tokenfactorytypes.NewMsgSetDenomMetadata(contractAddr.String(), setDenomMetadata.Metadata)
+
+	if err := msgSetDenomMetadata.ValidateBasic(); err != nil {
+		return errors.Wrap(err, "failed validating MsgSetDenomMetadata")
+	}
+
+	// Set denom metadata
+	_, err := msgServer.SetDenomMetadata(
+		sdk.WrapSDKContext(ctx),
+		msgSetDenomMetadata,
+	)
+	if err != nil {
+		return errors.Wrap(err, "setting denom metadata")
 	}
 	return nil
 }

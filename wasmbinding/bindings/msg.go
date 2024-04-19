@@ -5,11 +5,13 @@ import (
 	"cosmossdk.io/math"
 	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	feetypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	transferwrappertypes "github.com/neutron-org/neutron/v2/x/transfer/types"
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/v3/x/transfer/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -44,9 +46,14 @@ type NeutronMsg struct {
 	/// Currently, the burn from address must be the admin contract.
 	BurnTokens *BurnTokens `json:"burn_tokens,omitempty"`
 	/// Contracts can set before send hook for an existing factory denom
-	//	that they are the admin of.
-	//	Currently, the set before hook call should be performed from address that must be the admin contract.
+	///	that they are the admin of.
+	///	Currently, the set before hook call should be performed from address that must be the admin contract.
 	SetBeforeSendHook *SetBeforeSendHook `json:"set_before_send_hook,omitempty"`
+	/// Force transferring of a specific denom is only allowed for the creator of the denom registered during CreateDenom.
+	ForceTransfer *ForceTransfer `json:"force_transfer,omitempty"`
+	/// Setting of metadata for a specific denom is only allowed for the admin of the denom.
+	/// It allows the overwriting of the denom metadata in the bank module.
+	SetDenomMetadata *SetDenomMetadata `json:"set_denom_metadata,omitempty"`
 
 	// Cron types
 	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
@@ -55,6 +62,9 @@ type NeutronMsg struct {
 	// Contractmanager types
 	/// A contract that has failed acknowledgement can resubmit it
 	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
+
+	// dex module bindings
+	Dex *Dex `json:"dex,omitempty"`
 }
 
 // SubmitTx submits interchain transaction on a remote chain.
@@ -185,9 +195,24 @@ type BurnTokens struct {
 	BurnFromAddress string `json:"burn_from_address"`
 }
 
+// SetBeforeSendHook Allowing to assign a CosmWasm contract to call with a BeforeSend hook for a specific denom is only
+// allowed for the creator of the denom registered during CreateDenom.
 type SetBeforeSendHook struct {
 	Denom        string `json:"denom"`
 	ContractAddr string `json:"contract_addr"`
+}
+
+// SetDenomMetadata is sets the denom's bank metadata
+type SetDenomMetadata struct {
+	banktypes.Metadata
+}
+
+// ForceTransfer forces transferring of a specific denom is only allowed for the creator of the denom registered during CreateDenom.
+type ForceTransfer struct {
+	Denom               string   `json:"denom"`
+	Amount              math.Int `json:"amount"`
+	TransferFromAddress string   `json:"transfer_from_address"`
+	TransferToAddress   string   `json:"transfer_to_address"`
 }
 
 // AddSchedule adds new schedule to the cron module
@@ -222,4 +247,28 @@ type ResubmitFailure struct {
 
 type ResubmitFailureResponse struct {
 	FailureId uint64 `json:"failure_id"`
+}
+
+type Dex struct {
+	Deposit                  *dextypes.MsgDeposit                  `json:"deposit"`
+	Withdrawal               *dextypes.MsgWithdrawal               `json:"withdrawal"`
+	PlaceLimitOrder          *MsgPlaceLimitOrder                   `json:"place_limit_order"`
+	WithdrawFilledLimitOrder *dextypes.MsgWithdrawFilledLimitOrder `json:"withdraw_filled_limit_order"`
+	CancelLimitOrder         *dextypes.MsgCancelLimitOrder         `json:"cancel_limit_order"`
+	MultiHopSwap             *dextypes.MsgMultiHopSwap             `json:"multi_hop_swap"`
+}
+
+// MsgPlaceLimitOrder is a copy dextypes.MsgPlaceLimitOrder with altered ExpirationTime field,
+// it's a preferable way to pass timestamp as unixtime to contracts
+type MsgPlaceLimitOrder struct {
+	Creator          string   `json:"creator,omitempty"`
+	Receiver         string   `json:"receiver,omitempty"`
+	TokenIn          string   `json:"token_in,omitempty"`
+	TokenOut         string   `json:"token_out,omitempty"`
+	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`
+	AmountIn         math.Int `json:"amount_in"`
+	OrderType        string   `json:"order_type,omitempty"`
+	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
+	MaxAmountOut   *math.Int `json:"max_amount_out"`
 }

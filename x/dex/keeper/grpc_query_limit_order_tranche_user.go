@@ -3,13 +3,14 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func (k Keeper) LimitOrderTrancheUserAll(
@@ -26,7 +27,7 @@ func (k Keeper) LimitOrderTrancheUserAll(
 	store := ctx.KVStore(k.storeKey)
 	limitOrderTrancheUserStore := prefix.NewStore(store, types.KeyPrefix(types.LimitOrderTrancheUserKeyPrefix))
 
-	pageRes, err := query.Paginate(limitOrderTrancheUserStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(limitOrderTrancheUserStore, req.Pagination, func(_, value []byte) error {
 		limitOrderTrancheUser := &types.LimitOrderTrancheUser{}
 		if err := k.cdc.Unmarshal(value, limitOrderTrancheUser); err != nil {
 			return err
@@ -46,6 +47,26 @@ func (k Keeper) LimitOrderTrancheUserAll(
 	}, nil
 }
 
+func (k Keeper) CalcWithdrawableShares(ctx sdk.Context, trancheUser types.LimitOrderTrancheUser) (amount math.Int, err error) {
+	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
+
+	tranche, _, found := k.FindLimitOrderTranche(
+		ctx,
+		&types.LimitOrderTrancheKey{
+			TradePairId:           tradePairID,
+			TickIndexTakerToMaker: tickIndex,
+			TrancheKey:            trancheUser.TrancheKey,
+		},
+	)
+
+	if !found {
+		return math.ZeroInt(), status.Error(codes.NotFound, "Tranche not found")
+	}
+	withdrawableShares, _ := tranche.CalcWithdrawAmount(&trancheUser)
+
+	return withdrawableShares, nil
+}
+
 func (k Keeper) LimitOrderTrancheUser(c context.Context,
 	req *types.QueryGetLimitOrderTrancheUserRequest,
 ) (*types.QueryGetLimitOrderTrancheUserResponse, error) {
@@ -53,7 +74,7 @@ func (k Keeper) LimitOrderTrancheUser(c context.Context,
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-	val, found := k.GetLimitOrderTrancheUser(
+	trancheUser, found := k.GetLimitOrderTrancheUser(
 		ctx,
 		req.Address,
 		req.TrancheKey,
@@ -62,7 +83,16 @@ func (k Keeper) LimitOrderTrancheUser(c context.Context,
 		return nil, status.Error(codes.NotFound, "not found")
 	}
 
-	return &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: val}, nil
+	resp := &types.QueryGetLimitOrderTrancheUserResponse{LimitOrderTrancheUser: trancheUser}
+	if req.CalcWithdrawableShares {
+		withdrawAmt, err := k.CalcWithdrawableShares(ctx, *trancheUser)
+		if err != nil {
+			return nil, err
+		}
+		resp.WithdrawableShares = &withdrawAmt
+	}
+
+	return resp, nil
 }
 
 func (k Keeper) LimitOrderTrancheUserAllByAddress(
@@ -82,7 +112,7 @@ func (k Keeper) LimitOrderTrancheUserAllByAddress(
 	addressPrefix := types.LimitOrderTrancheUserAddressPrefix(addr.String())
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), addressPrefix)
 
-	pageRes, err := query.Paginate(store, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(store, req.Pagination, func(_, value []byte) error {
 		trancheUser := &types.LimitOrderTrancheUser{}
 		if err := k.cdc.Unmarshal(value, trancheUser); err != nil {
 			return err

@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func (k Keeper) PoolMetadataAll(goCtx context.Context, req *types.QueryAllPoolMetadataRequest) (*types.QueryAllPoolMetadataResponse, error) {
@@ -23,7 +23,7 @@ func (k Keeper) PoolMetadataAll(goCtx context.Context, req *types.QueryAllPoolMe
 	store := ctx.KVStore(k.storeKey)
 	poolMetadataStore := prefix.NewStore(store, types.KeyPrefix(types.PoolMetadataKeyPrefix))
 
-	pageRes, err := query.Paginate(poolMetadataStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(poolMetadataStore, req.Pagination, func(_, value []byte) error {
 		var poolMetadata types.PoolMetadata
 		if err := k.cdc.Unmarshal(value, &poolMetadata); err != nil {
 			return err

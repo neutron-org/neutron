@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func (k Keeper) PoolReservesAll(
@@ -35,7 +35,7 @@ func (k Keeper) PoolReservesAll(
 	pageRes, err := query.FilteredPaginate(
 		PoolReservesStore,
 		req.Pagination,
-		func(key, value []byte, accum bool) (hit bool, err error) {
+		func(_, value []byte, accum bool) (hit bool, err error) {
 			var tick types.TickLiquidity
 
 			if err := k.cdc.Unmarshal(value, &tick); err != nil {
