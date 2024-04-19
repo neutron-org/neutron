@@ -13,7 +13,7 @@ func genContractAddressCmd() *cobra.Command {
 		Use:   "generate-contract-address [instance_id] [code_id]",
 		Short: "Generates contract address for the given instance id and code id",
 		Args:  cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			instanceID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return fmt.Errorf("failed to parse instance_id: %w", err)

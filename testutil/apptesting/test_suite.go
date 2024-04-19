@@ -1,7 +1,6 @@
 package apptesting
 
 import (
-	"context"
 	"crypto/rand"
 	"fmt"
 
@@ -10,6 +9,7 @@ import (
 	"cosmossdk.io/store/metrics"
 	"cosmossdk.io/store/rootmulti"
 	"cosmossdk.io/store/types"
+
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	db2 "github.com/cosmos/cosmos-db"
@@ -25,9 +25,8 @@ import (
 type KeeperTestHelper struct {
 	suite.Suite
 
-	App   *app.App
-	Ctx   sdk.Context
-	GoCtx context.Context
+	App *app.App
+	Ctx sdk.Context
 	// Used for testing queries end to end.
 	// You can wrap this in a module-specific QueryClient()
 	// and then make calls as you would a normal GRPC client.
@@ -37,12 +36,13 @@ type KeeperTestHelper struct {
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *KeeperTestHelper) Setup() {
 	s.App = testutil.Setup(s.T()).(*app.App)
-	ctx := s.App.GetBaseApp().NewContext(
-		false,
-	)
+	// `NewUncachedContext` like a `NewContext` calls `sdk.NewContext` under the hood. But the reason why we switched to NewUncachedContext
+	// is NewContext tries to pass `app.finalizeBlockState.ms` as first argument while  app.finalizeBlockState is nil at this stage,
+	// and we get nil pointer exception
+	// when NewUncachedContext passes `app.cms` (multistore) as an argument to `sdk.NewContext`
+	ctx := s.App.GetBaseApp().NewUncachedContext(false, tmtypes.Header{})
 	s.Ctx = ctx.WithBlockGasMeter(types.NewInfiniteGasMeter())
 
-	s.GoCtx = sdk.WrapSDKContext(s.Ctx)
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
@@ -55,7 +55,7 @@ func SetupAddr(index int) sdk.AccAddress {
 	prefixBz := make([]byte, 8)
 	_, _ = rand.Read(prefixBz)
 	prefix := string(prefixBz)
-	addr := sdk.AccAddress([]byte(fmt.Sprintf("addr%s%8d", prefix, index)))
+	addr := sdk.AccAddress(fmt.Sprintf("addr%s%8d", prefix, index))
 	return addr
 }
 
@@ -110,7 +110,7 @@ func (s *KeeperTestHelper) Commit() {
 	if _, err := s.App.Commit(); err != nil {
 		panic(err)
 	}
-	//newHeader := tmtypes.Header{
+	// newHeader := tmtypes.Header{
 	//	Height:  oldHeight + 1,
 	//	ChainID: oldHeader.ChainID,
 	//	Time:    oldHeader.Time.Add(time.Minute),

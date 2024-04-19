@@ -3,10 +3,12 @@ package types_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"cosmossdk.io/math"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
 	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 	"github.com/neutron-org/neutron/v3/x/transfer/types"
@@ -116,12 +118,12 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		// msg := tt.malleate()
+		msg := tt.malleate().(sdktypes.HasValidateBasic)
 
 		if tt.expectedErr != nil {
-			// TODO: require.ErrorIs(t, msg.ValidateBasic(), tt.expectedErr)
+			require.ErrorIs(t, msg.ValidateBasic(), tt.expectedErr)
 		} else {
-			// TODO: require.NoError(t, msg.ValidateBasic())
+			require.NoError(t, msg.ValidateBasic())
 		}
 	}
 }

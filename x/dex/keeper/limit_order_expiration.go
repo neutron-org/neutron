@@ -10,6 +10,7 @@ import (
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
+// Creates a new LimitOrderExpiration struct based on a LimitOrderTranche
 func NewLimitOrderExpiration(tranche *types.LimitOrderTranche) *types.LimitOrderExpiration {
 	trancheExpiry := tranche.ExpirationTime
 	if trancheExpiry == nil {

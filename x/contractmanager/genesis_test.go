@@ -3,6 +3,8 @@ package contractmanager_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
+
 	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -10,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	keepertest "github.com/neutron-org/neutron/v3/testutil/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/contractmanager/nullify"
 	"github.com/neutron-org/neutron/v3/x/contractmanager"
 	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
 )

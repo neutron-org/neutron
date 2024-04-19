@@ -3,20 +3,18 @@ package keeper_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 	keepertest "github.com/neutron-org/neutron/v3/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/dex/nullify"
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func TestPoolReservesQuerySingle(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNPoolReserves(keeper, ctx, 2)
 	for _, tc := range []struct {
 		desc     string
@@ -60,7 +58,7 @@ func TestPoolReservesQuerySingle(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			response, err := keeper.PoolReserves(wctx, tc.request)
+			response, err := keeper.PoolReserves(ctx, tc.request)
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 			} else {
@@ -76,7 +74,6 @@ func TestPoolReservesQuerySingle(t *testing.T) {
 
 func TestPoolReservesQueryPaginated(t *testing.T) {
 	keeper, ctx := keepertest.DexKeeper(t)
-	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNPoolReserves(keeper, ctx, 2)
 	// Add more data to make sure only LO tranches are returned
 	createNLimitOrderTranches(keeper, ctx, 2)
@@ -96,7 +93,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.PoolReservesAll(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := keeper.PoolReservesAll(ctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.PoolReserves), step)
 			require.Subset(t,
@@ -109,7 +106,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(msgs); i += step {
-			resp, err := keeper.PoolReservesAll(wctx, request(next, 0, uint64(step), false))
+			resp, err := keeper.PoolReservesAll(ctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.PoolReserves), step)
 			require.Subset(t,
@@ -120,7 +117,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
-		resp, err := keeper.PoolReservesAll(wctx, request(nil, 0, 0, true))
+		resp, err := keeper.PoolReservesAll(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
 		require.Equal(t, len(msgs), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
@@ -129,7 +126,7 @@ func TestPoolReservesQueryPaginated(t *testing.T) {
 		)
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := keeper.PoolReservesAll(wctx, nil)
+		_, err := keeper.PoolReservesAll(ctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
 	})
 }

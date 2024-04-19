@@ -186,7 +186,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 			Msg:      []byte(msg.Msg),
 			Funds:    sdk.NewCoins(),
 		}
-		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(cacheCtx), &executeMsg)
+		_, err := k.WasmMsgServer.ExecuteContract(cacheCtx, &executeMsg)
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,

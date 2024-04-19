@@ -10,6 +10,7 @@ import (
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
+// Returns the pool that was requested by PairId, TickIndex and Fee (or errors)
 func (k Keeper) Pool(
 	goCtx context.Context,
 	req *types.QueryPoolRequest,

@@ -249,7 +249,6 @@ func (s *DexTestSuite) TestCancelGoodTilAfterExpirationFails() {
 
 	// WHEN expiration date has passed
 	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
-	// TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)

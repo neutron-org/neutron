@@ -11,7 +11,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	staking "github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/neutron-org/neutron/v3/testutil/consumer"
@@ -35,6 +35,10 @@ type (
 	Network = network.Network
 	Config  = network.Config
 )
+
+func init() {
+	app.GetDefaultConfig()
+}
 
 // New creates instance with fully configured cosmos network.
 // Accepts optional config, that will be used in place of the DefaultConfig() if provided.

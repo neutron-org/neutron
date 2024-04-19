@@ -7,11 +7,15 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"reflect"
+
+	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
+	"github.com/neutron-org/neutron/v3/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec/address"
+
 	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
@@ -27,11 +31,6 @@ import (
 	"github.com/neutron-org/neutron/v3/docs"
 
 	"github.com/neutron-org/neutron/v3/app/upgrades"
-	v030 "github.com/neutron-org/neutron/v3/app/upgrades/v0.3.0"
-	v044 "github.com/neutron-org/neutron/v3/app/upgrades/v0.4.4"
-	v200 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.0"
-	v202 "github.com/neutron-org/neutron/v3/app/upgrades/v2.0.2"
-	v300 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.0"
 
 	"github.com/neutron-org/neutron/v3/x/cron"
 
@@ -85,7 +84,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	//"github.com/cosmos/gaia/v11/x/globalfee"
+
+	// "github.com/cosmos/gaia/v11/x/globalfee"
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -100,7 +100,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v8/modules/core/02-client"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
@@ -164,6 +164,7 @@ import (
 	ibcswapkeeper "github.com/neutron-org/neutron/v3/x/ibcswap/keeper"
 	ibcswaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
 
+	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
 	gmpmiddleware "github.com/neutron-org/neutron/v3/x/gmp"
 
 	// Block-sdk imports
@@ -183,7 +184,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v300.Upgrade}
+	Upgrades = []upgrades.Upgrade{nextupgrade.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -231,7 +232,7 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		auction.AppModuleBasic{},
-		// globalfee.AppModule{},
+		globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
 	)
@@ -317,6 +318,7 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
+	GlobalFeeKeeper     globalfeekeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -398,6 +400,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
+		globalfeetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -438,8 +441,8 @@ func New(
 		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		address.NewBech32Codec(GetDefaultConfig().GetBech32AccountAddrPrefix()),
-		GetDefaultConfig().GetBech32AccountAddrPrefix(),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+		sdk.GetConfig().GetBech32AccountAddrPrefix(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -470,7 +473,7 @@ func New(
 		&app.BankKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		address.NewBech32Codec(GetDefaultConfig().GetBech32AccountAddrPrefix()),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 	)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
@@ -543,6 +546,8 @@ func New(
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
+	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+
 	// PFMKeeper must be created before TransferKeeper
 	app.PFMKeeper = pfmkeeper.NewKeeper(
 		appCodec,
@@ -554,7 +559,7 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	wasmHooks := ibchooks.NewWasmHooks(nil, GetDefaultConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
 		app.PFMKeeper,
@@ -584,7 +589,7 @@ func New(
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec, runtime.NewKVStoreService(keys[evidencetypes.StoreKey]), &app.ConsumerKeeper, app.SlashingKeeper,
-		address.NewBech32Codec(GetDefaultConfig().GetBech32AccountAddrPrefix()), runtime.ProvideCometInfoService(),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()), runtime.ProvideCometInfoService(),
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
@@ -606,8 +611,8 @@ func New(
 		app.IBCKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		address.NewBech32Codec(GetDefaultConfig().GetBech32ValidatorAddrPrefix()),
-		address.NewBech32Codec(GetDefaultConfig().GetBech32ConsensusAddrPrefix()),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
@@ -616,7 +621,7 @@ func New(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
 		app.AccountKeeper,
-		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+		&app.BankKeeper,
 		&app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -674,7 +679,7 @@ func New(
 	adminRouterLegacy.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		// AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)) //nolint:staticcheck
 
 	app.AdminmoduleKeeper = *adminmodulekeeper.NewKeeper(
 		appCodec,
@@ -824,8 +829,8 @@ func New(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.ConsumerKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
-		upgrade.NewAppModule(&app.UpgradeKeeper, address.NewBech32Codec(GetDefaultConfig().GetBech32AccountAddrPrefix())),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.ConsumerKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		upgrade.NewAppModule(&app.UpgradeKeeper, address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -962,7 +967,10 @@ func New(
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	app.mm.RegisterServices(app.configurator)
+	err = app.mm.RegisterServices(app.configurator)
+	if err != nil {
+		panic(fmt.Sprintf("failed to register services: %s", err))
+	}
 
 	app.setupUpgradeHandlers()
 
@@ -974,7 +982,7 @@ func New(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, nil, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.ConsumerKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -1022,13 +1030,13 @@ func New(
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
 			IBCKeeper:             app.IBCKeeper,
+			GlobalFeeKeeper:       app.GlobalFeeKeeper,
 			WasmConfig:            &wasmConfig,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 			ConsumerKeeper:        app.ConsumerKeeper,
-			// GlobalFeeSubspace: app.GetSubspace(globalfee.ModuleName),
-			AuctionKeeper: app.AuctionKeeper,
-			TxEncoder:     app.GetTxConfig().TxEncoder(),
-			MEVLane:       mevLane,
+			AuctionKeeper:         app.AuctionKeeper,
+			TxEncoder:             app.GetTxConfig().TxEncoder(),
+			MEVLane:               mevLane,
 		},
 		app.Logger(),
 	)
@@ -1141,20 +1149,22 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
-					AccountKeeper:      app.AccountKeeper,
-					FeeBurnerKeeper:    app.FeeBurnerKeeper,
-					CronKeeper:         app.CronKeeper,
-					IcqKeeper:          app.InterchainQueriesKeeper,
-					TokenFactoryKeeper: app.TokenFactoryKeeper,
-					SlashingKeeper:     app.SlashingKeeper,
-					ParamsKeeper:       app.ParamsKeeper,
-					CapabilityKeeper:   app.CapabilityKeeper,
-					AuctionKeeper:      app.AuctionKeeper,
-					ContractManager:    app.ContractManagerKeeper,
-					AdminModule:        app.AdminmoduleKeeper,
-					ConsensusKeeper:    &app.ConsensusParamsKeeper,
-					ConsumerKeeper:     &app.ConsumerKeeper,
-					// GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
+					AccountKeeper:       app.AccountKeeper,
+					FeeBurnerKeeper:     app.FeeBurnerKeeper,
+					BankKeeper:          app.BankKeeper,
+					TransferKeeper:      app.TransferKeeper.Keeper,
+					CronKeeper:          app.CronKeeper,
+					IcqKeeper:           app.InterchainQueriesKeeper,
+					TokenFactoryKeeper:  app.TokenFactoryKeeper,
+					SlashingKeeper:      app.SlashingKeeper,
+					ParamsKeeper:        app.ParamsKeeper,
+					CapabilityKeeper:    app.CapabilityKeeper,
+					AuctionKeeper:       app.AuctionKeeper,
+					ContractManager:     app.ContractManagerKeeper,
+					AdminModule:         app.AdminmoduleKeeper,
+					ConsensusKeeper:     &app.ConsensusParamsKeeper,
+					ConsumerKeeper:      &app.ConsumerKeeper,
+					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,
@@ -1162,13 +1172,6 @@ func (app *App) setupUpgradeHandlers() {
 			),
 		)
 	}
-}
-
-// ChainID gets chainID from private fields of BaseApp
-// Should be removed once SDK 0.50.x will be adopted
-func (app *App) ChainID() string {
-	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
-	return field.String()
 }
 
 // CheckTx will check the transaction with the provided checkTxHandler. We override the default
@@ -1236,7 +1239,10 @@ func (app *App) TestInitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*a
 	// TODO: app.ConsensusParamsKeeper.Set(ctx, sims.DefaultConsensusParams)
 	app.EnsureBlockGasMeter(ctx)
 
-	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
+	err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
+	if err != nil {
+		return nil, fmt.Errorf("failed to set module version map: %w", err)
+	}
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
@@ -1355,7 +1361,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
 
-	// paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
+	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 

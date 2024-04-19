@@ -31,7 +31,6 @@ func (k Keeper) EstimatePlaceLimitOrder(
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	cacheCtx, _ := ctx.CacheContext()
-	cacheGoCtx := sdk.WrapSDKContext(cacheCtx)
 
 	callerAddr := sdk.MustAccAddressFromBech32(req.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(req.Receiver)
@@ -46,7 +45,7 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	}
 
 	_, totalInCoin, swapInCoin, swapOutCoin, err := k.PlaceLimitOrderCore(
-		cacheGoCtx,
+		cacheCtx,
 		req.TokenIn,
 		req.TokenOut,
 		req.AmountIn,

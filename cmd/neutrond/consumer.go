@@ -28,7 +28,7 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 		Use:                        "add-consumer-section",
 		Short:                      "ONLY FOR TESTING PURPOSES! Modifies genesis so that chain can be started locally with one node.",
 		SuggestionsMinimumDistance: 2,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return genesisMutator.AlterConsumerModuleState(cmd, func(state *GenesisData, _ map[string]json.RawMessage) error {
 				genesisState := consumer.CreateMinimalConsumerTestGenesis()
 				clientCtx := client.GetClientContextFromCmd(cmd)
@@ -40,11 +40,11 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				sdkPublicKey, err := cryptocodec.FromTmPubKeyInterface(pk)
+				sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
 				if err != nil {
 					return err
 				}
-				tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(sdkPublicKey)
+				tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
 				if err != nil {
 					return err
 				}
