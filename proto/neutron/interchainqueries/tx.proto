@@ -52,6 +52,8 @@ message MsgRegisterInterchainQueryResponse {
 }
 
 message MsgSubmitQueryResult {
+  option (cosmos.msg.v1.signer) = "sender";
+
   uint64 query_id = 1;
   string sender = 2;
 
