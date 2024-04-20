@@ -1,12 +1,13 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
-
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/suite"
 
@@ -105,4 +106,25 @@ func CreateRandomAccounts(numAccts int) []sdktypes.AccAddress {
 	}
 
 	return testAddrs
+}
+
+func (s *KeeperTestSuite) TestForceTransferMsg() {
+	s.Setup()
+
+	// Create a denom
+	s.CreateDefaultDenom(s.ChainA.GetContext())
+
+	s.Run(fmt.Sprintf("test force transfer"), func() {
+		mintAmt := sdktypes.NewInt64Coin(s.defaultDenom, 10)
+
+		_, err := s.msgServer.Mint(sdktypes.WrapSDKContext(s.ChainA.GetContext()), types.NewMsgMint(s.TestAccs[0].String(), mintAmt))
+
+		govModAcc := s.GetNeutronZoneApp(s.ChainA).AccountKeeper.GetModuleAccount(s.ChainA.GetContext(), authtypes.FeeCollectorName)
+
+		err = s.GetNeutronZoneApp(s.ChainA).BankKeeper.SendCoins(s.ChainA.GetContext(), s.TestAccs[0], govModAcc.GetAddress(), sdktypes.NewCoins(mintAmt))
+		s.Require().NoError(err)
+
+		_, err = s.msgServer.ForceTransfer(s.ChainA.GetContext(), types.NewMsgForceTransfer(s.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), s.TestAccs[1].String()))
+		s.Require().ErrorContains(err, "send from module acc not available")
+	})
 }
