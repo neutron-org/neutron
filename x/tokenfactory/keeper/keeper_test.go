@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -108,23 +107,24 @@ func CreateRandomAccounts(numAccts int) []sdktypes.AccAddress {
 	return testAddrs
 }
 
-func (s *KeeperTestSuite) TestForceTransferMsg() {
-	s.Setup()
+func (suite *KeeperTestSuite) TestForceTransferMsg() {
+	suite.Setup()
 
 	// Create a denom
-	s.CreateDefaultDenom(s.ChainA.GetContext())
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 
-	s.Run(fmt.Sprintf("test force transfer"), func() {
-		mintAmt := sdktypes.NewInt64Coin(s.defaultDenom, 10)
+	suite.Run("test force transfer", func() {
+		mintAmt := sdktypes.NewInt64Coin(suite.defaultDenom, 10)
 
-		_, err := s.msgServer.Mint(sdktypes.WrapSDKContext(s.ChainA.GetContext()), types.NewMsgMint(s.TestAccs[0].String(), mintAmt))
+		_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), mintAmt))
+		suite.Require().NoError(err)
 
-		govModAcc := s.GetNeutronZoneApp(s.ChainA).AccountKeeper.GetModuleAccount(s.ChainA.GetContext(), authtypes.FeeCollectorName)
+		govModAcc := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAccount(suite.ChainA.GetContext(), authtypes.FeeCollectorName)
 
-		err = s.GetNeutronZoneApp(s.ChainA).BankKeeper.SendCoins(s.ChainA.GetContext(), s.TestAccs[0], govModAcc.GetAddress(), sdktypes.NewCoins(mintAmt))
-		s.Require().NoError(err)
+		err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(suite.ChainA.GetContext(), suite.TestAccs[0], govModAcc.GetAddress(), sdktypes.NewCoins(mintAmt))
+		suite.Require().NoError(err)
 
-		_, err = s.msgServer.ForceTransfer(s.ChainA.GetContext(), types.NewMsgForceTransfer(s.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), s.TestAccs[1].String()))
-		s.Require().ErrorContains(err, "send from module acc not available")
+		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), suite.TestAccs[1].String()))
+		suite.Require().ErrorContains(err, "send from module acc not available")
 	})
 }
