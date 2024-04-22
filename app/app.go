@@ -1176,7 +1176,7 @@ func New(
 	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
 	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
 
-	// block-sdk CheckTx blockSdkProposalHandler
+	// block-sdk CheckTx handler
 	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
 		app,
 		app.GetTxConfig().TxDecoder(),
@@ -1185,7 +1185,7 @@ func New(
 		app.BaseApp.CheckTx,
 	)
 
-	// wrap checkTxHandler with mempool parity blockSdkProposalHandler
+	// wrap checkTxHandler with mempool parity handler
 	parityCheckTx := checktx.NewMempoolParityCheckTx(
 		app.Logger(),
 		mempool,
@@ -1222,7 +1222,7 @@ func New(
 	)
 	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
 
-	// Create the vote extensions blockSdkProposalHandler that will be used to extend and verify
+	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
 		app.Logger(),
