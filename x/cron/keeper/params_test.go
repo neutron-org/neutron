@@ -1,8 +1,9 @@
 package keeper_test
 
 import (
-	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"github.com/neutron-org/neutron/v3/testutil"
 

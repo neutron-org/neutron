@@ -1,8 +1,9 @@
 package types_test
 
 import (
-	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"

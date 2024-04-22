@@ -2,9 +2,10 @@ package network
 
 import (
 	"fmt"
-	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
 	"time"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	db "github.com/cosmos/cosmos-db"

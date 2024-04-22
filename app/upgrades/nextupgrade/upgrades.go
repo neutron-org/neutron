@@ -3,8 +3,10 @@ package nextupgrade
 import (
 	"context"
 	"fmt"
+
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/neutron-org/neutron/v3/app/config"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"

@@ -3,9 +3,10 @@ package cli_test
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/neutron-org/neutron/v3/app/config"
 	"strconv"
 	"testing"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
 

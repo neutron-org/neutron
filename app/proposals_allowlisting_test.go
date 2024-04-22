@@ -1,8 +1,9 @@
 package app_test
 
 import (
-	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	cmttypes "github.com/cometbft/cometbft/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"

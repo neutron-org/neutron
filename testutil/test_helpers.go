@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/neutron-org/neutron/v3/app/config"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"cosmossdk.io/log"
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
