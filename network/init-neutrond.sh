@@ -13,6 +13,8 @@ THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 MIN_GAS_PRICES_DEFAULT='[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]'
 MIN_GAS_PRICES=${MIN_GAS_PRICES:-"$MIN_GAS_PRICES_DEFAULT"}
 
+ADMIN_MODULE_ADDRESS="neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z"
+
 BYPASS_MIN_FEE_MSG_TYPES_DEFAULT='["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"]'
 BYPASS_MIN_FEE_MSG_TYPES=${BYPASS_MIN_FEE_MSG_TYPES:-"$BYPASS_MIN_FEE_MSG_TYPES_DEFAULT"}
 
@@ -720,7 +722,7 @@ set_genesis_param escrow_account_address                "\"$DAO_CONTRACT_ADDRESS
 set_genesis_param sudo_call_gas_limit                   "\"1000000\""                                     # contractmanager
 set_genesis_param max_gas                               "\"1000000000\""                                  # consensus_params
 set_genesis_param vote_extensions_enable_height         "\"1\""                                           # consensus_params
-set_genesis_param market_authority                      "\"neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z\","                      # marketmap
+set_genesis_param market_authority                      "\"$ADMIN_MODULE_ADDRESS\","                      # marketmap
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2

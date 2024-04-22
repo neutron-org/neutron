@@ -10,8 +10,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName        = "nextupgrade"
-	AdminModuleAddress = "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z"
+	UpgradeName = "nextupgrade"
 )
 
 var Upgrade = upgrades.Upgrade{

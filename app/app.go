@@ -3,13 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	appconfig "github.com/neutron-org/neutron/v3/app/config"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	appconfig "github.com/neutron-org/neutron/v3/app/config"
 
 	"github.com/skip-mev/slinky/x/oracle"
 
@@ -1145,16 +1146,11 @@ func New(
 		panic(err)
 	}
 
-	// Connect to the oracle service (default timeout of 5 seconds).
-	go func() {
-		// TODO: change background to something cancellable across the app?
-		if err := app.oracleClient.Start(context.Background()); err != nil {
-			app.Logger().Error("failed to start oracle client", "err", err)
-			panic(err)
-		}
-
-		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
-	}()
+	// Connect to the oracle service
+	if err := app.oracleClient.Start(context.Background()); err != nil {
+		app.Logger().Error("failed to start oracle client", "err", err)
+		panic(err)
+	}
 
 	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
 	ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
