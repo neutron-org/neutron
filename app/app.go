@@ -1081,7 +1081,7 @@ func New(
 	// set the mempool first
 	app.SetMempool(mempool)
 
-	// then create the ante-blockSdkProposalHandler
+	// then create the ante-handler
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
