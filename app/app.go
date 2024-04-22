@@ -3,13 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	appconfig "github.com/neutron-org/neutron/v3/app/config"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	appconfig "github.com/neutron-org/neutron/v3/app/config"
 
 	"github.com/skip-mev/slinky/x/oracle"
 
@@ -199,6 +200,10 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	sla "github.com/skip-mev/slinky/x/sla"
+	slakeeper "github.com/skip-mev/slinky/x/sla/keeper"
+	slatypes "github.com/skip-mev/slinky/x/sla/types"
 )
 
 const (
@@ -259,6 +264,7 @@ var (
 		ibcswap.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
+		sla.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -373,6 +379,7 @@ type App struct {
 	// slinky
 	MarketMapKeeper *marketmapkeeper.Keeper
 	OracleKeeper    *oraclekeeper.Keeper
+	SLAKeeper       *slakeeper.Keeper
 
 	// processes
 	oracleClient oracleclient.OracleClient
@@ -437,7 +444,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		globalfeetypes.StoreKey, oracletypes.StoreKey, marketmaptypes.StoreKey,
+		globalfeetypes.StoreKey, oracletypes.StoreKey, marketmaptypes.StoreKey, slatypes.ModuleName,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -753,6 +760,13 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
+	ccvconsumerCompatKeeper := NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
+
+	app.SLAKeeper = slakeeper.NewKeeper(runtime.NewKVStoreService(keys[slatypes.ModuleName]), appCodec, authtypes.NewModuleAddress(adminmoduletypes.ModuleName), ccvconsumerCompatKeeper, app.ConsumerKeeper)
+
+	slaModule := sla.NewAppModule(appCodec, *app.SLAKeeper)
+
 	app.MarketMapKeeper = marketmapkeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[marketmaptypes.StoreKey]),
 		appCodec,
@@ -905,6 +919,7 @@ func New(
 		dexModule,
 		marketmapModule,
 		oracleModule,
+		slaModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
@@ -944,6 +959,7 @@ func New(
 		crontypes.ModuleName,
 		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
+		slatypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
@@ -979,6 +995,7 @@ func New(
 		crontypes.ModuleName,
 		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
+		slatypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
@@ -1021,6 +1038,7 @@ func New(
 		crontypes.ModuleName,
 		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
+		slatypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
@@ -1155,9 +1173,6 @@ func New(
 
 		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
 	}()
-
-	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
-	ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
