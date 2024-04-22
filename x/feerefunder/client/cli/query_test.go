@@ -1,8 +1,9 @@
 package cli_test
 
 import (
-	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"cosmossdk.io/math"
 

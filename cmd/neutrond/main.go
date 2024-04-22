@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/neutron-org/neutron/v3/app/config"
 	"os"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 

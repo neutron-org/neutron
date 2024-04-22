@@ -2,8 +2,9 @@ package types_test
 
 import (
 	"encoding/json"
-	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"cosmossdk.io/math"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"

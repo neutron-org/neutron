@@ -2,10 +2,11 @@ package nextupgrade
 
 import (
 	storetypes "cosmossdk.io/store/types"
-	"github.com/neutron-org/neutron/v3/app/upgrades"
-	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	"github.com/neutron-org/neutron/v3/app/upgrades"
+	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 )
 
 const (

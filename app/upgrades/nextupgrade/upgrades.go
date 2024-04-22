@@ -3,8 +3,11 @@ package nextupgrade
 import (
 	"context"
 	"fmt"
+
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	slakeeper "github.com/skip-mev/slinky/x/sla/keeper"
+
 	"github.com/neutron-org/neutron/v3/app/config"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
@@ -40,6 +43,11 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
+		ctx.Logger().Info("Setting SLA params...")
+		if err = setSLAParams(ctx, keepers.SLAKeeper); err != nil {
+			return nil, err
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
@@ -57,4 +65,16 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 		Version:         params.Version,
 	}
 	return marketmapKeeper.SetParams(ctx, marketmapParams)
+}
+
+func setSLAParams(ctx sdk.Context, slaKeeper *slakeeper.Keeper) error {
+	params, err := slaKeeper.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
+	// make sure the SLA is disabled on start
+	params.Enabled = false
+
+	return nil
 }

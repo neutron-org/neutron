@@ -3,8 +3,9 @@ package keeper_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/neutron-org/neutron/v3/app/config"
 	"testing"
+
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
