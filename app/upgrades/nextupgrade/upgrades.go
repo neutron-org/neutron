@@ -7,8 +7,6 @@ import (
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/neutron-org/neutron/v3/app/config"
-
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
@@ -48,7 +46,6 @@ func CreateUpgradeHandler(
 }
 
 func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper) error {
-	config.GetDefaultConfig() // make sure we use neutron prefix for admin address
 	params, err := marketmapKeeper.GetParams(ctx)
 	if err != nil {
 		return err
