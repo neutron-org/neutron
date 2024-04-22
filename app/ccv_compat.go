@@ -92,3 +92,14 @@ func (c CCVConsumerCompatKeeper) GetLastValidatorPower(ctx context.Context, oper
 
 	return val.Power, nil
 }
+
+// Slash overrides default CCVKeeper Slash method, cause it slashes with Infraction_INFRACTION_UNSPECIFIED by default and we need Infraction_INFRACTION_DOWNTIME
+func (c CCVConsumerCompatKeeper) Slash(
+	ctx context.Context,
+	consAddr sdk.ConsAddress,
+	infractionHeight,
+	power int64,
+	slashFactor math.LegacyDec,
+) (amount math.Int, err error) {
+	return c.ccvKeeper.SlashWithInfractionReason(ctx, consAddr, infractionHeight, power, slashFactor, stakingtypes.Infraction_INFRACTION_DOWNTIME)
+}

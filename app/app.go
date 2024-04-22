@@ -763,7 +763,7 @@ func New(
 	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
 	ccvconsumerCompatKeeper := NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
 
-	app.SLAKeeper = slakeeper.NewKeeper(runtime.NewKVStoreService(keys[slatypes.ModuleName]), appCodec, authtypes.NewModuleAddress(adminmoduletypes.ModuleName), ccvconsumerCompatKeeper, app.ConsumerKeeper)
+	app.SLAKeeper = slakeeper.NewKeeper(runtime.NewKVStoreService(keys[slatypes.ModuleName]), appCodec, authtypes.NewModuleAddress(adminmoduletypes.ModuleName), ccvconsumerCompatKeeper, ccvconsumerCompatKeeper)
 
 	slaModule := sla.NewAppModule(appCodec, *app.SLAKeeper)
 
