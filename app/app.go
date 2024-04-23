@@ -15,6 +15,7 @@ import (
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
 	"github.com/cosmos/interchain-security/v4/testutil/integration"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	"github.com/skip-mev/block-sdk/block/service"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -1313,6 +1314,9 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
+	// Register new block-sdk queries routes from grpc-gateway.
+	service.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register app's swagger ui
@@ -1324,6 +1328,13 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *App) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
+
+	// Register the Block SDK mempool transaction service.
+	mempool, ok := app.BaseApp.Mempool().(blocksdk.Mempool)
+	if !ok {
+		panic("mempool is not a block.Mempool")
+	}
+	service.RegisterMempoolService(app.GRPCQueryRouter(), mempool)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
