@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"reflect"
 
+	v305 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.5"
+
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
@@ -185,7 +187,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v301.Upgrade, v304.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v301.Upgrade, v304.Upgrade, v305.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
