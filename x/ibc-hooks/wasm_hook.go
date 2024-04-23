@@ -91,7 +91,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 
 	amount, ok := math.NewIntFromString(data.GetAmount())
 	if !ok {
-		// This should never happen, as it should've been caught in the underlaying call to OnRecvPacket,
+		// This should never happen, as it should've been caught in the underlying call to OnRecvPacket,
 		// but returning here for completeness
 		return utils.NewEmitErrorAcknowledgement(ctx, types.ErrInvalidPacket, "Amount is not an int")
 	}

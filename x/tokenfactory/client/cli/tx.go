@@ -194,7 +194,7 @@ func NewSetDenomMetadataCmd() *cobra.Command {
 				return err
 			}
 
-			metadataBytes, err := os.ReadFile(args[1])
+			metadataBytes, err := os.ReadFile(args[0])
 			if err != nil {
 				return err
 			}

@@ -6,21 +6,19 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	types1 "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	types2 "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-
-	types2 "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -93,7 +91,7 @@ var xxx_messageInfo_MsgTransfer proto.InternalMessageInfo
 type MsgTransferResponse struct {
 	// channel's sequence_id for outgoing ibc packet. Unique per a channel.
 	SequenceId uint64 `protobuf:"varint,1,opt,name=sequence_id,json=sequenceId,proto3" json:"sequence_id,omitempty"`
-	// channel src channel on neutron side trasaction was submitted from
+	// channel src channel on neutron side transaction was submitted from
 	Channel string `protobuf:"bytes,2,opt,name=channel,proto3" json:"channel,omitempty"`
 }
 
