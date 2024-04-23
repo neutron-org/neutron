@@ -23,6 +23,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
+	v304 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.4"
 	"github.com/neutron-org/neutron/v3/docs"
 
 	"github.com/neutron-org/neutron/v3/app/upgrades"
@@ -184,7 +185,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v301.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v301.Upgrade, v304.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -606,8 +607,9 @@ func New(
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
+		maccPerms,
 		app.AccountKeeper,
-		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+		&app.BankKeeper,
 		&app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
