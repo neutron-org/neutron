@@ -84,7 +84,7 @@ type IBCConnectionTestSuite struct {
 	TransferPath *ibctesting.Path
 }
 
-func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal {
+func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal { //nolint:staticcheck
 	prop := providertypes.NewConsumerAdditionProposal(
 		chain.ChainID,
 		"description",
@@ -100,7 +100,7 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		ccv.DefaultCCVTimeoutPeriod,
 		ccv.DefaultTransferTimeoutPeriod,
 		ccv.DefaultConsumerUnbondingPeriod,
-	).(*providertypes.ConsumerAdditionProposal)
+	).(*providertypes.ConsumerAdditionProposal) //nolint:staticcheck
 
 	return prop
 }
