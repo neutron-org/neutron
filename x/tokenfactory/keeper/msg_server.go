@@ -157,7 +157,7 @@ func (server msgServer) ChangeAdmin(goCtx context.Context, msg *types.MsgChangeA
 	}
 
 	if msg.Sender != authorityMetadata.GetAdmin() {
-		return nil, types.ErrUnauthorized
+		return nil, types.ErrUnauthorized.Wrapf("need: %s, received: %s, denom: %s", authorityMetadata.GetAdmin(), msg.Sender, msg.Denom)
 	}
 
 	err = server.Keeper.setAdmin(ctx, msg.Denom, msg.NewAdmin)
