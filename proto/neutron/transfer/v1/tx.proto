@@ -53,6 +53,6 @@ message MsgTransfer {
 message MsgTransferResponse {
   // channel's sequence_id for outgoing ibc packet. Unique per a channel.
   uint64 sequence_id = 1;
-  // channel src channel on neutron side trasaction was submitted from
+  // channel src channel on neutron side transaction was submitted from
   string channel = 2;
 }
