@@ -174,12 +174,6 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 func handleDexMsg[T sdk.LegacyMsg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
-	// TODO: is this even legal to do?
-	validatableMsg := any(msg).(sdk.HasValidateBasic)
-	if err := validatableMsg.ValidateBasic(); err != nil {
-		return nil, errors.Wrapf(err, "failed to validate %T", msg)
-	}
-
 	if len(msg.GetSigners()) != 1 {
 		// should never happen
 		panic("should be 1 signer")
