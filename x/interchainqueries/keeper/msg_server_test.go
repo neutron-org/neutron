@@ -170,6 +170,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.RegisterInterchainQuery(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -312,6 +313,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.SubmitQueryResult(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -356,6 +358,7 @@ func TestMsgRemoveInterchainQueryRequestValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.RemoveInterchainQuery(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -490,6 +493,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := msgServer.UpdateInterchainQuery(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -523,6 +527,7 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := k.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)

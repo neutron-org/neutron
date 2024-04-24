@@ -88,6 +88,7 @@ func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := icak.RegisterInterchainAccount(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -357,6 +358,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := icak.SubmitTx(ctx, &tt.msg)
 			require.ErrorIs(t, err, tt.expectedErr)
@@ -506,6 +508,7 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := icak.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
