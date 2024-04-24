@@ -13,7 +13,7 @@ import (
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
-
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
