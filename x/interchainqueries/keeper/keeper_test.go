@@ -181,7 +181,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	originalTXQuery := iqtypes.MsgRegisterInterchainQuery{
 		QueryType:          string(iqtypes.InterchainQueryTypeTX),
 		Keys:               nil,
-		TransactionsFilter: "someFilter",
+		TransactionsFilter: "[]",
 		ConnectionId:       suite.Path.EndpointA.ConnectionID,
 		UpdatePeriod:       1,
 		Sender:             "",
@@ -260,14 +260,14 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:               1,
 					NewUpdatePeriod:       0,
-					NewTransactionsFilter: "newFilter",
+					NewTransactionsFilter: "[]",
 					Sender:                sender,
 				}
 			},
 			nil,
 			originalTXQuery.UpdatePeriod,
 			nil,
-			"newFilter",
+			"[]",
 			originalTXQuery,
 		},
 		{
@@ -281,9 +281,8 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 							Key:  []byte("newdata"),
 						},
 					},
-					NewTransactionsFilter: "newFilter",
-					NewUpdatePeriod:       2,
-					Sender:                sender,
+					NewUpdatePeriod: 2,
+					Sender:          sender,
 				}
 			},
 			nil,
@@ -301,22 +300,16 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 			"valid tx query both tx filter and update period and ignore query keys",
 			func(sender string) {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
-					QueryId: 1,
-					NewKeys: []*iqtypes.KVKey{
-						{
-							Path: "newpath",
-							Key:  []byte("newdata"),
-						},
-					},
+					QueryId:               1,
 					NewUpdatePeriod:       2,
-					NewTransactionsFilter: "newFilter",
+					NewTransactionsFilter: "[]",
 					Sender:                sender,
 				}
 			},
 			nil,
 			2,
 			nil,
-			"newFilter",
+			"[]",
 			originalTXQuery,
 		},
 		{
@@ -325,7 +318,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:               1,
 					NewUpdatePeriod:       2,
-					NewTransactionsFilter: "newFilter",
+					NewTransactionsFilter: "[]",
 					Sender:                sender,
 				}
 			},
@@ -404,7 +397,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 
 	for i, tt := range tests {
 		tt := tt
-		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i+1, len(tests)), func() {
 			suite.SetupTest()
 
 			var (
@@ -475,7 +468,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				query = iqtypes.MsgRegisterInterchainQuery{
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					Keys:               nil,
-					TransactionsFilter: "",
+					TransactionsFilter: "[]",
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					UpdatePeriod:       1,
 					Sender:             "",
@@ -497,7 +490,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				query = iqtypes.MsgRegisterInterchainQuery{
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					Keys:               nil,
-					TransactionsFilter: "",
+					TransactionsFilter: "[]",
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					UpdatePeriod:       1,
 					Sender:             "",
@@ -521,7 +514,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				}
 				query = iqtypes.MsgRegisterInterchainQuery{
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
-					Keys:               nil,
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 					TransactionsFilter: "",
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					UpdatePeriod:       1,
@@ -539,7 +532,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				}
 				query = iqtypes.MsgRegisterInterchainQuery{
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
-					Keys:               nil,
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 					TransactionsFilter: "",
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					UpdatePeriod:       1,
@@ -564,7 +557,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				}
 				query = iqtypes.MsgRegisterInterchainQuery{
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
-					Keys:               nil,
+					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 					TransactionsFilter: "",
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					UpdatePeriod:       1,
@@ -576,7 +569,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	}
 
 	for i, tt := range tests {
-		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i+1, len(tests)), func() {
 			suite.SetupTest()
 
 			var (
@@ -736,7 +729,7 @@ func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
 	}
 
 	for i, tt := range tests {
-		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i+1, len(tests)), func() {
 			suite.SetupTest()
 
 			ctx := suite.ChainA.GetContext()
@@ -907,11 +900,12 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 				registerMsg := iqtypes.MsgRegisterInterchainQuery{
-					ConnectionId: suite.Path.EndpointA.ConnectionID,
-					Keys:         nil,
-					QueryType:    string(iqtypes.InterchainQueryTypeTX),
-					UpdatePeriod: 1,
-					Sender:       sender,
+					ConnectionId:       suite.Path.EndpointA.ConnectionID,
+					Keys:               nil,
+					TransactionsFilter: "[]",
+					QueryType:          string(iqtypes.InterchainQueryTypeTX),
+					UpdatePeriod:       1,
+					Sender:             sender,
 				}
 
 				msgSrv := keeper.NewMsgServerImpl(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper)
@@ -1428,7 +1422,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 
 	for i, tc := range tests {
 		tt := tc
-		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i+1, len(tests)), func() {
 			suite.SetupTest()
 
 			var (
@@ -1724,7 +1718,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 
 	resRegister, err := msgSrv.RegisterInterchainQuery(ctx, &iqtypes.MsgRegisterInterchainQuery{
 		QueryType:          string(iqtypes.InterchainQueryTypeKV),
-		Keys:               nil,
+		Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 		TransactionsFilter: "",
 		ConnectionId:       suite.Path.EndpointA.ConnectionID,
 		UpdatePeriod:       1,

@@ -263,10 +263,6 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, error) {
 	ibcTransferMsg.Sender = contractAddr.String()
 
-	if err := ibcTransferMsg.ValidateBasic(); err != nil {
-		return nil, nil, errors.Wrap(err, "failed to validate ibcTransferMsg")
-	}
-
 	response, err := m.transferKeeper.Transfer(ctx, &ibcTransferMsg)
 	if err != nil {
 		ctx.Logger().Debug("transferServer.Transfer: failed to transfer",
@@ -331,10 +327,6 @@ func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contract
 		Sender:                contractAddr.String(),
 	}
 
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate incoming UpdateInterchainQuery message")
-	}
-
 	response, err := m.Icqmsgserver.UpdateInterchainQuery(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update interchain query")
@@ -375,10 +367,6 @@ func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contract
 	msg := icqtypes.MsgRemoveInterchainQueryRequest{
 		QueryId: updateQuery.QueryId,
 		Sender:  contractAddr.String(),
-	}
-
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate incoming RemoveInterchainQuery message")
 	}
 
 	response, err := m.Icqmsgserver.RemoveInterchainQuery(ctx, &msg)
@@ -593,10 +581,6 @@ func PerformCreateDenom(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractA
 
 	msgCreateDenom := tokenfactorytypes.NewMsgCreateDenom(contractAddr.String(), createDenom.Subdenom)
 
-	if err := msgCreateDenom.ValidateBasic(); err != nil {
-		return errors.Wrap(err, "failed validating MsgCreateDenom")
-	}
-
 	// Create denom
 	_, err := msgServer.CreateDenom(
 		ctx,
@@ -623,10 +607,6 @@ func PerformForceTransfer(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contrac
 
 	msgForceTransfer := tokenfactorytypes.NewMsgForceTransfer(contractAddr.String(), sdk.NewInt64Coin(forceTransfer.Denom, forceTransfer.Amount.Int64()), forceTransfer.TransferFromAddress, forceTransfer.TransferToAddress)
 
-	if err := msgForceTransfer.ValidateBasic(); err != nil {
-		return errors.Wrap(err, "failed validating MsgForceTransfer")
-	}
-
 	// Force Transfer
 	_, err := msgServer.ForceTransfer(
 		ctx,
@@ -652,10 +632,6 @@ func PerformSetDenomMetadata(f *tokenfactorykeeper.Keeper, ctx sdk.Context, cont
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
 
 	msgSetDenomMetadata := tokenfactorytypes.NewMsgSetDenomMetadata(contractAddr.String(), setDenomMetadata.Metadata)
-
-	if err := msgSetDenomMetadata.ValidateBasic(); err != nil {
-		return errors.Wrap(err, "failed validating MsgSetDenomMetadata")
-	}
 
 	// Set denom metadata
 	_, err := msgServer.SetDenomMetadata(
@@ -695,9 +671,6 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 
 	coin := sdk.Coin{Denom: mint.Denom, Amount: mint.Amount}
 	sdkMsg := tokenfactorytypes.NewMsgMint(contractAddr.String(), coin)
-	if err = sdkMsg.ValidateBasic(); err != nil {
-		return err
-	}
 
 	// Mint through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
@@ -716,9 +689,6 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 
 func PerformSetBeforeSendHook(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSendHook) error {
 	sdkMsg := tokenfactorytypes.NewMsgSetBeforeSendHook(contractAddr.String(), set.Denom, set.ContractAddr)
-	if err := sdkMsg.ValidateBasic(); err != nil {
-		return err
-	}
 
 	// SetBeforeSendHook through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
@@ -748,9 +718,6 @@ func ChangeAdmin(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 	}
 
 	changeAdminMsg := tokenfactorytypes.NewMsgChangeAdmin(contractAddr.String(), changeAdmin.Denom, newAdminAddr.String())
-	if err := changeAdminMsg.ValidateBasic(); err != nil {
-		return err
-	}
 
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
 	_, err = msgServer.ChangeAdmin(ctx, changeAdminMsg)
@@ -778,9 +745,6 @@ func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 
 	coin := sdk.Coin{Denom: burn.Denom, Amount: burn.Amount}
 	sdkMsg := tokenfactorytypes.NewMsgBurn(contractAddr.String(), coin)
-	if err := sdkMsg.ValidateBasic(); err != nil {
-		return err
-	}
 
 	// Burn through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
@@ -838,10 +802,6 @@ func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		})
 	}
 
-	if err := tx.ValidateBasic(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate incoming SubmitTx message")
-	}
-
 	response, err := m.Ictxmsgserver.SubmitTx(ctx, &tx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit interchain transaction")
@@ -887,9 +847,6 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
 		RegisterFee:         getRegisterFee(reg.RegisterFee),
-	}
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")
 	}
 
 	response, err := m.Ictxmsgserver.RegisterInterchainAccount(ctx, &msg)
@@ -948,9 +905,6 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 		ConnectionId:       reg.ConnectionId,
 		UpdatePeriod:       reg.UpdatePeriod,
 		Sender:             contractAddr.String(),
-	}
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainQuery message")
 	}
 
 	response, err := m.Icqmsgserver.RegisterInterchainQuery(ctx, &msg)

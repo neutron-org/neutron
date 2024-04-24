@@ -11,14 +11,14 @@ func (s *DexTestSuite) TestDepositMultiCompleteFailure() {
 	// no existing liquidity
 
 	// WHEN
-	// alice deposits 0 A, 5 B at tick 0 fee 0 and 5 A, 0 B at tick 0 fee 0
+	// alice deposits 0 A, 5 B at tick 0 fee 1 and 5 A, 0 B at tick 0 fee 1
 	// THEN
 	// second deposit's ratio is different than pool after the first, so amounts will be rounded to 0,0 and tx will fail
 
 	err := types.ErrZeroTrueDeposit
+	s.aliceDeposits(NewDeposit(5, 0, 0, 1))
 	s.assertAliceDepositFails(
 		err,
-		NewDeposit(5, 0, 0, 1),
 		NewDeposit(0, 5, 0, 1),
 	)
 }
@@ -30,7 +30,7 @@ func (s *DexTestSuite) TestDepositMultiSuccess() {
 	// no existing liquidity
 
 	// WHEN
-	// alice deposits 5 A, 5 B at tick 0 fee 0 and then 10 A, 10 B at tick 5 fee 0
+	// alice deposits 5 A, 5 B at tick 0 fee 1 and then 10 A, 10 B at tick 5 fee 0
 	s.aliceDeposits(
 		NewDeposit(5, 5, 0, 1),
 		NewDeposit(10, 10, 5, 0),

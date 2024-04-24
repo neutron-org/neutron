@@ -21,6 +21,8 @@ import (
 	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
 )
 
+var _ types.MsgServer = msgServer{}
+
 type msgServer struct {
 	Keeper
 }
@@ -33,6 +35,10 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQuery) (*types.MsgRegisterInterchainQueryResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgRegisterInterchainQuery")
+	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("RegisterInterchainQuery", "msg", msg)
@@ -89,6 +95,10 @@ func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 }
 
 func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRemoveInterchainQueryRequest) (*types.MsgRemoveInterchainQueryResponse, error) {
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgRemoveInterchainQueryRequest")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("RemoveInterchainQuery", "msg", msg)
 
@@ -112,6 +122,10 @@ func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 }
 
 func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUpdateInterchainQueryRequest) (*types.MsgUpdateInterchainQueryResponse, error) {
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateInterchainQueryRequest")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("UpdateInterchainQuery", "msg", msg)
 
@@ -155,6 +169,10 @@ func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 
 func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResult) (*types.MsgSubmitQueryResultResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgSubmitQueryResult")
+	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("SubmitQueryResult", "query_id", msg.QueryId)
@@ -312,8 +330,9 @@ func (m msgServer) validateUpdateInterchainQueryParams(
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	if err := req.ValidateBasic(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
+
 	authority := k.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
@@ -358,5 +377,3 @@ func getEventsQueryRemoved(query *types.RegisteredQuery) sdk.Events {
 		),
 	}
 }
-
-var _ types.MsgServer = msgServer{}

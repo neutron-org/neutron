@@ -25,8 +25,9 @@ var _ types.MsgServer = msgServer{}
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	if err := req.ValidateBasic(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
+
 	authority := k.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
