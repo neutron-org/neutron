@@ -39,6 +39,7 @@ func TokenFactoryKeeper(
 	k := keeper.NewKeeper(
 		cdc,
 		storeKey,
+		nil,
 		accountKeeper,
 		bankKeeper,
 		contractKeeper,
