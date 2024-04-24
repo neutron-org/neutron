@@ -125,7 +125,7 @@ func (k Keeper) DepositCore(
 }
 
 // Handles core logic for MsgWithdrawal; calculating and withdrawing reserve0,reserve1 from a specified tick
-// given a specfied number of shares to remove.
+// given a specified number of shares to remove.
 // Calculates the amount of reserve0, reserve1 to withdraw based on the percentage of the desired
 // number of shares to remove compared to the total number of shares at the given tick.
 func (k Keeper) WithdrawCore(
