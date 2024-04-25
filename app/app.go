@@ -848,7 +848,7 @@ func New(
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
-		// globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
+		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
 		swapModule,
 		dexModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
@@ -961,7 +961,7 @@ func New(
 		ibchookstypes.ModuleName, // after auth keeper
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
-		// globalfee.ModuleName,
+		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 	)

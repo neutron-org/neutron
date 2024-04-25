@@ -29,7 +29,7 @@ func CmdListUserLimitOrders() *cobra.Command {
 				return err
 			}
 
-			params := &types.QueryAllUserLimitOrdersRequest{
+			params := &types.QueryAllLimitOrderTrancheUserByAddressRequest{
 				Address:    reqAddress,
 				Pagination: pageReq,
 			}
