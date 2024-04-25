@@ -27,6 +27,7 @@ service Msg {
 message MsgRegisterInterchainAccount {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "from_address";
 
   string from_address = 1;
   string connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
@@ -50,6 +51,7 @@ message MsgRegisterInterchainAccountResponse {
 message MsgSubmitTx {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "from_address";
 
   string from_address = 1;
   // interchain_account_id is supposed to be the unique identifier, e.g.,

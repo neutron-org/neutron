@@ -33,13 +33,13 @@ service Query {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche_user/{address}/{tranche_key}";
   }
 
-  // Queries a list of LimitOrderTrancheMap items.
+  // Queries a list of LimitOrderTranchUser items.
   rpc LimitOrderTrancheUserAll(QueryAllLimitOrderTrancheUserRequest) returns (QueryAllLimitOrderTrancheUserResponse) {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche_user";
   }
 
   // Queries a list of LimitOrderTrancheUser items for a given address.
-  rpc LimitOrderTrancheUserAllByAddress(QueryAllUserLimitOrdersRequest) returns (QueryAllUserLimitOrdersResponse) {
+  rpc LimitOrderTrancheUserAllByAddress(QueryAllLimitOrderTrancheUserByAddressRequest) returns (QueryAllLimitOrderTrancheUserByAddressResponse) {
     option (google.api.http).get = "/neutron/dex/user/limit_orders/{address}";
   }
 
@@ -69,13 +69,13 @@ service Query {
   // Queries a InactiveLimitOrderTranche by index.
   rpc InactiveLimitOrderTranche(QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
     option (google.api.http).get =
-      "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/"
+      "/neutron/dex/inactive_limit_order_tranche/{pair_id}/{token_in}/"
       "{tick_index}/{tranche_key}";
   }
 
   // Queries a list of InactiveLimitOrderTranche items.
   rpc InactiveLimitOrderTrancheAll(QueryAllInactiveLimitOrderTrancheRequest) returns (QueryAllInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche";
+    option (google.api.http).get = "/neutron/dex/inactive_limit_order_tranche";
   }
 
   // Queries a list of PoolReserves items.
@@ -188,12 +188,12 @@ message QueryAllUserDepositsResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-message QueryAllUserLimitOrdersRequest {
+message QueryAllLimitOrderTrancheUserByAddressRequest {
   string address = 1;
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
-message QueryAllUserLimitOrdersResponse {
+message QueryAllLimitOrderTrancheUserByAddressResponse {
   repeated LimitOrderTrancheUser limit_orders = 1 [(gogoproto.nullable) = true];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

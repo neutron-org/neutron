@@ -224,7 +224,7 @@ type DexQuery struct {
 	// Queries a list of LimitOrderTrancheUser items.
 	LimitOrderTrancheUserAll *dextypes.QueryAllLimitOrderTrancheUserRequest `json:"limit_order_tranche_user_all"`
 	// Queries a list of LimitOrderTrancheUser items for a given address.
-	LimitOrderTrancheUserAllByAddress *dextypes.QueryAllUserLimitOrdersRequest `json:"limit_order_tranche_user_all_by_address"`
+	LimitOrderTrancheUserAllByAddress *dextypes.QueryAllLimitOrderTrancheUserByAddressRequest `json:"limit_order_tranche_user_all_by_address"`
 	// Queries a LimitOrderTranche by index.
 	LimitOrderTranche *dextypes.QueryGetLimitOrderTrancheRequest `json:"limit_order_tranche"`
 	// Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination.

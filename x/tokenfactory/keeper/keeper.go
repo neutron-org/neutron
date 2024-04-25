@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -17,6 +18,7 @@ import (
 type (
 	Keeper struct {
 		storeKey       storetypes.StoreKey
+		permAddrs      map[string]authtypes.PermissionsForAddress
 		cdc            codec.Codec
 		accountKeeper  types.AccountKeeper
 		bankKeeper     types.BankKeeper
@@ -29,14 +31,21 @@ type (
 func NewKeeper(
 	cdc codec.Codec,
 	storeKey storetypes.StoreKey,
+	maccPerms map[string][]string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	contractKeeper types.ContractKeeper,
 	authority string,
 ) Keeper {
+	permAddrs := make(map[string]authtypes.PermissionsForAddress)
+	for name, perms := range maccPerms {
+		permAddrs[name] = authtypes.NewPermissionsForAddress(name, perms)
+	}
+
 	return Keeper{
 		cdc:            cdc,
 		storeKey:       storeKey,
+		permAddrs:      permAddrs,
 		accountKeeper:  accountKeeper,
 		bankKeeper:     bankKeeper,
 		contractKeeper: contractKeeper,
