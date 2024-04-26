@@ -39,7 +39,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.18.0
 	github.com/rs/zerolog v1.32.0
-	github.com/skip-mev/block-sdk v1.4.0
 	github.com/skip-mev/block-sdk/v2 v2.1.1
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
@@ -219,8 +218,11 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240304172302-564e5d10417a
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240226131019-8efae68de5cc
-	github.com/cosmos/interchain-security/v5 => github.com/neutron-org/interchain-security/v5 v5.0.0-20240319145305-bf0abfba3230
-	//github.com/cosmos/ibc-go/v8 => ../ibc-go
+	//github.com/cosmos/interchain-security/v5 => ../interchain-security/
+
+	github.com/cosmos/ibc-go/v8 => github.com/neutron-org/ibc-go/v8 v8.0.0-20240426121545-07ba6daa00ad
+	// wasm client reasy intecrahin security
+	github.com/cosmos/interchain-security/v5 => github.com/neutron-org/interchain-security/v5 v5.0.0-20240426121725-019165e45fd9
 	//github.com/cosmos/gaia/v11 => github.com/reecepbcups/globalfee v0.0.1-alpha.2
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7

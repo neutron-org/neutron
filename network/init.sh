@@ -22,11 +22,11 @@ DEMO_MNEMONIC_3="obscure canal because tomorrow tribe sibling describe satoshi k
 RLY_MNEMONIC_1="alley afraid soup fall idea toss can goose become valve initial strong forward bright dish figure check leopard decide warfare hub unusual join cart"
 RLY_MNEMONIC_2="record gift you once hip style during joke field prize dust unique length more pencil transfer quit train device arrive energy sort steak upset"
 
-# Stop if it is already running
-if pgrep -x "$BINARY" >/dev/null; then
-    echo "Terminating $BINARY..."
-    killall "$BINARY"
-fi
+## Stop if it is already running
+#if pgrep -x "$BINARY" >/dev/null; then
+#    echo "Terminating $BINARY..."
+#    killall "$BINARY"
+#fi
 
 echo "Removing previous data..."
 rm -rf "$CHAIN_DIR" &> /dev/null
@@ -63,7 +63,7 @@ $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys 
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show rly1 --keyring-backend test -a --home "$CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$CHAIN_DIR" keys show rly2 --keyring-backend test -a --home "$CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$CHAIN_DIR"
 
-
+sed -i -e 's/max_body_bytes = 1000000/max_body_bytes = 10000000/g' "$CHAIN_DIR/config/config.toml"
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "1s"/g' "$CHAIN_DIR/config/config.toml"
 sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' "$CHAIN_DIR/config/config.toml"
 sed -i -e 's/index_all_keys = false/index_all_keys = true/g' "$CHAIN_DIR/config/config.toml"

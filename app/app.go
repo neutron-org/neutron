@@ -785,7 +785,8 @@ func New(
 		appCodec,
 		runtime.NewKVStoreService(keys[ibcwasmtypes.StoreKey]),
 		app.IBCKeeper.ClientKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		//authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		"neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2", // demowallet1, for test purposes
 		wasmer, // pass the Wasm VM instance to `08-wasm` keeper constructor
 		app.GRPCQueryRouter(),
 	)
@@ -882,6 +883,7 @@ func New(
 		swapModule,
 		dexModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
+		ibcwasm.NewAppModule(app.WasmClientKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -920,6 +922,7 @@ func New(
 		crontypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
+		ibcwasmtypes.ModuleName,
 		dextypes.ModuleName,
 	)
 
@@ -953,6 +956,7 @@ func New(
 		crontypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
+		ibcwasmtypes.ModuleName,
 		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
 		// dexmodule must be the last endBlock module to run
 		dextypes.ModuleName,
@@ -993,6 +997,7 @@ func New(
 		crontypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
+		ibcwasmtypes.ModuleName,
 		dextypes.ModuleName,
 	)
 
