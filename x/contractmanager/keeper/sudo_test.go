@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/app/config"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app"
 	"github.com/neutron-org/neutron/v3/testutil"
 	keepertest "github.com/neutron-org/neutron/v3/testutil/contractmanager/keeper"
 	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/contractmanager/types"
@@ -17,7 +18,7 @@ import (
 )
 
 func init() {
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
 }
 
 func TestSudoTxQueryResult(t *testing.T) {

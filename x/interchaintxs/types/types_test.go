@@ -3,9 +3,10 @@ package types_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/app/config"
+
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app"
 	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
 
@@ -20,7 +21,7 @@ func TestICAOwner(t *testing.T) {
 		interchainAccountID string
 	)
 
-	cfg := app.GetDefaultConfig()
+	cfg := config.GetDefaultConfig()
 	cfg.Seal()
 
 	for _, tc := range []struct {

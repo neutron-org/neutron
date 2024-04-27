@@ -3,13 +3,14 @@ package types_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/app/config"
+
 	"cosmossdk.io/math"
 	cosmosTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app"
 	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
 )
@@ -17,7 +18,7 @@ import (
 const TestAddress = "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
 
 func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	tests := []struct {
 		name        string

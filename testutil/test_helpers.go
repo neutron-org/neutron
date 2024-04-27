@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/neutron-org/neutron/v3/app/config"
+
 	"cosmossdk.io/log"
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
 	db2 "github.com/cosmos/cosmos-db"
@@ -62,7 +64,10 @@ var (
 
 func init() {
 	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
+	// Disable cache since enabled cache triggers test errors when `AccAddress.String()`
+	// gets called before setting neutron bech32 prefix
+	sdk.SetAddrCacheEnabled(false)
 }
 
 type IBCConnectionTestSuite struct {
@@ -284,7 +289,7 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 	sdk.SetAddrCacheEnabled(false)
 	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chainID = ibctesting.GetChainID(2)
@@ -424,6 +429,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 
 		genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
 
+		// TODO: why isn't it in the `testApp.TestInitChainer`?
 		// NOTE ibc-go/v7/testing.SetupWithGenesisValSet requires a staking module
 		// genesisState or it panics. Feed a minimum one.
 		genesisState[stakingtypes.ModuleName] = encoding.Marshaler.MustMarshalJSON(

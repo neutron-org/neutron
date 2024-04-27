@@ -14,6 +14,10 @@ RPCPORT=${RPCPORT:-26657}
 RESTPORT=${RESTPORT:-1317}
 ROSETTA=${ROSETTA:-8081}
 
+ORACLE_ADDRESS=${ORACLE_ADDRESS:-localhost:8080}
+ORACLE_METRICS_ENABLED=${ORACLE_METRICS_ENABLED:-true}
+ORACLE_CLIENT_TIMEOUT=${ORACLE_CLIENT_TIMEOUT:-500ms}
+
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
 DEMO_MNEMONIC_1="banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
@@ -78,6 +82,17 @@ sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:'"$RPCPORT"'"#g' "$CHAIN_DIR
 sed -i -e 's#"tcp://localhost:1317"#"tcp://0.0.0.0:'"$RESTPORT"'"#g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's#"tcp://0.0.0.0:1317"#"tcp://0.0.0.0:'"$RESTPORT"'"#g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's#":8080"#":'"$ROSETTA_1"'"#g' "$CHAIN_DIR/config/app.toml"
+
+# NOTE: we provide prometheus_server_address but it does not matter, since we don't use it, just need non-empty value
+cat <<EOF >> "$CHAIN_DIR/config/app.toml"
+
+[oracle]
+enabled = true
+oracle_address = "$ORACLE_ADDRESS"
+client_timeout = "$ORACLE_CLIENT_TIMEOUT"
+metrics_enabled = $ORACLE_METRICS_ENABLED
+prometheus_server_address = "localhost:12912"
+EOF
 
 GENESIS_FILE="$CHAIN_DIR/config/genesis.json"
 

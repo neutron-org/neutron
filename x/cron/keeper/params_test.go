@@ -3,9 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v3/app/config"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/testutil"
 
 	testkeeper "github.com/neutron-org/neutron/v3/testutil/cron/keeper"
 
@@ -15,7 +15,7 @@ import (
 )
 
 func TestGetParams(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	k, ctx := testkeeper.CronKeeper(t, nil, nil)
 	params := types.Params{

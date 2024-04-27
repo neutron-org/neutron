@@ -3,14 +3,15 @@ package types_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/app/config"
+
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app"
 	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func TestDecomposeDenoms(t *testing.T) {
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
 	for _, tc := range []struct {
 		desc  string
 		denom string

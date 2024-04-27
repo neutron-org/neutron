@@ -3,8 +3,9 @@ package app_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v3/app/config"
+
 	cmttypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/require"
@@ -21,8 +22,7 @@ func TestConsumerWhitelistingKeys(t *testing.T) {
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
-	_ = app.GetDefaultConfig()
-	types.SetAddrCacheEnabled(false)
+	_ = config.GetDefaultConfig()
 	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chain := ibctesting.NewTestChain(t, coordinator, "test")
 
