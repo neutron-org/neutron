@@ -190,7 +190,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 
-	//WHEN there are too many JIT limit orders to cancel within the GoodTilPurgeAllowance
+	// WHEN there are too many JIT limit orders to cancel within the GoodTilPurgeAllowance
 	keeper.PurgeExpiredLimitOrders(ctx, now, gasRequiredToPurgeOneLO*2)
 
 	// THEN all JIT expirations are still purged
@@ -199,5 +199,4 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 
 	// AND GoodTilPurgeHitGasLimit event is not been emitted
 	s.AssertEventValueNotEmitted(types.GoodTilPurgeHitGasLimitEventGas, "Hit gas limit purging JIT expirations")
-
 }

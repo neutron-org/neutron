@@ -22,6 +22,7 @@ import (
 func DexKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
+	tStoreKey := storetypes.NewTransientStoreKey(types.TStoreKey)
 
 	db := cmdb.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db)
@@ -36,6 +37,7 @@ func DexKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		cdc,
 		storeKey,
 		memStoreKey,
+		tStoreKey,
 		nil,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)

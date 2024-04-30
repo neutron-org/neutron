@@ -109,7 +109,7 @@ func (s *KeeperTestHelper) Commit() {
 	oldHeader := s.Ctx.BlockHeader()
 	s.App.Commit()
 	newHeader := tmtypes.Header{
-		Height:  oldHeight + 1,
+		Height:  oldHeight + 2,
 		ChainID: oldHeader.ChainID,
 		Time:    oldHeader.Time.Add(time.Minute),
 	}

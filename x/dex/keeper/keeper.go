@@ -17,6 +17,7 @@ type (
 		cdc        codec.BinaryCodec
 		storeKey   storetypes.StoreKey
 		memKey     storetypes.StoreKey
+		tKey       storetypes.StoreKey
 		bankKeeper types.BankKeeper
 		authority  string
 	}
@@ -26,6 +27,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
+	tKey storetypes.StoreKey,
 	bankKeeper types.BankKeeper,
 	authority string,
 ) *Keeper {
@@ -33,6 +35,7 @@ func NewKeeper(
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
+		tKey:       tKey,
 		bankKeeper: bankKeeper,
 		authority:  authority,
 	}

@@ -602,6 +602,22 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {
 	s.assertAliceBalances(10, 0)
 }
 
+func (s *DexTestSuite) TestPlaceLimitOrderJITTooManyFails() {
+	s.fundAliceBalances(100, 0)
+
+	// GIVEN Alice places JITS up to the MaxJITPerBlock limit
+	for i := 0; i < int(types.DefaultMaxJITsPerBlock); i++ {
+		s.aliceLimitSells("TokenA", i, 1, types.LimitOrderType_JUST_IN_TIME)
+	}
+	// WHEN Alive places another JIT order it fails
+
+	s.assertAliceLimitSellFails(types.ErrOverJITPerBlockLimit, "TokenA", 0, 1, types.LimitOrderType_JUST_IN_TIME)
+
+	// WHEN we move to next block alice can place more JITS
+	s.Commit()
+	s.aliceLimitSells("TokenA", 0, 1, types.LimitOrderType_JUST_IN_TIME)
+}
+
 // GoodTilLimitOrders //////////////////////////////////////////////////
 
 func (s *DexTestSuite) TestPlaceLimitOrderGoodTilFills() {

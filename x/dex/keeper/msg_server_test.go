@@ -1580,6 +1580,7 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
 	s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
 		Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
-		Time: blockTime,
+		Time:    blockTime,
+		ChainID: s.App.ChainID(),
 	}})
 }

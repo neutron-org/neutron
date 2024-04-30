@@ -74,6 +74,21 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 	return nil
 }
 
+func (k Keeper) GetMaxJITsPerBlock(ctx sdk.Context) uint64 {
+	return k.GetParams(ctx).Max_JITsPerBlock
+}
+
+func (k Keeper) AssertCanPlaceJIT(ctx sdk.Context) error {
+	maxJITsAllowed := k.GetMaxJITsPerBlock(ctx)
+	JITsInBlock := k.GetJITsInBlockCount(ctx)
+
+	if JITsInBlock == maxJITsAllowed {
+		return types.ErrOverJITPerBlockLimit
+	}
+
+	return nil
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                            TOKENIZER UTILS                                //
 ///////////////////////////////////////////////////////////////////////////////

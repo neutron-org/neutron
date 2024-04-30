@@ -24,6 +24,9 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_dex"
+
+	// TStoreKey defines the transient store key
+	TStoreKey = "transient_dex"
 )
 
 const (
@@ -50,6 +53,9 @@ const (
 
 	// ParamsKey is the prefix to retrieve params
 	ParamsKey = "Params/value/"
+
+	// JITPerBlock is the key to retrieve the number of JIT limit orders place in a single block
+	JITsInBlockKey = "JITsInBlock/count/"
 )
 
 func KeyPrefix(p string) []byte {
