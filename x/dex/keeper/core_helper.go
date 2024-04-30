@@ -76,8 +76,7 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 }
 
 func (k Keeper) IsBehindEnemyLines(ctx sdk.Context, tradePairID *types.TradePairID, tickIndex int64) bool {
-	opTradePairId := tradePairID.Reversed()
-	oppositeTick, found := k.GetCurrTickIndexTakerToMaker(ctx, opTradePairId)
+	oppositeTick, found := k.GetCurrTickIndexTakerToMaker(ctx, tradePairID.Reversed())
 
 	if found && tickIndex*-1 > oppositeTick {
 		return true
