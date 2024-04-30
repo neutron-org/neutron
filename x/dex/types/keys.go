@@ -293,9 +293,6 @@ func JITGoodTilTime() time.Time {
 }
 
 const (
-	// NOTE: This number is based current cost of all operations in EndBlock,
-	// if that changes this value must be updated to ensure there is enough
-	// remaining gas (weak proxy for timeoutPrepareProposal) to complete endBlock
-	GoodTilPurgeGasBuffer = 50_000
+	GoodTilPurgeAllowance = 50_000
 	ExpiringLimitOrderGas = 10_000
 )

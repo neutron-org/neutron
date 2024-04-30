@@ -908,8 +908,6 @@ func New(
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
-		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
-		// dexmodule must be the last endBlock module to run
 		dextypes.ModuleName,
 	)
 

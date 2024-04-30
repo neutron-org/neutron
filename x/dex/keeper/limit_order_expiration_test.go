@@ -11,6 +11,8 @@ import (
 	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
+const gasRequiredToPurgeOneLO uint64 = 9_000
+
 func createNLimitOrderExpiration(
 	keeper *keeper.Keeper,
 	ctx sdk.Context,
@@ -117,7 +119,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	}
 
 	createLimitOrderExpirationAndTranches(&keeper, s.Ctx, expTimes)
-	keeper.PurgeExpiredLimitOrders(s.Ctx, now)
+	keeper.PurgeExpiredLimitOrders(s.Ctx, now, types.GoodTilPurgeAllowance)
 
 	// Only future LimitOrderExpiration items still exist
 	expList := keeper.GetAllLimitOrderExpiration(s.Ctx)
@@ -143,10 +145,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
-	gasLimit := 1000000
-	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimit)))
-	timeRequiredToPurgeOneNonJIT := 35000
-	gasUsed := gasLimit - types.GoodTilPurgeGasBuffer - timeRequiredToPurgeOneNonJIT
+	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
 
 	yesterday := now.AddDate(0, 0, -1)
 
@@ -159,12 +158,8 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	}
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 
-	// IF blockGasMeter is nearing the GoodTilPurgeBuffer
-	ctx = ctx.WithGasMeter(sdk.NewGasMeter(uint64(gasLimit)))
-	ctx.BlockGasMeter().ConsumeGas(uint64(gasUsed), "stub block gas usage")
-
-	// WHEN PurgeExpiredLimitOrders is run
-	keeper.PurgeExpiredLimitOrders(ctx, now)
+	// WHEN PurgeExpiredLimitOrders is run with a gas limit only big enough to purge 4 LOs
+	keeper.PurgeExpiredLimitOrders(ctx, now, 4*gasRequiredToPurgeOneLO)
 
 	// THEN GoodTilPurgeHitGasLimit event is emitted
 	s.AssertEventEmitted(ctx, types.EventTypeGoodTilPurgeHitGasLimit, 1)
@@ -181,9 +176,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
-	gasLimt := 1000000
-	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimt)))
-	gasUsed := gasLimt - types.GoodTilPurgeGasBuffer - 30000
+	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
 
 	expTimes := []time.Time{
 		types.JITGoodTilTime(),
@@ -196,14 +189,15 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	}
 
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
-	ctx = ctx.WithGasMeter(sdk.NewGasMeter(100000))
-	ctx.BlockGasMeter().ConsumeGas(uint64(gasUsed), "stub block gas usage")
-	keeper.PurgeExpiredLimitOrders(ctx, now)
 
-	// GoodTilPurgeHitGasLimit event is not been emitted
-	s.AssertEventValueNotEmitted(types.GoodTilPurgeHitGasLimitEventGas, "Hit gas limit purging JIT expirations")
+	//WHEN there are too many JIT limit orders to cancel within the GoodTilPurgeAllowance
+	keeper.PurgeExpiredLimitOrders(ctx, now, gasRequiredToPurgeOneLO*2)
 
-	// All JIT expirations are purged
+	// THEN all JIT expirations are still purged
 	expList := keeper.GetAllLimitOrderExpiration(ctx)
 	s.Equal(0, len(expList))
+
+	// AND GoodTilPurgeHitGasLimit event is not been emitted
+	s.AssertEventValueNotEmitted(types.GoodTilPurgeHitGasLimitEventGas, "Hit gas limit purging JIT expirations")
+
 }

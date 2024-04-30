@@ -5,7 +5,6 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	abci "github.com/cometbft/cometbft/abci/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/neutron-org/neutron/v3/x/dex/types"
@@ -594,7 +593,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {
 
 	// WHEN we move to block N+1
 	s.nextBlockWithTime(time.Now())
-	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	s.beginBlockWithTime(time.Now())
 
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
@@ -634,8 +633,8 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpires() {
 	s.assertAliceBalances(0, 0)
 
 	// When two days go by and multiple blocks are created (ie. purge is run)
-	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
-	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	s.beginBlockWithTime(time.Now().AddDate(0, 0, 2))
+
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
 	// Alice can withdraw the entirety of the unfilled limitOrder

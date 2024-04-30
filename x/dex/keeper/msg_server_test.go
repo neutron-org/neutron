@@ -1575,6 +1575,9 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 	newCtx := s.Ctx.WithBlockTime(blockTime)
 	s.Ctx = newCtx
 	s.GoCtx = sdk.WrapSDKContext(newCtx)
+}
+
+func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
 	s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
 		Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
 		Time: blockTime,
