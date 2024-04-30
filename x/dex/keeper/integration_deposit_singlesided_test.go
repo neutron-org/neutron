@@ -387,7 +387,6 @@ func (s *DexTestSuite) TestDepositSingleInvalidFeeFails() {
 }
 
 func (s *DexTestSuite) TestDepositSingleToken0BELFails() {
-
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN TokenB liquidity at tick 2002-2004
@@ -404,7 +403,6 @@ func (s *DexTestSuite) TestDepositSingleToken0BELFails() {
 }
 
 func (s *DexTestSuite) TestDepositSingleToken1BELFails() {
-
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN TokenA liquidity at tick 2002-2005
