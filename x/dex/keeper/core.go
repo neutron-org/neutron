@@ -539,7 +539,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		},
 	)
 
-	amountOutTokenOut := math_utils.ZeroPrecDec()
+	amountOutTokenOut := math.ZeroInt()
 	remainingTokenIn := math.ZeroInt()
 	// It's possible that a TrancheUser exists but tranche does not if LO was filled entirely through a swap
 	if found {
@@ -550,6 +550,10 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 			// This is only relevant for inactive JIT and GoodTil limit orders
 			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
 			k.SaveInactiveTranche(ctx, tranche)
+
+			// Treat the removed tokenIn as cancelled shares
+			trancheUser.SharesCancelled = trancheUser.SharesCancelled.Add(remainingTokenIn)
+
 		} else {
 			k.SetLimitOrderTranche(ctx, tranche)
 		}
@@ -560,7 +564,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	k.SaveTrancheUser(ctx, trancheUser)
 
 	if amountOutTokenOut.IsPositive() || remainingTokenIn.IsPositive() {
-		coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut.TruncateInt())
+		coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
 		coinMakerDenomRefund := sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 		coins := sdk.NewCoins(coinTakerDenomOut, coinMakerDenomRefund)
 		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
@@ -576,7 +580,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tradePairID.TakerDenom,
-		amountOutTokenOut.TruncateInt(),
+		amountOutTokenOut,
 		trancheKey,
 	))
 

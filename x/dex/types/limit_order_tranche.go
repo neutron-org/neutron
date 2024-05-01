@@ -129,19 +129,19 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	return amountToRemove
 }
 
-func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
+func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (sharesToWithdraw, tokenOut math.Int) {
 	ratioFilled := t.RatioFilled()
-	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned).TruncateInt()
-	amountOutTokenIn := maxAllowedToWithdraw.Sub(trancheUser.SharesWithdrawn)
-	amountOutTokenOut := math_utils.NewPrecDecFromInt(amountOutTokenIn).Quo(t.PriceTakerToMaker)
+	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned)
+	sharesToWithdrawDec := maxAllowedToWithdraw.Sub(math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn))
+	amountOutTokenOutDec := sharesToWithdrawDec.Quo(t.PriceTakerToMaker)
 
-	return amountOutTokenIn, amountOutTokenOut
+	// Round shares withdrawn up and amountOut down to ensure math favors dex
+	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec.TruncateInt()
 }
 
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn, tokenOut math.Int) {
 	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
-	reservesTokenOutDec := math_utils.NewPrecDecFromInt(t.ReservesTakerDenom)
-	t.ReservesTakerDenom = reservesTokenOutDec.Sub(amountOutTokenOut).TruncateInt()
+	t.ReservesTakerDenom = t.ReservesTakerDenom.Sub(amountOutTokenOut)
 
 	return amountOutTokenIn, amountOutTokenOut
 }
