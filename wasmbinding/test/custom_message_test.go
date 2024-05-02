@@ -24,7 +24,7 @@ import (
 	"github.com/neutron-org/neutron/v3/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmvm/types"
+	"github.com/CosmWasm/wasmvm/v2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -122,7 +122,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message via DispatchHandler cause we want to catch an error from SDK directly, not from a contract
-	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{ //nolint:dogsled
 		Custom: msg,
 	})
 	suite.Error(err)
@@ -617,7 +617,7 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
 	// Dispatch SubmitAdminProposal message
-	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg) //nolint:dogsled
 
 	suite.ErrorContains(err, "more than one admin proposal type is present in message")
 }
@@ -637,7 +637,7 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
 	// Dispatch SubmitAdminProposal message
-	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg) //nolint:dogsled
 
 	suite.ErrorContains(err, "no admin proposal type is present in message")
 }
