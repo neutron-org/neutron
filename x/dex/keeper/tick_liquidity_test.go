@@ -8,9 +8,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v3/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v3/x/dex/keeper"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v4/x/dex/keeper"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func CreateNTickLiquidity(keeper *keeper.Keeper, ctx sdk.Context, n int) []*types.TickLiquidity {

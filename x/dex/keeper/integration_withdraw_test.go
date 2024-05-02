@@ -5,7 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (s *DexTestSuite) TestPartialWithdrawOnlyA() {

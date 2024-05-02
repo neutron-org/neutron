@@ -5,8 +5,8 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades"
-	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
+	"github.com/neutron-org/neutron/v4/app/upgrades"
+	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 )
 
 const (

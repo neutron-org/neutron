@@ -16510,7 +16510,7 @@ definitions:
     type: object
   neutron.dex.QueryGetPoolMetadataResponse:
     properties:
-      Pool_metadata:
+      pool_metadata:
         properties:
           fee:
             format: uint64
@@ -21525,7 +21525,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v3
+  version: v4
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -39112,7 +39112,7 @@ paths:
           description: A successful response.
           schema:
             properties:
-              Pool_metadata:
+              pool_metadata:
                 properties:
                   fee:
                     format: uint64

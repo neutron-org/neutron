@@ -3,7 +3,7 @@ package types
 import (
 	sdkerrors "cosmossdk.io/errors"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 func NewTradePairID(takerDenom, makerDenom string) (*TradePairID, error) {

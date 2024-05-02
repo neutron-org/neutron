@@ -6,11 +6,11 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
+	"github.com/neutron-org/neutron/v4/app/upgrades/nextupgrade"
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v4/testutil"
 )
 
 type UpgradeTestSuite struct {

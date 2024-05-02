@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/app/config"
+	"github.com/neutron-org/neutron/v4/app/config"
 
 	"cosmossdk.io/math"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil/common/sample"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-	dextypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v4/testutil/common/sample"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 )
 
 func init() {
