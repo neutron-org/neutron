@@ -25,7 +25,7 @@ import (
 
 	softwareUpgrade "cosmossdk.io/x/upgrade/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -94,7 +94,7 @@ type CustomMessenger struct {
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
 
-func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	// Return early if msg.Custom is nil
 	if msg.Custom == nil {
 		return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
@@ -107,7 +107,7 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 			"message", string(msg.Custom),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to decode incoming custom cosmos message")
+		return nil, nil, nil, errors.Wrap(err, "failed to decode incoming custom cosmos message")
 	}
 
 	// Dispatch the message based on its type by checking each possible field
@@ -166,7 +166,8 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	}
 	if contractMsg.Dex != nil {
 		data, err := m.dispatchDexMsg(ctx, contractAddr, *(contractMsg.Dex))
-		return nil, data, err
+		// TODO
+		return nil, data, nil, err
 	}
 
 	// If none of the conditions are met, forward the message to the wrapped handler
@@ -260,11 +261,11 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 	return nil, sdkerrors.ErrUnknownRequest
 }
 
-func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	ibcTransferMsg.Sender = contractAddr.String()
 
 	if err := ibcTransferMsg.ValidateBasic(); err != nil {
-		return nil, nil, errors.Wrap(err, "failed to validate ibcTransferMsg")
+		return nil, nil, nil, errors.Wrap(err, "failed to validate ibcTransferMsg")
 	}
 
 	response, err := m.transferKeeper.Transfer(ctx, &ibcTransferMsg)
@@ -274,7 +275,7 @@ func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddre
 			"msg", ibcTransferMsg,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to execute IBCTransfer")
+		return nil, nil, nil, errors.Wrap(err, "failed to execute IBCTransfer")
 	}
 
 	data, err := json.Marshal(response)
@@ -284,17 +285,18 @@ func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddre
 			"msg", response,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("ibcTransferMsg completed",
 		"from_address", contractAddr.String(),
 		"msg", ibcTransferMsg,
 	)
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
-func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	response, err := m.performUpdateInterchainQuery(ctx, contractAddr, updateQuery)
 	if err != nil {
 		ctx.Logger().Debug("performUpdateInterchainQuery: failed to update interchain query",
@@ -302,7 +304,7 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 			"msg", updateQuery,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to update interchain query")
+		return nil, nil, nil, errors.Wrap(err, "failed to update interchain query")
 	}
 
 	data, err := json.Marshal(response)
@@ -312,14 +314,15 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 			"msg", updateQuery,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("interchain query updated",
 		"from_address", contractAddr.String(),
 		"msg", updateQuery,
 	)
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
 func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) (*bindings.UpdateInterchainQueryResponse, error) {
@@ -343,7 +346,7 @@ func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contract
 	return (*bindings.UpdateInterchainQueryResponse)(response), nil
 }
 
-func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, removeQuery *bindings.RemoveInterchainQuery) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, removeQuery *bindings.RemoveInterchainQuery) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	response, err := m.performRemoveInterchainQuery(ctx, contractAddr, removeQuery)
 	if err != nil {
 		ctx.Logger().Debug("performRemoveInterchainQuery: failed to update interchain query",
@@ -351,7 +354,7 @@ func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sd
 			"msg", removeQuery,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to remove interchain query")
+		return nil, nil, nil, errors.Wrap(err, "failed to remove interchain query")
 	}
 
 	data, err := json.Marshal(response)
@@ -361,14 +364,14 @@ func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sd
 			"msg", removeQuery,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("interchain query removed",
 		"from_address", contractAddr.String(),
 		"msg", removeQuery,
 	)
-	return nil, [][]byte{data}, nil
+	return nil, [][]byte{data}, nil, nil
 }
 
 func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.RemoveInterchainQuery) (*bindings.RemoveInterchainQueryResponse, error) {
@@ -389,7 +392,7 @@ func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contract
 	return (*bindings.RemoveInterchainQueryResponse)(response), nil
 }
 
-func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	response, err := m.performSubmitTx(ctx, contractAddr, submitTx)
 	if err != nil {
 		ctx.Logger().Debug("performSubmitTx: failed to submit interchain transaction",
@@ -398,7 +401,7 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 			"interchain_account_id", submitTx.InterchainAccountId,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to submit interchain transaction")
+		return nil, nil, nil, errors.Wrap(err, "failed to submit interchain transaction")
 	}
 
 	data, err := json.Marshal(response)
@@ -409,7 +412,7 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 			"interchain_account_id", submitTx.InterchainAccountId,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("interchain transaction submitted",
@@ -417,14 +420,15 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 		"connection_id", submitTx.ConnectionId,
 		"interchain_account_id", submitTx.InterchainAccountId,
 	)
-	return nil, [][]byte{data}, nil
+	// TODO: return an actual responses as 3rd argument
+	return nil, [][]byte{data}, nil, nil
 }
 
-func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	var data []byte
 	err := m.validateProposalQty(adminProposal)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "invalid proposal quantity")
+		return nil, nil, nil, errors.Wrap(err, "invalid proposal quantity")
 	}
 	// here we handle pre-v2.0.0 style of proposals: param change, upgrade, client update
 	if m.isLegacyProposal(adminProposal) {
@@ -434,7 +438,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 				"from_address", contractAddr.String(),
 				"error", err,
 			)
-			return nil, nil, errors.Wrap(err, "failed to submit admin proposal legacy")
+			return nil, nil, nil, errors.Wrap(err, "failed to submit admin proposal legacy")
 		}
 		data, err = json.Marshal(resp)
 		if err != nil {
@@ -442,13 +446,14 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 				"from_address", contractAddr.String(),
 				"error", err,
 			)
-			return nil, nil, errors.Wrap(err, "marshal json failed")
+			return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 		}
 
 		ctx.Logger().Debug("submit proposal legacy submitted",
 			"from_address", contractAddr.String(),
 		)
-		return nil, [][]byte{data}, nil
+		// TODO
+		return nil, [][]byte{data}, nil, nil
 	}
 
 	resp, err := m.performSubmitAdminProposal(ctx, contractAddr, adminProposal)
@@ -457,7 +462,7 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to submit admin proposal")
+		return nil, nil, nil, errors.Wrap(err, "failed to submit admin proposal")
 	}
 
 	data, err = json.Marshal(resp)
@@ -466,13 +471,14 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("submit proposal message submitted",
 		"from_address", contractAddr.String(),
 	)
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
 func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) (*admintypes.MsgSubmitProposalLegacyResponse, error) {
@@ -579,12 +585,12 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 }
 
 // createDenom creates a new token denom
-func (m *CustomMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindings.CreateDenom) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := PerformCreateDenom(m.TokenFactory, ctx, contractAddr, createDenom)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "perform create denom")
+		return nil, nil, nil, errors.Wrap(err, "perform create denom")
 	}
-	return nil, nil, nil
+	return nil, nil, nil, nil
 }
 
 // PerformCreateDenom is used with createDenom to create a token denom; validates the msgCreateDenom.
@@ -609,12 +615,12 @@ func PerformCreateDenom(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractA
 }
 
 // createDenom forces a transfer of a tokenFactory token
-func (m *CustomMessenger) forceTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, forceTransfer *bindings.ForceTransfer) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) forceTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, forceTransfer *bindings.ForceTransfer) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := PerformForceTransfer(m.TokenFactory, ctx, contractAddr, forceTransfer)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "perform force transfer")
+		return nil, nil, nil, errors.Wrap(err, "perform force transfer")
 	}
-	return nil, nil, nil
+	return nil, nil, nil, nil
 }
 
 // PerformForceTransfer is used with forceTransfer to force a tokenfactory token transfer; validates the msgForceTransfer.
@@ -639,12 +645,12 @@ func PerformForceTransfer(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contrac
 }
 
 // setDenomMetadata sets a metadata for a tokenfactory denom
-func (m *CustomMessenger) setDenomMetadata(ctx sdk.Context, contractAddr sdk.AccAddress, setDenomMetadata *bindings.SetDenomMetadata) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) setDenomMetadata(ctx sdk.Context, contractAddr sdk.AccAddress, setDenomMetadata *bindings.SetDenomMetadata) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := PerformSetDenomMetadata(m.TokenFactory, ctx, contractAddr, setDenomMetadata)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "perform set denom metadata")
+		return nil, nil, nil, errors.Wrap(err, "perform set denom metadata")
 	}
-	return nil, nil, nil
+	return nil, nil, nil, nil
 }
 
 // PerformSetDenomMetadata is used with setDenomMetadata to set a metadata for a tokenfactory denom; validates the msgSetDenomMetadata.
@@ -669,21 +675,21 @@ func PerformSetDenomMetadata(f *tokenfactorykeeper.Keeper, ctx sdk.Context, cont
 }
 
 // mintTokens mints tokens of a specified denom to an address.
-func (m *CustomMessenger) mintTokens(ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) mintTokens(ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := PerformMint(m.TokenFactory, m.Bank, ctx, contractAddr, mint)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "perform mint")
+		return nil, nil, nil, errors.Wrap(err, "perform mint")
 	}
-	return nil, nil, nil
+	return nil, nil, nil, nil
 }
 
 // setBeforeSendHook sets before send hook for a specified denom.
-func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSendHook) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.AccAddress, set *bindings.SetBeforeSendHook) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := PerformSetBeforeSendHook(m.TokenFactory, ctx, contractAddr, set)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to perform set before send hook")
+		return nil, nil, nil, errors.Wrap(err, "failed to perform set before send hook")
 	}
-	return nil, nil, nil
+	return nil, nil, nil, nil
 }
 
 // PerformMint used with mintTokens to validate the mint message and mint through token factory.
@@ -731,13 +737,13 @@ func PerformSetBeforeSendHook(f *tokenfactorykeeper.Keeper, ctx sdk.Context, con
 }
 
 // changeAdmin changes the admin.
-func (m *CustomMessenger) changeAdmin(ctx sdk.Context, contractAddr sdk.AccAddress, changeAdmin *bindings.ChangeAdmin) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) changeAdmin(ctx sdk.Context, contractAddr sdk.AccAddress, changeAdmin *bindings.ChangeAdmin) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := ChangeAdmin(m.TokenFactory, ctx, contractAddr, changeAdmin)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to change admin")
+		return nil, nil, nil, errors.Wrap(err, "failed to change admin")
 	}
 
-	return nil, nil, nil
+	return nil, nil, nil, nil
 }
 
 // ChangeAdmin is used with changeAdmin to validate changeAdmin messages and to dispatch.
@@ -761,13 +767,13 @@ func ChangeAdmin(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 }
 
 // burnTokens burns tokens.
-func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	err := PerformBurn(m.TokenFactory, ctx, contractAddr, burn)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "perform burn")
+		return nil, nil, nil, errors.Wrap(err, "perform burn")
 	}
 
-	return nil, nil, nil
+	return nil, nil, nil, nil
 }
 
 // PerformBurn performs token burning after validating tokenBurn message.
@@ -850,7 +856,7 @@ func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 	return (*bindings.SubmitTxResponse)(response), nil
 }
 
-func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	response, err := m.performRegisterInterchainAccount(ctx, contractAddr, reg)
 	if err != nil {
 		ctx.Logger().Debug("performRegisterInterchainAccount: failed to register interchain account",
@@ -859,7 +865,7 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 			"interchain_account_id", reg.InterchainAccountId,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to register interchain account")
+		return nil, nil, nil, errors.Wrap(err, "failed to register interchain account")
 	}
 
 	data, err := json.Marshal(response)
@@ -870,7 +876,7 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 			"interchain_account_id", reg.InterchainAccountId,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("registered interchain account",
@@ -878,7 +884,8 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 		"connection_id", reg.ConnectionId,
 		"interchain_account_id", reg.InterchainAccountId,
 	)
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
 func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*bindings.RegisterInterchainAccountResponse, error) {
@@ -900,7 +907,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 	return (*bindings.RegisterInterchainAccountResponse)(response), nil
 }
 
-func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	response, err := m.performRegisterInterchainQuery(ctx, contractAddr, reg)
 	if err != nil {
 		ctx.Logger().Debug("performRegisterInterchainQuery: failed to register interchain query",
@@ -912,7 +919,7 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 			"update_period", reg.UpdatePeriod,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to register interchain query")
+		return nil, nil, nil, errors.Wrap(err, "failed to register interchain query")
 	}
 
 	data, err := json.Marshal(response)
@@ -925,7 +932,7 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 			"update_period", reg.UpdatePeriod,
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("registered interchain query",
@@ -937,7 +944,8 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 		"update_period", reg.UpdatePeriod,
 		"query_id", response.Id,
 	)
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
 func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) (*bindings.RegisterInterchainQueryResponse, error) {
@@ -997,9 +1005,9 @@ func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) boo
 	}
 }
 
-func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, addSchedule *bindings.AddSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	if !m.isAdmin(ctx, contractAddr) {
-		return nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
+		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
 	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
@@ -1016,7 +1024,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	resp := bindings.AddScheduleResponse{}
@@ -1026,7 +1034,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("schedule added",
@@ -1034,13 +1042,14 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		"name", addSchedule.Name,
 		"period", addSchedule.Period,
 	)
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
-func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	params := m.CronKeeper.GetParams(ctx)
 	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
-		return nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
+		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
 	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
@@ -1052,20 +1061,21 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
 	ctx.Logger().Debug("schedule removed",
 		"from_address", contractAddr.String(),
 		"name", removeSchedule.Name,
 	)
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
-func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, error) {
+func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	failure, err := m.ContractmanagerKeeper.GetFailure(ctx, contractAddr, resubmitFailure.FailureId)
 	if err != nil {
-		return nil, nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
+		return nil, nil, nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
 	}
 
 	err = m.ContractmanagerKeeper.ResubmitFailure(ctx, contractAddr, failure)
@@ -1074,7 +1084,7 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "failed to resubmitFailure")
+		return nil, nil, nil, errors.Wrap(err, "failed to resubmitFailure")
 	}
 
 	resp := bindings.ResubmitFailureResponse{FailureId: failure.Id}
@@ -1084,10 +1094,11 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
-	return nil, [][]byte{data}, nil
+	// TODO
+	return nil, [][]byte{data}, nil, nil
 }
 
 func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
