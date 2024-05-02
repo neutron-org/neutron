@@ -15,16 +15,16 @@ import (
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
+	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {

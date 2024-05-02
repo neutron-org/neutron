@@ -17,8 +17,8 @@ import (
 	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 
-	globalfeeante "github.com/neutron-org/neutron/v3/x/globalfee/ante"
-	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
+	globalfeeante "github.com/neutron-org/neutron/v4/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
