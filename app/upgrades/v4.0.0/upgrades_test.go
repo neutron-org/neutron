@@ -1,4 +1,4 @@
-package nextupgrade_test
+package v400_test
 
 import (
 	"testing"
@@ -6,10 +6,9 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/app/upgrades/nextupgrade"
-
 	"github.com/stretchr/testify/suite"
 
+	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
 	"github.com/neutron-org/neutron/v4/testutil"
 )
 
@@ -31,7 +30,7 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
-		Name:   nextupgrade.UpgradeName,
+		Name:   v400.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
