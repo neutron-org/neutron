@@ -13,6 +13,7 @@ import (
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
 
@@ -72,6 +73,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*crisistypes.MsgUpdateParams,
 		*minttypes.MsgUpdateParams,
 		*pfmtypes.MsgUpdateParams,
+		*marketmaptypes.MsgUpdateMarketMap,
+		*marketmaptypes.MsgParams,
 		*auctiontypes.MsgUpdateParams,
 		*authtypes.MsgUpdateParams,
 		*globalfeetypes.MsgUpdateParams:

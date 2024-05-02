@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/neutron-org/neutron/v3/app/config"
+
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
@@ -37,7 +39,7 @@ type (
 )
 
 func init() {
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
 }
 
 // New creates instance with fully configured cosmos network.

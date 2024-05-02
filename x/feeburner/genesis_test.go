@@ -3,7 +3,7 @@ package feeburner_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v3/app/config"
 
 	"github.com/stretchr/testify/require"
 
@@ -14,7 +14,7 @@ import (
 )
 
 func TestGenesis(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
