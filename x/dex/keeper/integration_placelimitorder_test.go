@@ -328,7 +328,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
 	// Alice place LO at price ~.25
 	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenB", price, 200)
 
-	// WHEN bob swaps through all of Alice's LO
+	// WHEN bob swaps through Alice's LO
 	s.limitSellsWithPrice(s.bob, "TokenA", math_utils.OnePrecDec().Quo(price), 10)
 	s.aliceWithdrawsLimitSell(trancheKey0)
 

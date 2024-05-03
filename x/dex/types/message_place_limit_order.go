@@ -36,7 +36,7 @@ func NewMsgPlaceLimitOrder(
 		OrderType:        orderType,
 		ExpirationTime:   goodTil,
 		MaxAmountOut:     maxAmountOut,
-		PriceInToOut:     price,
+		LimitSellPrice:   price,
 	}
 }
 
@@ -98,11 +98,11 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 		return ErrTickOutsideRange
 	}
 
-	if msg.PriceInToOut != nil && IsPriceOutOfRange(*msg.PriceInToOut) {
+	if msg.LimitSellPrice != nil && IsPriceOutOfRange(*msg.LimitSellPrice) {
 		return ErrPriceOutsideRange
 	}
 
-	if msg.PriceInToOut != nil && msg.TickIndexInToOut != 0 {
+	if msg.LimitSellPrice != nil && msg.TickIndexInToOut != 0 {
 		return ErrInvalidPriceAndTick
 	}
 

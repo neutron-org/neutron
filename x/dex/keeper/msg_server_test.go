@@ -404,13 +404,13 @@ func (s *DexTestSuite) limitSellsWithPrice(
 	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
 
 	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
-		Creator:      account.String(),
-		Receiver:     account.String(),
-		TokenIn:      tokenIn,
-		TokenOut:     tokenOut,
-		PriceInToOut: &price,
-		AmountIn:     sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
-		OrderType:    types.LimitOrderType_GOOD_TIL_CANCELLED,
+		Creator:        account.String(),
+		Receiver:       account.String(),
+		TokenIn:        tokenIn,
+		TokenOut:       tokenOut,
+		LimitSellPrice: &price,
+		AmountIn:       sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
+		OrderType:      types.LimitOrderType_GOOD_TIL_CANCELLED,
 	})
 
 	s.Assert().NoError(err)

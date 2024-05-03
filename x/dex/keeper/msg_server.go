@@ -104,8 +104,8 @@ func (k MsgServer) PlaceLimitOrder(
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
 	tickIndex := msg.TickIndexInToOut
-	if msg.PriceInToOut != nil {
-		tickIndex, err = types.CalcTickIndexFromPrice(*msg.PriceInToOut)
+	if msg.LimitSellPrice != nil {
+		tickIndex, err = types.CalcTickIndexFromPrice(*msg.LimitSellPrice)
 		if err != nil {
 			return &types.MsgPlaceLimitOrderResponse{}, err
 		}
