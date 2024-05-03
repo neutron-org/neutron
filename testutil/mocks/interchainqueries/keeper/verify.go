@@ -11,7 +11,7 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	keeper "github.com/cosmos/ibc-go/v8/modules/core/02-client/keeper"
 	exported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	_7_tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	gomock "github.com/golang/mock/gomock"
 
 	types1 "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
@@ -93,7 +93,7 @@ func (m *MockTransactionVerifier) EXPECT() *MockTransactionVerifierMockRecorder 
 }
 
 // VerifyTransaction mocks base method.
-func (m *MockTransactionVerifier) VerifyTransaction(header, nextHeader *_7_tendermint.Header, tx *types1.TxValue) error {
+func (m *MockTransactionVerifier) VerifyTransaction(header, nextHeader *tendermint.Header, tx *types1.TxValue) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VerifyTransaction", header, nextHeader, tx)
 	ret0, _ := ret[0].(error)

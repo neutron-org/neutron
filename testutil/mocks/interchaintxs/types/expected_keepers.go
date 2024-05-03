@@ -14,6 +14,7 @@ import (
 	types2 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	exported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	gomock "github.com/golang/mock/gomock"
+
 	types3 "github.com/neutron-org/neutron/v3/x/feerefunder/types"
 )
 
@@ -236,6 +237,18 @@ func (m *MockICAControllerKeeper) RegisterInterchainAccount(ctx types0.Context, 
 func (mr *MockICAControllerKeeperMockRecorder) RegisterInterchainAccount(ctx, connectionID, owner, version interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterInterchainAccount", reflect.TypeOf((*MockICAControllerKeeper)(nil).RegisterInterchainAccount), ctx, connectionID, owner, version)
+}
+
+// SetMiddlewareEnabled mocks base method.
+func (m *MockICAControllerKeeper) SetMiddlewareEnabled(ctx types0.Context, portID, connectionID string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetMiddlewareEnabled", ctx, portID, connectionID)
+}
+
+// SetMiddlewareEnabled indicates an expected call of SetMiddlewareEnabled.
+func (mr *MockICAControllerKeeperMockRecorder) SetMiddlewareEnabled(ctx, portID, connectionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMiddlewareEnabled", reflect.TypeOf((*MockICAControllerKeeper)(nil).SetMiddlewareEnabled), ctx, portID, connectionID)
 }
 
 // MockICAControllerMsgServer is a mock of ICAControllerMsgServer interface.

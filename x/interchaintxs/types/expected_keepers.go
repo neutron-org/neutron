@@ -34,6 +34,7 @@ type ICAControllerKeeper interface {
 	GetActiveChannelID(ctx sdk.Context, connectionID, portID string) (string, bool)
 	GetInterchainAccountAddress(ctx sdk.Context, connectionID, portID string) (string, bool)
 	RegisterInterchainAccount(ctx sdk.Context, connectionID, owner, version string) error
+	SetMiddlewareEnabled(ctx sdk.Context, portID, connectionID string)
 }
 
 type ICAControllerMsgServer interface {

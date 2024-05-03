@@ -34,10 +34,11 @@ const TestFeeCollectorAddr = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"
 func TestRegisterInterchainAccount(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	icaMsgServer := mock_types.NewMockICAControllerMsgServer(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, icaMsgServer, nil, bankKeeper, func(_ sdk.Context) string {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, icaKeeper, icaMsgServer, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 
@@ -100,6 +101,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 		ChannelId: channelID,
 		PortId:    portID,
 	}, nil)
+	icaKeeper.EXPECT().SetMiddlewareEnabled(ctx, portID, msgRegAcc.ConnectionId)
 	resp, err = icak.RegisterInterchainAccount(ctx, &msgRegAcc)
 	require.NoError(t, err)
 	require.Equal(t, types.MsgRegisterInterchainAccountResponse{
