@@ -17,8 +17,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
 )
 
 func ContractManagerKeeper(t testing.TB, wasmKeeper types.WasmKeeper) (*keeper.Keeper, sdk.Context) {

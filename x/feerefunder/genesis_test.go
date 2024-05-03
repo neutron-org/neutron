@@ -5,15 +5,15 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v3/app/params"
-	"github.com/neutron-org/neutron/v3/testutil/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v4/testutil/feerefunder/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v3/x/feerefunder"
-	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v4/x/feerefunder"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
 
 const TestContractAddressNeutron = "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq"

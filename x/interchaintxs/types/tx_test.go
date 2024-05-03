@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/app/config"
+	"github.com/neutron-org/neutron/v4/app/config"
 
 	"cosmossdk.io/math"
 	cosmosTypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -11,8 +11,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 )
 
 const TestAddress = "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
