@@ -15,7 +15,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
 
 type (

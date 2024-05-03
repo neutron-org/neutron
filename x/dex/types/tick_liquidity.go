@@ -1,7 +1,7 @@
 package types
 
 import (
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 // NOTE: These methods should be avoided if possible.

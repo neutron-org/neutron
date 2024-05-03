@@ -8,7 +8,7 @@ import "neutron/feeburner/params.proto";
 import "neutron/feeburner/total_burned_neutrons_amount.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/neutron-org/neutron/v3/x/feeburner/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/feeburner/types";
 
 // Query defines the gRPC querier service.
 service Query {

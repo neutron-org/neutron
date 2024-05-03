@@ -3,11 +3,11 @@ package keeper_test
 import (
 	"testing"
 
-	testkeeper "github.com/neutron-org/neutron/v3/testutil/cron/keeper"
+	testkeeper "github.com/neutron-org/neutron/v4/testutil/cron/keeper"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/x/cron/types"
+	"github.com/neutron-org/neutron/v4/x/cron/types"
 )
 
 func TestParamsQuery(t *testing.T) {

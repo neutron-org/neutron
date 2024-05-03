@@ -10,8 +10,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v3/x/transfer/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/transfer/types"
 )
 
 const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"

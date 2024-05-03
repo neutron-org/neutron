@@ -11,20 +11,23 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
+	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
+	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
@@ -77,6 +80,9 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*marketmaptypes.MsgParams,
 		*auctiontypes.MsgUpdateParams,
 		*authtypes.MsgUpdateParams,
+		*ccvconsumertypes.MsgUpdateParams,
+		*icahosttypes.MsgUpdateParams,
+		*ibctransfertypes.MsgUpdateParams,
 		*globalfeetypes.MsgUpdateParams:
 		return true
 	}
@@ -87,29 +93,4 @@ type paramChangeKey struct {
 	Subspace, Key string
 }
 
-var WhitelistedParams = map[paramChangeKey]struct{}{
-	// ibc transfer
-	// {Subspace: ibctransfertypes.ModuleName, Key: string(ibctransfertypes.KeySendEnabled)}:    {},
-	// {Subspace: ibctransfertypes.ModuleName, Key: string(ibctransfertypes.KeyReceiveEnabled)}: {},
-	// ica
-	// {Subspace: icahosttypes.SubModuleName, Key: string(icahosttypes.KeyHostEnabled)}:   {},
-	// {Subspace: icahosttypes.SubModuleName, Key: string(icahosttypes.KeyAllowMessages)}: {},
-	// globalfee
-	// {Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMinGasPrices)}:                    {},
-	// {Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyBypassMinFeeMsgTypes)}:            {},
-	// {Subspace: globalfeetypes.ModuleName, Key: string(globalfeetypes.ParamStoreKeyMaxTotalBypassMinFeeMsgGasUsage)}: {},
-	// ICS consumer
-	// TODO:
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyRewardDenoms)}:                      {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyEnabled)}:                           {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyBlocksPerDistributionTransmission)}: {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyDistributionTransmissionChannel)}:   {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyProviderFeePoolAddrStr)}:            {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyTransferTimeoutPeriod)}:             {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyConsumerRedistributionFrac)}:        {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyHistoricalEntries)}:                 {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyConsumerUnbondingPeriod)}:           {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeySoftOptOutThreshold)}:               {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyProviderRewardDenoms)}:              {},
-	// {Subspace: ccvconsumertypes.ModuleName, Key: string(ccv.KeyRetryDelayPeriod)}:                  {},
-}
+var WhitelistedParams = map[paramChangeKey]struct{}{}

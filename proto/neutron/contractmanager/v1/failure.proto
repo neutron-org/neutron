@@ -1,7 +1,7 @@
 syntax = "proto3";
 package neutron.contractmanager.v1;
 
-option go_package = "github.com/neutron-org/neutron/v3/x/contractmanager/types/v1";
+option go_package = "github.com/neutron-org/neutron/v4/x/contractmanager/types/v1";
 
 // Deprecated. Used only for migration purposes.
 message Failure {
