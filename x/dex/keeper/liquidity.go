@@ -115,6 +115,8 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 	}
 }
 
+// Wrapper for taker LimitOrders
+// Ensures Fok behavior is correct and that the output >= limit price output
 func (k Keeper) TakerLimitOrderSwap(
 	ctx sdk.Context,
 	tradePairID types.TradePairID,
@@ -151,6 +153,8 @@ func (k Keeper) TakerLimitOrderSwap(
 	return totalInCoin, totalOutCoin, nil
 }
 
+// Wrapper for maker LimitOrders
+// Ensures the swap portion + maker portion of the limit order will have an output >= the limit price output
 func (k Keeper) MakerLimitOrderSwap(
 	ctx sdk.Context,
 	tradePairID types.TradePairID,
