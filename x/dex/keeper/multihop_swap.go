@@ -119,7 +119,7 @@ func (k Keeper) RunMultihopRoute(
 		// If we can't hit the best possible price we can greedily abort
 		priceUpperbound := currentPrice.Mul(step.RemainingBestPrice)
 		if exitLimitPrice.GT(priceUpperbound) {
-			return sdk.Coins{}, sdk.Coin{}, bCacheCtx.WriteCache, types.ErrExitLimitPriceHit
+			return sdk.Coins{}, sdk.Coin{}, bCacheCtx.WriteCache, types.ErrLimitPriceNotSatisfied
 		}
 
 		stepDust, stepOutCoin, bCacheCtx, err = k.MultihopStep(
@@ -145,7 +145,7 @@ func (k Keeper) RunMultihopRoute(
 	}
 
 	if exitLimitPrice.GT(currentPrice) {
-		return sdk.Coins{}, sdk.Coin{}, nil, types.ErrExitLimitPriceHit
+		return sdk.Coins{}, sdk.Coin{}, nil, types.ErrLimitPriceNotSatisfied
 	}
 
 	return dustAcc, stepOutCoin, bCacheCtx.WriteCache, nil

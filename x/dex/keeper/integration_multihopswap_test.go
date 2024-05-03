@@ -216,7 +216,7 @@ func (s *DexTestSuite) TestMultiHopSwapLimitPriceNotMetSingleRoute() {
 	// THEN alice multihopswap fails
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
 	s.aliceMultiHopSwapFails(
-		types.ErrExitLimitPriceHit,
+		types.ErrLimitPriceNotSatisfied,
 		route,
 		50,
 		math_utils.MustNewPrecDecFromStr("0.9"),
@@ -343,7 +343,7 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteAllFail() {
 
 	// Then fails with findBestRoute
 	s.aliceMultiHopSwapFails(
-		types.ErrExitLimitPriceHit,
+		types.ErrLimitPriceNotSatisfied,
 		routes,
 		100,
 		math_utils.MustNewPrecDecFromStr("0.91"),
@@ -353,7 +353,7 @@ func (s *DexTestSuite) TestMultiHopSwapMultiRouteAllFail() {
 	// and with findFirstRoute
 
 	s.aliceMultiHopSwapFails(
-		types.ErrExitLimitPriceHit,
+		types.ErrLimitPriceNotSatisfied,
 		routes,
 		100,
 		math_utils.MustNewPrecDecFromStr("0.91"),

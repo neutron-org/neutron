@@ -119,11 +119,6 @@ var (
 		1139,
 		"Limit order expiration time must be greater than current block time:",
 	)
-	ErrExitLimitPriceHit = sdkerrors.Register(
-		ModuleName,
-		1140,
-		"ExitLimitPrice cannot be satisfied.",
-	)
 	ErrAllMultiHopRoutesFailed = sdkerrors.Register(
 		ModuleName,
 		1141,
