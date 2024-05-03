@@ -301,7 +301,7 @@ func (s *DexTestSuite) TestLimitOrderPartialFillDepositCancel() {
 	s.assertDexBalances(0, 0)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderWithDustHitsPriceLimit() {
+func (s *DexTestSuite) TestPlaceLimitOrderWithDustHitsTruePriceLimit() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)
 	// GIVEN LP liq at 20001-20004
@@ -468,7 +468,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_165_594))
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderFoKHitsRealPriceLimit() {
+func (s *DexTestSuite) TestPlaceLimitOrderFoKHitsTruePriceLimit() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)
 	// GIVEN LP liq at 1-3. With small liq on tick 2
@@ -478,7 +478,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKHitsRealPriceLimit() {
 		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1000), 2, 1),
 		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(2000), 3, 1),
 	)
-	// WHEN alice submits IoC limitOrder with limitPrice > 20004
+	// WHEN alice submits FoK limitOrder with limitPrice > 20004
 	_, err := s.limitSellsInt(s.alice, "TokenA", 6, sdkmath.NewInt(3000), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 
 	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
