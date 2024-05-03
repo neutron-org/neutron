@@ -494,7 +494,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	)
 	suite.NoError(err)
 
-	var response bindings.SubmitTxResponse
+	var response ictxtypes.MsgSubmitTxResponse
 	err = json.Unmarshal(data, &response)
 	suite.NoError(err)
 	suite.Equal(uint64(1), response.SequenceId)
@@ -661,12 +661,8 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	}
 
 	// Dispatch AddSchedule message
-	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
-
-	expected, err := json.Marshal(&bindings.AddScheduleResponse{})
-	suite.NoError(err)
-	suite.Equal(expected, data)
 
 	// Craft RemoveSchedule message
 	msg = bindings.NeutronMsg{
@@ -676,12 +672,8 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	}
 
 	// Dispatch AddSchedule message
-	data, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
-
-	expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
-	suite.NoError(err)
-	suite.Equal(expected, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {

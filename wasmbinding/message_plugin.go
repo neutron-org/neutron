@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cosmos/gogoproto/proto"
+
 	"golang.org/x/exp/maps"
 
 	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
@@ -165,20 +167,19 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 		return m.resubmitFailure(ctx, contractAddr, contractMsg.ResubmitFailure)
 	}
 	if contractMsg.Dex != nil {
-		data, err := m.dispatchDexMsg(ctx, contractAddr, *(contractMsg.Dex))
-		// TODO
-		return nil, data, nil, err
+		data, messages, err := m.dispatchDexMsg(ctx, contractAddr, *(contractMsg.Dex))
+		return nil, data, messages, err
 	}
 
 	// If none of the conditions are met, forward the message to the wrapped handler
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 }
 
-func handleDexMsg[T sdk.LegacyMsg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
+func handleDexMsg[T sdk.LegacyMsg, R proto.Message](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, [][]*types.Any, error) {
 	// TODO: is this even legal to do?
 	validatableMsg := any(msg).(sdk.HasValidateBasic)
 	if err := validatableMsg.ValidateBasic(); err != nil {
-		return nil, errors.Wrapf(err, "failed to validate %T", msg)
+		return nil, nil, errors.Wrapf(err, "failed to validate %T", msg)
 	}
 
 	if len(msg.GetSigners()) != 1 {
@@ -194,7 +195,7 @@ func handleDexMsg[T sdk.LegacyMsg, R any](ctx sdk.Context, msg T, handler func(c
 			"msg", msg,
 			"error", err,
 		)
-		return nil, errors.Wrapf(err, "failed to execute %T", msg)
+		return nil, nil, errors.Wrapf(err, "failed to execute %T", msg)
 	}
 
 	data, err := json.Marshal(resp)
@@ -203,17 +204,23 @@ func handleDexMsg[T sdk.LegacyMsg, R any](ctx sdk.Context, msg T, handler func(c
 			"from_address", signer,
 			"error", err,
 		)
-		return nil, errors.Wrap(err, fmt.Sprintf("marshal %T failed", resp))
+		return nil, nil, errors.Wrap(err, fmt.Sprintf("marshal %T failed", resp))
 	}
 
 	ctx.Logger().Debug(fmt.Sprintf("%T execution completed", msg),
 		"from_address", signer,
 		"msg", msg,
 	)
-	return [][]byte{data}, nil
+
+	anyResp, err := types.NewAnyWithValue(resp)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", resp)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return [][]byte{data}, msgResponses, nil
 }
 
-func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAddress, dex bindings.Dex) ([][]byte, error) {
+func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAddress, dex bindings.Dex) ([][]byte, [][]*types.Any, error) {
 	switch {
 	case dex.Deposit != nil:
 		dex.Deposit.Creator = contractAddr.String()
@@ -233,7 +240,7 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		}
 		orderTypeInt, ok := dextypes.LimitOrderType_value[dex.PlaceLimitOrder.OrderType]
 		if !ok {
-			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
+			return nil, nil, errors.Wrap(dextypes.ErrInvalidOrderType,
 				fmt.Sprintf(
 					"got \"%s\", expected one of %s",
 					dex.PlaceLimitOrder.OrderType,
@@ -258,7 +265,7 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		return handleDexMsg(ctx, dex.MultiHopSwap, m.DexMsgServer.MultiHopSwap)
 	}
 
-	return nil, sdkerrors.ErrUnknownRequest
+	return nil, nil, sdkerrors.ErrUnknownRequest
 }
 
 func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddress, ibcTransferMsg transferwrappertypes.MsgTransfer) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -292,8 +299,13 @@ func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddre
 		"from_address", contractAddr.String(),
 		"msg", ibcTransferMsg,
 	)
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+
+	anyResp, err := types.NewAnyWithValue(response)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", response)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
 func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -321,11 +333,16 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 		"from_address", contractAddr.String(),
 		"msg", updateQuery,
 	)
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+
+	anyResp, err := types.NewAnyWithValue(response)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", response)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
-func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) (*bindings.UpdateInterchainQueryResponse, error) {
+func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) (*icqtypes.MsgUpdateInterchainQueryResponse, error) {
 	msg := icqtypes.MsgUpdateInterchainQueryRequest{
 		QueryId:               updateQuery.QueryId,
 		NewKeys:               updateQuery.NewKeys,
@@ -343,7 +360,7 @@ func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contract
 		return nil, errors.Wrap(err, "failed to update interchain query")
 	}
 
-	return (*bindings.UpdateInterchainQueryResponse)(response), nil
+	return response, nil
 }
 
 func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, removeQuery *bindings.RemoveInterchainQuery) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -371,10 +388,16 @@ func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sd
 		"from_address", contractAddr.String(),
 		"msg", removeQuery,
 	)
-	return nil, [][]byte{data}, nil, nil
+
+	anyResp, err := types.NewAnyWithValue(response)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", response)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
-func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.RemoveInterchainQuery) (*bindings.RemoveInterchainQueryResponse, error) {
+func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.RemoveInterchainQuery) (*icqtypes.MsgRemoveInterchainQueryResponse, error) {
 	msg := icqtypes.MsgRemoveInterchainQueryRequest{
 		QueryId: updateQuery.QueryId,
 		Sender:  contractAddr.String(),
@@ -389,7 +412,7 @@ func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contract
 		return nil, errors.Wrap(err, "failed to remove interchain query")
 	}
 
-	return (*bindings.RemoveInterchainQueryResponse)(response), nil
+	return response, nil
 }
 
 func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -420,8 +443,13 @@ func (m *CustomMessenger) submitTx(ctx sdk.Context, contractAddr sdk.AccAddress,
 		"connection_id", submitTx.ConnectionId,
 		"interchain_account_id", submitTx.InterchainAccountId,
 	)
-	// TODO: return an actual responses as 3rd argument
-	return nil, [][]byte{data}, nil, nil
+
+	anyResp, err := types.NewAnyWithValue(response)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", response)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
 func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -452,8 +480,13 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 		ctx.Logger().Debug("submit proposal legacy submitted",
 			"from_address", contractAddr.String(),
 		)
-		// TODO
-		return nil, [][]byte{data}, nil, nil
+
+		anyResp, err := types.NewAnyWithValue(resp)
+		if err != nil {
+			return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", resp)
+		}
+		msgResponses := [][]*types.Any{{anyResp}}
+		return nil, [][]byte{data}, msgResponses, nil
 	}
 
 	resp, err := m.performSubmitAdminProposal(ctx, contractAddr, adminProposal)
@@ -477,8 +510,13 @@ func (m *CustomMessenger) submitAdminProposal(ctx sdk.Context, contractAddr sdk.
 	ctx.Logger().Debug("submit proposal message submitted",
 		"from_address", contractAddr.String(),
 	)
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+
+	anyResp, err := types.NewAnyWithValue(resp)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", resp)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
 func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, contractAddr sdk.AccAddress, adminProposal *bindings.AdminProposal) (*admintypes.MsgSubmitProposalLegacyResponse, error) {
@@ -828,7 +866,7 @@ func parseAddress(addr string) (sdk.AccAddress, error) {
 	return parsed, nil
 }
 
-func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*bindings.SubmitTxResponse, error) {
+func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccAddress, submitTx *bindings.SubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
 	tx := ictxtypes.MsgSubmitTx{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        submitTx.ConnectionId,
@@ -853,7 +891,7 @@ func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, errors.Wrap(err, "failed to submit interchain transaction")
 	}
 
-	return (*bindings.SubmitTxResponse)(response), nil
+	return response, nil
 }
 
 func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -884,11 +922,16 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 		"connection_id", reg.ConnectionId,
 		"interchain_account_id", reg.InterchainAccountId,
 	)
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+
+	anyResp, err := types.NewAnyWithValue(response)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", response)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
-func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*bindings.RegisterInterchainAccountResponse, error) {
+func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	msg := ictxtypes.MsgRegisterInterchainAccount{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
@@ -904,7 +947,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		return nil, errors.Wrap(err, "failed to register interchain account")
 	}
 
-	return (*bindings.RegisterInterchainAccountResponse)(response), nil
+	return response, nil
 }
 
 func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -944,11 +987,16 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 		"update_period", reg.UpdatePeriod,
 		"query_id", response.Id,
 	)
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+
+	anyResp, err := types.NewAnyWithValue(response)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", response)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
-func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) (*bindings.RegisterInterchainQueryResponse, error) {
+func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) (*icqtypes.MsgRegisterInterchainQueryResponse, error) {
 	msg := icqtypes.MsgRegisterInterchainQuery{
 		Keys:               reg.Keys,
 		TransactionsFilter: reg.TransactionsFilter,
@@ -966,7 +1014,7 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 		return nil, errors.Wrap(err, "failed to register interchain query")
 	}
 
-	return (*bindings.RegisterInterchainQueryResponse)(response), nil
+	return response, nil
 }
 
 func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) error {
@@ -1027,23 +1075,13 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
-	resp := bindings.AddScheduleResponse{}
-	data, err := json.Marshal(&resp)
-	if err != nil {
-		ctx.Logger().Error("json.Marshal: failed to marshal add schedule response to JSON",
-			"from_address", contractAddr.String(),
-			"error", err,
-		)
-		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
-	}
-
 	ctx.Logger().Debug("schedule added",
 		"from_address", contractAddr.String(),
 		"name", addSchedule.Name,
 		"period", addSchedule.Period,
 	)
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+
+	return nil, nil, nil, nil
 }
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -1054,22 +1092,11 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 
 	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
 
-	resp := bindings.RemoveScheduleResponse{}
-	data, err := json.Marshal(&resp)
-	if err != nil {
-		ctx.Logger().Error("json.Marshal: failed to marshal remove schedule response to JSON",
-			"from_address", contractAddr.String(),
-			"error", err,
-		)
-		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
-	}
-
 	ctx.Logger().Debug("schedule removed",
 		"from_address", contractAddr.String(),
 		"name", removeSchedule.Name,
 	)
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+	return nil, nil, nil, nil
 }
 
 func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
@@ -1097,8 +1124,12 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
-	// TODO
-	return nil, [][]byte{data}, nil, nil
+	anyResp, err := types.NewAnyWithValue(failure)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", failure)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
 func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {
