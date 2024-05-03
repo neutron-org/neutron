@@ -347,7 +347,6 @@ func (s *DexTestSuite) TestWithdrawPartiallyFilledCancelled() {
 	// AND her LimitOrderTrancheUser is removed
 	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
 	s.False(found, "Alice's LimitOrderTrancheUser not removed")
-
 }
 
 func (s *DexTestSuite) TestWithdrawUnfilledGTTFilledCancelled() {
@@ -366,7 +365,6 @@ func (s *DexTestSuite) TestWithdrawUnfilledGTTFilledCancelled() {
 	// AND her LimitOrderTrancheUser is removed
 	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
 	s.False(found, "Alice's LimitOrderTrancheUser not removed")
-
 }
 
 func (s *DexTestSuite) TestWithdrawPartiallyGTTFilledCancelled() {
@@ -389,10 +387,9 @@ func (s *DexTestSuite) TestWithdrawPartiallyGTTFilledCancelled() {
 	// AND her LimitOrderTrancheUser is removed
 	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
 	s.False(found, "Alice's LimitOrderTrancheUser not removed")
-
 }
 
-//testcancel unfilled
+// testcancel unfilled
 
 // test withdraw expired
 
