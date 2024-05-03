@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/testutil/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {

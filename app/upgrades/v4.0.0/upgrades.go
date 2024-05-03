@@ -1,4 +1,4 @@
-package nextupgrade
+package v400
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades"
+	"github.com/neutron-org/neutron/v4/app/upgrades"
 )
 
 func CreateUpgradeHandler(

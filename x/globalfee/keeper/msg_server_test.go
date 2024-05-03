@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/v3/testutil/globalfee/keeper"
-	"github.com/neutron-org/neutron/v3/x/globalfee/keeper"
-	"github.com/neutron-org/neutron/v3/x/globalfee/types"
+	testkeeper "github.com/neutron-org/neutron/v4/testutil/globalfee/keeper"
+	"github.com/neutron-org/neutron/v4/x/globalfee/keeper"
+	"github.com/neutron-org/neutron/v4/x/globalfee/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {

@@ -3,8 +3,8 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-	"github.com/neutron-org/neutron/v3/x/dex/utils"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
 func (k Keeper) GetAllDepositsForAddress(ctx sdk.Context, addr sdk.AccAddress) []*types.DepositRecord {

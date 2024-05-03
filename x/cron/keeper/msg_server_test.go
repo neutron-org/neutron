@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil/cron/keeper"
-	"github.com/neutron-org/neutron/v3/x/cron/types"
+	"github.com/neutron-org/neutron/v4/testutil/cron/keeper"
+	"github.com/neutron-org/neutron/v4/x/cron/types"
 )
 
 func TestMsgUpdateParamsValidate(t *testing.T) {

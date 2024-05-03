@@ -3,11 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/neutron-org/neutron/v3/app/config"
+	"github.com/neutron-org/neutron/v4/app/config"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v4/app"
 )
 
 func main() {

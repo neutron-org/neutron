@@ -9,8 +9,8 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 )
 
 type SudoLimitWrapper struct {

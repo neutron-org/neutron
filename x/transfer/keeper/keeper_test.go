@@ -15,12 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v3/app/params"
-	"github.com/neutron-org/neutron/v3/testutil"
-	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/transfer/types"
-	"github.com/neutron-org/neutron/v3/testutil/transfer/keeper"
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v3/x/transfer/types"
+	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v4/testutil"
+	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/transfer/types"
+	"github.com/neutron-org/neutron/v4/testutil/transfer/keeper"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/transfer/types"
 )
 
 const (
