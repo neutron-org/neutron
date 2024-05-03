@@ -24,7 +24,7 @@ require (
 	github.com/cosmos/gogoproto v1.4.12
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.1
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
-	github.com/cosmos/ibc-go/v8 v8.1.0
+	github.com/cosmos/ibc-go/v8 v8.2.1
 	github.com/cosmos/ics23/go v0.10.0
 	github.com/cosmos/interchain-security/v5 v5.0.0-rc0
 	github.com/gogo/protobuf v1.3.3
