@@ -3,18 +3,18 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v4/app/config"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v3/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/v3/x/feeburner"
-	"github.com/neutron-org/neutron/v3/x/feeburner/types"
+	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v4/testutil/feeburner/keeper"
+	"github.com/neutron-org/neutron/v4/x/feeburner"
+	"github.com/neutron-org/neutron/v4/x/feeburner/types"
 )
 
 func TestGenesis(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),

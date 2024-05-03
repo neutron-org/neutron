@@ -1,16 +1,32 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
-	"github.com/neutron-org/neutron/v3/x/globalfee"
-	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
+	appconfig "github.com/neutron-org/neutron/v4/app/config"
+
+	"github.com/skip-mev/slinky/x/oracle"
+
+	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
+	slinkyproposals "github.com/skip-mev/slinky/abci/proposals"
+	compression "github.com/skip-mev/slinky/abci/strategies/codec"
+	"github.com/skip-mev/slinky/abci/strategies/currencypair"
+	"github.com/skip-mev/slinky/abci/ve"
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	"github.com/skip-mev/slinky/pkg/math/voteweighted"
+	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
+	servicemetrics "github.com/skip-mev/slinky/service/metrics"
+
+	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
+	"github.com/neutron-org/neutron/v4/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -28,11 +44,11 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v3/docs"
+	"github.com/neutron-org/neutron/v4/docs"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades"
+	"github.com/neutron-org/neutron/v4/app/upgrades"
 
-	"github.com/neutron-org/neutron/v3/x/cron"
+	"github.com/neutron-org/neutron/v4/x/cron"
 
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -56,6 +72,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
+
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -109,12 +126,12 @@ import (
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
-	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
 
-	"github.com/neutron-org/neutron/v3/x/tokenfactory"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
 	"github.com/cosmos/admin-module/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/x/adminmodule/client/cli"
@@ -123,28 +140,28 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	appparams "github.com/neutron-org/neutron/v3/app/params"
-	"github.com/neutron-org/neutron/v3/wasmbinding"
-	"github.com/neutron-org/neutron/v3/x/contractmanager"
-	contractmanagermodulekeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	contractmanagermoduletypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
-	"github.com/neutron-org/neutron/v3/x/feeburner"
-	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
-	"github.com/neutron-org/neutron/v3/x/feerefunder"
-	feekeeper "github.com/neutron-org/neutron/v3/x/feerefunder/keeper"
-	ibchooks "github.com/neutron-org/neutron/v3/x/ibc-hooks"
-	ibchookstypes "github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
-	"github.com/neutron-org/neutron/v3/x/interchainqueries"
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs"
-	interchaintxskeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
-	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
-	transferSudo "github.com/neutron-org/neutron/v3/x/transfer"
-	wrapkeeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
+	appparams "github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v4/wasmbinding"
+	"github.com/neutron-org/neutron/v4/x/contractmanager"
+	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v4/x/feeburner"
+	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
+	"github.com/neutron-org/neutron/v4/x/feerefunder"
+	feekeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/v4/x/ibc-hooks"
+	ibchookstypes "github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs"
+	interchaintxskeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	transferSudo "github.com/neutron-org/neutron/v4/x/transfer"
+	wrapkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
 
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 
 	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
@@ -156,16 +173,16 @@ import (
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex"
-	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 
-	"github.com/neutron-org/neutron/v3/x/ibcswap"
-	ibcswapkeeper "github.com/neutron-org/neutron/v3/x/ibcswap/keeper"
-	ibcswaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v4/x/ibcswap"
+	ibcswapkeeper "github.com/neutron-org/neutron/v4/x/ibcswap/keeper"
+	ibcswaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 
-	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
-	gmpmiddleware "github.com/neutron-org/neutron/v3/x/gmp"
+	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
+	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
@@ -177,6 +194,12 @@ import (
 
 	"github.com/skip-mev/block-sdk/v2/abci/checktx"
 	"github.com/skip-mev/block-sdk/v2/block/base"
+
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	marketmap "github.com/skip-mev/slinky/x/marketmap/module"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 const (
@@ -184,7 +207,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{nextupgrade.Upgrade}
+	Upgrades = []upgrades.Upgrade{v400.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -235,6 +258,8 @@ var (
 		globalfee.AppModule{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
+		oracle.AppModuleBasic{},
+		marketmap.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -253,6 +278,8 @@ var (
 		crontypes.ModuleName:                          nil,
 		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner},
 		ibcswaptypes.ModuleName:                       {authtypes.Burner},
+		oracletypes.ModuleName:                        nil,
+		marketmaptypes.ModuleName:                     nil,
 	}
 )
 
@@ -269,6 +296,10 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	appconfig.GetDefaultConfig()
+	// TODO: this is a hack to make unit tests pass. Remove that after marketmap module fixes DefaultParams() call
+	marketmaptypes.DefaultMarketAuthority = authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String()
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -340,6 +371,13 @@ type App struct {
 
 	WasmKeeper wasmkeeper.Keeper
 
+	// slinky
+	MarketMapKeeper *marketmapkeeper.Keeper
+	OracleKeeper    *oraclekeeper.Keeper
+
+	// processes
+	oracleClient oracleclient.OracleClient
+
 	// mm is the module manager
 	mm *module.Manager
 
@@ -400,7 +438,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		globalfeetypes.StoreKey,
+		globalfeetypes.StoreKey, oracletypes.StoreKey, marketmaptypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -487,7 +525,7 @@ func New(
 	)
 
 	// ... other modules keepers
-	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper
+	// pre-initialize ConsumerKeeper to satisfy ibckeeper.NewKeeper
 	// which would panic on nil or zero keeper
 	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe
 	// communication over IBC is not affected by these changes
@@ -718,6 +756,22 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	app.MarketMapKeeper = marketmapkeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[marketmaptypes.StoreKey]),
+		appCodec,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName),
+	)
+	marketmapModule := marketmap.NewAppModule(appCodec, app.MarketMapKeeper)
+
+	oracleKeeper := oraclekeeper.NewKeeper(runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
+		appCodec,
+		app.MarketMapKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName))
+	app.OracleKeeper = &oracleKeeper
+	oracleModule := oracle.NewAppModule(appCodec, *app.OracleKeeper)
+
+	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
+
 	app.CronKeeper = *cronkeeper.NewKeeper(
 		appCodec,
 		keys[crontypes.StoreKey],
@@ -852,6 +906,8 @@ func New(
 		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
 		swapModule,
 		dexModule,
+		marketmapModule,
+		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
@@ -889,6 +945,8 @@ func New(
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
@@ -922,6 +980,8 @@ func New(
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
@@ -963,6 +1023,8 @@ func New(
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
 		globalfee.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 	)
@@ -1055,18 +1117,66 @@ func New(
 	mevLane.WithOptions(opts...)
 
 	// set the block-sdk prepare / process-proposal handlers
-	handler := blocksdkabci.NewProposalHandler(
+	blockSdkProposalHandler := blocksdkabci.NewProposalHandler(
 		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
 		app.GetTxConfig().TxEncoder(),
 		mempool,
 	)
-	app.SetPrepareProposal(handler.PrepareProposalHandler())
 
-	// we use a no-op ProcessProposal, this way, we accept all proposals in avoidance
-	// of liveness failures due to Prepare / Process inconsistency. In other words,
-	// this ProcessProposal always returns ACCEPT.
-	app.SetProcessProposal(baseapp.NoOpProcessProposal())
+	// Read general config from app-opts, and construct oracle service.
+	cfg, err := oracleconfig.ReadConfigFromAppOpts(appOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
+	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
+	// latency in VerifyVoteExtension requests and more.
+	oracleMetrics, err := servicemetrics.NewMetricsFromConfig(cfg, app.ChainID())
+	if err != nil {
+		panic(err)
+	}
+
+	// Create the oracle service.
+	app.oracleClient, err = oracleclient.NewClientFromConfig(
+		cfg,
+		app.Logger().With("client", "oracle"),
+		oracleMetrics,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// Connect to the oracle service
+	if err := app.oracleClient.Start(context.Background()); err != nil {
+		app.Logger().Error("failed to start oracle client", "err", err)
+		panic(err)
+	}
+
+	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
+	ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
+
+	// Create the proposal handler that will be used to fill proposals with
+	// transactions and oracle data.
+	oracleProposalHandler := slinkyproposals.NewProposalHandler(
+		app.Logger(),
+		blockSdkProposalHandler.PrepareProposalHandler(),
+		baseapp.NoOpProcessProposal(),
+		ve.NewDefaultValidateVoteExtensionsFn(ccvconsumerCompatKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		oracleMetrics,
+	)
+	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
+	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
 
 	// block-sdk CheckTx handler
 	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
@@ -1086,6 +1196,50 @@ func New(
 	)
 
 	app.SetCheckTx(parityCheckTx.CheckTx())
+
+	// Create the aggregation function that will be used to aggregate oracle data
+	// from each validator.
+	aggregatorFn := voteweighted.MedianFromContext(
+		app.Logger(),
+		ccvconsumerCompatKeeper,
+		voteweighted.DefaultPowerThreshold,
+	)
+
+	// Create the pre-finalize block hook that will be used to apply oracle data
+	// to the state before any transactions are executed (in finalize block).
+	oraclePreBlockHandler := oraclepreblock.NewOraclePreBlockHandler(
+		app.Logger(),
+		aggregatorFn,
+		app.OracleKeeper,
+		oracleMetrics,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+	)
+	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
+
+	// Create the vote extensions handler that will be used to extend and verify
+	// vote extensions (i.e. oracle data).
+	voteExtensionsHandler := ve.NewVoteExtensionHandler(
+		app.Logger(),
+		app.oracleClient,
+		time.Second,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		oraclePreBlockHandler.PreBlocker(),
+		oracleMetrics,
+	)
+	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
+	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -1153,8 +1307,6 @@ func (app *App) setupUpgradeHandlers() {
 				&upgrades.UpgradeKeepers{
 					AccountKeeper:       app.AccountKeeper,
 					FeeBurnerKeeper:     app.FeeBurnerKeeper,
-					BankKeeper:          app.BankKeeper,
-					TransferKeeper:      app.TransferKeeper.Keeper,
 					CronKeeper:          app.CronKeeper,
 					IcqKeeper:           app.InterchainQueriesKeeper,
 					TokenFactoryKeeper:  app.TokenFactoryKeeper,
@@ -1166,6 +1318,7 @@ func (app *App) setupUpgradeHandlers() {
 					AdminModule:         app.AdminmoduleKeeper,
 					ConsensusKeeper:     &app.ConsensusParamsKeeper,
 					ConsumerKeeper:      &app.ConsumerKeeper,
+					MarketmapKeeper:     app.MarketMapKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},

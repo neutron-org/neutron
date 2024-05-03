@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/neutron-org/neutron/v4/app/config"
+
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
@@ -14,11 +16,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/neutron-org/neutron/v3/testutil/consumer"
+	"github.com/neutron-org/neutron/v4/testutil/consumer"
 
-	"github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v4/app/params"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v4/app"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -37,7 +39,7 @@ type (
 )
 
 func init() {
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
 }
 
 // New creates instance with fully configured cosmos network.

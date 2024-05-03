@@ -12,7 +12,7 @@ import "google/protobuf/any.proto";
 import "neutron/feerefunder/fee.proto";
 import "neutron/interchaintxs/v1/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v3/x/interchaintxs/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/interchaintxs/types";
 
 // Msg defines the Msg service.
 service Msg {

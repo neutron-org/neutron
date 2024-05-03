@@ -19,9 +19,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/client/cli"
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/client/cli"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 var (
