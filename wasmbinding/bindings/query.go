@@ -47,8 +47,10 @@ type NeutronQuery struct {
 	Failures *Failures `json:"failures,omitempty"`
 	// dex module queries
 	Dex *DexQuery `json:"dex,omitempty"`
-	// slinky queries
-	Slinky *SlinkyQuery `json:"slinky,omitempty"`
+	// oracle module queries
+	Oracle *OracleQuery `json:"oracle,omitempty"`
+	// marketmap module query
+	Marketmap *MarketmapQuery `json:"marketmap,omitempty"`
 }
 
 /* Requests */
@@ -57,13 +59,16 @@ type QueryRegisteredQueryResultRequest struct {
 	QueryID uint64 `json:"query_id,omitempty"`
 }
 
-type SlinkyQuery struct {
+type OracleQuery struct {
 	GetAllCurrencyPairs *oracletypes.GetAllCurrencyPairsRequest `json:"get_all_currency_pairs,omitempty"`
 	GetPrice            *oracletypes.GetPriceRequest            `json:"get_price,omitempty"`
 	GetPrices           *oracletypes.GetPricesRequest           `json:"get_prices,omitempty"`
-	GetMarketMap        *marketmaptypes.GetMarketMapRequest     `json:"get_market_map,omitempty"`
-	GetLastUpdated      *marketmaptypes.GetLastUpdatedRequest   `json:"get_last_updated,omitempty"`
-	Params              *marketmaptypes.ParamsRequest           `json:"params,omitempty"`
+}
+
+type MarketmapQuery struct {
+	GetMarketMap   *marketmaptypes.GetMarketMapRequest   `json:"get_market_map,omitempty"`
+	GetLastUpdated *marketmaptypes.GetLastUpdatedRequest `json:"get_last_updated,omitempty"`
+	Params         *marketmaptypes.ParamsRequest         `json:"params,omitempty"`
 }
 
 type QueryInterchainAccountAddressRequest struct {
