@@ -8,9 +8,9 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
 
 	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+
 	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
