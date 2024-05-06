@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/x/cron/types"
+	"github.com/neutron-org/neutron/v3/x/cron/types"
 )
 
 func (k Keeper) Schedules(c context.Context, req *types.QuerySchedulesRequest) (*types.QuerySchedulesResponse, error) {
@@ -22,7 +22,7 @@ func (k Keeper) Schedules(c context.Context, req *types.QuerySchedulesRequest) (
 
 	scheduleStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 
-	pageRes, err := query.Paginate(scheduleStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(scheduleStore, req.Pagination, func(_, value []byte) error {
 		var schedule types.Schedule
 		k.cdc.MustUnmarshal(value, &schedule)
 

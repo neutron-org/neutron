@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 
 	errorsmod "cosmossdk.io/errors"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
@@ -74,7 +74,7 @@ func (k Keeper) Hooks() Hooks {
 	return Hooks{k}
 }
 
-// TrackBeforeSend calls the before send listener contract surpresses any errors
+// TrackBeforeSend calls the before send listener contract suppresses any errors
 func (h Hooks) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	_ = h.k.callBeforeSendListener(ctx, from, to, amount, false)
 }

@@ -3,15 +3,16 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v2/utils"
-	math_utils "github.com/neutron-org/neutron/v2/utils/math"
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/utils"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into math.Ints.
@@ -124,7 +125,7 @@ func (k Keeper) DepositCore(
 }
 
 // Handles core logic for MsgWithdrawal; calculating and withdrawing reserve0,reserve1 from a specified tick
-// given a specfied number of shares to remove.
+// given a specified number of shares to remove.
 // Calculates the amount of reserve0, reserve1 to withdraw based on the percentage of the desired
 // number of shares to remove compared to the total number of shares at the given tick.
 func (k Keeper) WithdrawCore(
@@ -235,11 +236,12 @@ func (k Keeper) MultiHopSwapCore(
 		write   func()
 		coinOut sdk.Coin
 		route   []string
+		dust    sdk.Coins
 	}
 	bestRoute.coinOut = sdk.Coin{Amount: math.ZeroInt()}
 
 	for _, route := range routes {
-		routeCoinOut, writeRoute, err := k.RunMultihopRoute(
+		routeDust, routeCoinOut, writeRoute, err := k.RunMultihopRoute(
 			ctx,
 			*route,
 			initialInCoin,
@@ -255,6 +257,7 @@ func (k Keeper) MultiHopSwapCore(
 			bestRoute.coinOut = routeCoinOut
 			bestRoute.write = writeRoute
 			bestRoute.route = route.Hops
+			bestRoute.dust = routeDust
 		}
 		if !pickBestRoute {
 			break
@@ -280,15 +283,18 @@ func (k Keeper) MultiHopSwapCore(
 		return sdk.Coin{}, err
 	}
 
+	// send both dust and coinOut to receiver
+	// note that dust can be multiple coins collected from multiple hops.
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,
 		receiverAddr,
-		sdk.Coins{bestRoute.coinOut},
+		bestRoute.dust.Add(bestRoute.coinOut),
 	)
 	if err != nil {
-		return sdk.Coin{}, err
+		return sdk.Coin{}, fmt.Errorf("failed to send out coin and dust to the receiver: %w", err)
 	}
+
 	ctx.EventManager().EmitEvent(types.CreateMultihopSwapEvent(
 		callerAddr,
 		receiverAddr,
@@ -297,12 +303,13 @@ func (k Keeper) MultiHopSwapCore(
 		initialInCoin.Amount,
 		bestRoute.coinOut.Amount,
 		bestRoute.route,
+		bestRoute.dust,
 	))
 
 	return bestRoute.coinOut, nil
 }
 
-// Handles MsgPlaceLimitOrder, initializing (tick, pair) data structures if needed, calculating and
+// PlaceLimitOrderCore handles MsgPlaceLimitOrder, initializing (tick, pair) data structures if needed, calculating and
 // storing information for a new limit order at a specific tick.
 func (k Keeper) PlaceLimitOrderCore(
 	goCtx context.Context,
@@ -446,7 +453,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	return trancheKey, totalInCoin, swapInCoin, swapOutCoin, nil
 }
 
-// Handles MsgCancelLimitOrder, removing a specified number of shares from a limit order
+// CancelLimitOrderCore handles MsgCancelLimitOrder, removing a specified number of shares from a limit order
 // and returning the respective amount in terms of the reserve to the user.
 func (k Keeper) CancelLimitOrderCore(
 	goCtx context.Context,
@@ -513,7 +520,7 @@ func (k Keeper) CancelLimitOrderCore(
 	return nil
 }
 
-// Handles MsgWithdrawFilledLimitOrder, calculates and sends filled liqudity from module to user
+// WithdrawFilledLimitOrderCore handles MsgWithdrawFilledLimitOrder, calculates and sends filled liquidity from module to user
 // for a limit order based on amount wished to receive.
 func (k Keeper) WithdrawFilledLimitOrderCore(
 	goCtx context.Context,

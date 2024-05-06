@@ -6,6 +6,7 @@ import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -14,13 +15,14 @@ import (
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v2/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v2/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v2/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v2/x/tokenfactory/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	transferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
 )
 
 // Upgrade defines a struct containing necessary fields that a SoftwareUpgradeProposal
@@ -41,6 +43,8 @@ type Upgrade struct {
 type UpgradeKeepers struct {
 	// keepers
 	AccountKeeper      authkeeper.AccountKeeper
+	BankKeeper         bankkeeper.Keeper
+	TransferKeeper     transferkeeper.Keeper
 	IcqKeeper          icqkeeper.Keeper
 	CronKeeper         cronkeeper.Keeper
 	TokenFactoryKeeper *tokenfactorykeeper.Keeper

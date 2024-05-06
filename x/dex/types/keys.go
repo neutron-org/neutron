@@ -6,7 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v2/x/dex/utils"
+	"github.com/neutron-org/neutron/v3/x/dex/utils"
 )
 
 const (
@@ -221,6 +221,7 @@ const (
 	MultihopSwapEventAmountIn  = "AmountIn"
 	MultihopSwapEventAmountOut = "AmountOut"
 	MultihopSwapEventRoute     = "Route"
+	MultihopSwapEventDust      = "Dust"
 )
 
 // Place LimitOrder Event Attributes

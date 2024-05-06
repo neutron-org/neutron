@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 func CmdQueryParams() *cobra.Command {
@@ -15,7 +15,7 @@ func CmdQueryParams() *cobra.Command {
 		Use:   "params",
 		Short: "shows the parameters of the module",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)

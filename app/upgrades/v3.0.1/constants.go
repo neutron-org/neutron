@@ -1,4 +1,4 @@
-package nextupgrade
+package v301
 
 import (
 	"cosmossdk.io/math"
@@ -7,15 +7,15 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "nextupgrade"
+	UpgradeName = "v3.0.1"
 
-	AuctionParamsMaxBundleSize          = 2
-	AuctionParamsFrontRunningProtection = true
+	AuctionParamsMaxBundleSize          = 4
+	AuctionParamsFrontRunningProtection = false
 )
 
 var (

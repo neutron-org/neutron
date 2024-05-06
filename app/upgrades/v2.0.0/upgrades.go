@@ -9,7 +9,7 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
 
-	"github.com/neutron-org/neutron/v2/app/params"
+	"github.com/neutron-org/neutron/v3/app/params"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -21,15 +21,15 @@ import (
 	"github.com/cosmos/gaia/v11/x/globalfee/types"
 	v6 "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
-	contractmanagerkeeper "github.com/neutron-org/neutron/v2/x/contractmanager/keeper"
-	contractmanagertypes "github.com/neutron-org/neutron/v2/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/v2/x/cron/types"
-	feeburnertypes "github.com/neutron-org/neutron/v2/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v2/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v2/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v2/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v2/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
 func CreateUpgradeHandler(
@@ -39,7 +39,7 @@ func CreateUpgradeHandler(
 	storeKeys upgrades.StoreKeys,
 	codec codec.Codec,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("Migrating channel capability...")
 		// https://github.com/cosmos/ibc-go/blob/v7.0.1/docs/migrations/v5-to-v6.md#upgrade-proposal
 		if err := v6.MigrateICS27ChannelCapability(ctx, codec, storeKeys.GetKey(capabilitytypes.StoreKey), keepers.CapabilityKeeper, interchaintxstypes.ModuleName); err != nil {

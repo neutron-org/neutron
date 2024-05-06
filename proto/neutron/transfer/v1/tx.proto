@@ -7,7 +7,7 @@ import "gogoproto/gogo.proto";
 import "ibc/core/client/v1/client.proto";
 import "neutron/feerefunder/fee.proto";
 
-option go_package = "github.com/neutron-org/neutron/v2/x/transfer/types";
+option go_package = "github.com/neutron-org/neutron/v3/x/transfer/types";
 
 // Msg defines the ibc/transfer Msg service.
 service Msg {
@@ -49,6 +49,6 @@ message MsgTransfer {
 message MsgTransferResponse {
   // channel's sequence_id for outgoing ibc packet. Unique per a channel.
   uint64 sequence_id = 1;
-  // channel src channel on neutron side trasaction was submitted from
+  // channel src channel on neutron side transaction was submitted from
   string channel = 2;
 }

@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v2/utils/math"
-	"github.com/neutron-org/neutron/v2/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	"github.com/neutron-org/neutron/v3/x/dex/utils"
 )
 
 func NewLimitOrderTranche(
@@ -123,13 +123,18 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	return amountToRemove
 }
 
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
-	reservesTokenOutDec := math_utils.NewPrecDecFromInt(t.ReservesTakerDenom)
-
+func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
 	ratioFilled := t.RatioFilled()
 	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned).TruncateInt()
 	amountOutTokenIn := maxAllowedToWithdraw.Sub(trancheUser.SharesWithdrawn)
 	amountOutTokenOut := math_utils.NewPrecDecFromInt(amountOutTokenIn).Quo(t.PriceTakerToMaker)
+
+	return amountOutTokenIn, amountOutTokenOut
+}
+
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
+	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
+	reservesTokenOutDec := math_utils.NewPrecDecFromInt(t.ReservesTakerDenom)
 	t.ReservesTakerDenom = reservesTokenOutDec.Sub(amountOutTokenOut).TruncateInt()
 
 	return amountOutTokenIn, amountOutTokenOut

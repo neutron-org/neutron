@@ -7,9 +7,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/utils"
-	"github.com/neutron-org/neutron/v2/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v2/x/dex/utils"
+	"github.com/neutron-org/neutron/v3/utils"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v3/x/dex/utils"
 )
 
 func (k Keeper) UserDepositsAll(
@@ -56,6 +56,10 @@ func (k Keeper) UserDepositsAll(
 					Fee:             poolMetadata.Fee,
 				}
 
+				if req.IncludePoolData {
+					k.addPoolData(ctx, depositRecord)
+				}
+
 				depositArr = append(depositArr, depositRecord)
 			}
 
@@ -69,4 +73,17 @@ func (k Keeper) UserDepositsAll(
 		Deposits:   depositArr,
 		Pagination: pageRes,
 	}, nil
+}
+
+func (k Keeper) addPoolData(ctx sdk.Context, record *types.DepositRecord) *types.DepositRecord {
+	pool, found := k.GetPool(ctx, record.PairId, record.CenterTickIndex, record.Fee)
+	if !found {
+		panic("Pool does not exist")
+	}
+
+	record.Pool = pool
+	supply := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom())
+	record.TotalShares = &supply.Amount
+
+	return record
 }

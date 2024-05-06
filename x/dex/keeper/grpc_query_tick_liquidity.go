@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v2/x/dex/types"
+	"github.com/neutron-org/neutron/v3/x/dex/types"
 )
 
 // NOTE: For single queries of tick liquidity use explicty typed queries
@@ -36,7 +36,7 @@ func (k Keeper) TickLiquidityAll(
 	store := ctx.KVStore(k.storeKey)
 	tickLiquidityStore := prefix.NewStore(store, types.TickLiquidityPrefix(tradePairID))
 
-	pageRes, err := query.Paginate(tickLiquidityStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(tickLiquidityStore, req.Pagination, func(_, value []byte) error {
 		tickLiquidity := &types.TickLiquidity{}
 		if err := k.cdc.Unmarshal(value, tickLiquidity); err != nil {
 			return err

@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/neutron-org/neutron/v2/app/upgrades"
+	"github.com/neutron-org/neutron/v3/app/upgrades"
 )
 
 func CreateUpgradeHandler(
@@ -18,7 +18,7 @@ func CreateUpgradeHandler(
 	_ upgrades.StoreKeys,
 	_ codec.Codec,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info(fmt.Sprintf("Empty migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
