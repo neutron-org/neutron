@@ -37959,6 +37959,259 @@ paths:
       summary: Queries the simulated result of a PlaceLimit order
       tags:
         - Query
+  /neutron/dex/filled_limit_order_tranche:
+    get:
+      operationId: InactiveLimitOrderTrancheAll2
+      parameters:
+        - description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          format: byte
+          in: query
+          name: pagination.key
+          required: false
+          type: string
+        - description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          format: uint64
+          in: query
+          name: pagination.offset
+          required: false
+          type: string
+        - description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          format: uint64
+          in: query
+          name: pagination.limit
+          required: false
+          type: string
+        - description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          name: pagination.count_total
+          required: false
+          type: boolean
+        - description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          name: pagination.reverse
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              inactive_limit_order_tranche:
+                items:
+                  properties:
+                    expiration_time:
+                      format: date-time
+                      title: >-
+                        JIT orders also use expiration_time to handle deletion
+                        but represent a special case
+
+                        All JIT orders have a expiration_time of 0 and an
+                        exception is made to still treat these orders as live
+
+                        Order deletion still functions the same and the orders
+                        will be deleted at the end of the block
+                      type: string
+                    key:
+                      properties:
+                        tick_index_taker_to_maker:
+                          format: int64
+                          type: string
+                        trade_pair_id:
+                          properties:
+                            maker_denom:
+                              type: string
+                            taker_denom:
+                              type: string
+                          type: object
+                        tranche_key:
+                          type: string
+                      type: object
+                    price_taker_to_maker:
+                      type: string
+                    reserves_maker_denom:
+                      type: string
+                    reserves_taker_denom:
+                      type: string
+                    total_maker_denom:
+                      type: string
+                    total_taker_denom:
+                      type: string
+                  type: object
+                type: array
+              pagination:
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+                properties:
+                  next_key:
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                    format: byte
+                    type: string
+                  total:
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Queries a list of InactiveLimitOrderTranche items.
+      tags:
+        - Query
+  /neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}:
+    get:
+      operationId: InactiveLimitOrderTranche2
+      parameters:
+        - in: path
+          name: pair_id
+          required: true
+          type: string
+        - in: path
+          name: token_in
+          required: true
+          type: string
+        - format: int64
+          in: path
+          name: tick_index
+          required: true
+          type: string
+        - in: path
+          name: tranche_key
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              inactive_limit_order_tranche:
+                properties:
+                  expiration_time:
+                    format: date-time
+                    title: >-
+                      JIT orders also use expiration_time to handle deletion but
+                      represent a special case
+
+                      All JIT orders have a expiration_time of 0 and an
+                      exception is made to still treat these orders as live
+
+                      Order deletion still functions the same and the orders
+                      will be deleted at the end of the block
+                    type: string
+                  key:
+                    properties:
+                      tick_index_taker_to_maker:
+                        format: int64
+                        type: string
+                      trade_pair_id:
+                        properties:
+                          maker_denom:
+                            type: string
+                          taker_denom:
+                            type: string
+                        type: object
+                      tranche_key:
+                        type: string
+                    type: object
+                  price_taker_to_maker:
+                    type: string
+                  reserves_maker_denom:
+                    type: string
+                  reserves_taker_denom:
+                    type: string
+                  total_maker_denom:
+                    type: string
+                  total_taker_denom:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Queries a InactiveLimitOrderTranche by index.
+      tags:
+        - Query
   /neutron/dex/inactive_limit_order_tranche:
     get:
       operationId: InactiveLimitOrderTrancheAll
