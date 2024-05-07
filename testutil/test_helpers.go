@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/neutron-org/neutron/v4/app/config"
+
 	"cosmossdk.io/log"
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
 	db2 "github.com/cosmos/cosmos-db"
@@ -25,15 +27,15 @@ import (
 	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v3/app/params"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	appparams "github.com/neutron-org/neutron/v4/app/params"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	appProvider "github.com/cosmos/interchain-security/v5/app/provider"
 	e2e "github.com/cosmos/interchain-security/v5/testutil/integration"
 
-	"github.com/neutron-org/neutron/v3/app"
-	ictxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v4/app"
+	ictxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
 	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
 	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
@@ -62,7 +64,7 @@ var (
 
 func init() {
 	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
 	// Disable cache since enabled cache triggers test errors when `AccAddress.String()`
 	// gets called before setting neutron bech32 prefix
 	sdk.SetAddrCacheEnabled(false)
@@ -287,7 +289,7 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 	sdk.SetAddrCacheEnabled(false)
 	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chainID = ibctesting.GetChainID(2)

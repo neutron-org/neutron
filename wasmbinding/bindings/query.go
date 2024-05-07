@@ -6,17 +6,17 @@ import (
 	"cosmossdk.io/math"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
@@ -242,7 +242,7 @@ type DexQuery struct {
 	// Queries a list of LimitOrderTrancheUser items.
 	LimitOrderTrancheUserAll *dextypes.QueryAllLimitOrderTrancheUserRequest `json:"limit_order_tranche_user_all"`
 	// Queries a list of LimitOrderTrancheUser items for a given address.
-	LimitOrderTrancheUserAllByAddress *dextypes.QueryAllUserLimitOrdersRequest `json:"limit_order_tranche_user_all_by_address"`
+	LimitOrderTrancheUserAllByAddress *dextypes.QueryAllLimitOrderTrancheUserByAddressRequest `json:"limit_order_tranche_user_all_by_address"`
 	// Queries a LimitOrderTranche by index.
 	LimitOrderTranche *dextypes.QueryGetLimitOrderTrancheRequest `json:"limit_order_tranche"`
 	// Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination.

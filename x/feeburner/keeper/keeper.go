@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/v3/x/feeburner/types"
+	"github.com/neutron-org/neutron/v4/x/feeburner/types"
 )
 
 type (

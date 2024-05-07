@@ -1,8 +1,11 @@
-package nextupgrade
+package v400
 
 import (
 	"context"
 	"fmt"
+
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
@@ -12,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades"
+	"github.com/neutron-org/neutron/v4/app/upgrades"
 )
 
 func CreateUpgradeHandler(
@@ -49,7 +52,7 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 	}
 
 	marketmapParams := marketmaptypes.Params{
-		MarketAuthority: AdminModuleAddress,
+		MarketAuthority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		Version:         params.Version,
 	}
 	return marketmapKeeper.SetParams(ctx, marketmapParams)

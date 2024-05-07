@@ -10,10 +10,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v3/testutil/common/nullify"
-	"github.com/neutron-org/neutron/v3/testutil/common/sample"
-	keepertest "github.com/neutron-org/neutron/v3/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
+	"github.com/neutron-org/neutron/v4/testutil/common/sample"
+	keepertest "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func TestLimitOrderTrancheUserQuerySingle(t *testing.T) {
@@ -185,8 +185,8 @@ func TestLimitOrderTrancheUserAllByAddress(t *testing.T) {
 	address := sample.AccAddress()
 	msgs := createNLimitOrderTrancheUserWithAddress(keeper, ctx, address, 5)
 
-	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllUserLimitOrdersRequest {
-		return &types.QueryAllUserLimitOrdersRequest{
+	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllLimitOrderTrancheUserByAddressRequest {
+		return &types.QueryAllLimitOrderTrancheUserByAddressRequest{
 			Address: address,
 			Pagination: &query.PageRequest{
 				Key:        next,

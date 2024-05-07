@@ -16,7 +16,7 @@ ROSETTA=${ROSETTA:-8081}
 
 ORACLE_ADDRESS=${ORACLE_ADDRESS:-localhost:8080}
 ORACLE_METRICS_ENABLED=${ORACLE_METRICS_ENABLED:-true}
-ORACLE_CLIENT_TIMEOUT=${ORACLE_CLIENT_TIMEOUT:-2s}
+ORACLE_CLIENT_TIMEOUT=${ORACLE_CLIENT_TIMEOUT:-500ms}
 
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"

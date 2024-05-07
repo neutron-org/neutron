@@ -4,18 +4,18 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
-	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
-	feerefunderkeeper "github.com/neutron-org/neutron/v3/x/feerefunder/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
-	transfer "github.com/neutron-org/neutron/v3/x/transfer/keeper"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	transfer "github.com/neutron-org/neutron/v4/x/transfer/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )

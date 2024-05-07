@@ -22,15 +22,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v3/x/globalfee/client/cli"
-	"github.com/neutron-org/neutron/v3/x/globalfee/keeper"
-	"github.com/neutron-org/neutron/v3/x/globalfee/types"
+	"github.com/neutron-org/neutron/v4/x/globalfee/client/cli"
+	"github.com/neutron-org/neutron/v4/x/globalfee/keeper"
+	"github.com/neutron-org/neutron/v4/x/globalfee/types"
 )
 
 var (
 	_ module.AppModuleBasic   = AppModuleBasic{}
 	_ module.AppModuleGenesis = AppModule{}
 	_ module.AppModule        = AppModule{}
+	_ module.HasServices      = AppModule{}
 )
 
 // AppModuleBasic defines the basic application module used by the wasm module.
@@ -121,9 +122,6 @@ func (a AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {
 }
 
 func (a AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterQueryServer(cfg.QueryServer(), a.keeper)
-	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(a.keeper))
-
 	m := keeper.NewMigrator(a.cdc, a.paramSpace, a.storeKey)
 	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/globalfee from version 1 to 2: %v", err))
@@ -132,6 +130,9 @@ func (a AppModule) RegisterServices(cfg module.Configurator) {
 	if err := cfg.RegisterMigration(types.ModuleName, 2, m.Migrate2to3); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/globalfee from version 2 to 3: %v", err))
 	}
+
+	types.RegisterQueryServer(cfg.QueryServer(), a.keeper)
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(a.keeper))
 }
 
 func (a AppModule) BeginBlock(_ sdk.Context) {

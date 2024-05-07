@@ -37,7 +37,7 @@ linters-settings:
     # Default: false
     extra-rules: true
   nolintlint:
-    allow-unused: false
+    allow-unused: true
     allow-leading-space: true
     require-explanation: false
     require-specific: false

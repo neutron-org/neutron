@@ -11,7 +11,7 @@ import "neutron/interchainqueries/params.proto";
 import "tendermint/abci/types.proto";
 import "tendermint/crypto/proof.proto";
 
-option go_package = "github.com/neutron-org/neutron/v3/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/interchainqueries/types";
 
 // Msg defines the Msg service.
 service Msg {
@@ -25,6 +25,8 @@ service Msg {
 }
 
 message MsgRegisterInterchainQuery {
+  option (cosmos.msg.v1.signer) = "sender";
+
   // defines a query type: `kv` or `tx` now
   string query_type = 1;
 
@@ -50,6 +52,8 @@ message MsgRegisterInterchainQueryResponse {
 }
 
 message MsgSubmitQueryResult {
+  option (cosmos.msg.v1.signer) = "sender";
+
   uint64 query_id = 1;
   string sender = 2;
 
@@ -112,12 +116,14 @@ message TxValue {
 message MsgSubmitQueryResultResponse {}
 
 message MsgRemoveInterchainQueryRequest {
+  option (cosmos.msg.v1.signer) = "sender";
   uint64 query_id = 1;
   string sender = 2; // is the signer of the message
 }
 message MsgRemoveInterchainQueryResponse {}
 
 message MsgUpdateInterchainQueryRequest {
+  option (cosmos.msg.v1.signer) = "sender";
   uint64 query_id = 1;
   repeated KVKey new_keys = 2;
   uint64 new_update_period = 3;

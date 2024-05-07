@@ -17,9 +17,9 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/interchainqueries/client/cli"
-	"github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries/client/cli"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 )
 
 var (

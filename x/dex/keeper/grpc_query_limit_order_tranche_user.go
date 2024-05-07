@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (k Keeper) LimitOrderTrancheUserAll(
@@ -97,8 +97,8 @@ func (k Keeper) LimitOrderTrancheUser(c context.Context,
 
 func (k Keeper) LimitOrderTrancheUserAllByAddress(
 	goCtx context.Context,
-	req *types.QueryAllUserLimitOrdersRequest,
-) (*types.QueryAllUserLimitOrdersResponse, error) {
+	req *types.QueryAllLimitOrderTrancheUserByAddressRequest,
+) (*types.QueryAllLimitOrderTrancheUserByAddressResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -126,7 +126,7 @@ func (k Keeper) LimitOrderTrancheUserAllByAddress(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryAllUserLimitOrdersResponse{
+	return &types.QueryAllLimitOrderTrancheUserByAddressResponse{
 		LimitOrders: limitOrderTrancheUserList,
 		Pagination:  pageRes,
 	}, nil

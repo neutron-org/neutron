@@ -10,10 +10,12 @@ import (
 	"path/filepath"
 	"time"
 
+	appconfig "github.com/neutron-org/neutron/v4/app/config"
+
 	"github.com/skip-mev/slinky/x/oracle"
 
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
-	"github.com/skip-mev/slinky/abci/proposals"
+	slinkyproposals "github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
@@ -22,9 +24,9 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades/nextupgrade"
-	"github.com/neutron-org/neutron/v3/x/globalfee"
-	globalfeetypes "github.com/neutron-org/neutron/v3/x/globalfee/types"
+	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
+	"github.com/neutron-org/neutron/v4/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -42,11 +44,11 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v3/docs"
+	"github.com/neutron-org/neutron/v4/docs"
 
-	"github.com/neutron-org/neutron/v3/app/upgrades"
+	"github.com/neutron-org/neutron/v4/app/upgrades"
 
-	"github.com/neutron-org/neutron/v3/x/cron"
+	"github.com/neutron-org/neutron/v4/x/cron"
 
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -124,12 +126,12 @@ import (
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
-	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
 
-	"github.com/neutron-org/neutron/v3/x/tokenfactory"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
 	"github.com/cosmos/admin-module/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/x/adminmodule/client/cli"
@@ -138,28 +140,28 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	appparams "github.com/neutron-org/neutron/v3/app/params"
-	"github.com/neutron-org/neutron/v3/wasmbinding"
-	"github.com/neutron-org/neutron/v3/x/contractmanager"
-	contractmanagermodulekeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	contractmanagermoduletypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
-	"github.com/neutron-org/neutron/v3/x/feeburner"
-	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
-	"github.com/neutron-org/neutron/v3/x/feerefunder"
-	feekeeper "github.com/neutron-org/neutron/v3/x/feerefunder/keeper"
-	ibchooks "github.com/neutron-org/neutron/v3/x/ibc-hooks"
-	ibchookstypes "github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
-	"github.com/neutron-org/neutron/v3/x/interchainqueries"
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs"
-	interchaintxskeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
-	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
-	transferSudo "github.com/neutron-org/neutron/v3/x/transfer"
-	wrapkeeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
+	appparams "github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v4/wasmbinding"
+	"github.com/neutron-org/neutron/v4/x/contractmanager"
+	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v4/x/feeburner"
+	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
+	"github.com/neutron-org/neutron/v4/x/feerefunder"
+	feekeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/v4/x/ibc-hooks"
+	ibchookstypes "github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs"
+	interchaintxskeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	transferSudo "github.com/neutron-org/neutron/v4/x/transfer"
+	wrapkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
 
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 
 	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
@@ -171,16 +173,16 @@ import (
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex"
-	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 
-	"github.com/neutron-org/neutron/v3/x/ibcswap"
-	ibcswapkeeper "github.com/neutron-org/neutron/v3/x/ibcswap/keeper"
-	ibcswaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v4/x/ibcswap"
+	ibcswapkeeper "github.com/neutron-org/neutron/v4/x/ibcswap/keeper"
+	ibcswaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 
-	globalfeekeeper "github.com/neutron-org/neutron/v3/x/globalfee/keeper"
-	gmpmiddleware "github.com/neutron-org/neutron/v3/x/gmp"
+	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
+	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
@@ -205,7 +207,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{nextupgrade.Upgrade}
+	Upgrades = []upgrades.Upgrade{v400.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -295,8 +297,9 @@ func init() {
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
 
+	appconfig.GetDefaultConfig()
 	// TODO: this is a hack to make unit tests pass. Remove that after marketmap module fixes DefaultParams() call
-	marketmaptypes.DefaultMarketAuthority = "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z"
+	marketmaptypes.DefaultMarketAuthority = authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String()
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -655,6 +658,7 @@ func New(
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
+		maccPerms,
 		app.AccountKeeper,
 		&app.BankKeeper,
 		&app.WasmKeeper,
@@ -900,7 +904,7 @@ func New(
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
-		// globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
+		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
 		swapModule,
 		dexModule,
 		marketmapModule,
@@ -1019,9 +1023,9 @@ func New(
 		ibchookstypes.ModuleName, // after auth keeper
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
+		globalfee.ModuleName,
 		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
-		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 	)
@@ -1056,8 +1060,6 @@ func New(
 		feeBurnerModule,
 		cronModule,
 		dexModule,
-		// marketmapModule,
-		// oracleModule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -1116,7 +1118,7 @@ func New(
 	mevLane.WithOptions(opts...)
 
 	// set the block-sdk prepare / process-proposal handlers
-	handler := blocksdkabci.NewProposalHandler(
+	blockSdkProposalHandler := blocksdkabci.NewProposalHandler(
 		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
 		app.GetTxConfig().TxEncoder(),
@@ -1147,25 +1149,20 @@ func New(
 		panic(err)
 	}
 
-	// Connect to the oracle service (default timeout of 5 seconds).
-	go func() {
-		// TODO: change background to something cancellable across the app?
-		if err := app.oracleClient.Start(context.Background()); err != nil {
-			app.Logger().Error("failed to start oracle client", "err", err)
-			panic(err)
-		}
-
-		app.Logger().Info("started oracle client", "address", cfg.OracleAddress)
-	}()
+	// Connect to the oracle service
+	if err := app.oracleClient.Start(context.Background()); err != nil {
+		app.Logger().Error("failed to start oracle client", "err", err)
+		panic(err)
+	}
 
 	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
 	ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
-	proposalHandler := proposals.NewProposalHandler(
+	oracleProposalHandler := slinkyproposals.NewProposalHandler(
 		app.Logger(),
-		handler.PrepareProposalHandler(),
+		blockSdkProposalHandler.PrepareProposalHandler(),
 		baseapp.NoOpProcessProposal(),
 		ve.NewDefaultValidateVoteExtensionsFn(ccvconsumerCompatKeeper),
 		compression.NewCompressionVoteExtensionCodec(
@@ -1179,8 +1176,8 @@ func New(
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		oracleMetrics,
 	)
-	app.SetPrepareProposal(proposalHandler.PrepareProposalHandler())
-	app.SetProcessProposal(proposalHandler.ProcessProposalHandler())
+	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
+	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
 
 	// block-sdk CheckTx handler
 	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(

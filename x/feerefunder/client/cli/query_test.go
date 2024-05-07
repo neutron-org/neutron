@@ -3,17 +3,17 @@ package cli_test
 import (
 	"testing"
 
-	"cosmossdk.io/math"
+	"github.com/neutron-org/neutron/v4/app/config"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"cosmossdk.io/math"
 
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil/contractmanager/network"
-	"github.com/neutron-org/neutron/v3/x/feerefunder/client/cli"
-	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/testutil/contractmanager/network"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/client/cli"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
 
 func feeRefunderNetwork(t *testing.T, feeInfo types.Fee) *network.Network {
@@ -37,7 +37,7 @@ func feeRefunderNetwork(t *testing.T, feeInfo types.Fee) *network.Network {
 }
 
 func TestQueryFeeInfo(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	feeInfo := types.Fee{
 		RecvFee:    sdk.NewCoins(),

@@ -1,14 +1,14 @@
 package wasmbinding
 
 import (
-	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
-	feerefunderkeeper "github.com/neutron-org/neutron/v3/x/feerefunder/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	icacontrollerkeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	icacontrollerkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
