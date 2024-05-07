@@ -366,7 +366,7 @@ message QueryGetPoolMetadataRequest {
 }
 
 message QueryGetPoolMetadataResponse {
-  PoolMetadata pool_metadata = 1 [(gogoproto.nullable) = false];
+  PoolMetadata Pool_metadata = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryAllPoolMetadataRequest {

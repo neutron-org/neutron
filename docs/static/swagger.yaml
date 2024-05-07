@@ -16510,7 +16510,7 @@ definitions:
     type: object
   neutron.dex.QueryGetPoolMetadataResponse:
     properties:
-      pool_metadata:
+      Pool_metadata:
         properties:
           fee:
             format: uint64
@@ -39365,7 +39365,7 @@ paths:
           description: A successful response.
           schema:
             properties:
-              pool_metadata:
+              Pool_metadata:
                 properties:
                   fee:
                     format: uint64
