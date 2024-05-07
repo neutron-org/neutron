@@ -791,7 +791,10 @@ func New(
 	), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
-		&wasmkeeper.QueryPlugins{Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec)})
+		&wasmkeeper.QueryPlugins{
+			Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec),
+			Grpc:     wasmkeeper.AcceptListGrpcQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec),
+		})
 	wasmOpts = append(wasmOpts, queryPlugins)
 
 	app.WasmKeeper = wasmkeeper.NewKeeper(
