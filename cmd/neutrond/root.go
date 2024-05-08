@@ -63,7 +63,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		app.DefaultNodeHome,
 		0,
 		encodingConfig,
-		sims.NewAppOptionsWithFlagHome(tempDir()),
+		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
 		nil,
 	)
 
@@ -367,14 +367,4 @@ func setCustomEnvVariablesFromClientToml(ctx client.Context) {
 	setEnvFromConfig("fee-account", "NEUTROND_FEE_ACCOUNT")
 	// memo
 	setEnvFromConfig("note", "NEUTROND_NOTE")
-}
-
-var tempDir = func() string {
-	dir, err := os.MkdirTemp("", "simapp")
-	if err != nil {
-		dir = app.DefaultNodeHome
-	}
-	defer os.RemoveAll(dir)
-
-	return dir
 }
