@@ -131,7 +131,6 @@ func (k Keeper) GetPlaceTranche(
 		var tick types.TickLiquidity
 		k.cdc.MustUnmarshal(iter.Value(), &tick)
 		tranche := tick.GetLimitOrderTranche()
-		if tranche.IsPlaceTranche() {
 		// Make sure tranche has not been traded through and is not JIT or GTT (we do not commingle JIT or GTT tranches)
 		if tranche.IsPlaceTranche() && !tranche.HasExpiration() {
 			return tranche
