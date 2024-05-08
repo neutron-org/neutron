@@ -225,20 +225,6 @@ func (mr *MockICAControllerKeeperMockRecorder) GetInterchainAccountAddress(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterchainAccountAddress", reflect.TypeOf((*MockICAControllerKeeper)(nil).GetInterchainAccountAddress), ctx, connectionID, portID)
 }
 
-// RegisterInterchainAccount mocks base method.
-func (m *MockICAControllerKeeper) RegisterInterchainAccount(ctx types0.Context, connectionID, owner, version string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterInterchainAccount", ctx, connectionID, owner, version)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RegisterInterchainAccount indicates an expected call of RegisterInterchainAccount.
-func (mr *MockICAControllerKeeperMockRecorder) RegisterInterchainAccount(ctx, connectionID, owner, version interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterInterchainAccount", reflect.TypeOf((*MockICAControllerKeeper)(nil).RegisterInterchainAccount), ctx, connectionID, owner, version)
-}
-
 // SetMiddlewareEnabled mocks base method.
 func (m *MockICAControllerKeeper) SetMiddlewareEnabled(ctx types0.Context, portID, connectionID string) {
 	m.ctrl.T.Helper()
