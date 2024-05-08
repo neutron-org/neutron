@@ -68,14 +68,22 @@ service Query {
 
   // Queries a InactiveLimitOrderTranche by index.
   rpc InactiveLimitOrderTranche(QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get =
-      "/neutron/dex/inactive_limit_order_tranche/{pair_id}/{token_in}/"
-      "{tick_index}/{tranche_key}";
+    option (google.api.http) = {
+      get: "/neutron/dex/inactive_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}"
+      additional_bindings {
+        get: "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}" // this route is deprecated, keep it for backwards compatibility
+      }
+    };
   }
 
   // Queries a list of InactiveLimitOrderTranche items.
   rpc InactiveLimitOrderTrancheAll(QueryAllInactiveLimitOrderTrancheRequest) returns (QueryAllInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/inactive_limit_order_tranche";
+    option (google.api.http) = {
+      get: "/neutron/dex/inactive_limit_order_tranche"
+      additional_bindings {
+        get: "/neutron/dex/filled_limit_order_tranche" // this route is deprecated, keep it for backwards compatibility
+      }
+    };
   }
 
   // Queries a list of PoolReserves items.
@@ -358,7 +366,7 @@ message QueryGetPoolMetadataRequest {
 }
 
 message QueryGetPoolMetadataResponse {
-  PoolMetadata pool_metadata = 1 [(gogoproto.nullable) = false];
+  PoolMetadata Pool_metadata = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryAllPoolMetadataRequest {
