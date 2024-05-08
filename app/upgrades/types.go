@@ -15,6 +15,7 @@ import (
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
@@ -59,6 +60,7 @@ type UpgradeKeepers struct {
 	ConsensusKeeper    *consensuskeeper.Keeper
 	ConsumerKeeper     *ccvconsumerkeeper.Keeper
 	MarketmapKeeper    *marketmapkeeper.Keeper
+	OracleKeeper       *oraclekeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace

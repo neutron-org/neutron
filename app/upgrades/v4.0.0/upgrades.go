@@ -3,6 +3,7 @@ package v400
 import (
 	"context"
 	"fmt"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -40,6 +41,12 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
+		ctx.Logger().Info("Setting marketmap and oracle state...")
+		err = setMarketState(ctx, keepers.MarketmapKeeper, keepers.OracleKeeper)
+		if err != nil {
+			return nil, err
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
@@ -51,4 +58,8 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 		Admin:             authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	}
 	return marketmapKeeper.SetParams(ctx, marketmapParams)
+}
+
+func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper, oKeeper *oraclekeeper.Keeper) error {
+	return nil
 }
