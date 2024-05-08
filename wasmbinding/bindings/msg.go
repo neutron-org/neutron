@@ -265,7 +265,7 @@ type MsgPlaceLimitOrder struct {
 	Receiver string `json:"receiver,omitempty"`
 	TokenIn  string `json:"token_in,omitempty"`
 	TokenOut string `json:"token_out,omitempty"`
-	// DEPRECATED: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
+	// Deprecated: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
 	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`
 	AmountIn         math.Int `json:"amount_in"`
 	OrderType        string   `json:"order_type,omitempty"`

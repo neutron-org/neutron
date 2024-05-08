@@ -221,10 +221,11 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		return handleDexMsg(ctx, dex.Withdrawal, m.DexMsgServer.Withdrawal)
 	case dex.PlaceLimitOrder != nil:
 		msg := dextypes.MsgPlaceLimitOrder{
-			Creator:          contractAddr.String(),
-			Receiver:         dex.PlaceLimitOrder.Receiver,
-			TokenIn:          dex.PlaceLimitOrder.TokenIn,
-			TokenOut:         dex.PlaceLimitOrder.TokenOut,
+			Creator:  contractAddr.String(),
+			Receiver: dex.PlaceLimitOrder.Receiver,
+			TokenIn:  dex.PlaceLimitOrder.TokenIn,
+			TokenOut: dex.PlaceLimitOrder.TokenOut,
+			//nolint: staticcheck // TODO: remove in next release
 			TickIndexInToOut: dex.PlaceLimitOrder.TickIndexInToOut,
 			AmountIn:         dex.PlaceLimitOrder.AmountIn,
 			MaxAmountOut:     dex.PlaceLimitOrder.MaxAmountOut,

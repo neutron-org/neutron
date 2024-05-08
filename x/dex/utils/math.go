@@ -93,7 +93,6 @@ func Log(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
 var scientificNotationRE = regexp.MustCompile(`^([\d\.]+)(E([\-\+])(\d+))?$`)
 
 func ParsePrecDecScientificNotation(n string) (math_utils.PrecDec, error) {
-
 	match := scientificNotationRE.FindSubmatch([]byte(n))
 
 	if len(match) == 0 {
@@ -119,8 +118,7 @@ func ParsePrecDecScientificNotation(n string) (math_utils.PrecDec, error) {
 
 	if string(match[3]) == "+" { // positive exponent
 		return baseDec.Mul(shift), nil
-	} else { // string(match[3]) == "-" // negative exponent
+	} // else string(match[3]) == "-" // negative exponent
 
-		return baseDec.Quo(shift), nil
-	}
+	return baseDec.Quo(shift), nil
 }

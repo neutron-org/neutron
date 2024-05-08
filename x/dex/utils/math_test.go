@@ -3,9 +3,10 @@ package utils_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 	"github.com/neutron-org/neutron/v3/x/dex/utils"
-	"github.com/stretchr/testify/require"
 )
 
 func TestParsePrecDecScientificNotation(t *testing.T) {
