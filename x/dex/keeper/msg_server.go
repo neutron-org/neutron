@@ -27,7 +27,7 @@ func (k MsgServer) Deposit(
 	goCtx context.Context,
 	msg *types.MsgDeposit,
 ) (*types.MsgDepositResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgDeposit")
 	}
 
@@ -69,7 +69,7 @@ func (k MsgServer) Withdrawal(
 	goCtx context.Context,
 	msg *types.MsgWithdrawal,
 ) (*types.MsgWithdrawalResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgWithdrawal")
 	}
 
@@ -103,7 +103,7 @@ func (k MsgServer) PlaceLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgPlaceLimitOrder,
 ) (*types.MsgPlaceLimitOrderResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgPlaceLimitOrder")
 	}
 
@@ -143,7 +143,7 @@ func (k MsgServer) WithdrawFilledLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgWithdrawFilledLimitOrder,
 ) (*types.MsgWithdrawFilledLimitOrderResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgWithdrawFilledLimitOrder")
 	}
 
@@ -165,7 +165,7 @@ func (k MsgServer) CancelLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgCancelLimitOrder,
 ) (*types.MsgCancelLimitOrderResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgCancelLimitOrder")
 	}
 
@@ -187,7 +187,7 @@ func (k MsgServer) MultiHopSwap(
 	goCtx context.Context,
 	msg *types.MsgMultiHopSwap,
 ) (*types.MsgMultiHopSwapResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgMultiHopSwap")
 	}
 
@@ -211,7 +211,7 @@ func (k MsgServer) MultiHopSwap(
 }
 
 func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
+	if err := req.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
 

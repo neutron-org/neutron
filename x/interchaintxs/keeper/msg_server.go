@@ -34,7 +34,7 @@ func NewMsgServerImpl(keeper Keeper) ictxtypes.MsgServer {
 func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	defer telemetry.ModuleMeasureSince(ictxtypes.ModuleName, time.Now(), LabelRegisterInterchainAccount)
 
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgRegisterInterchainAccount")
 	}
 
@@ -77,7 +77,7 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "nil msg is prohibited")
 	}
 
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgSubmitTx")
 	}
 
@@ -186,7 +186,7 @@ func SerializeCosmosTx(cdc codec.BinaryCodec, msgs []*codectypes.Any) (bz []byte
 
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *ictxtypes.MsgUpdateParams) (*ictxtypes.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
+	if err := req.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
 

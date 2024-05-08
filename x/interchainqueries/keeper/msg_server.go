@@ -36,7 +36,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQuery) (*types.MsgRegisterInterchainQueryResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
 
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgRegisterInterchainQuery")
 	}
 
@@ -95,7 +95,7 @@ func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 }
 
 func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRemoveInterchainQueryRequest) (*types.MsgRemoveInterchainQueryResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgRemoveInterchainQueryRequest")
 	}
 
@@ -122,7 +122,7 @@ func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 }
 
 func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUpdateInterchainQueryRequest) (*types.MsgUpdateInterchainQueryResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgUpdateInterchainQueryRequest")
 	}
 
@@ -170,7 +170,7 @@ func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResult) (*types.MsgSubmitQueryResultResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
 
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgSubmitQueryResult")
 	}
 
@@ -329,7 +329,7 @@ func (m msgServer) validateUpdateInterchainQueryParams(
 
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
+	if err := req.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
 
