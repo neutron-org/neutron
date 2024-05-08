@@ -93,7 +93,10 @@ type RegisterInterchainAccount struct {
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
-type RegisterInterchainAccountResponse struct{}
+type RegisterInterchainAccountResponse struct {
+	ChannelId string `json:"channel_id"`
+	PortId    string `json:"port_id"`
+}
 
 // RegisterInterchainQuery creates a query for remote chain.
 type RegisterInterchainQuery struct {
