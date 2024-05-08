@@ -2,21 +2,18 @@ package v400
 
 import (
 	"context"
-	"fmt"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
-
-	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	"fmt"
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
+	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
 )
 
 func CreateUpgradeHandler(
@@ -42,7 +39,7 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Setting marketmap and oracle state...")
-		err = setMarketState(ctx, keepers.MarketmapKeeper, keepers.OracleKeeper)
+		err = setMarketState(ctx, keepers.MarketmapKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -60,6 +57,19 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 	return marketmapKeeper.SetParams(ctx, marketmapParams)
 }
 
-func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper, oKeeper *oraclekeeper.Keeper) error {
+func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
+	markets, err := slinkyutils.ReadMarketsFromFile("markets.json")
+	if err != nil {
+		return err
+	}
+
+	for _, market := range markets {
+		err = mmKeeper.CreateMarket(ctx, market)
+		if err != nil {
+			return err
+		}
+
+		err = mmKeeper.Hooks().AfterMarketCreated(ctx, market)
+	}
 	return nil
 }
