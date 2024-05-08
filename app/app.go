@@ -748,6 +748,7 @@ func New(
 		memKeys[interchaintxstypes.MemStoreKey],
 		app.IBCKeeper.ChannelKeeper,
 		app.ICAControllerKeeper,
+		icacontrollerkeeper.NewMsgServerImpl(&app.ICAControllerKeeper),
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		app.FeeKeeper,
 		app.BankKeeper,

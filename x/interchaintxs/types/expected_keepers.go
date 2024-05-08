@@ -5,8 +5,7 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
@@ -34,8 +33,12 @@ type WasmKeeper interface {
 type ICAControllerKeeper interface {
 	GetActiveChannelID(ctx sdk.Context, connectionID, portID string) (string, bool)
 	GetInterchainAccountAddress(ctx sdk.Context, connectionID, portID string) (string, bool)
-	RegisterInterchainAccount(ctx sdk.Context, connectionID, owner, version string) error
-	SendTx(ctx sdk.Context, chanCap *capabilitytypes.Capability, connectionID, portID string, icaPacketData icatypes.InterchainAccountPacketData, timeoutTimestamp uint64) (uint64, error)
+	SetMiddlewareEnabled(ctx sdk.Context, portID, connectionID string)
+}
+
+type ICAControllerMsgServer interface {
+	RegisterInterchainAccount(context.Context, *icacontrollertypes.MsgRegisterInterchainAccount) (*icacontrollertypes.MsgRegisterInterchainAccountResponse, error)
+	SendTx(context.Context, *icacontrollertypes.MsgSendTx) (*icacontrollertypes.MsgSendTxResponse, error)
 }
 
 type FeeRefunderKeeper interface {

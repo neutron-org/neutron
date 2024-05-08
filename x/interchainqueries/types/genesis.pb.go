@@ -13,7 +13,7 @@ import (
 	types1 "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	types "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	types "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
