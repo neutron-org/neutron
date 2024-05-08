@@ -154,6 +154,9 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		server.StatusCommand(),
+		server.ShowValidatorCmd(),
+		server.ShowNodeIDCmd(),
+		server.ShowAddressCmd(),
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
@@ -176,14 +179,14 @@ func queryCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		// TODO: authcmd.GetAccountCmd(),
 		rpc.ValidatorCommand(),
-		// TODO: rpc.BlockCommand(),
+		server.QueryBlockResultsCmd(),
+		server.QueryBlocksCmd(),
+		server.QueryBlockCmd(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
 	)
 
-	app.ModuleBasics.AddQueryCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
@@ -210,7 +213,6 @@ func txCommand() *cobra.Command {
 		authcmd.GetDecodeCommand(),
 	)
 
-	app.ModuleBasics.AddTxCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
