@@ -13,13 +13,14 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+
 	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"

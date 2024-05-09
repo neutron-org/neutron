@@ -1,9 +1,11 @@
 package v400_test
 
 import (
-	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	"testing"
+
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+
+	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/stretchr/testify/require"
