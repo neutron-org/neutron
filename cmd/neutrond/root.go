@@ -29,6 +29,7 @@ import (
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -62,7 +63,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		map[int64]bool{},
 		app.DefaultNodeHome,
 		0,
-		encodingConfig,
 		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
 		nil,
 	)
@@ -109,7 +109,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		},
 	}
 
-	initRootCmd(rootCmd, encodingConfig)
+	initRootCmd(rootCmd, encodingConfig, tempApp.BasicModuleManager)
 
 	autoCliOpts := tempApp.AutoCliOpts()
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
@@ -129,16 +129,19 @@ func initAppConfig() (string, interface{}) {
 	return serverconfig.DefaultConfigTemplate, srvCfg
 }
 
-func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
+func initRootCmd(rootCmd *cobra.Command,
+	encodingConfig params.EncodingConfig,
+	moduleBasics module.BasicManager,
+) {
 	debugCmd := debug.Cmd()
 	debugCmd.AddCommand(genContractAddressCmd())
-	gentxModule := app.ModuleBasics[genutiltypes.ModuleName].(genutil.AppModuleBasic)
+	gentxModule := moduleBasics[genutiltypes.ModuleName].(genutil.AppModuleBasic)
 
 	rootCmd.AddCommand(
-		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
+		genutilcli.InitCmd(moduleBasics, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome, gentxModule.GenTxValidator, encodingConfig.TxConfig.SigningContext().ValidatorAddressCodec()),
-		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome, encodingConfig.TxConfig.SigningContext().ValidatorAddressCodec()),
-		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
+		genutilcli.GenTxCmd(moduleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome, encodingConfig.TxConfig.SigningContext().ValidatorAddressCodec()),
+		genutilcli.ValidateGenesisCmd(moduleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		addGenesisWasmMsgCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
@@ -274,7 +277,6 @@ func (ac appCreator) newApp(
 	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
-		ac.encCfg,
 		appOpts,
 		wasmOpts,
 		baseapp.SetPruning(pruningOpts),
@@ -316,7 +318,6 @@ func (ac appCreator) appExport(
 		map[int64]bool{},
 		homePath,
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
-		ac.encCfg,
 		appOpts,
 		emptyWasmOpts,
 	)

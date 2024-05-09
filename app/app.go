@@ -45,9 +45,6 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	"github.com/neutron-org/neutron/v4/docs"
 
@@ -99,6 +96,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -142,7 +142,6 @@ import (
 	adminmodulecli "github.com/cosmos/admin-module/x/adminmodule/client/cli"
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	appparams "github.com/neutron-org/neutron/v4/app/params"
@@ -220,52 +219,52 @@ var (
 	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
 	// and genesis verification.
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-		authzmodule.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		capability.AppModuleBasic{},
-		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-		params.AppModuleBasic{},
-		crisis.AppModuleBasic{},
-		slashing.AppModuleBasic{},
-		feegrantmodule.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ica.AppModuleBasic{},
-		tendermint.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		transferSudo.AppModuleBasic{},
-		vesting.AppModuleBasic{},
-		ccvconsumer.AppModuleBasic{},
-		wasm.AppModuleBasic{},
-		tokenfactory.AppModuleBasic{},
-		interchainqueries.AppModuleBasic{},
-		interchaintxs.AppModuleBasic{},
-		feerefunder.AppModuleBasic{},
-		feeburner.AppModuleBasic{},
-		contractmanager.AppModuleBasic{},
-		cron.AppModuleBasic{},
-		adminmodule.NewAppModuleBasic(
-			govclient.NewProposalHandler(
-				adminmodulecli.NewSubmitParamChangeProposalTxCmd,
-			),
-			govclient.NewProposalHandler(
-				adminmodulecli.NewCmdSubmitUpgradeProposal,
-			),
-			govclient.NewProposalHandler(
-				adminmodulecli.NewCmdSubmitCancelUpgradeProposal,
-			),
-		),
-		ibchooks.AppModuleBasic{},
-		packetforward.AppModuleBasic{},
-		auction.AppModuleBasic{},
-		globalfee.AppModule{},
-		dex.AppModuleBasic{},
-		ibcswap.AppModuleBasic{},
-		oracle.AppModuleBasic{},
-		marketmap.AppModuleBasic{},
-	)
+	// ModuleBasics = module.NewBasicManager(
+	// 	auth.AppModuleBasic{},
+	// 	authzmodule.AppModuleBasic{},
+	// 	bank.AppModuleBasic{},
+	// 	capability.AppModuleBasic{},
+	// 	genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+	// 	params.AppModuleBasic{},
+	// 	crisis.AppModuleBasic{},
+	// 	slashing.AppModuleBasic{},
+	// 	feegrantmodule.AppModuleBasic{},
+	// 	ibc.AppModuleBasic{},
+	// 	ica.AppModuleBasic{},
+	// 	tendermint.AppModuleBasic{},
+	// 	upgrade.AppModuleBasic{},
+	// 	evidence.AppModuleBasic{},
+	// 	transferSudo.AppModuleBasic{},
+	// 	vesting.AppModuleBasic{},
+	// 	ccvconsumer.AppModuleBasic{},
+	// 	wasm.AppModuleBasic{},
+	// 	tokenfactory.AppModuleBasic{},
+	// 	interchainqueries.AppModuleBasic{},
+	// 	interchaintxs.AppModuleBasic{},
+	// 	feerefunder.AppModuleBasic{},
+	// 	feeburner.AppModuleBasic{},
+	// 	contractmanager.AppModuleBasic{},
+	// 	cron.AppModuleBasic{},
+	// 	adminmodule.NewAppModuleBasic(
+	// 		govclient.NewProposalHandler(
+	// 			adminmodulecli.NewSubmitParamChangeProposalTxCmd,
+	// 		),
+	// 		govclient.NewProposalHandler(
+	// 			adminmodulecli.NewCmdSubmitUpgradeProposal,
+	// 		),
+	// 		govclient.NewProposalHandler(
+	// 			adminmodulecli.NewCmdSubmitCancelUpgradeProposal,
+	// 		),
+	// 	),
+	// 	ibchooks.AppModuleBasic{},
+	// 	packetforward.AppModuleBasic{},
+	// 	auction.AppModuleBasic{},
+	// 	globalfee.AppModule{},
+	// 	dex.AppModuleBasic{},
+	// 	ibcswap.AppModuleBasic{},
+	// 	oracle.AppModuleBasic{},
+	// 	marketmap.AppModuleBasic{},
+	// )
 
 	// module account permissions
 	maccPerms = map[string][]string{
@@ -382,7 +381,8 @@ type App struct {
 	oracleClient oracleclient.OracleClient
 
 	// mm is the module manager
-	mm *module.Manager
+	mm                 *module.Manager
+	BasicModuleManager module.BasicManager
 
 	// sm is the simulation manager
 	sm *module.SimulationManager
@@ -417,12 +417,12 @@ func New(
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,
-	encodingConfig appparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
 	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	overrideWasmVariables()
+	encodingConfig := MakeEncodingConfig()
 
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
@@ -917,6 +917,34 @@ func New(
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
+	)
+
+	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
+	// non-dependant module elements, such as codec registration and genesis verification.
+	// By default it is composed of all the module from the module manager.
+	// Additionally, app module basics can be overwritten by passing them as argument.
+	app.BasicModuleManager = module.NewBasicManagerFromManager(
+		app.mm,
+		map[string]module.AppModuleBasic{
+			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+			adminmoduletypes.ModuleName: adminmodule.NewAppModuleBasic(
+				govclient.NewProposalHandler(
+					adminmodulecli.NewSubmitParamChangeProposalTxCmd,
+				),
+				govclient.NewProposalHandler(
+					adminmodulecli.NewCmdSubmitUpgradeProposal,
+				),
+				govclient.NewProposalHandler(
+					adminmodulecli.NewCmdSubmitCancelUpgradeProposal,
+				),
+			),
+		},
+	)
+	app.BasicModuleManager.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	app.BasicModuleManager.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+
+	app.mm.SetOrderPreBlockers(
+		upgradetypes.ModuleName,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -1509,7 +1537,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	// Register new tendermint queries routes from grpc-gateway.
 	cmtservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register app's swagger ui
 	if apiConfig.Swagger {

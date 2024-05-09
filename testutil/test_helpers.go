@@ -427,7 +427,6 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 			map[int64]bool{},
 			homePath,
 			0,
-			encoding,
 			sims.EmptyAppOptions{},
 			nil,
 		)
@@ -437,7 +436,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 		// and then we manually init baseapp and load states
 		testApp.LoadLatest()
 
-		genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
+		genesisState := testApp.NewDefaultGenesisState()
 
 		// TODO: why isn't it in the `testApp.TestInitChainer`?
 		// NOTE ibc-go/v7/testing.SetupWithGenesisValSet requires a staking module
