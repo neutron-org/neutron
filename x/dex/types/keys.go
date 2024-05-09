@@ -299,6 +299,6 @@ func JITGoodTilTime() time.Time {
 }
 
 const (
-	GoodTilPurgeAllowance = 50_000
+	GoodTilPurgeAllowance = 540_000
 	ExpiringLimitOrderGas = 10_000
 )
