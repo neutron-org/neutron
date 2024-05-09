@@ -28,7 +28,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -40,9 +39,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/neutron-org/neutron/v4/app"
 	"github.com/neutron-org/neutron/v4/app/params"
+	dbm "github.com/cosmos/cosmos-db"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -50,22 +51,27 @@ import (
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := app.MakeEncodingConfig()
 
-	// TODO: move to depinject
-	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
-	// note, this is not necessary when using app wiring, as depinject can be directly used
-	memoryDB := cosmosdb.NewMemDB()
-	tempApp := app.New(
+	// create a temporary application for use in constructing query + tx commands
+	initAppOptions := viper.New()
+	tempDir := tempDir()
+	initAppOptions.Set(flags.FlagHome, tempDir)
+	tempApplication := app.New(
 		log.NewNopLogger(),
-		memoryDB,
+		dbm.NewMemDB(),
 		nil,
-		false,
-		map[int64]bool{},
-		app.DefaultNodeHome,
+		true,
+		nil,
+		tempDir,
 		0,
 		encodingConfig,
-		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
+		initAppOptions,
 		nil,
 	)
+	defer func() {
+		if err := tempApplication.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
@@ -110,8 +116,15 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	}
 
 	initRootCmd(rootCmd, encodingConfig)
+	initClientCtx, err := config.ReadDefaultValuesFromDefaultClientConfig(initClientCtx)
+	if err != nil {
+		panic(err)
+	}
+	if err := tempApplication.AutoCLIOpts(initClientCtx).EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
 
-	autoCliOpts := tempApp.AutoCliOpts()
+	autoCliOpts := tempApplication.AutoCliOpts()
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
 	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
 	autoCliOpts.ClientCtx = initClientCtx
@@ -121,6 +134,16 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	}
 
 	return rootCmd, encodingConfig
+}
+
+func tempDir() string {
+	dir, err := os.MkdirTemp("", "neutrond")
+	if err != nil {
+		dir = app.DefaultNodeHome
+	}
+	defer os.RemoveAll(dir)
+
+	return dir
 }
 
 func initAppConfig() (string, interface{}) {
