@@ -121,7 +121,7 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
 
-build-docker-image: go.sum $(BUILDDIR)/
+build-e2e-docker-image: go.sum $(BUILDDIR)/
 	$(DOCKER) buildx create --name neutronbuilder || true
 	$(DOCKER) buildx use neutronbuilder
 	$(DOCKER) buildx build \

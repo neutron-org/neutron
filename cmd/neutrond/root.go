@@ -26,7 +26,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
-	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
@@ -43,7 +42,6 @@ import (
 
 	"github.com/neutron-org/neutron/v4/app"
 	"github.com/neutron-org/neutron/v4/app/params"
-	dbm "github.com/cosmos/cosmos-db"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -57,7 +55,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	initAppOptions.Set(flags.FlagHome, tempDir)
 	tempApplication := app.New(
 		log.NewNopLogger(),
-		dbm.NewMemDB(),
+		cosmosdb.NewMemDB(),
 		nil,
 		true,
 		nil,
@@ -110,8 +108,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			customTemplate, customNeutronConfig := initAppConfig()
-			return InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig, tmcfg.DefaultConfig())
+			neutronAppConfig, neutronAppConfigTemplate := initAppConfig()
+			return InterceptConfigsPreRunHandler(cmd, neutronAppConfigTemplate, neutronAppConfig, tmcfg.DefaultConfig())
 		},
 	}
 
@@ -144,12 +142,6 @@ func tempDir() string {
 	defer os.RemoveAll(dir)
 
 	return dir
-}
-
-func initAppConfig() (string, interface{}) {
-	srvCfg := serverconfig.DefaultConfig()
-
-	return serverconfig.DefaultConfigTemplate, srvCfg
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
