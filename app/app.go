@@ -127,6 +127,7 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+
 	"github.com/spf13/cast"
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -938,6 +939,8 @@ func New(
 					adminmodulecli.NewCmdSubmitCancelUpgradeProposal,
 				),
 			),
+			// Manually register the transfer module since we dont use a native ibc-go transfer module but a custom implementation
+			ibctransfertypes.ModuleName: transferSudo.AppModuleBasic{},
 		},
 	)
 	app.BasicModuleManager.RegisterLegacyAminoCodec(encodingConfig.Amino)
