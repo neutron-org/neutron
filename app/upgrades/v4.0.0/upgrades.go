@@ -2,8 +2,10 @@ package v400
 
 import (
 	"context"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"fmt"
+
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -70,6 +72,10 @@ func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
 		}
 
 		err = mmKeeper.Hooks().AfterMarketCreated(ctx, market)
+		if err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
