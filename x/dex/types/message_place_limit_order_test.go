@@ -6,10 +6,9 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-
-	"github.com/neutron-org/neutron/v3/testutil/common/sample"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/testutil/common/sample"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {

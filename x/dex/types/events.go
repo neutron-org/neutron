@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
+	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -189,7 +190,6 @@ func TickUpdateEvent(
 		sdk.NewAttribute(TickUpdateEventToken1, token1),
 		sdk.NewAttribute(TickUpdateEventTokenIn, makerDenom),
 		sdk.NewAttribute(TickUpdateEventTickIndex, strconv.FormatInt(tickIndex, 10)),
-		sdk.NewAttribute(TickUpdateEventFee, strconv.FormatInt(tickIndex, 10)),
 		sdk.NewAttribute(TickUpdateEventReserves, reserves.String()),
 	}
 	attrs = append(attrs, otherAttrs...)
@@ -223,7 +223,7 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
 	)
 }
 
-func GoodTilPurgeHitLimitEvent(gas sdk.Gas) sdk.Event {
+func GoodTilPurgeHitLimitEvent(gas types.Gas) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(GoodTilPurgeHitGasLimitEventGas, strconv.FormatUint(gas, 10)),

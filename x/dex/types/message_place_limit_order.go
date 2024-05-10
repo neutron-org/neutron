@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 const TypeMsgPlaceLimitOrder = "place_limit_order"
@@ -59,7 +59,7 @@ func (msg *MsgPlaceLimitOrder) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgPlaceLimitOrder) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
 func (msg *MsgPlaceLimitOrder) ValidateBasic() error {

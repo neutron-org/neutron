@@ -5,32 +5,33 @@ import (
 	"testing"
 	"time"
 
-	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	abci "github.com/cometbft/cometbft/abci/types"
+
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	"github.com/golang/mock/gomock"
 
-	icqtestkeeper "github.com/neutron-org/neutron/v3/testutil/interchainqueries/keeper"
-	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/interchainqueries/types"
+	icqtestkeeper "github.com/neutron-org/neutron/v4/testutil/interchainqueries/keeper"
+	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/interchainqueries/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmprotoversion "github.com/cometbft/cometbft/proto/tendermint/version"
 	tmtypes "github.com/cometbft/cometbft/types"
 	tmversion "github.com/cometbft/cometbft/version"
 	"github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v7/modules/core/exported"
-	ibctmtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibctmtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/require"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
+	clientkeeper "github.com/cosmos/ibc-go/v8/modules/core/02-client/keeper"
 
-	"github.com/neutron-org/neutron/v3/testutil"
-	iqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v4/testutil"
+	iqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 )
 
 // CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow
@@ -40,7 +41,7 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 		valSet      *tmproto.ValidatorSet
 		trustedVals *tmproto.ValidatorSet
 	)
-	require.NotNil(chain.T, tmValSet)
+	require.NotNil(chain.TB, tmValSet)
 
 	vsetHash := tmValSet.Hash()
 
@@ -65,22 +66,22 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 	blockID := ibctesting.MakeBlockID(hhash, 3, tmhash.Sum([]byte("part_set")))
 	voteSet := tmtypes.NewVoteSet(chainID, blockHeight, 1, tmproto.PrecommitType, tmValSet)
 
-	commit, err := tmtypes.MakeCommit(blockID, blockHeight, 1, voteSet, signers, timestamp)
-	require.NoError(chain.T, err)
+	commit, err := tmtypes.MakeExtCommit(blockID, blockHeight, 1, voteSet, signers, timestamp, false)
+	require.NoError(chain.TB, err)
 
 	signedHeader := &tmproto.SignedHeader{
 		Header: tmHeader.ToProto(),
-		Commit: commit.ToProto(),
+		Commit: commit.ToCommit().ToProto(),
 	}
 
 	if tmValSet != nil { //nolint:staticcheck // this checks if a pointer is nil, suggesting that it can be nil but we have this test all over the place
 		valSet, err = tmValSet.ToProto()
-		require.NoError(chain.T, err)
+		require.NoError(chain.TB, err)
 	}
 
 	if tmTrustedVals != nil {
 		trustedVals, err = tmTrustedVals.ToProto()
-		require.NoError(chain.T, err)
+		require.NoError(chain.TB, err)
 	}
 
 	// The trusted fields may be nil. They may be filled before relaying messages to a client.
@@ -94,10 +95,20 @@ func CreateTMClientHeader(chain *ibctesting.TestChain, chainID string, blockHeig
 }
 
 func NextBlock(chain *ibctesting.TestChain) {
+	_, err := chain.App.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height:             chain.CurrentHeader.Height,
+		Time:               chain.CurrentHeader.GetTime(),
+		NextValidatorsHash: chain.NextVals.Hash(),
+	})
+	require.NoError(chain.TB, err)
+
+	_, err = chain.App.Commit()
+	require.NoError(chain.TB, err)
+
 	// set the last header to the current header
 	// use nil trusted fields
 	ph, err := tmtypes.HeaderFromProto(chain.LastHeader.Header)
-	require.NoError(chain.T, err)
+	require.NoError(chain.TB, err)
 
 	var signers []tmtypes.PrivValidator
 	for _, val := range chain.Vals.Validators {
@@ -116,8 +127,6 @@ func NextBlock(chain *ibctesting.TestChain) {
 		ValidatorsHash:     chain.Vals.Hash(),
 		NextValidatorsHash: chain.Vals.Hash(),
 	}
-
-	chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
 }
 
 // CommitBlock commits a block on the provided indexes and then increments the global time.
@@ -125,7 +134,6 @@ func NextBlock(chain *ibctesting.TestChain) {
 // CONTRACT: the passed in list of indexes must not contain duplicates
 func CommitBlock(coord *ibctesting.Coordinator, chains ...*ibctesting.TestChain) {
 	for _, chain := range chains {
-		chain.App.Commit()
 		NextBlock(chain)
 	}
 	coord.IncrementTime()
@@ -154,7 +162,7 @@ func UpdateClient(endpoint *ibctesting.Endpoint) (err error) {
 		endpoint.ClientID, header,
 		endpoint.Chain.SenderAccount.GetAddress().String(),
 	)
-	require.NoError(endpoint.Chain.T, err)
+	require.NoError(endpoint.Chain.TB, err)
 
 	_, err = endpoint.Chain.SendMsgs(msg)
 
@@ -247,7 +255,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				}
 				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
 					RevisionNumber: 0,
-					RevisionHeight: 29,
+					RevisionHeight: 28,
 				})
 				suite.Require().NoError(err)
 

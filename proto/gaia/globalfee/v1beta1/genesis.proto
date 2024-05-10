@@ -1,0 +1,16 @@
+syntax = "proto3";
+package gaia.globalfee.v1beta1;
+
+import "gaia/globalfee/v1beta1/params.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/v4/x/globalfee/types";
+
+// GenesisState - initial state of module
+message GenesisState {
+  // Params of this module
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "params,omitempty"
+  ];
+}

@@ -6,7 +6,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v4/app/config"
+
+	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -18,10 +20,9 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/testutil/contractmanager/network"
-	"github.com/neutron-org/neutron/v3/testutil/contractmanager/nullify"
-	"github.com/neutron-org/neutron/v3/x/contractmanager/client/cli"
-	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v4/testutil/contractmanager/network"
+	"github.com/neutron-org/neutron/v4/x/contractmanager/client/cli"
+	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
 )
 
 func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.Failure) {
@@ -51,7 +52,7 @@ func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.F
 }
 
 func TestAddressFailures(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	net, objs := networkWithFailureObjects(t, 2)
 

@@ -4,17 +4,19 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
@@ -68,12 +70,11 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/neutron.dex.Query/Params":                            &dextypes.QueryParamsResponse{},
 		"/neutron.dex.Query/LimitOrderTrancheUser":             &dextypes.QueryGetLimitOrderTrancheUserResponse{},
 		"/neutron.dex.Query/LimitOrderTrancheUserAll":          &dextypes.QueryAllLimitOrderTrancheUserResponse{},
-		"/neutron.dex.Query/LimitOrderTrancheUserAllByAddress": &dextypes.QueryAllUserLimitOrdersResponse{},
+		"/neutron.dex.Query/LimitOrderTrancheUserAllByAddress": &dextypes.QueryAllLimitOrderTrancheUserByAddressResponse{},
 		"/neutron.dex.Query/LimitOrderTranche":                 &dextypes.QueryGetLimitOrderTrancheResponse{},
 		"/neutron.dex.Query/LimitOrderTrancheAll":              &dextypes.QueryAllLimitOrderTrancheResponse{},
 		"/neutron.dex.Query/UserDepositsAll":                   &dextypes.QueryAllUserDepositsResponse{},
 		"/neutron.dex.Query/TickLiquidityAll":                  &dextypes.QueryAllTickLiquidityResponse{},
-		"/neutron.dex.Query/UserLimitOrdersAll":                &dextypes.QueryAllUserLimitOrdersResponse{},
 		"/neutron.dex.Query/InactiveLimitOrderTranche":         &dextypes.QueryGetInactiveLimitOrderTrancheResponse{},
 		"/neutron.dex.Query/InactiveLimitOrderTrancheAll":      &dextypes.QueryAllInactiveLimitOrderTrancheResponse{},
 		"/neutron.dex.Query/PoolReservesAll":                   &dextypes.QueryAllPoolReservesResponse{},
@@ -84,5 +85,15 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
 		"/neutron.dex.Query/PoolByID":                          &dextypes.QueryPoolResponse{},
 		"/neutron.dex.Query/PoolMetadata":                      &dextypes.QueryGetPoolMetadataResponse{},
 		"/neutron.dex.Query/PoolMetadataAll":                   &dextypes.QueryAllPoolMetadataResponse{},
+
+		// oracle
+		"/slinky.oracle.v1.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
+		"/slinky.oracle.v1.Query/GetPrice":            &oracletypes.GetPriceResponse{},
+		"/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
+
+		// marketmap
+		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.GetMarketMapResponse{},
+		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.GetLastUpdatedResponse{},
+		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
 	}
 }

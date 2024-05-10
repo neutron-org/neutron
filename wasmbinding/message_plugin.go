@@ -9,44 +9,44 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v3/x/dex/utils"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v3/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
+	softwareUpgrade "cosmossdk.io/x/upgrade/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	softwareUpgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v3/x/transfer/types"
+	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v4/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(
@@ -174,8 +174,10 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 	return m.Wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 }
 
-func handleDexMsg[T sdk.Msg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
-	if err := msg.ValidateBasic(); err != nil {
+func handleDexMsg[T sdk.LegacyMsg, R any](ctx sdk.Context, msg T, handler func(ctx context.Context, msg T) (R, error)) ([][]byte, error) {
+	// TODO: is this even legal to do?
+	validatableMsg := any(msg).(sdk.HasValidateBasic)
+	if err := validatableMsg.ValidateBasic(); err != nil {
 		return nil, errors.Wrapf(err, "failed to validate %T", msg)
 	}
 
@@ -276,7 +278,7 @@ func (m *CustomMessenger) ibcTransfer(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, errors.Wrap(err, "failed to validate ibcTransferMsg")
 	}
 
-	response, err := m.transferKeeper.Transfer(sdk.WrapSDKContext(ctx), &ibcTransferMsg)
+	response, err := m.transferKeeper.Transfer(ctx, &ibcTransferMsg)
 	if err != nil {
 		ctx.Logger().Debug("transferServer.Transfer: failed to transfer",
 			"from_address", contractAddr.String(),
@@ -344,7 +346,7 @@ func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contract
 		return nil, errors.Wrap(err, "failed to validate incoming UpdateInterchainQuery message")
 	}
 
-	response, err := m.Icqmsgserver.UpdateInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Icqmsgserver.UpdateInterchainQuery(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update interchain query")
 	}
@@ -390,7 +392,7 @@ func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contract
 		return nil, errors.Wrap(err, "failed to validate incoming RemoveInterchainQuery message")
 	}
 
-	response, err := m.Icqmsgserver.RemoveInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Icqmsgserver.RemoveInterchainQuery(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to remove interchain query")
 	}
@@ -501,7 +503,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		}
 	case proposal.UpgradeProposal != nil:
 		p := proposal.UpgradeProposal
-		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{
+		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{ //nolint:staticcheck
 			Title:       p.Title,
 			Description: p.Description,
 			Plan: softwareUpgrade.Plan{
@@ -516,7 +518,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		}
 	case proposal.ClientUpdateProposal != nil:
 		p := proposal.ClientUpdateProposal
-		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{
+		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{ //nolint:staticcheck
 			Title:              p.Title,
 			Description:        p.Description,
 			SubjectClientId:    p.SubjectClientId,
@@ -533,7 +535,7 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposalLegacy(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Adminserver.SubmitProposalLegacy(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit proposal")
 	}
@@ -559,11 +561,14 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		return nil, errors.Wrap(err, "failed to unmarshall incoming sdk message")
 	}
 
-	signers := sdkMsg.GetSigners()
+	signers, _, err := cdc.GetMsgV1Signers(sdkMsg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get signers from incoming sdk message")
+	}
 	if len(signers) != 1 {
 		return nil, errors.Wrap(sdkerrors.ErrorInvalidSigner, "should be 1 signer")
 	}
-	if !signers[0].Equals(authority) {
+	if !sdk.AccAddress(signers[0]).Equals(authority) {
 		return nil, errors.Wrap(sdkerrors.ErrUnauthorized, "authority in incoming msg is not equal to admin module")
 	}
 
@@ -576,7 +581,7 @@ func (m *CustomMessenger) performSubmitAdminProposal(ctx sdk.Context, contractAd
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitAdminProposal message")
 	}
 
-	response, err := m.Adminserver.SubmitProposal(sdk.WrapSDKContext(ctx), msg)
+	response, err := m.Adminserver.SubmitProposal(ctx, msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit proposal")
 	}
@@ -605,7 +610,7 @@ func PerformCreateDenom(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractA
 
 	// Create denom
 	_, err := msgServer.CreateDenom(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		msgCreateDenom,
 	)
 	if err != nil {
@@ -635,7 +640,7 @@ func PerformForceTransfer(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contrac
 
 	// Force Transfer
 	_, err := msgServer.ForceTransfer(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		msgForceTransfer,
 	)
 	if err != nil {
@@ -665,7 +670,7 @@ func PerformSetDenomMetadata(f *tokenfactorykeeper.Keeper, ctx sdk.Context, cont
 
 	// Set denom metadata
 	_, err := msgServer.SetDenomMetadata(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		msgSetDenomMetadata,
 	)
 	if err != nil {
@@ -707,7 +712,7 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 
 	// Mint through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err = msgServer.Mint(sdk.WrapSDKContext(ctx), sdkMsg)
+	_, err = msgServer.Mint(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "minting coins from message")
 	}
@@ -728,7 +733,7 @@ func PerformSetBeforeSendHook(f *tokenfactorykeeper.Keeper, ctx sdk.Context, con
 
 	// SetBeforeSendHook through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err := msgServer.SetBeforeSendHook(sdk.WrapSDKContext(ctx), sdkMsg)
+	_, err := msgServer.SetBeforeSendHook(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "set before send from message")
 	}
@@ -759,7 +764,7 @@ func ChangeAdmin(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 	}
 
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err = msgServer.ChangeAdmin(sdk.WrapSDKContext(ctx), changeAdminMsg)
+	_, err = msgServer.ChangeAdmin(ctx, changeAdminMsg)
 	if err != nil {
 		return errors.Wrap(err, "failed changing admin from message")
 	}
@@ -790,7 +795,7 @@ func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk
 
 	// Burn through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
-	_, err := msgServer.Burn(sdk.WrapSDKContext(ctx), sdkMsg)
+	_, err := msgServer.Burn(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "burning coins from message")
 	}
@@ -848,7 +853,7 @@ func (m *CustomMessenger) performSubmitTx(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, errors.Wrap(err, "failed to validate incoming SubmitTx message")
 	}
 
-	response, err := m.Ictxmsgserver.SubmitTx(sdk.WrapSDKContext(ctx), &tx)
+	response, err := m.Ictxmsgserver.SubmitTx(ctx, &tx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit interchain transaction")
 	}
@@ -898,7 +903,7 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainAccount message")
 	}
 
-	response, err := m.Ictxmsgserver.RegisterInterchainAccount(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Ictxmsgserver.RegisterInterchainAccount(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to register interchain account")
 	}
@@ -959,7 +964,7 @@ func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contra
 		return nil, errors.Wrap(err, "failed to validate incoming RegisterInterchainQuery message")
 	}
 
-	response, err := m.Icqmsgserver.RegisterInterchainQuery(sdk.WrapSDKContext(ctx), &msg)
+	response, err := m.Icqmsgserver.RegisterInterchainQuery(ctx, &msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to register interchain query")
 	}

@@ -4,18 +4,18 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/suite"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/app/params"
-	"github.com/neutron-org/neutron/v3/testutil"
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 const (
@@ -71,12 +71,12 @@ func (suite *KeeperTestSuite) CreateDefaultDenom(ctx sdktypes.Context) {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	suite.TopUpWallet(ctx, senderAddress, suite.TestAccs[0])
 
-	res, _ := suite.msgServer.CreateDenom(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
+	res, _ := suite.msgServer.CreateDenom(suite.ChainA.GetContext(), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
 	suite.defaultDenom = res.GetNewTokenDenom()
 }
 
 func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contractAddress sdktypes.AccAddress) {
-	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, sdktypes.NewInt(TopUpCoinsAmount)))
+	coinsAmnt := sdktypes.NewCoins(sdktypes.NewCoin(params.DefaultDenom, math.NewInt(TopUpCoinsAmount)))
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	err := bankKeeper.SendCoins(ctx, sender, contractAddress, coinsAmnt)
 	suite.Require().NoError(err)
@@ -85,7 +85,7 @@ func (suite *KeeperTestSuite) TopUpWallet(ctx sdktypes.Context, sender, contract
 func (suite *KeeperTestSuite) WalletBalance(ctx sdktypes.Context, address string) math.Int {
 	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
 	balance, err := bankKeeper.Balance(
-		sdktypes.WrapSDKContext(ctx),
+		ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: address,
 			Denom:   params.DefaultDenom,
@@ -105,4 +105,26 @@ func CreateRandomAccounts(numAccts int) []sdktypes.AccAddress {
 	}
 
 	return testAddrs
+}
+
+func (suite *KeeperTestSuite) TestForceTransferMsg() {
+	suite.Setup()
+
+	// Create a denom
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
+
+	suite.Run("test force transfer", func() {
+		mintAmt := sdktypes.NewInt64Coin(suite.defaultDenom, 10)
+
+		_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), mintAmt))
+		suite.Require().NoError(err)
+
+		govModAcc := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAccount(suite.ChainA.GetContext(), authtypes.FeeCollectorName)
+
+		err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(suite.ChainA.GetContext(), suite.TestAccs[0], govModAcc.GetAddress(), sdktypes.NewCoins(mintAmt))
+		suite.Require().NoError(err)
+
+		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), suite.TestAccs[1].String()))
+		suite.Require().ErrorContains(err, "send from module acc not available")
+	})
 }

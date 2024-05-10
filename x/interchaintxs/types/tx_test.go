@@ -3,29 +3,31 @@ package types_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v4/app/config"
+
+	"cosmossdk.io/math"
 	cosmosTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app"
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 )
 
 const TestAddress = "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
 
 func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
-	_ = app.GetDefaultConfig()
+	_ = config.GetDefaultConfig()
 
 	tests := []struct {
 		name        string
-		malleate    func() sdktypes.Msg
+		malleate    func() sdktypes.HasValidateBasic
 		expectedErr error
 	}{
 		{
 			"valid",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgRegisterInterchainAccount{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -36,7 +38,7 @@ func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
 		},
 		{
 			"empty fromAddress",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgRegisterInterchainAccount{
 					FromAddress:         "",
 					ConnectionId:        "connection-id",
@@ -47,7 +49,7 @@ func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
 		},
 		{
 			"invalid fromAddress",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgRegisterInterchainAccount{
 					FromAddress:         "invalid address",
 					ConnectionId:        "connection-id",
@@ -58,7 +60,7 @@ func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
 		},
 		{
 			"empty connection id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgRegisterInterchainAccount{
 					FromAddress:         TestAddress,
 					ConnectionId:        "",
@@ -69,7 +71,7 @@ func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
 		},
 		{
 			"empty interchain account",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgRegisterInterchainAccount{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -94,11 +96,11 @@ func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
 func TestMsgRegisterInterchainAccountGetSigners(t *testing.T) {
 	tests := []struct {
 		name     string
-		malleate func() sdktypes.Msg
+		malleate func() sdktypes.LegacyMsg
 	}{
 		{
 			"valid_signer",
-			func() sdktypes.Msg {
+			func() sdktypes.LegacyMsg {
 				return &types.MsgRegisterInterchainAccount{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -118,12 +120,12 @@ func TestMsgRegisterInterchainAccountGetSigners(t *testing.T) {
 func TestMsgSubmitTXValidate(t *testing.T) {
 	tests := []struct {
 		name        string
-		malleate    func() sdktypes.Msg
+		malleate    func() sdktypes.HasValidateBasic
 		expectedErr error
 	}{
 		{
 			"valid",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -135,8 +137,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout: 1,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -144,7 +146,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"invalid timeout",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -156,8 +158,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout: 0,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -165,7 +167,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"empty connection id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "",
@@ -177,8 +179,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout: 1,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -186,7 +188,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"empty interchain account id",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -198,8 +200,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout: 1,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -207,7 +209,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"no messages",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -216,8 +218,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout:             1,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -225,7 +227,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"empty FromAddress",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         "",
 					ConnectionId:        "connection-id",
@@ -237,8 +239,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout: 1,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -246,7 +248,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"invalid FromAddress",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         "invalid_address",
 					ConnectionId:        "connection-id",
@@ -258,8 +260,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout: 1,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -267,7 +269,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"non zero recv fee",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -278,9 +280,9 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					}},
 					Timeout: 1,
 					Fee: feetypes.Fee{
-						RecvFee:    sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						RecvFee:    sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -288,7 +290,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"zero ack fee",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -301,7 +303,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
 						AckFee:     sdktypes.NewCoins(),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -309,7 +311,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 		},
 		{
 			"zero timeout fee",
-			func() sdktypes.Msg {
+			func() sdktypes.HasValidateBasic {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",
@@ -321,7 +323,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Timeout: 1,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 						TimeoutFee: sdktypes.NewCoins(),
 					},
 				}
@@ -344,11 +346,11 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 func TestMsgSubmitTXGetSigners(t *testing.T) {
 	tests := []struct {
 		name     string
-		malleate func() sdktypes.Msg
+		malleate func() sdktypes.LegacyMsg
 	}{
 		{
 			"valid_signer",
-			func() sdktypes.Msg {
+			func() sdktypes.LegacyMsg {
 				return &types.MsgSubmitTx{
 					FromAddress:         TestAddress,
 					ConnectionId:        "connection-id",

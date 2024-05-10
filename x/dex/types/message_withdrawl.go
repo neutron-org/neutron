@@ -48,7 +48,7 @@ func (msg *MsgWithdrawal) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgWithdrawal) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
 func (msg *MsgWithdrawal) ValidateBasic() error {

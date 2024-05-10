@@ -3,13 +3,15 @@ package types_test
 import (
 	"testing"
 
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/stretchr/testify/require"
 
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v3/x/transfer/types"
+	"cosmossdk.io/math"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/transfer/types"
 )
 
 const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
@@ -27,7 +29,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 				return &types.MsgTransfer{
 					SourcePort:    "port_id",
 					SourceChannel: "channel_id",
-					Token:         sdktypes.NewCoin("denom", sdktypes.NewInt(100)),
+					Token:         sdktypes.NewCoin("denom", math.NewInt(100)),
 					Sender:        TestAddress,
 					Receiver:      TestAddress,
 					TimeoutHeight: ibcclienttypes.Height{
@@ -37,8 +39,8 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					TimeoutTimestamp: 10000,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -50,7 +52,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 				return &types.MsgTransfer{
 					SourcePort:    "port_id",
 					SourceChannel: "channel_id",
-					Token:         sdktypes.NewCoin("denom", sdktypes.NewInt(100)),
+					Token:         sdktypes.NewCoin("denom", math.NewInt(100)),
 					Sender:        TestAddress,
 					Receiver:      TestAddress,
 					TimeoutHeight: ibcclienttypes.Height{
@@ -59,9 +61,9 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					},
 					TimeoutTimestamp: 10000,
 					Fee: feetypes.Fee{
-						RecvFee:    sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						RecvFee:    sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -73,7 +75,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 				return &types.MsgTransfer{
 					SourcePort:    "port_id",
 					SourceChannel: "channel_id",
-					Token:         sdktypes.NewCoin("denom", sdktypes.NewInt(100)),
+					Token:         sdktypes.NewCoin("denom", math.NewInt(100)),
 					Sender:        TestAddress,
 					Receiver:      TestAddress,
 					TimeoutHeight: ibcclienttypes.Height{
@@ -84,7 +86,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
 						AckFee:     sdktypes.NewCoins(),
-						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						TimeoutFee: sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 					},
 				}
 			},
@@ -96,7 +98,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 				return &types.MsgTransfer{
 					SourcePort:    "port_id",
 					SourceChannel: "channel_id",
-					Token:         sdktypes.NewCoin("denom", sdktypes.NewInt(100)),
+					Token:         sdktypes.NewCoin("denom", math.NewInt(100)),
 					Sender:        TestAddress,
 					Receiver:      TestAddress,
 					TimeoutHeight: ibcclienttypes.Height{
@@ -106,7 +108,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 					TimeoutTimestamp: 10000,
 					Fee: feetypes.Fee{
 						RecvFee:    sdktypes.NewCoins(),
-						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", sdktypes.NewInt(100))),
+						AckFee:     sdktypes.NewCoins(sdktypes.NewCoin("denom", math.NewInt(100))),
 						TimeoutFee: sdktypes.NewCoins(),
 					},
 				}
@@ -116,7 +118,7 @@ func TestMsgSubmitTXValidate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		msg := tt.malleate()
+		msg := tt.malleate().(sdktypes.HasValidateBasic)
 
 		if tt.expectedErr != nil {
 			require.ErrorIs(t, msg.ValidateBasic(), tt.expectedErr)

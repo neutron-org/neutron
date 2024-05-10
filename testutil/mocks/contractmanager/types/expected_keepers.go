@@ -5,13 +5,14 @@
 package mock_types
 
 import (
+	context "context"
 	reflect "reflect"
 
 	types "github.com/CosmWasm/wasmd/x/wasm/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
 
-	types1 "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	types1 "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 )
 
 // MockWasmKeeper is a mock of WasmKeeper interface.
@@ -38,7 +39,7 @@ func (m *MockWasmKeeper) EXPECT() *MockWasmKeeperMockRecorder {
 }
 
 // GetContractInfo mocks base method.
-func (m *MockWasmKeeper) GetContractInfo(ctx types0.Context, contractAddress types0.AccAddress) *types.ContractInfo {
+func (m *MockWasmKeeper) GetContractInfo(ctx context.Context, contractAddress types0.AccAddress) *types.ContractInfo {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetContractInfo", ctx, contractAddress)
 	ret0, _ := ret[0].(*types.ContractInfo)
@@ -52,7 +53,7 @@ func (mr *MockWasmKeeperMockRecorder) GetContractInfo(ctx, contractAddress inter
 }
 
 // HasContractInfo mocks base method.
-func (m *MockWasmKeeper) HasContractInfo(ctx types0.Context, contractAddress types0.AccAddress) bool {
+func (m *MockWasmKeeper) HasContractInfo(ctx context.Context, contractAddress types0.AccAddress) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasContractInfo", ctx, contractAddress)
 	ret0, _ := ret[0].(bool)
@@ -66,7 +67,7 @@ func (mr *MockWasmKeeperMockRecorder) HasContractInfo(ctx, contractAddress inter
 }
 
 // Sudo mocks base method.
-func (m *MockWasmKeeper) Sudo(ctx types0.Context, contractAddress types0.AccAddress, msg []byte) ([]byte, error) {
+func (m *MockWasmKeeper) Sudo(ctx context.Context, contractAddress types0.AccAddress, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Sudo", ctx, contractAddress, msg)
 	ret0, _ := ret[0].([]byte)
@@ -104,7 +105,7 @@ func (m *MockContractManagerKeeper) EXPECT() *MockContractManagerKeeperMockRecor
 }
 
 // AddContractFailure mocks base method.
-func (m *MockContractManagerKeeper) AddContractFailure(ctx types0.Context, address string, sudoPayload []byte, errMsg string) types1.Failure {
+func (m *MockContractManagerKeeper) AddContractFailure(ctx context.Context, address string, sudoPayload []byte, errMsg string) types1.Failure {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddContractFailure", ctx, address, sudoPayload, errMsg)
 	ret0, _ := ret[0].(types1.Failure)
@@ -118,7 +119,7 @@ func (mr *MockContractManagerKeeperMockRecorder) AddContractFailure(ctx, address
 }
 
 // GetParams mocks base method.
-func (m *MockContractManagerKeeper) GetParams(ctx types0.Context) types1.Params {
+func (m *MockContractManagerKeeper) GetParams(ctx context.Context) types1.Params {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetParams", ctx)
 	ret0, _ := ret[0].(types1.Params)
