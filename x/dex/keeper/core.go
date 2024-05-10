@@ -65,6 +65,10 @@ func (k Keeper) DepositCore(
 			return nil, nil, nil, err
 		}
 
+		amount0, amount1, err = k.SwapPoolBehindEnemyLines(ctx, pool, amount0, amount1)
+		if err != nil {
+			return nil, nil, nil, types.ErrZeroTrueDeposit
+		}
 		existingShares := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom()).Amount
 
 		inAmount0, inAmount1, outShares := pool.Deposit(amount0, amount1, existingShares, autoswap)

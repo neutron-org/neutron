@@ -74,6 +74,44 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 	return nil
 }
 
+func (k Keeper) IsBehindEnemyLines(ctx sdk.Context, tradePairID *types.TradePairID, tickIndex int64) bool {
+	oppositeTick, found := k.GetCurrTickIndexTakerToMaker(ctx, tradePairID.Reversed())
+
+	if found && tickIndex*-1 > oppositeTick {
+		return true
+	}
+
+	return false
+}
+
+func (k Keeper) SwapPoolBehindEnemyLines(ctx sdk.Context, pool *types.Pool, amount0, amount1 math.Int) (newAmount0, newAmount1 math.Int, err error) {
+
+	token0IsBEL := k.IsBehindEnemyLines(ctx, pool.LowerTick0.Key.TradePairId, pool.LowerTick0.Key.TickIndexTakerToMaker)
+	token1IsBEL := k.IsBehindEnemyLines(ctx, pool.UpperTick1.Key.TradePairId, pool.UpperTick1.Key.TickIndexTakerToMaker)
+
+	if token0IsBEL && token1IsBEL {
+		return math.ZeroInt(), math.ZeroInt(), types.ErrDepositBothSidesBEL
+	} else if token0IsBEL && amount0.IsPositive() {
+		coin0, additional1Coin, _, err := k.Swap(ctx, pool.LowerTick0.Key.TradePairId, amount0, nil, &pool.LowerTick0.PriceTakerToMaker)
+		if err != nil {
+			return math.ZeroInt(), math.ZeroInt(), err
+		}
+
+		return coin0.Amount, amount1.Add(additional1Coin.Amount), nil
+
+	} else if token1IsBEL && amount1.IsPositive() {
+		coin1, additional0Coin, _, err := k.Swap(ctx, pool.UpperTick1.Key.TradePairId, amount1, nil, &pool.UpperTick1.PriceTakerToMaker)
+		if err != nil {
+			return math.ZeroInt(), math.ZeroInt(), err
+		}
+
+		return amount0.Add(additional0Coin.Amount), coin1.Amount, nil
+
+	}
+
+	return amount0, amount1, nil
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                            TOKENIZER UTILS                                //
 ///////////////////////////////////////////////////////////////////////////////

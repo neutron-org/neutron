@@ -189,4 +189,9 @@ var (
 		1154,
 		"Swap amount too small; creates unfair spread for liquidity providers",
 	)
+	ErrDepositBothSidesBEL = sdkerrors.Register(
+		ModuleName,
+		1155,
+		"Cannot deposit into a pool with sides behind enemy lines",
+	)
 )

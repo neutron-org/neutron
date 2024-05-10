@@ -144,3 +144,61 @@ func (s *CoreHelpersTestSuite) TestGetCurrTick0To1WithMinLiq() {
 	s.Require().True(found)
 	s.Assert().Equal(int64(2), tickIdx)
 }
+
+// IsBehindEnemyLines /////////////////////////////////////////////////////////
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0BELHighTick() {
+	s.setLPAtFee1Pool(100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -102)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0BELLowTick() {
+	s.setLPAtFee1Pool(-100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 98)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0ValidHighTick() {
+	s.setLPAtFee1Pool(100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -101)
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0ValidLowtick() {
+	s.setLPAtFee1Pool(-100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 99)
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1BELLowTick() {
+	s.setLPAtFee1Pool(-10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -12)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1BELHighTick() {
+	s.setLPAtFee1Pool(10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 8)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1ValidLowTick() {
+	s.setLPAtFee1Pool(-10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -11)
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1ValidHighTick() {
+	s.setLPAtFee1Pool(10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 9)
+	s.False(isBEL)
+}
