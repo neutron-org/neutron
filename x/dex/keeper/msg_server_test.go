@@ -404,7 +404,7 @@ func (s *DexTestSuite) limitSellsWithPrice(
 ) string {
 	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
 
-	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:        account.String(),
 		Receiver:       account.String(),
 		TokenIn:        tokenIn,
