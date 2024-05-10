@@ -59,6 +59,21 @@ func createLimitOrderExpirationAndTranches(
 	}
 }
 
+// Sets a new purge allowance
+func SetPurgeAllowance(
+	keeper *keeper.Keeper,
+	ctx sdk.Context,
+	purgeAllowance uint64,
+) error {
+	params := types.DefaultParams()
+	params.GoodTilPurgeAllowance = purgeAllowance
+	// check error to keep the linter happy, no real error cases here
+	if err := keeper.SetParams(ctx, params); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *DexTestSuite) TestLimitOrderExpirationGet() {
 	keeper := s.App.DexKeeper
 	items := createNLimitOrderExpiration(&keeper, s.Ctx, 10)
@@ -119,7 +134,8 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	}
 
 	createLimitOrderExpirationAndTranches(&keeper, s.Ctx, expTimes)
-	keeper.PurgeExpiredLimitOrders(s.Ctx, now, types.GoodTilPurgeAllowance)
+	// using default purge allowance
+	keeper.PurgeExpiredLimitOrders(s.Ctx, now)
 
 	// Only future LimitOrderExpiration items still exist
 	expList := keeper.GetAllLimitOrderExpiration(s.Ctx)
@@ -156,10 +172,14 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 		yesterday,
 		yesterday,
 	}
+
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 
 	// WHEN PurgeExpiredLimitOrders is run with a gas limit only big enough to purge 4 LOs
-	keeper.PurgeExpiredLimitOrders(ctx, now, 4*gasRequiredToPurgeOneLO)
+	err := SetPurgeAllowance(&keeper, ctx, 4*gasRequiredToPurgeOneLO)
+	s.NoError(err)
+
+	keeper.PurgeExpiredLimitOrders(ctx, now)
 
 	// THEN GoodTilPurgeHitGasLimit event is emitted
 	s.AssertEventEmitted(ctx, types.EventTypeGoodTilPurgeHitGasLimit, 1)
@@ -191,7 +211,9 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 
 	// WHEN there are too many JIT limit orders to cancel within the GoodTilPurgeAllowance
-	keeper.PurgeExpiredLimitOrders(ctx, now, gasRequiredToPurgeOneLO*2)
+	err := SetPurgeAllowance(&keeper, ctx, 0)
+	s.Equal(err, nil)
+	keeper.PurgeExpiredLimitOrders(ctx, now)
 
 	// THEN all JIT expirations are still purged
 	expList := keeper.GetAllLimitOrderExpiration(ctx)

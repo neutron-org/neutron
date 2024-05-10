@@ -106,7 +106,7 @@ func (k Keeper) GetAllLimitOrderExpiration(ctx sdk.Context) (list []*types.Limit
 	return
 }
 
-func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time, purgeAllowance uint64) {
+func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 	store := prefix.NewStore(
 		ctx.KVStore(k.storeKey),
 		types.KeyPrefix(types.LimitOrderExpirationKeyPrefix),
@@ -116,7 +116,7 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time, purg
 
 	archivedTranches := make(map[string]bool)
 	defer iterator.Close()
-	gasCutoff := ctx.GasMeter().GasConsumed() + purgeAllowance
+	gasCutoff := ctx.GasMeter().GasConsumed() + k.GetGoodTilPurgeAllowance(ctx)
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.LimitOrderExpiration
 		k.cdc.MustUnmarshal(iterator.Value(), &val)

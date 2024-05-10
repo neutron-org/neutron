@@ -89,6 +89,10 @@ func (k Keeper) AssertCanPlaceJIT(ctx sdk.Context) error {
 	return nil
 }
 
+func (k Keeper) GetGoodTilPurgeAllowance(ctx sdk.Context) uint64 {
+	return k.GetParams(ctx).GoodTilPurgeAllowance
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                            TOKENIZER UTILS                                //
 ///////////////////////////////////////////////////////////////////////////////
