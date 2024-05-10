@@ -67,5 +67,7 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 		suite.Require().NoError(err)
 		suite.Require().Equal(uint64(0), price.Nonce())     // no nonce because no updates yet
 		suite.Require().Equal(uint64(0), price.BlockHeight) // no block height because no price written yet
+
+		suite.Require().True(market.Ticker.Enabled)
 	}
 }

@@ -6,7 +6,8 @@
         "Quote": "USD"
       },
       "decimals": 7,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -66,7 +67,8 @@
         "Quote": "USD"
       },
       "decimals": 5,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -134,7 +136,8 @@
         "Quote": "USD"
       },
       "decimals": 11,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -210,7 +213,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -278,7 +282,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -338,7 +343,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 2
+      "min_provider_count": 2,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -382,7 +388,8 @@
         "Quote": "USD"
       },
       "decimals": 16,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -446,7 +453,8 @@
         "Quote": "USD"
       },
       "decimals": 15,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -514,7 +522,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -574,7 +583,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -626,7 +636,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -682,7 +693,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -742,7 +754,8 @@
         "Quote": "USD"
       },
       "decimals": 7,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -818,7 +831,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -878,7 +892,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -938,7 +953,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -994,7 +1010,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1062,7 +1079,8 @@
         "Quote": "USD"
       },
       "decimals": 11,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1134,7 +1152,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1194,7 +1213,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1246,7 +1266,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1306,7 +1327,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1358,7 +1380,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1418,7 +1441,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1470,7 +1494,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1538,7 +1563,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1590,7 +1616,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1642,7 +1669,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1710,7 +1738,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1774,7 +1803,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1834,7 +1864,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 1
+      "min_provider_count": 1,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1887,7 +1918,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -1955,7 +1987,8 @@
         "Quote": "USD"
       },
       "decimals": 14,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2011,7 +2044,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2071,7 +2105,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2123,7 +2158,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2187,7 +2223,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2259,7 +2296,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2327,7 +2365,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2403,7 +2442,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2455,7 +2495,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2523,7 +2564,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2583,7 +2625,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2639,7 +2682,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2691,7 +2735,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2759,7 +2804,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2811,7 +2857,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2871,7 +2918,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2931,7 +2979,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -2991,7 +3040,8 @@
         "Quote": "USD"
       },
       "decimals": 8,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3059,7 +3109,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3111,7 +3162,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3183,7 +3235,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3255,7 +3308,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3323,7 +3377,8 @@
         "Quote": "USD"
       },
       "decimals": 6,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3375,7 +3430,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3443,7 +3499,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3519,7 +3576,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3575,7 +3633,8 @@
         "Quote": "USD"
       },
       "decimals": 6,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3643,7 +3702,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3703,7 +3763,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3747,7 +3808,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3811,7 +3873,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3871,7 +3934,8 @@
         "Quote": "USD"
       },
       "decimals": 10,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
@@ -3947,7 +4011,8 @@
         "Quote": "USD"
       },
       "decimals": 9,
-      "min_provider_count": 3
+      "min_provider_count": 3,
+      "enabled": true
     },
     "provider_configs": [
       {
