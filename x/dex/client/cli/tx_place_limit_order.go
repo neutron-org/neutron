@@ -68,15 +68,16 @@ func CmdPlaceLimitOrder() *cobra.Command {
 				return err
 			}
 
-			var maxAmountOutInt math.Int
+			var maxAmountOutIntP *math.Int
 			if maxAmountOutArg != "" {
-				maxAmountOutInt, ok = math.NewIntFromString(maxAmountOutArg)
+				maxAmountOutInt, ok := math.NewIntFromString(maxAmountOutArg)
 				if !ok {
 					return sdkerrors.Wrapf(
 						types.ErrIntOverflowTx,
 						"Integer overflow for max-amount-out",
 					)
 				}
+				maxAmountOutIntP = &maxAmountOutInt
 			}
 
 			priceArg, err := cmd.Flags().GetString(FlagPrice)
@@ -84,12 +85,13 @@ func CmdPlaceLimitOrder() *cobra.Command {
 				return err
 			}
 
-			var priceDec math_utils.PrecDec
-			if maxAmountOutArg != "" {
-				priceDec, err = math_utils.NewPrecDecFromStr(priceArg)
+			var priceDecP *math_utils.PrecDec
+			if priceArg != "" {
+				priceDec, err := math_utils.NewPrecDecFromStr(priceArg)
 				if err != nil {
 					return err
 				}
+				priceDecP = &priceDec
 			}
 
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -106,8 +108,8 @@ func CmdPlaceLimitOrder() *cobra.Command {
 				amountInInt,
 				orderType,
 				goodTil,
-				&maxAmountOutInt,
-				&priceDec,
+				maxAmountOutIntP,
+				priceDecP,
 			)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

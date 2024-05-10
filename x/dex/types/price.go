@@ -8,7 +8,7 @@ import (
 )
 
 // NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error
-// when using 26 digit decimal precision (via prec_dec).
+// when using 27 digit decimal precision (via prec_dec).
 // The error rate for very negative ticks approaches zero, so there is no concern there
 const (
 	MaxTickExp uint64 = 559_680

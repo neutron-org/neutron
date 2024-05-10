@@ -55,7 +55,7 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 			tick: int64(types.MaxTickExp) + 1,
 		},
 		{
-			desc: "LT TickExp",
+			desc: "LT MinTickExp",
 			tick: -1*int64(types.MaxTickExp) - 1,
 		},
 	} {
@@ -65,6 +65,8 @@ func TestCalcTickIndexFromPrice(t *testing.T) {
 			if errors.Is(err1, types.ErrTickOutsideRange) {
 				require.ErrorIs(t, err2, types.ErrPriceOutsideRange)
 			} else {
+				// Only expected error is ErrTickOutsideRange.
+				// If we are not outside the tick range we should TestCalcTickIndexFromPrice to never throw
 				require.NoError(t, err2)
 				require.Equal(t, tc.tick, val)
 			}
