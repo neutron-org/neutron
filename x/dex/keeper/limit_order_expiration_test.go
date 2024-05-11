@@ -175,6 +175,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	// for deleting expirations. If this cost changes the number of remaining
 	// expirations may change
 	s.Equal(1, len(expList))
+	s.Equal(expList[0].ExpirationTime, yesterday)
 }
 
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {

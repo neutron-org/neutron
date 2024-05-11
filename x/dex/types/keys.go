@@ -110,8 +110,13 @@ func LimitOrderTrancheUserAddressPrefix(address string) []byte {
 }
 
 func TimeBytes(timestamp time.Time) []byte {
-	unixMs := uint64(timestamp.UnixMilli())
-	str := utils.Uint64ToSortableString(unixMs)
+	var unixSecs uint64 = 0
+	// If timestamp is 0 use that instead of returning long negative number for unix time
+	if !timestamp.IsZero() {
+		unixSecs = uint64(timestamp.Unix())
+	}
+
+	str := utils.Uint64ToSortableString(unixSecs)
 	return []byte(str)
 }
 
