@@ -5,8 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"testing"
 	"time"
+
+	tmrand "github.com/cometbft/cometbft/libs/rand"
+	"github.com/neutron-org/neutron/v4/utils"
 
 	"github.com/neutron-org/neutron/v4/app/config"
 
@@ -280,6 +284,11 @@ func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
 	}
 }
 
+func testHomeDir(chainID string) string {
+	projectRoot := utils.RootDir()
+	return path.Join(projectRoot, ".testchains", chainID)
+}
+
 // NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 0)
@@ -291,8 +300,8 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 
 	_ = config.GetDefaultConfig()
 	sdk.SetAddrCacheEnabled(false)
-	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chainID = ibctesting.GetChainID(2)
+	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 
@@ -409,13 +418,14 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		encoding := app.MakeEncodingConfig()
 		db := db2.NewMemDB()
+		homePath := testHomeDir("testchain-" + tmrand.NewRand().Str(6))
 		testApp := app.New(
 			log.NewNopLogger(),
 			db,
 			nil,
 			false,
 			map[int64]bool{},
-			app.DefaultNodeHome,
+			homePath,
 			0,
 			encoding,
 			sims.EmptyAppOptions{},
