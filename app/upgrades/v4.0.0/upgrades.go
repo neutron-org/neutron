@@ -74,7 +74,7 @@ func enableVoteExtensions(ctx sdk.Context, consensusKeeper *consensuskeeper.Keep
 	}
 
 	// we need to enable VoteExtensions for Slinky
-	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight()}
+	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight() + 4}
 
 	updateParamsMsg := types.MsgUpdateParams{
 		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
