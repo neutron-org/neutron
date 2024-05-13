@@ -4,20 +4,20 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	wrappedtypes "github.com/neutron-org/neutron/v3/x/transfer/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	wrappedtypes "github.com/neutron-org/neutron/v4/x/transfer/types"
 )
 
 // KeeperTransferWrapper is a wrapper for original ibc keeper to override response for "Transfer" method
@@ -70,12 +70,12 @@ func NewKeeper(
 	ics4Wrapper porttypes.ICS4Wrapper, channelKeeper wrappedtypes.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, scopedKeeper capabilitykeeper.ScopedKeeper,
 	feeKeeper wrappedtypes.FeeRefunderKeeper,
-	sudoKeeper wrappedtypes.WasmKeeper,
+	sudoKeeper wrappedtypes.WasmKeeper, authority string,
 ) KeeperTransferWrapper {
 	return KeeperTransferWrapper{
 		channelKeeper: channelKeeper,
 		Keeper: keeper.NewKeeper(cdc, key, paramSpace, ics4Wrapper, channelKeeper, portKeeper,
-			authKeeper, bankKeeper, scopedKeeper),
+			authKeeper, bankKeeper, scopedKeeper, authority),
 		FeeKeeper:  feeKeeper,
 		SudoKeeper: sudoKeeper,
 	}

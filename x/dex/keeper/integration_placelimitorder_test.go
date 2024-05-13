@@ -5,10 +5,9 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	abci "github.com/cometbft/cometbft/abci/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // Core tests w/ GTC limitOrders //////////////////////////////////////////////
@@ -594,7 +593,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {
 
 	// WHEN we move to block N+1
 	s.nextBlockWithTime(time.Now())
-	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	// TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
@@ -635,7 +634,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpires() {
 
 	// When two days go by and multiple blocks are created (ie. purge is run)
 	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
-	s.App.EndBlock(abci.RequestEndBlock{Height: 0})
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
 	// Alice can withdraw the entirety of the unfilled limitOrder
@@ -655,7 +653,10 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilExpiresNotPurged() {
 
 	// When two days go by
 	// for simplicity sake we never run endBlock, it reality it would be run, but gas limit would be hit
-	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
+	// instead of moving chain forward by a block (BeginBlock + EndBlock + Commit) it's enough to jut move
+	// ctx time forward to simulate passed time.
+	newCtx := s.Ctx.WithBlockTime(time.Now().AddDate(0, 0, 2))
+	s.Ctx = newCtx
 
 	// THEN there is no liquidity available
 	s.assertLimitLiquidityAtTick("TokenA", 0, 0)
@@ -684,7 +685,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 	yesterday := time.Now().AddDate(0, 0, -1)
 	s.nextBlockWithTime(now)
 
-	_, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	_, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:          s.alice.String(),
 		Receiver:         s.alice.String(),
 		TokenIn:          "TokenA",

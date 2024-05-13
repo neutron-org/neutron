@@ -10,13 +10,13 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	wrapkeeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
-	neutrontypes "github.com/neutron-org/neutron/v3/x/transfer/types"
+	wrapkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
+	neutrontypes "github.com/neutron-org/neutron/v4/x/transfer/types"
 )
 
 /*

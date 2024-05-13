@@ -5,12 +5,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testkeeper "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	testkeeper "github.com/neutron-org/neutron/v4/testutil/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 )
 
 func TestGetParams(t *testing.T) {
-	k, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, nil)
 	params := types.DefaultParams()
 
 	err := k.SetParams(ctx, params)

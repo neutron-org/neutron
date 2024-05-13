@@ -3,13 +3,12 @@ package cron
 import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	cronsimulation "github.com/neutron-org/neutron/v3/x/cron/simulation"
-	"github.com/neutron-org/neutron/v3/x/cron/types"
+	cronsimulation "github.com/neutron-org/neutron/v4/x/cron/simulation"
+	"github.com/neutron-org/neutron/v4/x/cron/types"
 )
 
 // avoid unused import issue
@@ -37,8 +36,9 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 	return nil
 }
 
+// TODO
 // RegisterStoreDecoder registers a decoder
-func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
+func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {}
 
 // WeightedOperations returns the all the gov module operations with their respective weights.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {

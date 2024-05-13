@@ -5,10 +5,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	// ibc-go
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	ibchooks "github.com/neutron-org/neutron/v3/x/ibc-hooks"
+	ibchooks "github.com/neutron-org/neutron/v4/x/ibc-hooks"
 )
 
 var (

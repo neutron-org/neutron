@@ -6,7 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // TODO: In an ideal world, there should be enough lower level testing that the swap tests
@@ -77,7 +77,7 @@ func (s *DexTestSuite) TestSwapUnfairPriceFailsHighTick() {
 	// AmountIn = Floor(1,719,877,697 * 1.0001^-159,680) = 199
 	// TruePrice = AmountOut/AmountIn = 1,719,877,698/199 = 8,642,601
 	// BookPrice = 8,599,388 (thus maker is getting a price .502% worse than expected)
-	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdk.NewInt(200))
+	s.swapIntFails(types.ErrSwapAmountTooSmall, "TokenB", "TokenA", sdkmath.NewInt(200))
 }
 
 func (s *DexTestSuite) TestSwapUnfairPriceAbortEarly() {
@@ -88,7 +88,7 @@ func (s *DexTestSuite) TestSwapUnfairPriceAbortEarly() {
 	)
 
 	// WHEN swap 700 BIgTokenB
-	tokenIn, tokenOut, orderFilled, err := s.swapInt("TokenB", "TokenA", sdk.NewInt(499))
+	tokenIn, tokenOut, orderFilled, err := s.swapInt("TokenB", "TokenA", sdkmath.NewInt(499))
 
 	// THEN swap works on the first tick, but aborts on the second tick because of Unfair price condition
 	s.NoError(err)
@@ -126,8 +126,8 @@ func (s *DexTestSuite) TestSwap1To0PartialFillLP() {
 	// THEN swap should return ~10 BIGTokenB in and 10 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdk.NewInt(10_000_999), tokenOut, sdk.NewInt(10_000_000))
-	s.assertTickBalancesInt(sdk.ZeroInt(), sdk.NewInt(10_000_999))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(10_000_999), tokenOut, sdkmath.NewInt(10_000_000))
+	s.assertTickBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(10_000_999))
 
 	s.assertCurr0To1(1)
 	s.assertCurr1To0(math.MinInt64)
@@ -237,8 +237,8 @@ func (s *DexTestSuite) TestSwap1To0PartialFillMultipleLP() {
 	// THEN swap should return ~41 BIGTokenB in and 300 BIGTokenA out
 	s.Assert().Equal("TokenB", tokenIn.Denom)
 	s.Assert().Equal("TokenA", tokenOut.Denom)
-	s.assertSwapOutputInt(tokenIn, sdk.NewInt(40604644), tokenOut, sdk.NewInt(300000000))
-	s.assertTickBalancesInt(sdk.ZeroInt(), sdk.NewInt(40604644))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(40604644), tokenOut, sdkmath.NewInt(300000000))
+	s.assertTickBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(40604644))
 
 	s.assertCurr0To1(20_001)
 	s.assertCurr1To0(math.MinInt64)
@@ -681,7 +681,7 @@ func (s *DexTestSuite) swapSuccess(
 	tokenOut string,
 	maxAmountIn int64,
 ) (coinIn, coinOut sdk.Coin) {
-	coinIn, coinOut, _, err := s.swapInt(tokenIn, tokenOut, sdk.NewInt(maxAmountIn).Mul(denomMultiple))
+	coinIn, coinOut, _, err := s.swapInt(tokenIn, tokenOut, sdkmath.NewInt(maxAmountIn).Mul(denomMultiple))
 	s.Assert().NoError(err)
 	return coinIn, coinOut
 }

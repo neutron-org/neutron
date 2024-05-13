@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func TestValidatePoolDenom(t *testing.T) {
