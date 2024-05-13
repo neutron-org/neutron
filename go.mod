@@ -17,6 +17,7 @@ require (
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
+	github.com/CosmWasm/wasmvm/v2 v2.0.0
 	github.com/cometbft/cometbft v0.38.7
 	github.com/cosmos/admin-module v0.0.0-20220204080909-475a98e03f31
 	github.com/cosmos/cosmos-db v1.0.2
@@ -169,7 +170,7 @@ require (
 	github.com/petermattis/goid v0.0.0-20231207134359-e60b3f734c67 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.53.0 // indirect
+	github.com/prometheus/common v0.52.2 // indirect
 	github.com/prometheus/procfs v0.13.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
@@ -217,11 +218,13 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240304172302-564e5d10417a
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240501180153-d9bebe629e05
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240226131019-8efae68de5cc
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.18.0
+	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.0
 	github.com/prometheus/common => github.com/prometheus/common v0.47.0
+	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )

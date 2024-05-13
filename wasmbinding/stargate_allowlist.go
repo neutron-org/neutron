@@ -19,8 +19,8 @@ import (
 	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
-func AcceptedStargateQueries() wasmkeeper.AcceptedStargateQueries {
-	return wasmkeeper.AcceptedStargateQueries{
+func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
+	return wasmkeeper.AcceptedQueries{
 		// ibc
 		"/ibc.core.client.v1.Query/ClientState":    &ibcclienttypes.QueryClientStateResponse{},
 		"/ibc.core.client.v1.Query/ConsensusState": &ibcclienttypes.QueryConsensusStateResponse{},
