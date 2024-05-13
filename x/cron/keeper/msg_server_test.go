@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v4/testutil"
 	"github.com/neutron-org/neutron/v4/testutil/cron/keeper"
 	"github.com/neutron-org/neutron/v4/x/cron/types"
 )
@@ -30,6 +31,26 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 				Authority: "invalid authority",
 			},
 			"authority is invalid",
+		},
+		{
+			"empty security_address",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					SecurityAddress: "",
+				},
+			},
+			"security_address is invalid",
+		},
+		{
+			"invalid security_address",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					SecurityAddress: "invalid security_address",
+				},
+			},
+			"security_address is invalid",
 		},
 	}
 

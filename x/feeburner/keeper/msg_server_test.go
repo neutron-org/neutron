@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v4/testutil"
 	"github.com/neutron-org/neutron/v4/testutil/feeburner/keeper"
 	"github.com/neutron-org/neutron/v4/x/feeburner/types"
 )
@@ -30,6 +31,26 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 				Authority: "invalid authority",
 			},
 			"authority is invalid",
+		},
+		{
+			"empty treasury_address",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					TreasuryAddress: "",
+				},
+			},
+			"treasury_address is invalid",
+		},
+		{
+			"invalid treasury_address",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					TreasuryAddress: "invalid treasury_address",
+				},
+			},
+			"treasury_address is invalid",
 		},
 	}
 

@@ -95,6 +95,14 @@ func TestMsgMintValidate(t *testing.T) {
 			sdkerrors.ErrInvalidAddress,
 		},
 		{
+			"invalid mint_to_address",
+			types.MsgMint{
+				Sender:        testutil.TestOwnerAddress,
+				MintToAddress: "invalid mint_to_address",
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
 			"invalid coin denom",
 			types.MsgMint{
 				Sender: testutil.TestOwnerAddress,
@@ -177,6 +185,14 @@ func TestMsgBurnValidate(t *testing.T) {
 				Sender:          "invalid_sender",
 				Amount:          sdktypes.NewCoin(params.DefaultDenom, math.NewInt(100)),
 				BurnFromAddress: testAddress,
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"invalid burn_from_address",
+			types.MsgBurn{
+				Sender:          testutil.TestOwnerAddress,
+				BurnFromAddress: "invalid burn_from_address",
 			},
 			sdkerrors.ErrInvalidAddress,
 		},
@@ -851,6 +867,26 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 				Authority: "invalid authority",
 			},
 			"authority is invalid",
+		},
+		{
+			"empty fee_collector_address",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					FeeCollectorAddress: "",
+				},
+			},
+			"fee_collector_address is invalid",
+		},
+		{
+			"invalid fee_collector_address",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					FeeCollectorAddress: "invalid fee_collector_address",
+				},
+			},
+			"fee_collector_address is invalid",
 		},
 	}
 

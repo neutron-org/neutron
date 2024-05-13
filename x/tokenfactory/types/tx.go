@@ -31,5 +31,10 @@ func (msg *MsgUpdateParams) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errorsmod.Wrap(err, "authority is invalid")
 	}
+
+	if _, err := sdk.AccAddressFromBech32(msg.Params.FeeCollectorAddress); err != nil {
+		return errorsmod.Wrap(err, "fee_collector_address is invalid")
+	}
+
 	return nil
 }

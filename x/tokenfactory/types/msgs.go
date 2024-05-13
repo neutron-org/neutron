@@ -75,9 +75,14 @@ func NewMsgMintTo(sender string, amount sdk.Coin, mintToAddress string) *MsgMint
 func (m MsgMint) Route() string { return RouterKey }
 func (m MsgMint) Type() string  { return TypeMsgMint }
 func (m MsgMint) Validate() error {
-	_, err := sdk.AccAddressFromBech32(m.Sender)
-	if err != nil {
+	if _, err := sdk.AccAddressFromBech32(m.Sender); err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
+
+	if m.MintToAddress != "" {
+		if _, err := sdk.AccAddressFromBech32(m.MintToAddress); err != nil {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid mint_to_address (%s)", err)
+		}
 	}
 
 	if !m.Amount.IsValid() || m.Amount.Amount.Equal(math.ZeroInt()) {
@@ -117,9 +122,14 @@ func NewMsgBurnFrom(sender string, amount sdk.Coin, _ string) *MsgBurn {
 func (m MsgBurn) Route() string { return RouterKey }
 func (m MsgBurn) Type() string  { return TypeMsgBurn }
 func (m MsgBurn) Validate() error {
-	_, err := sdk.AccAddressFromBech32(m.Sender)
-	if err != nil {
+	if _, err := sdk.AccAddressFromBech32(m.Sender); err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+	}
+
+	if m.BurnFromAddress != "" {
+		if _, err := sdk.AccAddressFromBech32(m.BurnFromAddress); err != nil {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid burn_from_address (%s)", err)
+		}
 	}
 
 	if !m.Amount.IsValid() || m.Amount.Amount.Equal(math.ZeroInt()) {

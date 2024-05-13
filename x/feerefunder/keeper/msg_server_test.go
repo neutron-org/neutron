@@ -3,8 +3,13 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v4/testutil"
 	"github.com/neutron-org/neutron/v4/testutil/feerefunder/keeper"
 	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
@@ -30,6 +35,86 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 				Authority: "invalid authority",
 			},
 			"authority is invalid",
+		},
+		{
+			"invalid ack fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					MinFee: types.Fee{
+						RecvFee: nil,
+						AckFee: sdk.Coins{
+							{
+								Denom:  "{}!@#a",
+								Amount: math.NewInt(100),
+							},
+						},
+						TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins.Error(),
+		},
+		{
+			"invalid timeout fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					MinFee: types.Fee{
+						RecvFee: nil,
+						AckFee:  sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+						TimeoutFee: sdk.Coins{
+							{
+								Denom:  params.DefaultDenom,
+								Amount: math.NewInt(-100),
+							},
+						},
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins.Error(),
+		},
+		{
+			"non-zero recv fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					MinFee: types.Fee{
+						RecvFee:    sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+						AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+						TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins.Error(),
+		},
+		{
+			"zero ack fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					MinFee: types.Fee{
+						RecvFee:    nil,
+						AckFee:     nil,
+						TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins.Error(),
+		},
+		{
+			"zero timeout fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					MinFee: types.Fee{
+						RecvFee:    nil,
+						AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+						TimeoutFee: nil,
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins.Error(),
 		},
 	}
 
