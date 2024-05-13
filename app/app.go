@@ -1193,22 +1193,12 @@ func (app *App) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Respo
 	return app.mm.EndBlock(ctx, req)
 }
 
-func (app *App) EnsureBlockGasMeter(ctx sdk.Context) {
-	// TrancheKey generation and LimitOrderExpirationPurge both rely on a BlockGas meter.
-	// check that it works at startup
-	cp := app.GetConsensusParams(ctx)
-	if cp == nil || cp.Block == nil || cp.Block.MaxGas <= 0 {
-		panic("BlockGas meter must be initialized. Genesis must provide value for Block.MaxGas")
-	}
-}
-
 // InitChainer application update at chain initialization
 func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-	app.EnsureBlockGasMeter(ctx)
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
@@ -1223,7 +1213,6 @@ func (app *App) TestInitChainer(ctx sdk.Context, req abci.RequestInitChain) abci
 
 	// manually set consensus params here, cause there is no way to set it using ibctesting stuff for now
 	app.ConsensusParamsKeeper.Set(ctx, sims.DefaultConsensusParams)
-	app.EnsureBlockGasMeter(ctx)
 
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
