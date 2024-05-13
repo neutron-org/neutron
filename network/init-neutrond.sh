@@ -736,7 +736,8 @@ set_genesis_param escrow_account_address                "\"$DAO_CONTRACT_ADDRESS
 set_genesis_param sudo_call_gas_limit                   "\"1000000\""                                     # contractmanager
 set_genesis_param max_gas                               "\"1000000000\""                                  # consensus_params
 set_genesis_param vote_extensions_enable_height         "\"1\""                                           # consensus_params
-set_genesis_param market_admin                          "\"$ADMIN_MODULE_ADDRESS\","                      # marketmap
+set_genesis_param_jq ".app_state.marketmap.params.admin" "\"$ADMIN_MODULE_ADDRESS\""                      # marketmap
+set_genesis_param_jq ".app_state.marketmap.params.market_authorities" "[\"$ADMIN_MODULE_ADDRESS\"]"       # marketmap
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
