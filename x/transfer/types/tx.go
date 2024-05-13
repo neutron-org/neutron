@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (msg *MsgTransfer) ValidateBasic(isContract bool) error {
+func (msg *MsgTransfer) Validate(isContract bool) error {
 	if isContract {
 		if err := msg.Fee.Validate(); err != nil {
 			return err

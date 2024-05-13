@@ -39,7 +39,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 
 	isContract := k.SudoKeeper.HasContractInfo(ctx, senderAddr)
 
-	if err := msg.ValidateBasic(isContract); err != nil {
+	if err := msg.Validate(isContract); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgTransfer")
 	}
 
