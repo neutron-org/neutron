@@ -10,11 +10,15 @@ replace (
 )
 
 require (
+	cosmossdk.io/core v0.11.0 // indirect
 	github.com/cosmos/cosmos-sdk v0.50.6
+	github.com/docker/distribution v2.8.2+incompatible // indirect
+	github.com/docker/docker v24.0.9+incompatible // indirect
 	github.com/skip-mev/slinky v0.4.3
 	github.com/skip-mev/slinky/tests/integration v0.0.0-20240510204500-ba4a0c3c4fd0
 	github.com/strangelove-ventures/interchaintest/v8 v8.3.1-0.20240510203915-0559b76de4fa
 	github.com/stretchr/testify v1.9.0
+
 )
 
 require (
@@ -26,7 +30,6 @@ require (
 	cloud.google.com/go/storage v1.40.0 // indirect
 	cosmossdk.io/api v0.7.5 // indirect
 	cosmossdk.io/collections v0.4.0 // indirect
-	cosmossdk.io/core v0.11.0 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
 	cosmossdk.io/errors v1.0.1 // indirect
 	cosmossdk.io/log v1.3.1 // indirect
@@ -89,8 +92,6 @@ require (
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger/v4 v4.2.0 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
-	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/docker/docker v24.0.9+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
