@@ -151,6 +151,8 @@ distclean: clean
 
 
 test: test-unit
+	@rm -rf ./.testchains
+
 test-all: check test-race test-cover
 
 test-unit:

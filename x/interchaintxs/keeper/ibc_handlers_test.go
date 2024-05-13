@@ -26,11 +26,10 @@ const ICAId = ".ica0"
 func TestHandleAcknowledgement(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(_ sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
@@ -76,11 +75,10 @@ func TestHandleAcknowledgement(t *testing.T) {
 func TestHandleTimeout(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(_ sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
@@ -119,12 +117,12 @@ func TestHandleChanOpenAck(t *testing.T) {
 	defer ctrl.Finish()
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
-	channelID := "channel-0"
+	const channelID = "channel-0"
 	counterpartyChannelID := "channel-1"
 
 	err := icak.HandleChanOpenAck(ctx, "", channelID, counterpartyChannelID, "1")

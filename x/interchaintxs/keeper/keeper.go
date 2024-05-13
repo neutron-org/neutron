@@ -25,16 +25,17 @@ const (
 
 type (
 	Keeper struct {
-		Codec               codec.BinaryCodec
-		storeKey            storetypes.StoreKey
-		memKey              storetypes.StoreKey
-		channelKeeper       types.ChannelKeeper
-		feeKeeper           types.FeeRefunderKeeper
-		icaControllerKeeper types.ICAControllerKeeper
-		sudoKeeper          types.WasmKeeper
-		bankKeeper          types.BankKeeper
-		getFeeCollectorAddr types.GetFeeCollectorAddr
-		authority           string
+		Codec                  codec.BinaryCodec
+		storeKey               storetypes.StoreKey
+		memKey                 storetypes.StoreKey
+		channelKeeper          types.ChannelKeeper
+		feeKeeper              types.FeeRefunderKeeper
+		icaControllerKeeper    types.ICAControllerKeeper
+		icaControllerMsgServer types.ICAControllerMsgServer
+		sudoKeeper             types.WasmKeeper
+		bankKeeper             types.BankKeeper
+		getFeeCollectorAddr    types.GetFeeCollectorAddr
+		authority              string
 	}
 )
 
@@ -44,6 +45,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	channelKeeper types.ChannelKeeper,
 	icaControllerKeeper types.ICAControllerKeeper,
+	icaControllerMsgServer types.ICAControllerMsgServer,
 	sudoKeeper types.WasmKeeper,
 	feeKeeper types.FeeRefunderKeeper,
 	bankKeeper types.BankKeeper,
@@ -51,16 +53,17 @@ func NewKeeper(
 	authority string,
 ) *Keeper {
 	return &Keeper{
-		Codec:               cdc,
-		storeKey:            storeKey,
-		memKey:              memKey,
-		channelKeeper:       channelKeeper,
-		icaControllerKeeper: icaControllerKeeper,
-		sudoKeeper:          sudoKeeper,
-		feeKeeper:           feeKeeper,
-		bankKeeper:          bankKeeper,
-		getFeeCollectorAddr: getFeeCollectorAddr,
-		authority:           authority,
+		Codec:                  cdc,
+		storeKey:               storeKey,
+		memKey:                 memKey,
+		channelKeeper:          channelKeeper,
+		icaControllerKeeper:    icaControllerKeeper,
+		icaControllerMsgServer: icaControllerMsgServer,
+		sudoKeeper:             sudoKeeper,
+		feeKeeper:              feeKeeper,
+		bankKeeper:             bankKeeper,
+		getFeeCollectorAddr:    getFeeCollectorAddr,
+		authority:              authority,
 	}
 }
 

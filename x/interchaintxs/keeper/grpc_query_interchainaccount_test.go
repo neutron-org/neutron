@@ -19,7 +19,7 @@ func TestKeeper_InterchainAccountAddress(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
-	keeper, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, icaKeeper, nil, nil, nil)
+	keeper, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, icaKeeper, nil, nil, nil, nil)
 
 	resp, err := keeper.InterchainAccountAddress(ctx, nil)
 	require.ErrorIs(t, err, sdkerrors.ErrInvalidRequest)

@@ -16,7 +16,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
-	db2 "github.com/cosmos/cosmos-db"
+	cosmosdb "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -24,9 +24,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -47,6 +49,23 @@ import (
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := app.MakeEncodingConfig()
+
+	// TODO: move to depinject
+	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
+	// note, this is not necessary when using app wiring, as depinject can be directly used
+	memoryDB := cosmosdb.NewMemDB()
+	tempApp := app.New(
+		log.NewNopLogger(),
+		memoryDB,
+		nil,
+		false,
+		map[int64]bool{},
+		app.DefaultNodeHome,
+		0,
+		encodingConfig,
+		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
+		nil,
+	)
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
@@ -92,6 +111,15 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	initRootCmd(rootCmd, encodingConfig)
 
+	autoCliOpts := tempApp.AutoCliOpts()
+	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
+	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	autoCliOpts.ClientCtx = initClientCtx
+
+	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
+
 	return rootCmd, encodingConfig
 }
 
@@ -126,6 +154,9 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		server.StatusCommand(),
+		server.ShowValidatorCmd(),
+		server.ShowNodeIDCmd(),
+		server.ShowAddressCmd(),
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
@@ -148,14 +179,14 @@ func queryCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		// TODO: authcmd.GetAccountCmd(),
 		rpc.ValidatorCommand(),
-		// TODO: rpc.BlockCommand(),
+		server.QueryBlockResultsCmd(),
+		server.QueryBlocksCmd(),
+		server.QueryBlockCmd(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
 	)
 
-	app.ModuleBasics.AddQueryCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
@@ -182,7 +213,6 @@ func txCommand() *cobra.Command {
 		authcmd.GetDecodeCommand(),
 	)
 
-	app.ModuleBasics.AddTxCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
@@ -194,7 +224,7 @@ type appCreator struct {
 
 func (ac appCreator) newApp(
 	logger log.Logger,
-	db db2.DB,
+	db cosmosdb.DB,
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
@@ -217,7 +247,7 @@ func (ac appCreator) newApp(
 	homeDir := cast.ToString(appOpts.Get(flags.FlagHome))
 
 	snapshotDir := filepath.Join(homeDir, "data", "snapshots")
-	snapshotDB, err := db2.NewDB("metadata", db2.GoLevelDBBackend, snapshotDir)
+	snapshotDB, err := cosmosdb.NewDB("metadata", cosmosdb.GoLevelDBBackend, snapshotDir)
 	if err != nil {
 		panic(err)
 	}
@@ -262,7 +292,7 @@ func (ac appCreator) newApp(
 
 func (ac appCreator) appExport(
 	logger log.Logger,
-	db db2.DB,
+	db cosmosdb.DB,
 	traceStore io.Writer,
 	height int64,
 	forZeroHeight bool,

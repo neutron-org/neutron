@@ -1,6 +1,10 @@
 package utils
 
-import "reflect"
+import (
+	"path"
+	"reflect"
+	"runtime"
+)
 
 // MakeNew makes a new instance of generic T.
 // if T is a pointer, makes a new instance of the underlying struct via reflection,
@@ -14,4 +18,10 @@ func MakeNew[T any]() T {
 	}
 
 	return *new(T) // v is not ptr, alloc with new
+}
+
+func RootDir() string {
+	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
+	d := path.Join(path.Dir(b), "..")
+	return d
 }

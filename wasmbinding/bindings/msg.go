@@ -77,14 +77,6 @@ type SubmitTx struct {
 	Fee                 feetypes.Fee  `json:"fee"`
 }
 
-// SubmitTxResponse holds response from SubmitTx.
-type SubmitTxResponse struct {
-	// SequenceId is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
-	SequenceId uint64 `json:"sequence_id"`
-	// Channel is a src channel on neutron side transaction was submitted from
-	Channel string `json:"channel"`
-}
-
 // RegisterInterchainAccount creates account on remote chain.
 type RegisterInterchainAccount struct {
 	ConnectionId        string    `json:"connection_id"`
@@ -93,7 +85,10 @@ type RegisterInterchainAccount struct {
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
-type RegisterInterchainAccountResponse struct{}
+type RegisterInterchainAccountResponse struct {
+	ChannelId string `json:"channel_id"`
+	PortId    string `json:"port_id"`
+}
 
 // RegisterInterchainQuery creates a query for remote chain.
 type RegisterInterchainQuery struct {
