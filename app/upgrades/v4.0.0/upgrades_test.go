@@ -54,7 +54,7 @@ func (suite *UpgradeTestSuite) TestEnableVoteExtensionsUpgrade() {
 
 	// VoteExtensionsEnableHeight must be updated after the upgrade on upgrade height
 	// but the rest of params must be the same
-	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight()+4}
+	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight() + 4}
 	// it is automatically tracked in upgrade handler, we need to set it manually for tests
 	oldParams.Params.Version = &comettypes.VersionParams{App: 0}
 
