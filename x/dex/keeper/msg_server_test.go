@@ -516,7 +516,6 @@ func (s *DexTestSuite) depositsSuccess(
 	deposits []*Deposit,
 	pairID ...types.PairID,
 ) {
-
 	_, err := s.deposits(account, deposits, pairID...)
 	s.Assert().Nil(err)
 }
@@ -572,7 +571,6 @@ func (s *DexTestSuite) deposits(
 		return &types.MsgDepositResponse{}, err
 	}
 	return s.msgServer.Deposit(s.Ctx, msg)
-
 }
 
 func (s *DexTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (sdkmath.Int, sdkmath.Int) {
