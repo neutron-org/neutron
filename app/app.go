@@ -445,7 +445,7 @@ func New(
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
 		globalfeetypes.StoreKey, oracletypes.StoreKey, marketmaptypes.StoreKey,
 	)
-	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
+	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
 
 	app := &App{
@@ -680,6 +680,7 @@ func New(
 		appCodec,
 		keys[dextypes.StoreKey],
 		keys[dextypes.MemStoreKey],
+		tkeys[dextypes.TStoreKey],
 		app.BankKeeper.WithMintCoinsRestriction(dextypes.NewDexDenomMintCoinsRestriction()),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -992,8 +993,6 @@ func New(
 		oracletypes.ModuleName,
 		// globalfee.ModuleName,
 		ibcswaptypes.ModuleName,
-		// NOTE: Because of the gas sensitivity of PurgeExpiredLimit order operations
-		// dexmodule must be the last endBlock module to run
 		dextypes.ModuleName,
 	)
 
@@ -1386,27 +1385,15 @@ func (app *App) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
 	return app.mm.EndBlock(ctx)
 }
 
-func (app *App) EnsureBlockGasMeter(ctx sdk.Context) {
-	// TrancheKey generation and LimitOrderExpirationPurge both rely on a BlockGas meter.
-	// check that it works at startup
-	cp := app.GetConsensusParams(ctx)
-	if cp.Block == nil || cp.Block.MaxGas <= 0 {
-		panic("BlockGas meter must be initialized. Genesis must provide value for Block.MaxGas")
-	}
-}
-
 // InitChainer application update at chain initialization
 func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		return nil, err
 	}
-
-	app.EnsureBlockGasMeter(ctx)
 	if err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap()); err != nil {
 		return nil, err
 	}
-
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
@@ -1420,7 +1407,6 @@ func (app *App) TestInitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*a
 
 	// manually set consensus params here, cause there is no way to set it using ibctesting stuff for now
 	// TODO: app.ConsensusParamsKeeper.Set(ctx, sims.DefaultConsensusParams)
-	app.EnsureBlockGasMeter(ctx)
 
 	err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	if err != nil {

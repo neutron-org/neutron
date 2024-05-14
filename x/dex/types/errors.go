@@ -189,4 +189,9 @@ var (
 		1154,
 		"Swap amount too small; creates unfair spread for liquidity providers",
 	)
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
+		ModuleName,
+		1155,
+		"Maximum JIT LimitOrders per block has already been reached",
+	)
 )

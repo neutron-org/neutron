@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	testkeeper "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -13,10 +14,22 @@ func TestGetParams(t *testing.T) {
 	k, ctx := testkeeper.DexKeeper(t)
 	params := types.DefaultParams()
 
-	err := k.SetParams(ctx, params)
+	require.EqualValues(t, params, k.GetParams(ctx))
+}
+
+func TestSetParams(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+
+	newParams := types.Params{
+		FeeTiers:              []uint64{0, 1},
+		MaxTrueTakerSpread:    math_utils.MustNewPrecDecFromStr("0.111"),
+		Max_JITsPerBlock:      0,
+		GoodTilPurgeAllowance: 0,
+	}
+	err := k.SetParams(ctx, newParams)
 	require.NoError(t, err)
 
-	require.EqualValues(t, params, k.GetParams(ctx))
+	require.EqualValues(t, newParams, k.GetParams(ctx))
 }
 
 func TestValidateParams(t *testing.T) {

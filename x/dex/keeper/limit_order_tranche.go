@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -246,4 +247,33 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 	}
 
 	return placeTranche, nil
+}
+
+// GetJITsInBlockCount gets the total number of JIT LimitOrders placed in a block
+func (k Keeper) GetJITsInBlockCount(ctx sdk.Context) uint64 {
+	store := prefix.NewStore(ctx.TransientStore(k.tKey), []byte{})
+	byteKey := types.KeyPrefix(types.JITsInBlockKey)
+	bz := store.Get(byteKey)
+
+	// Count doesn't exist: no element
+	if bz == nil {
+		return 0
+	}
+
+	// Parse bytes
+	return binary.BigEndian.Uint64(bz)
+}
+
+// SetJITsInBlockCount sets the total number of JIT LimitOrders placed in a block
+func (k Keeper) SetJITsInBlockCount(ctx sdk.Context, count uint64) {
+	store := prefix.NewStore(ctx.TransientStore(k.tKey), []byte{})
+	byteKey := types.KeyPrefix(types.JITsInBlockKey)
+	bz := make([]byte, 8)
+	binary.BigEndian.PutUint64(bz, count)
+	store.Set(byteKey, bz)
+}
+
+func (k Keeper) IncrementJITsInBlock(ctx sdk.Context) {
+	currentCount := k.GetJITsInBlockCount(ctx)
+	k.SetJITsInBlockCount(ctx, currentCount+1)
 }
