@@ -15,7 +15,7 @@ replace (
 require (
 	github.com/cosmos/cosmos-sdk v0.50.6
 	github.com/skip-mev/slinky v0.4.3
-	github.com/skip-mev/slinky/tests/integration v0.0.0-20240514160851-7eee491c5964
+	github.com/skip-mev/slinky/tests/integration v1.0.0
 	github.com/strangelove-ventures/interchaintest/v8 v8.3.1-0.20240510203915-0559b76de4fa
 	github.com/stretchr/testify v1.9.0
 )
