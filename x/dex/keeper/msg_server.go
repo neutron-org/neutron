@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,6 +27,10 @@ func (k MsgServer) Deposit(
 	goCtx context.Context,
 	msg *types.MsgDeposit,
 ) (*types.MsgDepositResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgDeposit")
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -64,6 +69,10 @@ func (k MsgServer) Withdrawal(
 	goCtx context.Context,
 	msg *types.MsgWithdrawal,
 ) (*types.MsgWithdrawalResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgWithdrawal")
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -94,6 +103,10 @@ func (k MsgServer) PlaceLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgPlaceLimitOrder,
 ) (*types.MsgPlaceLimitOrderResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgPlaceLimitOrder")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
@@ -130,6 +143,10 @@ func (k MsgServer) WithdrawFilledLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgWithdrawFilledLimitOrder,
 ) (*types.MsgWithdrawFilledLimitOrderResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgWithdrawFilledLimitOrder")
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
 	err := k.WithdrawFilledLimitOrderCore(
@@ -148,6 +165,10 @@ func (k MsgServer) CancelLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgCancelLimitOrder,
 ) (*types.MsgCancelLimitOrderResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgCancelLimitOrder")
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
 	err := k.CancelLimitOrderCore(
@@ -166,6 +187,10 @@ func (k MsgServer) MultiHopSwap(
 	goCtx context.Context,
 	msg *types.MsgMultiHopSwap,
 ) (*types.MsgMultiHopSwapResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgMultiHopSwap")
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -186,9 +211,10 @@ func (k MsgServer) MultiHopSwap(
 }
 
 func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
-		return nil, err
+	if err := req.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
+
 	authority := k.GetAuthority()
 	if authority != req.Authority {
 		return nil, status.Errorf(codes.PermissionDenied, "invalid authority; expected %s, got %s", authority, req.Authority)
