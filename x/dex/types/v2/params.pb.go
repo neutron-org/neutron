@@ -12,7 +12,7 @@ import (
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 
-	github_com_neutron_org_neutron_v3_utils_math "github.com/neutron-org/neutron/v3/utils/math"
+	github_com_neutron_org_neutron_v3_utils_math "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -29,7 +29,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // Params defines the parameters for the module.
 type Params struct {
 	FeeTiers           []uint64                                             `protobuf:"varint,1,rep,packed,name=fee_tiers,json=feeTiers,proto3" json:"fee_tiers,omitempty"`
-	MaxTrueTakerSpread github_com_neutron_org_neutron_v3_utils_math.PrecDec `protobuf:"bytes,2,opt,name=max_true_taker_spread,json=maxTrueTakerSpread,proto3,customtype=github.com/neutron-org/neutron/v3/utils/math.PrecDec" json:"max_true_taker_spread" yaml:"max_true_taker_spread"`
+	MaxTrueTakerSpread github_com_neutron_org_neutron_v3_utils_math.PrecDec `protobuf:"bytes,2,opt,name=max_true_taker_spread,json=maxTrueTakerSpread,proto3,customtype=github.com/neutron-org/neutron/v4/utils/math.PrecDec" json:"max_true_taker_spread" yaml:"max_true_taker_spread"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }

@@ -3,12 +3,12 @@ package v3
 import (
 	"errors"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-	v2types "github.com/neutron-org/neutron/v3/x/dex/types/v2"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
+	v2types "github.com/neutron-org/neutron/v4/x/dex/types/v2"
 )
 
 // MigrateStore performs in-place store migrations.
@@ -26,20 +26,23 @@ func migrateParams(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.S
 	if bz == nil {
 		return errors.New("cannot fetch dex params from KV store")
 	}
-	var params v2types.Params
-	cdc.MustUnmarshal(bz, &params)
+	var oldParams v2types.Params
+	cdc.MustUnmarshal(bz, &oldParams)
 
-	newParams := types.Params{}
 	// add new param values
-	params.GoodTilPurgeAllowance = types.DefaultGoodTilPurgeAllowance
-	params.Max_JITsPerBlock = types.DefaultMaxJITsPerBlock
+	newParams := types.Params{
+		GoodTilPurgeAllowance: types.DefaultGoodTilPurgeAllowance,
+		Max_JITsPerBlock:      types.DefaultMaxJITsPerBlock,
+		FeeTiers:              oldParams.FeeTiers,
+		MaxTrueTakerSpread:    oldParams.MaxTrueTakerSpread,
+	}
 
 	// set params
-	bz, err := cdc.Marshal(&params)
+	bz, err := cdc.Marshal(&newParams)
 	if err != nil {
 		return err
 	}
-	store.Set([]byte(types.ParamsKey), bz)
+	store.Set(types.KeyPrefix(types.ParamsKey), bz)
 
 	ctx.Logger().Info("Finished migrating dex params")
 

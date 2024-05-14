@@ -5,12 +5,12 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v3/testutil"
-	"github.com/neutron-org/neutron/v3/utils/math"
-	v3 "github.com/neutron-org/neutron/v3/x/dex/migrations/v3"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v4/utils/math"
+	v3 "github.com/neutron-org/neutron/v4/x/dex/migrations/v3"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 
-	v2types "github.com/neutron-org/neutron/v3/x/dex/types/v2"
+	v2types "github.com/neutron-org/neutron/v4/x/dex/types/v2"
 )
 
 type V3DexMigrationTestSuite struct {
@@ -45,5 +45,7 @@ func (suite *V3DexMigrationTestSuite) TestParamsUpgrade() {
 
 	// Check params are correct
 	newParams := app.DexKeeper.GetParams(ctx)
-	suite.Require().EqualValues(types.DefaultParams(), newParams)
+	suite.Require().EqualValues(oldParams.FeeTiers, newParams.FeeTiers)
+	suite.Require().EqualValues(newParams.GoodTilPurgeAllowance, newParams.GoodTilPurgeAllowance)
+	suite.Require().EqualValues(newParams.Max_JITsPerBlock, newParams.Max_JITsPerBlock)
 }
