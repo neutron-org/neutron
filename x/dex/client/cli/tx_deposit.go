@@ -18,10 +18,10 @@ import (
 func CmdDeposit() *cobra.Command {
 	cmd := &cobra.Command{
 		//nolint:lll
-		Use:     "deposit [receiver] [token-a] [token-b] [list of amount-0] [list of amount-1] [list of tick-index] [list of fees] [disable_autoswap]",
+		Use:     "deposit [receiver] [token-a] [token-b] [list of amount-0] [list of amount-1] [list of tick-index] [list of fees] [disable_autoswap], [fail_tx_on_BEL]",
 		Short:   "Broadcast message deposit",
-		Example: "deposit alice tokenA tokenB 100,0 0,50 [-10,5] 1,1 false,false --from alice",
-		Args:    cobra.ExactArgs(8),
+		Example: "deposit alice tokenA tokenB 100,0 0,50 [-10,5] 1,1 false,false false,false --from alice",
+		Args:    cobra.ExactArgs(9),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			argReceiver := args[0]
 			argTokenA := args[1]
@@ -40,7 +40,8 @@ func CmdDeposit() *cobra.Command {
 			argTicksIndexes := strings.Split(args[5], ",")
 
 			argFees := strings.Split(args[6], ",")
-			argDepositOptions := strings.Split(args[7], ",")
+			argAutoswapOptions := strings.Split(args[7], ",")
+			argFailTxOptions := strings.Split(args[8], ",")
 
 			var AmountsA []math.Int
 			var AmountsB []math.Int
@@ -84,12 +85,20 @@ func CmdDeposit() *cobra.Command {
 				FeesUint = append(FeesUint, FeeInt)
 			}
 
-			for _, s := range argDepositOptions {
+			for i, s := range argAutoswapOptions {
 				disableAutoswap, err := strconv.ParseBool(s)
 				if err != nil {
 					return err
 				}
-				DepositOptions = append(DepositOptions, &types.DepositOptions{DisableAutoswap: disableAutoswap})
+				failTx, err := strconv.ParseBool(argFailTxOptions[i])
+				if err != nil {
+					return err
+				}
+
+				DepositOptions = append(DepositOptions, &types.DepositOptions{
+					DisableAutoswap: disableAutoswap,
+					FailTxOn_BEL:    failTx,
+				})
 			}
 
 			clientCtx, err := client.GetClientTxContext(cmd)

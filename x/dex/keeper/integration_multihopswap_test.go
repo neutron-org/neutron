@@ -38,7 +38,7 @@ func (s *DexTestSuite) SetupMultiplePools(poolSetups ...PoolSetup) {
 		)
 		s.fundAccountBalancesWithDenom(s.bob, coins)
 		pairID := types.PairID{Token0: p.TokenA, Token1: p.TokenB}
-		s.deposits(
+		s.depositsSuccess(
 			s.bob,
 			[]*Deposit{NewDeposit(p.AmountA, p.AmountB, p.TickIndex, p.Fee)},
 			pairID,

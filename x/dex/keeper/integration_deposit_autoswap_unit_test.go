@@ -1,5 +1,7 @@
 package keeper_test
 
+import "github.com/neutron-org/neutron/v4/x/dex/types"
+
 func (s *DexTestSuite) TestAutoswapperWithdraws() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 50)
@@ -18,7 +20,7 @@ func (s *DexTestSuite) TestAutoswapperWithdraws() {
 	s.assertDexBalances(10, 10)
 
 	// Alice deposits at a different balance ratio
-	s.aliceDepositsWithOptions(NewDepositWithOptions(12, 5, tickIndex, fee, DepositOptions{DisableAutoswap: false}))
+	s.aliceDeposits(NewDepositWithOptions(12, 5, tickIndex, fee, types.DepositOptions{DisableAutoswap: false}))
 	s.assertAliceBalances(38, 45)
 	s.assertDexBalances(22, 15)
 
@@ -52,7 +54,7 @@ func (s *DexTestSuite) TestAutoswapOtherDepositorWithdraws() {
 	s.assertDexBalances(10, 10)
 
 	// Alice deposits at a different balance ratio
-	s.aliceDepositsWithOptions(NewDepositWithOptions(10, 7, tickIndex, fee, DepositOptions{DisableAutoswap: false}))
+	s.aliceDeposits(NewDepositWithOptions(10, 7, tickIndex, fee, types.DepositOptions{DisableAutoswap: false}))
 	s.assertAliceBalances(40, 43)
 	s.assertDexBalances(20, 17)
 
@@ -83,7 +85,7 @@ func (s *DexTestSuite) TestAutoswapBothWithdraws() {
 	s.assertDexBalances(10, 10)
 
 	// Alice deposits at a different balance ratio
-	s.aliceDepositsWithOptions(NewDepositWithOptions(10, 5, tickIndex, fee, DepositOptions{DisableAutoswap: false}))
+	s.aliceDeposits(NewDepositWithOptions(10, 5, tickIndex, fee, types.DepositOptions{DisableAutoswap: false}))
 	s.assertAliceBalances(40, 45)
 	s.assertDexBalances(20, 15)
 

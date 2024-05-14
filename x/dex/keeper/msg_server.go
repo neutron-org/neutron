@@ -44,7 +44,7 @@ func (k MsgServer) Deposit(
 
 	tickIndexes := NormalizeAllTickIndexes(msg.TokenA, pairID.Token0, msg.TickIndexesAToB)
 
-	Amounts0Deposit, Amounts1Deposit, _, err := k.DepositCore(
+	Amounts0Deposit, Amounts1Deposit, _, failedDeposits, err := k.DepositCore(
 		goCtx,
 		pairID,
 		callerAddr,
@@ -62,6 +62,7 @@ func (k MsgServer) Deposit(
 	return &types.MsgDepositResponse{
 		Reserve0Deposited: Amounts0Deposit,
 		Reserve1Deposited: Amounts1Deposit,
+		FailedDeposits:    failedDeposits,
 	}, nil
 }
 

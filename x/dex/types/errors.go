@@ -206,4 +206,9 @@ var (
 		1159,
 		"Cannot specify LimitSellPrice and TickIndexInToOut",
 	)
+	ErrDepositBehindEnemyLines = sdkerrors.Register(
+		ModuleName,
+		1160,
+		"Cannot deposit at a price below the opposing token's current price",
+	)
 )

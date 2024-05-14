@@ -3,8 +3,6 @@ package keeper_test
 import (
 	"math"
 
-	sdkmath "cosmossdk.io/math"
-
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -257,55 +255,6 @@ func (s *DexTestSuite) TestDepositSingleSidedExistingLiquidityB() {
 	s.assertCurr0To1(1)
 }
 
-func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken0() {
-	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
-
-	// GIVEN
-	// deposit 10 of token B at tick 0 fee 1
-	s.aliceDeposits(NewDeposit(0, 10, 0, 1))
-	s.assertAliceBalances(50, 40)
-	s.assertDexBalances(0, 10)
-	s.assertPoolLiquidity(0, 10, 0, 1)
-	s.assertCurr0To1(1)
-
-	// WHEN
-	// depositing  above enemy lines at tick 1
-	// THEN
-	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
-	s.aliceDeposits(NewDeposit(10, 0, 4000, 1))
-
-	// Bob arbs
-	s.bobLimitSells("TokenB", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-	s.bobLimitSells("TokenA", 2, 10)
-	s.assertBobBalancesInt(sdkmath.NewInt(50_000_000), sdkmath.NewInt(53_294_995))
-}
-
-func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
-	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
-
-	// GIVEN
-	// deposit 10 of token A at tick 0 fee 1
-	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
-	s.assertAliceBalances(40, 50)
-	s.assertDexBalances(10, 0)
-	s.assertPoolLiquidity(10, 0, 0, 1)
-	s.assertCurr1To0(-1)
-
-	// WHEN
-	// depositing above enemy lines at tick -1
-	// THEN
-	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
-
-	s.aliceDeposits(NewDeposit(0, 10, -4000, 0))
-
-	// Bob arbs
-	s.bobLimitSells("TokenA", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-	s.bobLimitSells("TokenB", -2, 10)
-	s.assertBobBalancesInt(sdkmath.NewInt(53_295_665), sdkmath.NewInt(50_000_000))
-}
-
 func (s *DexTestSuite) TestDepositSingleSidedMultiA() {
 	s.fundAliceBalances(50, 50)
 
@@ -427,11 +376,42 @@ func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
 func (s *DexTestSuite) TestDepositSingleInvalidFeeFails() {
 	s.fundAliceBalances(0, 50)
 
-	// GIVEN
-	// Deposit at fee 43 (invalid)
+	// WHEN Deposit at fee 43 (invalid)
 	// THEN FAILURE
 	s.assertAliceDepositFails(
 		types.ErrInvalidFee,
 		NewDeposit(0, 50, 10, 43),
+	)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken0BELFails() {
+	s.fundAliceBalances(50, 50)
+
+	// GIVEN TokenB liquidity at tick 2002-2004
+	s.aliceDeposits(NewDeposit(0, 10, 2001, 1),
+		NewDeposit(0, 10, 2002, 1),
+		NewDeposit(0, 10, 2003, 1),
+	)
+	// WHEN alice deposits TokenA at tick -2003 (BEL)
+	// THEN FAILURE
+	s.assertAliceDepositFails(
+		types.ErrDepositBehindEnemyLines,
+		NewDepositWithOptions(50, 0, 2004, 1, types.DepositOptions{FailTxOn_BEL: true}),
+	)
+}
+
+func (s *DexTestSuite) TestDepositSingleToken1BELFails() {
+	s.fundAliceBalances(50, 50)
+
+	// GIVEN TokenA liquidity at tick 2002-2005
+	s.aliceDeposits(NewDeposit(10, 0, -2001, 1),
+		NewDeposit(10, 0, -2003, 1),
+		NewDeposit(10, 0, -2004, 1),
+	)
+	// WHEN alice deposits TokenB at tick -2003 (BEL)
+	// THEN FAILURE
+	s.assertAliceDepositFails(
+		types.ErrDepositBehindEnemyLines,
+		NewDepositWithOptions(0, 50, -2004, 1, types.DepositOptions{FailTxOn_BEL: true}),
 	)
 }
