@@ -26,7 +26,7 @@ func (msg MsgRemoveInterchainQueryRequest) Type() string {
 	return "remove-interchain-query"
 }
 
-func (msg MsgRemoveInterchainQueryRequest) ValidateBasic() error {
+func (msg MsgRemoveInterchainQueryRequest) Validate() error {
 	if msg.GetQueryId() == 0 {
 		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}

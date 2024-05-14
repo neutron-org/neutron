@@ -18,6 +18,7 @@ import (
 	"github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
@@ -30,6 +31,73 @@ import (
 )
 
 const TestFeeCollectorAddr = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"
+
+func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
+		return TestFeeCollectorAddr
+	})
+
+	tests := []struct {
+		name        string
+		msg         types.MsgRegisterInterchainAccount
+		expectedErr error
+	}{
+		{
+			"empty connection id",
+			types.MsgRegisterInterchainAccount{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "",
+				InterchainAccountId: "1",
+			},
+			types.ErrEmptyConnectionID,
+		},
+		{
+			"empty fromAddress",
+			types.MsgRegisterInterchainAccount{
+				FromAddress:         "",
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"invalid fromAddress",
+			types.MsgRegisterInterchainAccount{
+				FromAddress:         "invalid address",
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"empty interchain account id",
+			types.MsgRegisterInterchainAccount{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "",
+			},
+			types.ErrEmptyInterchainAccountID,
+		},
+		{
+			"long interchain account id",
+			types.MsgRegisterInterchainAccount{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: string(make([]byte, 48)),
+			},
+			types.ErrLongInterchainAccountID,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := icak.RegisterInterchainAccount(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
 
 func TestRegisterInterchainAccount(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -50,12 +118,8 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	contractAddress := sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress)
 	icaOwner := types.NewICAOwnerFromAddress(contractAddress, msgRegAcc.InterchainAccountId)
 
-	resp, err := icak.RegisterInterchainAccount(ctx, &types.MsgRegisterInterchainAccount{})
-	require.ErrorContains(t, err, "failed to parse address")
-	require.Nil(t, resp)
-
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
-	resp, err = icak.RegisterInterchainAccount(ctx, &msgRegAcc)
+	resp, err := icak.RegisterInterchainAccount(ctx, &msgRegAcc)
 	require.ErrorContains(t, err, "is not a contract address")
 	require.Nil(t, resp)
 
@@ -110,6 +174,219 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	}, *resp)
 }
 
+func TestMsgSubmitTXValidate(t *testing.T) {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
+		return TestFeeCollectorAddr
+	})
+
+	cosmosMsg := codectypes.Any{
+		TypeUrl: "msg",
+		Value:   []byte{100}, // just check that values are not nil
+	}
+
+	tests := []struct {
+		name        string
+		msg         types.MsgSubmitTx
+		expectedErr error
+	}{
+		{
+			"invalid ack fee",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee: nil,
+					AckFee: sdk.Coins{
+						{
+							Denom:  "{}!@#a",
+							Amount: math.NewInt(100),
+						},
+					},
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"invalid timeout fee",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee: nil,
+					AckFee:  sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.Coins{
+						{
+							Denom:  params.DefaultDenom,
+							Amount: math.NewInt(-100),
+						},
+					},
+				},
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"non-zero recv fee",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"zero ack fee",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     nil,
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"zero timeout fee",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: nil,
+				},
+			},
+			sdkerrors.ErrInvalidCoins,
+		},
+		{
+			"empty connection id",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			types.ErrEmptyConnectionID,
+		},
+		{
+			"empty FromAddress",
+			types.MsgSubmitTx{
+				FromAddress:         "",
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"invalid FromAddress",
+			types.MsgSubmitTx{
+				FromAddress:         "invalid_address",
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			sdkerrors.ErrInvalidAddress,
+		},
+		{
+			"empty interchain account id",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			types.ErrEmptyInterchainAccountID,
+		},
+		{
+			"no messages",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                nil,
+				Timeout:             1,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			types.ErrNoMessages,
+		},
+		{
+			"invalid timeout",
+			types.MsgSubmitTx{
+				FromAddress:         testutil.TestOwnerAddress,
+				ConnectionId:        "connection-id",
+				InterchainAccountId: "1",
+				Msgs:                []*codectypes.Any{&cosmosMsg},
+				Timeout:             0,
+				Fee: feerefundertypes.Fee{
+					RecvFee:    nil,
+					AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+					TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+				},
+			},
+			types.ErrInvalidTimeout,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := icak.SubmitTx(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
 func TestSubmitTx(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -134,7 +411,11 @@ func TestSubmitTx(t *testing.T) {
 		Msgs:                []*codectypes.Any{&cosmosMsg},
 		Memo:                "memo",
 		Timeout:             100,
-		Fee:                 feerefundertypes.Fee{},
+		Fee: feerefundertypes.Fee{
+			RecvFee:    sdk.NewCoins(),
+			AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+			TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(100))),
+		},
 	}
 
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
@@ -143,14 +424,6 @@ func TestSubmitTx(t *testing.T) {
 	resp, err := icak.SubmitTx(ctx, nil)
 	require.Nil(t, resp)
 	require.ErrorContains(t, err, "nil msg is prohibited")
-
-	resp, err = icak.SubmitTx(ctx, &types.MsgSubmitTx{})
-	require.Nil(t, resp)
-	require.ErrorContains(t, err, "empty Msgs field is prohibited")
-
-	resp, err = icak.SubmitTx(ctx, &types.MsgSubmitTx{Msgs: []*codectypes.Any{&cosmosMsg}})
-	require.Nil(t, resp)
-	require.ErrorContains(t, err, "failed to parse address")
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
 	resp, err = icak.SubmitTx(ctx, &submitMsg)
@@ -234,4 +507,40 @@ func TestSubmitTx(t *testing.T) {
 		Channel:    activeChannel,
 	}, *resp)
 	require.NoError(t, err)
+}
+
+func TestMsgUpdateParamsValidate(t *testing.T) {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
+		return TestFeeCollectorAddr
+	})
+
+	tests := []struct {
+		name        string
+		msg         types.MsgUpdateParams
+		expectedErr string
+	}{
+		{
+			"empty authority",
+			types.MsgUpdateParams{
+				Authority: "",
+			},
+			"authority is invalid",
+		},
+		{
+			"invalid authority",
+			types.MsgUpdateParams{
+				Authority: "invalid authority",
+			},
+			"authority is invalid",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := icak.UpdateParams(ctx, &tt.msg)
+			require.ErrorContains(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
 }

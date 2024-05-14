@@ -20,7 +20,7 @@ const interchainAccountIDLimit = 128 -
 
 var _ codectypes.UnpackInterfacesMessage = &MsgSubmitTx{}
 
-func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
+func (msg *MsgRegisterInterchainAccount) Validate() error {
 	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID
 	}
@@ -34,7 +34,7 @@ func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
 	}
 
 	if len(msg.InterchainAccountId) > interchainAccountIDLimit {
-		return ErrLongInterchainAccountID
+		return errors.Wrapf(ErrLongInterchainAccountID, "max length is %d, got %d", interchainAccountIDLimit, len(msg.InterchainAccountId))
 	}
 
 	return nil
@@ -59,7 +59,7 @@ func (msg *MsgRegisterInterchainAccount) GetSignBytes() []byte {
 
 //----------------------------------------------------------------
 
-func (msg *MsgSubmitTx) ValidateBasic() error {
+func (msg *MsgSubmitTx) Validate() error {
 	if err := msg.Fee.Validate(); err != nil {
 		return err
 	}
@@ -154,7 +154,7 @@ func (msg *MsgUpdateParams) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(msg)
 }
 
-func (msg *MsgUpdateParams) ValidateBasic() error {
+func (msg *MsgUpdateParams) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}
