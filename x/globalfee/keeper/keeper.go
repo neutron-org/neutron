@@ -37,7 +37,7 @@ func (k Keeper) GetAuthority() string {
 
 // SetParams sets the x/globalfee module parameters.
 func (k Keeper) SetParams(ctx sdk.Context, p types.Params) error {
-	if err := p.ValidateBasic(); err != nil {
+	if err := p.Validate(); err != nil {
 		return err
 	}
 

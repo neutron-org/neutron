@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,8 +27,11 @@ func (k MsgServer) Deposit(
 	goCtx context.Context,
 	msg *types.MsgDeposit,
 ) (*types.MsgDepositResponse, error) {
-	err := k.AssertNotPaused(goCtx)
-	if err != nil {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgDeposit")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
 		return nil, err
 	}
 
@@ -69,8 +73,11 @@ func (k MsgServer) Withdrawal(
 	goCtx context.Context,
 	msg *types.MsgWithdrawal,
 ) (*types.MsgWithdrawalResponse, error) {
-	err := k.AssertNotPaused(goCtx)
-	if err != nil {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgWithdrawal")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
 		return nil, err
 	}
 
@@ -104,8 +111,11 @@ func (k MsgServer) PlaceLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgPlaceLimitOrder,
 ) (*types.MsgPlaceLimitOrderResponse, error) {
-	err := k.AssertNotPaused(goCtx)
-	if err != nil {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgPlaceLimitOrder")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
 		return nil, err
 	}
 
@@ -114,7 +124,7 @@ func (k MsgServer) PlaceLimitOrder(
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
-	err = msg.ValidateGoodTilExpiration(ctx.BlockTime())
+	err := msg.ValidateGoodTilExpiration(ctx.BlockTime())
 	if err != nil {
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
@@ -145,13 +155,17 @@ func (k MsgServer) WithdrawFilledLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgWithdrawFilledLimitOrder,
 ) (*types.MsgWithdrawFilledLimitOrderResponse, error) {
-	err := k.AssertNotPaused(goCtx)
-	if err != nil {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgWithdrawFilledLimitOrder")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
 		return nil, err
 	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
-	err = k.WithdrawFilledLimitOrderCore(
+	err := k.WithdrawFilledLimitOrderCore(
 		goCtx,
 		msg.TrancheKey,
 		callerAddr,
@@ -167,14 +181,17 @@ func (k MsgServer) CancelLimitOrder(
 	goCtx context.Context,
 	msg *types.MsgCancelLimitOrder,
 ) (*types.MsgCancelLimitOrderResponse, error) {
-	err := k.AssertNotPaused(goCtx)
-	if err != nil {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgCancelLimitOrder")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
 		return nil, err
 	}
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
-	err = k.CancelLimitOrderCore(
+	err := k.CancelLimitOrderCore(
 		goCtx,
 		msg.TrancheKey,
 		callerAddr,
@@ -190,10 +207,14 @@ func (k MsgServer) MultiHopSwap(
 	goCtx context.Context,
 	msg *types.MsgMultiHopSwap,
 ) (*types.MsgMultiHopSwapResponse, error) {
-	err := k.AssertNotPaused(goCtx)
-	if err != nil {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgMultiHopSwap")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
 		return nil, err
 	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -214,9 +235,10 @@ func (k MsgServer) MultiHopSwap(
 }
 
 func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
-		return nil, err
+	if err := req.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
+
 	authority := k.GetAuthority()
 	if authority != req.Authority {
 		return nil, status.Errorf(codes.PermissionDenied, "invalid authority; expected %s, got %s", authority, req.Authority)
