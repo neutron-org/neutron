@@ -31,7 +31,7 @@ func (k Keeper) DepositCore(
 	tickIndices []int64,
 	fees []uint64,
 	options []*types.DepositOptions,
-) (amounts0Deposit, amounts1Deposit []math.Int, sharesIssued sdk.Coins, err error) {
+) (amounts0Deposit, amounts1Deposit []math.Int, sharesIssued sdk.Coins, failedDeposits []*types.FailedDeposit, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	totalAmountReserve0 := math.ZeroInt()
@@ -49,15 +49,22 @@ func (k Keeper) DepositCore(
 		amount1 := amounts1[i]
 		tickIndex := tickIndices[i]
 		fee := fees[i]
+		options := options[i]
 
 		if err := k.ValidateFee(ctx, fee); err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, failedDeposits, err
 		}
 
 		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, amount0, amount1) {
-			return nil, nil, nil, types.ErrDepositBehindEnemyLines
+			err = sdkerrors.Wrapf(types.ErrDepositBehindEnemyLines,
+				"deposit failed at tick %d fee %d", tickIndex, fee)
+			if options.FailTxOn_BEL {
+				return nil, nil, nil, failedDeposits, err
+			}
+			failedDeposits = append(failedDeposits, &types.FailedDeposit{DepositIdx: uint64(i), Error: err.Error()})
+			continue
 		}
-		autoswap := !options[i].DisableAutoswap
+		autoswap := !options.DisableAutoswap
 
 		pool, err := k.GetOrInitPool(
 			ctx,
@@ -66,7 +73,7 @@ func (k Keeper) DepositCore(
 			fee,
 		)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, failedDeposits, err
 		}
 
 		existingShares := k.bankKeeper.GetSupply(ctx, pool.GetPoolDenom()).Amount
@@ -76,11 +83,11 @@ func (k Keeper) DepositCore(
 		k.SetPool(ctx, pool)
 
 		if inAmount0.IsZero() && inAmount1.IsZero() {
-			return nil, nil, nil, types.ErrZeroTrueDeposit
+			return nil, nil, nil, failedDeposits, types.ErrZeroTrueDeposit
 		}
 
 		if outShares.IsZero() {
-			return nil, nil, nil, types.ErrDepositShareUnderflow
+			return nil, nil, nil, failedDeposits, types.ErrDepositShareUnderflow
 		}
 
 		sharesIssued = append(sharesIssued, outShares)
@@ -110,22 +117,22 @@ func (k Keeper) DepositCore(
 	if totalAmountReserve0.IsPositive() {
 		coin0 := sdk.NewCoin(pairID.Token0, totalAmountReserve0)
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin0}); err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, failedDeposits, err
 		}
 	}
 
 	if totalAmountReserve1.IsPositive() {
 		coin1 := sdk.NewCoin(pairID.Token1, totalAmountReserve1)
 		if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, callerAddr, types.ModuleName, sdk.Coins{coin1}); err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, failedDeposits, err
 		}
 	}
 
 	if err := k.MintShares(ctx, receiverAddr, sharesIssued); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, failedDeposits, err
 	}
 
-	return amounts0Deposited, amounts1Deposited, sharesIssued, nil
+	return amounts0Deposited, amounts1Deposited, sharesIssued, failedDeposits, nil
 }
 
 // Handles core logic for MsgWithdrawal; calculating and withdrawing reserve0,reserve1 from a specified tick
