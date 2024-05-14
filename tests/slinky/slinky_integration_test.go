@@ -105,3 +105,15 @@ func TestSlinkyOracleIntegration(t *testing.T) {
 
 	suite.Run(t, integration.NewSlinkyOracleIntegrationSuite(baseSuite))
 }
+
+func TestSlinkyCCVIntegration(t *testing.T) {
+	s := integration.NewSlinkyCCVIntegrationSuite(
+		spec,
+		oracleImage,
+		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
+		integration.WithChainConstructor(integration.CCVChainConstructor),
+		integration.WithDenom(denom),
+	)
+
+	suite.Run(t, s)
+}
