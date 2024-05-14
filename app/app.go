@@ -921,6 +921,41 @@ func New(
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
 
+	app.mm.SetOrderPreBlockers(
+		auctiontypes.ModuleName,
+		upgradetypes.ModuleName,
+		capabilitytypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		vestingtypes.ModuleName,
+		ibchost.ModuleName,
+		ibctransfertypes.ModuleName,
+		authtypes.ModuleName,
+		authz.ModuleName,
+		banktypes.ModuleName,
+		crisistypes.ModuleName,
+		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		ccvconsumertypes.ModuleName,
+		tokenfactorytypes.ModuleName,
+		icatypes.ModuleName,
+		interchainqueriesmoduletypes.ModuleName,
+		interchaintxstypes.ModuleName,
+		contractmanagermoduletypes.ModuleName,
+		wasmtypes.ModuleName,
+		feetypes.ModuleName,
+		feeburnertypes.ModuleName,
+		adminmoduletypes.ModuleName,
+		ibchookstypes.ModuleName,
+		pfmtypes.ModuleName,
+		crontypes.ModuleName,
+		marketmaptypes.ModuleName,
+		oracletypes.ModuleName,
+		// globalfee.ModuleName,
+		ibcswaptypes.ModuleName,
+		dextypes.ModuleName,
+	)
+
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator feerefunder pool to keep the
 	// CanWithdrawInvariant invariant.
@@ -1077,8 +1112,8 @@ func New(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
+	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
-
 	app.SetEndBlocker(app.EndBlocker)
 
 	// create the lanes
@@ -1376,6 +1411,11 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 // GetBaseApp returns the base app of the application
 func (app *App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
 
+// PreBlocker application updates every pre block
+func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	return app.mm.PreBlock(ctx)
+}
+
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
 	return app.mm.BeginBlock(ctx)
@@ -1538,7 +1578,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(slashingtypes.ModuleName).WithKeyTable(slashingtypes.ParamKeyTable()) //nolint:staticcheck
 	paramsKeeper.Subspace(crisistypes.ModuleName).WithKeyTable(crisistypes.ParamKeyTable())     //nolint:staticcheck
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
-	paramsKeeper.Subspace(ibchost.ModuleName)
+	paramsKeeper.Subspace(ibchost.ModuleName).WithKeyTable(ibcclienttypes.ParamKeyTable())
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
