@@ -53,7 +53,7 @@ func (a AppModuleBasic) ValidateGenesis(marshaler codec.JSONCodec, _ client.TxEn
 	if err != nil {
 		return err
 	}
-	if err := data.Params.ValidateBasic(); err != nil {
+	if err := data.Params.Validate(); err != nil {
 		return errorsmod.Wrap(err, "params")
 	}
 	return nil

@@ -200,8 +200,8 @@ import (
 	"github.com/skip-mev/block-sdk/v2/abci/checktx"
 	"github.com/skip-mev/block-sdk/v2/block/base"
 
+	"github.com/skip-mev/slinky/x/marketmap"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	marketmap "github.com/skip-mev/slinky/x/marketmap/module"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
@@ -303,8 +303,6 @@ func init() {
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
 
 	appconfig.GetDefaultConfig()
-	// TODO: this is a hack to make unit tests pass. Remove that after marketmap module fixes DefaultParams() call
-	marketmaptypes.DefaultMarketAuthority = authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String()
 }
 
 // App extends an ABCI application, but with most of its parameters exported.

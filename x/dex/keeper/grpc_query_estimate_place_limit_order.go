@@ -25,7 +25,7 @@ func (k Keeper) EstimatePlaceLimitOrder(
 		ExpirationTime:   req.ExpirationTime,
 		MaxAmountOut:     req.MaxAmountOut,
 	}
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
 
