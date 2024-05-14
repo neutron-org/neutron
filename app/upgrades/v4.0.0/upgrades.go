@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	comettypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	"github.com/cosmos/cosmos-sdk/x/consensus/types"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
@@ -40,20 +43,42 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
+		ctx.Logger().Info("Setting consensus params...")
+		err = enableVoteExtensions(ctx, keepers.ConsensusKeeper)
+		if err != nil {
+			return nil, err
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
 }
 
 func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper) error {
-	params, err := marketmapKeeper.GetParams(ctx)
+	marketmapParams := marketmaptypes.Params{
+		MarketAuthorities: []string{authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String()},
+		Admin:             authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	}
+	return marketmapKeeper.SetParams(ctx, marketmapParams)
+}
+
+func enableVoteExtensions(ctx sdk.Context, consensusKeeper *consensuskeeper.Keeper) error {
+	oldParams, err := consensusKeeper.Params(ctx, &types.QueryParamsRequest{})
 	if err != nil {
 		return err
 	}
 
-	marketmapParams := marketmaptypes.Params{
-		MarketAuthority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		Version:         params.Version,
+	// we need to enable VoteExtensions for Slinky
+	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight() + 4}
+
+	updateParamsMsg := types.MsgUpdateParams{
+		Authority: authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		Block:     oldParams.Params.Block,
+		Evidence:  oldParams.Params.Evidence,
+		Validator: oldParams.Params.Validator,
+		Abci:      oldParams.Params.Abci,
 	}
-	return marketmapKeeper.SetParams(ctx, marketmapParams)
+
+	_, err = consensusKeeper.UpdateParams(ctx, &updateParamsMsg)
+	return err
 }

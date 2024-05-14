@@ -19,6 +19,7 @@ func (s *DexTestSuite) TestDepositMultiCompleteFailure() {
 	// second deposit's ratio is different than pool after the first, so amounts will be rounded to 0,0 and tx will fail
 
 	err := types.ErrZeroTrueDeposit
+	s.aliceDeposits(NewDeposit(5, 0, 0, 1))
 	s.assertAliceDepositFails(
 		err,
 		NewDeposit(5, 0, 2, 1),
@@ -85,7 +86,7 @@ func (s *DexTestSuite) TestDepositMultiSuccess() {
 	)
 
 	// THEN
-	// both deposits should go through
+	// all deposits should go through
 	s.assertAliceBalances(40, 40)
 	s.assertLiquidityAtTick(5, 5, 0, 1)
 	s.assertLiquidityAtTick(5, 0, -6, 1)
