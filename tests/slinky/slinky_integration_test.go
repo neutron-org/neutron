@@ -89,7 +89,7 @@ var (
 			TrustingPeriod: "48h",
 			NoHostMount:    noHostMount,
 			ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisKV),
-			SkipGenTx: true,
+			SkipGenTx:      true,
 		},
 	}
 )

@@ -12,7 +12,6 @@ import (
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
-	"github.com/cosmos/cosmos-sdk/runtime/services"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
 	appconfig "github.com/neutron-org/neutron/v4/app/config"
@@ -206,8 +205,8 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
 const (
@@ -394,6 +393,7 @@ type App struct {
 	// wrapped in a bid-tx
 	checkTxHandler checktx.CheckTx
 }
+
 // AutoCLIOpts returns options based upon the modules in the neutron v4 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule, 0)
@@ -421,6 +421,7 @@ func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 		ClientCtx:             initClientCtx,
 	}
 }
+
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
 	return app.BankKeeper
 }
