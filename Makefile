@@ -135,7 +135,7 @@ build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
 		-f Dockerfile.builder .
 
 slinky-e2e-test: build-slinky-e2e-docker-image
-	cd ./tests/slinky && go test -v -race -timeout 20m ./...
+	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 20m ./...
 
 install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
