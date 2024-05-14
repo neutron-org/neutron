@@ -4,11 +4,13 @@ import (
 	"strconv"
 	"time"
 
+	storetypes "cosmossdk.io/store/types"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/keeper"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/keeper"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func createNLimitOrderExpiration(
@@ -102,7 +104,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
-	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(1000000))
+	ctx = ctx.WithBlockGasMeter(storetypes.NewGasMeter(1000000))
 
 	yesterday := now.AddDate(0, 0, -1)
 	tomorrow := now.AddDate(0, 0, 1)
@@ -144,7 +146,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
 	gasLimit := 1000000
-	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimit)))
+	ctx = ctx.WithBlockGasMeter(storetypes.NewGasMeter(uint64(gasLimit)))
 	timeRequiredToPurgeOneNonJIT := 35000
 	gasUsed := gasLimit - types.GoodTilPurgeGasBuffer - timeRequiredToPurgeOneNonJIT
 
@@ -160,7 +162,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
 
 	// IF blockGasMeter is nearing the GoodTilPurgeBuffer
-	ctx = ctx.WithGasMeter(sdk.NewGasMeter(uint64(gasLimit)))
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeter(uint64(gasLimit)))
 	ctx.BlockGasMeter().ConsumeGas(uint64(gasUsed), "stub block gas usage")
 
 	// WHEN PurgeExpiredLimitOrders is run
@@ -182,7 +184,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
 	gasLimt := 1000000
-	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(uint64(gasLimt)))
+	ctx = ctx.WithBlockGasMeter(storetypes.NewGasMeter(uint64(gasLimt)))
 	gasUsed := gasLimt - types.GoodTilPurgeGasBuffer - 30000
 
 	expTimes := []time.Time{
@@ -196,7 +198,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	}
 
 	createLimitOrderExpirationAndTranches(&keeper, ctx, expTimes)
-	ctx = ctx.WithGasMeter(sdk.NewGasMeter(100000))
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeter(100000))
 	ctx.BlockGasMeter().ConsumeGas(uint64(gasUsed), "stub block gas usage")
 	keeper.PurgeExpiredLimitOrders(ctx, now)
 

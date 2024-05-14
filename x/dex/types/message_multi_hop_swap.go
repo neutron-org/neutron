@@ -5,7 +5,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 const TypeMsgMultiHopSwap = "multi_hop_swap"
@@ -54,7 +54,7 @@ func (msg *MsgMultiHopSwap) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgMultiHopSwap) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
 func (msg *MsgMultiHopSwap) ValidateBasic() error {

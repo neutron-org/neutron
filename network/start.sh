@@ -19,7 +19,6 @@ if [ "$RUN_BACKGROUND" == 1 ]; then
     --home "$CHAIN_DIR"                   \
     --pruning=nothing                     \
     --grpc.address="0.0.0.0:$GRPCPORT"    \
-    --grpc-web.address="0.0.0.0:$GRPCWEB" \
     --trace > "$CHAIN_DIR/$CHAINID.log" 2>&1 &
 else
   $BINARY start                           \
@@ -28,7 +27,6 @@ else
     --home "$CHAIN_DIR"                   \
     --pruning=nothing                     \
     --grpc.address="0.0.0.0:$GRPCPORT"    \
-    --grpc-web.address="0.0.0.0:$GRPCWEB" \
     --trace 2>&1 | tee "$CHAIN_DIR/$CHAINID.log"
 fi
 

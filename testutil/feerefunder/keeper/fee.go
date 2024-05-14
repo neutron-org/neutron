@@ -3,29 +3,29 @@ package keeper
 import (
 	"testing"
 
-	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	tmdb "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	"cosmossdk.io/store"
+	metrics2 "cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	db2 "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/x/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
 
 func FeeKeeper(t testing.TB, channelKeeper types.ChannelKeeper, bankKeeper types.BankKeeper) (*keeper.Keeper, sdk.Context) {
-	storeKey := sdk.NewKVStoreKey(types.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
-	db := tmdb.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db)
+	db := db2.NewMemDB()
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics2.NewNoOpMetrics())
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
 	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())

@@ -10,10 +10,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	testutil_keeper "github.com/neutron-org/neutron/v3/testutil/cron/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/cron/nullify"
-	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
-	"github.com/neutron-org/neutron/v3/x/cron/types"
+	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
+	testutil_keeper "github.com/neutron-org/neutron/v4/testutil/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	"github.com/neutron-org/neutron/v4/x/cron/types"
 )
 
 // Prevent strconv unused error
@@ -21,7 +21,6 @@ var _ = strconv.IntSize
 
 func TestScheduleQuerySingle(t *testing.T) {
 	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
-	wctx := sdk.WrapSDKContext(ctx)
 	schedules := createNSchedule(t, ctx, k, 2)
 
 	for _, tc := range []struct {
@@ -57,7 +56,7 @@ func TestScheduleQuerySingle(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			response, err := k.Schedule(wctx, tc.request)
+			response, err := k.Schedule(ctx, tc.request)
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 			} else {
@@ -73,7 +72,6 @@ func TestScheduleQuerySingle(t *testing.T) {
 
 func TestScheduleQueryPaginated(t *testing.T) {
 	k, ctx := testutil_keeper.CronKeeper(t, nil, nil)
-	wctx := sdk.WrapSDKContext(ctx)
 	schedules := createNSchedule(t, ctx, k, 5)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QuerySchedulesRequest {
@@ -89,7 +87,7 @@ func TestScheduleQueryPaginated(t *testing.T) {
 	t.Run("ByOffset", func(t *testing.T) {
 		step := 2
 		for i := 0; i < len(schedules); i += step {
-			resp, err := k.Schedules(wctx, request(nil, uint64(i), uint64(step), false))
+			resp, err := k.Schedules(ctx, request(nil, uint64(i), uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Schedules), step)
 			require.Subset(t,
@@ -102,7 +100,7 @@ func TestScheduleQueryPaginated(t *testing.T) {
 		step := 2
 		var next []byte
 		for i := 0; i < len(schedules); i += step {
-			resp, err := k.Schedules(wctx, request(next, 0, uint64(step), false))
+			resp, err := k.Schedules(ctx, request(next, 0, uint64(step), false))
 			require.NoError(t, err)
 			require.LessOrEqual(t, len(resp.Schedules), step)
 			require.Subset(t,
@@ -113,7 +111,7 @@ func TestScheduleQueryPaginated(t *testing.T) {
 		}
 	})
 	t.Run("Total", func(t *testing.T) {
-		resp, err := k.Schedules(wctx, request(nil, 0, 0, true))
+		resp, err := k.Schedules(ctx, request(nil, 0, 0, true))
 		require.NoError(t, err)
 		require.Equal(t, len(schedules), int(resp.Pagination.Total))
 		require.ElementsMatch(t,
@@ -122,7 +120,7 @@ func TestScheduleQueryPaginated(t *testing.T) {
 		)
 	})
 	t.Run("InvalidRequest", func(t *testing.T) {
-		_, err := k.Schedules(wctx, nil)
+		_, err := k.Schedules(ctx, nil)
 		require.ErrorIs(t, err, status.Error(codes.InvalidArgument, "invalid request"))
 	})
 }

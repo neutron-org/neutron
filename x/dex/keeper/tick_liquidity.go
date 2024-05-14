@@ -1,16 +1,17 @@
 package keeper
 
 import (
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // GetAllTickLiquidity returns all tickLiquidity
 func (k Keeper) GetAllTickLiquidity(ctx sdk.Context) (list []*types.TickLiquidity) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.TickLiquidityKeyPrefix))
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
 	defer iterator.Close()
 

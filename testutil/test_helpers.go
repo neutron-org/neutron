@@ -5,38 +5,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"testing"
 	"time"
 
+	tmrand "github.com/cometbft/cometbft/libs/rand"
+
+	"github.com/neutron-org/neutron/v4/utils"
+
+	"github.com/neutron-org/neutron/v4/app/config"
+
+	"cosmossdk.io/log"
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
+	db2 "github.com/cosmos/cosmos-db"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
-	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v3/app/params"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	appparams "github.com/neutron-org/neutron/v4/app/params"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	appProvider "github.com/cosmos/interchain-security/v4/app/provider"
-	e2e "github.com/cosmos/interchain-security/v4/testutil/integration"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	appProvider "github.com/cosmos/interchain-security/v5/app/provider"
+	e2e "github.com/cosmos/interchain-security/v5/testutil/integration"
 
-	"github.com/neutron-org/neutron/v3/app"
-	ictxstypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v4/app"
+	ictxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
-	providertypes "github.com/cosmos/interchain-security/v4/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	cmttypes "github.com/cometbft/cometbft/types"
 )
@@ -62,7 +69,10 @@ var (
 
 func init() {
 	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
-	app.GetDefaultConfig()
+	config.GetDefaultConfig()
+	// Disable cache since enabled cache triggers test errors when `AccAddress.String()`
+	// gets called before setting neutron bech32 prefix
+	sdk.SetAddrCacheEnabled(false)
 }
 
 type IBCConnectionTestSuite struct {
@@ -84,7 +94,7 @@ type IBCConnectionTestSuite struct {
 	TransferPath *ibctesting.Path
 }
 
-func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal {
+func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal { //nolint:staticcheck
 	prop := providertypes.NewConsumerAdditionProposal(
 		chain.ChainID,
 		"description",
@@ -100,7 +110,7 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		ccv.DefaultCCVTimeoutPeriod,
 		ccv.DefaultTransferTimeoutPeriod,
 		ccv.DefaultConsumerUnbondingPeriod,
-	).(*providertypes.ConsumerAdditionProposal)
+	).(*providertypes.ConsumerAdditionProposal) //nolint:staticcheck
 
 	return prop
 }
@@ -136,6 +146,7 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
 	}
 
+	ct := suite.ChainProvider.GetContext()
 	// move chains to the next block
 	suite.ChainProvider.NextBlock()
 	suite.ChainA.NextBlock()
@@ -144,14 +155,14 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper.
 	prop1 := GetTestConsumerAdditionProp(suite.ChainA)
 	err := providerKeeper.CreateConsumerClient(
-		suite.ChainProvider.GetContext(),
+		ct,
 		prop1,
 	)
 	suite.Require().NoError(err)
 
 	prop2 := GetTestConsumerAdditionProp(suite.ChainB)
 	err = providerKeeper.CreateConsumerClient(
-		suite.ChainProvider.GetContext(),
+		ct,
 		prop2,
 	)
 	suite.Require().NoError(err)
@@ -236,7 +247,8 @@ func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
 	// - client config
 	trustingPeriodFraction := suite.ProviderApp.GetProviderKeeper().GetTrustingPeriodFraction(suite.ChainProvider.GetContext())
 
-	providerUnbondingPeriod := suite.ProviderApp.GetTestStakingKeeper().UnbondingTime(suite.ChainProvider.GetContext())
+	providerUnbondingPeriod, err := suite.ProviderApp.GetTestStakingKeeper().UnbondingTime(suite.ChainProvider.GetContext())
+	suite.Require().NoError(err)
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = providerUnbondingPeriod
 	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(providerUnbondingPeriod, trustingPeriodFraction)
 	consumerUnbondingPeriod := consumerKeeper.GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
@@ -273,17 +285,24 @@ func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
 	}
 }
 
+func testHomeDir(chainID string) string {
+	projectRoot := utils.RootDir()
+	return path.Join(projectRoot, ".testchains", chainID)
+}
+
 // NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
-	coordinator := ibctesting.NewCoordinator(t, 3)
+	coordinator := ibctesting.NewCoordinator(t, 0)
 	chainID := ibctesting.GetChainID(1)
 
 	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
-	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
+	_ = config.GetDefaultConfig()
+	sdk.SetAddrCacheEnabled(false)
 	chainID = ibctesting.GetChainID(2)
+	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 
@@ -399,14 +418,15 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		encoding := app.MakeEncodingConfig()
-		db := dbm.NewMemDB()
+		db := db2.NewMemDB()
+		homePath := testHomeDir("testchain-" + tmrand.NewRand().Str(6))
 		testApp := app.New(
 			log.NewNopLogger(),
 			db,
 			nil,
 			false,
 			map[int64]bool{},
-			app.DefaultNodeHome,
+			homePath,
 			0,
 			encoding,
 			sims.EmptyAppOptions{},
@@ -420,6 +440,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 
 		genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
 
+		// TODO: why isn't it in the `testApp.TestInitChainer`?
 		// NOTE ibc-go/v7/testing.SetupWithGenesisValSet requires a staking module
 		// genesisState or it panics. Feed a minimum one.
 		genesisState[stakingtypes.ModuleName] = encoding.Marshaler.MustMarshalJSON(

@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	dcli "github.com/neutron-org/neutron/v3/utils/dcli"
+	"github.com/neutron-org/neutron/v4/utils/dcli"
 )
 
 type testingStruct struct {
@@ -142,10 +142,10 @@ func TestParseFieldFromArg(t *testing.T) {
 			},
 		},
 		"Dec struct": {
-			testingStruct:  testingStruct{Dec: sdk.MustNewDecFromStr("100")},
+			testingStruct:  testingStruct{Dec: math.LegacyMustNewDecFromStr("100")},
 			arg:            "10",
 			fieldIndex:     8,
-			expectedStruct: testingStruct{Dec: sdk.MustNewDecFromStr("10")},
+			expectedStruct: testingStruct{Dec: math.LegacyMustNewDecFromStr("10")},
 		},
 	}
 

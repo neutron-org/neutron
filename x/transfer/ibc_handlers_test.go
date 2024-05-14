@@ -4,20 +4,22 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	types2 "cosmossdk.io/store/types"
+
+	"github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil"
-	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/transfer/types"
-	testkeeper "github.com/neutron-org/neutron/v3/testutil/transfer/keeper"
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	ictxtypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
-	"github.com/neutron-org/neutron/v3/x/transfer"
+	"github.com/neutron-org/neutron/v4/testutil"
+	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/transfer/types"
+	testkeeper "github.com/neutron-org/neutron/v4/testutil/transfer/keeper"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v4/x/transfer"
 )
 
 const TestCosmosAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
@@ -33,7 +35,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx, _ := testkeeper.TransferKeeper(t, wmKeeper, feeKeeper, chanKeeper, authKeeper)
 	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper)
-	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 
 	resACK := channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Result{Result: []byte("Result")},
@@ -83,13 +85,13 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 
 	// non contract
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	wmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	err = txModule.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 
 	// error during Sudo contract
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	wmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("SudoResponse error"))
@@ -97,7 +99,7 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 
 	// success during Sudo contract
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	wmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck)
@@ -116,7 +118,7 @@ func TestHandleTimeout(t *testing.T) {
 	authKeeper.EXPECT().GetModuleAddress(transfertypes.ModuleName).Return([]byte("address"))
 	txKeeper, infCtx, _ := testkeeper.TransferKeeper(t, wmKeeper, feeKeeper, chanKeeper, authKeeper)
 	txModule := transfer.NewIBCModule(*txKeeper, wmKeeper)
-	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
@@ -155,13 +157,13 @@ func TestHandleTimeout(t *testing.T) {
 	require.NoError(t, err)
 
 	// success non contract
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	wmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(false)
 	err = txModule.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
 
 	// success contract
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	wmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msg).Return(nil, nil)
@@ -169,7 +171,7 @@ func TestHandleTimeout(t *testing.T) {
 	require.NoError(t, err)
 
 	// error during SudoTimeOut contract
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	wmKeeper.EXPECT().HasContractInfo(ctx, sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)).Return(true)
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msg).Return(nil, fmt.Errorf("SudoTimeout error"))

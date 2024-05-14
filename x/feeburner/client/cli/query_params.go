@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/feeburner/types"
+	"github.com/neutron-org/neutron/v4/x/feeburner/types"
 )
 
 func CmdQueryParams() *cobra.Command {

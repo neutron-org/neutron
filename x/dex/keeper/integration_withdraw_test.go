@@ -5,7 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (s *DexTestSuite) TestPartialWithdrawOnlyA() {
@@ -247,7 +247,7 @@ func (s *DexTestSuite) TestWithdrawalFailsWithNonExistentPair() {
 	s.aliceDeposits(NewDeposit(100, 0, 0, 1))
 
 	// WHEN Alice tries to withdraw from a nonexistent tokenPair
-	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.Ctx, &types.MsgWithdrawal{
 		Creator:         s.alice.String(),
 		Receiver:        s.alice.String(),
 		TokenA:          "TokenX",

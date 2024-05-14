@@ -20,13 +20,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v3/x/cron/client/cli"
-	"github.com/neutron-org/neutron/v3/x/cron/keeper"
-	"github.com/neutron-org/neutron/v3/x/cron/types"
+	"github.com/neutron-org/neutron/v4/x/cron/client/cli"
+	"github.com/neutron-org/neutron/v4/x/cron/keeper"
+	"github.com/neutron-org/neutron/v4/x/cron/types"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
+	_ appmodule.AppModule   = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
@@ -155,10 +155,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(_ sdk.Context) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	am.keeper.ExecuteReadySchedules(ctx)
-	return []abci.ValidatorUpdate{}
+func (am AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
+	am.keeper.ExecuteReadySchedules(sdk.UnwrapSDKContext(ctx))
+	return []abci.ValidatorUpdate{}, nil
 }
