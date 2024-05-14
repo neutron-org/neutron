@@ -152,7 +152,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedAtooMuchTick0() {
 	// Alice then withdraws
 	// David then withdraws
 
-	s.aliceDepositsWithOptions(NewDepositWithOptions(5, 10, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.aliceDeposits(NewDepositWithOptions(5, 10, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(45, 40)
 	s.assertBobBalances(50, 50)
@@ -160,7 +160,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedAtooMuchTick0() {
 	s.assertCurr1To0(-1)
 	s.assertCurr0To1(1)
 
-	s.bobDepositsWithOptions(NewDepositWithOptions(10, 10, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.bobDeposits(NewDepositWithOptions(10, 10, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(45, 40)
 	s.assertBobBalances(45, 40)
@@ -195,7 +195,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedBtooMuchTick0() {
 	// Alice then withdraws
 	// David then withdraws
 
-	s.aliceDepositsWithOptions(NewDepositWithOptions(10, 5, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.aliceDeposits(NewDepositWithOptions(10, 5, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(40, 45)
 	s.assertBobBalances(50, 50)
@@ -203,7 +203,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedBtooMuchTick0() {
 	s.assertCurr1To0(-1)
 	s.assertCurr0To1(1)
 
-	s.bobDepositsWithOptions(NewDepositWithOptions(10, 10, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.bobDeposits(NewDepositWithOptions(10, 10, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(40, 45)
 	s.assertBobBalances(40, 45)

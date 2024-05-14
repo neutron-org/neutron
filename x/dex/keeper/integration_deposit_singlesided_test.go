@@ -398,7 +398,7 @@ func (s *DexTestSuite) TestDepositSingleToken0BELFails() {
 	// THEN FAILURE
 	s.assertAliceDepositFails(
 		types.ErrDepositBehindEnemyLines,
-		NewDeposit(50, 0, 2004, 1),
+		NewDepositWithOptions(50, 0, 2004, 1, types.DepositOptions{FailTxOn_BEL: true}),
 	)
 }
 
@@ -414,6 +414,6 @@ func (s *DexTestSuite) TestDepositSingleToken1BELFails() {
 	// THEN FAILURE
 	s.assertAliceDepositFails(
 		types.ErrDepositBehindEnemyLines,
-		NewDeposit(0, 50, -2004, 1),
+		NewDepositWithOptions(0, 50, -2004, 1, types.DepositOptions{FailTxOn_BEL: true}),
 	)
 }

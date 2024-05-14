@@ -464,71 +464,66 @@ type Deposit struct {
 	AmountB   sdkmath.Int
 	TickIndex int64
 	Fee       uint64
+	Options   *types.DepositOptions
 }
 
-type DepositOptions struct {
-	DisableAutoswap bool
-}
-
-type DepositWithOptions struct {
-	AmountA   sdkmath.Int
-	AmountB   sdkmath.Int
-	TickIndex int64
-	Fee       uint64
-	Options   DepositOptions
+func NewDepositInt(amountA, amountB sdkmath.Int, tickIndex, fee int) *Deposit {
+	return &Deposit{
+		AmountA:   amountA,
+		AmountB:   amountB,
+		TickIndex: int64(tickIndex),
+		Fee:       uint64(fee),
+	}
 }
 
 func NewDeposit(amountA, amountB, tickIndex, fee int) *Deposit {
+	return NewDepositInt(sdkmath.NewInt(int64(amountA)).Mul(denomMultiple), sdkmath.NewInt(int64(amountB)).Mul(denomMultiple), tickIndex, fee)
+}
+
+func NewDepositWithOptions(
+	amountA, amountB, tickIndex, fee int,
+	options types.DepositOptions,
+) *Deposit {
 	return &Deposit{
 		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
 		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
 		TickIndex: int64(tickIndex),
 		Fee:       uint64(fee),
-	}
-}
-
-func NewDepositWithOptions(
-	amountA, amountB, tickIndex, fee int,
-	options DepositOptions,
-) *DepositWithOptions {
-	return &DepositWithOptions{
-		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
-		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
-		TickIndex: int64(tickIndex),
-		Fee:       uint64(fee),
-		Options:   options,
+		Options:   &options,
 	}
 }
 
 func (s *DexTestSuite) aliceDeposits(deposits ...*Deposit) {
-	s.deposits(s.alice, deposits)
-}
-
-func (s *DexTestSuite) aliceDepositsWithOptions(deposits ...*DepositWithOptions) {
-	s.depositsWithOptions(s.alice, deposits...)
+	s.depositsSuccess(s.alice, deposits)
 }
 
 func (s *DexTestSuite) bobDeposits(deposits ...*Deposit) {
-	s.deposits(s.bob, deposits)
-}
-
-func (s *DexTestSuite) bobDepositsWithOptions(deposits ...*DepositWithOptions) {
-	s.depositsWithOptions(s.bob, deposits...)
+	s.depositsSuccess(s.bob, deposits)
 }
 
 func (s *DexTestSuite) carolDeposits(deposits ...*Deposit) {
-	s.deposits(s.carol, deposits)
+	s.depositsSuccess(s.carol, deposits)
 }
 
 func (s *DexTestSuite) danDeposits(deposits ...*Deposit) {
-	s.deposits(s.dan, deposits)
+	s.depositsSuccess(s.dan, deposits)
+}
+
+func (s *DexTestSuite) depositsSuccess(
+	account sdk.AccAddress,
+	deposits []*Deposit,
+	pairID ...types.PairID,
+) {
+
+	_, err := s.deposits(account, deposits, pairID...)
+	s.Assert().Nil(err)
 }
 
 func (s *DexTestSuite) deposits(
 	account sdk.AccAddress,
 	deposits []*Deposit,
 	pairID ...types.PairID,
-) {
+) (*types.MsgDepositResponse, error) {
 	amountsA := make([]sdkmath.Int, len(deposits))
 	amountsB := make([]sdkmath.Int, len(deposits))
 	tickIndexes := make([]int64, len(deposits))
@@ -539,7 +534,12 @@ func (s *DexTestSuite) deposits(
 		amountsB[i] = e.AmountB
 		tickIndexes[i] = e.TickIndex
 		fees[i] = e.Fee
-		options[i] = &types.DepositOptions{DisableAutoswap: false}
+		if e.Options != nil {
+			options[i] = e.Options
+		} else {
+			options[i] = &types.DepositOptions{}
+		}
+
 	}
 
 	var tokenA, tokenB string
@@ -566,42 +566,11 @@ func (s *DexTestSuite) deposits(
 		Options:         options,
 	}
 	err := msg.ValidateBasic()
-	s.Assert().NoError(err)
-	_, err = s.msgServer.Deposit(s.Ctx, msg)
-	s.Assert().Nil(err)
-}
-
-func (s *DexTestSuite) depositsWithOptions(
-	account sdk.AccAddress,
-	deposits ...*DepositWithOptions,
-) {
-	amountsA := make([]sdkmath.Int, len(deposits))
-	amountsB := make([]sdkmath.Int, len(deposits))
-	tickIndexes := make([]int64, len(deposits))
-	fees := make([]uint64, len(deposits))
-	options := make([]*types.DepositOptions, len(deposits))
-	for i, e := range deposits {
-		amountsA[i] = e.AmountA
-		amountsB[i] = e.AmountB
-		tickIndexes[i] = e.TickIndex
-		fees[i] = e.Fee
-		options[i] = &types.DepositOptions{
-			DisableAutoswap: e.Options.DisableAutoswap,
-		}
+	if err != nil {
+		return &types.MsgDepositResponse{}, err
 	}
+	return s.msgServer.Deposit(s.Ctx, msg)
 
-	_, err := s.msgServer.Deposit(s.Ctx, &types.MsgDeposit{
-		Creator:         account.String(),
-		Receiver:        account.String(),
-		TokenA:          "TokenA",
-		TokenB:          "TokenB",
-		AmountsA:        amountsA,
-		AmountsB:        amountsB,
-		TickIndexesAToB: tickIndexes,
-		Fees:            fees,
-		Options:         options,
-	})
-	s.Assert().Nil(err)
 }
 
 func (s *DexTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (sdkmath.Int, sdkmath.Int) {
@@ -649,30 +618,7 @@ func (s *DexTestSuite) assertDepositFails(
 	expectedErr error,
 	deposits ...*Deposit,
 ) {
-	amountsA := make([]sdkmath.Int, len(deposits))
-	amountsB := make([]sdkmath.Int, len(deposits))
-	tickIndexes := make([]int64, len(deposits))
-	fees := make([]uint64, len(deposits))
-	options := make([]*types.DepositOptions, len(deposits))
-	for i, e := range deposits {
-		amountsA[i] = e.AmountA
-		amountsB[i] = e.AmountB
-		tickIndexes[i] = e.TickIndex
-		fees[i] = e.Fee
-		options[i] = &types.DepositOptions{DisableAutoswap: true}
-	}
-
-	_, err := s.msgServer.Deposit(s.Ctx, &types.MsgDeposit{
-		Creator:         account.String(),
-		Receiver:        account.String(),
-		TokenA:          "TokenA",
-		TokenB:          "TokenB",
-		AmountsA:        amountsA,
-		AmountsB:        amountsB,
-		TickIndexesAToB: tickIndexes,
-		Fees:            fees,
-		Options:         options,
-	})
+	_, err := s.deposits(account, deposits)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
