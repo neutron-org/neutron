@@ -99,6 +99,7 @@ func (p *Pool) Swap(
 
 	amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
 		Quo(makerReserves.PriceTakerToMaker).
+		Ceil().
 		TruncateInt()
 	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
 	makerReserves.ReservesMakerDenom = makerReserves.ReservesMakerDenom.Sub(amountMakerOut)

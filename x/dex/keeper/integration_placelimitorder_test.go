@@ -308,14 +308,13 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice0To1() {
 	// GIVEN
 	// Alice place LO at price ~10.0
 	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenA", math_utils.NewPrecDec(10), 10)
-
 	// WHEN bob swaps through all of Alice's LO
 	s.bobLimitSells("TokenB", -23078, 100, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 	s.aliceWithdrawsLimitSell(trancheKey0)
 
 	// THEN alice gets out ~100 TOKENB and bob gets ~10 TOKENA
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_967))
-	s.assertBobBalancesInt(sdkmath.NewInt(10000000), sdkmath.NewInt(23))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_977))
+	s.assertBobBalancesInt(sdkmath.NewInt(10000000), sdkmath.NewInt(22))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
@@ -327,12 +326,41 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
 	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenB", price, 200)
 
 	// WHEN bob swaps through Alice's LO
-	s.limitSellsWithPrice(s.bob, "TokenA", math_utils.OnePrecDec().Quo(price), 10)
+	s.limitSellsWithPrice(s.bob, "TokenA", math_utils.MustNewPrecDecFromStr("0.24"), 10)
 	s.aliceWithdrawsLimitSell(trancheKey0)
-
 	// THEN alice gets out ~10 TOKENA and bob gets ~40 TOKENB
-	s.assertAliceBalancesInt(sdkmath.NewInt(9999998), sdkmath.ZeroInt())
+	s.assertAliceBalancesInt(sdkmath.NewInt(9999999), sdkmath.ZeroInt())
 	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(40001452))
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderWithDustHitsTruePriceLimit() {
+	s.fundAliceBalances(1, 0)
+	s.fundBobBalances(0, 1)
+	// GIVEN LP liq at 20001-20004
+	s.bobDeposits(
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(180), 20001, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(180), 20002, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 20003, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(10000), 20004, 1),
+	)
+	// THEN alice IoC limitOrder with limitPrice 20005 fails
+	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", 20005, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderWithDust() {
+	s.fundAliceBalances(1, 0)
+	s.fundBobBalances(0, 1)
+	// GIVEN LP liq at 20001-20004
+	s.bobDeposits(
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(180), 20001, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(180), 20002, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 20003, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(10000), 20004, 1),
+	)
+	// WHEN alice submits IoC limitOrder with limitPrice 20006
+	s.aliceLimitSells("TokenA", 20006, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	// THEN all liq is traded through
+	s.assertAliceBalancesInt(sdkmath.NewInt(923409), sdkmath.NewInt(10361))
 }
 
 // Fill Or Kill limit orders ///////////////////////////////////////////////////////////
@@ -424,7 +452,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK0TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenA", 21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalancesInt(sdkmath.NewInt(7), sdkmath.NewInt(1_353_046_854))
+	s.assertAliceBalancesInt(sdkmath.NewInt(5), sdkmath.NewInt(1_353_046_854))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
@@ -438,7 +466,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoK1TotalAmountInNotUsed() {
 	// WHEN alice submits FoK limitOrder for 9998 it succeeds
 	// even though trueAmountIn < specifiedAmountIn due to rounding
 	s.aliceLimitSells("TokenB", -21000, 9998, types.LimitOrderType_FILL_OR_KILL)
-	s.assertAliceBalancesInt(sdkmath.NewInt(135_3046_854), sdkmath.NewInt(7))
+	s.assertAliceBalancesInt(sdkmath.NewInt(135_3046_854), sdkmath.NewInt(5))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
@@ -452,7 +480,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsed() {
 	s.aliceLimitSellsWithMaxOut("TokenB", 0, 50, 20)
 
 	// THEN alice swap ~19 BIGTokenB and gets back 20 BIGTokenA
-	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_162_770))
+	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_162_769))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
@@ -468,7 +496,23 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 	s.aliceLimitSellsWithMaxOut("TokenB", 0, 50, 20)
 
 	// THEN alice swap ~19 BIGTokenB and gets back 20 BIGTokenA
-	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_165_596))
+	s.assertAliceBalancesInt(sdkmath.NewInt(20_000_000), sdkmath.NewInt(31_165_594))
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderFoKHitsTruePriceLimit() {
+	s.fundAliceBalances(1, 0)
+	s.fundBobBalances(0, 1)
+	// GIVEN LP liq at 1-3. With small liq on tick 2
+	s.bobDeposits(
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1), 0, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(2000), 1, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(1000), 2, 1),
+		NewDepositInt(sdkmath.ZeroInt(), sdkmath.NewInt(2000), 3, 1),
+	)
+	// WHEN alice submits FoK limitOrder with limitPrice > 20004
+	_, err := s.limitSellsInt(s.alice, "TokenA", 6, sdkmath.NewInt(3000), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+
+	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
 }
 
 // Immediate Or Cancel LimitOrders ////////////////////////////////////////////////////////////////////
@@ -476,16 +520,8 @@ func (s *DexTestSuite) TestPlaceLimitOrderFoKMaxOutUsedMultiTick() {
 func (s *DexTestSuite) TestPlaceLimitOrderIoCNoLiq() {
 	s.fundAliceBalances(10, 0)
 	// GIVEN no liquidity
-	// WHEN alice submits IoC limitOrder
-	s.aliceLimitSells("TokenA", 0, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN alice's LimitOrder is not filled
-	s.assertDexBalances(0, 0)
-	s.assertAliceBalances(10, 0)
-
-	// No maker LO is placed
-	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
-	s.assertFillAndPlaceTrancheKeys("TokenA", 1, "", "")
+	// Thenalice IoC limitOrder fails
+	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", 0, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPFills() {
@@ -527,52 +563,8 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	s.fundBobBalances(0, 20)
 	// GIVEN LP of 5 tokenB at tick -1
 	s.bobDeposits(NewDeposit(0, 5, -1, 1))
-	// WHEN alice submits IoC limitOrder for 10 tokenA below current 0To1 price
-	s.aliceLimitSells("TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN alice's LimitOrder doesn't fill and is canceled
-	s.assertDexBalances(0, 5)
-	s.assertAliceBalances(10, 0)
-	// No maker LO is placed
-	s.assertFillAndPlaceTrancheKeys("TokenA", 1, "", "")
-	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIoCUnfairPriceFails() {
-	s.fundAliceBalances(10, 0)
-	s.fundBobBalances(0, 1)
-	// GIVEN LP of 1 TokenB at tick -20
-	s.bobDeposits(NewDeposit(0, 1, -20, 1))
-	// WHEN alice submits IoC limitOrder for 2 tokenA
-	_, err := s.limitSellsInt(s.alice, "TokenA", 10, sdkmath.NewInt(2), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN alice's LimitOrder failswith SwapAmountTooSmall
-	s.ErrorIs(err, types.ErrSwapAmountTooSmall)
-
-	// Nothing is changed
-	s.assertAliceBalances(10, 0)
-	s.assertLiquidityAtTick(0, 1, -20, 1)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderIoCUnfairPriceAbortsEarly() {
-	s.fundAliceBalances(1, 0)
-	s.fundBobBalances(0, 2)
-	// GIVEN LP of 1 TokenB at ticks -20 & -21
-	s.bobDeposits(
-		NewDeposit(0, 1, -21, 1),
-		NewDeposit(0, 1, -20, 1),
-	)
-	// WHEN alice submits IoC limitOrder for 999_004 small TokenA
-	_, err := s.limitSellsInt(s.alice, "TokenA", 10, sdkmath.NewInt(998_004), types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN alice's LimitOrder swaps through the first tick, but does not swap the second tick due to unfair pricing
-	s.NoError(err)
-
-	// The first tick swapped and the second tick is not
-	s.assertLiquidityAtTickInt(sdkmath.NewInt(998_002), sdkmath.ZeroInt(), -21, 1)
-	s.assertLiquidityAtTick(0, 1, -20, 1)
-	// only the first swap is deducted from alices balance
-	s.assertAliceBalancesInt(sdkmath.NewInt(1998), sdkmath.NewInt(1_000_000))
+	// THEN alice IoC limitOrder for 10 tokenA below current 0To1 price fails
+	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 // Just In Time Limit Orders //////////////////////////////////////////////////
@@ -594,27 +586,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderJITFills() {
 	// Alice can withdraw 10 TokenB
 	s.aliceWithdrawsLimitSell(trancheKey)
 	s.assertAliceBalances(0, 10)
-}
-
-func (s *DexTestSuite) TestPlaceLimitOrderJITBehindEnemyLines() {
-	s.fundAliceBalances(10, 0)
-	s.fundBobBalances(0, 20)
-
-	// GIVEN 10 LP liquidity for token exists at tick 0
-	s.bobDeposits(NewDeposit(0, 10, 0, 1))
-
-	// WHEN alice places a JIT limit order for TokenA at tick 1 (above enemy lines)
-	trancheKey := s.aliceLimitSells("TokenA", 1, 10, types.LimitOrderType_JUST_IN_TIME)
-	s.assertLimitLiquidityAtTick("TokenA", 1, 10)
-	s.assertAliceBalances(0, 0)
-	// AND bob swaps through all the liquidity
-	s.bobLimitSells("TokenB", -10, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-
-	// THEN all liquidity is depleted
-	s.assertLimitLiquidityAtTick("TokenA", 1, 0)
-	// Alice can withdraw ~10 BIGTokenB
-	s.aliceWithdrawsLimitSell(trancheKey)
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(9998999))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderJITNextBlock() {
