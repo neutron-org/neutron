@@ -53,6 +53,10 @@ func (k Keeper) DepositCore(
 		if err := k.ValidateFee(ctx, fee); err != nil {
 			return nil, nil, nil, err
 		}
+
+		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, amount0, amount1) {
+			return nil, nil, nil, types.ErrDepositBehindEnemyLines
+		}
 		autoswap := !options[i].DisableAutoswap
 
 		pool, err := k.GetOrInitPool(
