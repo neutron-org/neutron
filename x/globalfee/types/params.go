@@ -51,8 +51,8 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-// ValidateBasic performs basic validation.
-func (p Params) ValidateBasic() error {
+// Validate performs basic validation.
+func (p Params) Validate() error {
 	if err := validateMinimumGasPrices(p.MinimumGasPrices); err != nil {
 		return err
 	}

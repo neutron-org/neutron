@@ -57,7 +57,7 @@ func (msg *MsgMultiHopSwap) GetSignBytes() []byte {
 	return bz
 }
 
-func (msg *MsgMultiHopSwap) ValidateBasic() error {
+func (msg *MsgMultiHopSwap) Validate() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid creator address (%s)", err)
