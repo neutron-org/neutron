@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	comettypes "github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/cosmos/cosmos-sdk/x/consensus/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/suite"
@@ -40,4 +42,31 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	suite.Require().NoError(err)
 	suite.Require().Equal(params.MarketAuthorities[0], "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
 	suite.Require().Equal(params.Admin, "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
+}
+
+func (suite *UpgradeTestSuite) TestEnableVoteExtensionsUpgrade() {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := suite.ChainA.GetContext()
+	t := suite.T()
+
+	oldParams, err := app.ConsensusParamsKeeper.Params(ctx, &types.QueryParamsRequest{})
+	suite.Require().NoError(err)
+
+	// VoteExtensionsEnableHeight must be updated after the upgrade on upgrade height
+	// but the rest of params must be the same
+	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight() + 4}
+	// it is automatically tracked in upgrade handler, we need to set it manually for tests
+	oldParams.Params.Version = &comettypes.VersionParams{App: 0}
+
+	upgrade := upgradetypes.Plan{
+		Name:   v400.UpgradeName,
+		Info:   "some text here",
+		Height: ctx.BlockHeight(),
+	}
+	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
+
+	newParams, err := app.ConsensusParamsKeeper.Params(ctx, &types.QueryParamsRequest{})
+	suite.Require().NoError(err)
+
+	suite.Require().Equal(oldParams, newParams)
 }
