@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-	"github.com/neutron-org/neutron/v3/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
 func NewPool(
@@ -219,11 +219,11 @@ func (p *Pool) RedeemValue(sharesToRemove, totalShares math.Int) (outAmount0, ou
 	// outAmount1 = ownershipRatio * reserves1
 	//            = (sharesToRemove / totalShares) * reserves1
 	//            = (reserves1 * sharesToRemove ) / totalShares
-	outAmount1 = sdk.NewDecFromInt(reserves1.Mul(sharesToRemove)).QuoInt(totalShares).TruncateInt()
+	outAmount1 = math.LegacyNewDecFromInt(reserves1.Mul(sharesToRemove)).QuoInt(totalShares).TruncateInt()
 	// outAmount0 = ownershipRatio * reserves1
 	//            = (sharesToRemove / totalShares) * reserves1
 	//            = (reserves1 * sharesToRemove ) / totalShares
-	outAmount0 = sdk.NewDecFromInt(reserves0.Mul(sharesToRemove)).QuoInt(totalShares).TruncateInt()
+	outAmount0 = math.LegacyNewDecFromInt(reserves0.Mul(sharesToRemove)).QuoInt(totalShares).TruncateInt()
 
 	return outAmount0, outAmount1
 }
@@ -245,22 +245,22 @@ func CalcGreatestMatchingRatio(
 	amount0 math.Int,
 	amount1 math.Int,
 ) (resultAmount0, resultAmount1 math.Int) {
-	targetAmount0Dec := sdk.NewDecFromInt(targetAmount0)
-	targetAmount1Dec := sdk.NewDecFromInt(targetAmount1)
+	targetAmount0Dec := math.LegacyNewDecFromInt(targetAmount0)
+	targetAmount1Dec := math.LegacyNewDecFromInt(targetAmount1)
 
 	// See spec: https://www.notion.so/dualityxyz/Autoswap-Spec-e856fa7b2438403c95147010d479b98c
 	if targetAmount1.GT(math.ZeroInt()) {
-		resultAmount0 = sdk.MinInt(
+		resultAmount0 = math.MinInt(
 			amount0,
-			sdk.NewDecFromInt(amount1).Mul(targetAmount0Dec).Quo(targetAmount1Dec).TruncateInt())
+			math.LegacyNewDecFromInt(amount1).Mul(targetAmount0Dec).Quo(targetAmount1Dec).TruncateInt())
 	} else {
 		resultAmount0 = amount0
 	}
 
 	if targetAmount0.GT(math.ZeroInt()) {
-		resultAmount1 = sdk.MinInt(
+		resultAmount1 = math.MinInt(
 			amount1,
-			sdk.NewDecFromInt(amount0).Mul(targetAmount1Dec).Quo(targetAmount0Dec).TruncateInt())
+			math.LegacyNewDecFromInt(amount0).Mul(targetAmount1Dec).Quo(targetAmount0Dec).TruncateInt())
 	} else {
 		resultAmount1 = amount1
 	}

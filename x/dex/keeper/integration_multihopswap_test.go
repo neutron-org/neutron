@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 type PoolSetup struct {
@@ -91,7 +91,7 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithDust() {
 		math_utils.MustNewPrecDecFromStr("0.000000013"),
 		false,
 	) // 60_000A (59841 real) -> 1B -> 1C -> 1D
-	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 	s.Assert().Nil(err)
 
 	// THEN alice gets out 1 TokenD
@@ -130,7 +130,7 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens() {
 		math_utils.MustNewPrecDecFromStr("0.00000000013"),
 		false,
 	) // 600_000_000A (599968093 real, 31907 dust) -> 10_026B (9679 real, 347 dust) -> 24C -> 24D
-	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 	s.Assert().Nil(err)
 
 	// THEN alice gets out 1 TokenD
@@ -167,7 +167,7 @@ func (s *DexTestSuite) TestMultiHopSwapSingleRouteWithManyDustTokens2() {
 		math_utils.MustNewPrecDecFromStr("0.0000013"),
 		false,
 	)
-	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 
 	s.Assert().Nil(err)
 

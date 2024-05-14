@@ -7,7 +7,7 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
-GO_VERSION=1.21
+GO_VERSION=1.22
 GOLANGCI_LINT_VERSION=v1.55.2
 BUILDDIR ?= $(CURDIR)/build
 
@@ -151,6 +151,8 @@ distclean: clean
 
 
 test: test-unit
+	@rm -rf ./.testchains
+
 test-all: check test-race test-cover
 
 test-unit:

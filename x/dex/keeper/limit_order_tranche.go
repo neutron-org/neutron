@@ -5,11 +5,12 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-	"github.com/neutron-org/neutron/v3/x/dex/utils"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
 func NewLimitOrderTranche(
@@ -148,7 +149,7 @@ func (k Keeper) GetFillTranche(
 		sdkCtx.KVStore(k.storeKey),
 		types.TickLiquidityLimitOrderPrefix(tradePairID, tickIndexTakerToMaker),
 	)
-	iter := sdk.KVStorePrefixIterator(prefixStore, []byte{})
+	iter := storetypes.KVStorePrefixIterator(prefixStore, []byte{})
 
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
@@ -170,7 +171,7 @@ func (k Keeper) GetAllLimitOrderTrancheAtIndex(
 		sdkCtx.KVStore(k.storeKey),
 		types.TickLiquidityLimitOrderPrefix(tradePairID, tickIndexTakerToMaker),
 	)
-	iter := sdk.KVStorePrefixIterator(prefixStore, []byte{})
+	iter := storetypes.KVStorePrefixIterator(prefixStore, []byte{})
 
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {

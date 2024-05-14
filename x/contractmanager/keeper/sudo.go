@@ -6,17 +6,18 @@ We use the entrypoint to send back an ibc acknowledgement for an ibc transaction
 */
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
 )
 
-func (k Keeper) HasContractInfo(ctx sdk.Context, contractAddress sdk.AccAddress) bool {
+func (k Keeper) HasContractInfo(ctx context.Context, contractAddress sdk.AccAddress) bool {
 	return k.wasmKeeper.HasContractInfo(ctx, contractAddress)
 }
 
@@ -58,16 +59,18 @@ func PrepareOpenAckCallbackMessage(details types.OpenAckDetails) ([]byte, error)
 //  1. check whether the transaction actually satisfies the initial query arguments;
 //  2. execute business logic related to the tx query result / save the result to state.
 func (k Keeper) SudoTxQueryResult(
-	ctx sdk.Context,
+	ctx context.Context,
 	contractAddress sdk.AccAddress,
 	queryID uint64,
 	height ibcclienttypes.Height,
 	data []byte,
 ) ([]byte, error) {
-	k.Logger(ctx).Debug("SudoTxQueryResult", "contractAddress", contractAddress)
+	c := sdk.UnwrapSDKContext(ctx)
+
+	k.Logger(c).Debug("SudoTxQueryResult", "contractAddress", contractAddress)
 
 	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
-		k.Logger(ctx).Debug("SudoTxQueryResult: contract not found", "contractAddress", contractAddress)
+		k.Logger(c).Debug("SudoTxQueryResult: contract not found", "contractAddress", contractAddress)
 		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
 	}
 
@@ -78,14 +81,14 @@ func (k Keeper) SudoTxQueryResult(
 
 	m, err := json.Marshal(x)
 	if err != nil {
-		k.Logger(ctx).Error("SudoTxQueryResult: failed to marshal MessageTxQueryResult message",
+		k.Logger(c).Error("SudoTxQueryResult: failed to marshal MessageTxQueryResult message",
 			"error", err, "contract_address", contractAddress)
 		return nil, fmt.Errorf("failed to marshal MessageTxQueryResult: %v", err)
 	}
 
 	resp, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoTxQueryResult: failed to sudo",
+		k.Logger(c).Debug("SudoTxQueryResult: failed to sudo",
 			"error", err, "contract_address", contractAddress)
 		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}
@@ -96,14 +99,16 @@ func (k Keeper) SudoTxQueryResult(
 // SudoKVQueryResult is used to pass a kv query id to the contract that registered the query
 // when a query result is provided by the relayer.
 func (k Keeper) SudoKVQueryResult(
-	ctx sdk.Context,
+	ctx context.Context,
 	contractAddress sdk.AccAddress,
 	queryID uint64,
 ) ([]byte, error) {
-	k.Logger(ctx).Info("SudoKVQueryResult", "contractAddress", contractAddress)
+	c := sdk.UnwrapSDKContext(ctx)
+
+	k.Logger(c).Info("SudoKVQueryResult", "contractAddress", contractAddress)
 
 	if !k.wasmKeeper.HasContractInfo(ctx, contractAddress) {
-		k.Logger(ctx).Debug("SudoKVQueryResult: contract was not found", "contractAddress", contractAddress)
+		k.Logger(c).Debug("SudoKVQueryResult: contract was not found", "contractAddress", contractAddress)
 		return nil, fmt.Errorf("%s is not a contract address", contractAddress)
 	}
 
@@ -112,14 +117,14 @@ func (k Keeper) SudoKVQueryResult(
 
 	m, err := json.Marshal(x)
 	if err != nil {
-		k.Logger(ctx).Error("SudoKVQueryResult: failed to marshal MessageKVQueryResult message",
+		k.Logger(c).Error("SudoKVQueryResult: failed to marshal MessageKVQueryResult message",
 			"error", err, "contract_address", contractAddress)
 		return nil, fmt.Errorf("failed to marshal MessageKVQueryResult: %v", err)
 	}
 
 	resp, err := k.wasmKeeper.Sudo(ctx, contractAddress, m)
 	if err != nil {
-		k.Logger(ctx).Debug("SudoKVQueryResult: failed to sudo",
+		k.Logger(c).Debug("SudoKVQueryResult: failed to sudo",
 			"error", err, "contract_address", contractAddress)
 		return nil, fmt.Errorf("failed to sudo: %v", err)
 	}

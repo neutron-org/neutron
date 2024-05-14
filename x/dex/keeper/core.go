@@ -10,9 +10,9 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/utils"
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/utils"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // NOTE: Currently we are using TruncateInt in multiple places for converting Decs back into math.Ints.
@@ -125,7 +125,7 @@ func (k Keeper) DepositCore(
 }
 
 // Handles core logic for MsgWithdrawal; calculating and withdrawing reserve0,reserve1 from a specified tick
-// given a specfied number of shares to remove.
+// given a specified number of shares to remove.
 // Calculates the amount of reserve0, reserve1 to withdraw based on the percentage of the desired
 // number of shares to remove compared to the total number of shares at the given tick.
 func (k Keeper) WithdrawCore(

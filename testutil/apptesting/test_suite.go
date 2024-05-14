@@ -1,32 +1,32 @@
 package apptesting
 
 import (
-	"context"
 	"crypto/rand"
 	"fmt"
-	"time"
 
-	dbm "github.com/cometbft/cometbft-db"
-	abci "github.com/cometbft/cometbft/abci/types"
+	log2 "cosmossdk.io/log"
+	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
+	"cosmossdk.io/store/rootmulti"
+	"cosmossdk.io/store/types"
+
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	"github.com/cometbft/cometbft/libs/log"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
+	db2 "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v3/app"
-	"github.com/neutron-org/neutron/v3/testutil"
-	dexmoduletypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/app"
+	"github.com/neutron-org/neutron/v4/testutil"
+	dexmoduletypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 type KeeperTestHelper struct {
 	suite.Suite
 
-	App   *app.App
-	Ctx   sdk.Context
-	GoCtx context.Context
+	App *app.App
+	Ctx sdk.Context
 	// Used for testing queries end to end.
 	// You can wrap this in a module-specific QueryClient()
 	// and then make calls as you would a normal GRPC client.
@@ -36,13 +36,13 @@ type KeeperTestHelper struct {
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *KeeperTestHelper) Setup() {
 	s.App = testutil.Setup(s.T()).(*app.App)
-	ctx := s.App.GetBaseApp().NewContext(
-		false,
-		tmtypes.Header{Height: 1, ChainID: "neutron-1", Time: time.Now().UTC()},
-	)
-	s.Ctx = ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+	// `NewUncachedContext` like a `NewContext` calls `sdk.NewContext` under the hood. But the reason why we switched to NewUncachedContext
+	// is NewContext tries to pass `app.finalizeBlockState.ms` as first argument while  app.finalizeBlockState is nil at this stage,
+	// and we get nil pointer exception
+	// when NewUncachedContext passes `app.cms` (multistore) as an argument to `sdk.NewContext`
+	ctx := s.App.GetBaseApp().NewUncachedContext(false, tmtypes.Header{})
+	s.Ctx = ctx.WithBlockGasMeter(types.NewInfiniteGasMeter())
 
-	s.GoCtx = sdk.WrapSDKContext(s.Ctx)
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
@@ -55,7 +55,7 @@ func SetupAddr(index int) sdk.AccAddress {
 	prefixBz := make([]byte, 8)
 	_, _ = rand.Read(prefixBz)
 	prefix := string(prefixBz)
-	addr := sdk.AccAddress([]byte(fmt.Sprintf("addr%s%8d", prefix, index)))
+	addr := sdk.AccAddress(fmt.Sprintf("addr%s%8d", prefix, index))
 	return addr
 }
 
@@ -93,28 +93,30 @@ func (s *KeeperTestHelper) CreateTestContext() sdk.Context {
 }
 
 // CreateTestContextWithMultiStore creates a test context and returns it together with multi store.
-func (s *KeeperTestHelper) CreateTestContextWithMultiStore() (sdk.Context, sdk.CommitMultiStore) {
-	db := dbm.NewMemDB()
-	logger := log.NewNopLogger()
+func (s *KeeperTestHelper) CreateTestContextWithMultiStore() (sdk.Context, store.CommitMultiStore) {
+	db := db2.NewMemDB()
+	logger := log2.NewNopLogger()
 
-	ms := rootmulti.NewStore(db, logger)
+	ms := rootmulti.NewStore(db, logger, metrics.NewNoOpMetrics())
 
 	return sdk.NewContext(ms, tmtypes.Header{}, false, logger), ms
 }
 
 // CreateTestContext creates a test context.
 func (s *KeeperTestHelper) Commit() {
-	s.App.EndBlock(abci.RequestEndBlock{Height: s.Ctx.BlockHeight()})
-	oldHeight := s.Ctx.BlockHeight()
-	oldHeader := s.Ctx.BlockHeader()
-	s.App.Commit()
-	newHeader := tmtypes.Header{
-		Height:  oldHeight + 1,
-		ChainID: oldHeader.ChainID,
-		Time:    oldHeader.Time.Add(time.Minute),
+	// TODO: s.App.EndBlock(abci.RequestEndBlock{Height: s.Ctx.BlockHeight()})
+	// oldHeight := s.Ctx.BlockHeight()
+	// oldHeader := s.Ctx.BlockHeader()
+	if _, err := s.App.Commit(); err != nil {
+		panic(err)
 	}
-	s.App.BeginBlock(abci.RequestBeginBlock{Header: newHeader})
-	s.Ctx = s.App.GetBaseApp().NewContext(false, newHeader)
+	// newHeader := tmtypes.Header{
+	//	Height:  oldHeight + 1,
+	//	ChainID: oldHeader.ChainID,
+	//	Time:    oldHeader.Time.Add(time.Minute),
+	//}
+	//TODO: s.App.BeginBlock(abci.RequestBeginBlock{Header: newHeader})
+	s.Ctx = s.App.GetBaseApp().NewContext(false)
 }
 
 // FundAcc funds target address with specified amount.

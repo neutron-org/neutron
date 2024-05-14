@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	neutronapp "github.com/neutron-org/neutron/v3/app"
-	"github.com/neutron-org/neutron/v3/testutil"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v4/app"
+	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // Test Suite ///////////////////////////////////////////////////////////////
@@ -30,7 +30,11 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 
 func (s *CoreHelpersTestSuite) SetupTest() {
 	app := testutil.Setup(s.T())
-	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
+	// `NewUncachedContext` like a `NewContext` calls `sdk.NewContext` under the hood. But the reason why we switched to NewUncachedContext
+	// is NewContext tries to pass `app.finalizeBlockState.ms` as first argument while  app.finalizeBlockState is nil at this stage,
+	// and we get nil pointer exception
+	// when NewUncachedContext passes `app.cms` (multistore) as an argument to `sdk.NewContext`
+	ctx := app.(*neutronapp.App).BaseApp.NewUncachedContext(false, cmtproto.Header{})
 
 	accAlice := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accAlice)
