@@ -5,16 +5,16 @@ import (
 
 	"cosmossdk.io/errors"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	querytypes "github.com/cosmos/cosmos-sdk/types/query"
-	contypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	tndtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	contypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	tndtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 )
 
 var _ types.QueryServer = Keeper{}

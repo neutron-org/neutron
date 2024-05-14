@@ -1,11 +1,11 @@
 package v2
 
 import (
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
 )
 
 // MigrateStore performs in-place store migrations.
@@ -21,7 +21,7 @@ func migrateFailures(ctx sdk.Context, storeKey storetypes.StoreKey) error {
 	// fetch list of all old failure keys
 	failureKeys := make([][]byte, 0)
 	iteratorStore := prefix.NewStore(ctx.KVStore(storeKey), types.ContractFailuresKey)
-	iterator := sdk.KVStorePrefixIterator(iteratorStore, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(iteratorStore, []byte{})
 
 	for ; iterator.Valid(); iterator.Next() {
 		failureKeys = append(failureKeys, iterator.Key())

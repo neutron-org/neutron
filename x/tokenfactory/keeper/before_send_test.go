@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
+	"cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
@@ -34,7 +35,7 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 			suite.Require().NoError(err)
 
 			// create new denom
-			res, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "testdenom"))
+			res, err := suite.msgServer.CreateDenom(suite.ChainA.GetContext(), types.NewMsgCreateDenom(suite.TestAccs[0].String(), "testdenom"))
 			suite.Require().NoError(err, "test: %v", tc.name)
 			factoryDenom := res.GetNewTokenDenom()
 
@@ -55,13 +56,13 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 			suite.Require().NoError(err, "test: %v", tc.name)
 
 			// set beforesend hook to the new denom
-			_, err = suite.msgServer.SetBeforeSendHook(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgSetBeforeSendHook(suite.TestAccs[0].String(), factoryDenom, cosmwasmAddress.String()))
+			_, err = suite.msgServer.SetBeforeSendHook(suite.ChainA.GetContext(), types.NewMsgSetBeforeSendHook(suite.TestAccs[0].String(), factoryDenom, cosmwasmAddress.String()))
 			suite.Require().NoError(err, "test: %v", tc.name)
 
-			tokenToSend := sdk.NewCoin(factoryDenom, sdk.NewInt(100))
+			tokenToSend := sdk.NewCoin(factoryDenom, math.NewInt(100))
 
 			// mint tokens
-			_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), tokenToSend))
+			_, err = suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), tokenToSend))
 			suite.Require().NoError(err)
 
 			queryResp, err := suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(suite.ChainA.GetContext(), cosmwasmAddress, []byte(`{"total_supply_at":{}}`))

@@ -1,12 +1,12 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)

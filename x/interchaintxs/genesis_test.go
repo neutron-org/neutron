@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
-	"github.com/neutron-org/neutron/v3/testutil/interchaintxs/nullify"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v4/testutil/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 )
 
 func TestGenesis(t *testing.T) {
@@ -16,7 +16,7 @@ func TestGenesis(t *testing.T) {
 		Params: types.DefaultParams(),
 	}
 
-	k, ctx := keepertest.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil)
+	k, ctx := keepertest.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, nil)
 	interchaintxs.InitGenesis(ctx, *k, genesisState)
 	got := interchaintxs.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)

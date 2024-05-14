@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/neutron-org/neutron/v3/x/ibc-hooks/utils"
+	"cosmossdk.io/math"
+
+	"github.com/neutron-org/neutron/v4/x/ibc-hooks/utils"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
 )
 
 type ContractAck struct {
@@ -87,7 +89,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 		return ack
 	}
 
-	amount, ok := sdk.NewIntFromString(data.GetAmount())
+	amount, ok := math.NewIntFromString(data.GetAmount())
 	if !ok {
 		// This should never happen, as it should've been caught in the underlying call to OnRecvPacket,
 		// but returning here for completeness
@@ -124,7 +126,7 @@ func (h WasmHooks) execWasmMsg(ctx sdk.Context, execMsg *wasmtypes.MsgExecuteCon
 		return nil, fmt.Errorf(types.ErrBadExecutionMsg, err.Error())
 	}
 	wasmMsgServer := wasmkeeper.NewMsgServerImpl(h.ContractKeeper)
-	return wasmMsgServer.ExecuteContract(sdk.WrapSDKContext(ctx), execMsg)
+	return wasmMsgServer.ExecuteContract(ctx, execMsg)
 }
 
 func isIcs20Packet(packet channeltypes.Packet) (isIcs20 bool, ics20data transfertypes.FungibleTokenPacketData) {

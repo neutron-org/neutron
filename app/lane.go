@@ -2,10 +2,10 @@ package app
 
 import (
 	"cosmossdk.io/math"
-	signer_extraction_adapter "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
-	blocksdkbase "github.com/skip-mev/block-sdk/block/base"
-	base_lane "github.com/skip-mev/block-sdk/lanes/base"
-	mev_lane "github.com/skip-mev/block-sdk/lanes/mev"
+	signer_extraction_adapter "github.com/skip-mev/block-sdk/v2/adapters/signer_extraction_adapter"
+	blocksdkbase "github.com/skip-mev/block-sdk/v2/block/base"
+	base_lane "github.com/skip-mev/block-sdk/v2/lanes/base"
+	mev_lane "github.com/skip-mev/block-sdk/v2/lanes/mev"
 )
 
 const (

@@ -4,11 +4,13 @@ import (
 	"strconv"
 	"time"
 
+	storetypes "cosmossdk.io/store/types"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/keeper"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/keeper"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 const gasRequiredToPurgeOneLO uint64 = 9_000
@@ -119,7 +121,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
-	ctx = ctx.WithBlockGasMeter(sdk.NewGasMeter(1000000))
+	ctx = ctx.WithBlockGasMeter(storetypes.NewGasMeter(1000000))
 
 	yesterday := now.AddDate(0, 0, -1)
 	tomorrow := now.AddDate(0, 0, 1)
@@ -161,7 +163,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	yesterday := now.AddDate(0, 0, -1)
 
@@ -197,7 +199,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	keeper := s.App.DexKeeper
 	now := time.Now().UTC()
 	ctx := s.Ctx.WithBlockTime(now)
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	expTimes := []time.Time{
 		types.JITGoodTilTime(),

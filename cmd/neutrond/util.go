@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -9,33 +10,49 @@ import (
 
 	"cosmossdk.io/log"
 
-	tmcfg "github.com/cometbft/cometbft/config"
-	tmcli "github.com/cometbft/cometbft/libs/cli"
-	tmlog "github.com/cometbft/cometbft/libs/log"
+	cmtcfg "github.com/cometbft/cometbft/config"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
-	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
-	serverlog "github.com/cosmos/cosmos-sdk/server/log"
+	"github.com/cosmos/cosmos-sdk/server/config"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-// NOTE: The functions below are copy-pasted from cosmos-sdk@v0.47.3 (see https://github.com/cosmos/cosmos-sdk/blob/v0.47.3/server/util.go#L122)
-// Reason for this is that we want to remove cosmos-sdk override of commit_timeout to 5s (https://github.com/cosmos/cosmos-sdk/blob/v0.47.3/server/util.go#L239-L241)
+// NOTE: The functions below are copy-pasted from cosmos-sdk@v0.50.5 (see https://github.com/cosmos/cosmos-sdk/blob/v0.50.5/server/util.go#L102)
+// Reason for this is that we want to remove cosmos-sdk override of commit_timeout to 5s (https://github.com/cosmos/cosmos-sdk/blob/v0.50.5/server/util.go#L252-L254)
 
-// InterceptConfigsPreRunHandler performs a pre-run function for the root daemon
+// InterceptConfigsPreRunHandler is identical to InterceptConfigsAndCreateContext
+// except it also sets the server context on the command and the server logger.
+func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate string, customAppConfig interface{}, cmtConfig *cmtcfg.Config) error {
+	serverCtx, err := InterceptConfigsAndCreateContext(cmd, customAppConfigTemplate, customAppConfig, cmtConfig)
+	if err != nil {
+		return err
+	}
+
+	// overwrite default server logger
+	logger, err := CreateSDKLogger(serverCtx, cmd.OutOrStdout())
+	if err != nil {
+		return err
+	}
+	serverCtx.Logger = logger.With(log.ModuleKey, "server")
+
+	// set server context
+	return SetCmdServerContext(cmd, serverCtx)
+}
+
+// InterceptConfigsAndCreateContext performs a pre-run function for the root daemon
 // application command. It will create a Viper literal and a default server
-// Context. The server Tendermint configuration will either be read and parsed
+// Context. The server CometBFT configuration will either be read and parsed
 // or created and saved to disk, where the server Context is updated to reflect
-// the Tendermint configuration. It takes custom app config template and config
-// settings to create a custom Tendermint configuration. If the custom template
+// the CometBFT configuration. It takes custom app config template and config
+// settings to create a custom CometBFT configuration. If the custom template
 // is empty, it uses default-template provided by the server. The Viper literal
 // is used to read and parse the application configuration. Command handlers can
-// fetch the server Context to get the Tendermint configuration or to get access
+// fetch the server Context to get the CometBFT configuration or to get access
 // to Viper.
-func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate string, customAppConfig interface{}, tmConfig *tmcfg.Config) error {
+func InterceptConfigsAndCreateContext(cmd *cobra.Command, customAppConfigTemplate string, customAppConfig interface{}, cmtConfig *cmtcfg.Config) (*server.Context, error) {
 	serverCtx := server.NewDefaultContext()
 
 	// Get the executable name and configure the viper instance so that environmental
@@ -43,17 +60,17 @@ func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate s
 	// as a separator.
 	executableName, err := os.Executable()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	basename := path.Base(executableName)
 
 	// configure the viper instance
 	if err := serverCtx.Viper.BindPFlags(cmd.Flags()); err != nil {
-		return err
+		return nil, err
 	}
 	if err := serverCtx.Viper.BindPFlags(cmd.PersistentFlags()); err != nil {
-		return err
+		return nil, err
 	}
 
 	serverCtx.Viper.SetEnvPrefix(basename)
@@ -61,75 +78,98 @@ func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate s
 	serverCtx.Viper.AutomaticEnv()
 
 	// intercept configuration files, using both Viper instances separately
-	config, err := interceptConfigs(serverCtx.Viper, customAppConfigTemplate, customAppConfig, tmConfig)
+	config, err := interceptConfigs(serverCtx.Viper, customAppConfigTemplate, customAppConfig, cmtConfig)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// return value is a tendermint configuration object
+	// return value is a CometBFT configuration object
 	serverCtx.Config = config
 	if err = bindFlags(basename, cmd, serverCtx.Viper); err != nil {
-		return err
+		return nil, err
 	}
 
-	var opts []log.Option
-	if serverCtx.Viper.GetString(flags.FlagLogFormat) == tmcfg.LogFormatJSON {
-		opts = append(opts, log.OutputJSONOption())
-	}
-
-	// check and set filter level or keys for the logger if any
-	logLvlStr := serverCtx.Viper.GetString(flags.FlagLogLevel)
-	if logLvlStr != "" {
-		logLvl, err := zerolog.ParseLevel(logLvlStr)
-		switch {
-		case err != nil:
-			// If the log level is not a valid zerolog level, then we try to parse it as a key filter.
-			filterFunc, err := log.ParseLogLevel(logLvlStr)
-			if err != nil {
-				return err
-			}
-
-			opts = append(opts, log.FilterOption(filterFunc))
-		case serverCtx.Viper.GetBool(tmcli.TraceFlag):
-			// Check if the CometBFT flag for trace logging is set if it is then setup a tracing logger in this app as well.
-			// Note it overrides log level passed in `log_levels`.
-			opts = append(opts, log.LevelOption(zerolog.TraceLevel))
-		default:
-			opts = append(opts, log.LevelOption(logLvl))
-		}
-	}
-
-	logger := log.NewLogger(tmlog.NewSyncWriter(os.Stdout), opts...).With(log.ModuleKey, "server")
-	serverCtx.Logger = serverlog.CometLoggerWrapper{Logger: logger}
-
-	return server.SetCmdServerContext(cmd, serverCtx)
+	return serverCtx, nil
 }
 
-// interceptConfigs parses and updates a Tendermint configuration file or
+// CreateSDKLogger creates a the default SDK logger.
+// It reads the log level and format from the server context.
+func CreateSDKLogger(ctx *server.Context, out io.Writer) (log.Logger, error) {
+	var opts []log.Option
+	if ctx.Viper.GetString(flags.FlagLogFormat) == flags.OutputFormatJSON {
+		opts = append(opts, log.OutputJSONOption())
+	}
+	opts = append(opts,
+		log.ColorOption(!ctx.Viper.GetBool(flags.FlagLogNoColor)),
+		// We use CometBFT flag (cmtcli.TraceFlag) for trace logging.
+		log.TraceOption(ctx.Viper.GetBool(server.FlagTrace)))
+
+	// check and set filter level or keys for the logger if any
+	logLvlStr := ctx.Viper.GetString(flags.FlagLogLevel)
+	if logLvlStr == "" {
+		return log.NewLogger(out, opts...), nil
+	}
+
+	logLvl, err := zerolog.ParseLevel(logLvlStr)
+	switch {
+	case err != nil:
+		// If the log level is not a valid zerolog level, then we try to parse it as a key filter.
+		filterFunc, err := log.ParseLogLevel(logLvlStr)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, log.FilterOption(filterFunc))
+	default:
+		opts = append(opts, log.LevelOption(logLvl))
+	}
+
+	return log.NewLogger(out, opts...), nil
+}
+
+// SetCmdServerContext sets a command's Context value to the provided argument.
+// If the context has not been set, set the given context as the default.
+func SetCmdServerContext(cmd *cobra.Command, serverCtx *server.Context) error {
+	v := cmd.Context().Value(server.ServerContextKey)
+	if v == nil {
+		v = serverCtx
+	}
+
+	serverCtxPtr := v.(*server.Context)
+	*serverCtxPtr = *serverCtx
+
+	return nil
+}
+
+// interceptConfigs parses and updates a CometBFT configuration file or
 // creates a new one and saves it. It also parses and saves the application
-// configuration file. The Tendermint configuration file is parsed given a root
+// configuration file. The CometBFT configuration file is parsed given a root
 // Viper object, whereas the application is parsed with the private package-aware
 // viperCfg object.
-func interceptConfigs(rootViper *viper.Viper, customAppTemplate string, customConfig interface{}, tmConfig *tmcfg.Config) (*tmcfg.Config, error) {
+func interceptConfigs(rootViper *viper.Viper, customAppTemplate string, customConfig interface{}, cmtConfig *cmtcfg.Config) (*cmtcfg.Config, error) {
 	rootDir := rootViper.GetString(flags.FlagHome)
 	configPath := filepath.Join(rootDir, "config")
-	tmCfgFile := filepath.Join(configPath, "config.toml")
+	cmtCfgFile := filepath.Join(configPath, "config.toml")
 
-	conf := tmConfig
+	conf := cmtConfig
 
-	switch _, err := os.Stat(tmCfgFile); {
+	switch _, err := os.Stat(cmtCfgFile); {
 	case os.IsNotExist(err):
-		tmcfg.EnsureRoot(rootDir)
+		cmtcfg.EnsureRoot(rootDir)
 
 		if err = conf.ValidateBasic(); err != nil {
 			return nil, fmt.Errorf("error in config file: %w", err)
 		}
 
-		defaultCometCfg := tmcfg.DefaultConfig()
+		defaultCometCfg := cmtcfg.DefaultConfig()
+		// The SDK is opinionated about those comet values, so we set them here.
+		// We verify first that the user has not changed them for not overriding them.
 		if conf.RPC.PprofListenAddress == defaultCometCfg.RPC.PprofListenAddress {
 			conf.RPC.PprofListenAddress = "localhost:6060"
 		}
-		tmcfg.WriteConfigFile(tmCfgFile, conf)
+
+		cmtcfg.WriteConfigFile(cmtCfgFile, conf)
+
 	case err != nil:
 		return nil, err
 
@@ -139,7 +179,7 @@ func interceptConfigs(rootViper *viper.Viper, customAppTemplate string, customCo
 		rootViper.AddConfigPath(configPath)
 
 		if err := rootViper.ReadInConfig(); err != nil {
-			return nil, fmt.Errorf("failed to read in %s: %w", tmCfgFile, err)
+			return nil, fmt.Errorf("failed to read in %s: %w", cmtCfgFile, err)
 		}
 	}
 
@@ -155,20 +195,20 @@ func interceptConfigs(rootViper *viper.Viper, customAppTemplate string, customCo
 	appCfgFilePath := filepath.Join(configPath, "app.toml")
 	if _, err := os.Stat(appCfgFilePath); os.IsNotExist(err) {
 		if customAppTemplate != "" {
-			serverconfig.SetConfigTemplate(customAppTemplate)
+			config.SetConfigTemplate(customAppTemplate)
 
 			if err = rootViper.Unmarshal(&customConfig); err != nil {
 				return nil, fmt.Errorf("failed to parse %s: %w", appCfgFilePath, err)
 			}
 
-			serverconfig.WriteConfigFile(appCfgFilePath, customConfig)
+			config.WriteConfigFile(appCfgFilePath, customConfig)
 		} else {
-			appConf, err := serverconfig.ParseConfig(rootViper)
+			appConf, err := config.ParseConfig(rootViper)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse %s: %w", appCfgFilePath, err)
 			}
 
-			serverconfig.WriteConfigFile(appCfgFilePath, appConf)
+			config.WriteConfigFile(appCfgFilePath, appConf)
 		}
 	}
 

@@ -3,13 +3,12 @@ package interchaintxs
 import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	interchaintxssimulation "github.com/neutron-org/neutron/v3/x/interchaintxs/simulation"
-	"github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	interchaintxssimulation "github.com/neutron-org/neutron/v4/x/interchaintxs/simulation"
+	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 )
 
 // avoid unused import issue
@@ -38,7 +37,7 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 }
 
 // RegisterStoreDecoder registers a decoder
-func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
+func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {}
 
 // WeightedOperations returns the all the gov module operations with their respective weights.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {

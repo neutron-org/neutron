@@ -3,22 +3,23 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 
-	"github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v4/app/params"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyQuerySubmitTimeout                = []byte("QuerySubmitTimeout")
-	DefaultQuerySubmitTimeout            = uint64(1036800) // One month, with block_time = 2.5s
-	KeyQueryDeposit                      = []byte("QueryDeposit")
-	DefaultQueryDeposit        sdk.Coins = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(1_000_000))))
-	KeyTxQueryRemovalLimit               = []byte("TxQueryRemovalLimit")
-	DefaultTxQueryRemovalLimit           = uint64(10_000)
+	KeyQuerySubmitTimeout      = []byte("QuerySubmitTimeout")
+	DefaultQuerySubmitTimeout  = uint64(1036800) // One month, with block_time = 2.5s
+	KeyQueryDeposit            = []byte("QueryDeposit")
+	DefaultQueryDeposit        = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000))))
+	KeyTxQueryRemovalLimit     = []byte("TxQueryRemovalLimit")
+	DefaultTxQueryRemovalLimit = uint64(10_000)
 )
 
 // ParamKeyTable the param key table for launch module

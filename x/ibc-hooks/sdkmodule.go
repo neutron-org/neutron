@@ -12,8 +12,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/ibc-hooks/client/cli"
-	"github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v4/x/ibc-hooks/client/cli"
+	"github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
 
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
+	_ appmodule.AppModule   = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
@@ -123,12 +123,12 @@ func (am AppModule) ExportGenesis(_ sdk.Context, _ codec.JSONCodec) json.RawMess
 }
 
 // BeginBlock returns the begin blocker for the ibc-hooks module.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(_ sdk.Context) {
 }
 
 // EndBlock returns the end blocker for the ibc-hooks module. It returns no validator
 // updates.
-func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (AppModule) EndBlock(_ sdk.Context) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 

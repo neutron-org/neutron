@@ -6,17 +6,18 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v3/testutil/apptesting"
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v3/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/testutil/apptesting"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v4/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // Test suite
@@ -31,7 +32,7 @@ type DexTestSuite struct {
 
 var defaultPairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
 
-var denomMultiple = sdk.NewInt(1000000)
+var denomMultiple = sdkmath.NewInt(1000000)
 
 var defaultTradePairID0To1 = &types.TradePairID{
 	TakerDenom: "TokenA",
@@ -379,7 +380,7 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
 	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut)).Mul(denomMultiple)
 
-	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tokenIn,
@@ -410,7 +411,7 @@ func (s *DexTestSuite) limitSellsInt(
 
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, tokenIn)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(int64(tickIndexNormalized))
-	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tradePairID.TakerDenom,
@@ -441,7 +442,7 @@ func (s *DexTestSuite) limitSellsGoodTil(
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, tokenIn)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(int64(tick))
 
-	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tradePairID.TakerDenom,
@@ -566,7 +567,7 @@ func (s *DexTestSuite) deposits(
 	}
 	err := msg.ValidateBasic()
 	s.Assert().NoError(err)
-	_, err = s.msgServer.Deposit(s.GoCtx, msg)
+	_, err = s.msgServer.Deposit(s.Ctx, msg)
 	s.Assert().Nil(err)
 }
 
@@ -589,7 +590,7 @@ func (s *DexTestSuite) depositsWithOptions(
 		}
 	}
 
-	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
+	_, err := s.msgServer.Deposit(s.Ctx, &types.MsgDeposit{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -661,7 +662,7 @@ func (s *DexTestSuite) assertDepositFails(
 		options[i] = &types.DepositOptions{DisableAutoswap: true}
 	}
 
-	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
+	_, err := s.msgServer.Deposit(s.Ctx, &types.MsgDeposit{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -744,7 +745,7 @@ func (s *DexTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*Withdra
 		sharesToRemove[i] = e.Shares
 	}
 
-	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.Ctx, &types.MsgWithdrawal{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -786,7 +787,7 @@ func (s *DexTestSuite) withdrawFails(
 		sharesToRemove[i] = e.Shares
 	}
 
-	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.Ctx, &types.MsgWithdrawal{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -818,7 +819,7 @@ func (s *DexTestSuite) danCancelsLimitSell(trancheKey string) {
 }
 
 func (s *DexTestSuite) cancelsLimitSell(account sdk.AccAddress, trancheKey string) {
-	_, err := s.msgServer.CancelLimitOrder(s.GoCtx, &types.MsgCancelLimitOrder{
+	_, err := s.msgServer.CancelLimitOrder(s.Ctx, &types.MsgCancelLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -846,7 +847,7 @@ func (s *DexTestSuite) cancelsLimitSellFails(
 	trancheKey string,
 	expectedErr error,
 ) {
-	_, err := s.msgServer.CancelLimitOrder(s.GoCtx, &types.MsgCancelLimitOrder{
+	_, err := s.msgServer.CancelLimitOrder(s.Ctx, &types.MsgCancelLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -906,7 +907,7 @@ func (s *DexTestSuite) multiHopSwaps(
 		exitLimitPrice,
 		pickBest,
 	)
-	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 	s.Assert().Nil(err)
 }
 
@@ -928,7 +929,7 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwap(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	res, err := s.App.DexKeeper.EstimateMultiHopSwap(s.GoCtx, msg)
+	res, err := s.App.DexKeeper.EstimateMultiHopSwap(s.Ctx, msg)
 	s.Require().Nil(err)
 	return res.CoinOut
 }
@@ -952,7 +953,7 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwapFails(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	_, err := s.App.DexKeeper.EstimateMultiHopSwap(s.GoCtx, msg)
+	_, err := s.App.DexKeeper.EstimateMultiHopSwap(s.Ctx, msg)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
@@ -1012,7 +1013,7 @@ func (s *DexTestSuite) multiHopSwapFails(
 		exitLimitPrice,
 		pickBest,
 	)
-	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
@@ -1035,7 +1036,7 @@ func (s *DexTestSuite) danWithdrawsLimitSell(trancheKey string) {
 }
 
 func (s *DexTestSuite) withdrawsLimitSell(account sdk.AccAddress, trancheKey string) {
-	_, err := s.msgServer.WithdrawFilledLimitOrder(s.GoCtx, &types.MsgWithdrawFilledLimitOrder{
+	_, err := s.msgServer.WithdrawFilledLimitOrder(s.Ctx, &types.MsgWithdrawFilledLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -1063,7 +1064,7 @@ func (s *DexTestSuite) withdrawLimitSellFails(
 	expectedErr error,
 	trancheKey string,
 ) {
-	_, err := s.msgServer.WithdrawFilledLimitOrder(s.GoCtx, &types.MsgWithdrawFilledLimitOrder{
+	_, err := s.msgServer.WithdrawFilledLimitOrder(s.Ctx, &types.MsgWithdrawFilledLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -1574,13 +1575,17 @@ func (s *DexTestSuite) calcExpectedBalancesAfterWithdrawOnePool(
 func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 	newCtx := s.Ctx.WithBlockTime(blockTime)
 	s.Ctx = newCtx
-	s.GoCtx = sdk.WrapSDKContext(newCtx)
+	_, err := s.App.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height: s.App.LastBlockHeight() + 1,
+		Time:   blockTime,
+	})
+	require.NoError(s.T(), err)
+	_, err = s.App.Commit()
+	require.NoError(s.T(), err)
 }
 
 func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
-	s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-		Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
-		Time:    blockTime,
-		ChainID: s.App.ChainID(),
-	}})
+	s.Ctx = s.Ctx.WithBlockTime(blockTime)
+	_, err := s.App.BeginBlocker(s.Ctx)
+	s.NoError(err)
 }

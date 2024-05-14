@@ -2,6 +2,7 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -45,7 +46,7 @@ func (m MsgCreateDenom) ValidateBasic() error {
 }
 
 func (m MsgCreateDenom) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+	return ModuleCdc.MustMarshalJSON(&m)
 }
 
 func (m MsgCreateDenom) GetSigners() []sdk.AccAddress {
@@ -79,7 +80,7 @@ func (m MsgMint) ValidateBasic() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
 	}
 
-	if !m.Amount.IsValid() || m.Amount.Amount.Equal(sdk.ZeroInt()) {
+	if !m.Amount.IsValid() || m.Amount.Amount.Equal(math.ZeroInt()) {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidCoins, m.Amount.String())
 	}
 
@@ -87,7 +88,7 @@ func (m MsgMint) ValidateBasic() error {
 }
 
 func (m MsgMint) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+	return ModuleCdc.MustMarshalJSON(&m)
 }
 
 func (m MsgMint) GetSigners() []sdk.AccAddress {
@@ -121,7 +122,7 @@ func (m MsgBurn) ValidateBasic() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
 	}
 
-	if !m.Amount.IsValid() || m.Amount.Amount.Equal(sdk.ZeroInt()) {
+	if !m.Amount.IsValid() || m.Amount.Amount.Equal(math.ZeroInt()) {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidCoins, m.Amount.String())
 	}
 
@@ -129,7 +130,7 @@ func (m MsgBurn) ValidateBasic() error {
 }
 
 func (m MsgBurn) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+	return ModuleCdc.MustMarshalJSON(&m)
 }
 
 func (m MsgBurn) GetSigners() []sdk.AccAddress {
@@ -174,7 +175,7 @@ func (m MsgForceTransfer) ValidateBasic() error {
 }
 
 func (m MsgForceTransfer) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+	return ModuleCdc.MustMarshalJSON(&m)
 }
 
 func (m MsgForceTransfer) GetSigners() []sdk.AccAddress {
@@ -215,7 +216,7 @@ func (m MsgChangeAdmin) ValidateBasic() error {
 }
 
 func (m MsgChangeAdmin) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+	return ModuleCdc.MustMarshalJSON(&m)
 }
 
 func (m MsgChangeAdmin) GetSigners() []sdk.AccAddress {
@@ -255,7 +256,7 @@ func (m MsgSetDenomMetadata) ValidateBasic() error {
 }
 
 func (m MsgSetDenomMetadata) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+	return ModuleCdc.MustMarshalJSON(&m)
 }
 
 func (m MsgSetDenomMetadata) GetSigners() []sdk.AccAddress {
@@ -298,7 +299,7 @@ func (m MsgSetBeforeSendHook) ValidateBasic() error {
 }
 
 func (m MsgSetBeforeSendHook) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+	return ModuleCdc.MustMarshalJSON(&m)
 }
 
 func (m MsgSetBeforeSendHook) GetSigners() []sdk.AccAddress {

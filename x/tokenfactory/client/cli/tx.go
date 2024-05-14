@@ -14,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -194,7 +194,7 @@ func NewSetDenomMetadataCmd() *cobra.Command {
 				return err
 			}
 
-			metadataBytes, err := os.ReadFile(args[1])
+			metadataBytes, err := os.ReadFile(args[0])
 			if err != nil {
 				return err
 			}

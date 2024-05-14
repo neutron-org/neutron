@@ -4,7 +4,7 @@ package neutron.feeburner;
 import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v3/x/feeburner/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/feeburner/types";
 
 // TotalBurnedNeutronsAmount defines total amount of burned neutron fees
 message TotalBurnedNeutronsAmount {

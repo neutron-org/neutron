@@ -10,10 +10,9 @@ mkdir -p tmp_deps
 declare -a deps=("github.com/cosmos/cosmos-sdk"
                 "github.com/CosmWasm/wasmd"
                 "github.com/cosmos/admin-module"
-                "github.com/cosmos/interchain-security/v4"
-                "github.com/cosmos/gaia/v11"
-                "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7"
-                "github.com/skip-mev/block-sdk")
+                "github.com/cosmos/interchain-security/v5"
+                "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8"
+                "github.com/skip-mev/block-sdk/v2")
 
 for dep in "${deps[@]}"
 do
@@ -54,9 +53,7 @@ for f in $files; do
   echo "[+] $f"
 
   # check gaia first before cosmos
-  if [[ "$f" =~ "gaia" ]]; then
-    cp $f ./tmp-swagger-gen/_all/gaia-$counter.json
-  elif [[ "$f" =~ "router" ]]; then
+  if [[ "$f" =~ "router" ]]; then
     cp $f ./tmp-swagger-gen/_all/pfm-$counter.json
   elif [[ "$f" =~ "cosmwasm" ]]; then
     cp $f ./tmp-swagger-gen/_all/cosmwasm-$counter.json
