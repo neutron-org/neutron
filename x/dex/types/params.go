@@ -19,6 +19,8 @@ var (
 	DefaultMaxJITsPerBlock       uint64 = 25
 	KeyGoodTilPurgeAllowance            = []byte("PurgeAllowance")
 	DefaultGoodTilPurgeAllowance uint64 = 540_000
+	KeyPaused                           = []byte("Paused")
+	DefaultPaused                       = false
 )
 
 // ParamKeyTable the param key table for launch module
@@ -27,18 +29,19 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(feeTiers []uint64, maxTrueTakerSpread math_utils.PrecDec, maxJITsPerBlock, goodTilPurgeAllowance uint64) Params {
+func NewParams(feeTiers []uint64, maxTrueTakerSpread math_utils.PrecDec, maxJITsPerBlock, goodTilPurgeAllowance uint64, paused bool) Params {
 	return Params{
 		FeeTiers:              feeTiers,
 		MaxTrueTakerSpread:    maxTrueTakerSpread,
 		Max_JITsPerBlock:      maxJITsPerBlock,
 		GoodTilPurgeAllowance: goodTilPurgeAllowance,
+		Paused:                paused,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultFeeTiers, DefaultMaxTrueTakerSpread, DefaultMaxJITsPerBlock, DefaultGoodTilPurgeAllowance)
+	return NewParams(DefaultFeeTiers, DefaultMaxTrueTakerSpread, DefaultMaxJITsPerBlock, DefaultGoodTilPurgeAllowance, DefaultPaused)
 }
 
 // ParamSetPairs get the params.ParamSet
@@ -47,6 +50,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyFeeTiers, &p.FeeTiers, validateFeeTiers),
 		paramtypes.NewParamSetPair(KeyMaxJITsPerBlock, &p.Max_JITsPerBlock, validateMaxJITsPerBlock),
 		paramtypes.NewParamSetPair(KeyGoodTilPurgeAllowance, &p.GoodTilPurgeAllowance, validatePurgeAllowance),
+		paramtypes.NewParamSetPair(KeyPaused, &p.Paused, validatePaused),
 	}
 }
 
@@ -65,6 +69,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validatePurgeAllowance(p.GoodTilPurgeAllowance); err != nil {
+		return err
+	}
+	if err := validatePaused(p.Paused); err != nil {
 		return err
 	}
 	return nil
@@ -97,6 +104,15 @@ func validateMaxJITsPerBlock(v interface{}) error {
 
 func validatePurgeAllowance(v interface{}) error {
 	_, ok := v.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", v)
+	}
+
+	return nil
+}
+
+func validatePaused(v interface{}) error {
+	_, ok := v.(bool)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", v)
 	}

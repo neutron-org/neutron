@@ -17,4 +17,5 @@ message Params {
   ];
   uint64 max_JITs_per_block = 3;
   uint64 good_til_purge_allowance = 4;
+  bool paused = 5;
 }
