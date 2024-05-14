@@ -13,6 +13,7 @@ import (
 
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 
@@ -230,10 +231,11 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		return handleDexMsg(ctx, dex.Withdrawal, m.DexMsgServer.Withdrawal)
 	case dex.PlaceLimitOrder != nil:
 		msg := dextypes.MsgPlaceLimitOrder{
-			Creator:          contractAddr.String(),
-			Receiver:         dex.PlaceLimitOrder.Receiver,
-			TokenIn:          dex.PlaceLimitOrder.TokenIn,
-			TokenOut:         dex.PlaceLimitOrder.TokenOut,
+			Creator:  contractAddr.String(),
+			Receiver: dex.PlaceLimitOrder.Receiver,
+			TokenIn:  dex.PlaceLimitOrder.TokenIn,
+			TokenOut: dex.PlaceLimitOrder.TokenOut,
+			//nolint: staticcheck // TODO: remove in next release
 			TickIndexInToOut: dex.PlaceLimitOrder.TickIndexInToOut,
 			AmountIn:         dex.PlaceLimitOrder.AmountIn,
 			MaxAmountOut:     dex.PlaceLimitOrder.MaxAmountOut,
@@ -253,6 +255,15 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
 			msg.ExpirationTime = &t
 		}
+
+		if limitPriceStr := dex.PlaceLimitOrder.LimitSellPrice; limitPriceStr != "" {
+			limitPriceDec, err := dexutils.ParsePrecDecScientificNotation(limitPriceStr)
+			if err != nil {
+				return nil, nil, err
+			}
+			msg.LimitSellPrice = &limitPriceDec
+		}
+
 		return handleDexMsg(ctx, &msg, m.DexMsgServer.PlaceLimitOrder)
 	case dex.CancelLimitOrder != nil:
 		dex.CancelLimitOrder.Creator = contractAddr.String()

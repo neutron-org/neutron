@@ -107,7 +107,9 @@ message MsgPlaceLimitOrder {
   string receiver = 2;
   string token_in = 3;
   string token_out = 4;
-  int64 tick_index_in_to_out = 5;
+
+  // DEPRECATED: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
+  int64 tick_index_in_to_out = 5 [deprecated = true];
   string amount_in = 7 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
@@ -125,6 +127,12 @@ message MsgPlaceLimitOrder {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "max_amount_out"
+  ];
+  string limit_sell_price = 11 [
+    (gogoproto.moretags) = "yaml:\"limit_sell_price\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+    (gogoproto.nullable) = true,
+    (gogoproto.jsontag) = "limit_sell_price"
   ];
 }
 

@@ -7,12 +7,18 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 	ZEROINT := math.ZeroInt()
 	ONEINT := math.OneInt()
+	FIVEDEC := math_utils.NewPrecDec(5)
+	SMALLDEC := math_utils.MustNewPrecDecFromStr("0.02")
+	TINYDEC := math_utils.MustNewPrecDecFromStr("0.000000000000000000000000494")
+	HUGEDEC := math_utils.MustNewPrecDecFromStr("2020125331305056766452345.127500016657360222036663652")
+
 	tests := []struct {
 		name string
 		msg  dextypes.MsgPlaceLimitOrder
@@ -109,7 +115,44 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 			err: dextypes.ErrTickOutsideRange,
 		},
 		{
-			name: "valid msg",
+			name: "price < minPrice",
+			msg: dextypes.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				LimitSellPrice: &TINYDEC,
+				AmountIn:       math.OneInt(),
+			},
+			err: dextypes.ErrPriceOutsideRange,
+		},
+		{
+			name: "price > maxPrice",
+			msg: dextypes.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				LimitSellPrice: &HUGEDEC,
+				AmountIn:       math.OneInt(),
+			},
+			err: dextypes.ErrPriceOutsideRange,
+		},
+		{
+			name: "invalid tickIndexInToOut & LimitSellPrice",
+			msg: dextypes.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				LimitSellPrice:   &FIVEDEC,
+				TickIndexInToOut: 6,
+				AmountIn:         math.OneInt(),
+			},
+			err: dextypes.ErrInvalidPriceAndTick,
+		},
+		{
+			name: "valid msg tick",
 			msg: dextypes.MsgPlaceLimitOrder{
 				Creator:          sample.AccAddress(),
 				Receiver:         sample.AccAddress(),
@@ -117,6 +160,28 @@ func TestMsgPlaceLimitOrder_ValidateBasic(t *testing.T) {
 				TokenOut:         "TokenB",
 				TickIndexInToOut: 0,
 				AmountIn:         math.OneInt(),
+			},
+		},
+		{
+			name: "valid msg price > 1",
+			msg: dextypes.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				AmountIn:       math.OneInt(),
+				LimitSellPrice: &FIVEDEC,
+			},
+		},
+		{
+			name: "valid msg price < 1",
+			msg: dextypes.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				AmountIn:       math.OneInt(),
+				LimitSellPrice: &SMALLDEC,
 			},
 		},
 	}
