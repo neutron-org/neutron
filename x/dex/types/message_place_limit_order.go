@@ -58,7 +58,7 @@ func (msg *MsgPlaceLimitOrder) GetSignBytes() []byte {
 	return bz
 }
 
-func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
+func (msg *MsgPlaceLimitOrder) Validate() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid creator address (%s)", err)
