@@ -377,8 +377,9 @@ type App struct {
 	WasmKeeper wasmkeeper.Keeper
 
 	// slinky
-	MarketMapKeeper *marketmapkeeper.Keeper
-	OracleKeeper    *oraclekeeper.Keeper
+	MarketMapKeeper  *marketmapkeeper.Keeper
+	OracleKeeper     *oraclekeeper.Keeper
+	OraclePreBlocker sdk.PreBlocker
 
 	// processes
 	oracleClient oracleclient.OracleClient
@@ -922,38 +923,7 @@ func New(
 	)
 
 	app.mm.SetOrderPreBlockers(
-		auctiontypes.ModuleName,
 		upgradetypes.ModuleName,
-		capabilitytypes.ModuleName,
-		slashingtypes.ModuleName,
-		evidencetypes.ModuleName,
-		vestingtypes.ModuleName,
-		ibchost.ModuleName,
-		ibctransfertypes.ModuleName,
-		authtypes.ModuleName,
-		authz.ModuleName,
-		banktypes.ModuleName,
-		crisistypes.ModuleName,
-		feegrant.ModuleName,
-		paramstypes.ModuleName,
-		ccvconsumertypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		icatypes.ModuleName,
-		interchainqueriesmoduletypes.ModuleName,
-		interchaintxstypes.ModuleName,
-		contractmanagermoduletypes.ModuleName,
-		wasmtypes.ModuleName,
-		feetypes.ModuleName,
-		feeburnertypes.ModuleName,
-		adminmoduletypes.ModuleName,
-		ibchookstypes.ModuleName,
-		pfmtypes.ModuleName,
-		crontypes.ModuleName,
-		marketmaptypes.ModuleName,
-		oracletypes.ModuleName,
-		// globalfee.ModuleName,
-		ibcswaptypes.ModuleName,
-		dextypes.ModuleName,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -1265,7 +1235,7 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
-	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
+	app.OraclePreBlocker = oraclePreBlockHandler.PreBlocker()
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
@@ -1412,8 +1382,18 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 func (app *App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
 
 // PreBlocker application updates every pre block
-func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.mm.PreBlock(ctx)
+func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	rsp, err := app.mm.PreBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = app.OraclePreBlocker(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return rsp, nil
 }
 
 // BeginBlocker application updates every begin block
