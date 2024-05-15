@@ -1387,7 +1387,7 @@ func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sd
 	}
 
 	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
-	return rsp, nil
+	return rsp, err
 }
 
 // BeginBlocker application updates every begin block
