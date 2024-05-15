@@ -66,9 +66,9 @@ type OracleQuery struct {
 }
 
 type MarketmapQuery struct {
-	GetMarketMap   *marketmaptypes.GetMarketMapRequest   `json:"get_market_map,omitempty"`
-	GetLastUpdated *marketmaptypes.GetLastUpdatedRequest `json:"get_last_updated,omitempty"`
-	Params         *marketmaptypes.ParamsRequest         `json:"params,omitempty"`
+	GetMarketMap   *marketmaptypes.MarketMapRequest   `json:"get_market_map,omitempty"`
+	GetLastUpdated *marketmaptypes.LastUpdatedRequest `json:"get_last_updated,omitempty"`
+	Params         *marketmaptypes.ParamsRequest      `json:"params,omitempty"`
 }
 
 type QueryInterchainAccountAddressRequest struct {
