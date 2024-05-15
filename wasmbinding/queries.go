@@ -251,10 +251,10 @@ func (qp *QueryPlugin) MarketmapQuery(ctx sdk.Context, query bindings.MarketmapQ
 	switch {
 	case query.Params != nil:
 		return processResponse(marketmapQueryServer.Params(ctx, query.Params))
-	case query.GetLastUpdated != nil:
-		return processResponse(marketmapQueryServer.LastUpdated(ctx, query.GetLastUpdated))
-	case query.GetMarketMap != nil:
-		return processResponse(marketmapQueryServer.MarketMap(ctx, query.GetMarketMap))
+	case query.LastUpdated != nil:
+		return processResponse(marketmapQueryServer.LastUpdated(ctx, query.LastUpdated))
+	case query.MarketMap != nil:
+		return processResponse(marketmapQueryServer.MarketMap(ctx, query.MarketMap))
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.marketmap query type"}
 	}
