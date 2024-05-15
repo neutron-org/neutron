@@ -18,7 +18,11 @@ import (
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
+	_ "embed"
 )
+
+//go:embed markets.json
+var marketsJSON []byte
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
@@ -68,7 +72,7 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 }
 
 func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
-	markets, err := slinkyutils.ReadMarketsFromFile("markets.json")
+	markets, err := slinkyutils.ReadMarketsFromFile(marketsJSON)
 	if err != nil {
 		return err
 	}

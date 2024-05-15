@@ -16,7 +16,11 @@ import (
 
 	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
 	"github.com/neutron-org/neutron/v4/testutil"
+	_ "embed"
 )
+
+//go:embed markets.json
+var marketsJSON []byte
 
 type UpgradeTestSuite struct {
 	testutil.IBCConnectionTestSuite
@@ -35,7 +39,7 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	ctx := suite.ChainA.GetContext()
 	t := suite.T()
 
-	markets, err := slinkyutils.ReadMarketsFromFile("markets.json")
+	markets, err := slinkyutils.ReadMarketsFromFile(marketsJSON)
 	suite.Require().NoError(err)
 	marketMap := slinkyutils.ToMarketMap(markets)
 
