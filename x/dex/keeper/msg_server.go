@@ -119,6 +119,8 @@ func (k MsgServer) PlaceLimitOrder(
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
 
+	totalLimitOrders()
+
 	return &types.MsgPlaceLimitOrderResponse{
 		TrancheKey:   trancheKey,
 		CoinIn:       coinIn,
