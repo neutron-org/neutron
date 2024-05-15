@@ -1,8 +1,6 @@
 module github.com/neutron-org/neutron/v4
 
-go 1.22
-
-toolchain go1.22.1
+go 1.22.3
 
 require (
 	cosmossdk.io/client/v2 v2.0.0-beta.1
@@ -11,10 +9,10 @@ require (
 	cosmossdk.io/log v1.3.1
 	cosmossdk.io/math v1.3.0
 	cosmossdk.io/store v1.1.0
-	cosmossdk.io/x/evidence v0.1.0
-	cosmossdk.io/x/feegrant v0.1.0
+	cosmossdk.io/x/evidence v0.1.1
+	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/tx v0.13.3
-	cosmossdk.io/x/upgrade v0.1.1
+	cosmossdk.io/x/upgrade v0.1.2
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/CosmWasm/wasmvm/v2 v2.0.0
@@ -63,7 +61,7 @@ require (
 	cosmossdk.io/api v0.7.4 // indirect
 	cosmossdk.io/collections v0.4.0 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
-	cosmossdk.io/x/circuit v0.1.0 // indirect
+	cosmossdk.io/x/circuit v0.1.1 // indirect
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
@@ -178,6 +176,7 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
+	github.com/skip-mev/feemarket v0.0.1-alpha.2.0.20240514210540-021286461d0a
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
@@ -217,6 +216,10 @@ require (
 )
 
 replace (
+	// TODO: update our cosmos-sdk up to 0.50.6+ to remove downgrade of upgrade modules cosmossdk.io/x/{evidence,feegrant,upgrade}
+	cosmossdk.io/x/evidence => cosmossdk.io/x/evidence v0.1.0
+	cosmossdk.io/x/feegrant => cosmossdk.io/x/feegrant v0.1.0
+	cosmossdk.io/x/upgrade => cosmossdk.io/x/upgrade v0.1.1
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240501180153-d9bebe629e05
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056

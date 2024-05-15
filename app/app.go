@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"fmt"
+	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+	types2 "github.com/skip-mev/feemarket/x/feemarket/types"
 	"io"
 	"io/fs"
 	"net/http"
@@ -344,6 +346,7 @@ type App struct {
 	EvidenceKeeper      evidencekeeper.Keeper
 	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
+	FeeMarkerKeeper     *feemarketkeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
@@ -524,6 +527,14 @@ func New(
 		appCodec,
 		homePath,
 		app.BaseApp,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	app.FeeMarkerKeeper = feemarketkeeper.NewKeeper(
+		appCodec,
+		keys[types2.StoreKey],
+		app.AccountKeeper,
+		&types2.TestDenomResolver{}, // TODO: implement ??? denom resolver, or find a proper one
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -1114,6 +1125,18 @@ func New(
 		panic(err)
 	}
 	app.SetAnteHandler(anteHandler)
+
+	postHandlerOptions := PostHandlerOptions{
+		AccountKeeper:   app.AccountKeeper,
+		BankKeeper:      app.BankKeeper,
+		FeeGrantKeeper:  app.FeeGrantKeeper,
+		FeeMarketKeeper: app.FeeMarkerKeeper,
+	}
+	postHandler, err := NewPostHandler(postHandlerOptions)
+	if err != nil {
+		panic(err)
+	}
+	app.SetPostHandler(postHandler)
 
 	// set ante-handlers
 	opts := []base.LaneOption{

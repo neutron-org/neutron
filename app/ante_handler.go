@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
@@ -31,6 +32,7 @@ type HandlerOptions struct {
 	GlobalFeeKeeper       globalfeekeeper.Keeper
 	WasmConfig            *wasmTypes.WasmConfig
 	TXCounterStoreService corestoretypes.KVStoreService
+	FeeMarketKeeper       feemarketante.FeeMarketKeeper
 
 	// dependencies for the x/auction ante-handler
 	AuctionKeeper auctionkeeper.Keeper
@@ -59,6 +61,10 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "mev lane is required for AnteHandler")
 	}
 
+	if options.FeeMarketKeeper == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "feemarket keeper is required for ante builder")
+	}
+
 	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
@@ -76,7 +82,10 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
 
-		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		//ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		feemarketante.NewFeeMarketCheckDecorator( // fee market check replaces fee deduct decorator
+			options.FeeMarketKeeper,
+		),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
