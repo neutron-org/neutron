@@ -211,17 +211,6 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 func (qp *QueryPlugin) OracleQuery(ctx sdk.Context, query bindings.OracleQuery) ([]byte, error) {
 	oracleQueryServer := oraclekeeper.NewQueryServer(*qp.oracleKeeper)
 
-	// handle query processing and marshaling
-	processResponse := func(resp interface{}, err error) ([]byte, error) {
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to process request %T", query)
-		}
-		if q, ok := resp.(bindings.BindingMarshaller); ok {
-			return q.MarshalBinding()
-		}
-		return json.Marshal(resp)
-	}
-
 	switch {
 	case query.GetAllCurrencyPairs != nil:
 		return processResponse(oracleQueryServer.GetAllCurrencyPairs(ctx, query.GetAllCurrencyPairs))
@@ -236,17 +225,6 @@ func (qp *QueryPlugin) OracleQuery(ctx sdk.Context, query bindings.OracleQuery) 
 
 func (qp *QueryPlugin) MarketmapQuery(ctx sdk.Context, query bindings.MarketmapQuery) ([]byte, error) {
 	marketmapQueryServer := marketmapkeeper.NewQueryServer(qp.marketmapKeeper)
-
-	// handle query processing and marshaling
-	processResponse := func(resp interface{}, err error) ([]byte, error) {
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to process request %T", query)
-		}
-		if q, ok := resp.(bindings.BindingMarshaller); ok {
-			return q.MarshalBinding()
-		}
-		return json.Marshal(resp)
-	}
 
 	switch {
 	case query.Params != nil:
@@ -278,6 +256,16 @@ func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context
 	}
 
 	return data, nil
+}
+
+func processResponse(resp interface{}, err error) ([]byte, error) {
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to process request %T", resp)
+	}
+	if q, ok := resp.(bindings.BindingMarshaller); ok {
+		return q.MarshalBinding()
+	}
+	return json.Marshal(resp)
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {
