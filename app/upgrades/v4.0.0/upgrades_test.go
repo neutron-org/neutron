@@ -14,9 +14,10 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	_ "embed"
+
 	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
 	"github.com/neutron-org/neutron/v4/testutil"
-	_ "embed"
 )
 
 //go:embed markets.json
