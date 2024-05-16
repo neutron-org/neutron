@@ -50,7 +50,7 @@ type NeutronQuery struct {
 	// oracle module queries
 	Oracle *OracleQuery `json:"oracle,omitempty"`
 	// marketmap module query
-	Marketmap *MarketMapQuery `json:"marketmap,omitempty"`
+	MarketMap *MarketMapQuery `json:"market_map,omitempty"`
 }
 
 /* Requests */
