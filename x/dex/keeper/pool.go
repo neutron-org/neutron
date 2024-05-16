@@ -21,6 +21,7 @@ func (k Keeper) GetOrInitPool(
 		return pool, nil
 	}
 
+	incTotalTickLiquidites()
 	return k.InitPool(ctx, pairID, centerTickIndexNormalized, fee)
 }
 
@@ -149,6 +150,7 @@ func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves
 	if reserves.HasToken() {
 		k.SetPoolReserves(ctx, reserves)
 	} else {
+		decTotalTickLiquidites()
 		k.RemovePoolReserves(ctx, reserves.Key)
 	}
 }

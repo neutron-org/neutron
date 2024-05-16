@@ -210,7 +210,7 @@ func (k Keeper) WithdrawCore(
 			receiverAddr,
 			sdk.Coins{coin1},
 		)
-		incWithdrawnAmount(ctx, sdk.Coins{coin1})
+		incWithdrawnAmount(sdk.Coins{coin1})
 		if err != nil {
 			return err
 		}
@@ -570,7 +570,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut.TruncateInt())
 		coinMakerDenomRefund := sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 		coins := sdk.NewCoins(coinTakerDenomOut, coinMakerDenomRefund)
-		incWithdrawnAmount(ctx, coins)
+		incWithdrawnAmount(coins)
 		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
 			return err
 		}

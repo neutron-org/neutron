@@ -55,6 +55,7 @@ func (k Keeper) SaveTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
 	} else {
 		k.SetInactiveLimitOrderTranche(ctx, tranche)
 		k.RemoveLimitOrderTranche(ctx, tranche.Key)
+		decTotalTickLiquidites()
 	}
 
 	ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranche(tranche))
@@ -218,6 +219,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, &JITGoodTilTime)
+		incTotalTickLiquidites()
 	case types.LimitOrderType_GOOD_TIL_TIME:
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
@@ -225,9 +227,11 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
+		incTotalTickLiquidites()
 	default:
 		placeTranche = k.GetPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
 		if placeTranche == nil {
+			incTotalTickLiquidites()
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 				TradePairId:           tradePairID,
 				TickIndexTakerToMaker: tickIndexTakerToMaker,

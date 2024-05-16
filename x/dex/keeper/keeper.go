@@ -16,10 +16,12 @@ import (
 )
 
 var (
-	MetricLabelWithdrawn          = "total_withdrawn"
-	MetricLabelGasConsumed        = "gas_consumed"
-	MetricLabelTotalOrdersExpired = "total_orders_expired"
-	MetricLabelTotalLimitOrders   = "total_orders_limit"
+	MetricLabelWithdrawn               = "total_withdrawn"
+	MetricLabelGasConsumed             = "gas_consumed"
+	MetricLabelTotalOrdersExpired      = "total_orders_expired"
+	MetricLabelTotalLimitOrders        = "total_orders_limit"
+	MetricLabelTotalTickLiquiditiesInc = "total_tick_liqidities_inc"
+	MetricLabelTotalTickLiquiditiesDec = "total_tick_liqidities_dec"
 )
 
 type (
@@ -56,7 +58,7 @@ func (k Keeper) GetAuthority() string {
 	return k.authority
 }
 
-func incWithdrawnAmount(ctx sdk.Context, coins sdk.Coins) {
+func incWithdrawnAmount(coins sdk.Coins) {
 	for _, coin := range coins {
 		divisor := big.NewInt(6)
 		f, _ := new(big.Int).Div(coin.Amount.BigInt(), divisor).Float64() // todo check err
@@ -76,14 +78,26 @@ func gasConsumed(ctx sdk.Context) {
 	})
 }
 
-func incExpiredOdrers() {
+func incExpiredOrders() {
 	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalOrdersExpired}, float32(1), []metrics.Label{
 		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
 	})
 }
 
 func totalLimitOrders() {
-	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalOrdersExpired}, float32(1), []metrics.Label{
+	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalLimitOrders}, float32(1), []metrics.Label{
+		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
+	})
+}
+
+func incTotalTickLiquidites() {
+	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalTickLiquiditiesInc}, float32(1), []metrics.Label{
+		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
+	})
+}
+
+func decTotalTickLiquidites() {
+	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalTickLiquiditiesDec}, float32(1), []metrics.Label{
 		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
 	})
 }
