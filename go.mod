@@ -40,7 +40,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rs/zerolog v1.32.0
-	github.com/skip-mev/block-sdk/v2 v2.1.1
+	github.com/skip-mev/block-sdk/v2 v2.1.2
 	github.com/skip-mev/slinky v0.4.3
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0

@@ -4,22 +4,25 @@ import (
 	"context"
 	"fmt"
 
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	comettypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	"github.com/cosmos/cosmos-sdk/x/consensus/types"
-
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	"github.com/cosmos/cosmos-sdk/x/consensus/types"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
+	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
+	_ "embed"
 )
+
+//go:embed markets.json
+var marketsJSON []byte
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
@@ -37,14 +40,20 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
+		ctx.Logger().Info("Setting consensus params...")
+		err = enableVoteExtensions(ctx, keepers.ConsensusKeeper)
+		if err != nil {
+			return nil, err
+		}
+
 		ctx.Logger().Info("Setting marketmap params...")
 		err = setMarketMapParams(ctx, keepers.MarketmapKeeper)
 		if err != nil {
 			return nil, err
 		}
 
-		ctx.Logger().Info("Setting consensus params...")
-		err = enableVoteExtensions(ctx, keepers.ConsensusKeeper)
+		ctx.Logger().Info("Setting marketmap and oracle state...")
+		err = setMarketState(ctx, keepers.MarketmapKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -60,6 +69,27 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 		Admin:             authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	}
 	return marketmapKeeper.SetParams(ctx, marketmapParams)
+}
+
+func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
+	markets, err := slinkyutils.ReadMarketsFromFile(marketsJSON)
+	if err != nil {
+		return err
+	}
+
+	for _, market := range markets {
+		err = mmKeeper.CreateMarket(ctx, market)
+		if err != nil {
+			return err
+		}
+
+		err = mmKeeper.Hooks().AfterMarketCreated(ctx, market)
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
 }
 
 func enableVoteExtensions(ctx sdk.Context, consensusKeeper *consensuskeeper.Keeper) error {
