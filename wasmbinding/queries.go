@@ -223,16 +223,18 @@ func (qp *QueryPlugin) OracleQuery(ctx sdk.Context, query bindings.OracleQuery) 
 	}
 }
 
-func (qp *QueryPlugin) MarketmapQuery(ctx sdk.Context, query bindings.MarketmapQuery) ([]byte, error) {
-	marketmapQueryServer := marketmapkeeper.NewQueryServer(qp.marketmapKeeper)
+func (qp *QueryPlugin) MarketMapQuery(ctx sdk.Context, query bindings.MarketMapQuery) ([]byte, error) {
+	marketMapQueryServer := marketmapkeeper.NewQueryServer(qp.marketmapKeeper)
 
 	switch {
 	case query.Params != nil:
-		return processResponse(marketmapQueryServer.Params(ctx, query.Params))
+		return processResponse(marketMapQueryServer.Params(ctx, query.Params))
 	case query.LastUpdated != nil:
-		return processResponse(marketmapQueryServer.LastUpdated(ctx, query.LastUpdated))
+		return processResponse(marketMapQueryServer.LastUpdated(ctx, query.LastUpdated))
 	case query.MarketMap != nil:
-		return processResponse(marketmapQueryServer.MarketMap(ctx, query.MarketMap))
+		return processResponse(marketMapQueryServer.MarketMap(ctx, query.MarketMap))
+	case query.Market != nil:
+		return processResponse(marketMapQueryServer.Market(ctx, query.Market))
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.marketmap query type"}
 	}

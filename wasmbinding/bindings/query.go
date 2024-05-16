@@ -50,7 +50,7 @@ type NeutronQuery struct {
 	// oracle module queries
 	Oracle *OracleQuery `json:"oracle,omitempty"`
 	// marketmap module query
-	Marketmap *MarketmapQuery `json:"marketmap,omitempty"`
+	Marketmap *MarketMapQuery `json:"marketmap,omitempty"`
 }
 
 /* Requests */
@@ -65,10 +65,11 @@ type OracleQuery struct {
 	GetPrices           *oracletypes.GetPricesRequest           `json:"get_prices,omitempty"`
 }
 
-type MarketmapQuery struct {
+type MarketMapQuery struct {
 	MarketMap   *marketmaptypes.MarketMapRequest   `json:"market_map,omitempty"`
 	LastUpdated *marketmaptypes.LastUpdatedRequest `json:"last_updated,omitempty"`
 	Params      *marketmaptypes.ParamsRequest      `json:"params,omitempty"`
+	Market      *marketmaptypes.MarketRequest      `json:"market,omitempty"`
 }
 
 type QueryInterchainAccountAddressRequest struct {
