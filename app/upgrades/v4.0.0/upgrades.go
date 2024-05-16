@@ -16,9 +16,10 @@ import (
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
+	_ "embed"
+
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
-	_ "embed"
 )
 
 //go:embed markets.json
