@@ -1386,7 +1386,7 @@ func (s *DexTestSuite) assertFillAndPlaceTrancheKeys(
 ) {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	placeTranche := s.App.DexKeeper.GetPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
+	placeTranche := s.App.DexKeeper.GetGTCPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
 	fillTranche, foundFill := s.App.DexKeeper.GetFillTranche(
 		s.Ctx,
 		tradePairID,
