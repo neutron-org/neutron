@@ -12,7 +12,6 @@ import (
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
-	"github.com/cosmos/cosmos-sdk/runtime/services"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
 	appconfig "github.com/neutron-org/neutron/v4/app/config"
@@ -205,6 +204,9 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
 const (
@@ -390,6 +392,34 @@ type App struct {
 	// Custom checkTx handler -> this check-tx is used to simulate txs that are
 	// wrapped in a bid-tx
 	checkTxHandler checktx.CheckTx
+}
+
+// AutoCLIOpts returns options based upon the modules in the neutron v4 app.
+func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
+	modules := make(map[string]appmodule.AppModule, 0)
+	for _, m := range app.mm.Modules {
+		if moduleWithName, ok := m.(module.HasName); ok {
+			moduleName := moduleWithName.Name()
+			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
+				modules[moduleName] = appModule
+			}
+		}
+	}
+
+	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	if err != nil {
+		panic(err)
+	}
+
+	return autocli.AppOptions{
+		Modules:               modules,
+		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.mm.Modules),
+		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
+		Keyring:               cliKR,
+		ClientCtx:             initClientCtx,
+	}
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -1348,7 +1378,7 @@ func (app *App) AutoCliOpts() autocli.AppOptions {
 
 	return autocli.AppOptions{
 		Modules:               modules,
-		ModuleOptions:         services.ExtractAutoCLIOptions(app.mm.Modules),
+		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.mm.Modules),
 		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
