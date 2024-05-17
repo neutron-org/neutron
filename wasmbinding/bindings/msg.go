@@ -3,7 +3,6 @@ package bindings
 
 import (
 	"cosmossdk.io/math"
-	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
@@ -105,8 +104,6 @@ type SubmitAdminProposal struct {
 
 type AdminProposal struct {
 	ParamChangeProposal    *ParamChangeProposal    `json:"param_change_proposal,omitempty"`
-	UpgradeProposal        *UpgradeProposal        `json:"upgrade_proposal,omitempty"`
-	ClientUpdateProposal   *ClientUpdateProposal   `json:"client_update_proposal,omitempty"`
 	ProposalExecuteMessage *ProposalExecuteMessage `json:"proposal_execute_message,omitempty"`
 }
 
@@ -141,20 +138,6 @@ type UpdateInterchainQuery struct {
 }
 
 type UpdateInterchainQueryResponse struct{}
-
-type UpgradeProposal struct {
-	Title               string           `json:"title,omitempty"`
-	Description         string           `json:"description,omitempty"`
-	Plan                Plan             `json:"plan"`
-	UpgradedClientState *cosmostypes.Any `json:"upgraded_client_state,omitempty"`
-}
-
-type ClientUpdateProposal struct {
-	Title              string `json:"title,omitempty"`
-	Description        string `json:"description,omitempty"`
-	SubjectClientId    string `json:"subject_client_id,omitempty"`
-	SubstituteClientId string `json:"substitute_client_id,omitempty"`
-}
 
 type ProposalExecuteMessage struct {
 	Message string `json:"message,omitempty"`
