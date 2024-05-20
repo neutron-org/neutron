@@ -50,7 +50,7 @@ endif
 ifeq ($(WITH_CLEVELDB),yes)
   build_tags += gcc
 endif
-build_tags += $(BUILD_TAGS),muslc
+build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
 build_tags_test_binary = $(build_tags)
@@ -111,7 +111,8 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
-		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep),muslc \
+		--platform linux/amd64 \
 		-t neutron-amd64 \
 		--load \
 		-f Dockerfile.builder .
