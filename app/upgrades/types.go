@@ -60,7 +60,6 @@ type UpgradeKeepers struct {
 	ConsumerKeeper     *ccvconsumerkeeper.Keeper
 	MarketmapKeeper    *marketmapkeeper.Keeper
 	// subspaces
-	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace
 }
 

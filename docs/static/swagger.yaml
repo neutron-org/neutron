@@ -13876,6 +13876,17 @@ definitions:
       QueryAllContractStateResponse is the response type for the
       Query/AllContractState RPC method
     type: object
+  cosmwasm.wasm.v1.QueryBuildAddressResponse:
+    description: >-
+      QueryBuildAddressResponse is the response type for the Query/BuildAddress
+      RPC
+
+      method.
+    properties:
+      address:
+        title: Address is the contract address
+        type: string
+    type: object
   cosmwasm.wasm.v1.QueryCodeResponse:
     properties:
       code_info:
@@ -14299,6 +14310,273 @@ definitions:
     title: |-
       QuerySmartContractStateResponse is the response type for the
       Query/SmartContractState RPC method
+    type: object
+  feemarket.feemarket.v1.BaseFeeResponse:
+    description: StateResponse is the response type for the Query/BaseFee RPC method.
+    properties:
+      fees:
+        items:
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+    type: object
+  feemarket.feemarket.v1.Params:
+    description: |-
+      Params contains the required set of parameters for the EIP1559 fee market
+      plugin implementation.
+    properties:
+      alpha:
+        description: |-
+          Alpha is the amount we additively increase the learning rate
+          when it is above or below the target +/- threshold.
+        type: string
+      beta:
+        description: |-
+          Beta is the amount we multiplicatively decrease the learning rate
+          when it is within the target +/- threshold.
+        type: string
+      delta:
+        description: >-
+          Delta is the amount we additively increase/decrease the base fee when
+          the
+
+          net block utilization difference in the window is above/below the
+          target
+
+          utilization.
+        type: string
+      distribute_fees:
+        description: >-
+          DistributeFees is a boolean that determines whether the fees are
+          burned or
+
+          distributed to all stakers.
+        type: boolean
+      enabled:
+        description: |-
+          Enabled is a boolean that determines whether the EIP1559 fee market is
+          enabled.
+        type: boolean
+      fee_denom:
+        description: FeeDenom is the denom that will be used for all fee payments.
+        type: string
+      max_block_utilization:
+        description: MaxBlockUtilization is the maximum block utilization.
+        format: uint64
+        type: string
+      max_learning_rate:
+        description: MaxLearningRate is the upper bound for the learning rate.
+        type: string
+      min_base_fee:
+        description: >-
+          MinBaseFee determines the initial base fee of the module and the
+          global
+
+          minimum for the network. This is denominated in fee per gas unit.
+        type: string
+      min_learning_rate:
+        description: MinLearningRate is the lower bound for the learning rate.
+        type: string
+      target_block_utilization:
+        description: TargetBlockUtilization is the target block utilization.
+        format: uint64
+        type: string
+      theta:
+        description: |-
+          Theta is the threshold for the learning rate. If the learning rate is
+          above or below the target +/- threshold, we additively increase the
+          learning rate by Alpha. Otherwise, we multiplicatively decrease the
+          learning rate by Beta.
+        type: string
+      window:
+        description: >-
+          Window defines the window size for calculating an adaptive learning
+          rate
+
+          over a moving window of blocks.
+        format: uint64
+        type: string
+    type: object
+  feemarket.feemarket.v1.ParamsResponse:
+    description: ParamsResponse is the response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: >-
+          Params contains the required set of parameters for the EIP1559 fee
+          market
+
+          plugin implementation.
+        properties:
+          alpha:
+            description: |-
+              Alpha is the amount we additively increase the learning rate
+              when it is above or below the target +/- threshold.
+            type: string
+          beta:
+            description: |-
+              Beta is the amount we multiplicatively decrease the learning rate
+              when it is within the target +/- threshold.
+            type: string
+          delta:
+            description: >-
+              Delta is the amount we additively increase/decrease the base fee
+              when the
+
+              net block utilization difference in the window is above/below the
+              target
+
+              utilization.
+            type: string
+          distribute_fees:
+            description: >-
+              DistributeFees is a boolean that determines whether the fees are
+              burned or
+
+              distributed to all stakers.
+            type: boolean
+          enabled:
+            description: >-
+              Enabled is a boolean that determines whether the EIP1559 fee
+              market is
+
+              enabled.
+            type: boolean
+          fee_denom:
+            description: FeeDenom is the denom that will be used for all fee payments.
+            type: string
+          max_block_utilization:
+            description: MaxBlockUtilization is the maximum block utilization.
+            format: uint64
+            type: string
+          max_learning_rate:
+            description: MaxLearningRate is the upper bound for the learning rate.
+            type: string
+          min_base_fee:
+            description: >-
+              MinBaseFee determines the initial base fee of the module and the
+              global
+
+              minimum for the network. This is denominated in fee per gas unit.
+            type: string
+          min_learning_rate:
+            description: MinLearningRate is the lower bound for the learning rate.
+            type: string
+          target_block_utilization:
+            description: TargetBlockUtilization is the target block utilization.
+            format: uint64
+            type: string
+          theta:
+            description: >-
+              Theta is the threshold for the learning rate. If the learning rate
+              is
+
+              above or below the target +/- threshold, we additively increase
+              the
+
+              learning rate by Alpha. Otherwise, we multiplicatively decrease
+              the
+
+              learning rate by Beta.
+            type: string
+          window:
+            description: >-
+              Window defines the window size for calculating an adaptive
+              learning rate
+
+              over a moving window of blocks.
+            format: uint64
+            type: string
+        type: object
+    type: object
+  feemarket.feemarket.v1.State:
+    description: >-
+      State is utilized to track the current state of the fee market. This
+      includes
+
+      the current base fee, learning rate, and block utilization within the
+
+      specified AIMD window.
+    properties:
+      base_fee:
+        description: >-
+          BaseFee is the current base fee. This is denominated in the fee per
+          gas
+
+          unit.
+        type: string
+      index:
+        description: >-
+          Index is the index of the current block in the block utilization
+          window.
+        format: uint64
+        type: string
+      learning_rate:
+        description: LearningRate is the current learning rate.
+        type: string
+      window:
+        description: >-
+          Window contains a list of the last blocks' utilization values. This is
+          used
+
+          to calculate the next base fee. This stores the number of units of gas
+
+          consumed per block.
+        items:
+          format: uint64
+          type: string
+        type: array
+    type: object
+  feemarket.feemarket.v1.StateResponse:
+    description: StateResponse is the response type for the Query/State RPC method.
+    properties:
+      state:
+        description: >-
+          State is utilized to track the current state of the fee market. This
+          includes
+
+          the current base fee, learning rate, and block utilization within the
+
+          specified AIMD window.
+        properties:
+          base_fee:
+            description: >-
+              BaseFee is the current base fee. This is denominated in the fee
+              per gas
+
+              unit.
+            type: string
+          index:
+            description: >-
+              Index is the index of the current block in the block utilization
+              window.
+            format: uint64
+            type: string
+          learning_rate:
+            description: LearningRate is the current learning rate.
+            type: string
+          window:
+            description: >-
+              Window contains a list of the last blocks' utilization values.
+              This is used
+
+              to calculate the next base fee. This stores the number of units of
+              gas
+
+              consumed per block.
+            items:
+              format: uint64
+              type: string
+            type: array
+        type: object
     type: object
   gaia.globalfee.v1beta1.Params:
     description: Params defines the set of module parameters.
@@ -35203,6 +35481,74 @@ paths:
       summary: PinnedCodes gets the pinned code ids
       tags:
         - Query
+  /cosmwasm/wasm/v1/contract/build_address:
+    get:
+      operationId: BuildAddress
+      parameters:
+        - description: CodeHash is the hash of the code.
+          in: query
+          name: code_hash
+          required: false
+          type: string
+        - description: CreatorAddress is the address of the contract instantiator.
+          in: query
+          name: creator_address
+          required: false
+          type: string
+        - description: Salt is a hex encoded salt.
+          in: query
+          name: salt
+          required: false
+          type: string
+        - description: >-
+            InitArgs are optional json encoded init args to be used in contract
+            address
+
+            building if provided.
+          format: byte
+          in: query
+          name: init_args
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryBuildAddressResponse is the response type for the
+              Query/BuildAddress RPC
+
+              method.
+            properties:
+              address:
+                title: Address is the contract address
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: BuildAddress builds a contract address
+      tags:
+        - Query
   /cosmwasm/wasm/v1/contract/{address}:
     get:
       operationId: ContractInfo
@@ -35851,6 +36197,267 @@ paths:
                 type: string
             type: object
       summary: ContractsByCreator gets the contracts by creator
+      tags:
+        - Query
+  /feemarket/v1/base_fee:
+    get:
+      operationId: BaseFee
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              StateResponse is the response type for the Query/BaseFee RPC
+              method.
+            properties:
+              fees:
+                items:
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                  properties:
+                    amount:
+                      type: string
+                    denom:
+                      type: string
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: BaseFee returns the current feemarket module base fee.
+      tags:
+        - Query
+  /feemarket/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              ParamsResponse is the response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: >-
+                  Params contains the required set of parameters for the EIP1559
+                  fee market
+
+                  plugin implementation.
+                properties:
+                  alpha:
+                    description: >-
+                      Alpha is the amount we additively increase the learning
+                      rate
+
+                      when it is above or below the target +/- threshold.
+                    type: string
+                  beta:
+                    description: >-
+                      Beta is the amount we multiplicatively decrease the
+                      learning rate
+
+                      when it is within the target +/- threshold.
+                    type: string
+                  delta:
+                    description: >-
+                      Delta is the amount we additively increase/decrease the
+                      base fee when the
+
+                      net block utilization difference in the window is
+                      above/below the target
+
+                      utilization.
+                    type: string
+                  distribute_fees:
+                    description: >-
+                      DistributeFees is a boolean that determines whether the
+                      fees are burned or
+
+                      distributed to all stakers.
+                    type: boolean
+                  enabled:
+                    description: >-
+                      Enabled is a boolean that determines whether the EIP1559
+                      fee market is
+
+                      enabled.
+                    type: boolean
+                  fee_denom:
+                    description: >-
+                      FeeDenom is the denom that will be used for all fee
+                      payments.
+                    type: string
+                  max_block_utilization:
+                    description: MaxBlockUtilization is the maximum block utilization.
+                    format: uint64
+                    type: string
+                  max_learning_rate:
+                    description: MaxLearningRate is the upper bound for the learning rate.
+                    type: string
+                  min_base_fee:
+                    description: >-
+                      MinBaseFee determines the initial base fee of the module
+                      and the global
+
+                      minimum for the network. This is denominated in fee per
+                      gas unit.
+                    type: string
+                  min_learning_rate:
+                    description: MinLearningRate is the lower bound for the learning rate.
+                    type: string
+                  target_block_utilization:
+                    description: TargetBlockUtilization is the target block utilization.
+                    format: uint64
+                    type: string
+                  theta:
+                    description: >-
+                      Theta is the threshold for the learning rate. If the
+                      learning rate is
+
+                      above or below the target +/- threshold, we additively
+                      increase the
+
+                      learning rate by Alpha. Otherwise, we multiplicatively
+                      decrease the
+
+                      learning rate by Beta.
+                    type: string
+                  window:
+                    description: >-
+                      Window defines the window size for calculating an adaptive
+                      learning rate
+
+                      over a moving window of blocks.
+                    format: uint64
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Params returns the current feemarket module parameters.
+      tags:
+        - Query
+  /feemarket/v1/state:
+    get:
+      operationId: State
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: StateResponse is the response type for the Query/State RPC method.
+            properties:
+              state:
+                description: >-
+                  State is utilized to track the current state of the fee
+                  market. This includes
+
+                  the current base fee, learning rate, and block utilization
+                  within the
+
+                  specified AIMD window.
+                properties:
+                  base_fee:
+                    description: >-
+                      BaseFee is the current base fee. This is denominated in
+                      the fee per gas
+
+                      unit.
+                    type: string
+                  index:
+                    description: >-
+                      Index is the index of the current block in the block
+                      utilization window.
+                    format: uint64
+                    type: string
+                  learning_rate:
+                    description: LearningRate is the current learning rate.
+                    type: string
+                  window:
+                    description: >-
+                      Window contains a list of the last blocks' utilization
+                      values. This is used
+
+                      to calculate the next base fee. This stores the number of
+                      units of gas
+
+                      consumed per block.
+                    items:
+                      format: uint64
+                      type: string
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: State returns the current feemarket module state.
       tags:
         - Query
   /gaia/globalfee/v1beta1/params:
