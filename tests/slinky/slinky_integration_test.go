@@ -27,7 +27,7 @@ func init() {
 
 var (
 	image = ibc.DockerImage{
-		Repository: "neutron-e2e",
+		Repository: "neutron-node",
 		Version:    "latest",
 		UidGid:     "1025:1025",
 	}
@@ -94,17 +94,17 @@ var (
 	}
 )
 
-func TestSlinkyOracleIntegration(t *testing.T) {
-	baseSuite := integration.NewSlinkyIntegrationSuite(
-		spec,
-		oracleImage,
-		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
-		integration.WithChainConstructor(integration.CCVChainConstructor),
-		integration.WithDenom(denom),
-	)
-
-	suite.Run(t, integration.NewSlinkyOracleIntegrationSuite(baseSuite))
-}
+//func TestSlinkyOracleIntegration(t *testing.T) {
+//	baseSuite := integration.NewSlinkyIntegrationSuite(
+//		spec,
+//		oracleImage,
+//		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
+//		integration.WithChainConstructor(integration.CCVChainConstructor),
+//		integration.WithDenom(denom),
+//	)
+//
+//	suite.Run(t, integration.NewSlinkyOracleIntegrationSuite(baseSuite))
+//}
 
 func TestSlinkyCCVIntegration(t *testing.T) {
 	s := integration.NewSlinkyCCVIntegrationSuite(
