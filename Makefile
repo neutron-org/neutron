@@ -135,7 +135,7 @@ build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
 		--load \
 		-f Dockerfile.builder .
 
-slinky-e2e-test: build-slinky-e2e-docker-image
+slinky-e2e-test:
 	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 20m ./...
 
 install-test-binary: check_version go.sum
