@@ -820,6 +820,8 @@ func New(
 		app.TokenFactoryKeeper, &app.CronKeeper,
 		&app.ContractManagerKeeper,
 		&app.DexKeeper,
+		app.OracleKeeper,
+		app.MarketMapKeeper,
 	), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
