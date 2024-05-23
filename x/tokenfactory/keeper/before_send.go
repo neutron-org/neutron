@@ -10,7 +10,7 @@ import (
 	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
 	errorsmod "cosmossdk.io/errors"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 )
 
 func (k Keeper) setBeforeSendHook(ctx sdk.Context, denom, contractAddr string) error {
@@ -47,14 +47,6 @@ func (k Keeper) GetBeforeSendHook(ctx context.Context, denom string) string {
 	}
 
 	return string(bz)
-}
-
-func CWCoinsFromSDKCoins(in sdk.Coins) wasmvmtypes.Coins {
-	var cwCoins wasmvmtypes.Coins
-	for _, coin := range in {
-		cwCoins = append(cwCoins, CWCoinFromSDKCoin(coin))
-	}
-	return cwCoins
 }
 
 func CWCoinFromSDKCoin(in sdk.Coin) wasmvmtypes.Coin {

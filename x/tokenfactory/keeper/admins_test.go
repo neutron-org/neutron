@@ -61,14 +61,7 @@ func (suite *KeeperTestSuite) TestAdminMsgs() {
 
 	// Try setting admin to empty
 	_, err = suite.msgServer.ChangeAdmin(suite.ChainA.GetContext(), types.NewMsgChangeAdmin(suite.TestAccs[1].String(), suite.defaultDenom, ""))
-	suite.Require().NoError(err)
-	denom = strings.Split(suite.defaultDenom, "/")
-	queryRes, err = suite.queryClient.DenomAuthorityMetadata(suite.ChainA.GetContext().Context(), &types.QueryDenomAuthorityMetadataRequest{
-		Creator:  denom[1],
-		Subdenom: denom[2],
-	})
-	suite.Require().NoError(err)
-	suite.Require().Equal("", queryRes.AuthorityMetadata.Admin)
+	suite.Require().Error(err)
 }
 
 // TestMintDenom ensures the following properties of the MintMessage:
@@ -279,16 +272,16 @@ func (suite *KeeperTestSuite) TestChangeAdminDenom() {
 		expectedMintPass        bool
 	}{
 		{
-			desc: "creator admin can't mint after setting to '' ",
+			desc: "can't set admin to '' ",
 			msgChangeAdmin: func(denom string) *types.MsgChangeAdmin {
 				return types.NewMsgChangeAdmin(suite.TestAccs[0].String(), denom, "")
 			},
-			expectedChangeAdminPass: true,
-			expectedAdminIndex:      -1,
+			expectedChangeAdminPass: false,
+			expectedAdminIndex:      0,
 			msgMint: func(denom string) *types.MsgMint {
 				return types.NewMsgMint(suite.TestAccs[0].String(), sdk.NewInt64Coin(denom, 5))
 			},
-			expectedMintPass: false,
+			expectedMintPass: true,
 		},
 		{
 			desc: "non-admins can't change the existing admin",
