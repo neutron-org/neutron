@@ -158,6 +158,12 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 		case contractQuery.Dex != nil:
 			return qp.DexQuery(ctx, *contractQuery.Dex)
 
+		case contractQuery.Oracle != nil:
+			return qp.OracleQuery(ctx, *contractQuery.Oracle)
+
+		case contractQuery.MarketMap != nil:
+			return qp.MarketMapQuery(ctx, *contractQuery.MarketMap)
+
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}
 		}

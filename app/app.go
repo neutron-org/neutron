@@ -12,7 +12,6 @@ import (
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
-	"github.com/cosmos/cosmos-sdk/runtime/services"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
 	appconfig "github.com/neutron-org/neutron/v4/app/config"
@@ -121,8 +120,8 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v8/modules/core/02-client"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+
+	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
@@ -205,6 +204,9 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
 const (
@@ -390,6 +392,34 @@ type App struct {
 	// Custom checkTx handler -> this check-tx is used to simulate txs that are
 	// wrapped in a bid-tx
 	checkTxHandler checktx.CheckTx
+}
+
+// AutoCLIOpts returns options based upon the modules in the neutron v4 app.
+func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
+	modules := make(map[string]appmodule.AppModule, 0)
+	for _, m := range app.mm.Modules {
+		if moduleWithName, ok := m.(module.HasName); ok {
+			moduleName := moduleWithName.Name()
+			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
+				modules[moduleName] = appModule
+			}
+		}
+	}
+
+	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	if err != nil {
+		panic(err)
+	}
+
+	return autocli.AppOptions{
+		Modules:               modules,
+		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.mm.Modules),
+		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
+		Keyring:               cliKR,
+		ClientCtx:             initClientCtx,
+	}
 }
 
 func (app *App) GetTestBankKeeper() integration.TestBankKeeper {
@@ -719,9 +749,7 @@ func New(
 	// register the proposal types
 	adminRouterLegacy := govv1beta1.NewRouter()
 	adminRouterLegacy.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
-		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		// AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)) //nolint:staticcheck
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)) //nolint:staticcheck
 
 	app.AdminmoduleKeeper = *adminmodulekeeper.NewKeeper(
 		appCodec,
@@ -792,6 +820,8 @@ func New(
 		app.TokenFactoryKeeper, &app.CronKeeper,
 		&app.ContractManagerKeeper,
 		&app.DexKeeper,
+		app.OracleKeeper,
+		app.MarketMapKeeper,
 	), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
@@ -1348,7 +1378,7 @@ func (app *App) AutoCliOpts() autocli.AppOptions {
 
 	return autocli.AppOptions{
 		Modules:               modules,
-		ModuleOptions:         services.ExtractAutoCLIOptions(app.mm.Modules),
+		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.mm.Modules),
 		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
