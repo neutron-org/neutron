@@ -82,7 +82,7 @@ func TestParsePrecDecScientificNotation(t *testing.T) {
 			out:  math_utils.MustNewPrecDecFromStr("18.93"),
 		},
 		{
-			desc: "valid decimal with E+10",
+			desc: "valid decimal with E-10",
 			in:   "101234567890.1E-10",
 			out:  math_utils.MustNewPrecDecFromStr("10.12345678901"),
 		},

@@ -120,7 +120,7 @@ func (k MsgServer) PlaceLimitOrder(
 	if msg.LimitSellPrice != nil {
 		tickIndex, err = types.CalcTickIndexFromPrice(*msg.LimitSellPrice)
 		if err != nil {
-			return &types.MsgPlaceLimitOrderResponse{}, err
+			return &types.MsgPlaceLimitOrderResponse{}, errors.Wrapf(err, "invalid LimitSellPrice %s", msg.LimitSellPrice.String())
 		}
 	}
 	trancheKey, coinIn, _, coinOutSwap, err := k.PlaceLimitOrderCore(

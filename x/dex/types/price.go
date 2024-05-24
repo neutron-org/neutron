@@ -7,10 +7,10 @@ import (
 	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
-// NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error
-// when using 27 digit decimal precision (via prec_dec).
-// The error rate for very negative ticks approaches zero, so there is no concern there
 const (
+	// NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error
+	// when using 27 digit decimal precision (via prec_dec).
+	// The error rate for very negative ticks approaches zero, so there is no concern there
 	MaxTickExp uint64 = 559_680
 	MinPrice   string = "0.000000000000000000000000495"
 	MaxPrice   string = "2020125331305056766452345.127500016657360222036663651"

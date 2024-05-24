@@ -252,7 +252,7 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		if limitPriceStr := dex.PlaceLimitOrder.LimitSellPrice; limitPriceStr != "" {
 			limitPriceDec, err := dexutils.ParsePrecDecScientificNotation(limitPriceStr)
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, errors.Wrapf(err, "cannot parse string %s for limit price", limitPriceStr)
 			}
 			msg.LimitSellPrice = &limitPriceDec
 		}

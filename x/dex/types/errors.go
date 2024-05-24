@@ -204,6 +204,6 @@ var (
 	ErrInvalidPriceAndTick = sdkerrors.Register(
 		ModuleName,
 		1157,
-		"Cannot specify LimitSellPrice and TickIndexInToOut",
+		"Only LimitSellPrice or TickIndexInToOut should be specified",
 	)
 )
