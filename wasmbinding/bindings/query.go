@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"cosmossdk.io/math"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
@@ -16,6 +17,7 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
 	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 // NeutronQuery contains neutron custom queries.
@@ -45,12 +47,29 @@ type NeutronQuery struct {
 	Failures *Failures `json:"failures,omitempty"`
 	// dex module queries
 	Dex *DexQuery `json:"dex,omitempty"`
+	// oracle module queries
+	Oracle *OracleQuery `json:"oracle,omitempty"`
+	// marketmap module query
+	MarketMap *MarketMapQuery `json:"market_map,omitempty"`
 }
 
 /* Requests */
 
 type QueryRegisteredQueryResultRequest struct {
 	QueryID uint64 `json:"query_id,omitempty"`
+}
+
+type OracleQuery struct {
+	GetAllCurrencyPairs *oracletypes.GetAllCurrencyPairsRequest `json:"get_all_currency_pairs,omitempty"`
+	GetPrice            *oracletypes.GetPriceRequest            `json:"get_price,omitempty"`
+	GetPrices           *oracletypes.GetPricesRequest           `json:"get_prices,omitempty"`
+}
+
+type MarketMapQuery struct {
+	MarketMap   *marketmaptypes.MarketMapRequest   `json:"market_map,omitempty"`
+	LastUpdated *marketmaptypes.LastUpdatedRequest `json:"last_updated,omitempty"`
+	Params      *marketmaptypes.ParamsRequest      `json:"params,omitempty"`
+	Market      *marketmaptypes.MarketRequest      `json:"market,omitempty"`
 }
 
 type QueryInterchainAccountAddressRequest struct {

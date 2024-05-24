@@ -25,7 +25,6 @@ import (
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	softwareUpgrade "cosmossdk.io/x/upgrade/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
@@ -36,7 +35,7 @@ import (
 	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	//nolint:staticcheck
 
 	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
@@ -516,32 +515,6 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ParameterChangeProposal")
 		}
-	case proposal.UpgradeProposal != nil:
-		p := proposal.UpgradeProposal
-		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{ //nolint:staticcheck
-			Title:       p.Title,
-			Description: p.Description,
-			Plan: softwareUpgrade.Plan{
-				Name:   p.Plan.Name,
-				Height: p.Plan.Height,
-				Info:   p.Plan.Info,
-			},
-			UpgradedClientState: p.UpgradedClientState,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on UpgradeProposal")
-		}
-	case proposal.ClientUpdateProposal != nil:
-		p := proposal.ClientUpdateProposal
-		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{ //nolint:staticcheck
-			Title:              p.Title,
-			Description:        p.Description,
-			SubjectClientId:    p.SubjectClientId,
-			SubstituteClientId: p.SubstituteClientId,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on ClientUpdateProposal")
-		}
 	default:
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "unexpected legacy admin proposal structure: %+v", proposal)
 	}
@@ -970,12 +943,6 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	if proposal.ParamChangeProposal != nil {
 		qty++
 	}
-	if proposal.ClientUpdateProposal != nil {
-		qty++
-	}
-	if proposal.UpgradeProposal != nil {
-		qty++
-	}
 	if proposal.ProposalExecuteMessage != nil {
 		qty++
 	}
@@ -992,9 +959,7 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 
 func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) bool {
 	switch {
-	case proposal.ParamChangeProposal != nil,
-		proposal.UpgradeProposal != nil,
-		proposal.ClientUpdateProposal != nil:
+	case proposal.ParamChangeProposal != nil:
 		return true
 	default:
 		return false
