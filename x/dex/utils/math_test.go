@@ -86,6 +86,16 @@ func TestParsePrecDecScientificNotation(t *testing.T) {
 			in:   "101234567890.1E-10",
 			out:  math_utils.MustNewPrecDecFromStr("10.12345678901"),
 		},
+		{
+			desc: "valid with lowercase 'e'",
+			in:   "10.1E-2",
+			out:  math_utils.MustNewPrecDecFromStr("0.101"),
+		},
+		{
+			desc: "valid with no '+'",
+			in:   "10.1E3",
+			out:  math_utils.MustNewPrecDecFromStr("10100"),
+		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			val, err := utils.ParsePrecDecScientificNotation(tc.in)

@@ -69,15 +69,8 @@ func MustSafeUint64ToInt64(in uint64) (out int64) {
 }
 
 func Log(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
-	valueFloat64, err := val.Float64()
-	if err != nil {
-		return math_utils.ZeroPrecDec(), fmt.Errorf("error converting value to float64: %v", err)
-	}
-
-	baseFloat64, err := base.Float64()
-	if err != nil {
-		return math_utils.ZeroPrecDec(), fmt.Errorf("error converting base to float64: %v", err)
-	}
+	valueFloat64 := val.MustFloat64()
+	baseFloat64 := base.MustFloat64()
 
 	logValue := math.Log(valueFloat64)
 	logBase := math.Log(baseFloat64)
@@ -90,7 +83,7 @@ func Log(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
 	return logAsPrecDec, nil
 }
 
-var scientificNotationRE = regexp.MustCompile(`^([\d\.]+)(E([\-\+])(\d+))?$`)
+var scientificNotationRE = regexp.MustCompile(`^([\d\.]+)([Ee]([\-\+])?(\d+))?$`)
 
 func ParsePrecDecScientificNotation(n string) (math_utils.PrecDec, error) {
 	match := scientificNotationRE.FindSubmatch([]byte(n))
@@ -116,9 +109,10 @@ func ParsePrecDecScientificNotation(n string) (math_utils.PrecDec, error) {
 
 	shift := math_utils.NewPrecDec(10).Power(pow)
 
-	if string(match[3]) == "+" { // positive exponent
-		return baseDec.Mul(shift), nil
-	} // else string(match[3]) == "-" // negative exponent
+	if string(match[3]) == "-" { // negative exponent
+		return baseDec.Quo(shift), nil
 
-	return baseDec.Quo(shift), nil
+	} // else string(match[3]) == "+" || string(match[3]) == "" // positive exponent
+	return baseDec.Mul(shift), nil
+
 }
