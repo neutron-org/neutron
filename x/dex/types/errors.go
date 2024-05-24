@@ -189,21 +189,25 @@ var (
 		1154,
 		"Swap amount too small; creates unfair spread for liquidity providers",
 	)
-
-	ErrCalcTickFromPrice = sdkerrors.Register(
+	ErrDexPaused = sdkerrors.Register(
 		ModuleName,
 		1155,
+		"Dex has been paused, all messages are disabled at this time",
+	)
+	ErrCalcTickFromPrice = sdkerrors.Register(
+		ModuleName,
+		1156,
 		"Cannot convert price to int64 tick value",
 	)
 	ErrPriceOutsideRange = sdkerrors.Register(
 		ModuleName,
-		1156,
+		1157,
 		"Invalid price; 0.00000000000000000000000050 < PRICE > 2020125331305056766451886.728",
 	)
 
 	ErrInvalidPriceAndTick = sdkerrors.Register(
 		ModuleName,
-		1157,
+		1158,
 		"Only LimitSellPrice or TickIndexInToOut should be specified",
 	)
 )
