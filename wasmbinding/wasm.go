@@ -12,12 +12,13 @@ import (
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
 	transfer "github.com/neutron-org/neutron/v4/x/transfer/keeper"
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )
 
 // RegisterCustomPlugins returns wasmkeeper.Option that we can use to connect handlers for implemented custom queries and messages to the App

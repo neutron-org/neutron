@@ -422,6 +422,9 @@ func (s *DexTestSuite) limitSellsInt(
 		AmountIn:         amountIn,
 		OrderType:        orderType,
 	})
+	if err != nil {
+		return "", err
+	}
 
 	return msg.TrancheKey, err
 }
@@ -1390,7 +1393,7 @@ func (s *DexTestSuite) assertFillAndPlaceTrancheKeys(
 ) {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	placeTranche := s.App.DexKeeper.GetPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
+	placeTranche := s.App.DexKeeper.GetGTCPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
 	fillTranche, foundFill := s.App.DexKeeper.GetFillTranche(
 		s.Ctx,
 		tradePairID,

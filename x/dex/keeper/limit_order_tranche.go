@@ -116,7 +116,7 @@ func (k Keeper) RemoveLimitOrderTranche(ctx sdk.Context, trancheKey *types.Limit
 	store.Delete(trancheKey.KeyMarshal())
 }
 
-func (k Keeper) GetPlaceTranche(
+func (k Keeper) GetGTCPlaceTranche(
 	sdkCtx sdk.Context,
 	tradePairID *types.TradePairID,
 	tickIndexTakerToMaker int64,
@@ -132,7 +132,8 @@ func (k Keeper) GetPlaceTranche(
 		var tick types.TickLiquidity
 		k.cdc.MustUnmarshal(iter.Value(), &tick)
 		tranche := tick.GetLimitOrderTranche()
-		if tranche.IsPlaceTranche() {
+		// Make sure tranche has not been traded through and is a GTC tranche
+		if tranche.IsPlaceTranche() && !tranche.HasExpiration() {
 			return tranche
 		}
 	}
@@ -227,7 +228,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
 	default:
-		placeTranche = k.GetPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
+		placeTranche = k.GetGTCPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
 		if placeTranche == nil {
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 				TradePairId:           tradePairID,

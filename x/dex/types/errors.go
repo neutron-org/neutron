@@ -179,4 +179,9 @@ var (
 		1154,
 		"Trade cannot be filled at the specified LimitPrice",
 	)
+	ErrDexPaused = sdkerrors.Register(
+		ModuleName,
+		1155,
+		"Dex has been paused, all messages are disabled at this time",
+	)
 )
