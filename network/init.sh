@@ -83,16 +83,11 @@ sed -i -e 's#"tcp://localhost:1317"#"tcp://0.0.0.0:'"$RESTPORT"'"#g' "$CHAIN_DIR
 sed -i -e 's#"tcp://0.0.0.0:1317"#"tcp://0.0.0.0:'"$RESTPORT"'"#g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's#":8080"#":'"$ROSETTA_1"'"#g' "$CHAIN_DIR/config/app.toml"
 
-# NOTE: we provide prometheus_server_address but it does not matter, since we don't use it, just need non-empty value
-cat <<EOF >> "$CHAIN_DIR/config/app.toml"
 
-[oracle]
-enabled = true
-oracle_address = "$ORACLE_ADDRESS"
-client_timeout = "$ORACLE_CLIENT_TIMEOUT"
-metrics_enabled = $ORACLE_METRICS_ENABLED
-prometheus_server_address = "localhost:12912"
-EOF
+sed -i -e 's/oracle_address = "localhost:8080"/oracle_address = '\""$ORACLE_ADDRESS"\"'/g' "$CHAIN_DIR/config/app.toml"
+sed -i -e 's/client_timeout = "2s"/client_timeout = '\""$ORACLE_CLIENT_TIMEOUT"\"'/g' "$CHAIN_DIR/config/app.toml"
+sed -i -e 's/metrics_enabled = true/metrics_enabled = '\""$ORACLE_METRICS_ENABLED"\"'/g' "$CHAIN_DIR/config/app.toml"
+
 
 GENESIS_FILE="$CHAIN_DIR/config/genesis.json"
 

@@ -189,9 +189,14 @@ var (
 		1154,
 		"Swap amount too small; creates unfair spread for liquidity providers",
 	)
-	ErrOverJITPerBlockLimit = sdkerrors.Register(
+	ErrDexPaused = sdkerrors.Register(
 		ModuleName,
 		1155,
+		"Dex has been paused, all messages are disabled at this time",
+	)
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
+		ModuleName,
+		1156,
 		"Maximum JIT LimitOrders per block has already been reached",
 	)
 )

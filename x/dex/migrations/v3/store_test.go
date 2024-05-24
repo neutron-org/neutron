@@ -46,6 +46,7 @@ func (suite *V3DexMigrationTestSuite) TestParamsUpgrade() {
 	// Check params are correct
 	newParams := app.DexKeeper.GetParams(ctx)
 	suite.Require().EqualValues(oldParams.FeeTiers, newParams.FeeTiers)
+	suite.Require().EqualValues(newParams.Paused, types.DefaultPaused)
 	suite.Require().EqualValues(newParams.GoodTilPurgeAllowance, types.DefaultGoodTilPurgeAllowance)
 	suite.Require().EqualValues(newParams.Max_JITsPerBlock, types.DefaultMaxJITsPerBlock)
 }

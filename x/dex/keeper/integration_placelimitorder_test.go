@@ -714,3 +714,16 @@ func (s *DexTestSuite) TestPlaceLimitOrderGoodTilAlreadyExpiredFails() {
 	})
 	s.Assert().ErrorIs(err, types.ErrExpirationTimeInPast)
 }
+
+func (s *DexTestSuite) TestPlaceLimitOrderMixedTypes() {
+	s.fundAliceBalances(4, 0)
+	trancheKey1 := s.aliceLimitSellsGoodTil("TokenA", 0, 1, time.Now())
+	trancheKey2 := s.aliceLimitSells("TokenA", 0, 1, types.LimitOrderType_JUST_IN_TIME)
+	trancheKey3 := s.aliceLimitSells("TokenA", 0, 1, types.LimitOrderType_GOOD_TIL_CANCELLED)
+	trancheKey4 := s.aliceLimitSells("TokenA", 0, 1, types.LimitOrderType_GOOD_TIL_CANCELLED)
+
+	s.NotEqual(trancheKey1, trancheKey2, "GTT and JIT in same tranche")
+	s.NotEqual(trancheKey1, trancheKey3, "GTC and GTT in same tranche")
+	s.NotEqual(trancheKey2, trancheKey3, "GTC and JIT in same tranche")
+	s.Equal(trancheKey4, trancheKey3, "GTCs not combined")
+}
