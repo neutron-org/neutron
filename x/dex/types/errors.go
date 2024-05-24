@@ -189,9 +189,14 @@ var (
 		1154,
 		"Swap amount too small; creates unfair spread for liquidity providers",
 	)
-	ErrDepositBehindEnemyLines = sdkerrors.Register(
+	ErrDexPaused = sdkerrors.Register(
 		ModuleName,
 		1155,
+		"Dex has been paused, all messages are disabled at this time",
+	)
+	ErrDepositBehindEnemyLines = sdkerrors.Register(
+		ModuleName,
+		1156,
 		"Cannot deposit at a price below the opposing token's current price",
 	)
 )

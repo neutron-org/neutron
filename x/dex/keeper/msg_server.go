@@ -31,6 +31,10 @@ func (k MsgServer) Deposit(
 		return nil, errors.Wrap(err, "failed to validate MsgDeposit")
 	}
 
+	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -74,6 +78,10 @@ func (k MsgServer) Withdrawal(
 		return nil, errors.Wrap(err, "failed to validate MsgWithdrawal")
 	}
 
+	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -106,6 +114,10 @@ func (k MsgServer) PlaceLimitOrder(
 ) (*types.MsgPlaceLimitOrderResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgPlaceLimitOrder")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -148,6 +160,10 @@ func (k MsgServer) WithdrawFilledLimitOrder(
 		return nil, errors.Wrap(err, "failed to validate MsgWithdrawFilledLimitOrder")
 	}
 
+	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
 	err := k.WithdrawFilledLimitOrderCore(
@@ -170,6 +186,10 @@ func (k MsgServer) CancelLimitOrder(
 		return nil, errors.Wrap(err, "failed to validate MsgCancelLimitOrder")
 	}
 
+	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
+	}
+
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
 	err := k.CancelLimitOrderCore(
@@ -190,6 +210,10 @@ func (k MsgServer) MultiHopSwap(
 ) (*types.MsgMultiHopSwapResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgMultiHopSwap")
+	}
+
+	if err := k.AssertNotPaused(goCtx); err != nil {
+		return nil, err
 	}
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
@@ -227,4 +251,14 @@ func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 	}
 
 	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+func (k MsgServer) AssertNotPaused(goCtx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	paused := k.GetParams(ctx).Paused
+
+	if paused {
+		return types.ErrDexPaused
+	}
+	return nil
 }
