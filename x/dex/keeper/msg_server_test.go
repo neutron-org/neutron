@@ -423,6 +423,10 @@ func (s *DexTestSuite) limitSellsInt(
 		OrderType:        orderType,
 	})
 
+	if err != nil {
+		return "", err
+	}
+
 	return msg.TrancheKey, err
 }
 
