@@ -111,8 +111,6 @@ func ParsePrecDecScientificNotation(n string) (math_utils.PrecDec, error) {
 
 	if string(match[3]) == "-" { // negative exponent
 		return baseDec.Quo(shift), nil
-
 	} // else string(match[3]) == "+" || string(match[3]) == "" // positive exponent
 	return baseDec.Mul(shift), nil
-
 }
