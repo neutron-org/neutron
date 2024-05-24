@@ -16,8 +16,9 @@ import (
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 )
 
 // NeutronQuery contains neutron custom queries.
