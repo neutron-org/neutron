@@ -3,10 +3,11 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	testkeeper "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGetParams(t *testing.T) {
@@ -31,10 +32,12 @@ func (s *DexTestSuite) TestPauseDex() {
 	s.fundAliceBalances(100, 100)
 	trancheKey := s.aliceLimitSells("TokenA", 0, 10, types.LimitOrderType_GOOD_TIL_CANCELLED)
 
-	//WHEN params.paused is set to true
+	// WHEN params.paused is set to true
 	params := types.DefaultParams()
 	params.Paused = true
-	s.msgServer.UpdateParams(s.Ctx, &types.MsgUpdateParams{Params: params, Authority: s.App.DexKeeper.GetAuthority()})
+	_, err := s.msgServer.UpdateParams(s.Ctx, &types.MsgUpdateParams{Params: params, Authority: s.App.DexKeeper.GetAuthority()})
+
+	s.NoError(err)
 
 	// THEN all messages fail
 	s.assertAliceDepositFails(types.ErrDexPaused, NewDeposit(0, 10, 0, 1))
@@ -46,7 +49,8 @@ func (s *DexTestSuite) TestPauseDex() {
 
 	// WHEN params.paused is set to false
 	params.Paused = false
-	s.msgServer.UpdateParams(s.Ctx, &types.MsgUpdateParams{Params: params, Authority: s.App.DexKeeper.GetAuthority()})
+	_, err = s.msgServer.UpdateParams(s.Ctx, &types.MsgUpdateParams{Params: params, Authority: s.App.DexKeeper.GetAuthority()})
+	s.NoError(err)
 
 	// THEN all messages succeed
 	s.aliceDeposits(NewDeposit(0, 10, 0, 1))
@@ -55,5 +59,4 @@ func (s *DexTestSuite) TestPauseDex() {
 	s.aliceWithdrawsLimitSell(trancheKey)
 	s.aliceCancelsLimitSell(trancheKey)
 	s.aliceMultiHopSwaps([][]string{{"TokenA", "TokenB"}}, 5, math_utils.MustNewPrecDecFromStr("0.01"), false)
-
 }

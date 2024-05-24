@@ -19,11 +19,12 @@ import (
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+
 	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 	icatypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )
 
 func (qp *QueryPlugin) GetInterchainQueryResult(ctx sdk.Context, queryID uint64) (*bindings.QueryRegisteredQueryResultResponse, error) {
