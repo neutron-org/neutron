@@ -88,7 +88,7 @@ func TestParsePrecDecScientificNotation(t *testing.T) {
 		},
 		{
 			desc: "valid with lowercase 'e'",
-			in:   "10.1E-2",
+			in:   "10.1e-2",
 			out:  math_utils.MustNewPrecDecFromStr("0.101"),
 		},
 		{
