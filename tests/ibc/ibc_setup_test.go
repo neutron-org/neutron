@@ -49,15 +49,15 @@ type IBCTestSuite struct {
 }
 
 // FIXME: fix fees and enable
-//func TestIBCTestSuite(t *testing.T) {
+// func TestIBCTestSuite(t *testing.T) {
 //	suite.Run(t, new(IBCTestSuite))
 //}
 
 func (s *IBCTestSuite) SetupTest() {
 	// we need to redefine this variable to make tests work cause we use untrn as default bond denom in neutron
 	sdk.DefaultBondDenom = appparams.DefaultDenom
-	//simapp.DefautFeeDenom = app.FeeDenom
-	//simapp.DefaultFee = 100_000
+	// simapp.DefautFeeDenom = app.FeeDenom
+	// simapp.DefaultFee = 100_000
 
 	// Create coordinator
 	s.coordinator = ibctesting.NewCoordinator(s.T(), 0)

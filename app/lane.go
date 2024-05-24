@@ -11,9 +11,7 @@ const (
 	MaxTxsForDefaultLane = 3000 // maximal number of txs that can be stored in this lane at any point in time
 )
 
-var (
-	MaxBlockspaceForDefaultLane = math.LegacyMustNewDecFromStr("1") // maximal fraction of blockMaxBytes / gas that can be used by this lane at any point in time (90%)
-)
+var MaxBlockspaceForDefaultLane = math.LegacyMustNewDecFromStr("1") // maximal fraction of blockMaxBytes / gas that can be used by this lane at any point in time (90%)
 
 // CreateLanes creates a LaneMempool containing MEV, default lanes (in that order)
 func (app *App) CreateLanes() *blocksdkbase.BaseLane {

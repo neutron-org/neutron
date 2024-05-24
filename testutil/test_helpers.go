@@ -10,6 +10,7 @@ import (
 	"time"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
+
 	"github.com/neutron-org/neutron/v4/utils"
 
 	"github.com/neutron-org/neutron/v4/app/config"
