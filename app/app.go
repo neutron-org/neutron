@@ -530,7 +530,7 @@ func New(
 		appCodec,
 		keys[feemarkettypes.StoreKey],
 		app.AccountKeeper,
-		&feemarkettypes.TestDenomResolver{}, // TODO: implement ??? denom resolver, or find a proper one
+		&feemarkettypes.ErrorDenomResolver{}, // TODO: implement ??? denom resolver, or find a proper one
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
