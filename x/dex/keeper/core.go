@@ -347,10 +347,11 @@ func (k Keeper) PlaceLimitOrderCore(
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
+	var orderFilled bool
 	if orderType.IsTakerOnly() {
 		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, orderType)
 	} else {
-		swapInCoin, swapOutCoin, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice)
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice)
 	}
 	if err != nil {
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
@@ -398,7 +399,7 @@ func (k Keeper) PlaceLimitOrderCore(
 
 	sharesIssued := math.ZeroInt()
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
-	if amountLeft.IsPositive() &&
+	if amountLeft.IsPositive() && !orderFilled &&
 		(orderType.IsGTC() || orderType.IsJIT() || orderType.IsGoodTil()) {
 
 		// Ensure that the maker portion will generate at least 1 token of output

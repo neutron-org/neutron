@@ -160,8 +160,8 @@ func (k Keeper) MakerLimitOrderSwap(
 	tradePairID types.TradePairID,
 	amountIn math.Int,
 	limitPrice math_utils.PrecDec,
-) (totalInCoin, totalOutCoin sdk.Coin, err error) {
-	totalInCoin, totalOutCoin, _, err = k.SwapWithCache(
+) (totalInCoin, totalOutCoin sdk.Coin, filled bool, err error) {
+	totalInCoin, totalOutCoin, filled, err = k.SwapWithCache(
 		ctx,
 		&tradePairID,
 		amountIn,
@@ -169,7 +169,7 @@ func (k Keeper) MakerLimitOrderSwap(
 		&limitPrice,
 	)
 	if err != nil {
-		return sdk.Coin{}, sdk.Coin{}, err
+		return sdk.Coin{}, sdk.Coin{}, filled, err
 	}
 
 	if totalInCoin.Amount.IsPositive() {
@@ -179,9 +179,9 @@ func (k Keeper) MakerLimitOrderSwap(
 		truePrice := totalExpectedOut.QuoInt(amountIn)
 
 		if truePrice.LT(limitPrice) {
-			return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+			return sdk.Coin{}, sdk.Coin{}, false, types.ErrLimitPriceNotSatisfied
 		}
 	}
 
-	return totalInCoin, totalOutCoin, nil
+	return totalInCoin, totalOutCoin, filled, nil
 }

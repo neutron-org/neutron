@@ -344,7 +344,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderTooSmallAfterSwapFails() {
 
 	// THEN Alice's order fails
 	s.assertAliceLimitSellFails(types.ErrTradeTooSmall, "TokenA", 149_149, 5)
-
 }
 
 // Fill Or Kill limit orders ///////////////////////////////////////////////////////////
@@ -556,7 +555,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCTooSmallFails() {
 	// WHEN Alice sells at a price where she would get less than 1 Token out
 	// 1_000_000 * 1.0001^ 138163 =  0.9999013318
 
-	//THEN Alice's order fails
+	// THEN Alice's order fails
 	s.assertAliceLimitSellFails(types.ErrTradeTooSmall, "TokenA", 138_163, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
