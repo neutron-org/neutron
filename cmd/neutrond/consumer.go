@@ -4,10 +4,8 @@ import (
 	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
-	"github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/p2p"
-	"github.com/cometbft/cometbft/proto/tendermint/crypto"
-	"github.com/neutron-org/neutron/v4/testutil/consumer"
+	"github.com/neutron-org/neutron/v3/testutil/consumer"
 
 	types1 "github.com/cometbft/cometbft/abci/types"
 	pvm "github.com/cometbft/cometbft/privval"
@@ -47,11 +45,11 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 					if err != nil {
 						return err
 					}
-					sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
+					sdkPublicKey, err := cryptocodec.FromTmPubKeyInterface(pk)
 					if err != nil {
 						return err
 					}
-					tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
+					tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(sdkPublicKey)
 					if err != nil {
 						return err
 					}
@@ -121,22 +119,22 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 //	return txCmd
 //}
 
-func extractValidatorKey(config *config.Config) (crypto.PublicKey, error) {
-	privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-	pk, err := privValidator.GetPubKey()
-	if err != nil {
-		return crypto.PublicKey{}, err
-	}
-	sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
-	if err != nil {
-		return crypto.PublicKey{}, err
-	}
-	tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
-	if err != nil {
-		return crypto.PublicKey{}, err
-	}
-	return tmProtoPublicKey, nil
-}
+//func extractValidatorKey(config *config.Config) (crypto.PublicKey, error) {
+//	privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+//	pk, err := privValidator.GetPubKey()
+//	if err != nil {
+//		return crypto.PublicKey{}, err
+//	}
+//	sdkPublicKey, err := cryptocodec.FromTmPubKeyInterface(pk)
+//	if err != nil {
+//		return crypto.PublicKey{}, err
+//	}
+//	tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(sdkPublicKey)
+//	if err != nil {
+//		return crypto.PublicKey{}, err
+//	}
+//	return tmProtoPublicKey, nil
+//}
 
 type GenesisMutator interface {
 	AlterConsumerModuleState(cmd *cobra.Command, callback func(state *GenesisData, appState map[string]json.RawMessage) error) error
