@@ -1753,6 +1753,19 @@ func TestMsgDepositValidate(t *testing.T) {
 			},
 			types.ErrTickOutsideRange,
 		},
+		{
+			"invalid fee overflow",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{559681},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidFee,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1872,6 +1885,17 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
 			},
 			types.ErrTickOutsideRange,
+		},
+		{
+			"invalid fee overflow",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{559681},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidFee,
 		},
 	}
 
