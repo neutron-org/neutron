@@ -53,6 +53,11 @@ require (
 )
 
 require (
+	github.com/oxyno-zeta/gomock-extra-matcher v1.2.0 // indirect
+	go.uber.org/mock v0.4.0 // indirect
+)
+
+require (
 	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute v1.25.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
@@ -222,12 +227,12 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240501180153-d9bebe629e05
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240226131019-8efae68de5cc
-	//github.com/cosmos/ibc-go/v8 => ../ibc-go
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.18.0
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.0
 	github.com/prometheus/common => github.com/prometheus/common v0.47.0
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
-	//github.com/skip-mev/feemarket => ../feemarket
+	//github.com/skip-mev/feemarket => github.com/neutron-org/feemarket  5972a48dc6089ac8ad01c3c44dbd03f76148bfec
+	github.com/skip-mev/feemarket => ../feemarket
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
