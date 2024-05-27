@@ -14,8 +14,8 @@ message Params {
   // it's use in cooperation with feemarket module
   // prices is a data source to  calculate gas_price from feemarket's base_denom (untrn)
   // into given asset
-  repeated cosmos.base.v1beta1.Coin ntrn_prices = 1 [
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+  repeated cosmos.base.v1beta1.DecCoin ntrn_prices = 1 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (gogoproto.nullable) = false
   ];
 }

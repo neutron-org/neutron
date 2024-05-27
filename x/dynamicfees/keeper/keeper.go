@@ -4,19 +4,11 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v4/x/dynamicfees/types"
-)
-
-var (
-	LabelExecuteReadySchedules   = "execute_ready_schedules"
-	LabelScheduleCount           = "schedule_count"
-	LabelScheduleExecutionsCount = "schedule_executions_count"
-
-	MetricLabelSuccess      = "success"
-	MetricLabelScheduleName = "schedule_name"
 )
 
 type (
