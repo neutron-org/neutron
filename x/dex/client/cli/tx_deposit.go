@@ -97,7 +97,7 @@ func CmdDeposit() *cobra.Command {
 
 				DepositOptions = append(DepositOptions, &types.DepositOptions{
 					DisableAutoswap: disableAutoswap,
-					FailTxOn_BEL:    failTx,
+					FailTxOnBel:     failTx,
 				})
 			}
 

@@ -42,7 +42,7 @@ func (s *DexTestSuite) TestDepositMultiPartialBELFailureWithFailTx() {
 	s.assertAliceDepositFails(
 		err,
 		NewDeposit(5, 5, 0, 1),
-		NewDepositWithOptions(5, 0, 3, 1, types.DepositOptions{FailTxOn_BEL: true}),
+		NewDepositWithOptions(5, 0, 3, 1, types.DepositOptions{FailTxOnBel: true}),
 	)
 }
 
@@ -62,7 +62,7 @@ func (s *DexTestSuite) TestDepositMultiPartialBELFailureWithoutFailTx() {
 		s.alice,
 		[]*Deposit{
 			NewDeposit(5, 5, 0, 1),
-			NewDepositWithOptions(5, 0, 3, 1, types.DepositOptions{FailTxOn_BEL: false}),
+			NewDepositWithOptions(5, 0, 3, 1, types.DepositOptions{FailTxOnBel: false}),
 		},
 	)
 

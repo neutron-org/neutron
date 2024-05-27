@@ -29,7 +29,7 @@ service Msg {
 
 message DepositOptions {
   bool disable_autoswap = 1;
-  bool fail_tx_on_BEL = 2;
+  bool fail_tx_on_bel = 2;
 }
 
 message MsgDeposit {

@@ -49,7 +49,7 @@ func (k Keeper) DepositCore(
 		amount1 := amounts1[i]
 		tickIndex := tickIndices[i]
 		fee := fees[i]
-		options := options[i]
+		option := options[i]
 
 		if err := k.ValidateFee(ctx, fee); err != nil {
 			return nil, nil, nil, failedDeposits, err
@@ -58,13 +58,13 @@ func (k Keeper) DepositCore(
 		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, amount0, amount1) {
 			err = sdkerrors.Wrapf(types.ErrDepositBehindEnemyLines,
 				"deposit failed at tick %d fee %d", tickIndex, fee)
-			if options.FailTxOn_BEL {
+			if option.FailTxOnBel {
 				return nil, nil, nil, failedDeposits, err
 			}
 			failedDeposits = append(failedDeposits, &types.FailedDeposit{DepositIdx: uint64(i), Error: err.Error()})
 			continue
 		}
-		autoswap := !options.DisableAutoswap
+		autoswap := !option.DisableAutoswap
 
 		pool, err := k.GetOrInitPool(
 			ctx,
