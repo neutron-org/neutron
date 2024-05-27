@@ -9,12 +9,15 @@ import (
 	"path/filepath"
 	"reflect"
 
+	v305 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.5"
+
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
 	"github.com/cosmos/interchain-security/v4/testutil/integration"
 	ccv "github.com/cosmos/interchain-security/v4/x/ccv/types"
+	"github.com/skip-mev/block-sdk/block/service"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -22,6 +25,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
+	v304 "github.com/neutron-org/neutron/v3/app/upgrades/v3.0.4"
 	"github.com/neutron-org/neutron/v3/docs"
 
 	"github.com/neutron-org/neutron/v3/app/upgrades"
@@ -183,7 +187,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v301.Upgrade}
+	Upgrades = []upgrades.Upgrade{v030.Upgrade, v044.Upgrade, v200.Upgrade, v202.Upgrade, v301.Upgrade, v304.Upgrade, v305.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -605,8 +609,9 @@ func New(
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
+		maccPerms,
 		app.AccountKeeper,
-		app.BankKeeper.WithMintCoinsRestriction(tokenfactorytypes.NewTokenFactoryDenomMintCoinsRestriction()),
+		&app.BankKeeper,
 		&app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
@@ -1311,6 +1316,9 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
+	// Register new block-sdk queries routes from grpc-gateway.
+	service.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register app's swagger ui
@@ -1322,6 +1330,13 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *App) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
+
+	// Register the Block SDK mempool transaction service.
+	mempool, ok := app.BaseApp.Mempool().(blocksdk.Mempool)
+	if !ok {
+		panic("mempool is not a block.Mempool")
+	}
+	service.RegisterMempoolService(app.GRPCQueryRouter(), mempool)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
