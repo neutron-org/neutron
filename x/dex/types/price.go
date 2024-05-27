@@ -1,6 +1,8 @@
 package types
 
 import (
+	"cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
@@ -41,6 +43,14 @@ func ValidateTickFee(tick int64, fee uint64) error {
 	// NOTE: Ugly arithmetic is to ensure that we don't overflow uint64
 	if utils.Abs(tick) > MaxTickExp-fee {
 		return ErrTickOutsideRange
+	}
+	return nil
+}
+
+func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
+	amountOut := price.MulInt(amountIn)
+	if amountOut.LT(math_utils.OnePrecDec()) {
+		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}
 	return nil
 }

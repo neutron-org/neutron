@@ -184,4 +184,9 @@ var (
 		1155,
 		"Dex has been paused, all messages are disabled at this time",
 	)
+	ErrTradeTooSmall = sdkerrors.Register(
+		ModuleName,
+		1156,
+		"Specified trade will result in a rounded output of 0",
+	)
 )

@@ -341,6 +341,12 @@ func (k Keeper) PlaceLimitOrderCore(
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
+	// Ensure that after rounding user will get at least 1 token out.
+	err = types.ValidateFairOutput(amountIn, limitPrice)
+	if err != nil {
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+	}
+
 	if orderType.IsTakerOnly() {
 		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, orderType)
 	} else {
@@ -394,6 +400,15 @@ func (k Keeper) PlaceLimitOrderCore(
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
 	if amountLeft.IsPositive() &&
 		(orderType.IsGTC() || orderType.IsJIT() || orderType.IsGoodTil()) {
+
+		// Ensure that the maker portion will generate at least 1 token of output
+		// NOTE: This does mean that a successful taker leg of the trade will be thrown away since the entire tx will fail.
+		// In most circumstances this seems preferable to executing the taker leg and exiting early before placing a maker
+		// order with the remaining liquidity.
+		err = types.ValidateFairOutput(amountLeft, limitPrice)
+		if err != nil {
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+		}
 		placeTranche.PlaceMakerLimitOrder(amountLeft)
 		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountLeft)
 

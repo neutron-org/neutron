@@ -331,6 +331,22 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithDust() {
 	s.assertAliceBalancesInt(sdkmath.NewInt(923409), sdkmath.NewInt(10361))
 }
 
+func (s *DexTestSuite) TestPlaceLimitOrderTooSmallAfterSwapFails() {
+	s.fundAliceBalances(5, 0)
+	s.fundBobBalances(0, 2)
+
+	// GIVEN 2 TokenB at tick 0
+	s.bobLimitSells("TokenB", 0, 2)
+	// WHEN Alice limit Sells at tick 149,149
+	// She swap through bobs liquidity leaving her with 3 tokens to place her maker order
+	// At price of 0.000000333333333 her expected output for the maker leg will be zero after rounding
+	// 3 * 149,149 * 1.0001^-149,149 = ~.9999
+
+	// THEN Alice's order fails
+	s.assertAliceLimitSellFails(types.ErrTradeTooSmall, "TokenA", 149_149, 5)
+
+}
+
 // Fill Or Kill limit orders ///////////////////////////////////////////////////////////
 func (s *DexTestSuite) TestPlaceLimitOrderFoKNoLiq() {
 	s.fundAliceBalances(10, 0)
@@ -533,6 +549,15 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	s.bobDeposits(NewDeposit(0, 5, -1, 1))
 	// THEN alice IoC limitOrder for 10 tokenA below current 0To1 price fails
 	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderIoCTooSmallFails() {
+	s.fundAliceBalances(1, 0)
+	// WHEN Alice sells at a price where she would get less than 1 Token out
+	// 1_000_000 * 1.0001^ 138163 =  0.9999013318
+
+	//THEN Alice's order fails
+	s.assertAliceLimitSellFails(types.ErrTradeTooSmall, "TokenA", 138_163, 1, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 // Just In Time Limit Orders //////////////////////////////////////////////////
