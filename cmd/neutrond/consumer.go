@@ -77,7 +77,9 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 					return errors.Wrap(err, "could not convert val updates to validator set")
 				}
 
-				err2 := writePeersIntoCargo(err, runnerVal)
+				fmt.Printf("writePeersIntoConfig\n")
+
+				err2 := writePeersIntoConfig(err, runnerVal)
 				if err2 != nil {
 					return err2
 				}
@@ -101,7 +103,7 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 	return txCmd
 }
 
-func writePeersIntoCargo(err error, runnerVal string) error {
+func writePeersIntoConfig(err error, runnerVal string) error {
 	// TODO: write peer ids into config.toml before start
 	var data []byte
 	data, err = os.ReadFile("/opt/neutron/peers.json")
@@ -116,13 +118,15 @@ func writePeersIntoCargo(err error, runnerVal string) error {
 		}
 	}
 	peersStr := strings.Join(res, ",")
+	fmt.Printf("peersStr: %s\n", peersStr)
 
-	baseConfigBytes, err := os.ReadFile("config/config.toml")
+	baseConfigBytes, err := os.ReadFile("/opt/neutron/data/config/config.toml")
 	if err != nil {
 		return err
 	}
 	baseConfig := strings.Replace(string(baseConfigBytes), "seeds = \"\"", "seeds = \""+peersStr+"\"", -1)
 	baseConfig = strings.Replace(baseConfig, "persistent_peers = \"\"", "persistent_peers = \""+peersStr+"\"", -1)
+	fmt.Printf("New base config: %s\n", baseConfig)
 	err = os.WriteFile("/opt/neutron/data/config/config.toml", []byte(baseConfig), 0644)
 	if err != nil {
 		return err
