@@ -15,7 +15,7 @@ package keeper_test
 //	"github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 //)
 //
-//func TestGetParams(t *testing.T) {
+// func TestGetParams(t *testing.T) {
 //	_ = config.GetDefaultConfig()
 //
 //	k, ctx := testkeeper.CronKeeper(t, nil, nil)

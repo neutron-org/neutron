@@ -14,7 +14,7 @@ package dynamicfees_test
 //	"github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 //)
 //
-//func TestGenesis(t *testing.T) {
+// func TestGenesis(t *testing.T) {
 //	_ = config.GetDefaultConfig()
 //
 //	genesisState := types.GenesisState{
