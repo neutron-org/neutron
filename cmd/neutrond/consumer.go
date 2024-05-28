@@ -95,9 +95,7 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 	}
 
 	txCmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
-	flags.AddQueryFlagsToCmd(txCmd)
-
-	txCmd.Flags().String("validator", defaultNodeHome, "Validator folder")
+	txCmd.Flags().String("validator", "", "Validator folder")
 	flags.AddQueryFlagsToCmd(txCmd)
 
 	return txCmd
