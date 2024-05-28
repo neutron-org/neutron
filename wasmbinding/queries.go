@@ -19,6 +19,9 @@ import (
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+
 	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 	icatypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
@@ -206,6 +209,38 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 	return data, err
 }
 
+func (qp *QueryPlugin) OracleQuery(ctx sdk.Context, query bindings.OracleQuery) ([]byte, error) {
+	oracleQueryServer := oraclekeeper.NewQueryServer(*qp.oracleKeeper)
+
+	switch {
+	case query.GetAllCurrencyPairs != nil:
+		return processResponse(oracleQueryServer.GetAllCurrencyPairs(ctx, query.GetAllCurrencyPairs))
+	case query.GetPrice != nil:
+		return processResponse(oracleQueryServer.GetPrice(ctx, query.GetPrice))
+	case query.GetPrices != nil:
+		return processResponse(oracleQueryServer.GetPrices(ctx, query.GetPrices))
+	default:
+		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.oracle query type"}
+	}
+}
+
+func (qp *QueryPlugin) MarketMapQuery(ctx sdk.Context, query bindings.MarketMapQuery) ([]byte, error) {
+	marketMapQueryServer := marketmapkeeper.NewQueryServer(qp.marketmapKeeper)
+
+	switch {
+	case query.Params != nil:
+		return processResponse(marketMapQueryServer.Params(ctx, query.Params))
+	case query.LastUpdated != nil:
+		return processResponse(marketMapQueryServer.LastUpdated(ctx, query.LastUpdated))
+	case query.MarketMap != nil:
+		return processResponse(marketMapQueryServer.MarketMap(ctx, query.MarketMap))
+	case query.Market != nil:
+		return processResponse(marketMapQueryServer.Market(ctx, query.Market))
+	default:
+		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.marketmap query type"}
+	}
+}
+
 func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context.Context, query *T) (R, error)) ([]byte, error) {
 	resp, err := queryHandler(ctx, query)
 	if err != nil {
@@ -224,6 +259,16 @@ func dexQuery[T, R any](ctx sdk.Context, query *T, queryHandler func(ctx context
 	}
 
 	return data, nil
+}
+
+func processResponse(resp interface{}, err error) ([]byte, error) {
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to process request %T", resp)
+	}
+	if q, ok := resp.(bindings.BindingMarshaller); ok {
+		return q.MarshalBinding()
+	}
+	return json.Marshal(resp)
 }
 
 func mapGRPCRegisteredQueryToWasmBindings(grpcQuery types.RegisteredQuery) bindings.RegisteredQuery {

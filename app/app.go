@@ -120,6 +120,8 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
 	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
@@ -377,8 +379,9 @@ type App struct {
 	WasmKeeper wasmkeeper.Keeper
 
 	// slinky
-	MarketMapKeeper *marketmapkeeper.Keeper
-	OracleKeeper    *oraclekeeper.Keeper
+	MarketMapKeeper       *marketmapkeeper.Keeper
+	OracleKeeper          *oraclekeeper.Keeper
+	oraclePreBlockHandler *oraclepreblock.PreBlockHandler
 
 	// processes
 	oracleClient oracleclient.OracleClient
@@ -820,6 +823,8 @@ func New(
 		app.TokenFactoryKeeper, &app.CronKeeper,
 		&app.ContractManagerKeeper,
 		&app.DexKeeper,
+		app.OracleKeeper,
+		app.MarketMapKeeper,
 	), wasmOpts...)
 
 	queryPlugins := wasmkeeper.WithQueryPlugins(
@@ -945,6 +950,10 @@ func New(
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
+	)
+
+	app.mm.SetOrderPreBlockers(
+		upgradetypes.ModuleName,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -1103,8 +1112,8 @@ func New(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
+	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
-
 	app.SetEndBlocker(app.EndBlocker)
 
 	// create the lanes
@@ -1241,7 +1250,7 @@ func New(
 
 	// Create the pre-finalize block hook that will be used to apply oracle data
 	// to the state before any transactions are executed (in finalize block).
-	oraclePreBlockHandler := oraclepreblock.NewOraclePreBlockHandler(
+	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
 		aggregatorFn,
 		app.OracleKeeper,
@@ -1256,7 +1265,6 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
-	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
@@ -1269,7 +1277,7 @@ func New(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
 		),
-		oraclePreBlockHandler.PreBlocker(),
+		app.oraclePreBlockHandler.PreBlocker(),
 		oracleMetrics,
 	)
 	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
@@ -1401,6 +1409,17 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 
 // GetBaseApp returns the base app of the application
 func (app *App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
+
+// PreBlocker application updates every pre block
+func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	rsp, err := app.mm.PreBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
+	return rsp, err
+}
 
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
@@ -1564,7 +1583,11 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(slashingtypes.ModuleName).WithKeyTable(slashingtypes.ParamKeyTable()) //nolint:staticcheck
 	paramsKeeper.Subspace(crisistypes.ModuleName).WithKeyTable(crisistypes.ParamKeyTable())     //nolint:staticcheck
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
-	paramsKeeper.Subspace(ibchost.ModuleName)
+
+	keyTable := ibcclienttypes.ParamKeyTable()
+	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{})
+	paramsKeeper.Subspace(ibchost.ModuleName).WithKeyTable(keyTable)
+
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
