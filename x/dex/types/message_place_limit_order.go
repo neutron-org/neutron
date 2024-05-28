@@ -72,12 +72,12 @@ func (msg *MsgPlaceLimitOrder) Validate() error {
 	// Verify tokenIn and tokenOut are valid denoms
 	err = sdk.ValidateDenom(msg.TokenIn)
 	if err != nil {
-		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenA denom (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenIn denom (%s)", err)
 	}
 
 	err = sdk.ValidateDenom(msg.TokenOut)
 	if err != nil {
-		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenB denom (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenOut denom (%s)", err)
 	}
 
 	if msg.TokenIn == msg.TokenOut {
