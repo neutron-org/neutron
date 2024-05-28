@@ -46,7 +46,7 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 				var initialValset []types1.ValidatorUpdate
 				//var peerIds []string
 				for _, valDir := range valDirs {
-					privValidator := pvm.LoadFilePVEmptyState("/opt/neutron/vals/"+valDir, "")
+					privValidator := pvm.LoadFilePVEmptyState("/opt/neutron/vals/"+valDir+"/data/priv_validator_state.json", "")
 					pk, err := privValidator.GetPubKey()
 					if err != nil {
 						return err
