@@ -1832,6 +1832,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{559681},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -2009,6 +2011,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{559681},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
