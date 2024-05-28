@@ -189,4 +189,9 @@ var (
 		1154,
 		"Swap amount too small; creates unfair spread for liquidity providers",
 	)
+	ErrInvalidDenom = sdkerrors.Register(
+		ModuleName,
+		1155,
+		"Invalid token denom",
+	)
 )

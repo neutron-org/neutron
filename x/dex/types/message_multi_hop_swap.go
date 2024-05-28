@@ -70,10 +70,19 @@ func (msg *MsgMultiHopSwap) Validate() error {
 	if len(msg.Routes) == 0 {
 		return ErrMissingMultihopRoute
 	}
-
+	// set the expected tokenIn as the first token in the first route.
+	// if the route is empty, don't set tokenIn and let route length check error.
+	var tokenIn string
+	if len(msg.Routes[0].Hops) != 0 {
+		tokenIn = msg.Routes[0].Hops[0]
+	}
 	for _, route := range msg.Routes {
 		if len(route.Hops) < 2 {
 			return ErrRouteWithoutExitToken
+		}
+
+		if route.Hops[0] != tokenIn {
+			return sdkerrors.Wrapf(ErrInvalidDenom, "TokenIn mismatch in routes")
 		}
 
 		existingHops := make(map[string]bool, len(route.Hops))
@@ -81,6 +90,12 @@ func (msg *MsgMultiHopSwap) Validate() error {
 			if _, ok := existingHops[hop]; ok {
 				return ErrCycleInHops
 			}
+
+			err = sdk.ValidateDenom(hop)
+			if err != nil {
+				return sdkerrors.Wrapf(ErrInvalidDenom, "invalid denom in route: (%s)", err)
+			}
+
 			existingHops[hop] = true
 		}
 	}
