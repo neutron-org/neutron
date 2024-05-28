@@ -34,7 +34,6 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 				clientCtx := client.GetClientContextFromCmd(cmd)
 				serverCtx := server.GetServerContextFromCmd(cmd)
 				config := serverCtx.Config
-				config.SetRoot(clientCtx.HomeDir)
 
 				valDirs := []string{"val_a", "val_b", "val_c", "val_d"}
 
@@ -45,8 +44,10 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 
 				var initialValset []types1.ValidatorUpdate
 				//var peerIds []string
+
 				for _, valDir := range valDirs {
-					privValidator := pvm.LoadFilePVEmptyState("/opt/neutron/vals/"+valDir+"/data/priv_validator_state.json", "")
+					config.SetRoot("/opt/neutron/vals/" + valDir)
+					privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
 					pk, err := privValidator.GetPubKey()
 					if err != nil {
 						return err
@@ -55,6 +56,8 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 					if err != nil {
 						return err
 					}
+					fmt.Printf("Validator public key: %s\n", sdkPublicKey.String())
+
 					tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(sdkPublicKey)
 					if err != nil {
 						return err
@@ -71,6 +74,8 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 					//	peerIds = append(peerIds, string(nodeKey.ID()))
 					//}
 				}
+
+				config.SetRoot(clientCtx.HomeDir)
 
 				vals, err := tmtypes.PB2TM.ValidatorUpdates(initialValset)
 				if err != nil {
