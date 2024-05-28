@@ -194,9 +194,14 @@ var (
 		1155,
 		"Dex has been paused, all messages are disabled at this time",
 	)
-	ErrDepositBehindEnemyLines = sdkerrors.Register(
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
 		ModuleName,
 		1156,
+		"Maximum JIT LimitOrders per block has already been reached",
+	)
+	ErrDepositBehindEnemyLines = sdkerrors.Register(
+		ModuleName,
+		1157,
 		"Cannot deposit at a price below the opposing token's current price",
 	)
 )

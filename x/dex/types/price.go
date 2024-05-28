@@ -37,6 +37,10 @@ func IsTickOutOfRange(tickIndex int64) bool {
 }
 
 func ValidateTickFee(tick int64, fee uint64) error {
+	// Ensure we do not overflow/wrap Uint
+	if fee >= MaxTickExp {
+		return ErrInvalidFee
+	}
 	// Ensure |tick| + fee <= MaxTickExp
 	// NOTE: Ugly arithmetic is to ensure that we don't overflow uint64
 	if utils.Abs(tick) > MaxTickExp-fee {

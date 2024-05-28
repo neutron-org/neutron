@@ -75,6 +75,25 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 	return nil
 }
 
+func (k Keeper) GetMaxJITsPerBlock(ctx sdk.Context) uint64 {
+	return k.GetParams(ctx).Max_JITsPerBlock
+}
+
+func (k Keeper) AssertCanPlaceJIT(ctx sdk.Context) error {
+	maxJITsAllowed := k.GetMaxJITsPerBlock(ctx)
+	JITsInBlock := k.GetJITsInBlockCount(ctx)
+
+	if JITsInBlock == maxJITsAllowed {
+		return types.ErrOverJITPerBlockLimit
+	}
+
+	return nil
+}
+
+func (k Keeper) GetGoodTilPurgeAllowance(ctx sdk.Context) uint64 {
+	return k.GetParams(ctx).GoodTilPurgeAllowance
+}
+
 func (k Keeper) IsBehindEnemyLines(ctx sdk.Context, tradePairID *types.TradePairID, tickIndex int64) bool {
 	oppositeTick, found := k.GetCurrTickIndexTakerToMaker(ctx, tradePairID.Reversed())
 

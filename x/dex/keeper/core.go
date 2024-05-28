@@ -447,6 +447,14 @@ func (k Keeper) PlaceLimitOrderCore(
 		}
 	}
 
+	if orderType.IsJIT() {
+		err = k.AssertCanPlaceJIT(ctx)
+		if err != nil {
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+		}
+		k.IncrementJITsInBlock(ctx)
+	}
+
 	ctx.EventManager().EmitEvent(types.CreatePlaceLimitOrderEvent(
 		callerAddr,
 		receiverAddr,
