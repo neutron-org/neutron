@@ -54,7 +54,7 @@ func Setup(t *testing.T) ibctesting.TestingApp {
 
 	ibctesting.DefaultTestingAppInit = SetupTestingApp(tmtypes.TM2PB.ValidatorUpdates(valSet))
 
-	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, "", balance)
+	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, "neutron-1", balance)
 
 	return app
 }
@@ -227,64 +227,64 @@ func GenesisStateWithValSet(
 }
 
 // type EmptyAppOptions struct {
-// 	servertypes.AppOptions
+//	servertypes.AppOptions
 // }
 
 // // Get implements AppOptions
 // func (ao EmptyAppOptions) Get(_ string) interface{} {
-// 	return nil
+//	return nil
 // }
 
 // var _ network.TestFixtureFactory = NewTestNetworkFixture
 
 // func NewTestNetworkFixture() network.TestFixture {
-// 	dir, err := os.MkdirTemp("", "neutron")
-// 	if err != nil {
-// 		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
-// 	}
-// 	defer os.RemoveAll(dir)
+//	dir, err := os.MkdirTemp("", "neutron")
+//	if err != nil {
+//		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
+//	}
+//	defer os.RemoveAll(dir)
 
-// 	encConfig := MakeEncodingConfig()
+//	encConfig := MakeEncodingConfig()
 
-// 	app := NewApp(
-// 		log.NewNopLogger(),
-// 		dbm.NewMemDB(),
-// 		nil,
-// 		true,
-// 		map[int64]bool{},
-// 		DefaultNodeHome,
-// 		5,
-// 		EmptyAppOptions{},
-// 		encConfig,
-// 		nil,
-// 	)
+//	app := NewApp(
+//		log.NewNopLogger(),
+//		dbm.NewMemDB(),
+//		nil,
+//		true,
+//		map[int64]bool{},
+//		DefaultNodeHome,
+//		5,
+//		EmptyAppOptions{},
+//		encConfig,
+//		nil,
+//	)
 
-// 	appCtr := func(val network.ValidatorI) servertypes.Application {
-// 		return NewApp(
-// 			val.GetCtx().Logger,
-// 			dbm.NewMemDB(),
-// 			nil,
-// 			true,
-// 			map[int64]bool{},
-// 			DefaultNodeHome,
-// 			5,
-// 			EmptyAppOptions{},
-// 			encConfig,
-// 			nil,
-// 			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
-// 			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
-// 			bam.SetChainID(val.GetCtx().Viper.GetString(flags.FlagChainID)),
-// 		)
-// 	}
+//	appCtr := func(val network.ValidatorI) servertypes.Application {
+//		return NewApp(
+//			val.GetCtx().Logger,
+//			dbm.NewMemDB(),
+//			nil,
+//			true,
+//			map[int64]bool{},
+//			DefaultNodeHome,
+//			5,
+//			EmptyAppOptions{},
+//			encConfig,
+//			nil,
+//			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
+//			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
+//			bam.SetChainID(val.GetCtx().Viper.GetString(flags.FlagChainID)),
+//		)
+//	}
 
-// 	return network.TestFixture{
-// 		AppConstructor: appCtr,
-// 		GenesisState:   NewDefaultGenesisState(app.AppCodec()),
-// 		EncodingConfig: moduletestutil.TestEncodingConfig{
-// 			InterfaceRegistry: app.InterfaceRegistry(),
-// 			Codec:             app.AppCodec(),
-// 			TxConfig:          encConfig.TxConfig,
-// 			Amino:             app.LegacyAmino(),
-// 		},
-// 	}
+//	return network.TestFixture{
+//		AppConstructor: appCtr,
+//		GenesisState:   NewDefaultGenesisState(app.AppCodec()),
+//		EncodingConfig: moduletestutil.TestEncodingConfig{
+//			InterfaceRegistry: app.InterfaceRegistry(),
+//			Codec:             app.AppCodec(),
+//			TxConfig:          encConfig.TxConfig,
+//			Amino:             app.LegacyAmino(),
+//		},
+//	}
 // }

@@ -184,9 +184,14 @@ var (
 		1155,
 		"Dex has been paused, all messages are disabled at this time",
 	)
-	ErrTradeTooSmall = sdkerrors.Register(
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
 		ModuleName,
 		1156,
+		"Maximum JIT LimitOrders per block has already been reached",
+	)
+	ErrTradeTooSmall = sdkerrors.Register(
+		ModuleName,
+		1157,
 		"Specified trade will result in a rounded output of 0",
 	)
 )
