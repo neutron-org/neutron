@@ -1583,9 +1583,14 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 		Time:   blockTime,
 	})
 	require.NoError(s.T(), err)
-
 	_, err = s.App.Commit()
 	require.NoError(s.T(), err)
+}
+
+func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
+	s.Ctx = s.Ctx.WithBlockTime(blockTime)
+	_, err := s.App.BeginBlocker(s.Ctx)
+	s.NoError(err)
 }
 
 func TestMsgDepositValidate(t *testing.T) {

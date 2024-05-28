@@ -194,4 +194,9 @@ var (
 		1155,
 		"Dex has been paused, all messages are disabled at this time",
 	)
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
+		ModuleName,
+		1156,
+		"Maximum JIT LimitOrders per block has already been reached",
+	)
 )
