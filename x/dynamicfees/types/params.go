@@ -24,7 +24,7 @@ func DefaultParams() Params {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	//if p.NtrnPrices.Len() ==0{
+	// if p.NtrnPrices.Len() ==0{
 	//	return
 	//}
 

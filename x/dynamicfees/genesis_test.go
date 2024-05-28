@@ -1,7 +1,7 @@
 package dynamicfees_test
 
 //
-//import (
+// import (
 //	"github.com/neutron-org/neutron/v4/x/feeburner"
 //	"testing"
 //

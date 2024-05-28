@@ -18,6 +18,8 @@ import (
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
@@ -82,6 +84,7 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*authtypes.MsgUpdateParams,
 		*ccvconsumertypes.MsgUpdateParams,
 		*icahosttypes.MsgUpdateParams,
+		*dynamicfeestypes.MsgUpdateParams,
 		*ibctransfertypes.MsgUpdateParams:
 		return true
 	}

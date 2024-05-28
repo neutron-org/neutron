@@ -3,14 +3,15 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/neutron-org/neutron/v4/x/dynamicfees"
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/neutron-org/neutron/v4/x/dynamicfees"
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"

@@ -2,8 +2,9 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
+	"github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 )
 
 var _ feemarkettypes.DenomResolver = Keeper{}
