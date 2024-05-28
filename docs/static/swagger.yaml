@@ -14311,10 +14311,30 @@ definitions:
       QuerySmartContractStateResponse is the response type for the
       Query/SmartContractState RPC method
     type: object
-  feemarket.feemarket.v1.BaseFeeResponse:
-    description: StateResponse is the response type for the Query/BaseFee RPC method.
+  feemarket.feemarket.v1.GasPriceResponse:
+    description: |-
+      GasPriceResponse is the response type for the Query/GasPrice RPC method.
+      Returns a gas price in specified denom.
     properties:
-      fees:
+      price:
+        description: |-
+          DecCoin defines a token with a denomination and a decimal amount.
+
+          NOTE: The amount field is an Dec which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+    type: object
+  feemarket.feemarket.v1.GasPricesResponse:
+    description: |-
+      GasPricesResponse is the response type for the Query/GasPrices RPC method.
+      Returns a gas price in all available denoms.
+    properties:
+      prices:
         items:
           description: |-
             DecCoin defines a token with a denomination and a decimal amount.
@@ -14575,113 +14595,6 @@ definitions:
             items:
               format: uint64
               type: string
-            type: array
-        type: object
-    type: object
-  gaia.globalfee.v1beta1.Params:
-    description: Params defines the set of module parameters.
-    properties:
-      bypass_min_fee_msg_types:
-        description: |-
-          bypass_min_fee_msg_types defines a list of message type urls
-          that are free of fee charge.
-        items:
-          type: string
-        type: array
-      max_total_bypass_min_fee_msg_gas_usage:
-        description: >-
-          max_total_bypass_min_fee_msg_gas_usage defines the total maximum gas
-          usage
-
-          allowed for a transaction containing only messages of types in
-          bypass_min_fee_msg_types
-
-          to bypass fee charge.
-        format: uint64
-        type: string
-      minimum_gas_prices:
-        items:
-          description: |-
-            DecCoin defines a token with a denomination and a decimal amount.
-
-            NOTE: The amount field is an Dec which implements the custom method
-            signatures required by gogoproto.
-          properties:
-            amount:
-              type: string
-            denom:
-              type: string
-          type: object
-        title: >-
-          minimum_gas_prices stores the minimum gas price(s) for all TX on the
-          chain.
-
-          When multiple coins are defined then they are accepted alternatively.
-
-          The list must be sorted by denoms asc. No duplicate denoms or zero
-          amount
-
-          values allowed. For more information see
-
-          https://docs.cosmos.network/main/modules/auth#concepts
-        type: array
-    type: object
-  gaia.globalfee.v1beta1.QueryParamsResponse:
-    description: |-
-      QueryMinimumGasPricesResponse is the response type for the
-      Query/MinimumGasPrices RPC method.
-    properties:
-      params:
-        description: Params defines the set of module parameters.
-        properties:
-          bypass_min_fee_msg_types:
-            description: |-
-              bypass_min_fee_msg_types defines a list of message type urls
-              that are free of fee charge.
-            items:
-              type: string
-            type: array
-          max_total_bypass_min_fee_msg_gas_usage:
-            description: >-
-              max_total_bypass_min_fee_msg_gas_usage defines the total maximum
-              gas usage
-
-              allowed for a transaction containing only messages of types in
-              bypass_min_fee_msg_types
-
-              to bypass fee charge.
-            format: uint64
-            type: string
-          minimum_gas_prices:
-            items:
-              description: >-
-                DecCoin defines a token with a denomination and a decimal
-                amount.
-
-
-                NOTE: The amount field is an Dec which implements the custom
-                method
-
-                signatures required by gogoproto.
-              properties:
-                amount:
-                  type: string
-                denom:
-                  type: string
-              type: object
-            title: >-
-              minimum_gas_prices stores the minimum gas price(s) for all TX on
-              the chain.
-
-              When multiple coins are defined then they are accepted
-              alternatively.
-
-              The list must be sorted by denoms asc. No duplicate denoms or zero
-              amount
-
-              values allowed. For more information see
-
-              https://docs.cosmos.network/main/modules/auth#concepts
             type: array
         type: object
     type: object
@@ -16984,6 +16897,68 @@ definitions:
         type: string
       taker_denom:
         type: string
+    type: object
+  neutron.dynamicfees.v1.Params:
+    description: Params defines the parameters for the module.
+    properties:
+      ntrn_prices:
+        items:
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        title: >-
+          List of asset prices relative to the NTRN
+
+          it's use in cooperation with feemarket module
+
+          prices is a data source to  calculate gas_price from feemarket's
+          base_denom (untrn)
+
+          into given asset
+        type: array
+    type: object
+  neutron.dynamicfees.v1.QueryParamsResponse:
+    description: QueryParamsResponse is response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: params holds all the parameters of this module.
+        properties:
+          ntrn_prices:
+            items:
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            title: >-
+              List of asset prices relative to the NTRN
+
+              it's use in cooperation with feemarket module
+
+              prices is a data source to  calculate gas_price from feemarket's
+              base_denom (untrn)
+
+              into given asset
+            type: array
+        type: object
     type: object
   neutron.feeburner.Params:
     description: Params defines the parameters for the module.
@@ -36199,18 +36174,83 @@ paths:
       summary: ContractsByCreator gets the contracts by creator
       tags:
         - Query
-  /feemarket/v1/base_fee:
+  /feemarket/v1/gas_price/{denom}:
     get:
-      operationId: BaseFee
+      operationId: GasPrice
+      parameters:
+        - description: denom we are querying gas price in
+          in: path
+          name: denom
+          required: true
+          type: string
       responses:
         '200':
           description: A successful response.
           schema:
             description: >-
-              StateResponse is the response type for the Query/BaseFee RPC
+              GasPriceResponse is the response type for the Query/GasPrice RPC
               method.
+
+              Returns a gas price in specified denom.
             properties:
-              fees:
+              price:
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                properties:
+                  amount:
+                    type: string
+                  denom:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        GasPrice returns the current feemarket module gas price
+        for specified denom.
+      tags:
+        - Query
+  /feemarket/v1/gas_prices:
+    get:
+      operationId: GasPrices
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GasPricesResponse is the response type for the Query/GasPrices RPC
+              method.
+
+              Returns a gas price in all available denoms.
+            properties:
+              prices:
                 items:
                   description: >-
                     DecCoin defines a token with a denomination and a decimal
@@ -36251,7 +36291,9 @@ paths:
               message:
                 type: string
             type: object
-      summary: BaseFee returns the current feemarket module base fee.
+      summary: |-
+        GasPrices returns the current feemarket module list of gas prices
+        in all available denoms.
       tags:
         - Query
   /feemarket/v1/params:
@@ -36458,97 +36500,6 @@ paths:
                 type: string
             type: object
       summary: State returns the current feemarket module state.
-      tags:
-        - Query
-  /gaia/globalfee/v1beta1/params:
-    get:
-      operationId: Params
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            description: |-
-              QueryMinimumGasPricesResponse is the response type for the
-              Query/MinimumGasPrices RPC method.
-            properties:
-              params:
-                description: Params defines the set of module parameters.
-                properties:
-                  bypass_min_fee_msg_types:
-                    description: >-
-                      bypass_min_fee_msg_types defines a list of message type
-                      urls
-
-                      that are free of fee charge.
-                    items:
-                      type: string
-                    type: array
-                  max_total_bypass_min_fee_msg_gas_usage:
-                    description: >-
-                      max_total_bypass_min_fee_msg_gas_usage defines the total
-                      maximum gas usage
-
-                      allowed for a transaction containing only messages of
-                      types in bypass_min_fee_msg_types
-
-                      to bypass fee charge.
-                    format: uint64
-                    type: string
-                  minimum_gas_prices:
-                    items:
-                      description: >-
-                        DecCoin defines a token with a denomination and a
-                        decimal amount.
-
-
-                        NOTE: The amount field is an Dec which implements the
-                        custom method
-
-                        signatures required by gogoproto.
-                      properties:
-                        amount:
-                          type: string
-                        denom:
-                          type: string
-                      type: object
-                    title: >-
-                      minimum_gas_prices stores the minimum gas price(s) for all
-                      TX on the chain.
-
-                      When multiple coins are defined then they are accepted
-                      alternatively.
-
-                      The list must be sorted by denoms asc. No duplicate denoms
-                      or zero amount
-
-                      values allowed. For more information see
-
-                      https://docs.cosmos.network/main/modules/auth#concepts
-                    type: array
-                type: object
-            type: object
-        default:
-          description: An unexpected error response.
-          schema:
-            properties:
-              code:
-                format: int32
-                type: integer
-              details:
-                items:
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      format: byte
-                      type: string
-                  type: object
-                type: array
-              error:
-                type: string
-              message:
-                type: string
-            type: object
       tags:
         - Query
   /ibc/apps/packetforward/v1/params:
@@ -40813,6 +40764,74 @@ paths:
                 type: string
             type: object
       summary: Queries a list of LimitOrderTrancheUser items for a given address.
+      tags:
+        - Query
+  /neutron/dynamicfees/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryParamsResponse is response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: params holds all the parameters of this module.
+                properties:
+                  ntrn_prices:
+                    items:
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    title: >-
+                      List of asset prices relative to the NTRN
+
+                      it's use in cooperation with feemarket module
+
+                      prices is a data source to  calculate gas_price from
+                      feemarket's base_denom (untrn)
+
+                      into given asset
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Parameters queries the parameters of the module.
       tags:
         - Query
   /neutron/feeburner/params:

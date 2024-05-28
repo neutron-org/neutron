@@ -152,6 +152,7 @@ import (
 	"github.com/neutron-org/neutron/v4/x/contractmanager"
 	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
 	"github.com/neutron-org/neutron/v4/x/feeburner"
 	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
@@ -348,6 +349,7 @@ type App struct {
 	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
 	FeeMarkerKeeper     *feemarketkeeper.Keeper
+	DynamicFeesKeeper   *dynamicfeeskeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
@@ -530,11 +532,13 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	app.DynamicFeesKeeper = dynamicfeeskeeper.NewKeeper(appCodec, keys[dynamicfeestypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+
 	app.FeeMarkerKeeper = feemarketkeeper.NewKeeper(
 		appCodec,
 		keys[feemarkettypes.StoreKey],
 		app.AccountKeeper,
-		&feemarkettypes.TestDenomResolver{}, // TODO: implement ??? denom resolver, or find a proper one
+		app.DynamicFeesKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
