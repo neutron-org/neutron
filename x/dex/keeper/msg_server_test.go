@@ -422,6 +422,9 @@ func (s *DexTestSuite) limitSellsInt(
 		AmountIn:         amountIn,
 		OrderType:        orderType,
 	})
+	if err != nil {
+		return "", err
+	}
 
 	return msg.TrancheKey, err
 }
@@ -1386,7 +1389,7 @@ func (s *DexTestSuite) assertFillAndPlaceTrancheKeys(
 ) {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	placeTranche := s.App.DexKeeper.GetPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
+	placeTranche := s.App.DexKeeper.GetGTCPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
 	fillTranche, foundFill := s.App.DexKeeper.GetFillTranche(
 		s.Ctx,
 		tradePairID,
@@ -1580,9 +1583,14 @@ func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 		Time:   blockTime,
 	})
 	require.NoError(s.T(), err)
-
 	_, err = s.App.Commit()
 	require.NoError(s.T(), err)
+}
+
+func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
+	s.Ctx = s.Ctx.WithBlockTime(blockTime)
+	_, err := s.App.BeginBlocker(s.Ctx)
+	s.NoError(err)
 }
 
 func TestMsgDepositValidate(t *testing.T) {
@@ -1819,6 +1827,19 @@ func TestMsgDepositValidate(t *testing.T) {
 			},
 			types.ErrTickOutsideRange,
 		},
+		{
+			"invalid fee overflow",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{559681},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidFee,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1982,6 +2003,17 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
 			},
 			types.ErrTickOutsideRange,
+		},
+		{
+			"invalid fee overflow",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				Fees:            []uint64{559681},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidFee,
 		},
 	}
 

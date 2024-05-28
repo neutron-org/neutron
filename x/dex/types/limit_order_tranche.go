@@ -75,6 +75,10 @@ func (t LimitOrderTranche) IsFilled() bool {
 	return t.ReservesMakerDenom.IsZero()
 }
 
+func (t LimitOrderTranche) HasExpiration() bool {
+	return t.ExpirationTime != nil
+}
+
 func (t LimitOrderTranche) IsJIT() bool {
 	return t.ExpirationTime != nil && *t.ExpirationTime == JITGoodTilTime()
 }
