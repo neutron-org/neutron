@@ -51,7 +51,12 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Setting dynamicfees/feemarket params...")
-		err = setDynamicFeesParams(ctx, keepers.FeeMarketKeeper, keepers.DynamicfeesKeeper)
+		err = setFeeMarketParams(ctx, keepers.FeeMarketKeeper)
+		if err != nil {
+			return nil, err
+		}
+
+		err = setDynamicFeesParams(ctx, keepers.DynamicfeesKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -69,8 +74,19 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 	return marketmapKeeper.SetParams(ctx, marketmapParams)
 }
 
+// NtrnPrices describes prices of any token in NTRN for dynamic fee resolver
+// TODO: determine actual prices
+var NtrnPrices = sdk.NewDecCoins(sdk.NewDecCoin(params.DefaultDenom, math.OneInt().Mul(math.NewInt(100))))
+
+func setDynamicFeesParams(ctx sdk.Context, dfKeeper *dynamicfeeskeeper.Keeper) error {
+	dfParams := dynamicfeestypes.Params{
+		NtrnPrices: NtrnPrices,
+	}
+	return dfKeeper.SetParams(ctx, dfParams)
+}
+
 // TODO: add a test for the migrations: check that feemarket state is consistent with feemarket params
-func setDynamicFeesParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper, dynamicfeesKeeper *dynamicfeeskeeper.Keeper) error {
+func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper) error {
 	// TODO: set params values
 	feemarketParams := feemarkettypes.Params{
 		Alpha:                  math.LegacyDec{},
@@ -97,11 +113,5 @@ func setDynamicFeesParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keep
 		return errors.Wrap(err, "failed to to set feemarket state")
 	}
 
-	dynamicfeesParams := dynamicfeestypes.Params{
-		NtrnPrices: sdk.NewDecCoins(
-			sdk.NewDecCoin(params.DefaultDenom, math.OneInt()),
-		),
-	}
-
-	return dynamicfeesKeeper.SetParams(ctx, dynamicfeesParams)
+	return nil
 }
