@@ -412,6 +412,25 @@ func (s *DexTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
 	s.assertAliceDepositFails(err, NewDeposit(0, 5, 0, 1))
 }
 
+func (s *DexTestSuite) TestDepositNilOptions() {
+	s.fundAliceBalances(0, 1)
+	msg := &types.MsgDeposit{
+		Creator:         s.alice.String(),
+		Receiver:        s.alice.String(),
+		TokenA:          "TokenA",
+		TokenB:          "TokenB",
+		AmountsA:        []sdkmath.Int{sdkmath.ZeroInt()},
+		AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+		TickIndexesAToB: []int64{0},
+		Fees:            []uint64{1},
+		Options:         []*types.DepositOptions{nil}, // WHEN options are nil
+	}
+	err := msg.Validate()
+	s.Assert().NoError(err)
+	_, err = s.msgServer.Deposit(s.Ctx, msg)
+	s.Assert().NoError(err)
+}
+
 // NOTE: The error checking for ShareUnderflow is completely subsumed by the ensureFairTruePrice check
 // it no longer possible to manually check this test case. Leaving the example test here should things change in the future
 // func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
