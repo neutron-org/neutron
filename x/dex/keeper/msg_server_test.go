@@ -2334,7 +2334,7 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 			types.ErrInvalidDenom,
 		},
 		{
-			"taker denom mismatch in route",
+			"entry token denom mismatch in route",
 			types.MsgMultiHopSwap{
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),

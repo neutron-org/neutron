@@ -96,7 +96,7 @@ func validateRoutes(routes []*MultiHopRoute) error {
 			return err
 		}
 
-		// validateHops ensures hops[] leat length 2
+		// validateHops ensures hops[] is at least length 2
 		exitToken := route.Hops[len(route.Hops)-1]
 		entryToken := route.Hops[0]
 
