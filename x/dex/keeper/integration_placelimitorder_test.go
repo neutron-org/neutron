@@ -360,24 +360,25 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice0To1() {
 	s.aliceWithdrawsLimitSell(trancheKey0)
 
 	// THEN alice gets out ~100 TOKENB and bob gets ~10 TOKENA
-	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_967))
-	s.assertBobBalancesInt(sdkmath.NewInt(10000000), sdkmath.NewInt(23))
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(99_999_977))
+	s.assertBobBalancesInt(sdkmath.NewInt(10000000), sdkmath.NewInt(22))
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
 	s.fundAliceBalances(0, 200)
 	s.fundBobBalances(10, 0)
-	price := math_utils.MustNewPrecDecFromStr("0.25")
+	makerPrice := math_utils.MustNewPrecDecFromStr("0.25")
+	takerPrice := math_utils.MustNewPrecDecFromStr("3.99")
 	// GIVEN
 	// Alice place LO at price ~.25
-	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenB", price, 200)
+	trancheKey0 := s.limitSellsWithPrice(s.alice, "TokenB", makerPrice, 200)
 
 	// WHEN bob swaps through Alice's LO
-	s.limitSellsWithPrice(s.bob, "TokenA", math_utils.OnePrecDec().Quo(price), 10)
+	s.limitSellsWithPrice(s.bob, "TokenA", takerPrice, 10)
 	s.aliceWithdrawsLimitSell(trancheKey0)
 
 	// THEN alice gets out ~10 TOKENA and bob gets ~40 TOKENB
-	s.assertAliceBalancesInt(sdkmath.NewInt(9999998), sdkmath.ZeroInt())
+	s.assertAliceBalancesInt(sdkmath.NewInt(9999999), sdkmath.ZeroInt())
 	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(40001452))
 }
 
