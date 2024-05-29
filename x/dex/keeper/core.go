@@ -53,11 +53,11 @@ func (k Keeper) DepositCore(
 		if option == nil {
 			option = &types.DepositOptions{}
 		}
+		autoswap := !option.DisableAutoswap
 
 		if err := k.ValidateFee(ctx, fee); err != nil {
 			return nil, nil, nil, err
 		}
-		autoswap := option.DisableAutoswap
 
 		pool, err := k.GetOrInitPool(
 			ctx,
