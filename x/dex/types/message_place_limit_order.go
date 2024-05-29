@@ -81,7 +81,7 @@ func (msg *MsgPlaceLimitOrder) Validate() error {
 	}
 
 	if msg.TokenIn == msg.TokenOut {
-		return sdkerrors.Wrapf(ErrInvalidDenom, "tokenIn == tokenOut (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidDenom, "tokenIn cannot equal tokenOut")
 	}
 
 	if msg.AmountIn.LTE(math.ZeroInt()) {

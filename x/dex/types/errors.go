@@ -204,4 +204,9 @@ var (
 		1157,
 		"Invalid token denom",
 	)
+	ErrMultihopEntryTokensMismatch = sdkerrors.Register(
+		ModuleName,
+		1158,
+		"MultihopSwap starting tokens for each route must be the same",
+	)
 )

@@ -58,63 +58,93 @@ func (msg *MsgMultiHopSwap) GetSignBytes() []byte {
 }
 
 func (msg *MsgMultiHopSwap) Validate() error {
-	_, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid creator address (%s)", err)
+	if err := validateAddress(msg.Creator, "creator"); err != nil {
+		return err
 	}
-	_, err = sdk.AccAddressFromBech32(msg.Receiver)
-	if err != nil {
-		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid receiver address (%s)", err)
+	if err := validateAddress(msg.Receiver, "receiver"); err != nil {
+		return err
 	}
+	if err := validateRoutes(msg.Routes); err != nil {
+		return err
+	}
+	if err := validateAmountIn(msg.AmountIn); err != nil {
+		return err
+	}
+	if err := validateExitLimitPrice(msg.ExitLimitPrice); err != nil {
+		return err
+	}
+	return nil
+}
 
-	if len(msg.Routes) == 0 {
+func validateAddress(address, field string) error {
+	_, err := sdk.AccAddressFromBech32(address)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid %s address (%s)", field, err)
+	}
+	return nil
+}
+
+func validateRoutes(routes []*MultiHopRoute) error {
+	if len(routes) == 0 {
 		return ErrMissingMultihopRoute
 	}
-	// set the expected tokenIn as the first token in the first route.
-	// if the route is empty, don't set tokenIn and let route length check error.
-	var tokenIn string
-	if len(msg.Routes[0].Hops) != 0 {
-		tokenIn = msg.Routes[0].Hops[0]
+	expectedExitToken := ""
+	expectedEntryToken := ""
+
+	for i, route := range routes {
+		if err := validateHops(route.Hops); err != nil {
+			return err
+		}
+
+		// validateHops ensures hops[] leat length 2
+		exitToken := route.Hops[len(route.Hops)-1]
+		entryToken := route.Hops[0]
+
+		switch {
+		case i == 0:
+			expectedExitToken = exitToken
+			expectedEntryToken = entryToken
+		case exitToken != expectedExitToken:
+			return ErrMultihopExitTokensMismatch
+		case entryToken != expectedEntryToken:
+			return ErrMultihopEntryTokensMismatch
+		}
 	}
-	for _, route := range msg.Routes {
-		if len(route.Hops) < 2 {
+	return nil
+}
+
+func validateHops(hops []string) error {
+	existingHops := make(map[string]bool, len(hops))
+	for _, hop := range hops {
+		// check that route has at least entry and exit token
+		if len(hop) < 2 {
 			return ErrRouteWithoutExitToken
 		}
-
-		if route.Hops[0] != tokenIn {
-			return sdkerrors.Wrapf(ErrInvalidDenom, "TokenIn mismatch in routes")
+		// check if we find cycles in the route
+		if existingHops[hop] {
+			return ErrCycleInHops
 		}
+		existingHops[hop] = true
 
-		existingHops := make(map[string]bool, len(route.Hops))
-		for _, hop := range route.Hops {
-			if _, ok := existingHops[hop]; ok {
-				return ErrCycleInHops
-			}
-
-			err = sdk.ValidateDenom(hop)
-			if err != nil {
-				return sdkerrors.Wrapf(ErrInvalidDenom, "invalid denom in route: (%s)", err)
-			}
-
-			existingHops[hop] = true
+		// check if the denom is valid
+		err := sdk.ValidateDenom(hop)
+		if err != nil {
+			return sdkerrors.Wrapf(ErrInvalidDenom, "invalid denom in route: (%s)", err)
 		}
 	}
+	return nil
+}
 
-	expectedExitToken := msg.Routes[0].Hops[len(msg.Routes[0].Hops)-1]
-	for _, route := range msg.Routes[1:] {
-		hops := route.Hops
-		if expectedExitToken != hops[len(hops)-1] {
-			return ErrMultihopExitTokensMismatch
-		}
-	}
-
-	if msg.AmountIn.LTE(math.ZeroInt()) {
+func validateAmountIn(amount math.Int) error {
+	if amount.LTE(math.ZeroInt()) {
 		return ErrZeroSwap
 	}
+	return nil
+}
 
-	if !msg.ExitLimitPrice.IsPositive() {
+func validateExitLimitPrice(price math_utils.PrecDec) error {
+	if !price.IsPositive() {
 		return ErrZeroExitPrice
 	}
-
 	return nil
 }

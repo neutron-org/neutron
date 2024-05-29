@@ -81,7 +81,7 @@ func (msg *MsgDeposit) Validate() error {
 	}
 
 	if msg.TokenA == msg.TokenB {
-		return sdkerrors.Wrapf(ErrInvalidDenom, "tokenA == tokenB (%s)", err)
+		return sdkerrors.Wrapf(ErrInvalidDenom, "tokenA cannot equal tokenB")
 	}
 
 	// Verify that the lengths of TickIndexes, Fees, AmountsA, AmountsB are all equal

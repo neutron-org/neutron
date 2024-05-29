@@ -2345,7 +2345,7 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 				AmountIn:       sdkmath.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
-			types.ErrInvalidDenom,
+			types.ErrMultihopEntryTokensMismatch,
 		},
 		{
 			"zero exit limit price",
