@@ -260,25 +260,22 @@ message QueryGetPoolReservesResponse {
 }
 
 message QueryEstimateMultiHopSwapRequest {
-  string creator = 1;
-  string receiver = 2;
-  repeated MultiHopRoute routes = 3;
-  string amount_in = 4 [
+  repeated MultiHopRoute routes = 1;
+  string amount_in = 2 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];
-  string exit_limit_price = 5 [
+  string exit_limit_price = 3 [
     (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "exit_limit_price"
   ];
-
   // If pickBestRoute == true then all routes are run and the route with the
   // best price is chosen otherwise, the first succesful route is used.
-  bool pick_best_route = 6;
+  bool pick_best_route = 4;
 }
 
 message QueryEstimateMultiHopSwapResponse {
@@ -290,25 +287,22 @@ message QueryEstimateMultiHopSwapResponse {
 }
 
 message QueryEstimatePlaceLimitOrderRequest {
-  string creator = 1;
-  string receiver = 2;
-  string token_in = 3;
-  string token_out = 4;
-  int64 tick_index_in_to_out = 5;
-  string amount_in = 6 [
+  string token_in = 1;
+  string token_out = 2;
+  int64 tick_index_in_to_out = 3;
+  string amount_in = 4 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];
-  LimitOrderType order_type = 7;
-
+  LimitOrderType order_type = 5;
   // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
-  google.protobuf.Timestamp expiration_time = 8 [
+  google.protobuf.Timestamp expiration_time = 9 [
     (gogoproto.stdtime) = true,
     (gogoproto.nullable) = true
   ];
-  string maxAmount_out = 9 [
+  string max_amount_out = 6 [
     (gogoproto.moretags) = "yaml:\"max_amount_out\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,

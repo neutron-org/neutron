@@ -3,14 +3,13 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (s *DexTestSuite) TestEstimateMultiHopSwapSingleRoute() {
-	s.fundAliceBalances(100, 0)
-
 	// GIVEN liquidity in pools A<>B, B<>C, C<>D,
 	s.SetupMultiplePools(
 		NewPoolSetup("TokenA", "TokenB", 0, 100, 0, 1),
@@ -20,17 +19,19 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapSingleRoute() {
 
 	// WHEN alice multihopswaps A<>B => B<>C => C<>D,
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
-	coinOut := s.aliceEstimatesMultiHopSwap(route, 100, math_utils.MustNewPrecDecFromStr("0.9"), false)
+	coinOut := s.estimatesMultiHopSwap(route, 100, math_utils.MustNewPrecDecFromStr("0.9"), false)
 
 	// THEN alice would get out ~99 BIGTokenD
 	s.Assert().Equal(math.NewInt(99970003), coinOut.Amount)
-	s.assertAccountBalanceWithDenom(s.alice, "TokenA", 100)
-	s.assertAccountBalanceWithDenom(s.alice, "TokenD", 0)
 
+	// AND state is not altered
+	s.assertAccountBalanceWithDenom(s.alice, "TokenD", 0)
 	s.assertDexBalanceWithDenom("TokenA", 0)
 	s.assertDexBalanceWithDenom("TokenB", 100)
 	s.assertDexBalanceWithDenom("TokenC", 100)
 	s.assertDexBalanceWithDenom("TokenD", 100)
+
+	s.assertBobLimitSellFails(sdkerrors.ErrInsufficientFunds, "TokenA", -400_000, 100_000_000)
 }
 
 func (s *DexTestSuite) TestEstimateMultiHopSwapInsufficientLiquiditySingleRoute() {
@@ -45,7 +46,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapInsufficientLiquiditySingleRoute(
 
 	// THEN estimate multihopswap fails
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
-	s.aliceEstimatesMultiHopSwapFails(
+	s.estimatesMultiHopSwapFails(
 		types.ErrInsufficientLiquidity,
 		route,
 		100,
@@ -66,7 +67,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapLimitPriceNotMetSingleRoute() {
 
 	// THEN estimate multihopswap fails
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
-	s.aliceEstimatesMultiHopSwapFails(
+	s.estimatesMultiHopSwapFails(
 		types.ErrExitLimitPriceHit,
 		route,
 		50,
@@ -106,7 +107,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteOneGood() {
 		1,
 	)
 
-	coinOut := s.aliceEstimatesMultiHopSwap(routes, 100, math_utils.MustNewPrecDecFromStr("0.91"), false)
+	coinOut := s.estimatesMultiHopSwap(routes, 100, math_utils.MustNewPrecDecFromStr("0.91"), false)
 
 	// THEN swap estimation succeeds through route A<>B, B<>E, E<>X
 
@@ -205,7 +206,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteAllFail() {
 	}
 
 	// Then fails with findBestRoute
-	s.aliceEstimatesMultiHopSwapFails(
+	s.estimatesMultiHopSwapFails(
 		types.ErrExitLimitPriceHit,
 		routes,
 		100,
@@ -215,7 +216,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteAllFail() {
 
 	// and with findFirstRoute
 
-	s.aliceEstimatesMultiHopSwapFails(
+	s.estimatesMultiHopSwapFails(
 		types.ErrExitLimitPriceHit,
 		routes,
 		100,
@@ -244,7 +245,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteFindBestRoute() {
 		{"TokenA", "TokenB", "TokenD", "TokenX"},
 		{"TokenA", "TokenB", "TokenE", "TokenX"},
 	}
-	coinOut := s.aliceEstimatesMultiHopSwap(routes, 100, math_utils.MustNewPrecDecFromStr("0.9"), true)
+	coinOut := s.estimatesMultiHopSwap(routes, 100, math_utils.MustNewPrecDecFromStr("0.9"), true)
 
 	// THEN swap succeeds through route A<>B, B<>E, E<>X
 
@@ -336,7 +337,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapLongRouteWithCache() {
 			"TokenG", "TokenH", "TokenI", "TokenJ", "TokenK", "TokenM", "TokenX",
 		},
 	}
-	coinOut := s.aliceEstimatesMultiHopSwap(routes, 100, math_utils.MustNewPrecDecFromStr("0.8"), true)
+	coinOut := s.estimatesMultiHopSwap(routes, 100, math_utils.MustNewPrecDecFromStr("0.8"), true)
 
 	// THEN swap succeeds with second route
 	s.Assert().Equal(coinOut, sdk.NewCoin("TokenX", math.NewInt(99880066)))
@@ -359,7 +360,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapEventsEmitted() {
 	)
 
 	route := [][]string{{"TokenA", "TokenB", "TokenC"}}
-	_ = s.aliceEstimatesMultiHopSwap(route, 100, math_utils.MustNewPrecDecFromStr("0.9"), false)
+	_ = s.estimatesMultiHopSwap(route, 100, math_utils.MustNewPrecDecFromStr("0.9"), false)
 
 	// 8 tickUpdateEvents are emitted 4x for pool setup 4x for two swaps
 	s.AssertEventValueNotEmitted(types.TickUpdateEventKey, "Expected no events")

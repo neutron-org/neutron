@@ -146,8 +146,6 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 		data, err = dexQuery(ctx, query.EstimateMultiHopSwap, qp.dexKeeper.EstimateMultiHopSwap)
 	case query.EstimatePlaceLimitOrder != nil:
 		q := dextypes.QueryEstimatePlaceLimitOrderRequest{
-			Creator:          query.EstimatePlaceLimitOrder.Creator,
-			Receiver:         query.EstimatePlaceLimitOrder.Receiver,
 			TokenIn:          query.EstimatePlaceLimitOrder.TokenIn,
 			TokenOut:         query.EstimatePlaceLimitOrder.TokenOut,
 			TickIndexInToOut: query.EstimatePlaceLimitOrder.TickIndexInToOut,

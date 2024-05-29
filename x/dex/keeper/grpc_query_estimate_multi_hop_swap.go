@@ -8,14 +8,13 @@ import (
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
-// TODO: This doesn't run ValidateBasic() checks.
 func (k Keeper) EstimateMultiHopSwap(
 	goCtx context.Context,
 	req *types.QueryEstimateMultiHopSwapRequest,
 ) (*types.QueryEstimateMultiHopSwapResponse, error) {
 	msg := types.MsgMultiHopSwap{
-		Creator:        req.Creator,
-		Receiver:       req.Receiver,
+		Creator:        "neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
+		Receiver:       "neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
 		Routes:         req.Routes,
 		AmountIn:       req.AmountIn,
 		ExitLimitPrice: req.ExitLimitPrice,
@@ -28,23 +27,23 @@ func (k Keeper) EstimateMultiHopSwap(
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	cacheCtx, _ := ctx.CacheContext()
 
-	callerAddr := sdk.MustAccAddressFromBech32(req.Creator)
-	receiverAddr := sdk.MustAccAddressFromBech32(req.Receiver)
-
+	oldBK := k.bankKeeper
+	k.bankKeeper = NewSimulationBankKeeper(k.bankKeeper)
 	coinOut, err := k.MultiHopSwapCore(
 		cacheCtx,
 		req.AmountIn,
 		req.Routes,
 		req.ExitLimitPrice,
 		req.PickBestRoute,
-		callerAddr,
-		receiverAddr,
+		[]byte("caller"),
+		[]byte("receiver"),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	// NB: Critically, we do not write the best route's buffered state context since this is only an estimate.
+	//nolint:staticcheck // Should be unnecessary but out of an abundance of caution we restore the old bankkeeper
+	k.bankKeeper = oldBK
 
 	return &types.QueryEstimateMultiHopSwapResponse{CoinOut: coinOut}, nil
 }
