@@ -125,8 +125,7 @@ func writePeersIntoConfig(err error, runnerVal string) error {
 	if err != nil {
 		return err
 	}
-	baseConfig := strings.Replace(string(baseConfigBytes), "seeds = \"\"", "seeds = \""+peersStr+"\"", -1)
-	baseConfig = strings.Replace(baseConfig, "persistent_peers = \"\"", "persistent_peers = \""+peersStr+"\"", -1)
+	baseConfig := strings.Replace(string(baseConfigBytes), "persistent_peers = \"\"", "persistent_peers = \""+peersStr+"\"", -1)
 	err = os.WriteFile("/opt/neutron/data/config/config.toml", []byte(baseConfig), 0644)
 	if err != nil {
 		return err
