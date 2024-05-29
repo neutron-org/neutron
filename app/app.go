@@ -1338,6 +1338,8 @@ func (app *App) setupUpgradeHandlers() {
 					ConsensusKeeper:     &app.ConsensusParamsKeeper,
 					ConsumerKeeper:      &app.ConsumerKeeper,
 					MarketmapKeeper:     app.MarketMapKeeper,
+					FeeMarketKeeper:     app.FeeMarkerKeeper,
+					DynamicfeesKeeper:   app.DynamicFeesKeeper,
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,

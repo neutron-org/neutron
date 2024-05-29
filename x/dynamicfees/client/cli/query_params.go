@@ -33,3 +33,5 @@ func CmdQueryParams() *cobra.Command {
 
 	return cmd
 }
+
+// TODO: add query for the list of prices

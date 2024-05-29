@@ -30,7 +30,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 			Beta:                   math.LegacyOneDec(),
 			Theta:                  math.LegacyOneDec(),
 			Delta:                  math.LegacyOneDec(),
-			MinBaseFee:             math.LegacyMustNewDecFromStr("0.0025"),
+			MinBaseGasPrice:        math.LegacyMustNewDecFromStr("0.0025"),
 			MinLearningRate:        math.LegacyMustNewDecFromStr("0.5"),
 			MaxLearningRate:        math.LegacyMustNewDecFromStr("1.5"),
 			TargetBlockUtilization: 1,
@@ -41,7 +41,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 			DistributeFees:         true,
 		},
 		State: feemarkettypes.State{
-			BaseFee:      math.LegacyMustNewDecFromStr("0.0025"),
+			BaseGasPrice: math.LegacyMustNewDecFromStr("0.0025"),
 			LearningRate: math.LegacyOneDec(),
 			Window:       []uint64{100},
 			Index:        0,

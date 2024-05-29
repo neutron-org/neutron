@@ -39,3 +39,5 @@ func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) 
 
 	return &types.MsgUpdateParamsResponse{}, nil
 }
+
+// TODO: add a test for update params message
