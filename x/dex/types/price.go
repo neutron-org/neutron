@@ -1,7 +1,8 @@
 package types
 
 import (
-	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/errors"
+	"cosmossdk.io/math"
 
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/utils"
@@ -39,7 +40,7 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 		// Log precision is bad on small numbers so we invert first
 		tick, err := utils.Log(math_utils.OnePrecDec().Quo(price), utils.BasePrice())
 		if err != nil {
-			return 0, sdkerrors.Wrap(ErrCalcTickFromPrice, err.Error())
+			return 0, errors.Wrap(ErrCalcTickFromPrice, err.Error())
 		}
 
 		return tick.RoundInt64(), nil
@@ -47,7 +48,7 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 
 	tick, err := utils.Log(price, utils.BasePrice())
 	if err != nil {
-		return 0, sdkerrors.Wrap(ErrCalcTickFromPrice, err.Error())
+		return 0, errors.Wrap(ErrCalcTickFromPrice, err.Error())
 	}
 
 	return tick.RoundInt64() * -1, nil
@@ -79,6 +80,14 @@ func ValidateTickFee(tick int64, fee uint64) error {
 	// NOTE: Ugly arithmetic is to ensure that we don't overflow uint64
 	if utils.Abs(tick) > MaxTickExp-fee {
 		return ErrTickOutsideRange
+	}
+	return nil
+}
+
+func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
+	amountOut := price.MulInt(amountIn)
+	if amountOut.LT(math_utils.OnePrecDec()) {
+		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}
 	return nil
 }
