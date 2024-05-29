@@ -277,8 +277,8 @@ func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken0() {
 
 	// Bob arbs
 	s.bobLimitSells("TokenB", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-	s.bobLimitSells("TokenA", 1, 10)
-	s.assertBobBalancesInt(sdkmath.NewInt(50_000_000), sdkmath.NewInt(53_294_996))
+	s.bobLimitSells("TokenA", 2, 10)
+	s.assertBobBalancesInt(sdkmath.NewInt(50_000_000), sdkmath.NewInt(53_294_995))
 }
 
 func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
@@ -302,8 +302,8 @@ func (s *DexTestSuite) TestDepositSingleSidedCreatingArbToken1() {
 
 	// Bob arbs
 	s.bobLimitSells("TokenA", -1, 50, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
-	s.bobLimitSells("TokenB", -1, 10)
-	s.assertBobBalancesInt(sdkmath.NewInt(53_295_666), sdkmath.NewInt(50_000_000))
+	s.bobLimitSells("TokenB", -2, 10)
+	s.assertBobBalancesInt(sdkmath.NewInt(53_295_665), sdkmath.NewInt(50_000_000))
 }
 
 func (s *DexTestSuite) TestDepositSingleSidedMultiA() {
@@ -431,19 +431,17 @@ func (s *DexTestSuite) TestDepositNilOptions() {
 	s.Assert().NoError(err)
 }
 
-// NOTE: The error checking for ShareUnderflow is completely subsumed by the ensureFairTruePrice check
-// it no longer possible to manually check this test case. Leaving the example test here should things change in the future
-// func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
-// 	s.fundAliceBalances(0, 40_000_000_000_0)
+func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
+	s.fundAliceBalances(0, 40_000_000_000_0)
 
-// 	// GIVEN
-// 	// deposit 50 of token B at tick -352436 fee 0
-// 	// THEN 0 shares would be issued so deposit fails
-// 	s.assertAliceDepositFails(
-// 		types.ErrDepositShareUnderflow,
-// 		NewDeposit(0, 26457, -240_000, 0),
-// 	)
-// }
+	// GIVEN
+	// deposit 50 of token B at tick -352436 fee 0
+	// THEN 0 shares would be issued so deposit fails
+	s.assertAliceDepositFails(
+		types.ErrDepositShareUnderflow,
+		NewDeposit(0, 26457, -240_000, 0),
+	)
+}
 
 func (s *DexTestSuite) TestDepositSingleInvalidFeeFails() {
 	s.fundAliceBalances(0, 50)
