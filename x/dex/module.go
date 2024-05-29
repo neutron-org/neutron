@@ -25,8 +25,9 @@ import (
 )
 
 var (
-	_ appmodule.AppModule   = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ appmodule.AppModule       = AppModule{}
+	_ module.AppModuleBasic     = AppModuleBasic{}
+	_ appmodule.HasBeginBlocker = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -188,12 +189,14 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(_ sdk.Context) {}
+func (am AppModule) BeginBlock(wctx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(wctx)
+	am.keeper.PurgeExpiredLimitOrders(ctx, ctx.BlockTime())
+	return nil
+}
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
-func (am AppModule) EndBlock(wctx context.Context) ([]abci.ValidatorUpdate, error) {
-	ctx := sdk.UnwrapSDKContext(wctx)
-	am.keeper.PurgeExpiredLimitOrders(ctx, ctx.BlockTime())
+func (am AppModule) EndBlock(_ context.Context) ([]abci.ValidatorUpdate, error) {
 	return []abci.ValidatorUpdate{}, nil
 }

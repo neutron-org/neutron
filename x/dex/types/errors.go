@@ -194,20 +194,25 @@ var (
 		1155,
 		"Dex has been paused, all messages are disabled at this time",
 	)
-	ErrCalcTickFromPrice = sdkerrors.Register(
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
 		ModuleName,
 		1156,
+		"Maximum JIT LimitOrders per block has already been reached",
+	)
+	ErrCalcTickFromPrice = sdkerrors.Register(
+		ModuleName,
+		1157,
 		"Cannot convert price to int64 tick value",
 	)
 	ErrPriceOutsideRange = sdkerrors.Register(
 		ModuleName,
-		1157,
+		1158,
 		"Invalid price; 0.00000000000000000000000050 < PRICE > 2020125331305056766451886.728",
 	)
 
 	ErrInvalidPriceAndTick = sdkerrors.Register(
 		ModuleName,
-		1158,
+		1159,
 		"Only LimitSellPrice or TickIndexInToOut should be specified",
 	)
 )
