@@ -46,7 +46,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapInsufficientLiquiditySingleRoute(
 	// THEN estimate multihopswap fails
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
 	s.aliceEstimatesMultiHopSwapFails(
-		types.ErrInsufficientLiquidity,
+		types.ErrLimitPriceNotSatisfied,
 		route,
 		100,
 		math_utils.MustNewPrecDecFromStr("0.9"),
@@ -67,7 +67,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapLimitPriceNotMetSingleRoute() {
 	// THEN estimate multihopswap fails
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
 	s.aliceEstimatesMultiHopSwapFails(
-		types.ErrExitLimitPriceHit,
+		types.ErrLimitPriceNotSatisfied,
 		route,
 		50,
 		math_utils.MustNewPrecDecFromStr("0.9"),
@@ -206,7 +206,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteAllFail() {
 
 	// Then fails with findBestRoute
 	s.aliceEstimatesMultiHopSwapFails(
-		types.ErrExitLimitPriceHit,
+		types.ErrLimitPriceNotSatisfied,
 		routes,
 		100,
 		math_utils.MustNewPrecDecFromStr("0.91"),
@@ -216,7 +216,7 @@ func (s *DexTestSuite) TestEstimateMultiHopSwapMultiRouteAllFail() {
 	// and with findFirstRoute
 
 	s.aliceEstimatesMultiHopSwapFails(
-		types.ErrExitLimitPriceHit,
+		types.ErrLimitPriceNotSatisfied,
 		routes,
 		100,
 		math_utils.MustNewPrecDecFromStr("0.91"),
