@@ -148,6 +148,8 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 				k.SetInactiveLimitOrderTranche(ctx, tranche)
 				k.RemoveLimitOrderTranche(ctx, tranche.Key)
 				archivedTranches[string(val.TrancheRef)] = true
+
+				ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranchePurge(tranche))
 			}
 		}
 
