@@ -106,7 +106,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
 	github.com/emicklei/dot v1.6.1 // indirect
-	github.com/fatih/color v1.16.0 // indirect
+	github.com/fatih/color v1.17.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/getsentry/sentry-go v0.27.0 // indirect
@@ -139,7 +139,7 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-plugin v1.5.2 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
-	github.com/hashicorp/go-version v1.6.0 // indirect
+	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -232,7 +232,7 @@ replace (
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.0
 	github.com/prometheus/common => github.com/prometheus/common v0.47.0
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
-	//github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20240529102440-33780b6362ff
-	github.com/skip-mev/feemarket => ../feemarket
+	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20240529202339-ecb1e6d614b9
+	//github.com/skip-mev/feemarket => ../feemarket
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
