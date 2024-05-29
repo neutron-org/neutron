@@ -8,6 +8,8 @@ import (
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
+// SimulationBankKeeper can be used by queries that require running a transaction but don't need to check bank balances
+// ie. EstimateMultiHopSwap & EstimatePlaceLimitOrder
 type SimulationBankKeeper struct {
 	originalBankKeeper types.BankKeeper
 }

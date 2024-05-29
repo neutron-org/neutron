@@ -27,7 +27,7 @@ func (k Keeper) EstimateMultiHopSwap(
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	cacheCtx, _ := ctx.CacheContext()
 
-	oldBK := k.bankKeeper
+	oldBk := k.bankKeeper
 	k.bankKeeper = NewSimulationBankKeeper(k.bankKeeper)
 	coinOut, err := k.MultiHopSwapCore(
 		cacheCtx,
@@ -43,7 +43,7 @@ func (k Keeper) EstimateMultiHopSwap(
 	}
 
 	//nolint:staticcheck // Should be unnecessary but out of an abundance of caution we restore the old bankkeeper
-	k.bankKeeper = oldBK
+	k.bankKeeper = oldBk
 
 	return &types.QueryEstimateMultiHopSwapResponse{CoinOut: coinOut}, nil
 }

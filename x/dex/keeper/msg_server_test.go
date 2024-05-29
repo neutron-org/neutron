@@ -914,7 +914,7 @@ func (s *DexTestSuite) multiHopSwaps(
 	s.Assert().Nil(err)
 }
 
-func (s *DexTestSuite) estimatesMultiHopSwap(
+func (s *DexTestSuite) estimateMultiHopSwap(
 	routes [][]string,
 	amountIn int,
 	exitLimitPrice math_utils.PrecDec,
@@ -935,7 +935,7 @@ func (s *DexTestSuite) estimatesMultiHopSwap(
 	return res.CoinOut
 }
 
-func (s *DexTestSuite) estimatesMultiHopSwapFails(
+func (s *DexTestSuite) estimateMultiHopSwapFails(
 	expectedErr error,
 	routes [][]string,
 	amountIn int,

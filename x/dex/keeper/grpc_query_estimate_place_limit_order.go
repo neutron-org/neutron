@@ -35,7 +35,7 @@ func (k Keeper) EstimatePlaceLimitOrder(
 		return nil, err
 	}
 
-	oldBK := k.bankKeeper
+	oldBk := k.bankKeeper
 	k.bankKeeper = NewSimulationBankKeeper(k.bankKeeper)
 	_, totalInCoin, swapInCoin, swapOutCoin, err := k.PlaceLimitOrderCore(
 		cacheCtx,
@@ -54,7 +54,7 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	}
 
 	//nolint:staticcheck // Should be unnecessary but out of an abundance of caution we restore the old bankkeeper
-	k.bankKeeper = oldBK
+	k.bankKeeper = oldBk
 
 	return &types.QueryEstimatePlaceLimitOrderResponse{
 		TotalInCoin: totalInCoin,
