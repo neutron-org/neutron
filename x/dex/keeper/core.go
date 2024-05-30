@@ -342,48 +342,44 @@ func (k Keeper) PlaceLimitOrderCore(
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
-	amountLeft, totalIn := amountIn, math.ZeroInt()
+	amountLeft := amountIn
 
-	// For everything except just-in-time (JIT) orders try to execute as a swap first
-	if !orderType.IsJIT() {
-		// This is ok because tokenOut is provided to the constructor of PairID above
-		takerTradePairID := pairID.MustTradePairIDFromMaker(tokenOut)
-		var limitPrice math_utils.PrecDec
-		limitPrice, err = types.CalcPrice(tickIndexInToOut)
-		if err != nil {
-			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-		}
+	// This is ok because tokenOut is provided to the constructor of PairID above
+	takerTradePairID := pairID.MustTradePairIDFromMaker(tokenOut)
+	var limitPrice math_utils.PrecDec
+	limitPrice, err = types.CalcPrice(tickIndexInToOut)
+	if err != nil {
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+	}
 
-		var orderFilled bool
-		swapInCoin, swapOutCoin, orderFilled, err = k.SwapWithCache(
+	// Ensure that after rounding user will get at least 1 token out.
+	err = types.ValidateFairOutput(amountIn, limitPrice)
+	if err != nil {
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+	}
+
+	var orderFilled bool
+	if orderType.IsTakerOnly() {
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, orderType)
+	} else {
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice)
+	}
+	if err != nil {
+		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+	}
+
+	totalIn := swapInCoin.Amount
+	amountLeft = amountLeft.Sub(swapInCoin.Amount)
+
+	if swapOutCoin.IsPositive() {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(
 			ctx,
-			takerTradePairID,
-			amountIn,
-			maxAmountOut,
-			&limitPrice,
+			types.ModuleName,
+			receiverAddr,
+			sdk.Coins{swapOutCoin},
 		)
 		if err != nil {
 			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-		}
-
-		if orderType.IsFoK() && !orderFilled {
-			err = types.ErrFoKLimitOrderNotFilled
-			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-		}
-
-		totalIn = swapInCoin.Amount
-		amountLeft = amountLeft.Sub(swapInCoin.Amount)
-
-		if swapOutCoin.IsPositive() {
-			err = k.bankKeeper.SendCoinsFromModuleToAccount(
-				ctx,
-				types.ModuleName,
-				receiverAddr,
-				sdk.Coins{swapOutCoin},
-			)
-			if err != nil {
-				return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
-			}
 		}
 	}
 
@@ -414,8 +410,17 @@ func (k Keeper) PlaceLimitOrderCore(
 
 	sharesIssued := math.ZeroInt()
 	// FOR GTC, JIT & GoodTil try to place a maker limitOrder with remaining Amount
-	if amountLeft.IsPositive() &&
+	if amountLeft.IsPositive() && !orderFilled &&
 		(orderType.IsGTC() || orderType.IsJIT() || orderType.IsGoodTil()) {
+
+		// Ensure that the maker portion will generate at least 1 token of output
+		// NOTE: This does mean that a successful taker leg of the trade will be thrown away since the entire tx will fail.
+		// In most circumstances this seems preferable to executing the taker leg and exiting early before placing a maker
+		// order with the remaining liquidity.
+		err = types.ValidateFairOutput(amountLeft, limitPrice)
+		if err != nil {
+			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
+		}
 		placeTranche.PlaceMakerLimitOrder(amountLeft)
 		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountLeft)
 
@@ -569,7 +574,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		},
 	)
 
-	amountOutTokenOut := math_utils.ZeroPrecDec()
+	amountOutTokenOut := math.ZeroInt()
 	remainingTokenIn := math.ZeroInt()
 	// It's possible that a TrancheUser exists but tranche does not if LO was filled entirely through a swap
 	if found {
@@ -580,6 +585,10 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 			// This is only relevant for inactive JIT and GoodTil limit orders
 			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
 			k.SaveInactiveTranche(ctx, tranche)
+
+			// Treat the removed tokenIn as cancelled shares
+			trancheUser.SharesCancelled = trancheUser.SharesCancelled.Add(remainingTokenIn)
+
 		} else {
 			k.SetLimitOrderTranche(ctx, tranche)
 		}
@@ -590,7 +599,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	k.SaveTrancheUser(ctx, trancheUser)
 
 	if amountOutTokenOut.IsPositive() || remainingTokenIn.IsPositive() {
-		coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut.TruncateInt())
+		coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
 		coinMakerDenomRefund := sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 		coins := sdk.NewCoins(coinTakerDenomOut, coinMakerDenomRefund)
 		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
@@ -606,7 +615,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tradePairID.TakerDenom,
-		amountOutTokenOut.TruncateInt(),
+		amountOutTokenOut,
 		trancheKey,
 	))
 

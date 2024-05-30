@@ -361,19 +361,17 @@ func (s *DexTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
 	s.assertAliceDepositFails(err, NewDeposit(0, 5, 0, 1))
 }
 
-// NOTE: The error checking for ShareUnderflow is completely subsumed by the ensureFairTruePrice check
-// it no longer possible to manually check this test case. Leaving the example test here should things change in the future
-// func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
-//	s.fundAliceBalances(0, 40_000_000_000_0)
+func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
+	s.fundAliceBalances(0, 40_000_000_000_0)
 
-//	// GIVEN
-//	// deposit 50 of token B at tick -352436 fee 0
-//	// THEN 0 shares would be issued so deposit fails
-//	s.assertAliceDepositFails(
-//		types.ErrDepositShareUnderflow,
-//		NewDeposit(0, 26457, -240_000, 0),
-//	)
-// }
+	// GIVEN
+	// deposit 50 of token B at tick -352436 fee 0
+	// THEN 0 shares would be issued so deposit fails
+	s.assertAliceDepositFails(
+		types.ErrDepositShareUnderflow,
+		NewDeposit(0, 26457, -240_000, 0),
+	)
+}
 
 func (s *DexTestSuite) TestDepositSingleInvalidFeeFails() {
 	s.fundAliceBalances(0, 50)
