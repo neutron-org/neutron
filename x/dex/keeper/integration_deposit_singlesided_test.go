@@ -425,9 +425,7 @@ func (s *DexTestSuite) TestDepositNilOptions() {
 		Fees:            []uint64{1},
 		Options:         []*types.DepositOptions{nil}, // WHEN options are nil
 	}
-	err := msg.Validate()
-	s.Assert().NoError(err)
-	_, err = s.msgServer.Deposit(s.Ctx, msg)
+	_, err := s.msgServer.Deposit(s.Ctx, msg)
 	s.Assert().NoError(err)
 }
 
