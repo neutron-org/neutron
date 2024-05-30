@@ -16,4 +16,6 @@ message Params {
     (gogoproto.jsontag) = "max_true_taker_spread"
   ];
   bool paused = 3;
+  uint64 max_JITs_per_block = 4;
+  uint64 good_til_purge_allowance = 5;
 }

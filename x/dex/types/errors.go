@@ -34,11 +34,6 @@ var (
 		1112,
 		"Cannot cancel additional liquidity from limit order tranche:",
 	) // "%d", tranche.TrancheKey
-	ErrInsufficientLiquidity = sdkerrors.Register(
-		ModuleName,
-		1114,
-		"Not enough liquidity to complete trade",
-	)
 	ErrTickOutsideRange = sdkerrors.Register(
 		ModuleName,
 		1117,
@@ -124,11 +119,6 @@ var (
 		1139,
 		"Limit order expiration time must be greater than current block time:",
 	)
-	ErrExitLimitPriceHit = sdkerrors.Register(
-		ModuleName,
-		1140,
-		"ExitLimitPrice cannot be satisfied.",
-	)
 	ErrAllMultiHopRoutesFailed = sdkerrors.Register(
 		ModuleName,
 		1141,
@@ -184,14 +174,24 @@ var (
 		1153,
 		"Can only provide a single deposit amount for each tick, fee pair",
 	)
-	ErrSwapAmountTooSmall = sdkerrors.Register(
+	ErrLimitPriceNotSatisfied = sdkerrors.Register(
 		ModuleName,
 		1154,
-		"Swap amount too small; creates unfair spread for liquidity providers",
+		"Trade cannot be filled at the specified LimitPrice",
 	)
 	ErrDexPaused = sdkerrors.Register(
 		ModuleName,
 		1155,
 		"Dex has been paused, all messages are disabled at this time",
+	)
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
+		ModuleName,
+		1156,
+		"Maximum JIT LimitOrders per block has already been reached",
+	)
+	ErrTradeTooSmall = sdkerrors.Register(
+		ModuleName,
+		1157,
+		"Specified trade will result in a rounded output of 0",
 	)
 )

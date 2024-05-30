@@ -128,7 +128,7 @@ build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
-		--build-arg BUILD_TAGS=$(build_tags_comma_sep),muslc,skip_ccv_msg_filter \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep),skip_ccv_msg_filter,muslc \
 		--build-arg RUNNER_IMAGE="alpine:3.18" \
 		--platform linux/amd64 \
 		-t neutron-node \

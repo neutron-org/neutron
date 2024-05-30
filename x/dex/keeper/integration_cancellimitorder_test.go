@@ -248,7 +248,7 @@ func (s *DexTestSuite) TestCancelGoodTilAfterExpirationFails() {
 	s.assertNLimitOrderExpiration(1)
 
 	// WHEN expiration date has passed
-	s.nextBlockWithTime(time.Now().AddDate(0, 0, 2))
+	s.beginBlockWithTime(time.Now().AddDate(0, 0, 2))
 
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
@@ -278,7 +278,7 @@ func (s *DexTestSuite) TestCancelJITNextBlock() {
 
 	// WHEN we move to block N+1
 	s.nextBlockWithTime(time.Now())
-	// TODO: s.App.EndBlock(abci.RequestEndBlock{Height: 0})
+	s.beginBlockWithTime(time.Now())
 
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
