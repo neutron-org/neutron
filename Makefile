@@ -131,11 +131,11 @@ build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
 		--build-arg BUILD_TAGS=$(build_tags_comma_sep),skip_ccv_msg_filter,muslc \
 		--build-arg RUNNER_IMAGE="alpine:3.18" \
 		--platform linux/amd64 \
-		-t neutron-e2e \
+		-t neutron-node \
 		--load \
 		-f Dockerfile.builder .
 
-slinky-e2e-test: build-slinky-e2e-docker-image
+slinky-e2e-test:
 	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 20m ./...
 
 install-test-binary: check_version go.sum

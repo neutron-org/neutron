@@ -27,7 +27,7 @@ func init() {
 
 var (
 	image = ibc.DockerImage{
-		Repository: "neutron-e2e",
+		Repository: "neutron-node",
 		Version:    "latest",
 		UidGid:     "1025:1025",
 	}
