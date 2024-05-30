@@ -77,6 +77,7 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 
 				config.SetRoot(clientCtx.HomeDir)
 
+				fmt.Printf("Initial validators: %+v\n", initialValset)
 				vals, err := tmtypes.PB2TM.ValidatorUpdates(initialValset)
 				if err != nil {
 					return errors.Wrap(err, "could not convert val updates to validator set")
@@ -126,6 +127,7 @@ func writePeersIntoConfig(err error, runnerVal string) error {
 		return err
 	}
 	baseConfig := strings.Replace(string(baseConfigBytes), "persistent_peers = \"\"", "persistent_peers = \""+peersStr+"\"", -1)
+	baseConfig = strings.Replace(baseConfig, "seeds = \"\"", "seeds = \""+peersStr+"\"", -1)
 	err = os.WriteFile("/opt/neutron/data/config/config.toml", []byte(baseConfig), 0644)
 	if err != nil {
 		return err
