@@ -157,6 +157,13 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	s.Equal(yesterday, *inactiveTrancheList[0].ExpirationTime)
 	s.Equal(yesterday, *inactiveTrancheList[1].ExpirationTime)
 	s.Equal(now, *inactiveTrancheList[2].ExpirationTime)
+
+	// 3 TickUpdates are emitted for the expired tranches
+	s.AssertEventEmitted(s.Ctx, types.TickUpdateEventKey, 3)
+	updateEvent := s.FindEvent(ctx.EventManager().Events(), types.TickUpdateEventKey)
+	eventAttrs := s.ExtractAttributes(updateEvent)
+	// Event has Reserves == 0
+	s.Equal(eventAttrs[types.TickUpdateEventReserves], "0")
 }
 
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
