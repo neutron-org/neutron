@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -95,7 +96,7 @@ func (s *DexTestSuite) TestEstimatePlaceLimitOrderFoKFails() {
 		OrderType:        types.LimitOrderType_IMMEDIATE_OR_CANCEL,
 	})
 
-	//THEN error is returned
+	// THEN error is returned
 	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
 	s.Nil(resp)
 
