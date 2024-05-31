@@ -209,4 +209,20 @@ var (
 		1158,
 		"Cannot deposit at a price below the opposing token's current price",
 	)
+	ErrCalcTickFromPrice = sdkerrors.Register(
+		ModuleName,
+		1159,
+		"Cannot convert price to int64 tick value",
+	)
+	ErrPriceOutsideRange = sdkerrors.Register(
+		ModuleName,
+		1160,
+		"Invalid price; 0.00000000000000000000000050 < PRICE > 2020125331305056766451886.728",
+	)
+
+	ErrInvalidPriceAndTick = sdkerrors.Register(
+		ModuleName,
+		1161,
+		"Only LimitSellPrice or TickIndexInToOut should be specified",
+	)
 )

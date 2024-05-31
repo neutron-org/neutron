@@ -398,6 +398,29 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	return msg.TrancheKey
 }
 
+func (s *DexTestSuite) limitSellsWithPrice(
+	account sdk.AccAddress,
+	tokenIn string,
+	price math_utils.PrecDec,
+	amountIn int,
+) string {
+	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
+
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
+		Creator:        account.String(),
+		Receiver:       account.String(),
+		TokenIn:        tokenIn,
+		TokenOut:       tokenOut,
+		LimitSellPrice: &price,
+		AmountIn:       sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
+		OrderType:      types.LimitOrderType_GOOD_TIL_CANCELLED,
+	})
+
+	s.Assert().NoError(err)
+
+	return msg.TrancheKey
+}
+
 func (s *DexTestSuite) limitSellsInt(
 	account sdk.AccAddress,
 	tokenIn string,
@@ -1982,6 +2005,9 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 
 	ZEROINT := sdkmath.ZeroInt()
 	ONEINT := sdkmath.OneInt()
+	TINYDEC := math_utils.MustNewPrecDecFromStr("0.000000000000000000000000494")
+	HUGEDEC := math_utils.MustNewPrecDecFromStr("2020125331305056766452345.127500016657360222036663652")
+	FIVEDEC := math_utils.NewPrecDec(5)
 	tests := []struct {
 		name        string
 		msg         types.MsgPlaceLimitOrder
@@ -2112,6 +2138,43 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 				OrderType:        types.LimitOrderType_GOOD_TIL_CANCELLED,
 			},
 			types.ErrTickOutsideRange,
+		},
+		{
+			"price < minPrice",
+			types.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				LimitSellPrice: &TINYDEC,
+				AmountIn:       sdkmath.OneInt(),
+			},
+			types.ErrPriceOutsideRange,
+		},
+		{
+			"price > maxPrice",
+			types.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				LimitSellPrice: &HUGEDEC,
+				AmountIn:       sdkmath.OneInt(),
+			},
+			types.ErrPriceOutsideRange,
+		},
+		{
+			"invalid tickIndexInToOut & LimitSellPrice",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				LimitSellPrice:   &FIVEDEC,
+				TickIndexInToOut: 6,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidPriceAndTick,
 		},
 	}
 

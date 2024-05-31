@@ -239,14 +239,17 @@ type Dex struct {
 // MsgPlaceLimitOrder is a copy dextypes.MsgPlaceLimitOrder with altered ExpirationTime field,
 // it's a preferable way to pass timestamp as unixtime to contracts
 type MsgPlaceLimitOrder struct {
-	Creator          string   `json:"creator,omitempty"`
-	Receiver         string   `json:"receiver,omitempty"`
-	TokenIn          string   `json:"token_in,omitempty"`
-	TokenOut         string   `json:"token_out,omitempty"`
+	Creator  string `json:"creator,omitempty"`
+	Receiver string `json:"receiver,omitempty"`
+	TokenIn  string `json:"token_in,omitempty"`
+	TokenOut string `json:"token_out,omitempty"`
+	// Deprecated: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
 	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`
 	AmountIn         math.Int `json:"amount_in"`
 	OrderType        string   `json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
 	MaxAmountOut   *math.Int `json:"max_amount_out"`
+	// Accepts standard decimals and decimals with scientific notation (ie. 1234.23E-7)
+	LimitSellPrice string `json:"limit_sell_price,omitempty"`
 }
