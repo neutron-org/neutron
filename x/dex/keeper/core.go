@@ -49,11 +49,15 @@ func (k Keeper) DepositCore(
 		amount1 := amounts1[i]
 		tickIndex := tickIndices[i]
 		fee := fees[i]
+		option := options[i]
+		if option == nil {
+			option = &types.DepositOptions{}
+		}
+		autoswap := !option.DisableAutoswap
 
 		if err := k.ValidateFee(ctx, fee); err != nil {
 			return nil, nil, nil, err
 		}
-		autoswap := !options[i].DisableAutoswap
 
 		pool, err := k.GetOrInitPool(
 			ctx,
