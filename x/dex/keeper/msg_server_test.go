@@ -1552,6 +1552,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         "invalid_address",
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -1565,6 +1567,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        "invalid address",
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -1574,10 +1578,57 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.ErrInvalidAddress,
 		},
 		{
+			"invalid denom A",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "er",
+				TokenB:          "factory/neutron1rxel5kdhu089fdk4xugmryx0y2wzjx8rqsa6hu/validDenom2",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{1},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid denom B",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "er",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{1},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"denoms match",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenA",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{1},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
 			"invalid fee indexes length",
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "factory/neutron1rxel5kdhu089fdk4xugmryx0y2wzjx8rqsa6hu/validDenom2",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []sdkmath.Int{},
@@ -1591,6 +1642,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []sdkmath.Int{},
@@ -1604,6 +1657,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -1617,6 +1672,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []sdkmath.Int{},
@@ -1630,6 +1687,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{1},
 				TickIndexesAToB: []int64{1},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -1643,6 +1702,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				AmountsA:        []sdkmath.Int{},
@@ -1656,6 +1717,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{1, 2, 1},
 				TickIndexesAToB: []int64{0, 0, 0},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt(), sdkmath.OneInt(), sdkmath.OneInt()},
@@ -1669,6 +1732,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []sdkmath.Int{sdkmath.ZeroInt()},
@@ -1682,6 +1747,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{3},
 				TickIndexesAToB: []int64{559678},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -1695,6 +1762,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{50},
 				TickIndexesAToB: []int64{-559631},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -1708,6 +1777,8 @@ func TestMsgDepositValidate(t *testing.T) {
 			types.MsgDeposit{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{559681},
 				TickIndexesAToB: []int64{0},
 				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
@@ -1742,6 +1813,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         "invalid_address",
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
@@ -1753,6 +1826,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        "invalid_address",
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
@@ -1760,10 +1835,38 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.ErrInvalidAddress,
 		},
 		{
+			"invalid TokenA",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "er",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid TokenB",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "er",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
 			"invalid fee indexes length",
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
@@ -1775,6 +1878,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
@@ -1786,6 +1891,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []sdkmath.Int{},
@@ -1797,6 +1904,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{},
 				TickIndexesAToB: []int64{},
 				SharesToRemove:  []sdkmath.Int{},
@@ -1808,6 +1917,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{0},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []sdkmath.Int{sdkmath.ZeroInt()},
@@ -1819,6 +1930,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{3},
 				TickIndexesAToB: []int64{559678},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
@@ -1830,6 +1943,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{50},
 				TickIndexesAToB: []int64{-559631},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
@@ -1841,6 +1956,8 @@ func TestMsgWithdrawalValidate(t *testing.T) {
 			types.MsgWithdrawal{
 				Creator:         sample.AccAddress(),
 				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
 				Fees:            []uint64{559681},
 				TickIndexesAToB: []int64{0},
 				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
@@ -1893,6 +2010,42 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 				AmountIn:         sdkmath.OneInt(),
 			},
 			types.ErrInvalidAddress,
+		},
+		{
+			"invalid TokenIn",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "er",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid TokenOut",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "er",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"denoms match",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenA",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidDenom,
 		},
 		{
 			"invalid zero limit order",
@@ -2045,7 +2198,7 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 				Creator:  "invalid_address",
 				Receiver: sample.AccAddress(),
 				Routes: []*types.MultiHopRoute{
-					{Hops: []string{"A", "B", "C"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
 				},
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
@@ -2057,7 +2210,7 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 				Creator:  sample.AccAddress(),
 				Receiver: "invalid_address",
 				Routes: []*types.MultiHopRoute{
-					{Hops: []string{"A", "B", "C"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
 				},
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
@@ -2079,8 +2232,8 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),
 				Routes: []*types.MultiHopRoute{
-					{Hops: []string{"A", "B", "C"}},
-					{Hops: []string{"A", "B", "Z"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenZ"}},
 				},
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
@@ -2091,7 +2244,7 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 			types.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*types.MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				Routes:         []*types.MultiHopRoute{{Hops: []string{"TokenA", "TokenB", "TokenC"}}},
 				AmountIn:       sdkmath.NewInt(-1),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
 			},
@@ -2103,8 +2256,8 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 				Creator:  sample.AccAddress(),
 				Receiver: sample.AccAddress(),
 				Routes: []*types.MultiHopRoute{
-					{Hops: []string{"A", "B", "C"}},                // normal
-					{Hops: []string{"A", "B", "D", "E", "B", "C"}}, // has cycle
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},                               // normal
+					{Hops: []string{"TokenA", "TokenB", "TokenD", "TokenE", "TokenB", "TokenC"}}, // has cycle
 				},
 				AmountIn:       sdkmath.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
@@ -2112,11 +2265,39 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 			types.ErrCycleInHops,
 		},
 		{
+			"invalid denom in route",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenD", "TokenE", "er", "TokenC"}},
+				},
+				AmountIn:       sdkmath.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"entry token denom mismatch in route",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenD", "TokenB", "TokenC"}},
+				},
+				AmountIn:       sdkmath.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrMultihopEntryTokensMismatch,
+		},
+		{
 			"zero exit limit price",
 			types.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*types.MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				Routes:         []*types.MultiHopRoute{{Hops: []string{"TokenA", "TokenB", "TokenC"}}},
 				AmountIn:       sdkmath.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0"),
 			},
@@ -2127,7 +2308,7 @@ func TestMsgMultiHopSwapValidate(t *testing.T) {
 			types.MsgMultiHopSwap{
 				Creator:        sample.AccAddress(),
 				Receiver:       sample.AccAddress(),
-				Routes:         []*types.MultiHopRoute{{Hops: []string{"A", "B", "C"}}},
+				Routes:         []*types.MultiHopRoute{{Hops: []string{"TokenA", "TokenB", "TokenC"}}},
 				AmountIn:       sdkmath.OneInt(),
 				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("-0.5"),
 			},

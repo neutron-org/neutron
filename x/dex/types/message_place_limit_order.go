@@ -69,6 +69,21 @@ func (msg *MsgPlaceLimitOrder) Validate() error {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid receiver address (%s)", err)
 	}
 
+	// Verify tokenIn and tokenOut are valid denoms
+	err = sdk.ValidateDenom(msg.TokenIn)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenIn denom (%s)", err)
+	}
+
+	err = sdk.ValidateDenom(msg.TokenOut)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenOut denom (%s)", err)
+	}
+
+	if msg.TokenIn == msg.TokenOut {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "tokenIn cannot equal tokenOut")
+	}
+
 	if msg.AmountIn.LTE(math.ZeroInt()) {
 		return ErrZeroLimitOrder
 	}

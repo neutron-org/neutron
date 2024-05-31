@@ -189,9 +189,19 @@ var (
 		1156,
 		"Maximum JIT LimitOrders per block has already been reached",
 	)
-	ErrTradeTooSmall = sdkerrors.Register(
+	ErrInvalidDenom = sdkerrors.Register(
 		ModuleName,
 		1157,
+		"Invalid token denom",
+	)
+	ErrMultihopEntryTokensMismatch = sdkerrors.Register(
+		ModuleName,
+		1158,
+		"MultihopSwap starting tokens for each route must be the same",
+	)
+	ErrTradeTooSmall = sdkerrors.Register(
+		ModuleName,
+		1159,
 		"Specified trade will result in a rounded output of 0",
 	)
 	ErrDepositBehindEnemyLines = sdkerrors.Register(
