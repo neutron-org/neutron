@@ -194,4 +194,9 @@ var (
 		1157,
 		"Specified trade will result in a rounded output of 0",
 	)
+	ErrDepositBehindEnemyLines = sdkerrors.Register(
+		ModuleName,
+		1158,
+		"Cannot deposit at a price below the opposing token's current price",
+	)
 )
