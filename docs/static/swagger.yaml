@@ -13876,6 +13876,17 @@ definitions:
       QueryAllContractStateResponse is the response type for the
       Query/AllContractState RPC method
     type: object
+  cosmwasm.wasm.v1.QueryBuildAddressResponse:
+    description: >-
+      QueryBuildAddressResponse is the response type for the Query/BuildAddress
+      RPC
+
+      method.
+    properties:
+      address:
+        title: Address is the contract address
+        type: string
+    type: object
   cosmwasm.wasm.v1.QueryCodeResponse:
     properties:
       code_info:
@@ -15608,8 +15619,14 @@ definitions:
           format: uint64
           type: string
         type: array
-      max_true_taker_spread:
+      good_til_purge_allowance:
+        format: uint64
         type: string
+      max_JITs_per_block:
+        format: uint64
+        type: string
+      paused:
+        type: boolean
     type: object
   neutron.dex.Pool:
     properties:
@@ -16569,8 +16586,14 @@ definitions:
               format: uint64
               type: string
             type: array
-          max_true_taker_spread:
+          good_til_purge_allowance:
+            format: uint64
             type: string
+          max_JITs_per_block:
+            format: uint64
+            type: string
+          paused:
+            type: boolean
         type: object
     type: object
   neutron.dex.QueryPoolResponse:
@@ -35203,6 +35226,74 @@ paths:
       summary: PinnedCodes gets the pinned code ids
       tags:
         - Query
+  /cosmwasm/wasm/v1/contract/build_address:
+    get:
+      operationId: BuildAddress
+      parameters:
+        - description: CodeHash is the hash of the code.
+          in: query
+          name: code_hash
+          required: false
+          type: string
+        - description: CreatorAddress is the address of the contract instantiator.
+          in: query
+          name: creator_address
+          required: false
+          type: string
+        - description: Salt is a hex encoded salt.
+          in: query
+          name: salt
+          required: false
+          type: string
+        - description: >-
+            InitArgs are optional json encoded init args to be used in contract
+            address
+
+            building if provided.
+          format: byte
+          in: query
+          name: init_args
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryBuildAddressResponse is the response type for the
+              Query/BuildAddress RPC
+
+              method.
+            properties:
+              address:
+                title: Address is the contract address
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: BuildAddress builds a contract address
+      tags:
+        - Query
   /cosmwasm/wasm/v1/contract/{address}:
     get:
       operationId: ContractInfo
@@ -38981,8 +39072,14 @@ paths:
                       format: uint64
                       type: string
                     type: array
-                  max_true_taker_spread:
+                  good_til_purge_allowance:
+                    format: uint64
                     type: string
+                  max_JITs_per_block:
+                    format: uint64
+                    type: string
+                  paused:
+                    type: boolean
                 type: object
             type: object
         default:

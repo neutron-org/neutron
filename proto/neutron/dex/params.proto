@@ -9,12 +9,6 @@ option go_package = "github.com/neutron-org/neutron/v4/x/dex/types";
 message Params {
   option (gogoproto.goproto_stringer) = false;
   repeated uint64 fee_tiers = 1;
-  string max_true_taker_spread = 2 [
-    (gogoproto.moretags) = "yaml:\"max_true_taker_spread\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
-    (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "max_true_taker_spread"
-  ];
   bool paused = 3;
   uint64 max_JITs_per_block = 4;
   uint64 good_til_purge_allowance = 5;
