@@ -13,6 +13,7 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	req *types.QueryEstimatePlaceLimitOrderRequest,
 ) (*types.QueryEstimatePlaceLimitOrderResponse, error) {
 	msg := types.MsgPlaceLimitOrder{
+		// Add a random address so that Validate passes. This address is not used for anything within the query
 		Creator:          "neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
 		Receiver:         "neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
 		TokenIn:          req.TokenIn,
