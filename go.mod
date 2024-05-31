@@ -232,7 +232,7 @@ replace (
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.0
 	github.com/prometheus/common => github.com/prometheus/common v0.47.0
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
-	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20240529202339-ecb1e6d614b9
+	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20240531203218-3d49aa8a026f
 	//github.com/skip-mev/feemarket => ../feemarket
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
