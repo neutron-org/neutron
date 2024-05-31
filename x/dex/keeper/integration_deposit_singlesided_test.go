@@ -412,6 +412,23 @@ func (s *DexTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
 	s.assertAliceDepositFails(err, NewDeposit(0, 5, 0, 1))
 }
 
+func (s *DexTestSuite) TestDepositNilOptions() {
+	s.fundAliceBalances(0, 1)
+	msg := &types.MsgDeposit{
+		Creator:         s.alice.String(),
+		Receiver:        s.alice.String(),
+		TokenA:          "TokenA",
+		TokenB:          "TokenB",
+		AmountsA:        []sdkmath.Int{sdkmath.ZeroInt()},
+		AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+		TickIndexesAToB: []int64{0},
+		Fees:            []uint64{1},
+		Options:         []*types.DepositOptions{nil}, // WHEN options are nil
+	}
+	_, err := s.msgServer.Deposit(s.Ctx, msg)
+	s.Assert().NoError(err)
+}
+
 func (s *DexTestSuite) TestDepositSingleLowTickUnderflowFails() {
 	s.fundAliceBalances(0, 40_000_000_000_0)
 

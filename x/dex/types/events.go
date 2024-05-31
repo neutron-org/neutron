@@ -223,6 +223,19 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
 	)
 }
 
+func CreateTickUpdateLimitOrderTranchePurge(tranche *LimitOrderTranche) sdk.Event {
+	tradePairID := tranche.Key.TradePairId
+	pairID := tradePairID.MustPairID()
+	return TickUpdateEvent(
+		pairID.Token0,
+		pairID.Token1,
+		tradePairID.MakerDenom,
+		tranche.Key.TickIndexTakerToMaker,
+		math.ZeroInt(),
+		sdk.NewAttribute(TickUpdateEventTrancheKey, tranche.Key.TrancheKey),
+	)
+}
+
 func GoodTilPurgeHitLimitEvent(gas types.Gas) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
