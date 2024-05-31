@@ -50,6 +50,10 @@ func (k Keeper) DepositCore(
 		tickIndex := tickIndices[i]
 		fee := fees[i]
 		option := options[i]
+		if option == nil {
+			option = &types.DepositOptions{}
+		}
+		autoswap := !option.DisableAutoswap
 
 		if err := k.ValidateFee(ctx, fee); err != nil {
 			return nil, nil, nil, failedDeposits, err
@@ -64,7 +68,6 @@ func (k Keeper) DepositCore(
 			failedDeposits = append(failedDeposits, &types.FailedDeposit{DepositIdx: uint64(i), Error: err.Error()})
 			continue
 		}
-		autoswap := !option.DisableAutoswap
 
 		pool, err := k.GetOrInitPool(
 			ctx,
