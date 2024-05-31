@@ -298,11 +298,11 @@ message QueryEstimatePlaceLimitOrderRequest {
   ];
   LimitOrderType order_type = 7;
   // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
-  google.protobuf.Timestamp expiration_time = 9 [
+  google.protobuf.Timestamp expiration_time = 8 [
     (gogoproto.stdtime) = true,
     (gogoproto.nullable) = true
   ];
-  string max_amount_out = 8 [
+  string max_amount_out = 9 [
     (gogoproto.moretags) = "yaml:\"max_amount_out\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,
