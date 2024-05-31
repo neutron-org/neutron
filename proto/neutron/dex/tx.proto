@@ -29,6 +29,7 @@ service Msg {
 
 message DepositOptions {
   bool disable_autoswap = 1;
+  bool fail_tx_on_bel = 2;
 }
 
 message MsgDeposit {
@@ -56,6 +57,10 @@ message MsgDeposit {
   repeated DepositOptions options = 9;
 }
 
+message FailedDeposit {
+  uint64 deposit_idx = 1;
+  string error = 2;
+}
 message MsgDepositResponse {
   repeated string reserve0_deposited = 1 [
     (gogoproto.moretags) = "yaml:\"reserve0_deposited\"",
@@ -69,6 +74,7 @@ message MsgDepositResponse {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve1_deposited"
   ];
+  repeated FailedDeposit failed_deposits = 3;
 }
 
 message MsgWithdrawal {
