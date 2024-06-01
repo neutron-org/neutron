@@ -4,9 +4,8 @@ import (
 	"encoding/gob"
 	fmt "fmt"
 	"os"
-	"runtime"
-
 	"path/filepath"
+	"runtime"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -32,7 +31,6 @@ func init() {
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load precomputed powers: %v", err))
 	}
-
 }
 
 func loadPrecomputedPricesFromFile() error {
@@ -85,25 +83,23 @@ func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 	if price.GT(math_utils.OnePrecDec()) {
 		panic("Can only lookup prices <= 1")
 	}
-	var left uint64 = 0
+	var left uint64 // = 0
 	right := MaxTickExp
 
 	// Binary search to find the closest precomputed value
 	for left < right {
-		mid := (left + right) / 2
-		if PrecomputedPrices[mid].Equal(price) {
+		switch mid := (left + right) / 2; {
+		case PrecomputedPrices[mid].Equal(price):
 			return mid
-		} else if PrecomputedPrices[mid].LT(price) {
+		case PrecomputedPrices[mid].LT(price):
 			right = mid - 1
-		} else {
+		default:
 			left = mid + 1
+
 		}
 	}
 
-	// If exact match is not found, return the closest upper bound
-	if right < MaxTickExp && PrecomputedPrices[right].LT(price) {
-		right++
-	}
+	// If exact match is not found, return the upper bound
 	return right
 }
 
