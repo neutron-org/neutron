@@ -10,6 +10,6 @@ message Params {
   option (gogoproto.goproto_stringer) = false;
   repeated uint64 fee_tiers = 1;
   bool paused = 3;
-  uint64 max_JITs_per_block = 4;
+  uint64 max_jits_per_block = 4;
   uint64 good_til_purge_allowance = 5;
 }

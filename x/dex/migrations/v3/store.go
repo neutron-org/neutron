@@ -39,7 +39,7 @@ func migrateParams(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.S
 		Paused:                types.DefaultPaused,
 		FeeTiers:              oldParams.FeeTiers,
 		GoodTilPurgeAllowance: types.DefaultGoodTilPurgeAllowance,
-		Max_JITsPerBlock:      types.DefaultMaxJITsPerBlock,
+		MaxJitsPerBlock:       types.DefaultMaxJITsPerBlock,
 	}
 
 	// set params

@@ -30,7 +30,7 @@ func NewParams(feeTiers []uint64, paused bool, maxJITsPerBlock, goodTilPurgeAllo
 	return Params{
 		FeeTiers:              feeTiers,
 		Paused:                paused,
-		Max_JITsPerBlock:      maxJITsPerBlock,
+		MaxJitsPerBlock:       maxJITsPerBlock,
 		GoodTilPurgeAllowance: goodTilPurgeAllowance,
 	}
 }
@@ -45,7 +45,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyFeeTiers, &p.FeeTiers, validateFeeTiers),
 		paramtypes.NewParamSetPair(KeyPaused, &p.Paused, validatePaused),
-		paramtypes.NewParamSetPair(KeyMaxJITsPerBlock, &p.Max_JITsPerBlock, validateMaxJITsPerBlock),
+		paramtypes.NewParamSetPair(KeyMaxJITsPerBlock, &p.MaxJitsPerBlock, validateMaxJITsPerBlock),
 		paramtypes.NewParamSetPair(KeyGoodTilPurgeAllowance, &p.GoodTilPurgeAllowance, validatePurgeAllowance),
 	}
 }
@@ -67,7 +67,7 @@ func (p Params) Validate() error {
 	if err != nil {
 		return fmt.Errorf("invalid paused: %w", err)
 	}
-	if err := validateMaxJITsPerBlock(p.Max_JITsPerBlock); err != nil {
+	if err := validateMaxJITsPerBlock(p.MaxJitsPerBlock); err != nil {
 		return err
 	}
 	if err := validatePurgeAllowance(p.GoodTilPurgeAllowance); err != nil {
