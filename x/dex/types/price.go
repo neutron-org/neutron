@@ -1,11 +1,10 @@
 package types
 
 import (
+	"bytes"
+	_ "embed"
 	"encoding/gob"
 	fmt "fmt"
-	"os"
-	"path/filepath"
-	"runtime"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -21,8 +20,11 @@ const (
 	MaxTickExp            uint64 = 559_680
 	MinPrice              string = "0.000000000000000000000000495"
 	MaxPrice              string = "2020125331305056766452345.127500016657360222036663651"
-	PrecomputedPricesFile        = "precomputed_powers.gob"
+	PrecomputedPricesFile        = "precomputed_prices.gob"
 )
+
+//go:embed precomputed_prices.gob
+var precomputedPricesBz []byte
 
 var PrecomputedPrices []math_utils.PrecDec
 
@@ -34,15 +36,9 @@ func init() {
 }
 
 func loadPrecomputedPricesFromFile() error {
-	file, err := os.Open(precomputedPricesFilePath())
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	var stringPrices []string
-	decoder := gob.NewDecoder(file)
-	err = decoder.Decode(&stringPrices)
+	decoder := gob.NewDecoder(bytes.NewBuffer(precomputedPricesBz))
+	err := decoder.Decode(&stringPrices)
 	if err != nil {
 		return err
 	}
@@ -52,17 +48,10 @@ func loadPrecomputedPricesFromFile() error {
 	for i, s := range stringPrices {
 		PrecomputedPrices[i] = math_utils.MustNewPrecDecFromStr(s)
 	}
+
+	// Release precomputedPricesBz from memory
+	precomputedPricesBz = []byte{}
 	return nil
-}
-
-func precomputedPricesFilePath() string {
-	_, callingFile, _, ok := runtime.Caller(1)
-	if !ok {
-		panic("could not get caller information to load prices files")
-	}
-
-	dir := filepath.Dir(callingFile)
-	return filepath.Join(dir, PrecomputedPricesFile)
 }
 
 // Calculates the price for a swap from token 0 to token 1 given a relative tick
@@ -173,7 +162,7 @@ func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
 
 // func WritePrecomputedPricesToFile() error {
 //	computedPrices := generatePrecomputedPrices()
-//	file, err := os.Create(precomputedPricesFilePath())
+//	file, err := os.Create(PrecomputedPricesFile)
 //	if err != nil {
 //		panic(fmt.Sprintf("Error creating precomputed power file: %v", err.Error()))
 //	}
