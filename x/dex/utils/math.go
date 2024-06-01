@@ -68,6 +68,19 @@ func MustSafeUint64ToInt64(in uint64) (out int64) {
 	return safeInt64
 }
 
+// func Logv2(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
+//	logValue, err := Log2Int(val)
+//	if err != nil {
+//		return math_utils.ZeroPrecDec(), err
+//	}
+//	logBase, err := Log2Int(base)
+//	if err != nil {
+//		return math_utils.ZeroPrecDec(), err
+//	}
+//	return logValue.Quo(logBase), nil
+
+// }
+
 func Log(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
 	valueFloat64 := val.MustFloat64()
 	baseFloat64 := base.MustFloat64()

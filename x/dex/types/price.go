@@ -1,6 +1,13 @@
 package types
 
 import (
+	"encoding/gob"
+	fmt "fmt"
+	"os"
+	"runtime"
+
+	"path/filepath"
+
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
@@ -12,10 +19,53 @@ const (
 	// NOTE: 559_680 is the highest possible tick at which price can be calculated with a < 1% error
 	// when using 27 digit decimal precision (via prec_dec).
 	// The error rate for very negative ticks approaches zero, so there is no concern there
-	MaxTickExp uint64 = 559_680
-	MinPrice   string = "0.000000000000000000000000495"
-	MaxPrice   string = "2020125331305056766452345.127500016657360222036663651"
+	MaxTickExp            uint64 = 559_680
+	MinPrice              string = "0.000000000000000000000000495"
+	MaxPrice              string = "2020125331305056766452345.127500016657360222036663651"
+	PrecomputedPricesFile        = "precomputed_powers.gob"
 )
+
+var PrecomputedPrices []math_utils.PrecDec
+
+func init() {
+	err := loadPrecomputedPricesFromFile()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to load precomputed powers: %v", err))
+	}
+
+}
+
+func loadPrecomputedPricesFromFile() error {
+	file, err := os.Open(precomputedPricesFilePath())
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var stringPrices []string
+	decoder := gob.NewDecoder(file)
+	err = decoder.Decode(&stringPrices)
+	if err != nil {
+		return err
+	}
+
+	// Convert the slice of strings back to math_utils.PrecDec
+	PrecomputedPrices = make([]math_utils.PrecDec, len(stringPrices))
+	for i, s := range stringPrices {
+		PrecomputedPrices[i] = math_utils.MustNewPrecDecFromStr(s)
+	}
+	return nil
+}
+
+func precomputedPricesFilePath() string {
+	_, callingFile, _, ok := runtime.Caller(1)
+	if !ok {
+		panic("could not get caller information to load prices files")
+	}
+
+	dir := filepath.Dir(callingFile)
+	return filepath.Join(dir, PrecomputedPricesFile)
+}
 
 // Calculates the price for a swap from token 0 to token 1 given a relative tick
 // tickIndex refers to the index of a specified tick such that x * 1.0001 ^(-1 * t) = y
@@ -31,27 +81,49 @@ func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 	return math_utils.OnePrecDec().Quo(utils.BasePrice().Power(uint64(relativeTickIndex))), nil
 }
 
+func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
+	if price.GT(math_utils.OnePrecDec()) {
+		panic("Can only lookup prices <= 1")
+	}
+	var left uint64 = 0
+	right := MaxTickExp
+
+	// Binary search to find the closest precomputed value
+	for left < right {
+		mid := (left + right) / 2
+		if PrecomputedPrices[mid].Equal(price) {
+			return mid
+		} else if PrecomputedPrices[mid].LT(price) {
+			right = mid - 1
+		} else {
+			left = mid + 1
+		}
+	}
+
+	// If exact match is not found, return the closest upper bound
+	if right < MaxTickExp && PrecomputedPrices[right].LT(price) {
+		right++
+	}
+	return right
+}
+
 func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 	if IsPriceOutOfRange(price) {
 		return 0, ErrPriceOutsideRange
 	}
 
-	if price.LT(math_utils.OnePrecDec()) {
-		// Log precision is bad on small numbers so we invert first
-		tick, err := utils.Log(math_utils.OnePrecDec().Quo(price), utils.BasePrice())
-		if err != nil {
-			return 0, errors.Wrap(ErrCalcTickFromPrice, err.Error())
-		}
-
-		return tick.RoundInt64(), nil
+	if price.GT(math_utils.OnePrecDec()) {
+		// We only have a lookup table for prices <= 1
+		// So we invert the price for the lookup
+		invPrice := math_utils.OnePrecDec().Quo(price)
+		tick := BinarySearchPriceToTick(invPrice)
+		// flip the sign back the other direction
+		return int64(tick) * -1, nil
 	}
 
-	tick, err := utils.Log(price, utils.BasePrice())
-	if err != nil {
-		return 0, errors.Wrap(ErrCalcTickFromPrice, err.Error())
-	}
+	tick := BinarySearchPriceToTick(price)
 
-	return tick.RoundInt64() * -1, nil
+	return int64(tick), nil
 }
 
 func MustCalcPrice(relativeTickIndex int64) math_utils.PrecDec {
@@ -91,3 +163,34 @@ func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
 	}
 	return nil
 }
+
+// Used for generating the precomputedPrice.gob file
+
+// func generatePrecomputedPrices() []math_utils.PrecDec {
+//	precomputedPowers := make([]math_utils.PrecDec, MaxTickExp+1)
+//	precomputedPowers[0] = math_utils.OnePrecDec() // 1.0001^0 = 1
+//	for i := 1; i <= int(MaxTickExp); i++ {
+//		precomputedPowers[i] = precomputedPowers[i-1].Quo(utils.BasePrice())
+//	}
+//	return precomputedPowers
+// }
+
+// func WritePrecomputedPricesToFile() error {
+//	computedPrices := generatePrecomputedPrices()
+//	file, err := os.Create(precomputedPricesFilePath())
+//	if err != nil {
+//		panic(fmt.Sprintf("Error creating precomputed power file: %v", err.Error()))
+//	}
+//	defer file.Close()
+//	stringPowers := make([]string, len(computedPrices))
+//	for i, power := range computedPrices {
+//		stringPowers[i] = power.String()
+//	}
+
+//	encoder := gob.NewEncoder(file)
+//	err = encoder.Encode(stringPowers)
+//	if err != nil {
+//		panic(fmt.Sprintf("Error writing precomputed powers to file: %v", err.Error()))
+//	}
+//	return nil
+// }
