@@ -29,6 +29,7 @@ service Msg {
 
 message DepositOptions {
   bool disable_autoswap = 1;
+  bool fail_tx_on_bel = 2;
 }
 
 message MsgDeposit {
@@ -56,6 +57,10 @@ message MsgDeposit {
   repeated DepositOptions options = 9;
 }
 
+message FailedDeposit {
+  uint64 deposit_idx = 1;
+  string error = 2;
+}
 message MsgDepositResponse {
   repeated string reserve0_deposited = 1 [
     (gogoproto.moretags) = "yaml:\"reserve0_deposited\"",
@@ -69,6 +74,7 @@ message MsgDepositResponse {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "reserve1_deposited"
   ];
+  repeated FailedDeposit failed_deposits = 3;
 }
 
 message MsgWithdrawal {
@@ -107,7 +113,9 @@ message MsgPlaceLimitOrder {
   string receiver = 2;
   string token_in = 3;
   string token_out = 4;
-  int64 tick_index_in_to_out = 5;
+
+  // DEPRECATED: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
+  int64 tick_index_in_to_out = 5 [deprecated = true];
   string amount_in = 7 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
@@ -125,6 +133,12 @@ message MsgPlaceLimitOrder {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "max_amount_out"
+  ];
+  string limit_sell_price = 11 [
+    (gogoproto.moretags) = "yaml:\"limit_sell_price\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+    (gogoproto.nullable) = true,
+    (gogoproto.jsontag) = "limit_sell_price"
   ];
 }
 

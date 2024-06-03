@@ -51,7 +51,7 @@ func (msg *MsgWithdrawal) GetSignBytes() []byte {
 	return bz
 }
 
-func (msg *MsgWithdrawal) ValidateBasic() error {
+func (msg *MsgWithdrawal) Validate() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid creator address (%s)", err)
@@ -60,6 +60,21 @@ func (msg *MsgWithdrawal) ValidateBasic() error {
 	_, err = sdk.AccAddressFromBech32(msg.Receiver)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid receiver address (%s)", err)
+	}
+
+	// Verify tokenA and tokenB are valid denoms
+	err = sdk.ValidateDenom(msg.TokenA)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "TokenA denom (%s)", err)
+	}
+
+	err = sdk.ValidateDenom(msg.TokenB)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "TokenB denom (%s)", err)
+	}
+
+	if msg.TokenA == msg.TokenB {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "tokenA cannot equal tokenB")
 	}
 
 	// Verify that the lengths of TickIndexes, Fees, SharesToRemove are all equal

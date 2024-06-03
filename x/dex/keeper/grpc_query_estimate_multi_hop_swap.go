@@ -21,7 +21,7 @@ func (k Keeper) EstimateMultiHopSwap(
 		ExitLimitPrice: req.ExitLimitPrice,
 		PickBestRoute:  req.PickBestRoute,
 	}
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
 

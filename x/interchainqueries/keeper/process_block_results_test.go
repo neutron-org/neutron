@@ -273,7 +273,7 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 
 	for i, tc := range tests {
 		tt := tc
-		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i, len(tests)), func() {
+		suite.Run(fmt.Sprintf("Case %s, %d/%d tests", tt.name, i+1, len(tests)), func() {
 			suite.SetupTest()
 
 			var (

@@ -602,11 +602,10 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
 			AdminProposal: bindings.AdminProposal{
-				ClientUpdateProposal: &bindings.ClientUpdateProposal{
-					Title:              "aaa",
-					Description:        "ddafds",
-					SubjectClientId:    "sdfsdf",
-					SubstituteClientId: "sdfsd",
+				ParamChangeProposal: &bindings.ParamChangeProposal{
+					Title:        "aaa",
+					Description:  "ddafds",
+					ParamChanges: nil,
 				},
 				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg},
 			},

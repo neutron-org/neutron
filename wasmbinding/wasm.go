@@ -12,6 +12,9 @@ import (
 
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
@@ -31,8 +34,10 @@ func RegisterCustomPlugins(
 	cronKeeper *cronkeeper.Keeper,
 	contractmanagerKeeper *contractmanagerkeeper.Keeper,
 	dexKeeper *dexkeeper.Keeper,
+	oracleKeeper *oraclekeeper.Keeper,
+	markemapKeeper *marketmapkeeper.Keeper,
 ) []wasmkeeper.Option {
-	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, contractmanagerKeeper, dexKeeper)
+	wasmQueryPlugin := NewQueryPlugin(ictxKeeper, icqKeeper, feeBurnerKeeper, feeRefunderKeeper, tfk, contractmanagerKeeper, dexKeeper, oracleKeeper, markemapKeeper)
 
 	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
 		Custom: CustomQuerier(wasmQueryPlugin),
