@@ -18,14 +18,14 @@ func TestConvertToDenom(t *testing.T) {
 	params := types.DefaultParams()
 
 	const atomDenom = "uatom"
-	const osmosDenom = "uosmo"
+	const osmoDenom = "uosmo"
 	// adding additional denoms
 	// Let's say:
-	// 1 ATOM = 10 NTRN => 1 NTRN = 0.1 ATOM
-	// 1 OSMO = 2 NTRN => 1 NTRN => 2 OSMO
+	// 1 ATOM = 10 NTRN
+	// 1 OSMO = 2 NTRN
 	params.NtrnPrices = append(params.NtrnPrices, []cosmostypes.DecCoin{
-		{Denom: atomDenom, Amount: math.LegacyMustNewDecFromStr("0.1")},
-		{Denom: osmosDenom, Amount: math.LegacyMustNewDecFromStr("2")},
+		{Denom: atomDenom, Amount: math.LegacyMustNewDecFromStr("10")},
+		{Denom: osmoDenom, Amount: math.LegacyMustNewDecFromStr("2")},
 	}...)
 	require.NoError(t, k.SetParams(ctx, params))
 
@@ -69,19 +69,19 @@ func TestConvertToDenom(t *testing.T) {
 			err:           nil,
 		},
 		{
-			// if i convert 0.5 NTRN to OSMO, i must get 1 TIA
+			// if i convert 0.5 NTRN to OSMO, i must get 1 OSMO
 			desc:          "0.5 NTRN to OSMO",
 			baseCoins:     cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("0.5")},
-			targetDenom:   osmosDenom,
-			expectedCoins: cosmostypes.DecCoin{Denom: osmosDenom, Amount: math.LegacyMustNewDecFromStr("1")},
+			targetDenom:   osmoDenom,
+			expectedCoins: cosmostypes.DecCoin{Denom: osmoDenom, Amount: math.LegacyMustNewDecFromStr("0.25")},
 			err:           nil,
 		},
 		{
 			// if i convert 2 NTRN to OSMO, i must get 4 OSMO
 			desc:          "2 NTRN to OSMO",
 			baseCoins:     cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("2")},
-			targetDenom:   osmosDenom,
-			expectedCoins: cosmostypes.DecCoin{Denom: osmosDenom, Amount: math.LegacyMustNewDecFromStr("4")},
+			targetDenom:   osmoDenom,
+			expectedCoins: cosmostypes.DecCoin{Denom: osmoDenom, Amount: math.LegacyMustNewDecFromStr("1")},
 			err:           nil,
 		},
 	} {
