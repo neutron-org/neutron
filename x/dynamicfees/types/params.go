@@ -1,11 +1,8 @@
 package types
 
 import (
-	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"gopkg.in/yaml.v2"
-
-	"github.com/neutron-org/neutron/v4/app/params"
 )
 
 // NewParams creates a new Params instance
@@ -17,9 +14,7 @@ func NewParams(prices sdk.DecCoins) Params {
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(
-		sdk.NewDecCoins(sdk.NewDecCoin(params.DefaultDenom, math.OneInt())),
-	)
+	return NewParams(sdk.DecCoins{})
 }
 
 // Validate validates the set of params

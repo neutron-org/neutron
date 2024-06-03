@@ -9,6 +9,7 @@ import (
 
 var _ feemarkettypes.DenomResolver = Keeper{}
 
+// ConvertToDenom converts NTRN deccoin into the equivalent amount of the token denominated in denom.
 func (k Keeper) ConvertToDenom(ctx sdk.Context, coin sdk.DecCoin, denom string) (sdk.DecCoin, error) {
 	params := k.GetParams(ctx)
 	for _, c := range params.NtrnPrices {

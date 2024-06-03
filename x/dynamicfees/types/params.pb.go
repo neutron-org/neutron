@@ -28,10 +28,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
 type Params struct {
-	// List of asset prices relative to the NTRN
-	// it's use in cooperation with feemarket module
-	// prices is a data source to  calculate gas_price from feemarket's base_denom (untrn)
-	// into given asset
+	// List of asset prices by the NTRN
+	// it's used in cooperation with feemarket module
+	// ntrn_prices is a data source to convert gas_price from feemarket's base_denom (untrn)
+	// into a given asset
 	NtrnPrices github_com_cosmos_cosmos_sdk_types.DecCoins `protobuf:"bytes,1,rep,name=ntrn_prices,json=ntrnPrices,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.DecCoins" json:"ntrn_prices"`
 }
 
