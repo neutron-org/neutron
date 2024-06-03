@@ -1,13 +1,14 @@
 package ibc_test
 
 import (
+	"testing"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	"testing"
 
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 
@@ -56,8 +57,6 @@ func TestIBCTestSuite(t *testing.T) {
 func (s *IBCTestSuite) SetupTest() {
 	// we need to redefine this variable to make tests work cause we use untrn as default bond denom in neutron
 	sdk.DefaultBondDenom = appparams.DefaultDenom
-	//simapp.DefautFeeDenom = app.FeeDenom
-	//simapp.DefaultFee = 100_000
 
 	// Create coordinator
 	s.coordinator = ibctesting.NewCoordinator(s.T(), 0)

@@ -1,8 +1,10 @@
 package app
 
 import (
-	"cosmossdk.io/math"
 	"encoding/json"
+
+	"cosmossdk.io/math"
+
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
