@@ -8,19 +8,67 @@ func (s *DexTestSuite) TestDepositMultiCompleteFailure() {
 	s.fundAliceBalances(50, 50)
 
 	// GIVEN
-	// no existing liquidity
+	// liquidity TokenA at tick 0
+	s.aliceDeposits(
+		NewDeposit(5, 0, 0, 1),
+	)
 
 	// WHEN
-	// alice deposits 0 A, 5 B at tick 0 fee 0 and 5 A, 0 B at tick 0 fee 0
+	// Alice deposits 0 A, 5 B at tick 0
 	// THEN
 	// second deposit's ratio is different than pool after the first, so amounts will be rounded to 0,0 and tx will fail
 
 	err := types.ErrZeroTrueDeposit
+	s.aliceDeposits(NewDeposit(5, 0, 0, 1))
 	s.assertAliceDepositFails(
 		err,
-		NewDeposit(5, 0, 0, 1),
-		NewDeposit(0, 5, 0, 1),
+		NewDeposit(5, 0, 2, 1),
+		NewDeposit(0, 5, 0, 1), // fails
 	)
+}
+
+func (s *DexTestSuite) TestDepositMultiPartialBELFailureWithFailTx() {
+	s.fundAliceBalances(50, 50)
+
+	// GIVEN
+	// no existing liquidity
+
+	// WHEN
+	// alice deposits 5 A, 5 B at tick 0 and 5 A at tick -2
+	// THEN
+	// second deposit fails BEL check
+
+	err := types.ErrDepositBehindEnemyLines
+	s.assertAliceDepositFails(
+		err,
+		NewDeposit(5, 5, 0, 1),
+		NewDepositWithOptions(5, 0, 3, 1, types.DepositOptions{FailTxOnBel: true}),
+	)
+}
+
+func (s *DexTestSuite) TestDepositMultiPartialBELFailureWithoutFailTx() {
+	s.fundAliceBalances(50, 50)
+
+	// GIVEN
+	// no existing liquidity
+
+	// WHEN
+	// alice deposits 5 A, 5 B at tick 0 and 5 A at tick -2
+	// THEN
+	// second deposit fails BEL check
+	// but other deposit succeeds
+
+	resp, err := s.deposits(
+		s.alice,
+		[]*Deposit{
+			NewDeposit(5, 5, 0, 1),
+			NewDepositWithOptions(5, 0, 3, 1, types.DepositOptions{FailTxOnBel: false}),
+		},
+	)
+
+	s.NoError(err)
+	s.Assert().EqualValues(1, resp.FailedDeposits[0].DepositIdx)
+	s.assertLiquidityAtTick(5, 5, 0, 1)
 }
 
 func (s *DexTestSuite) TestDepositMultiSuccess() {
@@ -30,16 +78,18 @@ func (s *DexTestSuite) TestDepositMultiSuccess() {
 	// no existing liquidity
 
 	// WHEN
-	// alice deposits 5 A, 5 B at tick 0 fee 0 and then 10 A, 10 B at tick 5 fee 0
+	// alice deposits 5 A, 5 B at tick 0, 5 A at tick -5 and 5 B at tick 5
 	s.aliceDeposits(
 		NewDeposit(5, 5, 0, 1),
-		NewDeposit(10, 10, 5, 0),
+		NewDeposit(5, 0, -6, 1),
+		NewDeposit(0, 5, 4, 1),
 	)
 
 	// THEN
-	// both deposits should go through
-	s.assertAliceBalances(35, 35)
+	// all deposits should go through
+	s.assertAliceBalances(40, 40)
 	s.assertLiquidityAtTick(5, 5, 0, 1)
-	s.assertLiquidityAtTick(10, 10, 5, 0)
-	s.assertDexBalances(15, 15)
+	s.assertLiquidityAtTick(5, 0, -6, 1)
+	s.assertLiquidityAtTick(0, 5, 4, 1)
+	s.assertDexBalances(10, 10)
 }
