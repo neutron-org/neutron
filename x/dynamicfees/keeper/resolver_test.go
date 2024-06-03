@@ -23,9 +23,11 @@ func TestConvertToDenom(t *testing.T) {
 	// Let's say:
 	// 1 ATOM = 10 NTRN
 	// 1 OSMO = 2 NTRN
+	// 1 NTRN = 1 NTRN
 	params.NtrnPrices = append(params.NtrnPrices, []cosmostypes.DecCoin{
 		{Denom: atomDenom, Amount: math.LegacyMustNewDecFromStr("10")},
 		{Denom: osmoDenom, Amount: math.LegacyMustNewDecFromStr("2")},
+		{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("1")},
 	}...)
 	require.NoError(t, k.SetParams(ctx, params))
 
