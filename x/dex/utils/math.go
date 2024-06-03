@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"math"
+	"regexp"
 	"strconv"
 
 	sdkmath "cosmossdk.io/math"
@@ -65,4 +66,51 @@ func MustSafeUint64ToInt64(in uint64) (out int64) {
 	}
 
 	return safeInt64
+}
+
+func Log(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
+	valueFloat64 := val.MustFloat64()
+	baseFloat64 := base.MustFloat64()
+
+	logValue := math.Log(valueFloat64)
+	logBase := math.Log(baseFloat64)
+	log := logValue / logBase
+
+	logAsPrecDec, err := math_utils.NewPrecDecFromStr(strconv.FormatFloat(log, 'f', -1, 64))
+	if err != nil {
+		return math_utils.ZeroPrecDec(), fmt.Errorf("error converting float64 value to string: %v", err)
+	}
+	return logAsPrecDec, nil
+}
+
+var scientificNotationRE = regexp.MustCompile(`^([\d\.]+)([Ee]([\-\+])?(\d+))?$`)
+
+func ParsePrecDecScientificNotation(n string) (math_utils.PrecDec, error) {
+	match := scientificNotationRE.FindSubmatch([]byte(n))
+
+	if len(match) == 0 {
+		return math_utils.ZeroPrecDec(), fmt.Errorf("error parsing string as PrecDec with possible scientific notation")
+	}
+
+	baseDec, err := math_utils.NewPrecDecFromStr(string(match[1]))
+	if err != nil {
+		return math_utils.ZeroPrecDec(), fmt.Errorf("error parsing string as PrecDec with possible scientific notation: %v", err)
+	}
+
+	// No scientific notation
+	if len(match[2]) == 0 {
+		return baseDec, nil
+	}
+
+	pow, err := strconv.ParseUint(string(match[4]), 10, 64)
+	if err != nil {
+		return math_utils.ZeroPrecDec(), fmt.Errorf("error parsing string as PrecDec with possible scientific notation: %v", err)
+	}
+
+	shift := math_utils.NewPrecDec(10).Power(pow)
+
+	if string(match[3]) == "-" { // negative exponent
+		return baseDec.Quo(shift), nil
+	} // else string(match[3]) == "+" || string(match[3]) == "" // positive exponent
+	return baseDec.Mul(shift), nil
 }

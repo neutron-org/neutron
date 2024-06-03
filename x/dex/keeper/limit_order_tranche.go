@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -116,7 +117,7 @@ func (k Keeper) RemoveLimitOrderTranche(ctx sdk.Context, trancheKey *types.Limit
 	store.Delete(trancheKey.KeyMarshal())
 }
 
-func (k Keeper) GetPlaceTranche(
+func (k Keeper) GetGTCPlaceTranche(
 	sdkCtx sdk.Context,
 	tradePairID *types.TradePairID,
 	tickIndexTakerToMaker int64,
@@ -132,7 +133,8 @@ func (k Keeper) GetPlaceTranche(
 		var tick types.TickLiquidity
 		k.cdc.MustUnmarshal(iter.Value(), &tick)
 		tranche := tick.GetLimitOrderTranche()
-		if tranche.IsPlaceTranche() {
+		// Make sure tranche has not been traded through and is a GTC tranche
+		if tranche.IsPlaceTranche() && !tranche.HasExpiration() {
 			return tranche
 		}
 	}
@@ -227,7 +229,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
 	default:
-		placeTranche = k.GetPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
+		placeTranche = k.GetGTCPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
 		if placeTranche == nil {
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 				TradePairId:           tradePairID,
@@ -245,4 +247,33 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 	}
 
 	return placeTranche, nil
+}
+
+// GetJITsInBlockCount gets the total number of JIT LimitOrders placed in a block
+func (k Keeper) GetJITsInBlockCount(ctx sdk.Context) uint64 {
+	store := prefix.NewStore(ctx.TransientStore(k.tKey), []byte{})
+	byteKey := types.KeyPrefix(types.JITsInBlockKey)
+	bz := store.Get(byteKey)
+
+	// Count doesn't exist: no element
+	if bz == nil {
+		return 0
+	}
+
+	// Parse bytes
+	return binary.BigEndian.Uint64(bz)
+}
+
+// SetJITsInBlockCount sets the total number of JIT LimitOrders placed in a block
+func (k Keeper) SetJITsInBlockCount(ctx sdk.Context, count uint64) {
+	store := prefix.NewStore(ctx.TransientStore(k.tKey), []byte{})
+	byteKey := types.KeyPrefix(types.JITsInBlockKey)
+	bz := make([]byte, 8)
+	binary.BigEndian.PutUint64(bz, count)
+	store.Set(byteKey, bz)
+}
+
+func (k Keeper) IncrementJITsInBlock(ctx sdk.Context) {
+	currentCount := k.GetJITsInBlockCount(ctx)
+	k.SetJITsInBlockCount(ctx, currentCount+1)
 }

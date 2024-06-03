@@ -32,7 +32,7 @@ type SwapMetadata struct {
 
 // Validate ensures that all the required fields are present in the SwapMetadata and contain valid values.
 func (sm SwapMetadata) Validate() error {
-	if err := sm.ValidateBasic(); err != nil {
+	if err := sm.MsgPlaceLimitOrder.Validate(); err != nil {
 		return sdkerrors.Wrap(ErrInvalidSwapMetadata, err.Error())
 	}
 	if sm.TokenIn == "" {

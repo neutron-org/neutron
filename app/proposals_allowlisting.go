@@ -62,6 +62,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*wasmtypes.MsgUnpinCodes,
 		*upgradetypes.MsgSoftwareUpgrade,
 		*upgradetypes.MsgCancelUpgrade,
+		*ibcclienttypes.MsgRecoverClient,
+		*ibcclienttypes.MsgIBCSoftwareUpgrade,
 		*tokenfactorytypes.MsgUpdateParams,
 		*interchainqueriestypes.MsgUpdateParams,
 		*interchaintxstypes.MsgUpdateParams,
