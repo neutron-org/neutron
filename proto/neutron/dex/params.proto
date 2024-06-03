@@ -10,7 +10,7 @@ message Params {
   option (gogoproto.goproto_stringer) = false;
   repeated uint64 fee_tiers = 1;
   bool paused = 3 [
-    // Adding jsontag prevents protoc from adding omit empty tag
+    // Adding jsontag prevents protoc from adding `omitempty` tag
     (gogoproto.jsontag) = "paused"
   ];
   uint64 max_jits_per_block = 4;
