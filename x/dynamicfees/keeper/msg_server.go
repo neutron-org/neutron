@@ -24,7 +24,7 @@ var _ types.MsgServer = msgServer{}
 
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
+	if err := req.Validate(); err != nil {
 		return nil, err
 	}
 	authority := k.GetAuthority()
@@ -39,5 +39,3 @@ func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) 
 
 	return &types.MsgUpdateParamsResponse{}, nil
 }
-
-// TODO: add a test for update params message

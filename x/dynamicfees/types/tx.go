@@ -1,5 +1,5 @@
 package types
 
-func (q *MsgUpdateParams) ValidateBasic() error {
+func (q *MsgUpdateParams) Validate() error {
 	return nil
 }

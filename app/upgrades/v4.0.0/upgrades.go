@@ -101,7 +101,12 @@ func setDynamicFeesParams(ctx sdk.Context, dfKeeper *dynamicfeeskeeper.Keeper) e
 	dfParams := dynamicfeestypes.Params{
 		NtrnPrices: NtrnPrices,
 	}
-	return dfKeeper.SetParams(ctx, dfParams)
+	err := dfKeeper.SetParams(ctx, dfParams)
+	if err != nil {
+		return errors.Wrap(err, "failed to set dynamic fees params")
+	}
+
+	return nil
 }
 
 // TODO: add a test for the migrations: check that feemarket state is consistent with feemarket params
@@ -125,11 +130,11 @@ func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper
 	feemarketState := feemarkettypes.NewState(feemarketParams.Window, feemarketParams.MinBaseGasPrice, feemarketParams.MinLearningRate)
 	err := feemarketKeeper.SetParams(ctx, feemarketParams)
 	if err != nil {
-		return errors.Wrap(err, "failed to to set feemarket params")
+		return errors.Wrap(err, "failed to set feemarket params")
 	}
 	err = feemarketKeeper.SetState(ctx, feemarketState)
 	if err != nil {
-		return errors.Wrap(err, "failed to to set feemarket state")
+		return errors.Wrap(err, "failed to set feemarket state")
 	}
 
 	return nil
