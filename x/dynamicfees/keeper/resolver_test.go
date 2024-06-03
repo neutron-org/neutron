@@ -61,7 +61,7 @@ func TestConvertToDenom(t *testing.T) {
 			err:           nil,
 		},
 		{
-			// if i convert 0.5 NTRN to ATOM, i must get 1 ATOM
+			// if i convert 0.5 NTRN to ATOM, i must get 0.05 ATOM
 			desc:          "0.5 NTRN to ATOM",
 			baseCoins:     cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("0.5")},
 			targetDenom:   atomDenom,
@@ -69,7 +69,7 @@ func TestConvertToDenom(t *testing.T) {
 			err:           nil,
 		},
 		{
-			// if i convert 0.5 NTRN to OSMO, i must get 1 OSMO
+			// if i convert 0.5 NTRN to OSMO, i must get 0.25 OSMO
 			desc:          "0.5 NTRN to OSMO",
 			baseCoins:     cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("0.5")},
 			targetDenom:   osmoDenom,
@@ -77,7 +77,7 @@ func TestConvertToDenom(t *testing.T) {
 			err:           nil,
 		},
 		{
-			// if i convert 2 NTRN to OSMO, i must get 4 OSMO
+			// if i convert 2 NTRN to OSMO, i must get 1 OSMO
 			desc:          "2 NTRN to OSMO",
 			baseCoins:     cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("2")},
 			targetDenom:   osmoDenom,
