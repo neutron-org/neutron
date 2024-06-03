@@ -13,7 +13,7 @@ func (k Keeper) ConvertToDenom(ctx sdk.Context, coin sdk.DecCoin, denom string) 
 	params := k.GetParams(ctx)
 	for _, c := range params.NtrnPrices {
 		if c.Denom == denom {
-			return sdk.NewDecCoinFromDec(denom, coin.Amount.Mul(c.Amount)), nil
+			return sdk.NewDecCoinFromDec(denom, coin.Amount.Quo(c.Amount)), nil
 		}
 	}
 	return sdk.DecCoin{}, types.ErrUnknownDenom

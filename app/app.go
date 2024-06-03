@@ -924,6 +924,7 @@ func New(
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
 		feemarket.NewAppModule(appCodec, *app.FeeMarkerKeeper),
+		dynamicfees.NewAppModule(appCodec, *app.DynamicFeesKeeper),
 		swapModule,
 		dexModule,
 		marketmapModule,
@@ -1047,6 +1048,7 @@ func New(
 		oracletypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		dynamicfeestypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
