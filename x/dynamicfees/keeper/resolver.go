@@ -20,8 +20,6 @@ func (k Keeper) ConvertToDenom(ctx sdk.Context, coin sdk.DecCoin, denom string) 
 	return sdk.DecCoin{}, types.ErrUnknownDenom
 }
 
-// TODO: add a test for ConvertToDenom method
-
 func (k Keeper) ExtraDenoms(ctx sdk.Context) ([]string, error) {
 	params := k.GetParams(ctx)
 	denoms := make([]string, 0, params.NtrnPrices.Len())
