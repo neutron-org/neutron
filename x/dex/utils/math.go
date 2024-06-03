@@ -68,34 +68,6 @@ func MustSafeUint64ToInt64(in uint64) (out int64) {
 	return safeInt64
 }
 
-// func Logv2(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
-//	logValue, err := Log2Int(val)
-//	if err != nil {
-//		return math_utils.ZeroPrecDec(), err
-//	}
-//	logBase, err := Log2Int(base)
-//	if err != nil {
-//		return math_utils.ZeroPrecDec(), err
-//	}
-//	return logValue.Quo(logBase), nil
-
-// }
-
-func Log(val, base math_utils.PrecDec) (math_utils.PrecDec, error) {
-	valueFloat64 := val.MustFloat64()
-	baseFloat64 := base.MustFloat64()
-
-	logValue := math.Log(valueFloat64)
-	logBase := math.Log(baseFloat64)
-	log := logValue / logBase
-
-	logAsPrecDec, err := math_utils.NewPrecDecFromStr(strconv.FormatFloat(log, 'f', -1, 64))
-	if err != nil {
-		return math_utils.ZeroPrecDec(), fmt.Errorf("error converting float64 value to string: %v", err)
-	}
-	return logAsPrecDec, nil
-}
-
 var scientificNotationRE = regexp.MustCompile(`^([\d\.]+)([Ee]([\-\+])?(\d+))?$`)
 
 func ParsePrecDecScientificNotation(n string) (math_utils.PrecDec, error) {
