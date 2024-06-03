@@ -107,3 +107,19 @@ func (suite *UpgradeTestSuite) TestEnableVoteExtensionsUpgrade() {
 
 	suite.Require().Equal(oldParams, newParams)
 }
+
+func (suite *UpgradeTestSuite) TestDynamicFeesUpgrade() {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := suite.ChainA.GetContext()
+	t := suite.T()
+
+	upgrade := upgradetypes.Plan{
+		Name:   v400.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
+
+	params := app.DynamicFeesKeeper.GetParams(ctx)
+	suite.Require().Equal(params.NtrnPrices, v400.NtrnPrices)
+}
