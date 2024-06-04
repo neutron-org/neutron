@@ -9,12 +9,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
-
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -65,10 +64,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-
-		feemarketante.NewFeeMarketCheckDecorator( // fee market check replaces fee deduct decorator
-			options.FeeMarketKeeper,
-		),
+		NewDecuctFeeDecoratorWithFallback(options),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
@@ -87,4 +83,33 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
+}
+
+// DeductFeeDecoratorWithFallback is a fee ante decorator which switches between default cosmos-sdk FeeDecorator
+// and feemarket's one, depending on the `params.Enabled` field feemarket's module.
+type DeductFeeDecoratorWithFallback struct {
+	feemarketkeeper    feemarketante.FeeMarketKeeper
+	feemarketDecorator feemarketante.FeeMarketCheckDecorator
+	cosmosDecorator    ante.DeductFeeDecorator
+}
+
+func NewDecuctFeeDecoratorWithFallback(options HandlerOptions) DeductFeeDecoratorWithFallback {
+	return DeductFeeDecoratorWithFallback{
+		feemarketkeeper: options.FeeMarketKeeper,
+		feemarketDecorator: feemarketante.NewFeeMarketCheckDecorator(
+			options.FeeMarketKeeper,
+		),
+		cosmosDecorator: ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+	}
+}
+
+func (d DeductFeeDecoratorWithFallback) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	params, err := d.feemarketkeeper.GetParams(ctx)
+	if err != nil {
+		return ctx, err
+	}
+	if params.Enabled {
+		return d.feemarketDecorator.AnteHandle(ctx, tx, simulate, next)
+	}
+	return d.cosmosDecorator.AnteHandle(ctx, tx, simulate, next)
 }
