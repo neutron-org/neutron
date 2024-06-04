@@ -12,7 +12,8 @@ declare -a deps=("github.com/cosmos/cosmos-sdk"
                 "github.com/cosmos/admin-module"
                 "github.com/cosmos/interchain-security/v5"
                 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8"
-                "github.com/skip-mev/block-sdk/v2")
+                "github.com/skip-mev/block-sdk/v2"
+                "github.com/skip-mev/feemarket")
 
 for dep in "${deps[@]}"
 do

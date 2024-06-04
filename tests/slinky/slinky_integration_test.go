@@ -62,6 +62,10 @@ var (
 			Key:   "consensus.params.block.max_gas",
 			Value: "1000000000",
 		},
+		{
+			Key:   "app_state.feemarket.params.enabled",
+			Value: false,
+		},
 	}
 
 	denom = "untrn"

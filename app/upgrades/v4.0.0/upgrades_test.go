@@ -115,3 +115,26 @@ func (suite *UpgradeTestSuite) TestEnableVoteExtensionsUpgrade() {
 
 	suite.Require().Equal(oldParams, newParams)
 }
+
+func (suite *UpgradeTestSuite) TestDynamicFeesUpgrade() {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	ctx := suite.ChainA.GetContext()
+	t := suite.T()
+
+	oldParams, err := app.ConsensusParamsKeeper.Params(ctx, &types.QueryParamsRequest{})
+	suite.Require().NoError(err)
+	// it is automatically tracked in upgrade handler, we need to set it manually for tests
+	oldParams.Params.Version = &comettypes.VersionParams{App: 0}
+	// we need to properly set consensus params for tests or we get a panic
+	suite.Require().NoError(app.ConsensusParamsKeeper.ParamsStore.Set(ctx, *oldParams.Params))
+
+	upgrade := upgradetypes.Plan{
+		Name:   v400.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
+
+	params := app.DynamicFeesKeeper.GetParams(ctx)
+	suite.Require().Equal(params.NtrnPrices, v400.NtrnPrices)
+}

@@ -3,8 +3,14 @@ package app
 import (
 	"encoding/json"
 
+	"cosmossdk.io/math"
+
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 )
+
+var FeeDenom = "untrn"
 
 // GenesisState is the genesis state of the blockchain represented here as a map of raw json
 // messages key'd by a identifier string.
@@ -17,30 +23,35 @@ type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
 func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
-	// This ugly hack is required to alter globalfee module genesis state
-	// because in current chain implementation staking module is absent which is required by globalfee module
-	// and we can't use default genesis state for globalfee module.
-	// If we do not alter globalfee module genesis state, then we will get panic during tests run.
-
 	genesisState := ModuleBasics.DefaultGenesis(cdc)
-	// globalFeeGenesisState := globalfeetypes.GenesisState{
-	//	Params: globalfeetypes.Params{
-	//		MinimumGasPrices: sdk.DecCoins{
-	//			sdk.NewDecCoinFromDec(params.DefaultDenom, sdk.MustNewDecFromStr("0")),
-	//		},
-	//		BypassMinFeeMsgTypes: []string{
-	//			sdk.MsgTypeURL(&ibcchanneltypes.MsgRecvPacket{}),
-	//			sdk.MsgTypeURL(&ibcchanneltypes.MsgAcknowledgement{}),
-	//			sdk.MsgTypeURL(&ibcclienttypes.MsgUpdateClient{}),
-	//		},
-	//		MaxTotalBypassMinFeeMsgGasUsage: globalfeetypes.DefaultmaxTotalBypassMinFeeMsgGasUsage,
-	//	},
-	//}
-	// globalFeeGenesisStateBytes, err := json.Marshal(globalFeeGenesisState)
-	// if err != nil {
-	//	panic("cannot marshal globalfee genesis state for tests")
-	//}
-	// genesisState["globalfee"] = globalFeeGenesisStateBytes
+	feemarketFeeGenesis := feemarkettypes.GenesisState{
+		Params: feemarkettypes.Params{
+			Alpha:                  math.LegacyOneDec(),
+			Beta:                   math.LegacyOneDec(),
+			Theta:                  math.LegacyOneDec(),
+			Delta:                  math.LegacyOneDec(),
+			MinBaseGasPrice:        math.LegacyMustNewDecFromStr("0.0025"),
+			MinLearningRate:        math.LegacyMustNewDecFromStr("0.5"),
+			MaxLearningRate:        math.LegacyMustNewDecFromStr("1.5"),
+			TargetBlockUtilization: 1,
+			MaxBlockUtilization:    1,
+			Window:                 1,
+			FeeDenom:               FeeDenom,
+			Enabled:                false,
+			DistributeFees:         true,
+		},
+		State: feemarkettypes.State{
+			BaseGasPrice: math.LegacyMustNewDecFromStr("0.0025"),
+			LearningRate: math.LegacyOneDec(),
+			Window:       []uint64{100},
+			Index:        0,
+		},
+	}
+	feemarketFeeGenesisStateBytes, err := json.Marshal(feemarketFeeGenesis)
+	if err != nil {
+		panic("cannot marshal feemarket genesis state for tests")
+	}
+	genesisState["feemarket"] = feemarketFeeGenesisStateBytes
 
 	return genesisState
 }
