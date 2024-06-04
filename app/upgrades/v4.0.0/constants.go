@@ -2,8 +2,11 @@ package v400
 
 import (
 	storetypes "cosmossdk.io/store/types"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 )
@@ -20,6 +23,8 @@ var Upgrade = upgrades.Upgrade{
 		Added: []string{
 			marketmaptypes.ModuleName,
 			oracletypes.ModuleName,
+			feemarkettypes.ModuleName,
+			dynamicfeestypes.ModuleName,
 		},
 	},
 }

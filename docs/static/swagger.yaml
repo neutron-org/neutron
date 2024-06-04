@@ -14396,12 +14396,12 @@ definitions:
       max_learning_rate:
         description: MaxLearningRate is the upper bound for the learning rate.
         type: string
-      min_base_fee:
+      min_base_gas_price:
         description: >-
-          MinBaseFee determines the initial base fee of the module and the
+          MinBaseGasPrice determines the initial gas price of the module and the
           global
 
-          minimum for the network. This is denominated in fee per gas unit.
+          minimum for the network.
         type: string
       min_learning_rate:
         description: MinLearningRate is the lower bound for the learning rate.
@@ -14480,12 +14480,12 @@ definitions:
           max_learning_rate:
             description: MaxLearningRate is the upper bound for the learning rate.
             type: string
-          min_base_fee:
+          min_base_gas_price:
             description: >-
-              MinBaseFee determines the initial base fee of the module and the
-              global
+              MinBaseGasPrice determines the initial gas price of the module and
+              the global
 
-              minimum for the network. This is denominated in fee per gas unit.
+              minimum for the network.
             type: string
           min_learning_rate:
             description: MinLearningRate is the lower bound for the learning rate.
@@ -14526,10 +14526,10 @@ definitions:
 
       specified AIMD window.
     properties:
-      base_fee:
+      base_gas_price:
         description: >-
-          BaseFee is the current base fee. This is denominated in the fee per
-          gas
+          BaseGasPrice is the current base fee. This is denominated in the fee
+          per gas
 
           unit.
         type: string
@@ -14567,10 +14567,10 @@ definitions:
 
           specified AIMD window.
         properties:
-          base_fee:
+          base_gas_price:
             description: >-
-              BaseFee is the current base fee. This is denominated in the fee
-              per gas
+              BaseGasPrice is the current base fee. This is denominated in the
+              fee per gas
 
               unit.
             type: string
@@ -15799,8 +15799,16 @@ definitions:
           format: uint64
           type: string
         type: array
+      good_til_purge_allowance:
+        format: uint64
+        type: string
+      max_JITs_per_block:
+        format: uint64
+        type: string
       max_true_taker_spread:
         type: string
+      paused:
+        type: boolean
     type: object
   neutron.dex.Pool:
     properties:
@@ -16760,8 +16768,16 @@ definitions:
               format: uint64
               type: string
             type: array
+          good_til_purge_allowance:
+            format: uint64
+            type: string
+          max_JITs_per_block:
+            format: uint64
+            type: string
           max_true_taker_spread:
             type: string
+          paused:
+            type: boolean
         type: object
     type: object
   neutron.dex.QueryPoolResponse:
@@ -16897,6 +16913,68 @@ definitions:
         type: string
       taker_denom:
         type: string
+    type: object
+  neutron.dynamicfees.v1.Params:
+    description: Params defines the parameters for the module.
+    properties:
+      ntrn_prices:
+        items:
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        title: >-
+          List of asset prices by the NTRN
+
+          it's used in cooperation with feemarket module
+
+          ntrn_prices is a data source to convert gas_price from feemarket's
+          base_denom (untrn)
+
+          into a given asset
+        type: array
+    type: object
+  neutron.dynamicfees.v1.QueryParamsResponse:
+    description: QueryParamsResponse is response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: params holds all the parameters of this module.
+        properties:
+          ntrn_prices:
+            items:
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            title: >-
+              List of asset prices by the NTRN
+
+              it's used in cooperation with feemarket module
+
+              ntrn_prices is a data source to convert gas_price from feemarket's
+              base_denom (untrn)
+
+              into a given asset
+            type: array
+        type: object
     type: object
   neutron.feeburner.Params:
     description: Params defines the parameters for the module.
@@ -36302,13 +36380,12 @@ paths:
                   max_learning_rate:
                     description: MaxLearningRate is the upper bound for the learning rate.
                     type: string
-                  min_base_fee:
+                  min_base_gas_price:
                     description: >-
-                      MinBaseFee determines the initial base fee of the module
-                      and the global
+                      MinBaseGasPrice determines the initial gas price of the
+                      module and the global
 
-                      minimum for the network. This is denominated in fee per
-                      gas unit.
+                      minimum for the network.
                     type: string
                   min_learning_rate:
                     description: MinLearningRate is the lower bound for the learning rate.
@@ -36384,10 +36461,10 @@ paths:
 
                   specified AIMD window.
                 properties:
-                  base_fee:
+                  base_gas_price:
                     description: >-
-                      BaseFee is the current base fee. This is denominated in
-                      the fee per gas
+                      BaseGasPrice is the current base fee. This is denominated
+                      in the fee per gas
 
                       unit.
                     type: string
@@ -39477,8 +39554,16 @@ paths:
                       format: uint64
                       type: string
                     type: array
+                  good_til_purge_allowance:
+                    format: uint64
+                    type: string
+                  max_JITs_per_block:
+                    format: uint64
+                    type: string
                   max_true_taker_spread:
                     type: string
+                  paused:
+                    type: boolean
                 type: object
             type: object
         default:
@@ -40702,6 +40787,74 @@ paths:
                 type: string
             type: object
       summary: Queries a list of LimitOrderTrancheUser items for a given address.
+      tags:
+        - Query
+  /neutron/dynamicfees/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryParamsResponse is response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: params holds all the parameters of this module.
+                properties:
+                  ntrn_prices:
+                    items:
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    title: >-
+                      List of asset prices by the NTRN
+
+                      it's used in cooperation with feemarket module
+
+                      ntrn_prices is a data source to convert gas_price from
+                      feemarket's base_denom (untrn)
+
+                      into a given asset
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Parameters queries the parameters of the module.
       tags:
         - Query
   /neutron/feeburner/params:

@@ -23,11 +23,6 @@ type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
 func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
-	// This ugly hack is required to alter globalfee module genesis state
-	// because in current chain implementation staking module is absent which is required by globalfee module
-	// and we can't use default genesis state for globalfee module.
-	// If we do not alter globalfee module genesis state, then we will get panic during tests run.
-
 	genesisState := ModuleBasics.DefaultGenesis(cdc)
 	feemarketFeeGenesis := feemarkettypes.GenesisState{
 		Params: feemarkettypes.Params{
@@ -35,7 +30,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 			Beta:                   math.LegacyOneDec(),
 			Theta:                  math.LegacyOneDec(),
 			Delta:                  math.LegacyOneDec(),
-			MinBaseFee:             math.LegacyMustNewDecFromStr("0.0025"),
+			MinBaseGasPrice:        math.LegacyMustNewDecFromStr("0.0025"),
 			MinLearningRate:        math.LegacyMustNewDecFromStr("0.5"),
 			MaxLearningRate:        math.LegacyMustNewDecFromStr("1.5"),
 			TargetBlockUtilization: 1,
@@ -46,7 +41,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 			DistributeFees:         true,
 		},
 		State: feemarkettypes.State{
-			BaseFee:      math.LegacyMustNewDecFromStr("0.0025"),
+			BaseGasPrice: math.LegacyMustNewDecFromStr("0.0025"),
 			LearningRate: math.LegacyOneDec(),
 			Window:       []uint64{100},
 			Index:        0,

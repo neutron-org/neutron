@@ -10,6 +10,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/neutron-org/neutron/v4/x/dynamicfees"
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
@@ -151,6 +154,7 @@ import (
 	"github.com/neutron-org/neutron/v4/x/contractmanager"
 	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
 	"github.com/neutron-org/neutron/v4/x/feeburner"
 	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
@@ -268,6 +272,7 @@ var (
 		ibcswap.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
+		dynamicfees.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -349,6 +354,7 @@ type App struct {
 	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
 	FeeMarkerKeeper     *feemarketkeeper.Keeper
+	DynamicFeesKeeper   *dynamicfeeskeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
@@ -474,7 +480,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey,
+		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -560,11 +566,13 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	app.DynamicFeesKeeper = dynamicfeeskeeper.NewKeeper(appCodec, keys[dynamicfeestypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+
 	app.FeeMarkerKeeper = feemarketkeeper.NewKeeper(
 		appCodec,
 		keys[feemarkettypes.StoreKey],
 		app.AccountKeeper,
-		&feemarkettypes.ErrorDenomResolver{}, // TODO: implement ??? denom resolver, or find a proper one
+		app.DynamicFeesKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
@@ -950,6 +958,7 @@ func New(
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
 		feemarket.NewAppModule(appCodec, *app.FeeMarkerKeeper),
+		dynamicfees.NewAppModule(appCodec, *app.DynamicFeesKeeper),
 		swapModule,
 		dexModule,
 		marketmapModule,
@@ -1075,6 +1084,7 @@ func New(
 		oracletypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		dynamicfeestypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1365,6 +1375,8 @@ func (app *App) setupUpgradeHandlers() {
 					ConsensusKeeper:     &app.ConsensusParamsKeeper,
 					ConsumerKeeper:      &app.ConsumerKeeper,
 					MarketmapKeeper:     app.MarketMapKeeper,
+					FeeMarketKeeper:     app.FeeMarkerKeeper,
+					DynamicfeesKeeper:   app.DynamicFeesKeeper,
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,

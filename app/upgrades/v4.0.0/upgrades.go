@@ -4,6 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"cosmossdk.io/errors"
+	"cosmossdk.io/math"
+
+	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
+	"github.com/neutron-org/neutron/v4/app/params"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	comettypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
@@ -53,6 +63,17 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
+		ctx.Logger().Info("Setting dynamicfees/feemarket params...")
+		err = setFeeMarketParams(ctx, keepers.FeeMarketKeeper)
+		if err != nil {
+			return nil, err
+		}
+
+		err = setDynamicFeesParams(ctx, keepers.DynamicfeesKeeper)
+		if err != nil {
+			return nil, err
+		}
+
 		ctx.Logger().Info("Setting marketmap and oracle state...")
 		err = setMarketState(ctx, keepers.MarketmapKeeper)
 		if err != nil {
@@ -70,6 +91,53 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 		Admin:             authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	}
 	return marketmapKeeper.SetParams(ctx, marketmapParams)
+}
+
+// NtrnPrices describes prices of any token in NTRN for dynamic fee resolver
+// TODO: determine actual prices
+var NtrnPrices = sdk.NewDecCoins(sdk.NewDecCoin(params.DefaultDenom, math.OneInt().Mul(math.NewInt(100))))
+
+func setDynamicFeesParams(ctx sdk.Context, dfKeeper *dynamicfeeskeeper.Keeper) error {
+	dfParams := dynamicfeestypes.Params{
+		NtrnPrices: NtrnPrices,
+	}
+	err := dfKeeper.SetParams(ctx, dfParams)
+	if err != nil {
+		return errors.Wrap(err, "failed to set dynamic fees params")
+	}
+
+	return nil
+}
+
+// TODO: add a test for the migrations: check that feemarket state is consistent with feemarket params
+func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper) error {
+	// TODO: set params values
+	feemarketParams := feemarkettypes.Params{
+		Alpha:                  math.LegacyDec{},
+		Beta:                   math.LegacyDec{},
+		Theta:                  math.LegacyDec{},
+		Delta:                  math.LegacyDec{},
+		MinBaseGasPrice:        math.LegacyDec{},
+		MinLearningRate:        math.LegacyDec{},
+		MaxLearningRate:        math.LegacyDec{},
+		TargetBlockUtilization: 0,
+		MaxBlockUtilization:    0,
+		Window:                 0,
+		FeeDenom:               "",
+		Enabled:                false,
+		DistributeFees:         false,
+	}
+	feemarketState := feemarkettypes.NewState(feemarketParams.Window, feemarketParams.MinBaseGasPrice, feemarketParams.MinLearningRate)
+	err := feemarketKeeper.SetParams(ctx, feemarketParams)
+	if err != nil {
+		return errors.Wrap(err, "failed to set feemarket params")
+	}
+	err = feemarketKeeper.SetState(ctx, feemarketState)
+	if err != nil {
+		return errors.Wrap(err, "failed to set feemarket state")
+	}
+
+	return nil
 }
 
 func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
