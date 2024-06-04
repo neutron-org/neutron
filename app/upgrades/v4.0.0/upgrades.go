@@ -2,6 +2,7 @@ package v400
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -15,8 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/consensus/types"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-
-	_ "embed"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
