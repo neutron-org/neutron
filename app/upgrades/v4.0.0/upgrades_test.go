@@ -1,6 +1,7 @@
 package v400_test
 
 import (
+	_ "embed"
 	"testing"
 
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
@@ -13,8 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/suite"
-
-	_ "embed"
 
 	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
 	"github.com/neutron-org/neutron/v4/testutil"
@@ -39,6 +38,13 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	ctx := suite.ChainA.GetContext()
 	t := suite.T()
+
+	oldParams, err := app.ConsensusParamsKeeper.Params(ctx, &types.QueryParamsRequest{})
+	suite.Require().NoError(err)
+	// it is automatically tracked in upgrade handler, we need to set it manually for tests
+	oldParams.Params.Version = &comettypes.VersionParams{App: 0}
+	// we need to properly set consensus params for tests or we get a panic
+	suite.Require().NoError(app.ConsensusParamsKeeper.ParamsStore.Set(ctx, *oldParams.Params))
 
 	markets, err := slinkyutils.ReadMarketsFromFile(marketsJSON)
 	suite.Require().NoError(err)
@@ -94,6 +100,8 @@ func (suite *UpgradeTestSuite) TestEnableVoteExtensionsUpgrade() {
 	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight() + 4}
 	// it is automatically tracked in upgrade handler, we need to set it manually for tests
 	oldParams.Params.Version = &comettypes.VersionParams{App: 0}
+	// we need to properly set consensus params for tests or we get a panic
+	suite.Require().NoError(app.ConsensusParamsKeeper.ParamsStore.Set(ctx, *oldParams.Params))
 
 	upgrade := upgradetypes.Plan{
 		Name:   v400.UpgradeName,
