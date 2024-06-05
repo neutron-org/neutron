@@ -7,6 +7,7 @@ import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
 import "ibc/core/client/v1/client.proto";
 import "neutron/feerefunder/fee.proto";
+import "ibc/applications/transfer/v1/transfer.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/transfer/types";
 
@@ -16,6 +17,9 @@ service Msg {
 
   // Transfer defines a rpc handler method for MsgTransfer.
   rpc Transfer(MsgTransfer) returns (MsgTransferResponse);
+
+  // UpdateParams defines a rpc handler for MsgUpdateParams.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
 message MsgTransfer {
@@ -56,3 +60,22 @@ message MsgTransferResponse {
   // channel src channel on neutron side transaction was submitted from
   string channel = 2;
 }
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  option (gogoproto.goproto_getters) = false;
+
+  // signer address
+  string signer = 1;
+
+  // params defines the transfer parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  ibc.applications.transfer.v1.Params params = 2 [(gogoproto.nullable) = false];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {}
