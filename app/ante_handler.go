@@ -21,6 +21,7 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 
+	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
 	ConsumerKeeper        ibcconsumerkeeper.Keeper
 	WasmConfig            *wasmTypes.WasmConfig
@@ -64,7 +65,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		NewDecuctFeeDecoratorWithFallback(options),
+		feemarketante.NewFeeMarketCheckDecorator(options.FeeMarketKeeper, options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
@@ -83,33 +84,4 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
-}
-
-// DeductFeeDecoratorWithFallback is a fee ante decorator which switches between default cosmos-sdk FeeDecorator
-// and feemarket's one, depending on the `params.Enabled` field feemarket's module.
-type DeductFeeDecoratorWithFallback struct {
-	feemarketkeeper    feemarketante.FeeMarketKeeper
-	feemarketDecorator feemarketante.FeeMarketCheckDecorator
-	cosmosDecorator    ante.DeductFeeDecorator
-}
-
-func NewDecuctFeeDecoratorWithFallback(options HandlerOptions) DeductFeeDecoratorWithFallback {
-	return DeductFeeDecoratorWithFallback{
-		feemarketkeeper: options.FeeMarketKeeper,
-		feemarketDecorator: feemarketante.NewFeeMarketCheckDecorator(
-			options.FeeMarketKeeper,
-		),
-		cosmosDecorator: ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
-	}
-}
-
-func (d DeductFeeDecoratorWithFallback) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	params, err := d.feemarketkeeper.GetParams(ctx)
-	if err != nil {
-		return ctx, err
-	}
-	if params.Enabled {
-		return d.feemarketDecorator.AnteHandle(ctx, tx, simulate, next)
-	}
-	return d.cosmosDecorator.AnteHandle(ctx, tx, simulate, next)
 }
