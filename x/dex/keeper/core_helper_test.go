@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	neutronapp "github.com/neutron-org/neutron/v3/app"
-	"github.com/neutron-org/neutron/v3/testutil"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v4/app"
+	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // Test Suite ///////////////////////////////////////////////////////////////
@@ -30,7 +30,11 @@ func TestCoreHelpersTestSuite(t *testing.T) {
 
 func (s *CoreHelpersTestSuite) SetupTest() {
 	app := testutil.Setup(s.T())
-	ctx := app.(*neutronapp.App).BaseApp.NewContext(false, tmproto.Header{})
+	// `NewUncachedContext` like a `NewContext` calls `sdk.NewContext` under the hood. But the reason why we switched to NewUncachedContext
+	// is NewContext tries to pass `app.finalizeBlockState.ms` as first argument while  app.finalizeBlockState is nil at this stage,
+	// and we get nil pointer exception
+	// when NewUncachedContext passes `app.cms` (multistore) as an argument to `sdk.NewContext`
+	ctx := app.(*neutronapp.App).BaseApp.NewUncachedContext(false, cmtproto.Header{})
 
 	accAlice := app.(*neutronapp.App).AccountKeeper.NewAccountWithAddress(ctx, s.alice)
 	app.(*neutronapp.App).AccountKeeper.SetAccount(ctx, accAlice)
@@ -143,4 +147,105 @@ func (s *CoreHelpersTestSuite) TestGetCurrTick0To1WithMinLiq() {
 	tickIdx, found := s.app.DexKeeper.GetCurrTickIndexTakerToMakerNormalized(s.ctx, defaultTradePairID0To1)
 	s.Require().True(found)
 	s.Assert().Equal(int64(2), tickIdx)
+}
+
+// IsBehindEnemyLines /////////////////////////////////////////////////////////
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0BELHighTick() {
+	s.setLPAtFee1Pool(100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -102)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0BELLowTick() {
+	s.setLPAtFee1Pool(-100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 98)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0ValidHighTick() {
+	s.setLPAtFee1Pool(100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -101)
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken0ValidLowtick() {
+	s.setLPAtFee1Pool(-100, 0, 10)
+	tradePairID := types.MustNewTradePairID("TokenB", "TokenA")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 99)
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1BELLowTick() {
+	s.setLPAtFee1Pool(-10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -12)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1BELHighTick() {
+	s.setLPAtFee1Pool(10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 8)
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1ValidLowTick() {
+	s.setLPAtFee1Pool(-10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, -11)
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsBehindEnemyLinesToken1ValidHighTick() {
+	s.setLPAtFee1Pool(10, 10, 0)
+	tradePairID := types.MustNewTradePairID("TokenA", "TokenB")
+	isBEL := s.app.DexKeeper.IsBehindEnemyLines(s.ctx, tradePairID, 9)
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken0BEL() {
+	// GIVEN Token1 at tick -19
+	s.setLPAtFee1Pool(-20, 0, 10)
+
+	// WHEN create pool with token0 at 18
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -17, 1, math.OneInt(), math.ZeroInt())
+
+	// THEN pool is BEL
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken0Valid() {
+	// GIVEN Token1 at tick -19
+	s.setLPAtFee1Pool(-20, 0, 10)
+
+	// WHEN create pool with token0 at 19
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, -18, 1, math.OneInt(), math.ZeroInt())
+	// THEN pool is not BEL
+	s.False(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken1BEL() {
+	// GIVEN token0 at -19
+	s.setLPAtFee1Pool(20, 10, 0)
+
+	// WHEN create pool with Token1 at 18
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, 17, 1, math.ZeroInt(), math.OneInt())
+
+	// THEN pool is BEL
+	s.True(isBEL)
+}
+
+func (s *CoreHelpersTestSuite) TestIsPoolBehindEnemyLinesToken1Valid() {
+	// GIVEN token0 at -19
+	s.setLPAtFee1Pool(20, 10, 0)
+
+	// WHEN create pool with Token1 at 19
+	isBEL := s.app.DexKeeper.IsPoolBehindEnemyLines(s.ctx, defaultPairID, 18, 1, math.ZeroInt(), math.OneInt())
+
+	// THEN pool is BEL
+	s.False(isBEL)
 }

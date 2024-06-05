@@ -5,21 +5,23 @@ import (
 	"testing"
 	"time"
 
-	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	"github.com/neutron-org/neutron/v4/app/config"
+
+	pruningtypes "cosmossdk.io/store/pruning/types"
+	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	staking "github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/neutron-org/neutron/v3/testutil/consumer"
+	"github.com/neutron-org/neutron/v4/testutil/consumer"
 
-	"github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v4/app/params"
 
-	"github.com/neutron-org/neutron/v3/app"
+	"github.com/neutron-org/neutron/v4/app"
 
-	tmdb "github.com/cometbft/cometbft-db"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -35,6 +37,10 @@ type (
 	Network = network.Network
 	Config  = network.Config
 )
+
+func init() {
+	config.GetDefaultConfig()
+}
 
 // New creates instance with fully configured cosmos network.
 // Accepts optional config, that will be used in place of the DefaultConfig() if provided.
@@ -80,7 +86,7 @@ func DefaultConfig() network.Config {
 			}
 
 			return app.New(
-				val.GetCtx().Logger, tmdb.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
+				val.GetCtx().Logger, db.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
 				encoding,
 				sims.EmptyAppOptions{},
 				nil,

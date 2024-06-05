@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "neutron/dex/trade_pair_id.proto";
 import "neutron/dex/tx.proto";
 
-option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/dex/types";
 
 message LimitOrderTrancheUser {
   TradePairID trade_pair_id = 1;
@@ -14,19 +14,19 @@ message LimitOrderTrancheUser {
   string address = 4;
   string shares_owned = 5 [
     (gogoproto.moretags) = "yaml:\"shares_owned\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_owned"
   ];
   string shares_withdrawn = 6 [
     (gogoproto.moretags) = "yaml:\"shares_withdrawn\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_withdrawn"
   ];
   string shares_cancelled = 7 [
     (gogoproto.moretags) = "yaml:\"shares_cancelled\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_cancelled"
   ];

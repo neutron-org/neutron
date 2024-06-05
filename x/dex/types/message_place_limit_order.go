@@ -6,6 +6,8 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 const TypeMsgPlaceLimitOrder = "place_limit_order"
@@ -22,6 +24,7 @@ func NewMsgPlaceLimitOrder(
 	orderType LimitOrderType,
 	goodTil *time.Time,
 	maxAmountOut *math.Int,
+	price *math_utils.PrecDec,
 ) *MsgPlaceLimitOrder {
 	return &MsgPlaceLimitOrder{
 		Creator:          creator,
@@ -33,6 +36,7 @@ func NewMsgPlaceLimitOrder(
 		OrderType:        orderType,
 		ExpirationTime:   goodTil,
 		MaxAmountOut:     maxAmountOut,
+		LimitSellPrice:   price,
 	}
 }
 
@@ -55,10 +59,10 @@ func (msg *MsgPlaceLimitOrder) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgPlaceLimitOrder) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
-func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
+func (msg *MsgPlaceLimitOrder) Validate() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid creator address (%s)", err)
@@ -67,6 +71,21 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 	_, err = sdk.AccAddressFromBech32(msg.Receiver)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid receiver address (%s)", err)
+	}
+
+	// Verify tokenIn and tokenOut are valid denoms
+	err = sdk.ValidateDenom(msg.TokenIn)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenIn denom (%s)", err)
+	}
+
+	err = sdk.ValidateDenom(msg.TokenOut)
+	if err != nil {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "Error TokenOut denom (%s)", err)
+	}
+
+	if msg.TokenIn == msg.TokenOut {
+		return sdkerrors.Wrapf(ErrInvalidDenom, "tokenIn cannot equal tokenOut")
 	}
 
 	if msg.AmountIn.LTE(math.ZeroInt()) {
@@ -92,6 +111,14 @@ func (msg *MsgPlaceLimitOrder) ValidateBasic() error {
 
 	if IsTickOutOfRange(msg.TickIndexInToOut) {
 		return ErrTickOutsideRange
+	}
+
+	if msg.LimitSellPrice != nil && IsPriceOutOfRange(*msg.LimitSellPrice) {
+		return ErrPriceOutsideRange
+	}
+
+	if msg.LimitSellPrice != nil && msg.TickIndexInToOut != 0 {
+		return ErrInvalidPriceAndTick
 	}
 
 	return nil

@@ -8,7 +8,6 @@ import (
 
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -21,10 +20,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
-	consumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/v3/testutil/consumer"
+	"github.com/neutron-org/neutron/v4/testutil/consumer"
 
 	"github.com/stretchr/testify/require"
 )
@@ -55,7 +54,7 @@ func Setup(t *testing.T) ibctesting.TestingApp {
 
 	ibctesting.DefaultTestingAppInit = SetupTestingApp(tmtypes.TM2PB.ValidatorUpdates(valSet))
 
-	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, "", balance)
+	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, "neutron-1", balance)
 
 	return app
 }
@@ -90,24 +89,25 @@ func SetupWithGenesisValSet(
 	require.NoError(t, err)
 
 	// init chain will set the validator set and initialize the genesis accounts
-	app.InitChain(
-		abci.RequestInitChain{
+	_, err = app.InitChain(
+		&abci.RequestInitChain{
 			ChainId:         chainID,
 			Validators:      []abci.ValidatorUpdate{},
 			ConsensusParams: sims.DefaultConsensusParams,
 			AppStateBytes:   stateBytes,
 		},
 	)
+	require.NoError(t, err)
 
-	// commit genesis changes
-	app.Commit()
-	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{
 		Height:             app.LastBlockHeight() + 1,
-		AppHash:            app.LastCommitID().Hash,
-		ValidatorsHash:     valSet.Hash(),
+		Time:               time.Now(),
 		NextValidatorsHash: valSet.Hash(),
-		ChainID:            chainID,
-	}})
+	})
+	require.NoError(t, err)
+
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	return app
 }
@@ -131,7 +131,7 @@ func GenesisStateWithValSet(
 	initValPowers := []abci.ValidatorUpdate{}
 
 	for _, val := range valSet.Validators {
-		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+		pk, err := cryptocodec.FromCmtPubKeyInterface(val.PubKey)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert pubkey: %w", err)
 		}
@@ -162,8 +162,8 @@ func GenesisStateWithValSet(
 		delegations = append(
 			delegations,
 			stakingtypes.NewDelegation(
-				genAccs[0].GetAddress(),
-				val.Address.Bytes(),
+				genAccs[0].GetAddress().String(),
+				sdk.ValAddress(val.Address).String(),
 				math.LegacyOneDec(),
 			),
 		)
@@ -227,64 +227,64 @@ func GenesisStateWithValSet(
 }
 
 // type EmptyAppOptions struct {
-// 	servertypes.AppOptions
+//	servertypes.AppOptions
 // }
 
 // // Get implements AppOptions
 // func (ao EmptyAppOptions) Get(_ string) interface{} {
-// 	return nil
+//	return nil
 // }
 
 // var _ network.TestFixtureFactory = NewTestNetworkFixture
 
 // func NewTestNetworkFixture() network.TestFixture {
-// 	dir, err := os.MkdirTemp("", "neutron")
-// 	if err != nil {
-// 		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
-// 	}
-// 	defer os.RemoveAll(dir)
+//	dir, err := os.MkdirTemp("", "neutron")
+//	if err != nil {
+//		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
+//	}
+//	defer os.RemoveAll(dir)
 
-// 	encConfig := MakeEncodingConfig()
+//	encConfig := MakeEncodingConfig()
 
-// 	app := NewApp(
-// 		log.NewNopLogger(),
-// 		dbm.NewMemDB(),
-// 		nil,
-// 		true,
-// 		map[int64]bool{},
-// 		DefaultNodeHome,
-// 		5,
-// 		EmptyAppOptions{},
-// 		encConfig,
-// 		nil,
-// 	)
+//	app := NewApp(
+//		log.NewNopLogger(),
+//		dbm.NewMemDB(),
+//		nil,
+//		true,
+//		map[int64]bool{},
+//		DefaultNodeHome,
+//		5,
+//		EmptyAppOptions{},
+//		encConfig,
+//		nil,
+//	)
 
-// 	appCtr := func(val network.ValidatorI) servertypes.Application {
-// 		return NewApp(
-// 			val.GetCtx().Logger,
-// 			dbm.NewMemDB(),
-// 			nil,
-// 			true,
-// 			map[int64]bool{},
-// 			DefaultNodeHome,
-// 			5,
-// 			EmptyAppOptions{},
-// 			encConfig,
-// 			nil,
-// 			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
-// 			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
-// 			bam.SetChainID(val.GetCtx().Viper.GetString(flags.FlagChainID)),
-// 		)
-// 	}
+//	appCtr := func(val network.ValidatorI) servertypes.Application {
+//		return NewApp(
+//			val.GetCtx().Logger,
+//			dbm.NewMemDB(),
+//			nil,
+//			true,
+//			map[int64]bool{},
+//			DefaultNodeHome,
+//			5,
+//			EmptyAppOptions{},
+//			encConfig,
+//			nil,
+//			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
+//			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
+//			bam.SetChainID(val.GetCtx().Viper.GetString(flags.FlagChainID)),
+//		)
+//	}
 
-// 	return network.TestFixture{
-// 		AppConstructor: appCtr,
-// 		GenesisState:   NewDefaultGenesisState(app.AppCodec()),
-// 		EncodingConfig: moduletestutil.TestEncodingConfig{
-// 			InterfaceRegistry: app.InterfaceRegistry(),
-// 			Codec:             app.AppCodec(),
-// 			TxConfig:          encConfig.TxConfig,
-// 			Amino:             app.LegacyAmino(),
-// 		},
-// 	}
+//	return network.TestFixture{
+//		AppConstructor: appCtr,
+//		GenesisState:   NewDefaultGenesisState(app.AppCodec()),
+//		EncodingConfig: moduletestutil.TestEncodingConfig{
+//			InterfaceRegistry: app.InterfaceRegistry(),
+//			Codec:             app.AppCodec(),
+//			TxConfig:          encConfig.TxConfig,
+//			Amino:             app.LegacyAmino(),
+//		},
+//	}
 // }

@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
+	types2 "cosmossdk.io/store/types"
+
+	"github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/testutil"
-	testkeeper "github.com/neutron-org/neutron/v3/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v3/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v3/x/contractmanager/types"
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/testutil"
+	testkeeper "github.com/neutron-org/neutron/v4/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
 
 const ICAId = ".ica0"
@@ -24,14 +26,13 @@ const ICAId = ".ica0"
 func TestHandleAcknowledgement(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
-	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 
 	resACK := channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Result{Result: []byte("Result")},
@@ -57,14 +58,14 @@ func TestHandleAcknowledgement(t *testing.T) {
 	require.NoError(t, err)
 
 	// success contract SudoResponse
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck)
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
 	require.NoError(t, err)
 
 	// error contract SudoResponse
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeAcknowledgementFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("error sudoResponse"))
 	err = icak.HandleAcknowledgement(ctx, p, resAckData, relayerAddress)
@@ -74,14 +75,13 @@ func TestHandleAcknowledgement(t *testing.T) {
 func TestHandleTimeout(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	feeKeeper := mock_types.NewMockFeeRefunderKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, icaKeeper, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, infCtx := testkeeper.InterchainTxsKeeper(t, wmKeeper, feeKeeper, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
-	ctx := infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx := infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	relayerBech32 := "neutron1fxudpred77a0grgh69u0j7y84yks5ev4n5050z45kecz792jnd6scqu98z"
 	relayerAddress := sdk.MustAccAddressFromBech32(relayerBech32)
@@ -98,14 +98,14 @@ func TestHandleTimeout(t *testing.T) {
 	require.ErrorContains(t, err, "failed to get ica owner from port")
 
 	// contract success
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck)
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
 	require.NoError(t, err)
 
 	// contract error
-	ctx = infCtx.WithGasMeter(sdk.NewGasMeter(1_000_000_000_000))
+	ctx = infCtx.WithGasMeter(types2.NewGasMeter(1_000_000_000_000))
 	feeKeeper.EXPECT().DistributeTimeoutFee(ctx, relayerAddress, feetypes.NewPacketID(p.SourcePort, p.SourceChannel, p.Sequence))
 	wmKeeper.EXPECT().Sudo(ctx, contractAddress, msgAck).Return(nil, fmt.Errorf("SudoTimeout error"))
 	err = icak.HandleTimeout(ctx, p, relayerAddress)
@@ -117,12 +117,12 @@ func TestHandleChanOpenAck(t *testing.T) {
 	defer ctrl.Finish()
 	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
 	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
-	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, bankKeeper, func(ctx sdk.Context) string {
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, nil, nil, nil, bankKeeper, func(_ sdk.Context) string {
 		return TestFeeCollectorAddr
 	})
 	portID := icatypes.ControllerPortPrefix + testutil.TestOwnerAddress + ICAId
 	contractAddress := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
-	channelID := "channel-0"
+	const channelID = "channel-0"
 	counterpartyChannelID := "channel-1"
 
 	err := icak.HandleChanOpenAck(ctx, "", channelID, counterpartyChannelID, "1")

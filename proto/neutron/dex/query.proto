@@ -19,7 +19,7 @@ import "neutron/dex/tx.proto";
 
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/dex/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -33,13 +33,13 @@ service Query {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche_user/{address}/{tranche_key}";
   }
 
-  // Queries a list of LimitOrderTrancheMap items.
+  // Queries a list of LimitOrderTranchUser items.
   rpc LimitOrderTrancheUserAll(QueryAllLimitOrderTrancheUserRequest) returns (QueryAllLimitOrderTrancheUserResponse) {
     option (google.api.http).get = "/neutron/dex/limit_order_tranche_user";
   }
 
   // Queries a list of LimitOrderTrancheUser items for a given address.
-  rpc LimitOrderTrancheUserAllByAddress(QueryAllUserLimitOrdersRequest) returns (QueryAllUserLimitOrdersResponse) {
+  rpc LimitOrderTrancheUserAllByAddress(QueryAllLimitOrderTrancheUserByAddressRequest) returns (QueryAllLimitOrderTrancheUserByAddressResponse) {
     option (google.api.http).get = "/neutron/dex/user/limit_orders/{address}";
   }
 
@@ -68,14 +68,22 @@ service Query {
 
   // Queries a InactiveLimitOrderTranche by index.
   rpc InactiveLimitOrderTranche(QueryGetInactiveLimitOrderTrancheRequest) returns (QueryGetInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get =
-      "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/"
-      "{tick_index}/{tranche_key}";
+    option (google.api.http) = {
+      get: "/neutron/dex/inactive_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}"
+      additional_bindings {
+        get: "/neutron/dex/filled_limit_order_tranche/{pair_id}/{token_in}/{tick_index}/{tranche_key}" // this route is deprecated, keep it for backwards compatibility
+      }
+    };
   }
 
   // Queries a list of InactiveLimitOrderTranche items.
   rpc InactiveLimitOrderTrancheAll(QueryAllInactiveLimitOrderTrancheRequest) returns (QueryAllInactiveLimitOrderTrancheResponse) {
-    option (google.api.http).get = "/neutron/dex/filled_limit_order_tranche";
+    option (google.api.http) = {
+      get: "/neutron/dex/inactive_limit_order_tranche"
+      additional_bindings {
+        get: "/neutron/dex/filled_limit_order_tranche" // this route is deprecated, keep it for backwards compatibility
+      }
+    };
   }
 
   // Queries a list of PoolReserves items.
@@ -133,10 +141,17 @@ message QueryParamsResponse {
 message QueryGetLimitOrderTrancheUserRequest {
   string address = 1;
   string tranche_key = 2;
+  bool calc_withdrawable_shares = 3;
 }
 
 message QueryGetLimitOrderTrancheUserResponse {
   LimitOrderTrancheUser limit_order_tranche_user = 1 [(gogoproto.nullable) = true];
+  string withdrawable_shares = 2 [
+    (gogoproto.moretags) = "yaml:\"withdrawable_shares\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = true,
+    (gogoproto.jsontag) = "withdrawable_shares"
+  ];
 }
 
 message QueryAllLimitOrderTrancheUserRequest {
@@ -181,12 +196,12 @@ message QueryAllUserDepositsResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-message QueryAllUserLimitOrdersRequest {
+message QueryAllLimitOrderTrancheUserByAddressRequest {
   string address = 1;
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
-message QueryAllUserLimitOrdersResponse {
+message QueryAllLimitOrderTrancheUserByAddressResponse {
   repeated LimitOrderTrancheUser limit_orders = 1 [(gogoproto.nullable) = true];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -250,13 +265,13 @@ message QueryEstimateMultiHopSwapRequest {
   repeated MultiHopRoute routes = 3;
   string amount_in = 4 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];
   string exit_limit_price = 5 [
     (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v3/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "exit_limit_price"
   ];
@@ -282,7 +297,7 @@ message QueryEstimatePlaceLimitOrderRequest {
   int64 tick_index_in_to_out = 5;
   string amount_in = 6 [
     (gogoproto.moretags) = "yaml:\"amount_in\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "amount_in"
   ];
@@ -295,7 +310,7 @@ message QueryEstimatePlaceLimitOrderRequest {
   ];
   string maxAmount_out = 9 [
     (gogoproto.moretags) = "yaml:\"max_amount_out\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "max_amount_out"
   ];

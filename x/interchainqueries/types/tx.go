@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
-	"github.com/cosmos/ibc-go/v7/modules/core/exported"
+	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +28,7 @@ func (msg MsgSubmitQueryResult) Type() string {
 	return "submit-query-result"
 }
 
-func (msg MsgSubmitQueryResult) ValidateBasic() error {
+func (msg MsgSubmitQueryResult) Validate() error {
 	if msg.Result == nil {
 		return errors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
@@ -57,7 +57,7 @@ func (msg MsgSubmitQueryResult) ValidateBasic() error {
 }
 
 func (msg MsgSubmitQueryResult) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
 func (msg MsgSubmitQueryResult) GetSigners() []sdk.AccAddress {
@@ -90,7 +90,7 @@ func (msg MsgRegisterInterchainQuery) Type() string {
 	return "register-interchain-query"
 }
 
-func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
+func (msg MsgRegisterInterchainQuery) Validate() error {
 	if msg.UpdatePeriod == 0 {
 		return errors.Wrap(ErrInvalidUpdatePeriod, "update period can not be equal to zero")
 	}
@@ -129,7 +129,7 @@ func (msg MsgRegisterInterchainQuery) ValidateBasic() error {
 }
 
 func (msg MsgRegisterInterchainQuery) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
 func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
@@ -144,7 +144,7 @@ func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 
 var _ sdk.Msg = &MsgUpdateInterchainQueryRequest{}
 
-func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
+func (msg MsgUpdateInterchainQueryRequest) Validate() error {
 	if msg.GetQueryId() == 0 {
 		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
@@ -188,7 +188,7 @@ func (msg MsgUpdateInterchainQueryRequest) ValidateBasic() error {
 }
 
 func (msg MsgUpdateInterchainQueryRequest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
 func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
@@ -220,10 +220,10 @@ func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 }
 
 func (msg *MsgUpdateParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
-func (msg *MsgUpdateParams) ValidateBasic() error {
+func (msg *MsgUpdateParams) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}

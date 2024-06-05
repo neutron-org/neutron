@@ -5,19 +5,19 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/armon/go-metrics"
+	"cosmossdk.io/log"
+	"github.com/hashicorp/go-metrics"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 
+	"cosmossdk.io/store/prefix"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 
-	"github.com/cometbft/cometbft/libs/log"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/cron/types"
+	"github.com/neutron-org/neutron/v4/x/cron/types"
 )
 
 var (
@@ -125,7 +125,7 @@ func (k *Keeper) GetAllSchedules(ctx sdk.Context) []types.Schedule {
 
 	res := make([]types.Schedule, 0)
 
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -148,7 +148,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 
 	res := make([]types.Schedule, 0)
 
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -186,7 +186,7 @@ func (k *Keeper) executeSchedule(ctx sdk.Context, schedule types.Schedule) error
 			Msg:      []byte(msg.Msg),
 			Funds:    sdk.NewCoins(),
 		}
-		_, err := k.WasmMsgServer.ExecuteContract(sdk.WrapSDKContext(cacheCtx), &executeMsg)
+		_, err := k.WasmMsgServer.ExecuteContract(cacheCtx, &executeMsg)
 		if err != nil {
 			ctx.Logger().Info("executeSchedule: failed to execute contract msg",
 				"schedule_name", schedule.Name,

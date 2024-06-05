@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
+	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -72,7 +73,12 @@ func CreateMultihopSwapEvent(
 	amountIn math.Int,
 	amountOut math.Int,
 	route []string,
+	dust sdk.Coins,
 ) sdk.Event {
+	dustStrings := make([]string, 0, dust.Len())
+	for _, item := range dust {
+		dustStrings = append(dustStrings, item.String())
+	}
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, MultihopSwapEventKey),
@@ -83,6 +89,7 @@ func CreateMultihopSwapEvent(
 		sdk.NewAttribute(MultihopSwapEventAmountIn, amountIn.String()),
 		sdk.NewAttribute(MultihopSwapEventAmountOut, amountOut.String()),
 		sdk.NewAttribute(MultihopSwapEventRoute, strings.Join(route, ",")),
+		sdk.NewAttribute(MultihopSwapEventDust, strings.Join(dustStrings, ",")),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
@@ -183,7 +190,6 @@ func TickUpdateEvent(
 		sdk.NewAttribute(TickUpdateEventToken1, token1),
 		sdk.NewAttribute(TickUpdateEventTokenIn, makerDenom),
 		sdk.NewAttribute(TickUpdateEventTickIndex, strconv.FormatInt(tickIndex, 10)),
-		sdk.NewAttribute(TickUpdateEventFee, strconv.FormatInt(tickIndex, 10)),
 		sdk.NewAttribute(TickUpdateEventReserves, reserves.String()),
 	}
 	attrs = append(attrs, otherAttrs...)
@@ -217,7 +223,20 @@ func CreateTickUpdateLimitOrderTranche(tranche *LimitOrderTranche) sdk.Event {
 	)
 }
 
-func GoodTilPurgeHitLimitEvent(gas sdk.Gas) sdk.Event {
+func CreateTickUpdateLimitOrderTranchePurge(tranche *LimitOrderTranche) sdk.Event {
+	tradePairID := tranche.Key.TradePairId
+	pairID := tradePairID.MustPairID()
+	return TickUpdateEvent(
+		pairID.Token0,
+		pairID.Token1,
+		tradePairID.MakerDenom,
+		tranche.Key.TickIndexTakerToMaker,
+		math.ZeroInt(),
+		sdk.NewAttribute(TickUpdateEventTrancheKey, tranche.Key.TrancheKey),
+	)
+}
+
+func GoodTilPurgeHitLimitEvent(gas types.Gas) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(GoodTilPurgeHitGasLimitEventGas, strconv.FormatUint(gas, 10)),

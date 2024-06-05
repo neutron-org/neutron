@@ -3,12 +3,14 @@ package keeper
 import (
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
+// Creates a new LimitOrderExpiration struct based on a LimitOrderTranche
 func NewLimitOrderExpiration(tranche *types.LimitOrderTranche) *types.LimitOrderExpiration {
 	trancheExpiry := tranche.ExpirationTime
 	if trancheExpiry == nil {
@@ -92,7 +94,7 @@ func (k Keeper) GetAllLimitOrderExpiration(ctx sdk.Context) (list []*types.Limit
 		ctx.KVStore(k.storeKey),
 		types.KeyPrefix(types.LimitOrderExpirationKeyPrefix),
 	)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 
 	defer iterator.Close()
 
@@ -110,15 +112,12 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 		ctx.KVStore(k.storeKey),
 		types.KeyPrefix(types.LimitOrderExpirationKeyPrefix),
 	)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	inGoodTilSegment := false
 
 	archivedTranches := make(map[string]bool)
 	defer iterator.Close()
-
-	gasCutoff := ctx.BlockGasMeter().Limit() - types.GoodTilPurgeGasBuffer
-	curBlockGas := ctx.BlockGasMeter().GasConsumed()
-
+	gasCutoff := ctx.GasMeter().GasConsumed() + k.GetGoodTilPurgeAllowance(ctx)
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.LimitOrderExpiration
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
@@ -127,10 +126,11 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 		}
 
 		inGoodTilSegment = inGoodTilSegment || val.ExpirationTime != types.JITGoodTilTime()
-		gasConsumed := curBlockGas + ctx.GasMeter().GasConsumed()
+		gasConsumed := ctx.GasMeter().GasConsumed()
 		if inGoodTilSegment && gasConsumed >= gasCutoff {
+
 			// If we hit our gas cutoff stop deleting so as not to timeout the block.
-			// We can only do this if we are proccesing normal GT limitOrders
+			// We can only do this if we are proccesing normal GTT limitOrders
 			// and not JIT limit orders, since there is not protection in place
 			// to prevent JIT order from being traded on the next block.
 			// This is ok since only GT limit orders pose a meaningful attack
@@ -148,6 +148,8 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 				k.SetInactiveLimitOrderTranche(ctx, tranche)
 				k.RemoveLimitOrderTranche(ctx, tranche.Key)
 				archivedTranches[string(val.TrancheRef)] = true
+
+				ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranchePurge(tranche))
 			}
 		}
 

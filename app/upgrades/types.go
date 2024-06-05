@@ -1,28 +1,32 @@
 package upgrades
 
 import (
+	store "cosmossdk.io/store/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
-	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v3/x/cron/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v3/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	transferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 )
 
 // Upgrade defines a struct containing necessary fields that a SoftwareUpgradeProposal
@@ -57,8 +61,10 @@ type UpgradeKeepers struct {
 	AdminModule        adminmodulekeeper.Keeper
 	ConsensusKeeper    *consensuskeeper.Keeper
 	ConsumerKeeper     *ccvconsumerkeeper.Keeper
+	MarketmapKeeper    *marketmapkeeper.Keeper
+	FeeMarketKeeper    *feemarketkeeper.Keeper
+	DynamicfeesKeeper  *dynamicfeeskeeper.Keeper
 	// subspaces
-	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace
 }
 

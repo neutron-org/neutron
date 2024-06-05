@@ -52,7 +52,7 @@ func (f FlagAdvice) Sanitize() FlagAdvice {
 }
 
 func FlagOnlyParser[v any](f func(fs *pflag.FlagSet) (v, error)) CustomFieldParserFn {
-	return func(_arg string, fs *pflag.FlagSet) (any, FieldReadLocation, error) {
+	return func(_ string, fs *pflag.FlagSet) (any, FieldReadLocation, error) {
 		t, err := f(fs)
 		return t, UsedFlag, err
 	}

@@ -7,7 +7,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 
-	"github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v4/app/params"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -32,7 +32,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 		paramtypes.NewParamSetPair(
 			KeyReserveAddress,
 			DefaultReserveAddress,
-			func(i interface{}) error { return nil },
+			func(_ interface{}) error { return nil },
 		),
 		paramtypes.NewParamSetPair(
 			KeyTreasuryAddress,
@@ -67,7 +67,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(
 			KeyReserveAddress,
 			&p.ReserveAddress,
-			func(i interface{}) error { return nil },
+			func(_ interface{}) error { return nil },
 		),
 		paramtypes.NewParamSetPair(
 			KeyTreasuryAddress,

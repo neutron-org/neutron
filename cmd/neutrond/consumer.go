@@ -15,10 +15,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v4/x/ccv/consumer/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/testutil/consumer"
+	"github.com/neutron-org/neutron/v4/testutil/consumer"
 )
 
 func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
@@ -28,7 +28,7 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 		Use:                        "add-consumer-section",
 		Short:                      "ONLY FOR TESTING PURPOSES! Modifies genesis so that chain can be started locally with one node.",
 		SuggestionsMinimumDistance: 2,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return genesisMutator.AlterConsumerModuleState(cmd, func(state *GenesisData, _ map[string]json.RawMessage) error {
 				genesisState := consumer.CreateMinimalConsumerTestGenesis()
 				clientCtx := client.GetClientContextFromCmd(cmd)
@@ -40,11 +40,11 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				sdkPublicKey, err := cryptocodec.FromTmPubKeyInterface(pk)
+				sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
 				if err != nil {
 					return err
 				}
-				tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(sdkPublicKey)
+				tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
 				if err != nil {
 					return err
 				}
@@ -106,8 +106,8 @@ func (x DefaultGenesisIO) AlterConsumerModuleState(cmd *cobra.Command, callback 
 		return errors.Wrap(err, "marshal application genesis state")
 	}
 
-	g.GenDoc.AppState = appStateJSON
-	return genutil.ExportGenesisFile(g.GenDoc, g.GenesisFile)
+	g.AppGenesis.AppState = appStateJSON
+	return genutil.ExportGenesisFile(g.AppGenesis, g.GenesisFile)
 }
 
 type DefaultGenesisReader struct{}
@@ -119,14 +119,14 @@ func (d DefaultGenesisReader) ReadGenesis(cmd *cobra.Command) (*GenesisData, err
 	config.SetRoot(clientCtx.HomeDir)
 
 	genFile := config.GenesisFile()
-	appState, genDoc, err := genutiltypes.GenesisStateFromGenFile(genFile)
+	appState, appGenesis, err := genutiltypes.GenesisStateFromGenFile(genFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal genesis state: %w", err)
 	}
 
 	return NewGenesisData(
 		genFile,
-		genDoc,
+		appGenesis,
 		appState,
 		nil,
 	), nil
@@ -134,11 +134,11 @@ func (d DefaultGenesisReader) ReadGenesis(cmd *cobra.Command) (*GenesisData, err
 
 type GenesisData struct {
 	GenesisFile         string
-	GenDoc              *tmtypes.GenesisDoc
+	AppGenesis          *genutiltypes.AppGenesis
 	AppState            map[string]json.RawMessage
 	ConsumerModuleState *ccvconsumertypes.GenesisState
 }
 
-func NewGenesisData(genesisFile string, genDoc *tmtypes.GenesisDoc, appState map[string]json.RawMessage, consumerModuleState *ccvconsumertypes.GenesisState) *GenesisData {
-	return &GenesisData{GenesisFile: genesisFile, GenDoc: genDoc, AppState: appState, ConsumerModuleState: consumerModuleState}
+func NewGenesisData(genesisFile string, appGenesis *genutiltypes.AppGenesis, appState map[string]json.RawMessage, consumerModuleState *ccvconsumertypes.GenesisState) *GenesisData {
+	return &GenesisData{GenesisFile: genesisFile, AppGenesis: appGenesis, AppState: appState, ConsumerModuleState: consumerModuleState}
 }

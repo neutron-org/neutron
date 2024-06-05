@@ -35,10 +35,10 @@ func (msg *MsgCancelLimitOrder) GetSigners() []sdk.AccAddress {
 
 func (msg *MsgCancelLimitOrder) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
+	return bz
 }
 
-func (msg *MsgCancelLimitOrder) ValidateBasic() error {
+func (msg *MsgCancelLimitOrder) Validate() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return sdkerrors.Wrapf(ErrInvalidAddress, "invalid creator address (%s)", err)

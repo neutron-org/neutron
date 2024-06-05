@@ -3,13 +3,13 @@ package keeper
 import (
 	"context"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (k Keeper) InactiveLimitOrderTrancheAll(
@@ -26,7 +26,7 @@ func (k Keeper) InactiveLimitOrderTrancheAll(
 	store := ctx.KVStore(k.storeKey)
 	inactiveLimitOrderTrancheStore := prefix.NewStore(store, types.KeyPrefix(types.InactiveLimitOrderTrancheKeyPrefix))
 
-	pageRes, err := query.Paginate(inactiveLimitOrderTrancheStore, req.Pagination, func(key, value []byte) error {
+	pageRes, err := query.Paginate(inactiveLimitOrderTrancheStore, req.Pagination, func(_, value []byte) error {
 		inactiveLimitOrderTranche := &types.LimitOrderTranche{}
 		if err := k.cdc.Unmarshal(value, inactiveLimitOrderTranche); err != nil {
 			return err

@@ -20,7 +20,7 @@ const interchainAccountIDLimit = 128 -
 
 var _ codectypes.UnpackInterfacesMessage = &MsgSubmitTx{}
 
-func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
+func (msg *MsgRegisterInterchainAccount) Validate() error {
 	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID
 	}
@@ -34,7 +34,7 @@ func (msg *MsgRegisterInterchainAccount) ValidateBasic() error {
 	}
 
 	if len(msg.InterchainAccountId) > interchainAccountIDLimit {
-		return ErrLongInterchainAccountID
+		return errors.Wrapf(ErrLongInterchainAccountID, "max length is %d, got %d", interchainAccountIDLimit, len(msg.InterchainAccountId))
 	}
 
 	return nil
@@ -54,12 +54,12 @@ func (msg *MsgRegisterInterchainAccount) Type() string {
 }
 
 func (msg *MsgRegisterInterchainAccount) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
 //----------------------------------------------------------------
 
-func (msg *MsgSubmitTx) ValidateBasic() error {
+func (msg *MsgSubmitTx) Validate() error {
 	if err := msg.Fee.Validate(); err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (msg *MsgSubmitTx) Type() string {
 }
 
 func (msg *MsgSubmitTx) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
 // PackTxMsgAny marshals the sdk.Msg payload to a protobuf Any type
@@ -151,10 +151,10 @@ func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 }
 
 func (msg *MsgUpdateParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return ModuleCdc.MustMarshalJSON(msg)
 }
 
-func (msg *MsgUpdateParams) ValidateBasic() error {
+func (msg *MsgUpdateParams) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}

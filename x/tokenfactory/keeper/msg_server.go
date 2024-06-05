@@ -6,9 +6,8 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 type msgServer struct {
@@ -24,6 +23,10 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 var _ types.MsgServer = msgServer{}
 
 func (server msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateDenom) (*types.MsgCreateDenomResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgCreateDenom")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	denom, err := server.Keeper.CreateDenom(ctx, msg.Sender, msg.Subdenom)
@@ -45,6 +48,10 @@ func (server msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateD
 }
 
 func (server msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMintResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgMint")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// pay some extra gas cost to give a better error here.
@@ -83,6 +90,10 @@ func (server msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.
 }
 
 func (server msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgBurn")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	authorityMetadata, err := server.Keeper.GetAuthorityMetadata(ctx, msg.Amount.GetDenom())
@@ -99,7 +110,7 @@ func (server msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.
 	}
 
 	accountI := server.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.BurnFromAddress))
-	_, ok := accountI.(authtypes.ModuleAccountI)
+	_, ok := accountI.(sdk.ModuleAccountI)
 	if ok {
 		return nil, types.ErrBurnFromModuleAccount
 	}
@@ -121,6 +132,10 @@ func (server msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.
 }
 
 func (server msgServer) ForceTransfer(goCtx context.Context, msg *types.MsgForceTransfer) (*types.MsgForceTransferResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgForceTransfer")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	authorityMetadata, err := server.Keeper.GetAuthorityMetadata(ctx, msg.Amount.GetDenom())
@@ -150,6 +165,10 @@ func (server msgServer) ForceTransfer(goCtx context.Context, msg *types.MsgForce
 }
 
 func (server msgServer) ChangeAdmin(goCtx context.Context, msg *types.MsgChangeAdmin) (*types.MsgChangeAdminResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgChangeAdmin")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	authorityMetadata, err := server.Keeper.GetAuthorityMetadata(ctx, msg.Denom)
@@ -158,7 +177,7 @@ func (server msgServer) ChangeAdmin(goCtx context.Context, msg *types.MsgChangeA
 	}
 
 	if msg.Sender != authorityMetadata.GetAdmin() {
-		return nil, types.ErrUnauthorized
+		return nil, types.ErrUnauthorized.Wrapf("need: %s, received: %s, denom: %s", authorityMetadata.GetAdmin(), msg.Sender, msg.Denom)
 	}
 
 	err = server.Keeper.setAdmin(ctx, msg.Denom, msg.NewAdmin)
@@ -177,6 +196,10 @@ func (server msgServer) ChangeAdmin(goCtx context.Context, msg *types.MsgChangeA
 }
 
 func (server msgServer) SetDenomMetadata(goCtx context.Context, msg *types.MsgSetDenomMetadata) (*types.MsgSetDenomMetadataResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgSetDenomMetadata")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Defense in depth validation of metadata
@@ -208,6 +231,10 @@ func (server msgServer) SetDenomMetadata(goCtx context.Context, msg *types.MsgSe
 }
 
 func (server msgServer) SetBeforeSendHook(goCtx context.Context, msg *types.MsgSetBeforeSendHook) (*types.MsgSetBeforeSendHookResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgSetBeforeSendHook")
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	authorityMetadata, err := server.Keeper.GetAuthorityMetadata(ctx, msg.Denom)
@@ -237,9 +264,10 @@ func (server msgServer) SetBeforeSendHook(goCtx context.Context, msg *types.MsgS
 
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
-		return nil, err
+	if err := req.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
+
 	authority := k.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)

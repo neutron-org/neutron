@@ -4,21 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-)
-
-var (
-	AttributeWithdrawn                 = "total_withdrawn"
-	AttributeGasConsumed               = "gas_consumed"
-	MetricLabelTotalOrdersExpired      = "total_orders_expired"
-	MetricLabelTotalLimitOrders        = "total_orders_limit"
-	MetricLabelTotalTickLiquiditiesInc = "total_tick_liqidities_inc"
-	MetricLabelTotalTickLiquiditiesDec = "total_tick_liqidities_dec"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 type (
@@ -26,6 +17,7 @@ type (
 		cdc        codec.BinaryCodec
 		storeKey   storetypes.StoreKey
 		memKey     storetypes.StoreKey
+		tKey       storetypes.StoreKey
 		bankKeeper types.BankKeeper
 		authority  string
 	}
@@ -35,6 +27,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
+	tKey storetypes.StoreKey,
 	bankKeeper types.BankKeeper,
 	authority string,
 ) *Keeper {
@@ -42,6 +35,7 @@ func NewKeeper(
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
+		tKey:       tKey,
 		bankKeeper: bankKeeper,
 		authority:  authority,
 	}
@@ -69,7 +63,7 @@ func getEventsWithdrawnAmount(coins sdk.Coins) sdk.Events {
 	return events
 }
 
-func getEventsGasConsumed(gasBefore, gasAfter sdk.Gas) sdk.Events {
+func getEventsGasConsumed(gasBefore, gasAfter storetypes.Gas) sdk.Events {
 	return sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeNeutronMessage,

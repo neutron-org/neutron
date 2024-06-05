@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type TxCliTestCase[M sdk.Msg] struct {
+type TxCliTestCase[M sdk.HasValidateBasic] struct {
 	Cmd                    string
 	ExpectedMsg            M
 	ExpectedErr            bool
@@ -26,7 +26,7 @@ type QueryCliTestCase[Q proto.Message] struct {
 	ExpectedErr   bool
 }
 
-func RunTxTestCases[M sdk.Msg](t *testing.T, desc *TxCliDesc, testcases map[string]TxCliTestCase[M]) {
+func RunTxTestCases[M sdk.HasValidateBasic](t *testing.T, desc *TxCliDesc, testcases map[string]TxCliTestCase[M]) {
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
 			RunTxTestCase(t, desc, tc)
@@ -42,7 +42,7 @@ func RunQueryTestCases[Q proto.Message](t *testing.T, desc *QueryDescriptor, tes
 	}
 }
 
-func RunTxTestCase[M sdk.Msg](t *testing.T, desc *TxCliDesc, tc TxCliTestCase[M]) {
+func RunTxTestCase[M sdk.HasValidateBasic](t *testing.T, desc *TxCliDesc, tc TxCliTestCase[M]) {
 	cmd := BuildTxCli[M](desc)
 	err := resetCommandFlagValues(cmd)
 	require.NoError(t, err, "error in resetCommandFlagValues")

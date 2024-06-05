@@ -12,11 +12,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	ictxtypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 )
 
 type msgServer struct {
@@ -33,6 +34,10 @@ func NewMsgServerImpl(keeper Keeper) ictxtypes.MsgServer {
 
 func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.MsgRegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	defer telemetry.ModuleMeasureSince(ictxtypes.ModuleName, time.Now(), LabelRegisterInterchainAccount)
+
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgRegisterInterchainAccount")
+	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	k.Logger(ctx).Debug("RegisterInterchainAccount", "connection_id", msg.ConnectionId, "from_address", msg.FromAddress, "interchain_account_id", msg.InterchainAccountId)
@@ -55,15 +60,25 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		}
 	}
 
-	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
+	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId).String()
 
-	// FIXME: empty version string doesn't look good
-	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, icaOwner.String(), ""); err != nil {
-		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to create RegisterInterchainAccount:", "error", err, "owner", icaOwner.String(), "msg", &msg)
+	resp, err := k.icaControllerMsgServer.RegisterInterchainAccount(ctx, &icacontrollertypes.MsgRegisterInterchainAccount{
+		Owner:        icaOwner,
+		ConnectionId: msg.ConnectionId,
+		Version:      "", // FIXME: empty version string doesn't look good
+		Ordering:     channeltypes.ORDERED,
+	})
+	if err != nil {
+		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to RegisterInterchainAccount:", "error", err, "owner", icaOwner, "msg", &msg)
 		return nil, errors.Wrap(err, "failed to RegisterInterchainAccount")
 	}
 
-	return &ictxtypes.MsgRegisterInterchainAccountResponse{}, nil
+	k.icaControllerKeeper.SetMiddlewareEnabled(ctx, resp.PortId, msg.ConnectionId)
+
+	return &ictxtypes.MsgRegisterInterchainAccountResponse{
+		ChannelId: resp.ChannelId,
+		PortId:    resp.PortId,
+	}, nil
 }
 
 func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ictxtypes.MsgSubmitTxResponse, error) {
@@ -73,8 +88,8 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "nil msg is prohibited")
 	}
 
-	if msg.Msgs == nil {
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "empty Msgs field is prohibited")
+	if err := msg.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgSubmitTx")
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -105,9 +120,9 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		)
 	}
 
-	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId)
+	icaOwner := ictxtypes.NewICAOwnerFromAddress(senderAddr, msg.InterchainAccountId).String()
 
-	portID, err := icatypes.NewControllerPortID(icaOwner.String())
+	portID, err := icatypes.NewControllerPortID(icaOwner)
 	if err != nil {
 		k.Logger(ctx).Error("SubmitTx: failed to create NewControllerPortID:", "error", err, "owner", icaOwner)
 		return nil, errors.Wrap(err, "failed to create NewControllerPortID")
@@ -143,17 +158,20 @@ func (k Keeper) SubmitTx(goCtx context.Context, msg *ictxtypes.MsgSubmitTx) (*ic
 		return nil, errors.Wrapf(err, "failed to lock fees to pay for SubmitTx msg: %s", msg)
 	}
 
-	timeoutTimestamp := ctx.BlockTime().Add(time.Duration(msg.Timeout) * time.Second).UnixNano()
-	// TODO: keeper's SendTx deprecated, replace it with MsgServer SendTx
-	_, err = k.icaControllerKeeper.SendTx(ctx, nil, msg.ConnectionId, portID, packetData, uint64(timeoutTimestamp))
+	resp, err := k.icaControllerMsgServer.SendTx(ctx, &icacontrollertypes.MsgSendTx{
+		Owner:           icaOwner,
+		ConnectionId:    msg.ConnectionId,
+		PacketData:      packetData,
+		RelativeTimeout: uint64(time.Duration(msg.Timeout) * time.Second),
+	})
 	if err != nil {
 		// usually we use DEBUG level for such errors, but in this case we have checked full input before running SendTX, so error here may be critical
-		k.Logger(ctx).Error("SubmitTx", "error", err, "connection_id", msg.ConnectionId, "port_id", portID, "channel_id", channelID)
+		k.Logger(ctx).Error("SubmitTx", "error", err, "owner", icaOwner, "connection_id", msg.ConnectionId, "channel_id", channelID)
 		return nil, errors.Wrap(err, "failed to SendTx")
 	}
 
 	return &ictxtypes.MsgSubmitTxResponse{
-		SequenceId: sequence,
+		SequenceId: resp.Sequence,
 		Channel:    channelID,
 	}, nil
 }
@@ -182,9 +200,10 @@ func SerializeCosmosTx(cdc codec.BinaryCodec, msgs []*codectypes.Any) (bz []byte
 
 // UpdateParams updates the module parameters
 func (k Keeper) UpdateParams(goCtx context.Context, req *ictxtypes.MsgUpdateParams) (*ictxtypes.MsgUpdateParamsResponse, error) {
-	if err := req.ValidateBasic(); err != nil {
-		return nil, err
+	if err := req.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
+
 	authority := k.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)

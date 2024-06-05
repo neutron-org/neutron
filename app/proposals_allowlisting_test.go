@@ -3,24 +3,26 @@ package app_test
 import (
 	"testing"
 
+	"github.com/neutron-org/neutron/v4/app/config"
+
 	cmttypes "github.com/cometbft/cometbft/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
-	icssimapp "github.com/cosmos/interchain-security/v4/testutil/ibc_testing"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app"
-	"github.com/neutron-org/neutron/v3/testutil"
+	"github.com/neutron-org/neutron/v4/app"
+	"github.com/neutron-org/neutron/v4/testutil"
 )
 
 func TestConsumerWhitelistingKeys(t *testing.T) {
-	_ = app.GetDefaultConfig()
-	coordinator := ibctesting.NewCoordinator(t, 2)
+	coordinator := ibctesting.NewCoordinator(t, 0)
 	chainID := ibctesting.GetChainID(1)
 
 	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
+	_ = config.GetDefaultConfig()
 	ibctesting.DefaultTestingAppInit = testutil.SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	chain := ibctesting.NewTestChain(t, coordinator, "test")
 

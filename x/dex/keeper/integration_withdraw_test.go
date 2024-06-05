@@ -5,7 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (s *DexTestSuite) TestPartialWithdrawOnlyA() {
@@ -152,7 +152,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedAtooMuchTick0() {
 	// Alice then withdraws
 	// David then withdraws
 
-	s.aliceDepositsWithOptions(NewDepositWithOptions(5, 10, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.aliceDeposits(NewDepositWithOptions(5, 10, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(45, 40)
 	s.assertBobBalances(50, 50)
@@ -160,7 +160,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedAtooMuchTick0() {
 	s.assertCurr1To0(-1)
 	s.assertCurr0To1(1)
 
-	s.bobDepositsWithOptions(NewDepositWithOptions(10, 10, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.bobDeposits(NewDepositWithOptions(10, 10, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(45, 40)
 	s.assertBobBalances(45, 40)
@@ -195,7 +195,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedBtooMuchTick0() {
 	// Alice then withdraws
 	// David then withdraws
 
-	s.aliceDepositsWithOptions(NewDepositWithOptions(10, 5, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.aliceDeposits(NewDepositWithOptions(10, 5, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(40, 45)
 	s.assertBobBalances(50, 50)
@@ -203,7 +203,7 @@ func (s *DexTestSuite) TestTwoFullDoubleSidedRebalancedBtooMuchTick0() {
 	s.assertCurr1To0(-1)
 	s.assertCurr0To1(1)
 
-	s.bobDepositsWithOptions(NewDepositWithOptions(10, 10, 0, 1, DepositOptions{DisableAutoswap: true}))
+	s.bobDeposits(NewDepositWithOptions(10, 10, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 
 	s.assertAliceBalances(40, 45)
 	s.assertBobBalances(40, 45)
@@ -247,7 +247,7 @@ func (s *DexTestSuite) TestWithdrawalFailsWithNonExistentPair() {
 	s.aliceDeposits(NewDeposit(100, 0, 0, 1))
 
 	// WHEN Alice tries to withdraw from a nonexistent tokenPair
-	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.Ctx, &types.MsgWithdrawal{
 		Creator:         s.alice.String(),
 		Receiver:        s.alice.String(),
 		TokenA:          "TokenX",

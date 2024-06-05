@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func CmdListUserDeposits() *cobra.Command {
@@ -29,9 +29,15 @@ func CmdListUserDeposits() *cobra.Command {
 				return err
 			}
 
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
 			params := &types.QueryAllUserDepositsRequest{
 				Address:         reqAddress,
 				IncludePoolData: includePoolData,
+				Pagination:      pageReq,
 			}
 
 			res, err := queryClient.UserDepositsAll(cmd.Context(), params)

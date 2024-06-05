@@ -6,7 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/utils"
+	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
 const (
@@ -24,6 +24,9 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_dex"
+
+	// TStoreKey defines the transient store key
+	TStoreKey = "transient_dex"
 )
 
 const (
@@ -50,6 +53,9 @@ const (
 
 	// ParamsKey is the prefix to retrieve params
 	ParamsKey = "Params/value/"
+
+	// JITPerBlock is the key to retrieve the number of JIT limit orders place in a single block
+	JITsInBlockKey = "JITsInBlock/count/"
 )
 
 func KeyPrefix(p string) []byte {
@@ -110,8 +116,13 @@ func LimitOrderTrancheUserAddressPrefix(address string) []byte {
 }
 
 func TimeBytes(timestamp time.Time) []byte {
-	unixMs := uint64(timestamp.UnixMilli())
-	str := utils.Uint64ToSortableString(unixMs)
+	var unixSecs uint64
+	// If timestamp is 0 use that instead of returning long negative number for unix time
+	if !timestamp.IsZero() {
+		unixSecs = uint64(timestamp.Unix())
+	}
+
+	str := utils.Uint64ToSortableString(unixSecs)
 	return []byte(str)
 }
 
@@ -221,6 +232,7 @@ const (
 	MultihopSwapEventAmountIn  = "AmountIn"
 	MultihopSwapEventAmountOut = "AmountOut"
 	MultihopSwapEventRoute     = "Route"
+	MultihopSwapEventDust      = "Dust"
 )
 
 // Place LimitOrder Event Attributes
@@ -292,9 +304,5 @@ func JITGoodTilTime() time.Time {
 }
 
 const (
-	// NOTE: This number is based current cost of all operations in EndBlock,
-	// if that changes this value must be updated to ensure there is enough
-	// remaining gas (weak proxy for timeoutPrepareProposal) to complete endBlock
-	GoodTilPurgeGasBuffer = 50_000
 	ExpiringLimitOrderGas = 10_000
 )
