@@ -5,9 +5,9 @@ package neutron.transfer;
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
+import "ibc/applications/transfer/v1/transfer.proto";
 import "ibc/core/client/v1/client.proto";
 import "neutron/feerefunder/fee.proto";
-import "ibc/applications/transfer/v1/transfer.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/transfer/types";
 
