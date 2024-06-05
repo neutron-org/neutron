@@ -10,6 +10,13 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/neutron-org/neutron/v4/x/dynamicfees"
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+
+	"github.com/skip-mev/feemarket/x/feemarket"
+	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
@@ -29,14 +36,11 @@ import (
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
 	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
-	"github.com/neutron-org/neutron/v4/x/globalfee"
-	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 
-	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 	"github.com/cosmos/interchain-security/v5/testutil/integration"
@@ -106,7 +110,6 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	// "github.com/cosmos/gaia/v11/x/globalfee"
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -151,6 +154,7 @@ import (
 	"github.com/neutron-org/neutron/v4/x/contractmanager"
 	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
 	"github.com/neutron-org/neutron/v4/x/feeburner"
 	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
@@ -187,7 +191,6 @@ import (
 	ibcswapkeeper "github.com/neutron-org/neutron/v4/x/ibcswap/keeper"
 	ibcswaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 
-	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
 	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
 
 	// Block-sdk imports
@@ -264,11 +267,12 @@ var (
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 		auction.AppModuleBasic{},
-		globalfee.AppModule{},
+		feemarket.AppModuleBasic{},
 		dex.AppModuleBasic{},
 		ibcswap.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
+		dynamicfees.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -289,6 +293,7 @@ var (
 		ibcswaptypes.ModuleName:                       {authtypes.Burner},
 		oracletypes.ModuleName:                        nil,
 		marketmaptypes.ModuleName:                     nil,
+		feemarkettypes.FeeCollectorName:               nil,
 	}
 )
 
@@ -348,6 +353,8 @@ type App struct {
 	EvidenceKeeper      evidencekeeper.Keeper
 	TransferKeeper      wrapkeeper.KeeperTransferWrapper
 	FeeGrantKeeper      feegrantkeeper.Keeper
+	FeeMarkerKeeper     *feemarketkeeper.Keeper
+	DynamicFeesKeeper   *dynamicfeeskeeper.Keeper
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
@@ -356,7 +363,6 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
-	GlobalFeeKeeper     globalfeekeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -474,7 +480,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		globalfeetypes.StoreKey, oracletypes.StoreKey, marketmaptypes.StoreKey,
+		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -560,6 +566,16 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	app.DynamicFeesKeeper = dynamicfeeskeeper.NewKeeper(appCodec, keys[dynamicfeestypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+
+	app.FeeMarkerKeeper = feemarketkeeper.NewKeeper(
+		appCodec,
+		keys[feemarkettypes.StoreKey],
+		app.AccountKeeper,
+		app.DynamicFeesKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
 	// ... other modules keepers
 	// pre-initialize ConsumerKeeper to satisfy ibckeeper.NewKeeper
 	// which would panic on nil or zero keeper
@@ -619,8 +635,6 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
-
-	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 
 	// PFMKeeper must be created before TransferKeeper
 	app.PFMKeeper = pfmkeeper.NewKeeper(
@@ -943,7 +957,8 @@ func New(
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
-		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
+		feemarket.NewAppModule(appCodec, *app.FeeMarkerKeeper),
+		dynamicfees.NewAppModule(appCodec, *app.DynamicFeesKeeper),
 		swapModule,
 		dexModule,
 		marketmapModule,
@@ -991,7 +1006,7 @@ func New(
 		crontypes.ModuleName,
 		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
-		// globalfee.ModuleName,
+		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 	)
@@ -1026,7 +1041,7 @@ func New(
 		crontypes.ModuleName,
 		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
-		// globalfee.ModuleName,
+		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 	)
@@ -1064,11 +1079,12 @@ func New(
 		ibchookstypes.ModuleName, // after auth keeper
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
-		globalfee.ModuleName,
+		feemarkettypes.ModuleName,
 		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		dynamicfeestypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1116,8 +1132,8 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	// create the lanes
-	mevLane, baseLane := app.CreateLanes()
-	mempool, err := blocksdk.NewLanedMempool(app.Logger(), []blocksdk.Lane{mevLane, baseLane})
+	baseLane := app.CreateLanes()
+	mempool, err := blocksdk.NewLanedMempool(app.Logger(), []blocksdk.Lane{baseLane})
 	if err != nil {
 		panic(err)
 	}
@@ -1136,13 +1152,10 @@ func New(
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
 			IBCKeeper:             app.IBCKeeper,
-			GlobalFeeKeeper:       app.GlobalFeeKeeper,
 			WasmConfig:            &wasmConfig,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 			ConsumerKeeper:        app.ConsumerKeeper,
-			AuctionKeeper:         app.AuctionKeeper,
-			TxEncoder:             app.GetTxConfig().TxEncoder(),
-			MEVLane:               mevLane,
+			FeeMarketKeeper:       app.FeeMarkerKeeper,
 		},
 		app.Logger(),
 	)
@@ -1151,12 +1164,23 @@ func New(
 	}
 	app.SetAnteHandler(anteHandler)
 
+	postHandlerOptions := PostHandlerOptions{
+		AccountKeeper:   app.AccountKeeper,
+		BankKeeper:      app.BankKeeper,
+		FeeGrantKeeper:  app.FeeGrantKeeper,
+		FeeMarketKeeper: app.FeeMarkerKeeper,
+	}
+	postHandler, err := NewPostHandler(postHandlerOptions)
+	if err != nil {
+		panic(err)
+	}
+	app.SetPostHandler(postHandler)
+
 	// set ante-handlers
 	opts := []base.LaneOption{
 		base.WithAnteHandler(anteHandler),
 	}
 	baseLane.WithOptions(opts...)
-	mevLane.WithOptions(opts...)
 
 	// set the block-sdk prepare / process-proposal handlers
 	blockSdkProposalHandler := blocksdkabci.NewProposalHandler(
@@ -1220,21 +1244,12 @@ func New(
 	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
 	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
 
-	// block-sdk CheckTx handler
-	mevCheckTxHandler := checktx.NewMEVCheckTxHandler(
-		app,
-		app.GetTxConfig().TxDecoder(),
-		mevLane,
-		anteHandler,
-		app.BaseApp.CheckTx,
-	)
-
 	// wrap checkTxHandler with mempool parity handler
 	parityCheckTx := checktx.NewMempoolParityCheckTx(
 		app.Logger(),
 		mempool,
 		app.GetTxConfig().TxDecoder(),
-		mevCheckTxHandler.CheckTx(),
+		app.BaseApp.CheckTx,
 	)
 
 	app.SetCheckTx(parityCheckTx.CheckTx())
@@ -1360,7 +1375,8 @@ func (app *App) setupUpgradeHandlers() {
 					ConsensusKeeper:     &app.ConsensusParamsKeeper,
 					ConsumerKeeper:      &app.ConsumerKeeper,
 					MarketmapKeeper:     app.MarketMapKeeper,
-					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
+					FeeMarketKeeper:     app.FeeMarkerKeeper,
+					DynamicfeesKeeper:   app.DynamicFeesKeeper,
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
 				app,
@@ -1578,8 +1594,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
-
-	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
 

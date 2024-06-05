@@ -14,7 +14,7 @@ replace (
 
 require (
 	github.com/cosmos/cosmos-sdk v0.50.6
-	github.com/skip-mev/slinky v0.4.3
+	github.com/skip-mev/slinky v0.4.6
 	github.com/skip-mev/slinky/tests/integration v1.0.0
 	github.com/strangelove-ventures/interchaintest/v8 v8.3.1-0.20240510203915-0559b76de4fa
 	github.com/stretchr/testify v1.9.0
@@ -247,7 +247,7 @@ require (
 	google.golang.org/genproto v0.0.0-20240513163218-0867130af1f8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8 // indirect
-	google.golang.org/grpc v1.63.2 // indirect
+	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
