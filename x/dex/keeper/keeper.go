@@ -2,12 +2,9 @@ package keeper
 
 import (
 	"fmt"
-	"math/big"
+	"strconv"
 
-	"github.com/armon/go-metrics"
 	"github.com/cometbft/cometbft/libs/log"
-	"github.com/cosmos/cosmos-sdk/telemetry"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,8 +13,8 @@ import (
 )
 
 var (
-	MetricLabelWithdrawn               = "total_withdrawn"
-	MetricLabelGasConsumed             = "gas_consumed"
+	AttributeWithdrawn                 = "total_withdrawn"
+	AttributeGasConsumed               = "gas_consumed"
 	MetricLabelTotalOrdersExpired      = "total_orders_expired"
 	MetricLabelTotalLimitOrders        = "total_orders_limit"
 	MetricLabelTotalTickLiquiditiesInc = "total_tick_liqidities_inc"
@@ -58,46 +55,76 @@ func (k Keeper) GetAuthority() string {
 	return k.authority
 }
 
-func incWithdrawnAmount(coins sdk.Coins) {
+func getEventsWithdrawnAmount(coins sdk.Coins) sdk.Events {
+	events := sdk.Events{}
 	for _, coin := range coins {
-		divisor := big.NewInt(6)
-		f, _ := new(big.Int).Div(coin.Amount.BigInt(), divisor).Float64() // todo check err
-		telemetry.IncrCounterWithLabels([]string{MetricLabelWithdrawn}, float32(f), []metrics.Label{
-			telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
-			telemetry.NewLabel("denom", coin.Denom),
-		})
+		event := sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(types.AttributeDenom, coin.Denom),
+			sdk.NewAttribute(types.AttributeWithdrawn, coin.Amount.String()),
+		)
+		events = append(events, event)
+	}
+	return events
+}
+
+func getEventsGasConsumed(gasBefore, gasAfter sdk.Gas) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(types.AttributeGasConsumed, strconv.FormatUint(gasAfter-gasBefore, 10)),
+		),
 	}
 }
 
-func gasConsumed(ctx sdk.Context) {
-	gas := ctx.GasMeter().GasConsumed()
-	gasFloat := float32(gas)
-	telemetry.SetGaugeWithLabels([]string{MetricLabelWithdrawn}, gasFloat, []metrics.Label{
-		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
-		telemetry.NewLabel(MetricLabelGasConsumed, "todo"),
-	})
+func getEventsIncExpiredOrders() sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeIncExpiredOrders),
+		),
+	}
 }
 
-func incExpiredOrders() {
-	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalOrdersExpired}, float32(1), []metrics.Label{
-		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
-	})
+func getEventsDecExpiredOrders() sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeDecExpiredOrders),
+		),
+	}
 }
 
-func totalLimitOrders() {
-	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalLimitOrders}, float32(1), []metrics.Label{
-		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
-	})
+func getEventsIncTotalOrders() sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeTotalLimitOrders),
+		),
+	}
 }
 
-func incTotalTickLiquidites() {
-	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalTickLiquiditiesInc}, float32(1), []metrics.Label{
-		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
-	})
+func getEventsIncTotalTickLiquidities() sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeTotalTickLiquiditiesInc),
+		),
+	}
 }
 
-func decTotalTickLiquidites() {
-	telemetry.IncrCounterWithLabels([]string{MetricLabelTotalTickLiquiditiesDec}, float32(1), []metrics.Label{
-		telemetry.NewLabel(telemetry.MetricLabelNameModule, types.ModuleName),
-	})
+func getEventsDecTotalTickLiquidities() sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeTotalTickLiquiditiesDec),
+		),
+	}
 }

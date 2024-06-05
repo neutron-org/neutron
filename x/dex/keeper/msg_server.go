@@ -119,7 +119,7 @@ func (k MsgServer) PlaceLimitOrder(
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
 
-	totalLimitOrders()
+	ctx.EventManager().EmitEvents(getEventsIncTotalOrders())
 
 	return &types.MsgPlaceLimitOrderResponse{
 		TrancheKey:   trancheKey,
@@ -168,6 +168,8 @@ func (k MsgServer) MultiHopSwap(
 	goCtx context.Context,
 	msg *types.MsgMultiHopSwap,
 ) (*types.MsgMultiHopSwapResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	gasBefore := ctx.GasMeter().GasConsumed()
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
@@ -184,6 +186,8 @@ func (k MsgServer) MultiHopSwap(
 		return &types.MsgMultiHopSwapResponse{}, err
 	}
 
+	gasAfter := ctx.GasMeter().GasConsumed()
+	ctx.EventManager().EmitEvents(getEventsGasConsumed(gasBefore, gasAfter))
 	return &types.MsgMultiHopSwapResponse{CoinOut: coinOut}, nil
 }
 

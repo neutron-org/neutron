@@ -21,7 +21,7 @@ func (k Keeper) GetOrInitPool(
 		return pool, nil
 	}
 
-	incTotalTickLiquidites()
+	ctx.EventManager().EmitEvents(getEventsIncTotalTickLiquidities())
 	return k.InitPool(ctx, pairID, centerTickIndexNormalized, fee)
 }
 

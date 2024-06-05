@@ -152,6 +152,6 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 		}
 
 		k.RemoveLimitOrderExpirationByKey(ctx, iterator.Key())
-		incExpiredOrders()
+		ctx.EventManager().EmitEvents(getEventsDecExpiredOrders())
 	}
 }
