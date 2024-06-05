@@ -27,7 +27,7 @@ func init() {
 
 var (
 	image = ibc.DockerImage{
-		Repository: "neutron-e2e",
+		Repository: "neutron-node",
 		Version:    "latest",
 		UidGid:     "1025:1025",
 	}
@@ -61,6 +61,10 @@ var (
 		{
 			Key:   "consensus.params.block.max_gas",
 			Value: "1000000000",
+		},
+		{
+			Key:   "app_state.feemarket.params.enabled",
+			Value: false,
 		},
 	}
 

@@ -1,0 +1,21 @@
+syntax = "proto3";
+package neutron.dynamicfees.v1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/v4/x/dynamicfees/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+
+  // List of asset prices by the NTRN
+  // it's used in cooperation with feemarket module
+  // ntrn_prices is a data source to convert gas_price from feemarket's base_denom (untrn)
+  // into a given asset
+  repeated cosmos.base.v1beta1.DecCoin ntrn_prices = 1 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (gogoproto.nullable) = false
+  ];
+}

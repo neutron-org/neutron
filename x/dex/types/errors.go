@@ -34,11 +34,6 @@ var (
 		1112,
 		"Cannot cancel additional liquidity from limit order tranche:",
 	) // "%d", tranche.TrancheKey
-	ErrInsufficientLiquidity = sdkerrors.Register(
-		ModuleName,
-		1114,
-		"Not enough liquidity to complete trade",
-	)
 	ErrTickOutsideRange = sdkerrors.Register(
 		ModuleName,
 		1117,
@@ -124,11 +119,6 @@ var (
 		1139,
 		"Limit order expiration time must be greater than current block time:",
 	)
-	ErrExitLimitPriceHit = sdkerrors.Register(
-		ModuleName,
-		1140,
-		"ExitLimitPrice cannot be satisfied.",
-	)
 	ErrAllMultiHopRoutesFailed = sdkerrors.Register(
 		ModuleName,
 		1141,
@@ -184,9 +174,54 @@ var (
 		1153,
 		"Can only provide a single deposit amount for each tick, fee pair",
 	)
-	ErrSwapAmountTooSmall = sdkerrors.Register(
+	ErrLimitPriceNotSatisfied = sdkerrors.Register(
 		ModuleName,
 		1154,
-		"Swap amount too small; creates unfair spread for liquidity providers",
+		"Trade cannot be filled at the specified LimitPrice",
+	)
+	ErrDexPaused = sdkerrors.Register(
+		ModuleName,
+		1155,
+		"Dex has been paused, all messages are disabled at this time",
+	)
+	ErrOverJITPerBlockLimit = sdkerrors.Register(
+		ModuleName,
+		1156,
+		"Maximum JIT LimitOrders per block has already been reached",
+	)
+	ErrInvalidDenom = sdkerrors.Register(
+		ModuleName,
+		1157,
+		"Invalid token denom",
+	)
+	ErrMultihopEntryTokensMismatch = sdkerrors.Register(
+		ModuleName,
+		1158,
+		"MultihopSwap starting tokens for each route must be the same",
+	)
+	ErrTradeTooSmall = sdkerrors.Register(
+		ModuleName,
+		1159,
+		"Specified trade will result in a rounded output of 0",
+	)
+	ErrPriceOutsideRange = sdkerrors.Register(
+		ModuleName,
+		1160,
+		"Invalid price; 0.00000000000000000000000050 < PRICE > 2020125331305056766451886.728",
+	)
+	ErrInvalidPriceAndTick = sdkerrors.Register(
+		ModuleName,
+		1161,
+		"Only LimitSellPrice or TickIndexInToOut should be specified",
+	)
+	ErrDepositBehindEnemyLines = sdkerrors.Register(
+		ModuleName,
+		1162,
+		"Cannot deposit at a price below the opposing token's current price",
+	)
+	ErrCalcTickFromPrice = sdkerrors.Register(
+		ModuleName,
+		1163,
+		"Cannot convert price to int64 tick value",
 	)
 )
