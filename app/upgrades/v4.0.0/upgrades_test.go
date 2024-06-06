@@ -1,11 +1,13 @@
 package v400_test
 
 import (
+	"sort"
 	"testing"
 
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	comettypes "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -68,6 +70,7 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	suite.Require().Equal(numCps, uint64(len(markets)))
 
 	// check that all currency pairs have been initialized in the oracle module
+	tickers := make([]slinkytypes.CurrencyPair, 0, len(markets))
 	for _, market := range markets {
 		decimals, err := app.OracleKeeper.GetDecimalsForCurrencyPair(ctx, market.Ticker.CurrencyPair)
 		suite.Require().NoError(err)
@@ -79,6 +82,19 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 		suite.Require().Equal(uint64(0), price.BlockHeight) // no block height because no price written yet
 
 		suite.Require().True(market.Ticker.Enabled)
+
+		tickers = append(tickers, market.Ticker.CurrencyPair)
+	}
+
+	// check IDs for inserted currency pairs, sort currency-pairs alphabetically
+	sort.Slice(tickers, func(i, j int) bool {
+		return tickers[i].String() < tickers[j].String()
+	})
+
+	for i, cp := range tickers {
+		id, found := app.OracleKeeper.GetIDForCurrencyPair(ctx, cp)
+		suite.Require().True(found)
+		suite.Require().Equal(uint64(i), id)
 	}
 }
 
