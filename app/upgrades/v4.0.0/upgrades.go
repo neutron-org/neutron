@@ -3,6 +3,7 @@ package v400
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -136,7 +137,8 @@ func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper
 }
 
 func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
-	for _, market := range slinkyconstants.CoreMarketMap.Markets {
+	markets := marketMapToDeterministicallyOrderedMarkets(slinkyconstants.CoreMarketMap)
+	for _, market := range markets {
 		if err := mmKeeper.CreateMarket(ctx, market); err != nil {
 			return err
 		}
@@ -147,6 +149,20 @@ func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
 
 	}
 	return nil
+}
+
+func marketMapToDeterministicallyOrderedMarkets(mm marketmaptypes.MarketMap) []marketmaptypes.Market {
+	markets := make([]marketmaptypes.Market, 0, len(mm.Markets))
+	for _, market := range mm.Markets {
+		markets = append(markets, market)
+	}
+
+	// order the markets alphabetically by their ticker.String()
+	sort.Slice(markets, func(i, j int) bool {
+		return markets[i].Ticker.String() < markets[j].Ticker.String()
+	})
+
+	return markets
 }
 
 func enableVoteExtensions(ctx sdk.Context, consensusKeeper *consensuskeeper.Keeper) error {
