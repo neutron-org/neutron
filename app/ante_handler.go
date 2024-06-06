@@ -70,6 +70,10 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		// globalfee ante handler must always be BEFORE feemarket ante
+		// If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
+		// so we pass the execution directly from globalfee to feemarket ante handler (it's always the next one)
+		// If feemarket is disabled, we check min gas prices via globalfee and then feemarket handler will be called.
+		// And since it's disabled it calls the native cosmos fee deduction ante handler inside
 		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper, options.FeeMarketKeeper),
 		feemarketante.NewFeeMarketCheckDecorator(options.FeeMarketKeeper, options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
