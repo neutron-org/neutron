@@ -14,6 +14,9 @@ import (
 	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
+
+	globalfeeante "github.com/neutron-org/neutron/v4/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -24,6 +27,7 @@ type HandlerOptions struct {
 	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
 	ConsumerKeeper        ibcconsumerkeeper.Keeper
+	GlobalFeeKeeper       globalfeekeeper.Keeper
 	WasmConfig            *wasmTypes.WasmConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 	FeeMarketKeeper       feemarketante.FeeMarketKeeper
@@ -65,6 +69,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
+		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
 		feemarketante.NewFeeMarketCheckDecorator(options.FeeMarketKeeper, options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
