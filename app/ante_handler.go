@@ -69,13 +69,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		// globalfee ante handler must always be BEFORE feemarket ante
-		// If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
-		// so we pass the execution directly from globalfee to feemarket ante handler (it's always the next one)
-		// If feemarket is disabled, we check min gas prices via globalfee and then feemarket handler will be called.
-		// And since it's disabled it calls the native cosmos fee deduction ante handler inside
-		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper, options.FeeMarketKeeper),
-		feemarketante.NewFeeMarketCheckDecorator(options.FeeMarketKeeper, options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		NewFeeDecoratorWithSwitch(options),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
@@ -94,4 +88,38 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
+}
+
+// FeeDecoratorWithSwitch is a fee ante decorator which switches between globalfee ante handler
+// and feemarket's one, depending on the `params.Enabled` field feemarket's module.
+// If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
+// so we switch the execution directly to feemarket ante handler
+// If feemarket is disabled, we check min gas prices via globalfee and then feemarket handler will be called.
+// And since it's disabled it calls the native cosmos fee deduction ante handler inside
+type FeeDecoratorWithSwitch struct {
+	feemarketkeeper    feemarketante.FeeMarketKeeper
+	feemarketDecorator feemarketante.FeeMarketCheckDecorator
+	globalfeeDecorator globalfeeante.FeeDecorator
+}
+
+func NewFeeDecoratorWithSwitch(options HandlerOptions) FeeDecoratorWithSwitch {
+	return FeeDecoratorWithSwitch{
+		feemarketkeeper:    options.FeeMarketKeeper,
+		feemarketDecorator: feemarketante.NewFeeMarketCheckDecorator(options.FeeMarketKeeper, options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		globalfeeDecorator: globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
+	}
+}
+
+func (d FeeDecoratorWithSwitch) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	params, err := d.feemarketkeeper.GetParams(ctx)
+	if err != nil {
+		return ctx, err
+	}
+	// If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
+	// so we pass the execution directly to feemarket ante handler (it's always the next one)
+	// If feemarket is disabled, we check min gas prices via globalfee
+	if params.Enabled {
+		return d.feemarketDecorator.AnteHandle(ctx, tx, simulate, next)
+	}
+	return d.globalfeeDecorator.AnteHandle(ctx, tx, simulate, next)
 }

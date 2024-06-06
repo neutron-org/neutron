@@ -51,7 +51,7 @@ func (s *IntegrationTestSuite) SetupTestGlobalFeeStoreAndMinGasPrice(minGasPrice
 	s.ctx = s.ctx.WithMinGasPrices(minGasPrice).WithIsCheckTx(true)
 
 	// build fee decorator
-	feeDecorator := gaiafeeante.NewFeeDecorator(s.app.GlobalFeeKeeper, s.app.FeeMarkerKeeper)
+	feeDecorator := gaiafeeante.NewFeeDecorator(s.app.GlobalFeeKeeper)
 
 	// chain fee decorator to antehandler
 	antehandler := sdk.ChainAnteDecorators(feeDecorator)

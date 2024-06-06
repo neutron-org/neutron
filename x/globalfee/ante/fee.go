@@ -3,8 +3,6 @@ package ante
 import (
 	"fmt"
 
-	"github.com/skip-mev/feemarket/x/feemarket/ante"
-
 	gaiaerrors "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
 	"cosmossdk.io/math"
@@ -31,11 +29,10 @@ var _ sdk.AnteDecorator = FeeDecorator{}
 
 type FeeDecorator struct {
 	GlobalMinFeeKeeper globalfeekeeper.Keeper
-	FeeMarketKeeper    ante.FeeMarketKeeper
 }
 
-func NewFeeDecorator(keeper globalfeekeeper.Keeper, feemarketKeeper ante.FeeMarketKeeper) FeeDecorator {
-	return FeeDecorator{GlobalMinFeeKeeper: keeper, FeeMarketKeeper: feemarketKeeper}
+func NewFeeDecorator(keeper globalfeekeeper.Keeper) FeeDecorator {
+	return FeeDecorator{GlobalMinFeeKeeper: keeper}
 }
 
 // AnteHandle implements the AnteDecorator interface
@@ -47,17 +44,6 @@ func (mfd FeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, ne
 
 	// Do not check minimum-gas-prices and global fees during simulations
 	if simulate {
-		return next(ctx, tx, simulate)
-	}
-
-	feemarketParams, err := mfd.FeeMarketKeeper.GetParams(ctx)
-	if err != nil {
-		return ctx, err
-	}
-	// If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
-	// so we pass the execution directly to feemarket ante handler (it's always the next one)
-	// If feemarket is disabled, we check min gas prices via globalfee
-	if feemarketParams.Enabled {
 		return next(ctx, tx, simulate)
 	}
 
