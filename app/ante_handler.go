@@ -94,12 +94,13 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 // and feemarket's one, depending on the `params.Enabled` field feemarket's module.
 // If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
 // so we switch the execution directly to feemarket ante handler
-// If feemarket is disabled, we check min gas prices via globalfee and then feemarket handler will be called.
-// And since it's disabled it calls the native cosmos fee deduction ante handler inside
+// If feemarket is disabled, we call globalfee + native cosmos fee ante handler where min gas prices will be checked
+// via globalfee and then they will be deducted via native cosmos fee ante handler.
 type FeeDecoratorWithSwitch struct {
 	feemarketkeeper    feemarketante.FeeMarketKeeper
 	feemarketDecorator feemarketante.FeeMarketCheckDecorator
 	globalfeeDecorator globalfeeante.FeeDecorator
+	cosmosFeeDecorator ante.DeductFeeDecorator
 }
 
 func NewFeeDecoratorWithSwitch(options HandlerOptions) FeeDecoratorWithSwitch {
@@ -107,6 +108,7 @@ func NewFeeDecoratorWithSwitch(options HandlerOptions) FeeDecoratorWithSwitch {
 		feemarketkeeper:    options.FeeMarketKeeper,
 		feemarketDecorator: feemarketante.NewFeeMarketCheckDecorator(options.FeeMarketKeeper, options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		globalfeeDecorator: globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
+		cosmosFeeDecorator: ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 	}
 }
 
@@ -116,10 +118,13 @@ func (d FeeDecoratorWithSwitch) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 		return ctx, err
 	}
 	// If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
-	// so we pass the execution directly to feemarket ante handler (it's always the next one)
-	// If feemarket is disabled, we check min gas prices via globalfee
+	// so we pass the execution directly to feemarket ante handler
 	if params.Enabled {
 		return d.feemarketDecorator.AnteHandle(ctx, tx, simulate, next)
 	}
-	return d.globalfeeDecorator.AnteHandle(ctx, tx, simulate, next)
+	// If feemarket is disabled, we call globalfee + native cosmos fee ante handler where min gas prices will be checked
+	// via globalfee and then they will be deducted via native cosmos fee ante handler.
+	return d.globalfeeDecorator.AnteHandle(ctx, tx, simulate, func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+		return d.cosmosFeeDecorator.AnteHandle(ctx, tx, simulate, next)
+	})
 }
