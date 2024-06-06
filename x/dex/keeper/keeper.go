@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"strconv"
 
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
@@ -47,78 +46,4 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) GetAuthority() string {
 	return k.authority
-}
-
-func getEventsWithdrawnAmount(coins sdk.Coins) sdk.Events {
-	events := sdk.Events{}
-	for _, coin := range coins {
-		event := sdk.NewEvent(
-			types.EventTypeNeutronMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeDenom, coin.Denom),
-			sdk.NewAttribute(types.AttributeWithdrawn, coin.Amount.String()),
-		)
-		events = append(events, event)
-	}
-	return events
-}
-
-func getEventsGasConsumed(gasBefore, gasAfter storetypes.Gas) sdk.Events {
-	return sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNeutronMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeGasConsumed, strconv.FormatUint(gasAfter-gasBefore, 10)),
-		),
-	}
-}
-
-func getEventsIncExpiredOrders() sdk.Events {
-	return sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNeutronMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeIncExpiredOrders),
-		),
-	}
-}
-
-func getEventsDecExpiredOrders() sdk.Events {
-	return sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNeutronMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeDecExpiredOrders),
-		),
-	}
-}
-
-func getEventsIncTotalOrders() sdk.Events {
-	return sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNeutronMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeTotalLimitOrders),
-		),
-	}
-}
-
-func getEventsIncTotalTickLiquidities() sdk.Events {
-	return sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNeutronMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeTotalTickLiquiditiesInc),
-		),
-	}
-}
-
-func getEventsDecTotalTickLiquidities() sdk.Events {
-	return sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeNeutronMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(sdk.AttributeKeyAction, types.AttributeTotalTickLiquiditiesDec),
-		),
-	}
 }

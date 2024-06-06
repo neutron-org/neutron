@@ -211,7 +211,7 @@ func (k Keeper) WithdrawCore(
 			receiverAddr,
 			sdk.Coins{coin0},
 		)
-		ctx.EventManager().EmitEvents(getEventsWithdrawnAmount(sdk.Coins{coin0}))
+		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin0}))
 		if err != nil {
 			return err
 		}
@@ -226,7 +226,7 @@ func (k Keeper) WithdrawCore(
 			receiverAddr,
 			sdk.Coins{coin1},
 		)
-		ctx.EventManager().EmitEvents(getEventsWithdrawnAmount(sdk.Coins{coin1}))
+		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin1}))
 		if err != nil {
 			return err
 		}
@@ -607,7 +607,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
 		coinMakerDenomRefund := sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 		coins := sdk.NewCoins(coinTakerDenomOut, coinMakerDenomRefund)
-		ctx.EventManager().EmitEvents(getEventsWithdrawnAmount(coins))
+		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(coins))
 		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
 			return err
 		}

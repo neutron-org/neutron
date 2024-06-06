@@ -57,7 +57,11 @@ func (k Keeper) SaveTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
 	} else {
 		k.SetInactiveLimitOrderTranche(ctx, tranche)
 		k.RemoveLimitOrderTranche(ctx, tranche.Key)
-		ctx.EventManager().EmitEvents(getEventsDecTotalTickLiquidities())
+		// TODO: either delete tradePairID from this event or provide pair ID somehow (seems it's unreachable here)
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(&types.TradePairID{
+			MakerDenom: "",
+			TakerDenom: "",
+		}))
 	}
 
 	ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranche(tranche))
@@ -222,26 +226,25 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, &JITGoodTilTime)
-		ctx.EventManager().EmitEvents(getEventsIncTotalTickLiquidities())
+		ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
 	case types.LimitOrderType_GOOD_TIL_TIME:
-		ctx.EventManager().EmitEvents(getEventsIncExpiredOrders())
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
 			TickIndexTakerToMaker: tickIndexTakerToMaker,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
-		ctx.EventManager().EmitEvents(getEventsIncTotalTickLiquidities())
+		ctx.EventManager().EmitEvents(types.GetEventsIncExpiringOrders(tradePairID))
 	default:
 		placeTranche = k.GetGTCPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
 		if placeTranche == nil {
-			ctx.EventManager().EmitEvents(getEventsIncTotalTickLiquidities())
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 				TradePairId:           tradePairID,
 				TickIndexTakerToMaker: tickIndexTakerToMaker,
 				TrancheKey:            NewTrancheKey(ctx),
 			}
 			placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, nil)
+			ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
 			if err != nil {
 				return nil, err
 			}

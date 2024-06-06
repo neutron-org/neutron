@@ -154,6 +154,10 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 		}
 
 		k.RemoveLimitOrderExpirationByKey(ctx, iterator.Key())
-		ctx.EventManager().EmitEvents(getEventsDecExpiredOrders())
+		// TODO: either delete tradePairID from this event or provide pair ID somehow (seems it's unreachable here)
+		ctx.EventManager().EmitEvents(types.GetEventsDecExpiringOrders(&types.TradePairID{
+			MakerDenom: "",
+			TakerDenom: "",
+		}))
 	}
 }

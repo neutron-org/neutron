@@ -152,7 +152,10 @@ func (k MsgServer) PlaceLimitOrder(
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
 
-	ctx.EventManager().EmitEvents(getEventsIncTotalOrders())
+	ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(&types.TradePairID{
+		MakerDenom: coinIn.Denom,
+		TakerDenom: coinOutSwap.Denom,
+	}))
 
 	return &types.MsgPlaceLimitOrderResponse{
 		TrancheKey:   trancheKey,
@@ -217,9 +220,6 @@ func (k MsgServer) MultiHopSwap(
 	goCtx context.Context,
 	msg *types.MsgMultiHopSwap,
 ) (*types.MsgMultiHopSwapResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	gasBefore := ctx.GasMeter().GasConsumed()
-
 	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgMultiHopSwap")
 	}
@@ -243,9 +243,6 @@ func (k MsgServer) MultiHopSwap(
 	if err != nil {
 		return &types.MsgMultiHopSwapResponse{}, err
 	}
-
-	gasAfter := ctx.GasMeter().GasConsumed()
-	ctx.EventManager().EmitEvents(getEventsGasConsumed(gasBefore, gasAfter))
 	return &types.MsgMultiHopSwapResponse{CoinOut: coinOut}, nil
 }
 

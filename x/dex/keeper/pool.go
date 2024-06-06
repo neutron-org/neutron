@@ -20,8 +20,7 @@ func (k Keeper) GetOrInitPool(
 	if found {
 		return pool, nil
 	}
-
-	ctx.EventManager().EmitEvents(getEventsIncTotalTickLiquidities())
+	ctx.EventManager().EmitEvents(types.GetEventsIncTotalPoolReserves(pool.GetId()))
 	return k.InitPool(ctx, pairID, centerTickIndexNormalized, fee)
 }
 
@@ -137,8 +136,8 @@ func (k Keeper) GetPoolIDByParams(
 }
 
 func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) {
-	k.updatePoolReserves(ctx, pool.LowerTick0)
-	k.updatePoolReserves(ctx, pool.UpperTick1)
+	k.updatePoolReserves(ctx, pool.LowerTick0, pool.GetId())
+	k.updatePoolReserves(ctx, pool.UpperTick1, pool.GetId())
 
 	// TODO: this will create a bit of extra noise since not every Save is updating both ticks
 	// This should be solved upstream by better tracking of dirty ticks
@@ -146,11 +145,11 @@ func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) {
 	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*pool.UpperTick1))
 }
 
-func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves) {
+func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves, poolID uint64) {
 	if reserves.HasToken() {
 		k.SetPoolReserves(ctx, reserves)
 	} else {
-		ctx.EventManager().EmitEvents(getEventsDecTotalTickLiquidities())
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalPoolReserves(poolID))
 		k.RemovePoolReserves(ctx, reserves.Key)
 	}
 }
