@@ -1,11 +1,9 @@
 package main
 
 import (
+	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
-
-	"cosmossdk.io/errors"
-
 	types1 "github.com/cometbft/cometbft/abci/types"
 	pvm "github.com/cometbft/cometbft/privval"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -16,9 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	"github.com/spf13/cobra"
-
 	"github.com/neutron-org/neutron/v4/testutil/consumer"
+	"github.com/spf13/cobra"
 )
 
 func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
@@ -28,28 +25,39 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 		Use:                        "add-consumer-section",
 		Short:                      "ONLY FOR TESTING PURPOSES! Modifies genesis so that chain can be started locally with one node.",
 		SuggestionsMinimumDistance: 2,
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			return genesisMutator.AlterConsumerModuleState(cmd, func(state *GenesisData, _ map[string]json.RawMessage) error {
 				genesisState := consumer.CreateMinimalConsumerTestGenesis()
 				clientCtx := client.GetClientContextFromCmd(cmd)
 				serverCtx := server.GetServerContextFromCmd(cmd)
 				config := serverCtx.Config
-				config.SetRoot(clientCtx.HomeDir)
-				privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-				pk, err := privValidator.GetPubKey()
-				if err != nil {
-					return err
-				}
-				sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
-				if err != nil {
-					return err
-				}
-				tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
-				if err != nil {
-					return err
+
+				valDirs := []string{"val_a", "val_b", "val_c", "val_d"}
+
+				var initialValset []types1.ValidatorUpdate
+
+				for _, valDir := range valDirs {
+					config.SetRoot("/opt/neutron/vals/" + valDir)
+					privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+					pk, err := privValidator.GetPubKey()
+					if err != nil {
+						return err
+					}
+					sdkPublicKey, err := cryptocodec.FromTmPubKeyInterface(pk)
+					if err != nil {
+						return err
+					}
+
+					tmProtoPublicKey, err := cryptocodec.ToTmProtoPublicKey(sdkPublicKey)
+					if err != nil {
+						return err
+					}
+					initialValset = append(initialValset, types1.ValidatorUpdate{PubKey: tmProtoPublicKey, Power: 25})
 				}
 
-				initialValset := []types1.ValidatorUpdate{{PubKey: tmProtoPublicKey, Power: 100}}
+				config.SetRoot(clientCtx.HomeDir)
+
+				fmt.Printf("Initial validators: %+v\n", initialValset)
 				vals, err := tmtypes.PB2TM.ValidatorUpdates(initialValset)
 				if err != nil {
 					return errors.Wrap(err, "could not convert val updates to validator set")
@@ -66,13 +74,10 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 	}
 
 	txCmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
+	txCmd.Flags().String("validator", "", "Validator folder")
 	flags.AddQueryFlagsToCmd(txCmd)
 
 	return txCmd
-}
-
-type GenesisMutator interface {
-	AlterConsumerModuleState(cmd *cobra.Command, callback func(state *GenesisData, appState map[string]json.RawMessage) error) error
 }
 
 type DefaultGenesisIO struct {
@@ -119,14 +124,14 @@ func (d DefaultGenesisReader) ReadGenesis(cmd *cobra.Command) (*GenesisData, err
 	config.SetRoot(clientCtx.HomeDir)
 
 	genFile := config.GenesisFile()
-	appState, appGenesis, err := genutiltypes.GenesisStateFromGenFile(genFile)
+	appState, genDoc, err := genutiltypes.GenesisStateFromGenFile(genFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal genesis state: %w", err)
 	}
 
 	return NewGenesisData(
 		genFile,
-		appGenesis,
+		genDoc,
 		appState,
 		nil,
 	), nil
