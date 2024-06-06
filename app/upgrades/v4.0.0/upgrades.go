@@ -2,7 +2,6 @@ package v400
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 
 	"cosmossdk.io/errors"
@@ -28,11 +27,8 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
-	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
+	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
 )
-
-//go:embed markets.json
-var marketsJSON []byte
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
@@ -140,19 +136,12 @@ func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper
 }
 
 func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
-	markets, err := slinkyutils.ReadMarketsFromFile(marketsJSON)
-	if err != nil {
-		return err
-	}
-
-	for _, market := range markets {
-		err = mmKeeper.CreateMarket(ctx, market)
-		if err != nil {
+	for _, market := range slinkyconstants.CoreMarketMap.Markets {
+		if err := mmKeeper.CreateMarket(ctx, market); err != nil {
 			return err
 		}
 
-		err = mmKeeper.Hooks().AfterMarketCreated(ctx, market)
-		if err != nil {
+		if err := mmKeeper.Hooks().AfterMarketCreated(ctx, market); err != nil {
 			return err
 		}
 

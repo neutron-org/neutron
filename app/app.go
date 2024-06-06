@@ -23,6 +23,7 @@ import (
 
 	appconfig "github.com/neutron-org/neutron/v4/app/config"
 
+	"github.com/skip-mev/slinky/abci/strategies/aggregator"
 	"github.com/skip-mev/slinky/x/oracle"
 
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
@@ -1282,6 +1283,14 @@ func New(
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
+	veCodec := compression.NewCompressionVoteExtensionCodec(
+		compression.NewDefaultVoteExtensionCodec(),
+		compression.NewZLibCompressor(),
+	)
+	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
+		compression.NewDefaultExtendedCommitCodec(),
+		compression.NewZStdCompressor(),
+	)
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
 		app.Logger(),
 		app.oracleClient,
@@ -1291,7 +1300,17 @@ func New(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
 		),
-		app.oraclePreBlockHandler.PreBlocker(),
+		aggregator.NewOraclePriceApplier(
+			aggregator.NewDefaultVoteAggregator(
+				app.Logger(),
+				aggregatorFn,
+				currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+			),
+			app.OracleKeeper,
+			veCodec,
+			extCommitCodec,
+			app.Logger(),
+		),
 		oracleMetrics,
 	)
 	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
