@@ -69,6 +69,7 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
+		// globalfee ante handler must always be BEFORE feemarket ante
 		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper, options.FeeMarketKeeper),
 		feemarketante.NewFeeMarketCheckDecorator(options.FeeMarketKeeper, options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
