@@ -16,7 +16,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 	wrappedtypes "github.com/neutron-org/neutron/v4/x/transfer/types"
 )
@@ -72,7 +71,7 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 }
 
 func (k KeeperTransferWrapper) UpdateParams(goCtx context.Context, msg *wrappedtypes.MsgUpdateParams) (*wrappedtypes.MsgUpdateParamsResponse, error) {
-	newMsg := &transfertypes.MsgUpdateParams{
+	newMsg := &types.MsgUpdateParams{
 		Signer: msg.Signer,
 		Params: msg.Params,
 	}
