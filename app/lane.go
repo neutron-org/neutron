@@ -28,6 +28,12 @@ func (app *App) CreateLanes() *blocksdkbase.BaseLane {
 	// BaseLane (DefaultLane) is intended to hold all txs that are not matched by any lanes ordered before this
 	// lane.
 	baseLane := base_lane.NewDefaultLane(basecfg, blocksdkbase.DefaultMatchHandler())
+	baseLane.LaneMempool = blocksdkbase.NewMempool(
+		blocksdkbase.NewDefaultTxPriority(),
+		basecfg.TxEncoder,
+		basecfg.SignerExtractor,
+		basecfg.MaxTxs,
+	)
 
 	return baseLane
 }
