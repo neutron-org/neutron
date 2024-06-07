@@ -102,6 +102,88 @@ func TestConvertToDenom(t *testing.T) {
 	}
 }
 
+func TestConvertFromDenom(t *testing.T) {
+	k, ctx := testkeeper.DynamicFeesKeeper(t)
+	params := types.DefaultParams()
+
+	const atomDenom = "uatom"
+	const osmoDenom = "uosmo"
+	// adding additional denoms
+	// Let's say:
+	// 1 ATOM = 10 NTRN
+	// 1 OSMO = 2 NTRN
+	// 1 NTRN = 1 NTRN
+	params.NtrnPrices = append(params.NtrnPrices, []cosmostypes.DecCoin{
+		{Denom: atomDenom, Amount: math.LegacyMustNewDecFromStr("10")},
+		{Denom: osmoDenom, Amount: math.LegacyMustNewDecFromStr("2")},
+		{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("1")},
+	}...)
+	require.NoError(t, k.SetParams(ctx, params))
+
+	for _, tc := range []struct {
+		desc          string
+		baseCoins     cosmostypes.DecCoin
+		expectedCoins cosmostypes.DecCoin
+		err           error
+	}{
+		{
+			// if i try to convert 10 NTRN to NTRN i must pay 10 NTRN
+			desc:          "check NTRN",
+			baseCoins:     cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("10")},
+			expectedCoins: cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("10")},
+			err:           nil,
+		},
+		{
+			// if i try to convert from non-existing denom, i must get an ErrUnknownDenom error
+			desc:          "non-existing denom",
+			baseCoins:     cosmostypes.DecCoin{Denom: "unknown_denom", Amount: math.LegacyMustNewDecFromStr("10")},
+			expectedCoins: cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("10")},
+			err:           types.ErrUnknownDenom,
+		},
+		{
+			// if i convert ATOM to NTRN, i must get 10 NTRN
+			desc:          "ATOM to 10 NTRN",
+			baseCoins:     cosmostypes.DecCoin{Denom: atomDenom, Amount: math.LegacyMustNewDecFromStr("1")},
+			expectedCoins: cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("10")},
+			err:           nil,
+		},
+		{
+			// if i convert 0.05 ATOM to NTRN, i must get 0.5 NTRN
+			desc:          "0.05 ATOM to NTRN",
+			baseCoins:     cosmostypes.DecCoin{Denom: atomDenom, Amount: math.LegacyMustNewDecFromStr("0.05")},
+			expectedCoins: cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("0.5")},
+			err:           nil,
+		},
+		{
+			// if i convert 0.25 OSMO to NTRN, i must get 0.5 NTRN
+			desc:          "0.25 OSMO to NTRN",
+			baseCoins:     cosmostypes.DecCoin{Denom: osmoDenom, Amount: math.LegacyMustNewDecFromStr("0.25")},
+			expectedCoins: cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("0.5")},
+			err:           nil,
+		},
+		{
+			// if i convert OSMO to NTRN, i must get 2 NTRN
+			desc:          "OSMO to NTRN",
+			baseCoins:     cosmostypes.DecCoin{Denom: osmoDenom, Amount: math.LegacyMustNewDecFromStr("1")},
+			expectedCoins: cosmostypes.DecCoin{Denom: appparams.DefaultDenom, Amount: math.LegacyMustNewDecFromStr("2")},
+			err:           nil,
+		},
+	} {
+		t.Run(tc.desc, func(t *testing.T) {
+			convertedCoin, err := k.ConvertToDenom(ctx, tc.baseCoins, appparams.DefaultDenom)
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t,
+					nullify.Fill(tc.expectedCoins),
+					nullify.Fill(convertedCoin),
+				)
+			}
+		})
+	}
+}
+
 func TestExtraDenoms(t *testing.T) {
 	k, ctx := testkeeper.DynamicFeesKeeper(t)
 	params := types.DefaultParams()
