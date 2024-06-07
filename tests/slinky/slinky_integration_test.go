@@ -39,7 +39,7 @@ var (
 
 	oracleImage = ibc.DockerImage{
 		Repository: "ghcr.io/skip-mev/slinky-sidecar",
-		Version:    "latest",
+		Version:    "v1.0.0",
 		UidGid:     "1000:1000",
 	}
 	encodingConfig = testutil.MakeTestEncodingConfig(
