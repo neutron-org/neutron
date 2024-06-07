@@ -112,19 +112,17 @@ func setDynamicFeesParams(ctx sdk.Context, dfKeeper *dynamicfeeskeeper.Keeper) e
 func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper) error {
 	// TODO: set params values
 	feemarketParams := feemarkettypes.Params{
-		Alpha:                  math.LegacyDec{},
-		Beta:                   math.LegacyDec{},
-		Theta:                  math.LegacyDec{},
-		Delta:                  math.LegacyDec{},
-		MinBaseGasPrice:        math.LegacyDec{},
-		MinLearningRate:        math.LegacyDec{},
-		MaxLearningRate:        math.LegacyDec{},
-		TargetBlockUtilization: 0,
-		MaxBlockUtilization:    0,
-		Window:                 0,
-		FeeDenom:               "",
-		Enabled:                false,
-		DistributeFees:         false,
+		Alpha:               math.LegacyDec{},
+		Beta:                math.LegacyDec{},
+		Delta:               math.LegacyDec{},
+		MinBaseGasPrice:     math.LegacyDec{},
+		MinLearningRate:     math.LegacyDec{},
+		MaxLearningRate:     math.LegacyDec{},
+		MaxBlockUtilization: 0,
+		Window:              0,
+		FeeDenom:            "",
+		Enabled:             false,
+		DistributeFees:      false,
 	}
 	feemarketState := feemarkettypes.NewState(feemarketParams.Window, feemarketParams.MinBaseGasPrice, feemarketParams.MinLearningRate)
 	err := feemarketKeeper.SetParams(ctx, feemarketParams)

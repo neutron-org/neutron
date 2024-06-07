@@ -846,8 +846,6 @@ github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056 h1:mb3f
 github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056/go.mod h1:di9iYm/L6fwGZXig6kNw8jCkCLfNdHo46UMcFgIbJUo=
 github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240604111945-c6481e4cfe4c h1:tc577BATsxnGi1O+0L3cJDC3WW52RITo+bXNOIfmhGw=
 github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240604111945-c6481e4cfe4c/go.mod h1:84xDDJEHttRT7NDGwBaUOLVOMN0JNE9x7NbsYIxXs1s=
-github.com/neutron-org/feemarket v0.0.0-20240531203218-3d49aa8a026f h1:TwR1dT8Grwzzb3MOuYTInIqD4i5aQkgdqul/xC0NCto=
-github.com/neutron-org/feemarket v0.0.0-20240531203218-3d49aa8a026f/go.mod h1:xBs2ZCqpo+S9HhHNOqDVV7kHj8lO8ZIA+l66pMUdqbE=
 github.com/neutron-org/wasmd v0.45.1-0.20240501180153-d9bebe629e05 h1:HTf3tdocEy9MDElIe9wePm/P9A74cE/3gyIgnWvOGEc=
 github.com/neutron-org/wasmd v0.45.1-0.20240501180153-d9bebe629e05/go.mod h1:7TSaj5HoolghujuVWeExqmcUKgpcYWEySGLSODbnnwY=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
@@ -984,6 +982,8 @@ github.com/skip-mev/block-sdk/v2 v2.1.2 h1:fNKbrb+PVVzuU0JiSuWgBV4Afj5zZ1VeHQJp8
 github.com/skip-mev/block-sdk/v2 v2.1.2/go.mod h1:kIq7SMva0/eHKTCiG/oI5XGxD4HNVK0t71TrUZqHcvA=
 github.com/skip-mev/chaintestutil v0.0.0-20240514161515-056d7ba45610 h1:4JlsiRVt/YZOvrKH525T7sZXgEWUEjqSDMwE6fXNbdo=
 github.com/skip-mev/chaintestutil v0.0.0-20240514161515-056d7ba45610/go.mod h1:kB8gFZX07CyJnw8q9iEZijI3qJTIe1K/Y++P5VGkrcg=
+github.com/skip-mev/feemarket v1.0.0-beta.1.0.20240606160631-1eca27f96436 h1:anFvEbZ7I7/s+sZkvIm7nDcObwYPGE1iC9rpIi8xlIs=
+github.com/skip-mev/feemarket v1.0.0-beta.1.0.20240606160631-1eca27f96436/go.mod h1:6MuzjSgVXeHmyv8MDGXyY5FrtTibj95wFnE/FxQAFY0=
 github.com/skip-mev/slinky v0.4.6 h1:XODpNhaF7WJPylpjZLns6mxfcANunCi5mrr5cTSVBvo=
 github.com/skip-mev/slinky v0.4.6/go.mod h1:AfPB9XOT50c6GXvRLO67Aw3iHw7hQhjuMaASpDFjRSM=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
