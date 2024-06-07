@@ -15622,10 +15622,8 @@ definitions:
       good_til_purge_allowance:
         format: uint64
         type: string
-      max_JITs_per_block:
+      max_jits_per_block:
         format: uint64
-        type: string
-      max_true_taker_spread:
         type: string
       paused:
         type: boolean
@@ -16591,10 +16589,8 @@ definitions:
           good_til_purge_allowance:
             format: uint64
             type: string
-          max_JITs_per_block:
+          max_jits_per_block:
             format: uint64
-            type: string
-          max_true_taker_spread:
             type: string
           paused:
             type: boolean
@@ -39141,10 +39137,8 @@ paths:
                   good_til_purge_allowance:
                     format: uint64
                     type: string
-                  max_JITs_per_block:
+                  max_jits_per_block:
                     format: uint64
-                    type: string
-                  max_true_taker_spread:
                     type: string
                   paused:
                     type: boolean

@@ -5,8 +5,6 @@ import (
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
-
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -14,7 +12,6 @@ var _ paramtypes.ParamSet = (*Params)(nil)
 var (
 	KeyFeeTiers                         = []byte("FeeTiers")
 	DefaultFeeTiers                     = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
-	DefaultMaxTrueTakerSpread           = math_utils.MustNewPrecDecFromStr("0.005")
 	KeyPaused                           = []byte("Paused")
 	DefaultPaused                       = false
 	KeyMaxJITsPerBlock                  = []byte("MaxJITs")
@@ -29,19 +26,18 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(feeTiers []uint64, maxTrueTakerSpread math_utils.PrecDec, paused bool, maxJITsPerBlock, goodTilPurgeAllowance uint64) Params {
+func NewParams(feeTiers []uint64, paused bool, maxJITsPerBlock, goodTilPurgeAllowance uint64) Params {
 	return Params{
 		FeeTiers:              feeTiers,
-		MaxTrueTakerSpread:    maxTrueTakerSpread,
 		Paused:                paused,
-		Max_JITsPerBlock:      maxJITsPerBlock,
+		MaxJitsPerBlock:       maxJITsPerBlock,
 		GoodTilPurgeAllowance: goodTilPurgeAllowance,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultFeeTiers, DefaultMaxTrueTakerSpread, DefaultPaused, DefaultMaxJITsPerBlock, DefaultGoodTilPurgeAllowance)
+	return NewParams(DefaultFeeTiers, DefaultPaused, DefaultMaxJITsPerBlock, DefaultGoodTilPurgeAllowance)
 }
 
 // ParamSetPairs get the params.ParamSet
@@ -49,7 +45,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyFeeTiers, &p.FeeTiers, validateFeeTiers),
 		paramtypes.NewParamSetPair(KeyPaused, &p.Paused, validatePaused),
-		paramtypes.NewParamSetPair(KeyMaxJITsPerBlock, &p.Max_JITsPerBlock, validateMaxJITsPerBlock),
+		paramtypes.NewParamSetPair(KeyMaxJITsPerBlock, &p.MaxJitsPerBlock, validateMaxJITsPerBlock),
 		paramtypes.NewParamSetPair(KeyGoodTilPurgeAllowance, &p.GoodTilPurgeAllowance, validatePurgeAllowance),
 	}
 }
@@ -71,7 +67,7 @@ func (p Params) Validate() error {
 	if err != nil {
 		return fmt.Errorf("invalid paused: %w", err)
 	}
-	if err := validateMaxJITsPerBlock(p.Max_JITsPerBlock); err != nil {
+	if err := validateMaxJITsPerBlock(p.MaxJitsPerBlock); err != nil {
 		return err
 	}
 	if err := validatePurgeAllowance(p.GoodTilPurgeAllowance); err != nil {
