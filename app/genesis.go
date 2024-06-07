@@ -24,21 +24,20 @@ type GenesisState map[string]json.RawMessage
 // NewDefaultGenesisState generates the default state for the application.
 func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	genesisState := ModuleBasics.DefaultGenesis(cdc)
+
 	feemarketFeeGenesis := feemarkettypes.GenesisState{
 		Params: feemarkettypes.Params{
-			Alpha:                  math.LegacyOneDec(),
-			Beta:                   math.LegacyOneDec(),
-			Theta:                  math.LegacyOneDec(),
-			Delta:                  math.LegacyOneDec(),
-			MinBaseGasPrice:        math.LegacyMustNewDecFromStr("0.0025"),
-			MinLearningRate:        math.LegacyMustNewDecFromStr("0.5"),
-			MaxLearningRate:        math.LegacyMustNewDecFromStr("1.5"),
-			TargetBlockUtilization: 1,
-			MaxBlockUtilization:    1,
-			Window:                 1,
-			FeeDenom:               FeeDenom,
-			Enabled:                false,
-			DistributeFees:         true,
+			Alpha:               math.LegacyOneDec(),
+			Beta:                math.LegacyOneDec(),
+			Delta:               math.LegacyOneDec(),
+			MinBaseGasPrice:     math.LegacyMustNewDecFromStr("0.0025"),
+			MinLearningRate:     math.LegacyMustNewDecFromStr("0.5"),
+			MaxLearningRate:     math.LegacyMustNewDecFromStr("1.5"),
+			MaxBlockUtilization: 30_000_000,
+			Window:              1,
+			FeeDenom:            FeeDenom,
+			Enabled:             false,
+			DistributeFees:      true,
 		},
 		State: feemarkettypes.State{
 			BaseGasPrice: math.LegacyMustNewDecFromStr("0.0025"),

@@ -20,6 +20,7 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
@@ -89,7 +90,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*icahosttypes.MsgUpdateParams,
 		*feemarkettypes.MsgParams,
 		*dynamicfeestypes.MsgUpdateParams,
-		*ibctransfertypes.MsgUpdateParams:
+		*ibctransfertypes.MsgUpdateParams,
+		*globalfeetypes.MsgUpdateParams:
 		return true
 	}
 	return false

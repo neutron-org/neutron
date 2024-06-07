@@ -38,6 +38,7 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rs/zerolog v1.32.0
 	github.com/skip-mev/block-sdk/v2 v2.1.2
+	github.com/skip-mev/feemarket v1.0.0-beta.1.0.20240606160631-1eca27f96436
 	github.com/skip-mev/slinky v1.0.0
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
@@ -210,7 +211,6 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
-	github.com/skip-mev/feemarket v0.0.1-alpha.2.0.20240520161032-284047ab934c
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
@@ -255,7 +255,5 @@ replace (
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240604111945-c6481e4cfe4c
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
-	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20240531203218-3d49aa8a026f
-	//github.com/skip-mev/feemarket => ../feemarket
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
