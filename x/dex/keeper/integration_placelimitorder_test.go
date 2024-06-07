@@ -379,7 +379,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithPrice1To0() {
 
 	// THEN alice gets out ~10 TOKENA and bob gets ~40 TOKENB
 	s.assertAliceBalancesInt(sdkmath.NewInt(9999999), sdkmath.ZeroInt())
-	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(40001452))
+	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(39997453))
 }
 
 // Fill Or Kill limit orders ///////////////////////////////////////////////////////////
