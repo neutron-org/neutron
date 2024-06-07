@@ -76,7 +76,7 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 }
 
 func (k Keeper) GetMaxJITsPerBlock(ctx sdk.Context) uint64 {
-	return k.GetParams(ctx).Max_JITsPerBlock
+	return k.GetParams(ctx).MaxJitsPerBlock
 }
 
 func (k Keeper) AssertCanPlaceJIT(ctx sdk.Context) error {
