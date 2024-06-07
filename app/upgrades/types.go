@@ -65,6 +65,7 @@ type UpgradeKeepers struct {
 	FeeMarketKeeper    *feemarketkeeper.Keeper
 	DynamicfeesKeeper  *dynamicfeeskeeper.Keeper
 	// subspaces
+	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace
 }
 
