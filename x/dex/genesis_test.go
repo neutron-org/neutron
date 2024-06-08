@@ -2,6 +2,7 @@ package dex_test
 
 import (
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
@@ -70,6 +71,36 @@ func TestGenesis(t *testing.T) {
 					),
 				},
 			},
+			{
+				Liquidity: &types.TickLiquidity_LimitOrderTranche{
+					LimitOrderTranche: types.MustNewLimitOrderTranche(
+						"TokenB",
+						"TokenA",
+						"0",
+						0,
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC),
+					),
+				},
+			},
+			{
+				Liquidity: &types.TickLiquidity_LimitOrderTranche{
+					LimitOrderTranche: types.MustNewLimitOrderTranche(
+						"TokenB",
+						"TokenA",
+						"0",
+						0,
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						time.Date(2024, 2, 1, 1, 0, 0, 0, time.UTC),
+					),
+				},
+			},
 		},
 		InactiveLimitOrderTrancheList: []*types.LimitOrderTranche{
 			{
@@ -108,6 +139,23 @@ func TestGenesis(t *testing.T) {
 	k, ctx := keepertest.DexKeeper(t)
 	dex.InitGenesis(ctx, *k, genesisState)
 	got := dex.ExportGenesis(ctx, *k)
+
+	// check that LimitorderExpirations are recreated correctly
+	expectedLimitOrderExpirations := []*types.LimitOrderExpiration{
+		{
+			ExpirationTime: *genesisState.TickLiquidityList[2].GetLimitOrderTranche().ExpirationTime,
+			TrancheRef:     genesisState.TickLiquidityList[2].GetLimitOrderTranche().Key.KeyMarshal(),
+		},
+		{
+			ExpirationTime: *genesisState.TickLiquidityList[3].GetLimitOrderTranche().ExpirationTime,
+			TrancheRef:     genesisState.TickLiquidityList[3].GetLimitOrderTranche().Key.KeyMarshal(),
+		},
+	}
+	loExpirations := k.GetAllLimitOrderExpiration(ctx)
+	require.Equal(t, *expectedLimitOrderExpirations[0], *loExpirations[0])
+	require.Equal(t, *expectedLimitOrderExpirations[1], *loExpirations[1])
+	require.Equal(t, len(expectedLimitOrderExpirations), len(loExpirations))
+
 	require.NotNil(t, got)
 
 	nullify.Fill(&genesisState)

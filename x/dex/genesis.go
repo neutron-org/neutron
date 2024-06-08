@@ -17,7 +17,13 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		case *types.TickLiquidity_PoolReserves:
 			k.SetPoolReserves(ctx, elem.GetPoolReserves())
 		case *types.TickLiquidity_LimitOrderTranche:
-			k.SetLimitOrderTranche(ctx, elem.GetLimitOrderTranche())
+			tranche := elem.GetLimitOrderTranche()
+			k.SetLimitOrderTranche(ctx, tranche)
+			if tranche.HasExpiration() {
+				// re-create expiration record
+				loExpiration := keeper.NewLimitOrderExpiration(tranche)
+				k.SetLimitOrderExpiration(ctx, loExpiration)
+			}
 		}
 	}
 	// Set all the inactiveLimitOrderTranche
