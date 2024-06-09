@@ -38,6 +38,8 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	// Set all the poolMetadata
 	for _, elem := range genState.PoolMetadataList {
 		k.SetPoolMetadata(ctx, elem)
+		// Store PoolID reference
+		k.StorePoolIDRef(ctx, elem.Id, elem.PairId, elem.Tick, elem.Fee)
 	}
 
 	// Set poolMetadata count

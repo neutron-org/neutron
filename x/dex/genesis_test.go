@@ -101,6 +101,17 @@ func TestGenesis(t *testing.T) {
 					),
 				},
 			},
+			{
+				Liquidity: &types.TickLiquidity_PoolReserves{
+					PoolReserves: types.MustNewPoolReserves(
+						&types.PoolReservesKey{
+							TradePairId:           types.MustNewTradePairID("TokenA", "TokenB"),
+							TickIndexTakerToMaker: 0,
+							Fee:                   1,
+						},
+					),
+				},
+			},
 		},
 		InactiveLimitOrderTrancheList: []*types.LimitOrderTranche{
 			{
@@ -126,10 +137,16 @@ func TestGenesis(t *testing.T) {
 		},
 		PoolMetadataList: []types.PoolMetadata{
 			{
-				Id: 0,
+				PairId: types.MustNewPairID("TokenA", "TokenB"),
+				Tick:   0,
+				Fee:    1,
+				Id:     0,
 			},
 			{
-				Id: 1,
+				PairId: types.MustNewPairID("TokenA", "TokenB"),
+				Tick:   1,
+				Fee:    1,
+				Id:     1,
 			},
 		},
 		PoolCount: 2,
@@ -139,6 +156,7 @@ func TestGenesis(t *testing.T) {
 	k, ctx := keepertest.DexKeeper(t)
 	dex.InitGenesis(ctx, *k, genesisState)
 	got := dex.ExportGenesis(ctx, *k)
+	require.NotNil(t, got)
 
 	// check that LimitorderExpirations are recreated correctly
 	expectedLimitOrderExpirations := []*types.LimitOrderExpiration{
@@ -156,7 +174,10 @@ func TestGenesis(t *testing.T) {
 	require.Equal(t, *expectedLimitOrderExpirations[1], *loExpirations[1])
 	require.Equal(t, len(expectedLimitOrderExpirations), len(loExpirations))
 
-	require.NotNil(t, got)
+	// Check that poolID refs works
+
+	_, found := k.GetPool(ctx, types.MustNewPairID("TokenA", "TokenB"), 0, 1)
+	require.True(t, found)
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
