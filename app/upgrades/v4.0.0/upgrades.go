@@ -2,8 +2,8 @@ package v400
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
+	"sort"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -28,11 +28,8 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
-	slinkyutils "github.com/neutron-org/neutron/v4/utils/slinky"
+	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
 )
-
-//go:embed markets.json
-var marketsJSON []byte
 
 func CreateUpgradeHandler(
 	mm *module.Manager,
@@ -138,24 +135,32 @@ func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper
 }
 
 func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
-	markets, err := slinkyutils.ReadMarketsFromFile(marketsJSON)
-	if err != nil {
-		return err
-	}
-
+	markets := marketMapToDeterministicallyOrderedMarkets(slinkyconstants.CoreMarketMap)
 	for _, market := range markets {
-		err = mmKeeper.CreateMarket(ctx, market)
-		if err != nil {
+		if err := mmKeeper.CreateMarket(ctx, market); err != nil {
 			return err
 		}
 
-		err = mmKeeper.Hooks().AfterMarketCreated(ctx, market)
-		if err != nil {
+		if err := mmKeeper.Hooks().AfterMarketCreated(ctx, market); err != nil {
 			return err
 		}
 
 	}
 	return nil
+}
+
+func marketMapToDeterministicallyOrderedMarkets(mm marketmaptypes.MarketMap) []marketmaptypes.Market {
+	markets := make([]marketmaptypes.Market, 0, len(mm.Markets))
+	for _, market := range mm.Markets {
+		markets = append(markets, market)
+	}
+
+	// order the markets alphabetically by their ticker.String()
+	sort.Slice(markets, func(i, j int) bool {
+		return markets[i].Ticker.String() < markets[j].Ticker.String()
+	})
+
+	return markets
 }
 
 func enableVoteExtensions(ctx sdk.Context, consensusKeeper *consensuskeeper.Keeper) error {
