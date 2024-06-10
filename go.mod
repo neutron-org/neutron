@@ -252,7 +252,7 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240501180153-d9bebe629e05
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056
-	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240610093812-0be2cd2325fe
+	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.7-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
