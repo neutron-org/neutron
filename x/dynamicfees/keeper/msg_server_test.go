@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/suite"

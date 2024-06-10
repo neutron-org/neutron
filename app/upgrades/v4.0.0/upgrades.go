@@ -17,7 +17,7 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	comettypes "github.com/cometbft/cometbft/proto/tendermint/types"
-	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -27,8 +27,9 @@ import (
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	"github.com/neutron-org/neutron/v4/app/upgrades"
 	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
+
+	"github.com/neutron-org/neutron/v4/app/upgrades"
 )
 
 func CreateUpgradeHandler(

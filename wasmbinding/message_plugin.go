@@ -32,8 +32,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
-	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
+	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck

@@ -147,10 +147,10 @@ import (
 	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
-	"github.com/cosmos/admin-module/x/adminmodule"
-	adminmodulecli "github.com/cosmos/admin-module/x/adminmodule/client/cli"
-	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
-	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	"github.com/cosmos/admin-module/v2/x/adminmodule"
+	adminmodulecli "github.com/cosmos/admin-module/v2/x/adminmodule/client/cli"
+	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 

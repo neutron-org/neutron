@@ -9,7 +9,7 @@ mkdir -p tmp_deps
 #copy some deps to use their proto files to generate swagger
 declare -a deps=("github.com/cosmos/cosmos-sdk"
                 "github.com/CosmWasm/wasmd"
-                "github.com/cosmos/admin-module"
+                "github.com/cosmos/admin-module/v2"
                 "github.com/cosmos/interchain-security/v5"
                 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8"
                 "github.com/skip-mev/block-sdk/v2")
