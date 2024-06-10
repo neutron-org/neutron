@@ -23,6 +23,7 @@ import (
 
 	appconfig "github.com/neutron-org/neutron/v4/app/config"
 
+	"github.com/skip-mev/slinky/abci/strategies/aggregator"
 	"github.com/skip-mev/slinky/x/oracle"
 
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
@@ -146,10 +147,10 @@ import (
 	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
-	"github.com/cosmos/admin-module/x/adminmodule"
-	adminmodulecli "github.com/cosmos/admin-module/x/adminmodule/client/cli"
-	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
-	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	"github.com/cosmos/admin-module/v2/x/adminmodule"
+	adminmodulecli "github.com/cosmos/admin-module/v2/x/adminmodule/client/cli"
+	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
@@ -1296,6 +1297,14 @@ func New(
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
+	veCodec := compression.NewCompressionVoteExtensionCodec(
+		compression.NewDefaultVoteExtensionCodec(),
+		compression.NewZLibCompressor(),
+	)
+	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
+		compression.NewDefaultExtendedCommitCodec(),
+		compression.NewZStdCompressor(),
+	)
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
 		app.Logger(),
 		app.oracleClient,
@@ -1305,7 +1314,17 @@ func New(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
 		),
-		app.oraclePreBlockHandler.PreBlocker(),
+		aggregator.NewOraclePriceApplier(
+			aggregator.NewDefaultVoteAggregator(
+				app.Logger(),
+				aggregatorFn,
+				currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+			),
+			app.OracleKeeper,
+			veCodec,
+			extCommitCodec,
+			app.Logger(),
+		),
 		oracleMetrics,
 	)
 	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())

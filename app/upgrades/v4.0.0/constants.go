@@ -15,6 +15,10 @@ import (
 const (
 	// UpgradeName defines the on-chain upgrade name.
 	UpgradeName = "v4.0.0"
+
+	// MarketMapAuthorityMultisig defines the address of a market-map authority governed by a
+	// multi-sig of contributors.
+	MarketMapAuthorityMultisig = "neutron1ua63s43u2p4v38pxhcxmps0tj2gudyw2hfeetz"
 )
 
 var Upgrade = upgrades.Upgrade{
