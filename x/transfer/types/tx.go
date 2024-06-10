@@ -72,6 +72,36 @@ func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, conv, info, handler)
 }
 
+// MsgUpdateParamsHandler handler helps to bind `/ibc.applications.transfer.v1.Msg/UpdateParams`.
+//
+//nolint:revive // we cant rearrange arguments since we need to meet the type requirement
+func MsgUpdateParamsHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(types.MsgUpdateParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	conv := &MsgUpdateParams{
+		Signer: in.Signer,
+		Params: in.Params,
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpdateParams(ctx, conv)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ibc.applications.transfer.v1.Msg/UpdateParams",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		reqT := req.(*types.MsgUpdateParams)
+		convReq := &MsgUpdateParams{
+			Signer: reqT.Signer,
+			Params: reqT.Params,
+		}
+		return srv.(MsgServer).UpdateParams(ctx, convReq)
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var MsgServiceDescOrig = grpc.ServiceDesc{
 	ServiceName: "ibc.applications.transfer.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -79,6 +109,10 @@ var MsgServiceDescOrig = grpc.ServiceDesc{
 		{
 			MethodName: "Transfer",
 			Handler:    MsgOrigTransferHandler,
+		},
+		{
+			MethodName: "UpdateParams",
+			Handler:    MsgUpdateParamsHandler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
