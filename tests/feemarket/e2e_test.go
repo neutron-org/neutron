@@ -2,6 +2,7 @@ package feemarket_test
 
 import (
 	"fmt"
+
 	"strconv"
 	"testing"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/skip-mev/feemarket/tests/e2e"
 	feemarketmodule "github.com/skip-mev/feemarket/x/feemarket"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+	"github.com/skip-mev/slinky/tests/integration"
 	marketmapmodule "github.com/skip-mev/slinky/x/marketmap"
 	"github.com/skip-mev/slinky/x/oracle"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
@@ -71,6 +73,7 @@ var (
 				Alpha:               sdkmath.LegacyOneDec(),
 				Beta:                sdkmath.LegacyOneDec(),
 				Delta:               sdkmath.LegacyOneDec(),
+				Gamma:               feemarkettypes.DefaultGamma,
 				MinBaseGasPrice:     sdkmath.LegacyMustNewDecFromStr("0.0025"),
 				MinLearningRate:     sdkmath.LegacyMustNewDecFromStr("0.5"),
 				MaxLearningRate:     sdkmath.LegacyMustNewDecFromStr("1.5"),
@@ -126,8 +129,8 @@ func TestE2ETestSuite(t *testing.T) {
 	s := e2e.NewIntegrationSuite(
 		spec,
 		oracleImage,
-		e2e.WithInterchainConstructor(e2e.CCVInterchainConstructor),
-		e2e.WithChainConstructor(e2e.CCVChainConstructor),
+		e2e.WithInterchainConstructor(integration.CCVInterchainConstructor),
+		e2e.WithChainConstructor(integration.CCVChainConstructor),
 		e2e.WithDenom(denom),
 	)
 	suite.Run(t, s)
