@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-	swaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
+	swaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 )
 
 // TestSwapAndForward_Fails asserts that the IBC swap middleware fails gracefully when provided with a package-forward memo

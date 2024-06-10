@@ -5,40 +5,41 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	keeper2 "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v3/x/feeburner/types"
+	keeper2 "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
 
-	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
-	ictxtypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
-	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
-	"github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v4/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmvm/types"
+	"github.com/CosmWasm/wasmvm/v2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v3/app"
-	"github.com/neutron-org/neutron/v3/testutil"
-	"github.com/neutron-org/neutron/v3/wasmbinding"
-	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	icqkeeper "github.com/neutron-org/neutron/v3/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v3/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v4/app"
+	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v4/wasmbinding"
+	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
 
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 const FeeCollectorAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
@@ -95,13 +96,13 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
 			ConnectionId:        suite.Path.EndpointA.ConnectionID,
 			InterchainAccountId: testutil.TestInterchainID,
-			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))),
+			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))),
 		},
 	}
 
 	bankKeeper := suite.neutron.BankKeeper
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1_000_000))))
+	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
@@ -121,7 +122,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message via DispatchHandler cause we want to catch an error from SDK directly, not from a contract
-	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{
+	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, types.CosmosMsg{ //nolint:dogsled
 		Custom: msg,
 	})
 	suite.Error(err)
@@ -134,7 +135,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 
 	// Top up contract balance
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -160,7 +161,7 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
 
 func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -178,7 +179,7 @@ func (suite *CustomMessengerTestSuite) TestCreateDenomMsg() {
 
 func (suite *CustomMessengerTestSuite) TestSetDenomMetadataMsg() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -251,7 +252,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 	)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(20_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(20_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -272,7 +273,7 @@ func (suite *CustomMessengerTestSuite) TestMintMsg() {
 
 	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
 
-	amount, ok := sdk.NewIntFromString("808010808")
+	amount, ok := math.NewIntFromString("808010808")
 	require.True(suite.T(), ok)
 
 	fullMsg = bindings.NeutronMsg{
@@ -345,7 +346,7 @@ func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
 	)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(20_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(20_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -366,7 +367,7 @@ func (suite *CustomMessengerTestSuite) TestForceTransferMsg() {
 
 	sunDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
 
-	amount, ok := sdk.NewIntFromString("808010808")
+	amount, ok := math.NewIntFromString("808010808")
 	require.True(suite.T(), ok)
 
 	fullMsg = bindings.NeutronMsg{
@@ -479,7 +480,7 @@ func (suite *CustomMessengerTestSuite) TestRemoveInterchainQueryFailed() {
 
 func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := suite.neutron.BankKeeper
 	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
 	suite.NoError(err)
@@ -493,7 +494,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	)
 	suite.NoError(err)
 
-	var response bindings.SubmitTxResponse
+	var response ictxtypes.MsgSubmitTxResponse
 	err = json.Unmarshal(data, &response)
 	suite.NoError(err)
 	suite.Equal(uint64(1), response.SequenceId)
@@ -601,11 +602,10 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
 			AdminProposal: bindings.AdminProposal{
-				ClientUpdateProposal: &bindings.ClientUpdateProposal{
-					Title:              "aaa",
-					Description:        "ddafds",
-					SubjectClientId:    "sdfsdf",
-					SubstituteClientId: "sdfsd",
+				ParamChangeProposal: &bindings.ParamChangeProposal{
+					Title:        "aaa",
+					Description:  "ddafds",
+					ParamChanges: nil,
 				},
 				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg},
 			},
@@ -616,7 +616,7 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
 	// Dispatch SubmitAdminProposal message
-	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg) //nolint:dogsled
 
 	suite.ErrorContains(err, "more than one admin proposal type is present in message")
 }
@@ -636,7 +636,7 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	cosmosMsg := types.CosmosMsg{Custom: msg}
 
 	// Dispatch SubmitAdminProposal message
-	_, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg)
+	_, _, _, err = suite.messenger.DispatchMsg(suite.ctx, suite.contractAddress, suite.Path.EndpointA.ChannelConfig.PortID, cosmosMsg) //nolint:dogsled
 
 	suite.ErrorContains(err, "no admin proposal type is present in message")
 }
@@ -660,12 +660,8 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	}
 
 	// Dispatch AddSchedule message
-	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
-
-	expected, err := json.Marshal(&bindings.AddScheduleResponse{})
-	suite.NoError(err)
-	suite.Equal(expected, data)
 
 	// Craft RemoveSchedule message
 	msg = bindings.NeutronMsg{
@@ -675,12 +671,8 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 	}
 
 	// Dispatch AddSchedule message
-	data, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
-
-	expected, err = json.Marshal(&bindings.RemoveScheduleResponse{})
-	suite.NoError(err)
-	suite.Equal(expected, data)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
@@ -805,8 +797,8 @@ func (suite *CustomMessengerTestSuite) craftMarshaledMsgSubmitTxWithNumMsgs(numM
 			Timeout:             2000,
 			Fee: feetypes.Fee{
 				RecvFee:    sdk.NewCoins(),
-				AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
-				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(1000))),
+				AckFee:     sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1000))),
+				TimeoutFee: sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1000))),
 			},
 		},
 	}

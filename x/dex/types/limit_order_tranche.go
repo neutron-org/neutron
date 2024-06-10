@@ -1,11 +1,13 @@
 package types
 
 import (
+	"time"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-	"github.com/neutron-org/neutron/v3/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
 func NewLimitOrderTranche(
@@ -50,6 +52,7 @@ func MustNewLimitOrderTranche(
 	reservesTakerDenom math.Int,
 	totalMakerDenom math.Int,
 	totalTakerDenom math.Int,
+	expirationTime ...time.Time,
 ) *LimitOrderTranche {
 	limitOrderTranche, err := NewLimitOrderTranche(
 		makerDenom,
@@ -64,6 +67,14 @@ func MustNewLimitOrderTranche(
 	if err != nil {
 		panic(err)
 	}
+	switch len(expirationTime) {
+	case 0:
+		break
+	case 1:
+		limitOrderTranche.ExpirationTime = &expirationTime[0]
+	default:
+		panic("can only supply one expiration time")
+	}
 	return limitOrderTranche
 }
 
@@ -73,6 +84,10 @@ func (t LimitOrderTranche) IsPlaceTranche() bool {
 
 func (t LimitOrderTranche) IsFilled() bool {
 	return t.ReservesMakerDenom.IsZero()
+}
+
+func (t LimitOrderTranche) HasExpiration() bool {
+	return t.ExpirationTime != nil
 }
 
 func (t LimitOrderTranche) IsJIT() bool {
@@ -98,12 +113,18 @@ func (t LimitOrderTranche) Price() math_utils.PrecDec {
 func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
 	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
 	ratioFilled := amountFilled.QuoInt(t.TotalMakerDenom)
-	return ratioFilled
+
+	// Cap ratio filled at 100% so that makers cannot over withdraw
+	return math_utils.MinPrecDec(ratioFilled, math_utils.OnePrecDec())
 }
 
 func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
 	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
-	return math_utils.NewPrecDecFromInt(t.TotalMakerDenom).Sub(amountFilled)
+	trueAmountUnfilled := math_utils.NewPrecDecFromInt(t.TotalMakerDenom).Sub(amountFilled)
+
+	// It is possible for a tranche to be overfilled due to rounding. Thus we cap the unfilled amount at 0
+	withdrawableAmount := math_utils.MaxPrecDec(math_utils.ZeroPrecDec(), trueAmountUnfilled)
+	return withdrawableAmount
 }
 
 func (t LimitOrderTranche) HasLiquidity() bool {
@@ -123,19 +144,19 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	return amountToRemove
 }
 
-func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
+func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUser) (sharesToWithdraw, tokenOut math.Int) {
 	ratioFilled := t.RatioFilled()
-	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned).TruncateInt()
-	amountOutTokenIn := maxAllowedToWithdraw.Sub(trancheUser.SharesWithdrawn)
-	amountOutTokenOut := math_utils.NewPrecDecFromInt(amountOutTokenIn).Quo(t.PriceTakerToMaker)
+	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned)
+	sharesToWithdrawDec := maxAllowedToWithdraw.Sub(math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn))
+	amountOutTokenOutDec := sharesToWithdrawDec.Quo(t.PriceTakerToMaker)
 
-	return amountOutTokenIn, amountOutTokenOut
+	// Round shares withdrawn up and amountOut down to ensure math favors dex
+	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec.TruncateInt()
 }
 
-func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (math.Int, math_utils.PrecDec) {
+func (t *LimitOrderTranche) Withdraw(trancheUser *LimitOrderTrancheUser) (sharesWithdrawn, tokenOut math.Int) {
 	amountOutTokenIn, amountOutTokenOut := t.CalcWithdrawAmount(trancheUser)
-	reservesTokenOutDec := math_utils.NewPrecDecFromInt(t.ReservesTakerDenom)
-	t.ReservesTakerDenom = reservesTokenOutDec.Sub(amountOutTokenOut).TruncateInt()
+	t.ReservesTakerDenom = t.ReservesTakerDenom.Sub(amountOutTokenOut)
 
 	return amountOutTokenIn, amountOutTokenOut
 }
@@ -154,7 +175,7 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *m
 	}
 	outAmount = utils.MinIntArr(possibleOutAmounts)
 
-	inAmount = math_utils.NewPrecDecFromInt(outAmount).Quo(t.PriceTakerToMaker).TruncateInt()
+	inAmount = math_utils.NewPrecDecFromInt(outAmount).Quo(t.PriceTakerToMaker).Ceil().TruncateInt()
 
 	*fillTokenIn = fillTokenIn.Add(inAmount)
 	*totalTokenIn = totalTokenIn.Add(inAmount)

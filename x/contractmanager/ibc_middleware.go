@@ -1,14 +1,16 @@
 package contractmanager
 
 import (
+	"context"
 	"fmt"
 
+	"cosmossdk.io/log"
+	"cosmossdk.io/store/types"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cometbft/cometbft/libs/log"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v3/x/contractmanager/keeper"
-	contractmanagertypes "github.com/neutron-org/neutron/v3/x/contractmanager/types"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 )
 
 type SudoLimitWrapper struct {
@@ -27,8 +29,10 @@ func NewSudoLimitWrapper(contractManager contractmanagertypes.ContractManagerKee
 // Sudo calls underlying Sudo handlers with a limited amount of gas
 // in case of `out of gas` panic it converts the panic into an error and stops `out of gas` panic propagation
 // if error happens during the Sudo call, we store the data that raised the error, and return the error
-func (k SudoLimitWrapper) Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) (resp []byte, err error) {
-	cacheCtx, writeFn := createCachedContext(ctx, k.contractManager.GetParams(ctx).SudoCallGasLimit)
+func (k SudoLimitWrapper) Sudo(ctx context.Context, contractAddress sdk.AccAddress, msg []byte) (resp []byte, err error) {
+	c := sdk.UnwrapSDKContext(ctx)
+
+	cacheCtx, writeFn := createCachedContext(c, k.contractManager.GetParams(ctx).SudoCallGasLimit)
 	func() {
 		defer outOfGasRecovery(cacheCtx.GasMeter(), &err)
 		// Actually we have only one kind of error returned from acknowledgement
@@ -42,7 +46,7 @@ func (k SudoLimitWrapper) Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, 
 			msg,
 			contractmanagerkeeper.RedactError(err).Error(),
 		)
-		ctx.EventManager().EmitEvents(sdk.Events{
+		c.EventManager().EmitEvents(sdk.Events{
 			sdk.NewEvent(
 				wasmtypes.EventTypeSudo,
 				sdk.NewAttribute(wasmtypes.AttributeKeyContractAddr, contractAddress.String()),
@@ -54,8 +58,8 @@ func (k SudoLimitWrapper) Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, 
 		writeFn()
 	}
 
-	ctx.GasMeter().ConsumeGas(cacheCtx.GasMeter().GasConsumedToLimit(), "consume gas from cached context")
-	return
+	c.GasMeter().ConsumeGas(cacheCtx.GasMeter().GasConsumedToLimit(), "consume gas from cached context")
+	return resp, err
 }
 
 func (k SudoLimitWrapper) Logger(ctx sdk.Context) log.Logger {
@@ -65,11 +69,11 @@ func (k SudoLimitWrapper) Logger(ctx sdk.Context) log.Logger {
 // outOfGasRecovery converts `out of gas` panic into an error
 // leaving unprocessed any other kinds of panics
 func outOfGasRecovery(
-	gasMeter sdk.GasMeter,
+	gasMeter types.GasMeter,
 	err *error,
 ) {
 	if r := recover(); r != nil {
-		_, ok := r.(sdk.ErrorOutOfGas)
+		_, ok := r.(types.ErrorOutOfGas)
 		if !ok || !gasMeter.IsOutOfGas() {
 			panic(r)
 		}
@@ -80,7 +84,7 @@ func outOfGasRecovery(
 // createCachedContext creates a cached context with a limited gas meter.
 func createCachedContext(ctx sdk.Context, gasLimit uint64) (sdk.Context, func()) {
 	cacheCtx, writeFn := ctx.CacheContext()
-	gasMeter := sdk.NewGasMeter(gasLimit)
+	gasMeter := types.NewGasMeter(gasLimit)
 	cacheCtx = cacheCtx.WithGasMeter(gasMeter)
 	return cacheCtx, writeFn
 }

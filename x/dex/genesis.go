@@ -3,9 +3,9 @@ package dex
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/keeper"
+	"github.com/neutron-org/neutron/v4/x/dex/keeper"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis
@@ -17,7 +17,13 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		case *types.TickLiquidity_PoolReserves:
 			k.SetPoolReserves(ctx, elem.GetPoolReserves())
 		case *types.TickLiquidity_LimitOrderTranche:
-			k.SetLimitOrderTranche(ctx, elem.GetLimitOrderTranche())
+			tranche := elem.GetLimitOrderTranche()
+			k.SetLimitOrderTranche(ctx, tranche)
+			if tranche.HasExpiration() {
+				// re-create expiration record
+				loExpiration := keeper.NewLimitOrderExpiration(tranche)
+				k.SetLimitOrderExpiration(ctx, loExpiration)
+			}
 		}
 	}
 	// Set all the inactiveLimitOrderTranche
@@ -32,6 +38,8 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	// Set all the poolMetadata
 	for _, elem := range genState.PoolMetadataList {
 		k.SetPoolMetadata(ctx, elem)
+		// Store PoolID reference
+		k.StorePoolIDRef(ctx, elem.Id, elem.PairId, elem.Tick, elem.Fee)
 	}
 
 	// Set poolMetadata count

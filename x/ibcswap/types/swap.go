@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/iancoleman/orderedmap"
 
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // PacketMetadata wraps the SwapMetadata. The root key in the incoming ICS20 transfer packet's memo needs to be set to the same
@@ -32,7 +32,7 @@ type SwapMetadata struct {
 
 // Validate ensures that all the required fields are present in the SwapMetadata and contain valid values.
 func (sm SwapMetadata) Validate() error {
-	if err := sm.ValidateBasic(); err != nil {
+	if err := sm.MsgPlaceLimitOrder.Validate(); err != nil {
 		return sdkerrors.Wrap(ErrInvalidSwapMetadata, err.Error())
 	}
 	if sm.TokenIn == "" {

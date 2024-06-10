@@ -7,7 +7,7 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 SIMAPP = ./app
-GO_VERSION=1.21
+GO_VERSION=1.22
 GOLANGCI_LINT_VERSION=v1.55.2
 BUILDDIR ?= $(CURDIR)/build
 
@@ -111,7 +111,7 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
-		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep),muslc \
 		--platform linux/amd64 \
 		-t neutron-amd64 \
 		--load \
@@ -120,6 +120,23 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) create -ti --name neutronbinary neutron-amd64
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
+
+build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name neutronbuilder || true
+	$(DOCKER) buildx use neutronbuilder
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep),skip_ccv_msg_filter,muslc \
+		--build-arg RUNNER_IMAGE="alpine:3.18" \
+		--platform linux/amd64 \
+		-t neutron-node \
+		--load \
+		-f Dockerfile.builder .
+
+slinky-e2e-test:
+	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 20m -count=1 ./...
 
 install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
@@ -151,6 +168,8 @@ distclean: clean
 
 
 test: test-unit
+	@rm -rf ./.testchains
+
 test-all: check test-race test-cover
 
 test-unit:

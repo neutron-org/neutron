@@ -6,17 +6,20 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v3/testutil/apptesting"
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-	dexkeeper "github.com/neutron-org/neutron/v3/x/dex/keeper"
-	testutils "github.com/neutron-org/neutron/v3/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/testutil/apptesting"
+	"github.com/neutron-org/neutron/v4/testutil/common/sample"
+	testkeeper "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	testutils "github.com/neutron-org/neutron/v4/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // Test suite
@@ -31,7 +34,7 @@ type DexTestSuite struct {
 
 var defaultPairID = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
 
-var denomMultiple = sdk.NewInt(1000000)
+var denomMultiple = sdkmath.NewInt(1000000)
 
 var defaultTradePairID0To1 = &types.TradePairID{
 	TakerDenom: "TokenA",
@@ -379,7 +382,7 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
 	maxAmountOutInt := sdkmath.NewInt(int64(maxAmoutOut)).Mul(denomMultiple)
 
-	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tokenIn,
@@ -388,6 +391,29 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 		AmountIn:         sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		OrderType:        types.LimitOrderType_FILL_OR_KILL,
 		MaxAmountOut:     &maxAmountOutInt,
+	})
+
+	s.Assert().NoError(err)
+
+	return msg.TrancheKey
+}
+
+func (s *DexTestSuite) limitSellsWithPrice(
+	account sdk.AccAddress,
+	tokenIn string,
+	price math_utils.PrecDec,
+	amountIn int,
+) string {
+	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
+
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
+		Creator:        account.String(),
+		Receiver:       account.String(),
+		TokenIn:        tokenIn,
+		TokenOut:       tokenOut,
+		LimitSellPrice: &price,
+		AmountIn:       sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
+		OrderType:      types.LimitOrderType_GOOD_TIL_CANCELLED,
 	})
 
 	s.Assert().NoError(err)
@@ -410,7 +436,7 @@ func (s *DexTestSuite) limitSellsInt(
 
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, tokenIn)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(int64(tickIndexNormalized))
-	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tradePairID.TakerDenom,
@@ -419,6 +445,9 @@ func (s *DexTestSuite) limitSellsInt(
 		AmountIn:         amountIn,
 		OrderType:        orderType,
 	})
+	if err != nil {
+		return "", err
+	}
 
 	return msg.TrancheKey, err
 }
@@ -441,7 +470,7 @@ func (s *DexTestSuite) limitSellsGoodTil(
 	tradePairID := types.NewTradePairIDFromTaker(defaultPairID, tokenIn)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(int64(tick))
 
-	msg, err := s.msgServer.PlaceLimitOrder(s.GoCtx, &types.MsgPlaceLimitOrder{
+	msg, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:          account.String(),
 		Receiver:         account.String(),
 		TokenIn:          tradePairID.TakerDenom,
@@ -463,71 +492,65 @@ type Deposit struct {
 	AmountB   sdkmath.Int
 	TickIndex int64
 	Fee       uint64
+	Options   *types.DepositOptions
 }
 
-type DepositOptions struct {
-	DisableAutoswap bool
-}
-
-type DepositWithOptions struct {
-	AmountA   sdkmath.Int
-	AmountB   sdkmath.Int
-	TickIndex int64
-	Fee       uint64
-	Options   DepositOptions
+func NewDepositInt(amountA, amountB sdkmath.Int, tickIndex, fee int) *Deposit {
+	return &Deposit{
+		AmountA:   amountA,
+		AmountB:   amountB,
+		TickIndex: int64(tickIndex),
+		Fee:       uint64(fee),
+	}
 }
 
 func NewDeposit(amountA, amountB, tickIndex, fee int) *Deposit {
+	return NewDepositInt(sdkmath.NewInt(int64(amountA)).Mul(denomMultiple), sdkmath.NewInt(int64(amountB)).Mul(denomMultiple), tickIndex, fee)
+}
+
+func NewDepositWithOptions(
+	amountA, amountB, tickIndex, fee int,
+	options types.DepositOptions,
+) *Deposit {
 	return &Deposit{
 		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
 		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
 		TickIndex: int64(tickIndex),
 		Fee:       uint64(fee),
-	}
-}
-
-func NewDepositWithOptions(
-	amountA, amountB, tickIndex, fee int,
-	options DepositOptions,
-) *DepositWithOptions {
-	return &DepositWithOptions{
-		AmountA:   sdkmath.NewInt(int64(amountA)).Mul(denomMultiple),
-		AmountB:   sdkmath.NewInt(int64(amountB)).Mul(denomMultiple),
-		TickIndex: int64(tickIndex),
-		Fee:       uint64(fee),
-		Options:   options,
+		Options:   &options,
 	}
 }
 
 func (s *DexTestSuite) aliceDeposits(deposits ...*Deposit) {
-	s.deposits(s.alice, deposits)
-}
-
-func (s *DexTestSuite) aliceDepositsWithOptions(deposits ...*DepositWithOptions) {
-	s.depositsWithOptions(s.alice, deposits...)
+	s.depositsSuccess(s.alice, deposits)
 }
 
 func (s *DexTestSuite) bobDeposits(deposits ...*Deposit) {
-	s.deposits(s.bob, deposits)
-}
-
-func (s *DexTestSuite) bobDepositsWithOptions(deposits ...*DepositWithOptions) {
-	s.depositsWithOptions(s.bob, deposits...)
+	s.depositsSuccess(s.bob, deposits)
 }
 
 func (s *DexTestSuite) carolDeposits(deposits ...*Deposit) {
-	s.deposits(s.carol, deposits)
+	s.depositsSuccess(s.carol, deposits)
 }
 
 func (s *DexTestSuite) danDeposits(deposits ...*Deposit) {
-	s.deposits(s.dan, deposits)
+	s.depositsSuccess(s.dan, deposits)
+}
+
+func (s *DexTestSuite) depositsSuccess(
+	account sdk.AccAddress,
+	deposits []*Deposit,
+	pairID ...types.PairID,
+) {
+	_, err := s.deposits(account, deposits, pairID...)
+	s.Assert().Nil(err)
 }
 
 func (s *DexTestSuite) deposits(
 	account sdk.AccAddress,
 	deposits []*Deposit,
 	pairID ...types.PairID,
-) {
+) (*types.MsgDepositResponse, error) {
 	amountsA := make([]sdkmath.Int, len(deposits))
 	amountsB := make([]sdkmath.Int, len(deposits))
 	tickIndexes := make([]int64, len(deposits))
@@ -538,7 +561,12 @@ func (s *DexTestSuite) deposits(
 		amountsB[i] = e.AmountB
 		tickIndexes[i] = e.TickIndex
 		fees[i] = e.Fee
-		options[i] = &types.DepositOptions{DisableAutoswap: false}
+		if e.Options != nil {
+			options[i] = e.Options
+		} else {
+			options[i] = &types.DepositOptions{}
+		}
+
 	}
 
 	var tokenA, tokenB string
@@ -564,43 +592,11 @@ func (s *DexTestSuite) deposits(
 		Fees:            fees,
 		Options:         options,
 	}
-	err := msg.ValidateBasic()
-	s.Assert().NoError(err)
-	_, err = s.msgServer.Deposit(s.GoCtx, msg)
-	s.Assert().Nil(err)
-}
-
-func (s *DexTestSuite) depositsWithOptions(
-	account sdk.AccAddress,
-	deposits ...*DepositWithOptions,
-) {
-	amountsA := make([]sdkmath.Int, len(deposits))
-	amountsB := make([]sdkmath.Int, len(deposits))
-	tickIndexes := make([]int64, len(deposits))
-	fees := make([]uint64, len(deposits))
-	options := make([]*types.DepositOptions, len(deposits))
-	for i, e := range deposits {
-		amountsA[i] = e.AmountA
-		amountsB[i] = e.AmountB
-		tickIndexes[i] = e.TickIndex
-		fees[i] = e.Fee
-		options[i] = &types.DepositOptions{
-			DisableAutoswap: e.Options.DisableAutoswap,
-		}
+	err := msg.Validate()
+	if err != nil {
+		return &types.MsgDepositResponse{}, err
 	}
-
-	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
-		Creator:         account.String(),
-		Receiver:        account.String(),
-		TokenA:          "TokenA",
-		TokenB:          "TokenB",
-		AmountsA:        amountsA,
-		AmountsB:        amountsB,
-		TickIndexesAToB: tickIndexes,
-		Fees:            fees,
-		Options:         options,
-	})
-	s.Assert().Nil(err)
+	return s.msgServer.Deposit(s.Ctx, msg)
 }
 
 func (s *DexTestSuite) getLiquidityAtTick(tickIndex int64, fee uint64) (sdkmath.Int, sdkmath.Int) {
@@ -648,31 +644,7 @@ func (s *DexTestSuite) assertDepositFails(
 	expectedErr error,
 	deposits ...*Deposit,
 ) {
-	amountsA := make([]sdkmath.Int, len(deposits))
-	amountsB := make([]sdkmath.Int, len(deposits))
-	tickIndexes := make([]int64, len(deposits))
-	fees := make([]uint64, len(deposits))
-	options := make([]*types.DepositOptions, len(deposits))
-	for i, e := range deposits {
-		amountsA[i] = e.AmountA
-		amountsB[i] = e.AmountB
-		tickIndexes[i] = e.TickIndex
-		fees[i] = e.Fee
-		options[i] = &types.DepositOptions{DisableAutoswap: true}
-	}
-
-	_, err := s.msgServer.Deposit(s.GoCtx, &types.MsgDeposit{
-		Creator:         account.String(),
-		Receiver:        account.String(),
-		TokenA:          "TokenA",
-		TokenB:          "TokenB",
-		AmountsA:        amountsA,
-		AmountsB:        amountsB,
-		TickIndexesAToB: tickIndexes,
-		Fees:            fees,
-		Options:         options,
-	})
-	s.Assert().NotNil(err)
+	_, err := s.deposits(account, deposits)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
@@ -744,7 +716,7 @@ func (s *DexTestSuite) withdraws(account sdk.AccAddress, withdrawals ...*Withdra
 		sharesToRemove[i] = e.Shares
 	}
 
-	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.Ctx, &types.MsgWithdrawal{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -786,7 +758,7 @@ func (s *DexTestSuite) withdrawFails(
 		sharesToRemove[i] = e.Shares
 	}
 
-	_, err := s.msgServer.Withdrawal(s.GoCtx, &types.MsgWithdrawal{
+	_, err := s.msgServer.Withdrawal(s.Ctx, &types.MsgWithdrawal{
 		Creator:         account.String(),
 		Receiver:        account.String(),
 		TokenA:          "TokenA",
@@ -818,7 +790,7 @@ func (s *DexTestSuite) danCancelsLimitSell(trancheKey string) {
 }
 
 func (s *DexTestSuite) cancelsLimitSell(account sdk.AccAddress, trancheKey string) {
-	_, err := s.msgServer.CancelLimitOrder(s.GoCtx, &types.MsgCancelLimitOrder{
+	_, err := s.msgServer.CancelLimitOrder(s.Ctx, &types.MsgCancelLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -846,7 +818,7 @@ func (s *DexTestSuite) cancelsLimitSellFails(
 	trancheKey string,
 	expectedErr error,
 ) {
-	_, err := s.msgServer.CancelLimitOrder(s.GoCtx, &types.MsgCancelLimitOrder{
+	_, err := s.msgServer.CancelLimitOrder(s.Ctx, &types.MsgCancelLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -906,7 +878,7 @@ func (s *DexTestSuite) multiHopSwaps(
 		exitLimitPrice,
 		pickBest,
 	)
-	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 	s.Assert().Nil(err)
 }
 
@@ -928,7 +900,7 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwap(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	res, err := s.App.DexKeeper.EstimateMultiHopSwap(s.GoCtx, msg)
+	res, err := s.App.DexKeeper.EstimateMultiHopSwap(s.Ctx, msg)
 	s.Require().Nil(err)
 	return res.CoinOut
 }
@@ -952,7 +924,7 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwapFails(
 		ExitLimitPrice: exitLimitPrice,
 		PickBestRoute:  pickBest,
 	}
-	_, err := s.App.DexKeeper.EstimateMultiHopSwap(s.GoCtx, msg)
+	_, err := s.App.DexKeeper.EstimateMultiHopSwap(s.Ctx, msg)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
@@ -1012,7 +984,7 @@ func (s *DexTestSuite) multiHopSwapFails(
 		exitLimitPrice,
 		pickBest,
 	)
-	_, err := s.msgServer.MultiHopSwap(s.GoCtx, msg)
+	_, err := s.msgServer.MultiHopSwap(s.Ctx, msg)
 	s.Assert().ErrorIs(err, expectedErr)
 }
 
@@ -1035,7 +1007,7 @@ func (s *DexTestSuite) danWithdrawsLimitSell(trancheKey string) {
 }
 
 func (s *DexTestSuite) withdrawsLimitSell(account sdk.AccAddress, trancheKey string) {
-	_, err := s.msgServer.WithdrawFilledLimitOrder(s.GoCtx, &types.MsgWithdrawFilledLimitOrder{
+	_, err := s.msgServer.WithdrawFilledLimitOrder(s.Ctx, &types.MsgWithdrawFilledLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -1063,7 +1035,7 @@ func (s *DexTestSuite) withdrawLimitSellFails(
 	expectedErr error,
 	trancheKey string,
 ) {
-	_, err := s.msgServer.WithdrawFilledLimitOrder(s.GoCtx, &types.MsgWithdrawFilledLimitOrder{
+	_, err := s.msgServer.WithdrawFilledLimitOrder(s.Ctx, &types.MsgWithdrawFilledLimitOrder{
 		Creator:    account.String(),
 		TrancheKey: trancheKey,
 	})
@@ -1385,7 +1357,7 @@ func (s *DexTestSuite) assertFillAndPlaceTrancheKeys(
 ) {
 	tradePairID := defaultPairID.MustTradePairIDFromMaker(selling)
 	tickIndexTakerToMaker := tradePairID.TickIndexTakerToMaker(tickIndexNormalized)
-	placeTranche := s.App.DexKeeper.GetPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
+	placeTranche := s.App.DexKeeper.GetGTCPlaceTranche(s.Ctx, tradePairID, tickIndexTakerToMaker)
 	fillTranche, foundFill := s.App.DexKeeper.GetFillTranche(
 		s.Ctx,
 		tradePairID,
@@ -1574,9 +1546,880 @@ func (s *DexTestSuite) calcExpectedBalancesAfterWithdrawOnePool(
 func (s *DexTestSuite) nextBlockWithTime(blockTime time.Time) {
 	newCtx := s.Ctx.WithBlockTime(blockTime)
 	s.Ctx = newCtx
-	s.GoCtx = sdk.WrapSDKContext(newCtx)
-	s.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-		Height: s.App.LastBlockHeight() + 1, AppHash: s.App.LastCommitID().Hash,
-		Time: blockTime,
-	}})
+	_, err := s.App.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height: s.App.LastBlockHeight() + 1,
+		Time:   blockTime,
+	})
+	require.NoError(s.T(), err)
+	_, err = s.App.Commit()
+	require.NoError(s.T(), err)
+}
+
+func (s *DexTestSuite) beginBlockWithTime(blockTime time.Time) {
+	s.Ctx = s.Ctx.WithBlockTime(blockTime)
+	_, err := s.App.BeginBlocker(s.Ctx)
+	s.NoError(err)
+}
+
+func TestMsgDepositValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	tests := []struct {
+		name        string
+		msg         types.MsgDeposit
+		expectedErr error
+	}{
+		{
+			"invalid creator",
+			types.MsgDeposit{
+				Creator:         "invalid_address",
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid receiver",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        "invalid address",
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid denom A",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "er",
+				TokenB:          "factory/neutron1rxel5kdhu089fdk4xugmryx0y2wzjx8rqsa6hu/validDenom2",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{1},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid denom B",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "er",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{1},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"denoms match",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenA",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{1},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid fee indexes length",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "factory/neutron1rxel5kdhu089fdk4xugmryx0y2wzjx8rqsa6hu/validDenom2",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{},
+				AmountsA:        []sdkmath.Int{},
+				AmountsB:        []sdkmath.Int{},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"invalid tick indexes length",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{},
+				AmountsB:        []sdkmath.Int{},
+				Options:         []*types.DepositOptions{{DisableAutoswap: true}},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"invalid amounts A length",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{},
+				TickIndexesAToB: []int64{},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{},
+				Options:         []*types.DepositOptions{{DisableAutoswap: true}},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"invalid amounts B length",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{},
+				TickIndexesAToB: []int64{},
+				AmountsA:        []sdkmath.Int{},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: true}},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"invalid options length",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{1},
+				TickIndexesAToB: []int64{1},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"invalid no deposit",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{},
+				TickIndexesAToB: []int64{},
+				AmountsA:        []sdkmath.Int{},
+				AmountsB:        []sdkmath.Int{},
+				Options:         []*types.DepositOptions{},
+			},
+			types.ErrZeroDeposit,
+		},
+		{
+			"invalid duplicate deposit",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{1, 2, 1},
+				TickIndexesAToB: []int64{0, 0, 0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt(), sdkmath.OneInt(), sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt(), sdkmath.OneInt(), sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}, {DisableAutoswap: false}, {DisableAutoswap: false}},
+			},
+			types.ErrDuplicatePoolDeposit,
+		},
+		{
+			"invalid no deposit",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.ZeroInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.ZeroInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrZeroDeposit,
+		},
+		{
+			"invalid tick + fee upper",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{3},
+				TickIndexesAToB: []int64{559678},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrTickOutsideRange,
+		},
+		{
+			"invalid tick + fee lower",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{50},
+				TickIndexesAToB: []int64{-559631},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrTickOutsideRange,
+		},
+		{
+			"invalid fee overflow",
+			types.MsgDeposit{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{559681},
+				TickIndexesAToB: []int64{0},
+				AmountsA:        []sdkmath.Int{sdkmath.OneInt()},
+				AmountsB:        []sdkmath.Int{sdkmath.OneInt()},
+				Options:         []*types.DepositOptions{{DisableAutoswap: false}},
+			},
+			types.ErrInvalidFee,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.Deposit(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
+func TestMsgWithdrawalValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	tests := []struct {
+		name        string
+		msg         types.MsgWithdrawal
+		expectedErr error
+	}{
+		{
+			"invalid creator",
+			types.MsgWithdrawal{
+				Creator:         "invalid_address",
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid receiver",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        "invalid_address",
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid TokenA",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "er",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid TokenB",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "er",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid fee indexes length",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"invalid tick indexes length",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"invalid shares to remove length",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{},
+			},
+			types.ErrUnbalancedTxArray,
+		},
+		{
+			"no withdraw specs",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{},
+				TickIndexesAToB: []int64{},
+				SharesToRemove:  []sdkmath.Int{},
+			},
+			types.ErrZeroWithdraw,
+		},
+		{
+			"no withdraw specs",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{0},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.ZeroInt()},
+			},
+			types.ErrZeroWithdraw,
+		},
+		{
+			"invalid tick + fee upper",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{3},
+				TickIndexesAToB: []int64{559678},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrTickOutsideRange,
+		},
+		{
+			"invalid tick + fee lower",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{50},
+				TickIndexesAToB: []int64{-559631},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrTickOutsideRange,
+		},
+		{
+			"invalid fee overflow",
+			types.MsgWithdrawal{
+				Creator:         sample.AccAddress(),
+				Receiver:        sample.AccAddress(),
+				TokenA:          "TokenA",
+				TokenB:          "TokenB",
+				Fees:            []uint64{559681},
+				TickIndexesAToB: []int64{0},
+				SharesToRemove:  []sdkmath.Int{sdkmath.OneInt()},
+			},
+			types.ErrInvalidFee,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.Withdrawal(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
+func TestMsgPlaceLimitOrderValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	ZEROINT := sdkmath.ZeroInt()
+	ONEINT := sdkmath.OneInt()
+	TINYDEC := math_utils.MustNewPrecDecFromStr("0.000000000000000000000000494")
+	HUGEDEC := math_utils.MustNewPrecDecFromStr("2020125331305056766452345.127500016657360222036663652")
+	FIVEDEC := math_utils.NewPrecDec(5)
+	tests := []struct {
+		name        string
+		msg         types.MsgPlaceLimitOrder
+		expectedErr error
+	}{
+		{
+			"invalid creator",
+			types.MsgPlaceLimitOrder{
+				Creator:          "invalid_address",
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid receiver",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         "invalid_address",
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid TokenIn",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "er",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid TokenOut",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "er",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"denoms match",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenA",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"invalid zero limit order",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.ZeroInt(),
+			},
+			types.ErrZeroLimitOrder,
+		},
+		{
+			"zero maxOut",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+				MaxAmountOut:     &ZEROINT,
+				OrderType:        types.LimitOrderType_FILL_OR_KILL,
+			},
+			types.ErrZeroMaxAmountOut,
+		},
+		{
+			"max out with maker order",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 0,
+				AmountIn:         sdkmath.OneInt(),
+				MaxAmountOut:     &ONEINT,
+				OrderType:        types.LimitOrderType_GOOD_TIL_CANCELLED,
+			},
+			types.ErrInvalidMaxAmountOutForMaker,
+		},
+		{
+			"tick outside range upper",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: 700_000,
+				AmountIn:         sdkmath.OneInt(),
+				OrderType:        types.LimitOrderType_GOOD_TIL_CANCELLED,
+			},
+			types.ErrTickOutsideRange,
+		},
+		{
+			"tick outside range lower",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				TickIndexInToOut: -600_000,
+				AmountIn:         sdkmath.OneInt(),
+				OrderType:        types.LimitOrderType_GOOD_TIL_CANCELLED,
+			},
+			types.ErrTickOutsideRange,
+		},
+		{
+			"price < minPrice",
+			types.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				LimitSellPrice: &TINYDEC,
+				AmountIn:       sdkmath.OneInt(),
+			},
+			types.ErrPriceOutsideRange,
+		},
+		{
+			"price > maxPrice",
+			types.MsgPlaceLimitOrder{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				TokenIn:        "TokenA",
+				TokenOut:       "TokenB",
+				LimitSellPrice: &HUGEDEC,
+				AmountIn:       sdkmath.OneInt(),
+			},
+			types.ErrPriceOutsideRange,
+		},
+		{
+			"invalid tickIndexInToOut & LimitSellPrice",
+			types.MsgPlaceLimitOrder{
+				Creator:          sample.AccAddress(),
+				Receiver:         sample.AccAddress(),
+				TokenIn:          "TokenA",
+				TokenOut:         "TokenB",
+				LimitSellPrice:   &FIVEDEC,
+				TickIndexInToOut: 6,
+				AmountIn:         sdkmath.OneInt(),
+			},
+			types.ErrInvalidPriceAndTick,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.PlaceLimitOrder(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
+func TestMsgWithdrawFilledLimitOrderValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	tests := []struct {
+		name        string
+		msg         types.MsgWithdrawFilledLimitOrder
+		expectedErr error
+	}{
+		{
+			"invalid creator",
+			types.MsgWithdrawFilledLimitOrder{
+				Creator:    "invalid_address",
+				TrancheKey: "ORDER123",
+			},
+			types.ErrInvalidAddress,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.WithdrawFilledLimitOrder(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
+func TestMsgCancelLimitOrderValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	tests := []struct {
+		name        string
+		msg         types.MsgCancelLimitOrder
+		expectedErr error
+	}{
+		{
+			"invalid creator",
+			types.MsgCancelLimitOrder{
+				Creator:    "invalid_address",
+				TrancheKey: "ORDER123",
+			},
+			types.ErrInvalidAddress,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.CancelLimitOrder(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
+func TestMsgMultiHopSwapValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	tests := []struct {
+		name        string
+		msg         types.MsgMultiHopSwap
+		expectedErr error
+	}{
+		{
+			"invalid creator address",
+			types.MsgMultiHopSwap{
+				Creator:  "invalid_address",
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+				},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"invalid receiver address",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: "invalid_address",
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+				},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrInvalidAddress,
+		},
+		{
+			"missing route",
+			types.MsgMultiHopSwap{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*types.MultiHopRoute{},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrMissingMultihopRoute,
+		},
+		{
+			"invalid exit tokens",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenZ"}},
+				},
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrMultihopExitTokensMismatch,
+		},
+		{
+			"invalid amountIn",
+			types.MsgMultiHopSwap{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*types.MultiHopRoute{{Hops: []string{"TokenA", "TokenB", "TokenC"}}},
+				AmountIn:       sdkmath.NewInt(-1),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrZeroSwap,
+		},
+		{
+			"cycles in hops",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},                               // normal
+					{Hops: []string{"TokenA", "TokenB", "TokenD", "TokenE", "TokenB", "TokenC"}}, // has cycle
+				},
+				AmountIn:       sdkmath.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrCycleInHops,
+		},
+		{
+			"invalid denom in route",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenA", "TokenB", "TokenD", "TokenE", "er", "TokenC"}},
+				},
+				AmountIn:       sdkmath.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrInvalidDenom,
+		},
+		{
+			"entry token denom mismatch in route",
+			types.MsgMultiHopSwap{
+				Creator:  sample.AccAddress(),
+				Receiver: sample.AccAddress(),
+				Routes: []*types.MultiHopRoute{
+					{Hops: []string{"TokenA", "TokenB", "TokenC"}},
+					{Hops: []string{"TokenD", "TokenB", "TokenC"}},
+				},
+				AmountIn:       sdkmath.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0.9"),
+			},
+			types.ErrMultihopEntryTokensMismatch,
+		},
+		{
+			"zero exit limit price",
+			types.MsgMultiHopSwap{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*types.MultiHopRoute{{Hops: []string{"TokenA", "TokenB", "TokenC"}}},
+				AmountIn:       sdkmath.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("0"),
+			},
+			types.ErrZeroExitPrice,
+		},
+		{
+			"negative exit limit price",
+			types.MsgMultiHopSwap{
+				Creator:        sample.AccAddress(),
+				Receiver:       sample.AccAddress(),
+				Routes:         []*types.MultiHopRoute{{Hops: []string{"TokenA", "TokenB", "TokenC"}}},
+				AmountIn:       sdkmath.OneInt(),
+				ExitLimitPrice: math_utils.MustNewPrecDecFromStr("-0.5"),
+			},
+			types.ErrZeroExitPrice,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.MultiHopSwap(ctx, &tt.msg)
+			require.ErrorIs(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
+}
+
+func TestMsgUpdateParamsValidate(t *testing.T) {
+	k, ctx := testkeeper.DexKeeper(t)
+	msgServer := dexkeeper.NewMsgServerImpl(*k)
+
+	tests := []struct {
+		name        string
+		msg         types.MsgUpdateParams
+		expectedErr string
+	}{
+		{
+			"empty authority",
+			types.MsgUpdateParams{
+				Authority: "",
+			},
+			"authority is invalid",
+		},
+		{
+			"invalid authority",
+			types.MsgUpdateParams{
+				Authority: "invalid authority",
+			},
+			"authority is invalid",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := msgServer.UpdateParams(ctx, &tt.msg)
+			require.ErrorContains(t, err, tt.expectedErr)
+			require.Nil(t, resp)
+		})
+	}
 }

@@ -3,11 +3,11 @@ package keeper
 import (
 	"encoding/binary"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-	"github.com/neutron-org/neutron/v3/x/dex/utils"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
 func (k Keeper) GetOrInitPool(
@@ -32,12 +32,12 @@ func (k Keeper) InitPool(
 ) (pool *types.Pool, err error) {
 	poolID := k.initializePoolMetadata(ctx, pairID, centerTickIndexNormalized, fee)
 
-	k.storePoolIDRef(ctx, poolID, pairID, centerTickIndexNormalized, fee)
+	k.StorePoolIDRef(ctx, poolID, pairID, centerTickIndexNormalized, fee)
 
 	return types.NewPool(pairID, centerTickIndexNormalized, fee, poolID)
 }
 
-func (k Keeper) storePoolIDRef(
+func (k Keeper) StorePoolIDRef(
 	ctx sdk.Context,
 	poolID uint64,
 	pairID *types.PairID,

@@ -5,10 +5,10 @@ import (
 
 	"cosmossdk.io/errors"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
+	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
 )
 
 // CustomQuerier returns a function that is an implementation of custom querier mechanism for specific messages
@@ -157,6 +157,12 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 		case contractQuery.Dex != nil:
 			return qp.DexQuery(ctx, *contractQuery.Dex)
+
+		case contractQuery.Oracle != nil:
+			return qp.OracleQuery(ctx, *contractQuery.Oracle)
+
+		case contractQuery.MarketMap != nil:
+			return qp.MarketMapQuery(ctx, *contractQuery.MarketMap)
 
 		default:
 			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron query type"}

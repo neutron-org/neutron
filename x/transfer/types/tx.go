@@ -3,17 +3,19 @@ package types
 import (
 	"context"
 
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"google.golang.org/grpc"
 
-	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (msg *MsgTransfer) ValidateBasic() error {
-	if err := msg.Fee.Validate(); err != nil {
-		return err
+func (msg *MsgTransfer) Validate(isContract bool) error {
+	if isContract {
+		if err := msg.Fee.Validate(); err != nil {
+			return err
+		}
 	}
 
 	sdkMsg := types.NewMsgTransfer(msg.SourcePort, msg.SourceChannel, msg.Token, msg.Sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp, msg.Memo)
@@ -70,6 +72,36 @@ func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, conv, info, handler)
 }
 
+// MsgUpdateParamsHandler handler helps to bind `/ibc.applications.transfer.v1.Msg/UpdateParams`.
+//
+//nolint:revive // we cant rearrange arguments since we need to meet the type requirement
+func MsgUpdateParamsHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(types.MsgUpdateParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	conv := &MsgUpdateParams{
+		Signer: in.Signer,
+		Params: in.Params,
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpdateParams(ctx, conv)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ibc.applications.transfer.v1.Msg/UpdateParams",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		reqT := req.(*types.MsgUpdateParams)
+		convReq := &MsgUpdateParams{
+			Signer: reqT.Signer,
+			Params: reqT.Params,
+		}
+		return srv.(MsgServer).UpdateParams(ctx, convReq)
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var MsgServiceDescOrig = grpc.ServiceDesc{
 	ServiceName: "ibc.applications.transfer.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -77,6 +109,10 @@ var MsgServiceDescOrig = grpc.ServiceDesc{
 		{
 			MethodName: "Transfer",
 			Handler:    MsgOrigTransferHandler,
+		},
+		{
+			MethodName: "UpdateParams",
+			Handler:    MsgUpdateParamsHandler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

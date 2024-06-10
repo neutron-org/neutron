@@ -5,8 +5,8 @@ import (
 
 	"cosmossdk.io/math"
 
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
-	swaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	swaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 )
 
 // TestIBCSwapMiddleware_Success asserts that the IBC swap middleware works as intended with Neutron running as a
@@ -55,7 +55,7 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 				TokenIn:          s.providerToNeutronDenom,
 				TokenOut:         nativeDenom,
 				AmountIn:         swapAmount,
-				TickIndexInToOut: 1,
+				TickIndexInToOut: 2,
 				OrderType:        dextypes.LimitOrderType_FILL_OR_KILL,
 			},
 			Next: nil,
@@ -88,8 +88,8 @@ func (s *IBCTestSuite) TestIBCSwapMiddleware_Success() {
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 
-	// Check that the unused balance is credited to the original creator
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
+	// Check that nothing credited to the original creator
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
 }
 
 // TestIBCSwapMiddleware_FailRefund asserts that the IBC swap middleware works as intended with Neutron running as a

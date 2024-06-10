@@ -4,7 +4,7 @@ package neutron.dex;
 import "gogoproto/gogo.proto";
 import "neutron/dex/trade_pair_id.proto";
 
-option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/dex/types";
 
 message PoolReservesKey {
   TradePairID trade_pair_id = 1;
@@ -16,19 +16,19 @@ message PoolReserves {
   PoolReservesKey key = 1;
   string reserves_maker_denom = 2 [
     (gogoproto.moretags) = "yaml:\"reserves_maker_denom\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.jsontag) = "reserves_maker_denom",
     (gogoproto.nullable) = false
   ];
   string price_taker_to_maker = 3 [
     (gogoproto.moretags) = "yaml:\"price_taker_to_maker\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v3/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_taker_to_maker"
   ];
   string price_opposite_taker_to_maker = 4 [
     (gogoproto.moretags) = "yaml:\"price_opposite_taker_to_maker\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v3/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_opposite_taker_to_maker"
   ];

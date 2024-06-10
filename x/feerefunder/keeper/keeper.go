@@ -1,20 +1,21 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
 	"cosmossdk.io/errors"
+	"cosmossdk.io/log"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v3/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
 )
 
 type (
@@ -54,14 +55,16 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
-	k.Logger(ctx).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
+func (k Keeper) LockFees(ctx context.Context, payer sdk.AccAddress, packetID types.PacketID, fee types.Fee) error {
+	c := sdk.UnwrapSDKContext(ctx)
 
-	if _, ok := k.channelKeeper.GetChannel(ctx, packetID.PortId, packetID.ChannelId); !ok {
+	k.Logger(c).Debug("Trying to lock fees", "packetID", packetID, "fee", fee)
+
+	if _, ok := k.channelKeeper.GetChannel(c, packetID.PortId, packetID.ChannelId); !ok {
 		return errors.Wrapf(channeltypes.ErrChannelNotFound, "channel with id %s and port %s not found", packetID.ChannelId, packetID.PortId)
 	}
 
-	if err := k.checkFees(ctx, fee); err != nil {
+	if err := k.checkFees(c, fee); err != nil {
 		return errors.Wrapf(err, "failed to lock fees")
 	}
 
@@ -70,13 +73,13 @@ func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.P
 		Fee:      fee,
 		PacketId: packetID,
 	}
-	k.StoreFeeInfo(ctx, feeInfo)
+	k.StoreFeeInfo(c, feeInfo)
 
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, payer, types.ModuleName, fee.Total()); err != nil {
 		return errors.Wrapf(err, "failed to send coins during fees locking")
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
+	c.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeLockFees,
 			sdk.NewAttribute(types.AttributeKeyPayer, payer.String()),
@@ -93,27 +96,29 @@ func (k Keeper) LockFees(ctx sdk.Context, payer sdk.AccAddress, packetID types.P
 	return nil
 }
 
-func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAddress, packetID types.PacketID) {
-	k.Logger(ctx).Debug("Trying to distribute ack fee", "packetID", packetID)
-	feeInfo, err := k.GetFeeInfo(ctx, packetID)
+func (k Keeper) DistributeAcknowledgementFee(ctx context.Context, receiver sdk.AccAddress, packetID types.PacketID) {
+	c := sdk.UnwrapSDKContext(ctx)
+
+	k.Logger(c).Debug("Trying to distribute ack fee", "packetID", packetID)
+	feeInfo, err := k.GetFeeInfo(c, packetID)
 	if err != nil {
-		k.Logger(ctx).Error("no fee info", "error", err)
+		k.Logger(c).Error("no fee info", "error", err)
 		panic(errors.Wrapf(err, "no fee info"))
 	}
 
 	// try to distribute ack fee
-	if err := k.distributeFee(ctx, receiver, feeInfo.Fee.AckFee); err != nil {
-		k.Logger(ctx).Error("error distributing ack fee", "receiver", receiver, "payer", feeInfo.Payer, "packet", packetID)
+	if err := k.distributeFee(c, receiver, feeInfo.Fee.AckFee); err != nil {
+		k.Logger(c).Error("error distributing ack fee", "receiver", receiver, "payer", feeInfo.Payer, "packet", packetID)
 		panic(errors.Wrapf(err, "error distributing ack fee: receiver = %s, packetID=%v", receiver, packetID))
 	}
 
 	// try to return unused timeout fee
-	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.TimeoutFee); err != nil {
-		k.Logger(ctx).Error("error returning unused timeout fee", "receiver", feeInfo.Payer, "packet", packetID)
+	if err := k.distributeFee(c, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.TimeoutFee); err != nil {
+		k.Logger(c).Error("error returning unused timeout fee", "receiver", feeInfo.Payer, "packet", packetID)
 		panic(errors.Wrapf(err, "error distributing unused timeout fee: receiver = %s, packetID=%v", feeInfo.Payer, packetID))
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
+	c.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDistributeAcknowledgementFee,
 			sdk.NewAttribute(types.AttributeKeyReceiver, receiver.String()),
@@ -127,30 +132,32 @@ func (k Keeper) DistributeAcknowledgementFee(ctx sdk.Context, receiver sdk.AccAd
 		),
 	})
 
-	k.removeFeeInfo(ctx, packetID)
+	k.removeFeeInfo(c, packetID)
 }
 
-func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, packetID types.PacketID) {
-	k.Logger(ctx).Debug("Trying to distribute timeout fee", "packetID", packetID)
-	feeInfo, err := k.GetFeeInfo(ctx, packetID)
+func (k Keeper) DistributeTimeoutFee(ctx context.Context, receiver sdk.AccAddress, packetID types.PacketID) {
+	c := sdk.UnwrapSDKContext(ctx)
+
+	k.Logger(c).Debug("Trying to distribute timeout fee", "packetID", packetID)
+	feeInfo, err := k.GetFeeInfo(c, packetID)
 	if err != nil {
-		k.Logger(ctx).Error("no fee info", "error", err)
+		k.Logger(c).Error("no fee info", "error", err)
 		panic(errors.Wrapf(err, "no fee info"))
 	}
 
 	// try to distribute timeout fee
-	if err := k.distributeFee(ctx, receiver, feeInfo.Fee.TimeoutFee); err != nil {
-		k.Logger(ctx).Error("error distributing timeout fee", "receiver", receiver, "payer", feeInfo.Payer, "packet", packetID)
+	if err := k.distributeFee(c, receiver, feeInfo.Fee.TimeoutFee); err != nil {
+		k.Logger(c).Error("error distributing timeout fee", "receiver", receiver, "payer", feeInfo.Payer, "packet", packetID)
 		panic(errors.Wrapf(err, "error distributing timeout fee: receiver = %s, packetID=%v", receiver, packetID))
 	}
 
 	// try to return unused ack fee
-	if err := k.distributeFee(ctx, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.AckFee); err != nil {
-		k.Logger(ctx).Error("error returning unused ack fee", "receiver", feeInfo.Payer, "packet", packetID)
+	if err := k.distributeFee(c, sdk.MustAccAddressFromBech32(feeInfo.Payer), feeInfo.Fee.AckFee); err != nil {
+		k.Logger(c).Error("error returning unused ack fee", "receiver", feeInfo.Payer, "packet", packetID)
 		panic(errors.Wrapf(err, "error distributing unused ack fee: receiver = %s, packetID=%v", feeInfo.Payer, packetID))
 	}
 
-	ctx.EventManager().EmitEvents(sdk.Events{
+	c.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDistributeTimeoutFee,
 			sdk.NewAttribute(types.AttributeKeyReceiver, receiver.String()),
@@ -164,7 +171,7 @@ func (k Keeper) DistributeTimeoutFee(ctx sdk.Context, receiver sdk.AccAddress, p
 		),
 	})
 
-	k.removeFeeInfo(ctx, packetID)
+	k.removeFeeInfo(c, packetID)
 }
 
 func (k Keeper) GetFeeInfo(ctx sdk.Context, packetID types.PacketID) (*types.FeeInfo, error) {
@@ -185,7 +192,7 @@ func (k Keeper) GetAllFeeInfos(ctx sdk.Context) []types.FeeInfo {
 
 	infos := make([]types.FeeInfo, 0)
 
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {

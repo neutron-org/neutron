@@ -1,12 +1,13 @@
 package types
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 const (
@@ -44,8 +45,8 @@ func ParsePoolIDFromDenom(denom string) (uint64, error) {
 
 // NewDexMintCoinsRestriction creates and returns a BankMintingRestrictionFn that only allows minting of
 // valid pool denoms
-func NewDexDenomMintCoinsRestriction() bankkeeper.MintingRestrictionFn {
-	return func(_ sdk.Context, coinsToMint sdk.Coins) error {
+func NewDexDenomMintCoinsRestriction() types.MintingRestrictionFn {
+	return func(_ context.Context, coinsToMint sdk.Coins) error {
 		for _, coin := range coinsToMint {
 			err := ValidatePoolDenom(coin.Denom)
 			if err != nil {

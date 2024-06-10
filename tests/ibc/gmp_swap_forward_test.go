@@ -5,9 +5,9 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
-	"github.com/neutron-org/neutron/v3/x/gmp"
-	swaptypes "github.com/neutron-org/neutron/v3/x/ibcswap/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/gmp"
+	swaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 )
 
 // TestGMPSwap_Success asserts that the swap middleware works as intended when the original message is sent via GMP
@@ -83,6 +83,6 @@ func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 	s.assertNeutronBalance(overrideAddr, s.providerToNeutronDenom, math.ZeroInt())
 
-	// Check that the unused balance is credited to the original creator
-	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.OneInt())
+	// Check that nothing is credited to the original creator
+	s.assertNeutronBalance(s.neutronAddr, s.providerToNeutronDenom, math.ZeroInt())
 }

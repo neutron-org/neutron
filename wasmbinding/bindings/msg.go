@@ -3,15 +3,14 @@ package bindings
 
 import (
 	"cosmossdk.io/math"
-	cosmostypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
-	feetypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	transferwrappertypes "github.com/neutron-org/neutron/v3/x/transfer/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/v4/x/transfer/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -77,14 +76,6 @@ type SubmitTx struct {
 	Fee                 feetypes.Fee  `json:"fee"`
 }
 
-// SubmitTxResponse holds response from SubmitTx.
-type SubmitTxResponse struct {
-	// SequenceId is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
-	SequenceId uint64 `json:"sequence_id"`
-	// Channel is a src channel on neutron side transaction was submitted from
-	Channel string `json:"channel"`
-}
-
 // RegisterInterchainAccount creates account on remote chain.
 type RegisterInterchainAccount struct {
 	ConnectionId        string    `json:"connection_id"`
@@ -93,7 +84,10 @@ type RegisterInterchainAccount struct {
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
-type RegisterInterchainAccountResponse struct{}
+type RegisterInterchainAccountResponse struct {
+	ChannelId string `json:"channel_id"`
+	PortId    string `json:"port_id"`
+}
 
 // RegisterInterchainQuery creates a query for remote chain.
 type RegisterInterchainQuery struct {
@@ -110,8 +104,6 @@ type SubmitAdminProposal struct {
 
 type AdminProposal struct {
 	ParamChangeProposal    *ParamChangeProposal    `json:"param_change_proposal,omitempty"`
-	UpgradeProposal        *UpgradeProposal        `json:"upgrade_proposal,omitempty"`
-	ClientUpdateProposal   *ClientUpdateProposal   `json:"client_update_proposal,omitempty"`
 	ProposalExecuteMessage *ProposalExecuteMessage `json:"proposal_execute_message,omitempty"`
 }
 
@@ -146,20 +138,6 @@ type UpdateInterchainQuery struct {
 }
 
 type UpdateInterchainQueryResponse struct{}
-
-type UpgradeProposal struct {
-	Title               string           `json:"title,omitempty"`
-	Description         string           `json:"description,omitempty"`
-	Plan                Plan             `json:"plan"`
-	UpgradedClientState *cosmostypes.Any `json:"upgraded_client_state,omitempty"`
-}
-
-type ClientUpdateProposal struct {
-	Title              string `json:"title,omitempty"`
-	Description        string `json:"description,omitempty"`
-	SubjectClientId    string `json:"subject_client_id,omitempty"`
-	SubstituteClientId string `json:"substitute_client_id,omitempty"`
-}
 
 type ProposalExecuteMessage struct {
 	Message string `json:"message,omitempty"`
@@ -261,14 +239,17 @@ type Dex struct {
 // MsgPlaceLimitOrder is a copy dextypes.MsgPlaceLimitOrder with altered ExpirationTime field,
 // it's a preferable way to pass timestamp as unixtime to contracts
 type MsgPlaceLimitOrder struct {
-	Creator          string   `json:"creator,omitempty"`
-	Receiver         string   `json:"receiver,omitempty"`
-	TokenIn          string   `json:"token_in,omitempty"`
-	TokenOut         string   `json:"token_out,omitempty"`
+	Creator  string `json:"creator,omitempty"`
+	Receiver string `json:"receiver,omitempty"`
+	TokenIn  string `json:"token_in,omitempty"`
+	TokenOut string `json:"token_out,omitempty"`
+	// Deprecated: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
 	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`
 	AmountIn         math.Int `json:"amount_in"`
 	OrderType        string   `json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
 	MaxAmountOut   *math.Int `json:"max_amount_out"`
+	// Accepts standard decimals and decimals with scientific notation (ie. 1234.23E-7)
+	LimitSellPrice string `json:"limit_sell_price,omitempty"`
 }
