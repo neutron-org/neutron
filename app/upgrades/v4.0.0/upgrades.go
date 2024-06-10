@@ -3,8 +3,9 @@ package v400
 import (
 	"context"
 	"fmt"
-	appparams "github.com/neutron-org/neutron/v4/app/params"
 	"sort"
+
+	appparams "github.com/neutron-org/neutron/v4/app/params"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -27,8 +28,9 @@ import (
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	"github.com/neutron-org/neutron/v4/app/upgrades"
 	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
+
+	"github.com/neutron-org/neutron/v4/app/upgrades"
 )
 
 func CreateUpgradeHandler(

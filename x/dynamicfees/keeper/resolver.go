@@ -2,8 +2,9 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	appparams "github.com/neutron-org/neutron/v4/app/params"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
+	appparams "github.com/neutron-org/neutron/v4/app/params"
 
 	"github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 )
