@@ -73,6 +73,7 @@ func MsgOrigTransferHandler(srv interface{}, ctx context.Context, dec func(inter
 }
 
 // MsgUpdateParamsHandler handler helps to bind `/ibc.applications.transfer.v1.Msg/UpdateParams`.
+//
 //nolint:revive // we cant rearrange arguments since we need to meet the type requirement
 func MsgUpdateParamsHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(types.MsgUpdateParams)
