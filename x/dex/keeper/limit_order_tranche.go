@@ -57,11 +57,7 @@ func (k Keeper) SaveTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
 	} else {
 		k.SetInactiveLimitOrderTranche(ctx, tranche)
 		k.RemoveLimitOrderTranche(ctx, tranche.Key)
-		// TODO: either delete tradePairID from this event or provide pair ID somehow (seems it's unreachable here)
-		ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(&types.TradePairID{
-			MakerDenom: "",
-			TakerDenom: "",
-		}))
+ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(tranche.Key.TradePairId))
 	}
 
 	ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranche(tranche))
