@@ -3,6 +3,7 @@ package v400
 import (
 	"context"
 	"fmt"
+	appparams "github.com/neutron-org/neutron/v4/app/params"
 	"sort"
 
 	"cosmossdk.io/errors"
@@ -167,21 +168,19 @@ func setDynamicFeesParams(ctx sdk.Context, dfKeeper *dynamicfeeskeeper.Keeper) e
 	return nil
 }
 
-// TODO: add a test for the migrations: check that feemarket state is consistent with feemarket params
 func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper) error {
-	// TODO: set params values
 	feemarketParams := feemarkettypes.Params{
-		Alpha:               math.LegacyDec{},
-		Beta:                math.LegacyDec{},
-		Delta:               math.LegacyDec{},
-		MinBaseGasPrice:     math.LegacyDec{},
-		MinLearningRate:     math.LegacyDec{},
-		MaxLearningRate:     math.LegacyDec{},
-		MaxBlockUtilization: 0,
-		Window:              0,
-		FeeDenom:            "",
-		Enabled:             false,
-		DistributeFees:      false,
+		Alpha:               math.LegacyZeroDec(),
+		Beta:                math.LegacyZeroDec(),
+		Delta:               math.LegacyZeroDec(),
+		MinBaseGasPrice:     math.LegacyMustNewDecFromStr("0.0053"),
+		MinLearningRate:     math.LegacyMustNewDecFromStr("0.08"),
+		MaxLearningRate:     math.LegacyMustNewDecFromStr("0.08"),
+		MaxBlockUtilization: 30_000_000,
+		Window:              1,
+		FeeDenom:            appparams.DefaultDenom,
+		Enabled:             true,
+		DistributeFees:      true,
 	}
 	feemarketState := feemarkettypes.NewState(feemarketParams.Window, feemarketParams.MinBaseGasPrice, feemarketParams.MinLearningRate)
 	err := feemarketKeeper.SetParams(ctx, feemarketParams)
