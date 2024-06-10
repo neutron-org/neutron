@@ -20,7 +20,7 @@ func (k Keeper) GetOrInitPool(
 	if found {
 		return pool, nil
 	}
-
+	ctx.EventManager().EmitEvents(types.GetEventsIncTotalPoolReserves(*pairID))
 	return k.InitPool(ctx, pairID, centerTickIndexNormalized, fee)
 }
 
@@ -149,6 +149,7 @@ func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves
 	if reserves.HasToken() {
 		k.SetPoolReserves(ctx, reserves)
 	} else {
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalPoolReserves(*reserves.Key.TradePairId.MustPairID()))
 		k.RemovePoolReserves(ctx, reserves.Key)
 	}
 }
