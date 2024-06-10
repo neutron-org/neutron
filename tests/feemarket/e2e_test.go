@@ -30,9 +30,6 @@ func init() {
 }
 
 var (
-	minGasPrice = sdkmath.LegacyNewDec(10)
-	gasPrice    = sdkmath.LegacyNewDec(1000000)
-
 	image = ibc.DockerImage{
 		Repository: "neutron-node",
 		Version:    "latest",
@@ -71,16 +68,15 @@ var (
 		{
 			Key: "app_state.feemarket.params",
 			Value: feemarkettypes.Params{
-				Alpha:               feemarkettypes.DefaultAlpha,
-				Beta:                feemarkettypes.DefaultBeta,
-				Gamma:               feemarkettypes.DefaultGamma,
-				Delta:               feemarkettypes.DefaultDelta,
-				MinBaseGasPrice:     minGasPrice,
-				MinLearningRate:     feemarkettypes.DefaultMinLearningRate,
-				MaxLearningRate:     feemarkettypes.DefaultMaxLearningRate,
-				MaxBlockUtilization: feemarkettypes.DefaultMaxBlockUtilization,
-				Window:              feemarkettypes.DefaultWindow,
-				FeeDenom:            "untrn",
+				Alpha:               sdkmath.LegacyOneDec(),
+				Beta:                sdkmath.LegacyOneDec(),
+				Delta:               sdkmath.LegacyOneDec(),
+				MinBaseGasPrice:     sdkmath.LegacyMustNewDecFromStr("0.0025"),
+				MinLearningRate:     sdkmath.LegacyMustNewDecFromStr("0.5"),
+				MaxLearningRate:     sdkmath.LegacyMustNewDecFromStr("1.5"),
+				MaxBlockUtilization: 30_000_000,
+				Window:              1,
+				FeeDenom:            denom,
 				Enabled:             true,
 				DistributeFees:      false,
 			},
@@ -88,7 +84,7 @@ var (
 		{
 			Key: "app_state.feemarket.state",
 			Value: feemarkettypes.State{
-				BaseGasPrice: gasPrice,
+				BaseGasPrice: sdkmath.LegacyMustNewDecFromStr("0.025"),
 				LearningRate: feemarkettypes.DefaultMaxLearningRate,
 				Window:       make([]uint64, feemarkettypes.DefaultWindow),
 				Index:        0,
@@ -117,7 +113,7 @@ var (
 			Bech32Prefix:   "neutron",
 			CoinType:       "118",
 			GasAdjustment:  gasAdjustment,
-			GasPrices:      fmt.Sprintf("100000%s", denom),
+			GasPrices:      fmt.Sprintf("1000000000%s", denom),
 			TrustingPeriod: "48h",
 			NoHostMount:    noHostMount,
 			ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisKV),
