@@ -556,7 +556,7 @@ func (s *DexTestSuite) addDeposit(deposit *Deposit) {
 	s.Assert().NoError(err)
 	pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(deposit.AmountA)
 	pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(deposit.AmountB)
-	s.App.DexKeeper.SetPool(s.Ctx, pool, &types.PairID{Token0: "", Token1: ""})
+	s.App.DexKeeper.SetPool(s.Ctx, pool)
 }
 
 func (s *DexTestSuite) addDeposits(deposits ...*Deposit) {

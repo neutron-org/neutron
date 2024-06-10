@@ -116,7 +116,7 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity, pa
 		k.SaveTranche(sdkCtx, liquidity)
 
 	case *types.PoolLiquidity:
-		k.SetPool(sdkCtx, liquidity.Pool, pairID)
+		k.SetPool(sdkCtx, liquidity.Pool)
 	default:
 		panic("Invalid liquidity type")
 	}

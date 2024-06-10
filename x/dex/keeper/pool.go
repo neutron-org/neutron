@@ -135,9 +135,9 @@ func (k Keeper) GetPoolIDByParams(
 	return poolID, true
 }
 
-func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool, pairID *types.PairID) {
-	k.updatePoolReserves(ctx, pool.LowerTick0, *pairID)
-	k.updatePoolReserves(ctx, pool.UpperTick1, *pairID)
+func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) {
+	k.updatePoolReserves(ctx, pool.LowerTick0)
+	k.updatePoolReserves(ctx, pool.UpperTick1)
 
 	// TODO: this will create a bit of extra noise since not every Save is updating both ticks
 	// This should be solved upstream by better tracking of dirty ticks
@@ -145,11 +145,11 @@ func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool, pairID *types.PairID)
 	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*pool.UpperTick1))
 }
 
-func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves, poolID types.PairID) {
+func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves) {
 	if reserves.HasToken() {
 		k.SetPoolReserves(ctx, reserves)
 	} else {
-		ctx.EventManager().EmitEvents(types.GetEventsDecTotalPoolReserves(poolID))
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalPoolReserves(*reserves.Key.TradePairId.MustPairID()))
 		k.RemovePoolReserves(ctx, reserves.Key)
 	}
 }

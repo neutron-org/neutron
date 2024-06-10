@@ -83,7 +83,7 @@ func (k Keeper) DepositCore(
 
 		inAmount0, inAmount1, outShares := pool.Deposit(amount0, amount1, existingShares, autoswap)
 
-		k.SetPool(ctx, pool, pairID)
+		k.SetPool(ctx, pool)
 
 		if inAmount0.IsZero() && inAmount1.IsZero() {
 			return nil, nil, nil, failedDeposits, types.ErrZeroTrueDeposit
@@ -178,7 +178,7 @@ func (k Keeper) WithdrawCore(
 		}
 
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
-		k.SetPool(ctx, pool, pairID)
+		k.SetPool(ctx, pool)
 
 		if sharesToRemove.IsPositive() {
 			if err := k.BurnShares(ctx, callerAddr, sharesToRemove, poolDenom); err != nil {
@@ -607,7 +607,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
 		coinMakerDenomRefund := sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 		coins := sdk.NewCoins(coinTakerDenomOut, coinMakerDenomRefund)
-		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(coins))
+		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(coinTakerDenomOut)))
 		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
 			return err
 		}

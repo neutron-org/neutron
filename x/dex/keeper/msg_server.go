@@ -152,11 +152,6 @@ func (k MsgServer) PlaceLimitOrder(
 		return &types.MsgPlaceLimitOrderResponse{}, err
 	}
 
-	ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(&types.TradePairID{
-		MakerDenom: coinIn.Denom,
-		TakerDenom: coinOutSwap.Denom,
-	}))
-
 	return &types.MsgPlaceLimitOrderResponse{
 		TrancheKey:   trancheKey,
 		CoinIn:       coinIn,
