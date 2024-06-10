@@ -253,6 +253,8 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.45.1-0.20240501180153-d9bebe629e05
 	github.com/cosmos/admin-module => github.com/neutron-org/admin-module v1.0.2-0.20240402143659-7dcb4a8c2056
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.0-beta.0.0.20240604111945-c6481e4cfe4c
+	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
+	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
