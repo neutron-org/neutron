@@ -72,7 +72,7 @@ func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB
 
 	lowerTick.ReservesMakerDenom = amountAInt
 	upperTick.ReservesMakerDenom = amountBInt
-	s.app.DexKeeper.SetPool(s.ctx, pool)
+	s.app.DexKeeper.SetPool(s.ctx, pool, &types.PairID{Token0: "", Token1: ""})
 }
 
 // FindNextTick ////////////////////////////////////////////////////
