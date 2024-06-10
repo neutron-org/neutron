@@ -43,7 +43,10 @@ func (k Keeper) Swap(
 
 		inAmount, outAmount := liq.Swap(remainingTakerDenom, remainingMakerDenom)
 
-		k.SaveLiquidity(ctx, liq)
+		k.SaveLiquidity(ctx, liq, &types.PairID{
+			Token0: tradePairID.MakerDenom,
+			Token1: tradePairID.TakerDenom,
+		})
 
 		remainingTakerDenom = remainingTakerDenom.Sub(inAmount)
 		totalMakerDenom = totalMakerDenom.Add(outAmount)
@@ -107,13 +110,13 @@ func (k Keeper) SwapWithCache(
 	return totalIn, totalOut, orderFilled, err
 }
 
-func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
+func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity, pairID *types.PairID) {
 	switch liquidity := liquidityI.(type) {
 	case *types.LimitOrderTranche:
 		k.SaveTranche(sdkCtx, liquidity)
 
 	case *types.PoolLiquidity:
-		k.SetPool(sdkCtx, liquidity.Pool)
+		k.SetPool(sdkCtx, liquidity.Pool, pairID)
 	default:
 		panic("Invalid liquidity type")
 	}

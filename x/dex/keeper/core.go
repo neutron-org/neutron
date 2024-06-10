@@ -83,7 +83,7 @@ func (k Keeper) DepositCore(
 
 		inAmount0, inAmount1, outShares := pool.Deposit(amount0, amount1, existingShares, autoswap)
 
-		k.SetPool(ctx, pool)
+		k.SetPool(ctx, pool, pairID)
 
 		if inAmount0.IsZero() && inAmount1.IsZero() {
 			return nil, nil, nil, failedDeposits, types.ErrZeroTrueDeposit
@@ -178,7 +178,7 @@ func (k Keeper) WithdrawCore(
 		}
 
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
-		k.SetPool(ctx, pool)
+		k.SetPool(ctx, pool, pairID)
 
 		if sharesToRemove.IsPositive() {
 			if err := k.BurnShares(ctx, callerAddr, sharesToRemove, poolDenom); err != nil {

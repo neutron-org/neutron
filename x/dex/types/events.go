@@ -321,7 +321,7 @@ func GetEventsDecTotalOrders(pairID *TradePairID) sdk.Events {
 	}
 }
 
-func GetEventsIncTotalPoolReserves(pairID uint64) sdk.Events {
+func GetEventsIncTotalPoolReserves(pairID PairID) sdk.Events {
 	return sdk.Events{
 		sdk.NewEvent(
 			EventTypeNeutronMessage,
@@ -329,12 +329,12 @@ func GetEventsIncTotalPoolReserves(pairID uint64) sdk.Events {
 			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeInc),
 			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLp),
 			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(false)),
-			sdk.NewAttribute(AttributePairID, strconv.FormatUint(pairID, 10)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
 		),
 	}
 }
 
-func GetEventsDecTotalPoolReserves(pairID uint64) sdk.Events {
+func GetEventsDecTotalPoolReserves(pairID PairID) sdk.Events {
 	return sdk.Events{
 		sdk.NewEvent(
 			EventTypeNeutronMessage,
@@ -342,7 +342,7 @@ func GetEventsDecTotalPoolReserves(pairID uint64) sdk.Events {
 			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeDec),
 			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLp),
 			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(false)),
-			sdk.NewAttribute(AttributePairID, strconv.FormatUint(pairID, 10)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
 		),
 	}
 }
