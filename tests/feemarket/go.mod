@@ -9,8 +9,7 @@ replace (
 	github.com/docker/distribution => github.com/docker/distribution v2.8.2+incompatible
 	github.com/docker/docker => github.com/docker/docker v24.0.9+incompatible
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/skip-mev/feemarket/tests/e2e => ../../../feemarket/tests/e2e
-	github.com/strangelove-ventures/interchaintest/v8 => ../../../interchaintest
+	github.com/strangelove-ventures/interchaintest/v8 => github.com/skip-mev/interchaintest/v8 v8.0.1-0.20240611183342-72ec508eb966
 	github.com/vedhavyas/go-subkey => github.com/strangelove-ventures/go-subkey v1.0.7
 )
 
@@ -18,7 +17,7 @@ require (
 	cosmossdk.io/math v1.3.0
 	github.com/cosmos/cosmos-sdk v0.50.7
 	github.com/skip-mev/feemarket v1.0.0
-	github.com/skip-mev/feemarket/tests/e2e v1.5.0
+	github.com/skip-mev/feemarket/tests/e2e v1.6.0
 	github.com/skip-mev/slinky v1.0.0
 	github.com/strangelove-ventures/interchaintest/v8 v8.4.0
 	github.com/stretchr/testify v1.9.0

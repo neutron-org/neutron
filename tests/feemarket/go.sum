@@ -1059,6 +1059,10 @@ github.com/skip-mev/chaintestutil v0.0.0-20240514161515-056d7ba45610 h1:4JlsiRVt
 github.com/skip-mev/chaintestutil v0.0.0-20240514161515-056d7ba45610/go.mod h1:kB8gFZX07CyJnw8q9iEZijI3qJTIe1K/Y++P5VGkrcg=
 github.com/skip-mev/feemarket v1.0.0 h1:6saDWTgCedMSBur+xLCURtZsxMX/CHmflhA/zuMo+7w=
 github.com/skip-mev/feemarket v1.0.0/go.mod h1:52iSehc6mb98xPhRYRqg4crAIxz32RWTbK/LXOwRuf4=
+github.com/skip-mev/feemarket/tests/e2e v1.6.0 h1:kGf32G/2vvLUBDYxjUHCR7+WSE97AjNGMbU4xNuQj7M=
+github.com/skip-mev/feemarket/tests/e2e v1.6.0/go.mod h1:0OGXj14idjYg9jOzydF3fbYXBARDqTGY8MADvFxnU5A=
+github.com/skip-mev/interchaintest/v8 v8.0.1-0.20240611183342-72ec508eb966 h1:X5BD7m4QieHlORqGho1Af8r0O1GSWBRYO330xyu2kzQ=
+github.com/skip-mev/interchaintest/v8 v8.0.1-0.20240611183342-72ec508eb966/go.mod h1:nfPgRi1yjnzi+qF+0Fs9qN9kkS1Fk0oqgpKvqg5a200=
 github.com/skip-mev/slinky v1.0.0 h1:4sgHF1H8yrqNn3Uhuw+B11aWIavXgaSiZBZU5/BF/fs=
 github.com/skip-mev/slinky v1.0.0/go.mod h1:XRNy7m51XOLtEWN5l3TyKyYkNUL7KL2tuTsYe17LYGE=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
