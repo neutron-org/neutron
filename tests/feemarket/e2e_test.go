@@ -1,14 +1,14 @@
 package feemarket_test
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
-
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -17,7 +17,6 @@ import (
 	"github.com/skip-mev/feemarket/tests/e2e"
 	feemarketmodule "github.com/skip-mev/feemarket/x/feemarket"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
-	"github.com/skip-mev/slinky/tests/integration"
 	marketmapmodule "github.com/skip-mev/slinky/x/marketmap"
 	"github.com/skip-mev/slinky/x/oracle"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
@@ -32,6 +31,9 @@ func init() {
 }
 
 var (
+	minBaseGasPrice = sdkmath.LegacyMustNewDecFromStr("0.001")
+	baseGasPrice    = sdkmath.LegacyMustNewDecFromStr("0.1")
+
 	image = ibc.DockerImage{
 		Repository: "neutron-node",
 		Version:    "latest",
@@ -47,7 +49,7 @@ var (
 	numValidators = 4
 	numFullNodes  = 0
 	noHostMount   = false
-	gasAdjustment = 1.5
+	gasAdjustment = 2.0
 
 	encodingConfig = testutil.MakeTestEncodingConfig(
 		bank.AppModuleBasic{},
@@ -70,16 +72,16 @@ var (
 		{
 			Key: "app_state.feemarket.params",
 			Value: feemarkettypes.Params{
-				Alpha:               sdkmath.LegacyOneDec(),
-				Beta:                sdkmath.LegacyOneDec(),
-				Delta:               sdkmath.LegacyOneDec(),
-				Gamma:               feemarkettypes.DefaultGamma,
-				MinBaseGasPrice:     sdkmath.LegacyMustNewDecFromStr("0.0025"),
-				MinLearningRate:     sdkmath.LegacyMustNewDecFromStr("0.5"),
-				MaxLearningRate:     sdkmath.LegacyMustNewDecFromStr("1.5"),
-				MaxBlockUtilization: 30_000_000,
-				Window:              1,
-				FeeDenom:            denom,
+				Alpha:               feemarkettypes.DefaultAlpha,
+				Beta:                feemarkettypes.DefaultBeta,
+				Gamma:               feemarkettypes.DefaultAIMDGamma,
+				Delta:               feemarkettypes.DefaultDelta,
+				MinBaseGasPrice:     minBaseGasPrice,
+				MinLearningRate:     feemarkettypes.DefaultMinLearningRate,
+				MaxLearningRate:     feemarkettypes.DefaultMaxLearningRate,
+				MaxBlockUtilization: feemarkettypes.DefaultMaxBlockUtilization,
+				Window:              feemarkettypes.DefaultWindow,
+				FeeDenom:            feemarkettypes.DefaultFeeDenom,
 				Enabled:             true,
 				DistributeFees:      false,
 			},
@@ -87,7 +89,7 @@ var (
 		{
 			Key: "app_state.feemarket.state",
 			Value: feemarkettypes.State{
-				BaseGasPrice: sdkmath.LegacyMustNewDecFromStr("0.025"),
+				BaseGasPrice: baseGasPrice,
 				LearningRate: feemarkettypes.DefaultMaxLearningRate,
 				Window:       make([]uint64, feemarkettypes.DefaultWindow),
 				Index:        0,
@@ -116,7 +118,7 @@ var (
 			Bech32Prefix:   "neutron",
 			CoinType:       "118",
 			GasAdjustment:  gasAdjustment,
-			GasPrices:      fmt.Sprintf("1000000000%s", denom),
+			GasPrices:      fmt.Sprintf("10%s", denom),
 			TrustingPeriod: "48h",
 			NoHostMount:    noHostMount,
 			ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisKV),
@@ -129,9 +131,10 @@ func TestE2ETestSuite(t *testing.T) {
 	s := e2e.NewIntegrationSuite(
 		spec,
 		oracleImage,
-		e2e.WithInterchainConstructor(integration.CCVInterchainConstructor),
-		e2e.WithChainConstructor(integration.CCVChainConstructor),
+		e2e.WithInterchainConstructor(e2e.CCVInterchainConstructor),
+		e2e.WithChainConstructor(e2e.CCVChainConstructor),
 		e2e.WithDenom(denom),
+		e2e.WithGasPrices(strings.Join([]string{"0.0uatom"}, ",")),
 	)
 	suite.Run(t, s)
 }
