@@ -40,7 +40,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 			DistributeFees:      true,
 		},
 		State: feemarkettypes.State{
-			BaseGasPrice: math.LegacyMustNewDecFromStr("0.025"),
+			BaseGasPrice: math.LegacyMustNewDecFromStr("0.0025"),
 			LearningRate: math.LegacyOneDec(),
 			Window:       []uint64{100},
 			Index:        0,
