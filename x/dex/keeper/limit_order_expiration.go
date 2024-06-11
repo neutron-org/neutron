@@ -140,7 +140,7 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 
 			return
 		}
-
+		var pairID types.TradePairID
 		if _, ok := archivedTranches[string(val.TrancheRef)]; !ok {
 			tranche, found := k.GetLimitOrderTrancheByKey(ctx, val.TrancheRef)
 			if found {
@@ -149,10 +149,12 @@ func (k Keeper) PurgeExpiredLimitOrders(ctx sdk.Context, curTime time.Time) {
 				k.RemoveLimitOrderTranche(ctx, tranche.Key)
 				archivedTranches[string(val.TrancheRef)] = true
 
+				pairID = *tranche.Key.TradePairId
 				ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranchePurge(tranche))
 			}
 		}
 
 		k.RemoveLimitOrderExpirationByKey(ctx, iterator.Key())
+		ctx.EventManager().EmitEvents(types.GetEventsDecExpiringOrders(&pairID))
 	}
 }

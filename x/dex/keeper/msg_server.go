@@ -238,7 +238,6 @@ func (k MsgServer) MultiHopSwap(
 	if err != nil {
 		return &types.MsgMultiHopSwapResponse{}, err
 	}
-
 	return &types.MsgMultiHopSwapResponse{CoinOut: coinOut}, nil
 }
 
