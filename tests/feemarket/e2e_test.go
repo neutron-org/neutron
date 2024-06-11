@@ -1,14 +1,12 @@
 package feemarket_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -22,6 +20,7 @@ import (
 	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/stretchr/testify/suite"
 )
 
 func init() {
@@ -32,7 +31,7 @@ func init() {
 
 var (
 	minBaseGasPrice = sdkmath.LegacyMustNewDecFromStr("0.001")
-	baseGasPrice    = sdkmath.LegacyMustNewDecFromStr("0.1")
+	baseGasPrice    = sdkmath.LegacyMustNewDecFromStr("0.01")
 
 	image = ibc.DockerImage{
 		Repository: "neutron-node",
@@ -79,9 +78,9 @@ var (
 				MinBaseGasPrice:     minBaseGasPrice,
 				MinLearningRate:     feemarkettypes.DefaultMinLearningRate,
 				MaxLearningRate:     feemarkettypes.DefaultMaxLearningRate,
-				MaxBlockUtilization: feemarkettypes.DefaultMaxBlockUtilization,
+				MaxBlockUtilization: 15_000_000,
 				Window:              feemarkettypes.DefaultWindow,
-				FeeDenom:            feemarkettypes.DefaultFeeDenom,
+				FeeDenom:            denom,
 				Enabled:             true,
 				DistributeFees:      false,
 			},
@@ -125,12 +124,19 @@ var (
 			SkipGenTx:      true,
 		},
 	}
+
+	txCfg = e2e.TestTxConfig{
+		SmallSendsNum:          1,
+		LargeSendsNum:          325,
+		TargetIncreaseGasPrice: sdkmath.LegacyMustNewDecFromStr("0.0011"),
+	}
 )
 
 func TestE2ETestSuite(t *testing.T) {
 	s := e2e.NewIntegrationSuite(
 		spec,
 		oracleImage,
+		txCfg,
 		e2e.WithInterchainConstructor(e2e.CCVInterchainConstructor),
 		e2e.WithChainConstructor(e2e.CCVChainConstructor),
 		e2e.WithDenom(denom),
