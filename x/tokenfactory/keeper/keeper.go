@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -50,6 +51,32 @@ func NewKeeper(
 		contractKeeper: contractKeeper,
 		authority:      authority,
 	}
+}
+
+// BlockedAddr checks if a given address is restricted
+func (k Keeper) BlockedAddr(ctx sdk.Context, addr sdk.AccAddress) bool {
+	sortedPermAddrs := make([]string, 0, len(k.permAddrs))
+	for moduleName := range k.permAddrs {
+		sortedPermAddrs = append(sortedPermAddrs, moduleName)
+	}
+	sort.Strings(sortedPermAddrs)
+
+	for _, moduleName := range sortedPermAddrs {
+		// tokenfactory itself is allowed to receive and send funds, otherwise Mint/Burn don't work
+		if moduleName == types.ModuleName {
+			continue
+		}
+
+		account := k.accountKeeper.GetModuleAccount(ctx, moduleName)
+		if account == nil {
+			return true
+		}
+
+		if account.GetAddress().Equals(addr) {
+			return true
+		}
+	}
+	return false
 }
 
 // Logger returns a logger for the x/tokenfactory module

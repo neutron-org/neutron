@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -96,6 +97,18 @@ func (k Keeper) callBeforeSendListener(ctx sdk.Context, from, to sdk.AccAddress,
 	}()
 
 	for _, coin := range amount {
+		// verify that denom is an x/tokenfactory denom
+		_, _, err := types.DeconstructDenom(coin.Denom)
+		if err != nil {
+			// we don't need to perform any hooks for non-tokenfactory denom
+			continue
+		}
+
+		// we don't allow to send tf tokens to blocked addresses
+		if k.BlockedAddr(ctx, to) {
+			return fmt.Errorf("failed to transfer to blocked address: %s", to)
+		}
+
 		contractAddr := k.GetBeforeSendHook(ctx, coin.Denom)
 		if contractAddr != "" {
 			cwAddr, err := sdk.AccAddressFromBech32(contractAddr)

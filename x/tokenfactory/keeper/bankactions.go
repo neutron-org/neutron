@@ -1,11 +1,9 @@
 package keeper
 
 import (
-	"sort"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
@@ -27,6 +25,10 @@ func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
 		return err
 	}
 
+	if k.BlockedAddr(ctx, addr) {
+		return fmt.Errorf("failed to mint to blocked address: %s", addr)
+	}
+
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
 		addr,
 		sdk.NewCoins(amount))
@@ -42,6 +44,10 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 	addr, err := sdk.AccAddressFromBech32(burnFrom)
 	if err != nil {
 		return err
+	}
+
+	if k.BlockedAddr(ctx, addr) {
+		return fmt.Errorf("failed to burn from blocked address: %s", addr)
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx,
@@ -62,28 +68,6 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 		return err
 	}
 
-	fromAcc, err := sdk.AccAddressFromBech32(fromAddr)
-	if err != nil {
-		return err
-	}
-
-	sortedPermAddrs := make([]string, 0, len(k.permAddrs))
-	for moduleName := range k.permAddrs {
-		sortedPermAddrs = append(sortedPermAddrs, moduleName)
-	}
-	sort.Strings(sortedPermAddrs)
-
-	for _, moduleName := range sortedPermAddrs {
-		account := k.accountKeeper.GetModuleAccount(ctx, moduleName)
-		if account == nil {
-			return status.Errorf(codes.NotFound, "account %s not found", moduleName)
-		}
-
-		if account.GetAddress().Equals(fromAcc) {
-			return status.Errorf(codes.Internal, "send from module acc not available")
-		}
-	}
-
 	fromSdkAddr, err := sdk.AccAddressFromBech32(fromAddr)
 	if err != nil {
 		return err
@@ -92,6 +76,14 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 	toSdkAddr, err := sdk.AccAddressFromBech32(toAddr)
 	if err != nil {
 		return err
+	}
+
+	if k.BlockedAddr(ctx, fromSdkAddr) {
+		return fmt.Errorf("failed to transfer from blocked address: %s", fromSdkAddr)
+	}
+
+	if k.BlockedAddr(ctx, toSdkAddr) {
+		return fmt.Errorf("failed to transfer to blocked address: %s", toSdkAddr)
 	}
 
 	return k.bankKeeper.SendCoins(ctx, fromSdkAddr, toSdkAddr, sdk.NewCoins(amount))

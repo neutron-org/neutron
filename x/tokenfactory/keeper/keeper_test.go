@@ -121,10 +121,16 @@ func (suite *KeeperTestSuite) TestForceTransferMsg() {
 
 		govModAcc := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAccount(suite.ChainA.GetContext(), authtypes.FeeCollectorName)
 
+		// can't even just send coins to a blocked address
 		err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(suite.ChainA.GetContext(), suite.TestAccs[0], govModAcc.GetAddress(), sdktypes.NewCoins(mintAmt))
-		suite.Require().NoError(err)
+		suite.Require().ErrorContains(err, "failed to transfer to blocked address")
 
+		// can't force transfer coins from a blocked address
 		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), suite.TestAccs[1].String()))
-		suite.Require().ErrorContains(err, "send from module acc not available")
+		suite.Require().ErrorContains(err, "failed to transfer from blocked address")
+
+		// can't force transfer coins to a blocked address
+		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, suite.TestAccs[1].String(), govModAcc.GetAddress().String()))
+		suite.Require().ErrorContains(err, "failed to transfer to blocked address")
 	})
 }

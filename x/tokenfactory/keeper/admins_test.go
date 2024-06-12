@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/neutron-org/neutron/v3/app/params"
 	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
@@ -88,6 +89,7 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 		mintDenom string
 		admin     string
 		valid     bool
+		mintTo    string
 	}{
 		{
 			desc:      "denom does not exist",
@@ -117,10 +119,17 @@ func (suite *KeeperTestSuite) TestMintDenom() {
 			admin:     suite.TestAccs[0].String(),
 			valid:     false,
 		},
+		{
+			desc:      "error: try minting to a blocked address",
+			amount:    10,
+			mintDenom: suite.defaultDenom,
+			admin:     suite.TestAccs[0].String(),
+			valid:     false,
+			mintTo:    authtypes.NewModuleAddress(authtypes.FeeCollectorName).String(),
+		},
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
-			// Test minting to admins own account
-			_, err := suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, tc.amount)))
+			_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMintTo(tc.admin, sdk.NewInt64Coin(tc.mintDenom, tc.amount), tc.mintTo))
 			if tc.valid {
 				addr0bal += 10
 				suite.Require().NoError(err)
@@ -150,6 +159,7 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 		burnDenom string
 		admin     string
 		valid     bool
+		burnFrom  string
 	}{
 		{
 			desc:      "denom does not exist",
@@ -186,10 +196,17 @@ func (suite *KeeperTestSuite) TestBurnDenom() {
 			admin:     suite.TestAccs[0].String(),
 			valid:     false,
 		},
+		{
+			desc:      "fail case - burn from a blocked address",
+			amount:    10,
+			burnDenom: params.DefaultDenom,
+			admin:     suite.TestAccs[0].String(),
+			valid:     false,
+			burnFrom:  authtypes.NewModuleAddress(authtypes.FeeCollectorName).String(),
+		},
 	} {
 		suite.Run(fmt.Sprintf("Case %s", tc.desc), func() {
-			// Test minting to admins own account
-			_, err := suite.msgServer.Burn(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgBurn(tc.admin, sdk.NewInt64Coin(tc.burnDenom, tc.amount)))
+			_, err := suite.msgServer.Burn(suite.ChainA.GetContext(), types.NewMsgBurnFrom(tc.admin, sdk.NewInt64Coin(tc.burnDenom, tc.amount), tc.burnFrom))
 			if tc.valid {
 				addr0bal -= 10
 				suite.Require().NoError(err)
