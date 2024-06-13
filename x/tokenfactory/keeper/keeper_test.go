@@ -126,6 +126,9 @@ func (suite *KeeperTestSuite) TestForceTransferMsg() {
 
 		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), suite.TestAccs[1].String()))
 		suite.Require().ErrorContains(err, "force transfer from module acc not available")
+
+		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, suite.TestAccs[1].String(), govModAcc.GetAddress().String()))
+		suite.Require().ErrorContains(err, "force transfer to module acc not available")
 	})
 }
 
@@ -135,7 +138,7 @@ func (suite *KeeperTestSuite) TestMintToMsg() {
 	// Create a denom
 	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 
-	suite.Run("test force transfer", func() {
+	suite.Run("test mint to", func() {
 		mintAmt := sdktypes.NewInt64Coin(suite.defaultDenom, 10)
 
 		govModAcc := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAccount(suite.ChainA.GetContext(), authtypes.FeeCollectorName)
@@ -151,7 +154,7 @@ func (suite *KeeperTestSuite) TestBurnFromMsg() {
 	// Create a denom
 	suite.CreateDefaultDenom(suite.ChainA.GetContext())
 
-	suite.Run("test force transfer", func() {
+	suite.Run("test burn from", func() {
 		mintAmt := sdktypes.NewInt64Coin(suite.defaultDenom, 10)
 
 		_, err := suite.msgServer.Mint(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), mintAmt))
