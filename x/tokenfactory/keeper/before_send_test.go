@@ -8,6 +8,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	dextypes "github.com/neutron-org/neutron/v3/x/dex/types"
 	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
 )
 
@@ -69,4 +70,40 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 			suite.Require().Equal("\"100\"", string(queryResp))
 		})
 	}
+}
+
+func (suite *KeeperTestSuite) TestDisableBlockBeforeSend() {
+	// setup test
+	suite.Setup()
+
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	suite.TopUpWallet(suite.ChainA.GetContext(), senderAddress, suite.TestAccs[0])
+
+	// create new denom
+	res, err := suite.msgServer.CreateDenom(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgCreateDenom(senderAddress.String(), "testdenom"))
+	suite.Require().NoError(err)
+	factoryDenom := res.GetNewTokenDenom()
+
+	tokenToSend := sdk.NewCoin(factoryDenom, sdk.NewInt(100))
+	halfTokenToSend := sdk.NewCoin(factoryDenom, sdk.NewInt(50))
+	// mint tokens
+	_, err = suite.msgServer.Mint(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(senderAddress.String(), tokenToSend))
+	suite.Require().NoError(err)
+
+	// Send some tokens to the dex
+	err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoinsFromAccountToModule(suite.ChainA.GetContext(), senderAddress, dextypes.ModuleName, sdk.NewCoins(halfTokenToSend))
+	suite.Require().NoError(err)
+
+	// set beforesend hook to the new denom with an invalid contract address
+	invalidContractAddr := "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf"
+	_, err = suite.msgServer.SetBeforeSendHook(sdk.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgSetBeforeSendHook(senderAddress.String(), factoryDenom, invalidContractAddr))
+	suite.Require().NoError(err)
+
+	// Trying to send more tokens to dex fails
+	err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoinsFromAccountToModule(suite.ChainA.GetContext(), senderAddress, dextypes.ModuleName, sdk.NewCoins(halfTokenToSend))
+	suite.Require().Error(err)
+
+	// Sending tokens from dex (disablesBlockSend) to account succeeds
+	err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoinsFromModuleToAccount(suite.ChainA.GetContext(), dextypes.ModuleName, senderAddress, sdk.NewCoins(halfTokenToSend))
+	suite.Require().NoError(err)
 }

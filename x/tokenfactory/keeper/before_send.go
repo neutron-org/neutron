@@ -81,7 +81,12 @@ func (h Hooks) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount 
 
 // TrackBeforeSend calls the before send listener contract returns any errors
 func (h Hooks) BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
+	// Don't run blockBeforeSend if sender is a module which explicitly disables blockSend
+	if h.k.shouldDisableBlockSend(ctx, from) {
+		return nil
+	}
 	return h.k.callBeforeSendListener(ctx, from, to, amount, true)
+
 }
 
 // callBeforeSendListener iterates over each coin and sends corresponding sudo msg to the contract address stored in state.

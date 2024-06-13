@@ -610,6 +610,7 @@ func New(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
 		maccPerms,
+		[]string{dextypes.ModuleName},
 		app.AccountKeeper,
 		&app.BankKeeper,
 		&app.WasmKeeper,

@@ -15,13 +15,14 @@ import (
 
 type (
 	Keeper struct {
-		storeKey       storetypes.StoreKey
-		knownModules   []string
-		cdc            codec.Codec
-		accountKeeper  types.AccountKeeper
-		bankKeeper     types.BankKeeper
-		contractKeeper types.ContractKeeper
-		authority      string
+		storeKey                storetypes.StoreKey
+		knownModules            []string
+		disableBlockSendModules []string
+		cdc                     codec.Codec
+		accountKeeper           types.AccountKeeper
+		bankKeeper              types.BankKeeper
+		contractKeeper          types.ContractKeeper
+		authority               string
 	}
 )
 
@@ -30,6 +31,7 @@ func NewKeeper(
 	cdc codec.Codec,
 	storeKey storetypes.StoreKey,
 	maccPerms map[string][]string,
+	disableBlockSendModule []string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	contractKeeper types.ContractKeeper,
@@ -42,13 +44,14 @@ func NewKeeper(
 	sort.Strings(sortedKnownModules)
 
 	return Keeper{
-		cdc:            cdc,
-		storeKey:       storeKey,
-		knownModules:   sortedKnownModules,
-		accountKeeper:  accountKeeper,
-		bankKeeper:     bankKeeper,
-		contractKeeper: contractKeeper,
-		authority:      authority,
+		cdc:                     cdc,
+		storeKey:                storeKey,
+		knownModules:            sortedKnownModules,
+		disableBlockSendModules: disableBlockSendModule,
+		accountKeeper:           accountKeeper,
+		bankKeeper:              bankKeeper,
+		contractKeeper:          contractKeeper,
+		authority:               authority,
 	}
 }
 

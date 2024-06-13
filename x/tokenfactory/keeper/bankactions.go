@@ -103,3 +103,18 @@ func (k Keeper) isModuleAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
 
 	return false
 }
+
+func (k Keeper) shouldDisableBlockSend(ctx sdk.Context, addr sdk.AccAddress) bool {
+	for _, moduleName := range k.disableBlockSendModules {
+		account := k.accountKeeper.GetModuleAccount(ctx, moduleName)
+		if account == nil {
+			continue
+		}
+
+		if account.GetAddress().Equals(addr) {
+			return true
+		}
+	}
+
+	return false
+}
