@@ -14,7 +14,7 @@ permissions:
 jobs:
   golangci:
     name: lint
-    runs-on: [self-hosted, ubuntu-latest]
+    runs-on: self-hosted
     steps:
       - uses: actions/setup-go@v4
         with:
