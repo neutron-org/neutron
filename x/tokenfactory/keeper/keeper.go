@@ -15,13 +15,13 @@ import (
 
 type (
 	Keeper struct {
-		storeKey             storetypes.StoreKey
-		knownModuleAddresses []string
-		cdc                  codec.Codec
-		accountKeeper        types.AccountKeeper
-		bankKeeper           types.BankKeeper
-		contractKeeper       types.ContractKeeper
-		authority            string
+		storeKey       storetypes.StoreKey
+		knownModules   []string
+		cdc            codec.Codec
+		accountKeeper  types.AccountKeeper
+		bankKeeper     types.BankKeeper
+		contractKeeper types.ContractKeeper
+		authority      string
 	}
 )
 
@@ -35,20 +35,20 @@ func NewKeeper(
 	contractKeeper types.ContractKeeper,
 	authority string,
 ) Keeper {
-	sortedKnownModuleAddresses := make([]string, 0, len(maccPerms))
+	sortedKnownModules := make([]string, 0, len(maccPerms))
 	for moduleName := range maccPerms {
-		sortedKnownModuleAddresses = append(sortedKnownModuleAddresses, moduleName)
+		sortedKnownModules = append(sortedKnownModules, moduleName)
 	}
-	sort.Strings(sortedKnownModuleAddresses)
+	sort.Strings(sortedKnownModules)
 
 	return Keeper{
-		cdc:                  cdc,
-		storeKey:             storeKey,
-		knownModuleAddresses: sortedKnownModuleAddresses,
-		accountKeeper:        accountKeeper,
-		bankKeeper:           bankKeeper,
-		contractKeeper:       contractKeeper,
-		authority:            authority,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		knownModules:   sortedKnownModules,
+		accountKeeper:  accountKeeper,
+		bankKeeper:     bankKeeper,
+		contractKeeper: contractKeeper,
+		authority:      authority,
 	}
 }
 
