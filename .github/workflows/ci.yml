@@ -21,6 +21,15 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y jq curl git
 
+      - name: Install Go
+        run: |
+          GO_VERSION=1.22
+          curl -LO https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz
+          sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+          echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
+          source $HOME/.profile
+        shell: bash
+
       - name: Download Buildx with Hydrobuilder support
         run: |
           ARCH=amd64
