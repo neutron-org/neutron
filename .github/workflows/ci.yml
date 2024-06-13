@@ -50,6 +50,7 @@ jobs:
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v3
         with:
           version: "lab:latest"
@@ -70,8 +71,9 @@ jobs:
       - name: Build and push Docker image
         env:
           VERSION: ${{ env.VERSION }}
+          BUILDER: ${{ steps.buildx.outputs.name }}
         run: |
-          docker buildx use neutron
+          docker buildx use $BUILDER
           make build-static-linux-amd64
           docker tag neutron-amd64:latest neutronorg/neutron:${{ env.VERSION }}
           docker push neutronorg/neutron:${{ env.VERSION }}
