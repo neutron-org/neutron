@@ -86,7 +86,6 @@ func (h Hooks) BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount 
 		return nil
 	}
 	return h.k.callBeforeSendListener(ctx, from, to, amount, true)
-
 }
 
 // callBeforeSendListener iterates over each coin and sends corresponding sudo msg to the contract address stored in state.
