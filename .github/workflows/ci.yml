@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Go
         run: |
-          GO_VERSION=1.22
+          GO_VERSION=1.22.4
           curl -LO https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz
           sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
           echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
