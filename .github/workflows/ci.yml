@@ -71,7 +71,7 @@ jobs:
         env:
           VERSION: ${{ env.VERSION }}
         run: |
-          docker buildx use neutronorg/neutron
+          docker buildx use neutron
           make build-static-linux-amd64
           docker tag neutron-amd64:latest neutronorg/neutron:${{ env.VERSION }}
           docker push neutronorg/neutron:${{ env.VERSION }}
