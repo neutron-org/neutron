@@ -90,7 +90,7 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 }
 
 func (k Keeper) isModuleAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
-	for _, moduleName := range k.knownModuleAddresses {
+	for _, moduleName := range k.knownModules {
 		account := k.accountKeeper.GetModuleAccount(ctx, moduleName)
 		if account == nil {
 			return false
