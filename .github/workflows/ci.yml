@@ -37,7 +37,7 @@ jobs:
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
       - name: Set up Docker Buildx
-        run: docker buildx create --use --driver cloud "neutronorg/default"
+        run: docker buildx create --use --driver cloud "neutronorg/neutron"
 
       - name: Build and push Docker image
         env:
