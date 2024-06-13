@@ -2,11 +2,10 @@ package keeper
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,13 +15,13 @@ import (
 
 type (
 	Keeper struct {
-		storeKey       storetypes.StoreKey
-		permAddrs      map[string]authtypes.PermissionsForAddress
-		cdc            codec.Codec
-		accountKeeper  types.AccountKeeper
-		bankKeeper     types.BankKeeper
-		contractKeeper types.ContractKeeper
-		authority      string
+		storeKey             storetypes.StoreKey
+		knownModuleAddresses []string
+		cdc                  codec.Codec
+		accountKeeper        types.AccountKeeper
+		bankKeeper           types.BankKeeper
+		contractKeeper       types.ContractKeeper
+		authority            string
 	}
 )
 
@@ -36,19 +35,20 @@ func NewKeeper(
 	contractKeeper types.ContractKeeper,
 	authority string,
 ) Keeper {
-	permAddrs := make(map[string]authtypes.PermissionsForAddress)
-	for name, perms := range maccPerms {
-		permAddrs[name] = authtypes.NewPermissionsForAddress(name, perms)
+	sortedKnownModuleAddresses := make([]string, 0, len(maccPerms))
+	for moduleName := range maccPerms {
+		sortedKnownModuleAddresses = append(sortedKnownModuleAddresses, moduleName)
 	}
+	sort.Strings(sortedKnownModuleAddresses)
 
 	return Keeper{
-		cdc:            cdc,
-		storeKey:       storeKey,
-		permAddrs:      permAddrs,
-		accountKeeper:  accountKeeper,
-		bankKeeper:     bankKeeper,
-		contractKeeper: contractKeeper,
-		authority:      authority,
+		cdc:                  cdc,
+		storeKey:             storeKey,
+		knownModuleAddresses: sortedKnownModuleAddresses,
+		accountKeeper:        accountKeeper,
+		bankKeeper:           bankKeeper,
+		contractKeeper:       contractKeeper,
+		authority:            authority,
 	}
 }
 
