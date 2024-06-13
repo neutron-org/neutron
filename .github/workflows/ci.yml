@@ -57,23 +57,24 @@ jobs:
           endpoint: "neutronorg/neutron"
           install: true
 
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.builder
-          tags: "${{ env.VERSION }}"
-          # For pull requests, export results to the build cache.
-          # Otherwise, push to a registry.
-          outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry,push=true' }}
+#      - name: Build and push
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          file: Dockerfile.builder
+#          tags: "${{ env.VERSION }}"
+#          # For pull requests, export results to the build cache.
+#          # Otherwise, push to a registry.
+#          outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry,push=true' }}
 
-#      - name: Build and push Docker image
-#        env:
-#          VERSION: ${{ env.VERSION }}
-#        run: |
-#          DOCKER_BUILDKIT=1 make build-static-linux-amd64
-#          docker tag neutron-amd64:latest neutronorg/neutron:${{ env.VERSION }}
-#          docker push neutronorg/neutron:${{ env.VERSION }}
+      - name: Build and push Docker image
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          docker buildx use neutronorg/neutron
+          make build-static-linux-amd64
+          docker tag neutron-amd64:latest neutronorg/neutron:${{ env.VERSION }}
+          docker push neutronorg/neutron:${{ env.VERSION }}
 
       - name: Cleanup temporary container
         run: docker rm -f neutronbinary || true
