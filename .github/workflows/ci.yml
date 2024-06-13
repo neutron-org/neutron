@@ -4,13 +4,17 @@ on:
   push:
     branches:
       - "main"
+      - "chore/fix-ci"
   pull_request:
     branches:
       - "main"
+      - "chore/fix-ci"
 
 jobs:
   docker:
     runs-on: self-hosted
+    env:
+      DOCKER_BUILDKIT: 1
 
     steps:
       - name: Checkout
