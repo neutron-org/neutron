@@ -41,17 +41,17 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 		return err
 	}
 
-	addr, err := sdk.AccAddressFromBech32(burnFrom)
+	burnFromAddr, err := sdk.AccAddressFromBech32(burnFrom)
 	if err != nil {
 		return err
 	}
 
-	if k.isModuleAccount(ctx, addr) {
+	if k.isModuleAccount(ctx, burnFromAddr) {
 		return status.Errorf(codes.Internal, "burning from module accounts is forbidden")
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx,
-		addr,
+		burnFromAddr,
 		types.ModuleName,
 		sdk.NewCoins(amount))
 	if err != nil {
