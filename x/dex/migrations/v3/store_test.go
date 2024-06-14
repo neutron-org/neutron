@@ -117,3 +117,57 @@ func (suite *V3DexMigrationTestSuite) TestLimitOrderExpirationUpgrade() {
 	allExp := app.DexKeeper.GetAllLimitOrderExpiration(ctx)
 	suite.Require().Equal(len(lOExpirations), len(allExp))
 }
+
+func (suite *V3DexMigrationTestSuite) TestPriceUpdates() {
+	var (
+		app      = suite.GetNeutronZoneApp(suite.ChainA)
+		storeKey = app.GetKey(types.StoreKey)
+		ctx      = suite.ChainA.GetContext()
+		cdc      = app.AppCodec()
+	)
+
+	// Write tranche with incorrect price
+	trancheKey := &types.LimitOrderTrancheKey{
+		TradePairId:           types.MustNewTradePairID("TokenA", "TokenB"),
+		TickIndexTakerToMaker: -50,
+		TrancheKey:            "123",
+	}
+	tranche := &types.LimitOrderTranche{
+		Key:               trancheKey,
+		PriceTakerToMaker: math.ZeroPrecDec(),
+	}
+	// create active tranche
+	app.DexKeeper.SetLimitOrderTranche(ctx, tranche)
+	// create inactive tranche
+	app.DexKeeper.SetInactiveLimitOrderTranche(ctx, tranche)
+
+	// Write poolReserves with old precision
+	poolKey := &types.PoolReservesKey{
+		TradePairId:           types.MustNewTradePairID("TokenA", "TokenB"),
+		TickIndexTakerToMaker: 60000,
+		Fee:                   1,
+	}
+	poolReserves := &types.PoolReserves{
+		Key:                       poolKey,
+		PriceTakerToMaker:         math.ZeroPrecDec(),
+		PriceOppositeTakerToMaker: math.ZeroPrecDec(),
+	}
+
+	app.DexKeeper.SetPoolReserves(ctx, poolReserves)
+
+	// Run migration
+	suite.NoError(v3.MigrateStore(ctx, cdc, storeKey))
+
+	// Check LimitOrderTranche has correct price
+	newTranche := app.DexKeeper.GetLimitOrderTranche(ctx, trancheKey)
+	suite.True(newTranche.PriceTakerToMaker.Equal(math.MustNewPrecDecFromStr("1.005012269623051203500693815")), "was : %v", newTranche.PriceTakerToMaker)
+
+	// check InactiveLimitOrderTranche has correct price
+	inactiveTranche, _ := app.DexKeeper.GetInactiveLimitOrderTranche(ctx, trancheKey)
+	suite.True(inactiveTranche.PriceTakerToMaker.Equal(math.MustNewPrecDecFromStr("1.005012269623051203500693815")), "was : %v", newTranche.PriceTakerToMaker)
+
+	// Check PoolReserves has the correct prices
+	newPool, _ := app.DexKeeper.GetPoolReserves(ctx, poolKey)
+	suite.True(newPool.PriceTakerToMaker.Equal(math.MustNewPrecDecFromStr("0.002479495864288162666675923")), "was : %v", newPool.PriceTakerToMaker)
+	suite.True(newPool.PriceOppositeTakerToMaker.Equal(math.MustNewPrecDecFromStr("403.227141612124702272520931931")), "was : %v", newPool.PriceOppositeTakerToMaker)
+}
