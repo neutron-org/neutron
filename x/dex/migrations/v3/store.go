@@ -106,6 +106,7 @@ func migrateLimitOrderExpirations(ctx sdk.Context, cdc codec.BinaryCodec, storeK
 }
 
 func migrateTickLiquidityPrices(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
+	// Due to change in precision of PrecDec between v2 and v3 we need to recompute all PrecDecs in the kvstore
 	ctx.Logger().Info("Migrating TickLiquidity Prices...")
 
 	// Iterate through all tickLiquidity
@@ -146,6 +147,7 @@ func migrateTickLiquidityPrices(ctx sdk.Context, cdc codec.BinaryCodec, storeKey
 }
 
 func migrateInactiveTranchePrices(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
+	// Due to change in precision of PrecDec between v2 and v3 we need to recompute all PrecDecs in the kvstore
 	ctx.Logger().Info("Migrating InactiveLimitOrderTranche Prices...")
 
 	// Iterate through all tickLiquidity
@@ -169,7 +171,7 @@ func migrateInactiveTranchePrices(ctx sdk.Context, cdc codec.BinaryCodec, storeK
 		return err
 	}
 
-	ctx.Logger().Info("Finished Migrating InactiveLimitOrderTranche Prices...")
+	ctx.Logger().Info("Finished migrating InactiveLimitOrderTranche Prices...")
 
 	return nil
 }
