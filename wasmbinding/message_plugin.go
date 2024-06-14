@@ -682,7 +682,7 @@ func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.Ac
 }
 
 // PerformMint used with mintTokens to validate the mint message and mint through token factory.
-func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
+func PerformMint(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
 	rcpt, err := parseAddress(mint.MintToAddress)
 	if err != nil {
 		return err
