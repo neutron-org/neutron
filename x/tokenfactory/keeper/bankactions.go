@@ -79,11 +79,11 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 	}
 
 	if k.isModuleAccount(ctx, transferFromAcc) {
-		return status.Errorf(codes.Internal, "force transfer from module acc not available")
+		return status.Errorf(codes.Internal, "force transfer from module accounts is forbidden")
 	}
 
 	if k.isModuleAccount(ctx, transferToAcc) {
-		return status.Errorf(codes.Internal, "force transfer to module acc not available")
+		return status.Errorf(codes.Internal, "force transfer to module accounts is forbidden")
 	}
 
 	return k.bankKeeper.SendCoins(ctx, transferFromAcc, transferToAcc, sdk.NewCoins(amount))
