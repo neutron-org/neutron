@@ -125,10 +125,10 @@ func (suite *KeeperTestSuite) TestForceTransferMsg() {
 		suite.Require().NoError(err)
 
 		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), suite.TestAccs[1].String()))
-		suite.Require().ErrorContains(err, "force transfer from module acc not available")
+		suite.Require().ErrorContains(err, "force transfer from module accounts is forbidden")
 
 		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, suite.TestAccs[1].String(), govModAcc.GetAddress().String()))
-		suite.Require().ErrorContains(err, "force transfer to module acc not available")
+		suite.Require().ErrorContains(err, "force transfer to module accounts is forbidden")
 	})
 }
 
