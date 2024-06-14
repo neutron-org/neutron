@@ -157,7 +157,7 @@ func (suite *KeeperTestSuite) TestBurnFromMsg() {
 	suite.Run("test burn from", func() {
 		mintAmt := sdktypes.NewInt64Coin(suite.defaultDenom, 10)
 
-		_, err := suite.msgServer.Mint(sdktypes.WrapSDKContext(suite.ChainA.GetContext()), types.NewMsgMint(suite.TestAccs[0].String(), mintAmt))
+		_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), mintAmt))
 		suite.Require().NoError(err)
 
 		govModAcc := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAccount(suite.ChainA.GetContext(), authtypes.FeeCollectorName)
