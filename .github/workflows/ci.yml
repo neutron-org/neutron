@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - "main"
+      - "releases/v3.x"
       - "chore/fix-ci"
   pull_request:
     branches:
       - "main"
+      - "releases/v3.x"
       - "chore/fix-ci"
 
 jobs:
