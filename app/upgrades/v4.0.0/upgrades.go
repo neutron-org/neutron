@@ -232,6 +232,11 @@ func enableVoteExtensions(ctx sdk.Context, consensusKeeper *consensuskeeper.Keep
 		return err
 	}
 
+	oldParams.Params.Version = &comettypes.VersionParams{App: 0}
+	if err := consensusKeeper.ParamsStore.Set(ctx, *oldParams.Params); err != nil {
+		return err
+	}
+
 	// we need to enable VoteExtensions for Slinky
 	oldParams.Params.Abci = &comettypes.ABCIParams{VoteExtensionsEnableHeight: ctx.BlockHeight() + 4}
 
