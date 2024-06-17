@@ -682,14 +682,14 @@ func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.Ac
 }
 
 // PerformMint used with mintTokens to validate the mint message and mint through token factory.
-func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
+func PerformMint(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
 	rcpt, err := parseAddress(mint.MintToAddress)
 	if err != nil {
 		return err
 	}
 
 	coin := sdk.Coin{Denom: mint.Denom, Amount: mint.Amount}
-	sdkMsg := tokenfactorytypes.NewMsgMint(contractAddr.String(), coin)
+	sdkMsg := tokenfactorytypes.NewMsgMintTo(contractAddr.String(), coin, rcpt.String())
 	if err = sdkMsg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -699,11 +699,6 @@ func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk
 	_, err = msgServer.Mint(sdk.WrapSDKContext(ctx), sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "minting coins from message")
-	}
-
-	err = b.SendCoins(ctx, contractAddr, rcpt, sdk.NewCoins(coin))
-	if err != nil {
-		return errors.Wrap(err, "sending newly minted coins from message")
 	}
 
 	return nil

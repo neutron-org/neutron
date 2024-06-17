@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"sort"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,12 +15,16 @@ func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
 		return err
 	}
 
-	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(amount))
+	addr, err := sdk.AccAddressFromBech32(mintTo)
 	if err != nil {
 		return err
 	}
 
-	addr, err := sdk.AccAddressFromBech32(mintTo)
+	if k.isModuleAccount(ctx, addr) {
+		return status.Errorf(codes.Internal, "minting to module accounts is forbidden")
+	}
+
+	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(amount))
 	if err != nil {
 		return err
 	}
@@ -39,13 +41,17 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 		return err
 	}
 
-	addr, err := sdk.AccAddressFromBech32(burnFrom)
+	burnFromAddr, err := sdk.AccAddressFromBech32(burnFrom)
 	if err != nil {
 		return err
 	}
 
+	if k.isModuleAccount(ctx, burnFromAddr) {
+		return status.Errorf(codes.Internal, "burning from module accounts is forbidden")
+	}
+
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx,
-		addr,
+		burnFromAddr,
 		types.ModuleName,
 		sdk.NewCoins(amount))
 	if err != nil {
@@ -62,28 +68,6 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 		return err
 	}
 
-	fromAcc, err := sdk.AccAddressFromBech32(fromAddr)
-	if err != nil {
-		return err
-	}
-
-	sortedPermAddrs := make([]string, 0, len(k.permAddrs))
-	for moduleName := range k.permAddrs {
-		sortedPermAddrs = append(sortedPermAddrs, moduleName)
-	}
-	sort.Strings(sortedPermAddrs)
-
-	for _, moduleName := range sortedPermAddrs {
-		account := k.accountKeeper.GetModuleAccount(ctx, moduleName)
-		if account == nil {
-			return status.Errorf(codes.NotFound, "account %s not found", moduleName)
-		}
-
-		if account.GetAddress().Equals(fromAcc) {
-			return status.Errorf(codes.Internal, "send from module acc not available")
-		}
-	}
-
 	fromSdkAddr, err := sdk.AccAddressFromBech32(fromAddr)
 	if err != nil {
 		return err
@@ -94,5 +78,28 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 		return err
 	}
 
+	if k.isModuleAccount(ctx, fromSdkAddr) {
+		return status.Errorf(codes.Internal, "force transfer from module acc not available")
+	}
+
+	if k.isModuleAccount(ctx, toSdkAddr) {
+		return status.Errorf(codes.Internal, "force transfer to module acc not available")
+	}
+
 	return k.bankKeeper.SendCoins(ctx, fromSdkAddr, toSdkAddr, sdk.NewCoins(amount))
+}
+
+func (k Keeper) isModuleAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
+	for _, moduleName := range k.knownModules {
+		account := k.accountKeeper.GetModuleAccount(ctx, moduleName)
+		if account == nil {
+			continue
+		}
+
+		if account.GetAddress().Equals(addr) {
+			return true
+		}
+	}
+
+	return false
 }

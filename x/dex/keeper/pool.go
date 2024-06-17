@@ -32,12 +32,12 @@ func (k Keeper) InitPool(
 ) (pool *types.Pool, err error) {
 	poolID := k.initializePoolMetadata(ctx, pairID, centerTickIndexNormalized, fee)
 
-	k.storePoolIDRef(ctx, poolID, pairID, centerTickIndexNormalized, fee)
+	k.StorePoolIDRef(ctx, poolID, pairID, centerTickIndexNormalized, fee)
 
 	return types.NewPool(pairID, centerTickIndexNormalized, fee, poolID)
 }
 
-func (k Keeper) storePoolIDRef(
+func (k Keeper) StorePoolIDRef(
 	ctx sdk.Context,
 	poolID uint64,
 	pairID *types.PairID,
