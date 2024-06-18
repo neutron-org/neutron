@@ -13,6 +13,7 @@ import (
 
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 
@@ -31,8 +32,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
-	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
+	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck
@@ -223,10 +224,11 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		return handleDexMsg(ctx, dex.Withdrawal, m.DexMsgServer.Withdrawal)
 	case dex.PlaceLimitOrder != nil:
 		msg := dextypes.MsgPlaceLimitOrder{
-			Creator:          contractAddr.String(),
-			Receiver:         dex.PlaceLimitOrder.Receiver,
-			TokenIn:          dex.PlaceLimitOrder.TokenIn,
-			TokenOut:         dex.PlaceLimitOrder.TokenOut,
+			Creator:  contractAddr.String(),
+			Receiver: dex.PlaceLimitOrder.Receiver,
+			TokenIn:  dex.PlaceLimitOrder.TokenIn,
+			TokenOut: dex.PlaceLimitOrder.TokenOut,
+			//nolint: staticcheck // TODO: remove in next release
 			TickIndexInToOut: dex.PlaceLimitOrder.TickIndexInToOut,
 			AmountIn:         dex.PlaceLimitOrder.AmountIn,
 			MaxAmountOut:     dex.PlaceLimitOrder.MaxAmountOut,
@@ -246,6 +248,15 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
 			msg.ExpirationTime = &t
 		}
+
+		if limitPriceStr := dex.PlaceLimitOrder.LimitSellPrice; limitPriceStr != "" {
+			limitPriceDec, err := dexutils.ParsePrecDecScientificNotation(limitPriceStr)
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "cannot parse string %s for limit price", limitPriceStr)
+			}
+			msg.LimitSellPrice = &limitPriceDec
+		}
+
 		return handleDexMsg(ctx, &msg, m.DexMsgServer.PlaceLimitOrder)
 	case dex.CancelLimitOrder != nil:
 		dex.CancelLimitOrder.Creator = contractAddr.String()
@@ -674,25 +685,20 @@ func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.Ac
 }
 
 // PerformMint used with mintTokens to validate the mint message and mint through token factory.
-func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
+func PerformMint(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
 	rcpt, err := parseAddress(mint.MintToAddress)
 	if err != nil {
 		return err
 	}
 
 	coin := sdk.Coin{Denom: mint.Denom, Amount: mint.Amount}
-	sdkMsg := tokenfactorytypes.NewMsgMint(contractAddr.String(), coin)
+	sdkMsg := tokenfactorytypes.NewMsgMintTo(contractAddr.String(), coin, rcpt.String())
 
 	// Mint through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
 	_, err = msgServer.Mint(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "minting coins from message")
-	}
-
-	err = b.SendCoins(ctx, contractAddr, rcpt, sdk.NewCoins(coin))
-	if err != nil {
-		return errors.Wrap(err, "sending newly minted coins from message")
 	}
 
 	return nil

@@ -7,7 +7,7 @@ import (
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	keeper2 "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
@@ -19,7 +19,7 @@ import (
 
 	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
-	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
 	"github.com/neutron-org/neutron/v4/app/params"
 

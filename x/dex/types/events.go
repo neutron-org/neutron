@@ -244,3 +244,105 @@ func GoodTilPurgeHitLimitEvent(gas types.Gas) sdk.Event {
 
 	return sdk.NewEvent(EventTypeGoodTilPurgeHitGasLimit, attrs...)
 }
+
+func GetEventsWithdrawnAmount(coins sdk.Coins) sdk.Events {
+	events := sdk.Events{}
+	for _, coin := range coins {
+		event := sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(AttributeDenom, coin.Denom),
+			sdk.NewAttribute(AttributeWithdrawn, coin.Amount.String()),
+		)
+		events = append(events, event)
+	}
+	return events
+}
+
+func GetEventsGasConsumed(gasBefore, gasAfter types.Gas) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(AttributeGasConsumed, strconv.FormatUint(gasAfter-gasBefore, 10)),
+		),
+	}
+}
+
+func GetEventsIncExpiringOrders(pairID *TradePairID) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeInc),
+			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLimitOrder),
+			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(true)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
+		),
+	}
+}
+
+func GetEventsDecExpiringOrders(pairID *TradePairID) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeDec),
+			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLimitOrder),
+			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(true)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
+		),
+	}
+}
+
+func GetEventsIncTotalOrders(pairID *TradePairID) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeInc),
+			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLimitOrder),
+			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(false)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
+		),
+	}
+}
+
+func GetEventsDecTotalOrders(pairID *TradePairID) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeDec),
+			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLimitOrder),
+			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(false)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
+		),
+	}
+}
+
+func GetEventsIncTotalPoolReserves(pairID PairID) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeInc),
+			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLp),
+			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(false)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
+		),
+	}
+}
+
+func GetEventsDecTotalPoolReserves(pairID PairID) sdk.Events {
+	return sdk.Events{
+		sdk.NewEvent(
+			EventTypeNeutronMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyAction, AttributeDec),
+			sdk.NewAttribute(AttributeLiquidityTickType, AttributeLp),
+			sdk.NewAttribute(AttributeIsExpiringLimitOrder, strconv.FormatBool(false)),
+			sdk.NewAttribute(AttributePairID, pairID.String()),
+		),
+	}
+}

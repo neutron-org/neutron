@@ -51,7 +51,7 @@ func (suite *V3DexMigrationTestSuite) TestParamsUpgrade() {
 	suite.Require().EqualValues(oldParams.FeeTiers, newParams.FeeTiers)
 	suite.Require().EqualValues(newParams.Paused, types.DefaultPaused)
 	suite.Require().EqualValues(newParams.GoodTilPurgeAllowance, types.DefaultGoodTilPurgeAllowance)
-	suite.Require().EqualValues(newParams.Max_JITsPerBlock, types.DefaultMaxJITsPerBlock)
+	suite.Require().EqualValues(newParams.MaxJitsPerBlock, types.DefaultMaxJITsPerBlock)
 }
 
 func v2TimeBytes(timestamp time.Time) []byte {

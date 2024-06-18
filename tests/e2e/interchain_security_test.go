@@ -5,13 +5,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	appProvider "github.com/cosmos/interchain-security/v5/app/provider"
+	e2e "github.com/cosmos/interchain-security/v5/tests/integration"
 	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	e2e "github.com/cosmos/interchain-security/v5/tests/integration"
-
 	appConsumer "github.com/neutron-org/neutron/v4/app"
-
 	appparams "github.com/neutron-org/neutron/v4/app/params"
 	"github.com/neutron-org/neutron/v4/testutil"
 )

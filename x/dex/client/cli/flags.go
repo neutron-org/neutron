@@ -6,11 +6,18 @@ const (
 	FlagMaxAmountOut    = "max-amount-out"
 	FlagIncludePoolData = "include-pool-data"
 	FlagCalcWithdraw    = "calc-withdraw"
+	FlagPrice           = "price"
 )
 
 func FlagSetMaxAmountOut() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 	fs.String(FlagMaxAmountOut, "", "Max amount to be returned from trade")
+	return fs
+}
+
+func FlagSetPrice() *flag.FlagSet {
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fs.String(FlagPrice, "", "Sell price for limit order")
 	return fs
 }
 

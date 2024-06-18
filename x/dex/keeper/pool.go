@@ -20,7 +20,7 @@ func (k Keeper) GetOrInitPool(
 	if found {
 		return pool, nil
 	}
-
+	ctx.EventManager().EmitEvents(types.GetEventsIncTotalPoolReserves(*pairID))
 	return k.InitPool(ctx, pairID, centerTickIndexNormalized, fee)
 }
 
@@ -32,12 +32,12 @@ func (k Keeper) InitPool(
 ) (pool *types.Pool, err error) {
 	poolID := k.initializePoolMetadata(ctx, pairID, centerTickIndexNormalized, fee)
 
-	k.storePoolIDRef(ctx, poolID, pairID, centerTickIndexNormalized, fee)
+	k.StorePoolIDRef(ctx, poolID, pairID, centerTickIndexNormalized, fee)
 
 	return types.NewPool(pairID, centerTickIndexNormalized, fee, poolID)
 }
 
-func (k Keeper) storePoolIDRef(
+func (k Keeper) StorePoolIDRef(
 	ctx sdk.Context,
 	poolID uint64,
 	pairID *types.PairID,
@@ -149,6 +149,7 @@ func (k Keeper) updatePoolReserves(ctx sdk.Context, reserves *types.PoolReserves
 	if reserves.HasToken() {
 		k.SetPoolReserves(ctx, reserves)
 	} else {
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalPoolReserves(*reserves.Key.TradePairId.MustPairID()))
 		k.RemovePoolReserves(ctx, reserves.Key)
 	}
 }

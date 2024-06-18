@@ -15,6 +15,7 @@ func (k Keeper) Swap(
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
+	gasBefore := ctx.GasMeter().GasConsumed()
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math.Int
 	if useMaxOut {
@@ -72,6 +73,9 @@ func (k Keeper) Swap(
 		}
 	}
 	totalTakerDenom := maxAmountTakerDenom.Sub(remainingTakerDenom)
+
+	gasAfter := ctx.GasMeter().GasConsumed()
+	ctx.EventManager().EmitEvents(types.GetEventsGasConsumed(gasBefore, gasAfter))
 
 	return sdk.NewCoin(
 			tradePairID.TakerDenom,

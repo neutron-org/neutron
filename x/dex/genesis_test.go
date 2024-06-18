@@ -2,6 +2,7 @@ package dex_test
 
 import (
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
@@ -70,6 +71,47 @@ func TestGenesis(t *testing.T) {
 					),
 				},
 			},
+			{
+				Liquidity: &types.TickLiquidity_LimitOrderTranche{
+					LimitOrderTranche: types.MustNewLimitOrderTranche(
+						"TokenB",
+						"TokenA",
+						"0",
+						0,
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						time.Date(2024, 1, 1, 1, 0, 0, 0, time.UTC),
+					),
+				},
+			},
+			{
+				Liquidity: &types.TickLiquidity_LimitOrderTranche{
+					LimitOrderTranche: types.MustNewLimitOrderTranche(
+						"TokenB",
+						"TokenA",
+						"0",
+						0,
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						math.ZeroInt(),
+						time.Date(2024, 2, 1, 1, 0, 0, 0, time.UTC),
+					),
+				},
+			},
+			{
+				Liquidity: &types.TickLiquidity_PoolReserves{
+					PoolReserves: types.MustNewPoolReserves(
+						&types.PoolReservesKey{
+							TradePairId:           types.MustNewTradePairID("TokenA", "TokenB"),
+							TickIndexTakerToMaker: 0,
+							Fee:                   1,
+						},
+					),
+				},
+			},
 		},
 		InactiveLimitOrderTrancheList: []*types.LimitOrderTranche{
 			{
@@ -95,10 +137,16 @@ func TestGenesis(t *testing.T) {
 		},
 		PoolMetadataList: []types.PoolMetadata{
 			{
-				Id: 0,
+				PairId: types.MustNewPairID("TokenA", "TokenB"),
+				Tick:   0,
+				Fee:    1,
+				Id:     0,
 			},
 			{
-				Id: 1,
+				PairId: types.MustNewPairID("TokenA", "TokenB"),
+				Tick:   1,
+				Fee:    1,
+				Id:     1,
 			},
 		},
 		PoolCount: 2,
@@ -109,6 +157,27 @@ func TestGenesis(t *testing.T) {
 	dex.InitGenesis(ctx, *k, genesisState)
 	got := dex.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)
+
+	// check that LimitorderExpirations are recreated correctly
+	expectedLimitOrderExpirations := []*types.LimitOrderExpiration{
+		{
+			ExpirationTime: *genesisState.TickLiquidityList[2].GetLimitOrderTranche().ExpirationTime,
+			TrancheRef:     genesisState.TickLiquidityList[2].GetLimitOrderTranche().Key.KeyMarshal(),
+		},
+		{
+			ExpirationTime: *genesisState.TickLiquidityList[3].GetLimitOrderTranche().ExpirationTime,
+			TrancheRef:     genesisState.TickLiquidityList[3].GetLimitOrderTranche().Key.KeyMarshal(),
+		},
+	}
+	loExpirations := k.GetAllLimitOrderExpiration(ctx)
+	require.Equal(t, *expectedLimitOrderExpirations[0], *loExpirations[0])
+	require.Equal(t, *expectedLimitOrderExpirations[1], *loExpirations[1])
+	require.Equal(t, len(expectedLimitOrderExpirations), len(loExpirations))
+
+	// Check that poolID refs works
+
+	_, found := k.GetPool(ctx, types.MustNewPairID("TokenA", "TokenB"), 0, 1)
+	require.True(t, found)
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)

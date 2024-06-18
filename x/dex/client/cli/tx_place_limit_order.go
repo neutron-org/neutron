@@ -12,13 +12,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func CmdPlaceLimitOrder() *cobra.Command {
 	cmd := &cobra.Command{
 		//nolint:lll
-		Use:     "place-limit-order [receiver] [token-in] [token-out] [tick-index] [amount-in] ?[order-type] ?[expirationTime] ?(--max-amout-out)",
+		Use:     "place-limit-order [receiver] [token-in] [token-out] [tick-index] [amount-in] ?[order-type] ?[expirationTime] ?(--max-amout-out) ?(--price)",
 		Short:   "Broadcast message PlaceLimitOrder",
 		Example: "place-limit-order alice tokenA tokenB [-10] tokenA 50 GOOD_TIL_TIME '01/02/2006 15:04:05' --max-amount-out 20 --from alice",
 		Args:    cobra.RangeArgs(5, 7),
@@ -65,6 +66,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			var maxAmountOutIntP *math.Int
 			if maxAmountOutArg != "" {
 				maxAmountOutInt, ok := math.NewIntFromString(maxAmountOutArg)
@@ -75,6 +77,20 @@ func CmdPlaceLimitOrder() *cobra.Command {
 					)
 				}
 				maxAmountOutIntP = &maxAmountOutInt
+			}
+
+			priceArg, err := cmd.Flags().GetString(FlagPrice)
+			if err != nil {
+				return err
+			}
+
+			var priceDecP *math_utils.PrecDec
+			if priceArg != "" {
+				priceDec, err := math_utils.NewPrecDecFromStr(priceArg)
+				if err != nil {
+					return err
+				}
+				priceDecP = &priceDec
 			}
 
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -92,6 +108,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 				orderType,
 				goodTil,
 				maxAmountOutIntP,
+				priceDecP,
 			)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -100,6 +117,7 @@ func CmdPlaceLimitOrder() *cobra.Command {
 
 	flags.AddTxFlagsToCmd(cmd)
 	cmd.Flags().AddFlagSet(FlagSetMaxAmountOut())
+	cmd.Flags().AddFlagSet(FlagSetPrice())
 
 	return cmd
 }

@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/log"
 	metrics2 "cosmossdk.io/store/metrics"
-	adminmoduletypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	db2 "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 

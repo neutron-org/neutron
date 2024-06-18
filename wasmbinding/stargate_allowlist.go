@@ -8,8 +8,11 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 
 	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
@@ -95,5 +98,14 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
 		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
+
+		// feemarket
+		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
+		"feemarket.feemarket.v1.Query/State":     &feemarkettypes.StateResponse{},
+		"feemarket.feemarket.v1.Query/GasPrice":  &feemarkettypes.GasPriceResponse{},
+		"feemarket.feemarket.v1.Query/GasPrices": &feemarkettypes.GasPricesResponse{},
+
+		// dynamicfees
+		"neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
 	}
 }

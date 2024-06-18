@@ -70,6 +70,18 @@ func (k KeeperTransferWrapper) Transfer(goCtx context.Context, msg *wrappedtypes
 	}, nil
 }
 
+func (k KeeperTransferWrapper) UpdateParams(goCtx context.Context, msg *wrappedtypes.MsgUpdateParams) (*wrappedtypes.MsgUpdateParamsResponse, error) {
+	newMsg := &types.MsgUpdateParams{
+		Signer: msg.Signer,
+		Params: msg.Params,
+	}
+	if _, err := k.Keeper.UpdateParams(goCtx, newMsg); err != nil {
+		return nil, err
+	}
+
+	return &wrappedtypes.MsgUpdateParamsResponse{}, nil
+}
+
 // NewKeeper creates a new IBC transfer Keeper(KeeperTransferWrapper) instance
 func NewKeeper(
 	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
