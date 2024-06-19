@@ -99,8 +99,8 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 				return err
 			}
 
-			// Do not invoke hook if denom is not whitelisted and `from` is a module
-			if !k.isHookWhitelisted(c, coin.Denom, cwAddr) {
+			// Do not invoke hook if denom is not whitelisted
+			if err := k.AssertIsHookWhitelisted(c, coin.Denom, cwAddr); err != nil {
 				return nil
 			}
 
