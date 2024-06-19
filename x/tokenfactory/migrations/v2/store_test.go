@@ -101,7 +101,7 @@ func (suite *V3DexMigrationTestSuite) TestHooksUpgrade() {
 	store.Set([]byte(types.BeforeSendHookAddressPrefixKey), []byte(cwAddressStr))
 
 	// Include the hook we want to whitelist in the params migration
-	v2.WhitelistedHooks = []*types.HookWhitelist{
+	v2.WhitelistedHooks = []*types.WhitelistedHook{
 		{
 			CodeID:       codeID,
 			DenomCreator: addr1.String(),

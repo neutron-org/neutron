@@ -32,7 +32,7 @@ func MigrateStore(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.St
 	return nil
 }
 
-var WhitelistedHooks = []*types.HookWhitelist{
+var WhitelistedHooks = []*types.WhitelistedHook{
 	{ // xASTRO balances tracker
 		CodeID:       944,
 		DenomCreator: "neutron1zlf3hutsa4qnmue53lz2tfxrutp8y2e3rj4nkghg3rupgl4mqy8s5jgxsn",

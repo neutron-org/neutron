@@ -17,7 +17,7 @@ var (
 	DefaultDenomCreationFee        sdk.Coins
 	DefaultDenomCreationGasConsume uint64
 	DefaultFeeCollectorAddress     = ""
-	DefaultWhitelistedHooks        = []*HookWhitelist{}
+	DefaultWhitelistedHooks        = []*WhitelistedHook{}
 )
 
 // ParamKeyTable the param key table for tokenfactory module.
@@ -25,7 +25,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64, feeCollectorAddress string, whitelistedHooks []*HookWhitelist) Params {
+func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64, feeCollectorAddress string, whitelistedHooks []*WhitelistedHook) Params {
 	return Params{
 		DenomCreationFee:        denomCreationFee,
 		DenomCreationGasConsume: denomCreationGasConsume,
@@ -115,7 +115,7 @@ func validateFeeCollectorAddress(i interface{}) error {
 }
 
 func validateWhitelistedHooks(i interface{}) error {
-	hooks, ok := i.([]*HookWhitelist)
+	hooks, ok := i.([]*WhitelistedHook)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -124,7 +124,7 @@ func validateWhitelistedHooks(i interface{}) error {
 	for _, hook := range hooks {
 		hookStr := hook.String()
 		if seenHooks[hookStr] {
-			return fmt.Errorf("duplicate whitelisted hook: %#v", hook)
+			return fmt.Errorf("duplicate whitelisted hook: %s", hookStr)
 		}
 		seenHooks[hookStr] = true
 		_, err := sdk.AccAddressFromBech32(hook.DenomCreator)
