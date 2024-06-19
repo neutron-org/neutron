@@ -6,6 +6,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 	v1beta1types "github.com/neutron-org/neutron/v4/x/tokenfactory/types/v1beta1"
 )
@@ -14,11 +15,9 @@ import (
 // The migration adds the new tokenfactory params WhitelistedHooks
 func MigrateStore(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
 	return migrateParams(ctx, cdc, storeKey)
-
 }
 
 var WhitelistedHooks = []*types.HookWhitelist{
-
 	{ // xASTRO balances tracker
 		CodeID:       944,
 		DenomCreator: "neutron1zlf3hutsa4qnmue53lz2tfxrutp8y2e3rj4nkghg3rupgl4mqy8s5jgxsn",

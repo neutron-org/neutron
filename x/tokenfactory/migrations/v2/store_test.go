@@ -5,11 +5,12 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/neutron-org/neutron/v4/testutil"
 	v2 "github.com/neutron-org/neutron/v4/x/tokenfactory/migrations/v2"
 	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 	"github.com/neutron-org/neutron/v4/x/tokenfactory/types/v1beta1"
-	"github.com/stretchr/testify/suite"
 )
 
 type V3DexMigrationTestSuite struct {

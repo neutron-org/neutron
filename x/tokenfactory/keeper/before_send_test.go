@@ -68,6 +68,7 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 	suite.Require().NoError(err)
 
 	queryResp, err := suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(suite.ChainA.GetContext(), cosmwasmAddress, []byte(`{"total_supply_at":{}}`))
+	suite.Require().NoError(err)
 	// Whitelisted contract is called correctly
 	suite.Require().Equal("\"100\"", string(queryResp))
 }
@@ -110,6 +111,7 @@ func (suite *KeeperTestSuite) TestNonWhitelistedHooksNotCalled() {
 	suite.Require().NoError(err)
 
 	queryResp, err := suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(suite.ChainA.GetContext(), cosmwasmAddress, []byte(`{"total_supply_at":{}}`))
+	suite.Require().NoError(err)
 	// Whitelisted contract is not called
 	suite.Require().Equal("\"0\"", string(queryResp))
 }
