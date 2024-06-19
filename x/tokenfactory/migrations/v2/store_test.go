@@ -72,6 +72,7 @@ func (suite *V3DexMigrationTestSuite) TestHooksUpgrade() {
 	// Setup contract
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper)
 	codeID, _, err := contractKeeper.Create(ctx, addr1, wasmCode, nil)
+	suite.Require().NoError(err)
 	tokenFactoryModuleAddr := app.AccountKeeper.GetModuleAddress(types.ModuleName)
 	initMsg, _ := json.Marshal(
 		map[string]interface{}{
@@ -114,10 +115,9 @@ func (suite *V3DexMigrationTestSuite) TestHooksUpgrade() {
 	hook1 := app.TokenFactoryKeeper.GetBeforeSendHook(ctx, factoryDenom1)
 	suite.Assert().Equal(cwAddressStr, hook1)
 
-	//The non whitelisted hooks have been removed
+	// The non whitelisted hooks have been removed
 	hook2 := app.TokenFactoryKeeper.GetBeforeSendHook(ctx, factoryDenom2)
 	suite.Assert().Equal("", hook2)
 	hook3 := app.TokenFactoryKeeper.GetBeforeSendHook(ctx, factoryDenom3)
 	suite.Assert().Equal("", hook3)
-
 }

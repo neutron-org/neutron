@@ -25,7 +25,7 @@ func MigrateStore(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.St
 	if err := migrateParams(ctx, cdc, storeKey); err != nil {
 		return err
 	}
-	if err := migrateHooks(ctx, cdc, storeKey, keeper); err != nil {
+	if err := migrateHooks(ctx, storeKey, keeper); err != nil {
 		return err
 	}
 
@@ -75,7 +75,7 @@ func migrateParams(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.S
 	return nil
 }
 
-func migrateHooks(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey, keeper TokenFactoryKeeper) error {
+func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFactoryKeeper) error {
 	ctx.Logger().Info("Migrating tokenfactory hooks...")
 
 	// get hook store
@@ -85,7 +85,7 @@ func migrateHooks(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.St
 	for ; iterator.Valid(); iterator.Next() {
 		keyParts := strings.Split(string(iterator.Key()), types.KeySeparator)
 
-		// Hooks and authorityMetadata are in the same store we only care about the hooks
+		// Hooks and authorityMetadata are in the same store, we only care about the hooks
 		if keyParts[2] == types.BeforeSendHookAddressPrefixKey {
 			denom := keyParts[1]
 			contractAddr, err := sdk.AccAddressFromBech32(string(iterator.Value()))
