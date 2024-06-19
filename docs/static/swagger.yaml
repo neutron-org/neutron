@@ -18637,17 +18637,7 @@ definitions:
             type: array
         type: object
     type: object
-  osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
-    description: |-
-      DenomAuthorityMetadata specifies metadata for addresses that have specific
-      capabilities over a token factory denom. Right now there is only one Admin
-      permission, but is planned to be extended to the future.
-    properties:
-      Admin:
-        title: Can be empty for no admin, or a valid osmosis address
-        type: string
-    type: object
-  osmosis.tokenfactory.v1beta1.Params:
+  osmosis.tokenfactory.Params:
     description: Params defines the parameters for the tokenfactory module.
     properties:
       denom_creation_fee:
@@ -18685,6 +18675,37 @@ definitions:
           creation
 
           are sent to
+        type: string
+      whitelisted_hooks:
+        items:
+          properties:
+            code_id:
+              format: uint64
+              type: string
+            denom_creator:
+              type: string
+          type: object
+        title: >-
+          HookWhitelist is the list of hooks which are allowed to be added and
+          executed
+        type: array
+    type: object
+  osmosis.tokenfactory.WhitelistedHook:
+    properties:
+      code_id:
+        format: uint64
+        type: string
+      denom_creator:
+        type: string
+    type: object
+  osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
+    description: |-
+      DenomAuthorityMetadata specifies metadata for addresses that have specific
+      capabilities over a token factory denom. Right now there is only one Admin
+      permission, but is planned to be extended to the future.
+    properties:
+      Admin:
+        title: Can be empty for no admin, or a valid osmosis address
         type: string
     type: object
   osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse:
@@ -18774,6 +18795,19 @@ definitions:
 
               are sent to
             type: string
+          whitelisted_hooks:
+            items:
+              properties:
+                code_id:
+                  format: uint64
+                  type: string
+                denom_creator:
+                  type: string
+              type: object
+            title: >-
+              HookWhitelist is the list of hooks which are allowed to be added
+              and executed
+            type: array
         type: object
     type: object
   packetforward.v1.Params:
@@ -43742,6 +43776,19 @@ paths:
 
                       are sent to
                     type: string
+                  whitelisted_hooks:
+                    items:
+                      properties:
+                        code_id:
+                          format: uint64
+                          type: string
+                        denom_creator:
+                          type: string
+                      type: object
+                    title: >-
+                      HookWhitelist is the list of hooks which are allowed to be
+                      added and executed
+                    type: array
                 type: object
             type: object
         default:
