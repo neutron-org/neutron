@@ -73,7 +73,7 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 
 			// Whitelist the hook
 			params := types.DefaultParams()
-			params.WhitelistedHooks = []*types.HookWhitelist{{DenomCreator: senderAddress.String(), CodeID: codeID}}
+			params.WhitelistedHooks = []*types.HookWhitelist{{DenomCreator: suite.TestAccs[0].String(), CodeID: codeID}}
 			err = suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper.SetParams(suite.ChainA.GetContext(), params)
 			suite.Require().NoError(err)
 
