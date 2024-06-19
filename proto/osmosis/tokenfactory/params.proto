@@ -1,11 +1,16 @@
 syntax = "proto3";
-package osmosis.tokenfactory.v1beta1;
+package osmosis.tokenfactory;
 
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/tokenfactory/types/v1beta1";
+option go_package = "github.com/neutron-org/neutron/v4/x/tokenfactory/types";
+
+message HookWhitelist {
+  uint64 code_id = 1 [(gogoproto.customname) = "CodeID"];
+  string denom_creator = 2;
+}
 
 // Params defines the parameters for the tokenfactory module.
 message Params {
@@ -30,4 +35,5 @@ message Params {
   // FeeCollectorAddress is the address where fees collected from denom creation
   // are sent to
   string fee_collector_address = 3;
+  repeated HookWhitelist whitelisted_hooks = 4;
 }

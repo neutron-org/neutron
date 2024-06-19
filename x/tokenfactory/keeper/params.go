@@ -29,3 +29,24 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) error {
 	store.Set(types.ParamsKey, bz)
 	return nil
 }
+
+func (k Keeper) isHookWhitelisted(ctx sdk.Context, denom string, contractAddress sdk.AccAddress) bool {
+	contractInfo := k.contractKeeper.GetContractInfo(ctx, contractAddress)
+	if contractInfo == nil {
+		return false
+	}
+	codeID := contractInfo.CodeID
+	whitelistedHooks := k.GetParams(ctx).WhitelistedHooks
+	denomCreator, _, err := types.DeconstructDenom(denom)
+	if err != nil {
+		return false
+	}
+
+	for _, hook := range whitelistedHooks {
+		if hook.CodeID == codeID && hook.DenomCreator == denomCreator {
+			return true
+		}
+	}
+
+	return false
+}

@@ -67,6 +67,24 @@ func (suite *KeeperTestSuite) TestTrackBeforeSendWasm() {
 
 			queryResp, err := suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(suite.ChainA.GetContext(), cosmwasmAddress, []byte(`{"total_supply_at":{}}`))
 			suite.Require().NoError(err)
+
+			// Contract has not been called because it is not whitelisted
+			suite.Require().Equal("\"0\"", string(queryResp))
+
+			// Whitelist the hook
+			params := types.DefaultParams()
+			params.WhitelistedHooks = []*types.HookWhitelist{{DenomCreator: senderAddress.String(), CodeID: codeID}}
+			err = suite.GetNeutronZoneApp(suite.ChainA).TokenFactoryKeeper.SetParams(suite.ChainA.GetContext(), params)
+			suite.Require().NoError(err)
+
+			// mint tokens again
+			_, err = suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), tokenToSend))
+			suite.Require().NoError(err)
+
+			queryResp, err = suite.GetNeutronZoneApp(suite.ChainA).WasmKeeper.QuerySmart(suite.ChainA.GetContext(), cosmwasmAddress, []byte(`{"total_supply_at":{}}`))
+			suite.Require().NoError(err)
+
+			// Whitelisted contract has now been called
 			suite.Require().Equal("\"100\"", string(queryResp))
 		})
 	}

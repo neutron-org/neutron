@@ -99,6 +99,11 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 				return err
 			}
 
+			// Do not invoke hook if denom is not whitelisted and `from` is a module
+			if !k.isHookWhitelisted(c, coin.Denom, cwAddr) {
+				return nil
+			}
+
 			var msgBz []byte
 
 			// get msgBz, either BlockBeforeSend or TrackBeforeSend

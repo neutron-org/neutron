@@ -57,6 +57,7 @@ func (suite *KeeperTestSuite) Setup() {
 		sdktypes.NewCoins(sdktypes.NewInt64Coin(params.DefaultDenom, TopUpCoinsAmount)),
 		0,
 		FeeCollectorAddress,
+		types.DefaultWhitelistedHooks,
 	))
 	suite.Require().NoError(err)
 
