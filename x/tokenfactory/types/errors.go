@@ -19,5 +19,6 @@ var (
 	ErrDenomDoesNotExist            = errorsmod.Register(ModuleName, 10, "denom does not exist")
 	ErrBurnFromModuleAccount        = errorsmod.Register(ModuleName, 11, "burning from Module Account is not allowed")
 	ErrTrackBeforeSendOutOfGas      = errorsmod.Register(ModuleName, 12, "gas meter hit maximum limit")
-	ErrBeforeSendHookNotWhitelisted = errorsmod.Register(ModuleName, 13, "beforeSendHook is not whitelisted")
+	ErrInvalidHookContractAddress   = errorsmod.Register(ModuleName, 13, "invalid hook contract address")
+	ErrBeforeSendHookNotWhitelisted = errorsmod.Register(ModuleName, 14, "beforeSendHook is not whitelisted")
 )

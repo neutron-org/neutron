@@ -130,6 +130,36 @@ func TestGenesisState_Validate(t *testing.T) {
 			},
 			valid: false,
 		},
+		{
+			desc: "empty hook address",
+			genState: &types.GenesisState{
+				FactoryDenoms: []types.GenesisDenom{
+					{
+						Denom: "factory/neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2/bitcoin",
+						AuthorityMetadata: types.DenomAuthorityMetadata{
+							Admin: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
+						},
+						HookContractAddress: "",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			desc: "invalid hook address",
+			genState: &types.GenesisState{
+				FactoryDenoms: []types.GenesisDenom{
+					{
+						Denom: "factory/neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2/bitcoin",
+						AuthorityMetadata: types.DenomAuthorityMetadata{
+							Admin: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
+						},
+						HookContractAddress: "sfsdfsdfsdfs",
+					},
+				},
+			},
+			valid: false,
+		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			err := tc.genState.Validate()

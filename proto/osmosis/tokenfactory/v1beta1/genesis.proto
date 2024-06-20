@@ -29,4 +29,6 @@ message GenesisDenom {
     (gogoproto.moretags) = "yaml:\"authority_metadata\"",
     (gogoproto.nullable) = false
   ];
+
+  string hook_contract_address = 3 [(gogoproto.nullable) = true];
 }
