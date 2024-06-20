@@ -81,7 +81,7 @@ func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFac
 	// get hook store
 	store := prefix.NewStore(ctx.KVStore(storeKey), []byte(types.DenomsPrefixKey))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
-
+	hooksToRemove := make([][]byte, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		keyParts := strings.Split(string(iterator.Key()), types.KeySeparator)
 		if len(keyParts) != 3 {
@@ -98,8 +98,7 @@ func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFac
 
 			err = keeper.AssertIsHookWhitelisted(ctx, denom, contractAddr)
 			if err != nil {
-				// If hook is not whitelisted delete it
-				store.Delete(iterator.Key())
+				hooksToRemove = append(hooksToRemove, iterator.Key())
 			}
 		}
 	}
@@ -107,6 +106,11 @@ func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFac
 	err := iterator.Close()
 	if err != nil {
 		return errorsmod.Wrap(err, "iterator failed to close after migration")
+	}
+
+	// Delete all non-whitelisted hooks
+	for _, k := range hooksToRemove {
+		store.Delete(k)
 	}
 
 	ctx.Logger().Info("Finished migrating tokenfactory hooks")
