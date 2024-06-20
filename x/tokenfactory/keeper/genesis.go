@@ -39,8 +39,10 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 			panic(err)
 		}
 
-		if err := k.setBeforeSendHook(ctx, genDenom.Denom, genDenom.HookContractAddress); err != nil {
-			panic(err)
+		if genDenom.HookContractAddress != "" {
+			if err := k.setBeforeSendHook(ctx, genDenom.Denom, genDenom.HookContractAddress); err != nil {
+				panic(err)
+			}
 		}
 	}
 }
