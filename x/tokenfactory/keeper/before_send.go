@@ -125,6 +125,12 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 			// It is here as an emergency override if we want to shutoff a hook. We do not return the error because once it is removed from the whitelist
 			// a hook should not be able to block a send.
 			if err := k.AssertIsHookWhitelisted(c, coin.Denom, cwAddr); err != nil {
+				c.Logger().Error(
+					"Skipped hook execution due to missing whitelist",
+					"err", err,
+					"denom", coin.Amount,
+					"contract", cwAddr.String(),
+				)
 				continue
 			}
 
