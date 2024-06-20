@@ -6,10 +6,10 @@ import (
 
 	"cosmossdk.io/store/prefix"
 
+	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 	v1beta1types "github.com/neutron-org/neutron/v4/x/tokenfactory/types/v1beta1"
 )
@@ -84,6 +84,9 @@ func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFac
 
 	for ; iterator.Valid(); iterator.Next() {
 		keyParts := strings.Split(string(iterator.Key()), types.KeySeparator)
+		if len(keyParts) != 3 {
+			return errors.New("cannot parse BeforeSendHook data")
+		}
 
 		// Hooks and authorityMetadata are in the same store, we only care about the hooks
 		if keyParts[2] == types.BeforeSendHookAddressPrefixKey {
@@ -103,7 +106,7 @@ func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFac
 
 	err := iterator.Close()
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "iterator failed to close after migration")
 	}
 
 	ctx.Logger().Info("Finished migrating tokenfactory hooks")
