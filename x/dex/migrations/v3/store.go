@@ -3,6 +3,7 @@ package v3
 import (
 	"errors"
 
+	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -84,7 +85,7 @@ func migrateLimitOrderExpirations(ctx sdk.Context, cdc codec.BinaryCodec, storeK
 
 	err := iterator.Close()
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "iterator failed to close during migration")
 	}
 
 	for i, key := range expirationKeys {
@@ -105,6 +106,11 @@ func migrateLimitOrderExpirations(ctx sdk.Context, cdc codec.BinaryCodec, storeK
 	return nil
 }
 
+type migrationUpdate struct {
+	key []byte
+	val []byte
+}
+
 func migrateTickLiquidityPrices(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
 	// Due to change in precision of PrecDec between v2 and v3 we need to recompute all PrecDecs in the kvstore
 	ctx.Logger().Info("Migrating TickLiquidity Prices...")
@@ -112,12 +118,13 @@ func migrateTickLiquidityPrices(ctx sdk.Context, cdc codec.BinaryCodec, storeKey
 	// Iterate through all tickLiquidity
 	store := prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(types.TickLiquidityKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
+	ticksToUpdate := make([]migrationUpdate, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
 		var tickLiq types.TickLiquidity
 		var updatedTickLiq types.TickLiquidity
 		cdc.MustUnmarshal(iterator.Value(), &tickLiq)
-		// Recalculate all prices by precisionUpdateMultiplier
+		// Recalculate all prices
 		switch liquidity := tickLiq.Liquidity.(type) {
 		case *types.TickLiquidity_LimitOrderTranche:
 			liquidity.LimitOrderTranche.PriceTakerToMaker = types.MustCalcPrice(liquidity.LimitOrderTranche.Key.TickIndexTakerToMaker)
@@ -131,14 +138,20 @@ func migrateTickLiquidityPrices(ctx sdk.Context, cdc codec.BinaryCodec, storeKey
 		default:
 			panic("Tick does not contain valid liqudityType")
 		}
-		// Store the updated tickLiquidity
+
 		bz := cdc.MustMarshal(&updatedTickLiq)
-		store.Set(iterator.Key(), bz)
+		ticksToUpdate = append(ticksToUpdate, migrationUpdate{key: iterator.Key(), val: bz})
+
 	}
 
 	err := iterator.Close()
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "iterator failed to close during migration")
+	}
+
+	// Store the updated TickLiquidity
+	for _, v := range ticksToUpdate {
+		store.Set(v.key, v.val)
 	}
 
 	ctx.Logger().Info("Finished migrating TickLiquidity Prices...")
@@ -150,25 +163,29 @@ func migrateInactiveTranchePrices(ctx sdk.Context, cdc codec.BinaryCodec, storeK
 	// Due to change in precision of PrecDec between v2 and v3 we need to recompute all PrecDecs in the kvstore
 	ctx.Logger().Info("Migrating InactiveLimitOrderTranche Prices...")
 
-	// Iterate through all tickLiquidity
+	// Iterate through all InactiveTranches
 	store := prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(types.InactiveLimitOrderTrancheKeyPrefix))
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
+	ticksToUpdate := make([]migrationUpdate, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
 		var tranche types.LimitOrderTranche
 		cdc.MustUnmarshal(iterator.Value(), &tranche)
-		// Multiply all price by precisionUpdateMultiplier
-
+		// Recalculate price
 		tranche.PriceTakerToMaker = types.MustCalcPrice(tranche.Key.TickIndexTakerToMaker)
 
-		// Store the updated tickLiquidity
 		bz := cdc.MustMarshal(&tranche)
-		store.Set(iterator.Key(), bz)
+		ticksToUpdate = append(ticksToUpdate, migrationUpdate{key: iterator.Key(), val: bz})
 	}
 
 	err := iterator.Close()
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "iterator failed to close during migration")
+	}
+
+	// Store the updated InactiveTranches
+	for _, v := range ticksToUpdate {
+		store.Set(v.key, v.val)
 	}
 
 	ctx.Logger().Info("Finished migrating InactiveLimitOrderTranche Prices...")
