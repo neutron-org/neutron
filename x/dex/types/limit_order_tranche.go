@@ -1,6 +1,8 @@
 package types
 
 import (
+	"time"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -50,6 +52,7 @@ func MustNewLimitOrderTranche(
 	reservesTakerDenom math.Int,
 	totalMakerDenom math.Int,
 	totalTakerDenom math.Int,
+	expirationTime ...time.Time,
 ) *LimitOrderTranche {
 	limitOrderTranche, err := NewLimitOrderTranche(
 		makerDenom,
@@ -64,6 +67,14 @@ func MustNewLimitOrderTranche(
 	if err != nil {
 		panic(err)
 	}
+	switch len(expirationTime) {
+	case 0:
+		break
+	case 1:
+		limitOrderTranche.ExpirationTime = &expirationTime[0]
+	default:
+		panic("can only supply one expiration time")
+	}
 	return limitOrderTranche
 }
 
@@ -73,6 +84,10 @@ func (t LimitOrderTranche) IsPlaceTranche() bool {
 
 func (t LimitOrderTranche) IsFilled() bool {
 	return t.ReservesMakerDenom.IsZero()
+}
+
+func (t LimitOrderTranche) HasExpiration() bool {
+	return t.ExpirationTime != nil
 }
 
 func (t LimitOrderTranche) IsJIT() bool {

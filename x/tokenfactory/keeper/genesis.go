@@ -24,13 +24,25 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		if err != nil {
 			panic(err)
 		}
+
 		err = k.createDenomAfterValidation(ctx, creator, genDenom.GetDenom())
 		if err != nil {
 			panic(err)
 		}
+
 		err = k.setAuthorityMetadata(ctx, genDenom.GetDenom(), genDenom.GetAuthorityMetadata())
 		if err != nil {
 			panic(err)
+		}
+
+		if _, err := sdk.AccAddressFromBech32(genDenom.HookContractAddress); genDenom.HookContractAddress != "" && err != nil {
+			panic(err)
+		}
+
+		if genDenom.HookContractAddress != "" {
+			if err := k.setBeforeSendHook(ctx, genDenom.Denom, genDenom.HookContractAddress); err != nil {
+				panic(err)
+			}
 		}
 	}
 }
@@ -43,14 +55,17 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	for ; iterator.Valid(); iterator.Next() {
 		denom := string(iterator.Value())
 
+		contractHook := k.GetBeforeSendHook(ctx, denom)
+
 		authorityMetadata, err := k.GetAuthorityMetadata(ctx, denom)
 		if err != nil {
 			panic(err)
 		}
 
 		genDenoms = append(genDenoms, types.GenesisDenom{
-			Denom:             denom,
-			AuthorityMetadata: authorityMetadata,
+			Denom:               denom,
+			AuthorityMetadata:   authorityMetadata,
+			HookContractAddress: contractHook,
 		})
 	}
 
