@@ -50,15 +50,15 @@ func (p Params) Validate() error {
 	}
 
 	if err := validateDenomCreationFee(p.DenomCreationFee); err != nil {
-		return fmt.Errorf("failed to validate params: %w", err)
+		return fmt.Errorf("failed to validate DenomCreationFee: %w", err)
 	}
 
 	if err := validateFeeCollectorAddress(p.FeeCollectorAddress); err != nil {
-		return fmt.Errorf("failed to validate params: %w", err)
+		return fmt.Errorf("failed to validate FeeCollectorAddress: %w", err)
 	}
 
 	if err := validateWhitelistedHooks(p.WhitelistedHooks); err != nil {
-		return fmt.Errorf("failed to validate params: %w", err)
+		return fmt.Errorf("failed to validate WhitelistedHooks: %w", err)
 	}
 
 	return nil

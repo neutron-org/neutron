@@ -2,6 +2,7 @@ package v2
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"cosmossdk.io/store/prefix"
@@ -94,7 +95,7 @@ func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFac
 	for ; iterator.Valid(); iterator.Next() {
 		keyParts := strings.Split(string(iterator.Key()), types.KeySeparator)
 		if len(keyParts) != 3 {
-			return errors.New("cannot parse BeforeSendHook data")
+			return fmt.Errorf("cannot parse BeforeSendHook data key: %s", string(iterator.Key()))
 		}
 
 		// Hooks and authorityMetadata are in the same store, we only care about the hooks
@@ -102,7 +103,7 @@ func migrateHooks(ctx sdk.Context, storeKey storetypes.StoreKey, keeper TokenFac
 			denom := keyParts[1]
 			contractAddr, err := sdk.AccAddressFromBech32(string(iterator.Value()))
 			if err != nil {
-				return errors.New("cannot parse hook contract address")
+				return fmt.Errorf("cannot parse hook contract address: %s", string(iterator.Value()))
 			}
 
 			err = keeper.AssertIsHookWhitelisted(ctx, denom, contractAddr)

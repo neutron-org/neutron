@@ -128,7 +128,7 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 				c.Logger().Error(
 					"Skipped hook execution due to missing whitelist",
 					"err", err,
-					"denom", coin.Amount,
+					"denom", coin.Denom,
 					"contract", cwAddr.String(),
 				)
 				continue
