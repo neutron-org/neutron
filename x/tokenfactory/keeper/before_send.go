@@ -162,17 +162,16 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 			if err != nil {
 				return err
 			}
-			em := sdk.NewEventManager()
 
 			// if its track before send, apply gas meter to prevent infinite loop
 			if blockBeforeSend {
-				_, err = k.contractKeeper.Sudo(c.WithEventManager(em), cwAddr, msgBz)
+				_, err = k.contractKeeper.Sudo(c, cwAddr, msgBz)
 				if err != nil {
 					return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
 				}
 			} else {
 				childCtx := c.WithGasMeter(types2.NewGasMeter(types.TrackBeforeSendGasLimit))
-				_, err = k.contractKeeper.Sudo(childCtx.WithEventManager(em), cwAddr, msgBz)
+				_, err = k.contractKeeper.Sudo(childCtx, cwAddr, msgBz)
 				if err != nil {
 					return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
 				}
