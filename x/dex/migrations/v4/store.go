@@ -11,7 +11,7 @@ import (
 )
 
 // MigrateStore performs in-place store migrations.
-// The migration adds new dex params -- GoodTilPurgeAllowance & MaxJITsPerBlock// for handling JIT orders.
+// Due to change in precision of PrecDec between v3 and v4 we need to recompute all PrecDecs in the kvstore
 func MigrateStore(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
 	if err := migrateTickLiquidityPrices(ctx, cdc, storeKey); err != nil {
 		return err
