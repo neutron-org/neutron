@@ -39,7 +39,7 @@ require (
 	github.com/rs/zerolog v1.32.0
 	github.com/skip-mev/block-sdk/v2 v2.1.2
 	github.com/skip-mev/feemarket v1.0.3
-	github.com/skip-mev/slinky v1.0.1
+	github.com/skip-mev/slinky v1.0.3
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
