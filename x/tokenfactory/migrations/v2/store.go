@@ -40,11 +40,11 @@ var WhitelistedHooks = []*types.WhitelistedHook{
 		DenomCreator: "neutron1zlf3hutsa4qnmue53lz2tfxrutp8y2e3rj4nkghg3rupgl4mqy8s5jgxsn",
 	},
 	{ // USDC <> NTRN balances tracker
-		CodeID:       944,
+		CodeID:       1473,
 		DenomCreator: "neutron18c8qejysp4hgcfuxdpj4wf29mevzwllz5yh8uayjxamwtrs0n9fshq9vtv",
 	},
 	{ // NTRN <> ATOM balances tracker
-		CodeID:       944,
+		CodeID:       1473,
 		DenomCreator: "neutron145z3nj7yqft2vpugr5a5p7jsnagvms90tvtej45g4s0xkqalhy7sj20vgz",
 	},
 	{ // NFA.zoneV1
