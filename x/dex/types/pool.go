@@ -248,7 +248,6 @@ func CalcGreatestMatchingRatio(
 	targetAmount0Dec := math.LegacyNewDecFromInt(targetAmount0)
 	targetAmount1Dec := math.LegacyNewDecFromInt(targetAmount1)
 
-	// See spec: https://www.notion.so/dualityxyz/Autoswap-Spec-e856fa7b2438403c95147010d479b98c
 	if targetAmount1.GT(math.ZeroInt()) {
 		resultAmount0 = math.MinInt(
 			amount0,
