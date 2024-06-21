@@ -18684,10 +18684,18 @@ definitions:
               type: string
             denom_creator:
               type: string
+          title: >-
+            WhitelistedHook describes a beforeSendHook which is allowed to be
+            added and executed
+
+            SetBeforeSendHook can only be called on denoms where the denom
+            creator and
+
+            code_id for the `contract_addr` match a WhitelistedHook
           type: object
         title: >-
-          HookWhitelist is the list of hooks which are allowed to be added and
-          executed
+          whitelisted_hooks is the list of hooks which are allowed to be added
+          and executed
         type: array
     type: object
   osmosis.tokenfactory.WhitelistedHook:
@@ -18697,6 +18705,13 @@ definitions:
         type: string
       denom_creator:
         type: string
+    title: >-
+      WhitelistedHook describes a beforeSendHook which is allowed to be added
+      and executed
+
+      SetBeforeSendHook can only be called on denoms where the denom creator and
+
+      code_id for the `contract_addr` match a WhitelistedHook
     type: object
   osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
     description: |-
@@ -18803,10 +18818,18 @@ definitions:
                   type: string
                 denom_creator:
                   type: string
+              title: >-
+                WhitelistedHook describes a beforeSendHook which is allowed to
+                be added and executed
+
+                SetBeforeSendHook can only be called on denoms where the denom
+                creator and
+
+                code_id for the `contract_addr` match a WhitelistedHook
               type: object
             title: >-
-              HookWhitelist is the list of hooks which are allowed to be added
-              and executed
+              whitelisted_hooks is the list of hooks which are allowed to be
+              added and executed
             type: array
         type: object
     type: object
@@ -43784,10 +43807,18 @@ paths:
                           type: string
                         denom_creator:
                           type: string
+                      title: >-
+                        WhitelistedHook describes a beforeSendHook which is
+                        allowed to be added and executed
+
+                        SetBeforeSendHook can only be called on denoms where the
+                        denom creator and
+
+                        code_id for the `contract_addr` match a WhitelistedHook
                       type: object
                     title: >-
-                      HookWhitelist is the list of hooks which are allowed to be
-                      added and executed
+                      whitelisted_hooks is the list of hooks which are allowed
+                      to be added and executed
                     type: array
                 type: object
             type: object

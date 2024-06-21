@@ -27,6 +27,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// WhitelistedHook describes a beforeSendHook which is allowed to be added and executed
+// SetBeforeSendHook can only be called on denoms where the denom creator and
+// code_id for the `contract_addr` match a WhitelistedHook
 type WhitelistedHook struct {
 	CodeID       uint64 `protobuf:"varint,1,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
 	DenomCreator string `protobuf:"bytes,2,opt,name=denom_creator,json=denomCreator,proto3" json:"denom_creator,omitempty"`
@@ -93,7 +96,7 @@ type Params struct {
 	// FeeCollectorAddress is the address where fees collected from denom creation
 	// are sent to
 	FeeCollectorAddress string `protobuf:"bytes,3,opt,name=fee_collector_address,json=feeCollectorAddress,proto3" json:"fee_collector_address,omitempty"`
-	// HookWhitelist is the list of hooks which are allowed to be added and executed
+	// whitelisted_hooks is the list of hooks which are allowed to be added and executed
 	WhitelistedHooks []*WhitelistedHook `protobuf:"bytes,4,rep,name=whitelisted_hooks,json=whitelistedHooks,proto3" json:"whitelisted_hooks,omitempty"`
 }
 
