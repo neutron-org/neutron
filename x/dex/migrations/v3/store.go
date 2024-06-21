@@ -3,6 +3,7 @@ package v3
 import (
 	"errors"
 
+	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -15,11 +16,14 @@ import (
 // MigrateStore performs in-place store migrations.
 // The migration adds new dex params -- GoodTilPurgeAllowance & MaxJITsPerBlock// for handling JIT orders.
 func MigrateStore(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
-	err := migrateParams(ctx, cdc, storeKey)
-	if err != nil {
+	if err := migrateParams(ctx, cdc, storeKey); err != nil {
 		return err
 	}
-	return migrateLimitOrderExpirations(ctx, cdc, storeKey)
+
+	if err := migrateLimitOrderExpirations(ctx, cdc, storeKey); err != nil {
+		return err
+	}
+	return nil
 }
 
 func migrateParams(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
@@ -72,7 +76,7 @@ func migrateLimitOrderExpirations(ctx sdk.Context, cdc codec.BinaryCodec, storeK
 
 	err := iterator.Close()
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "iterator failed to close during migration")
 	}
 
 	for i, key := range expirationKeys {
