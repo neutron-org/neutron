@@ -3,8 +3,8 @@ package osmosis.tokenfactory.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "osmosis/tokenfactory/params.proto";
 import "osmosis/tokenfactory/v1beta1/authorityMetadata.proto";
-import "osmosis/tokenfactory/v1beta1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/tokenfactory/types";
 
