@@ -289,4 +289,4 @@ check-proto-format:
 		format proto -d --exit-code
 
 gen-wasmbinding-json: build
-	./build/neutrond gen-wasmbinding-schema
+	$(BUILDDIR)/neutrond gen-wasmbinding-schema

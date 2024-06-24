@@ -3,10 +3,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/invopop/jsonschema"
-	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/invopop/jsonschema"
+	"github.com/spf13/cobra"
+
+	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
+)
+
+var (
+	schemaFolder = "wasmbinding/schema/"
+	packageName  = "github.com/neutron-org/neutron/v4"
+	prefix       = ""
+	indent       = "  "
+	queryFile    = "query.json"
+	msgFile      = "msg.json"
 )
 
 func genWasmbindingSchemaCmd() *cobra.Command {
@@ -14,31 +25,30 @@ func genWasmbindingSchemaCmd() *cobra.Command {
 		Use:   "gen-wasmbinding-schema",
 		Short: "Generates wasmbinding json schema for NeutronQuery and NeutronMsg",
 		Args:  cobra.ExactArgs(0),
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			r := new(jsonschema.Reflector)
-			if err := r.AddGoComments("github.com/neutron-org/neutron/v4", "./"); err != nil {
-				// deal with error
-				return err
+			if err := r.AddGoComments(packageName, "./"); err != nil {
+				return fmt.Errorf("failed to add comments: %w", err)
 			}
 			querySchema := r.Reflect(&bindings.NeutronQuery{})
 
-			queryJson, err := json.MarshalIndent(querySchema, "", "  ")
+			queryJSON, err := json.MarshalIndent(querySchema, prefix, indent)
 			if err != nil {
 				return fmt.Errorf("failed to create jsonschema: %w", err)
 			}
 
-			err = writeToFile(err, queryJson, "wasmbinding/schema/query.json")
+			err = writeToFile(queryJSON, schemaFolder+queryFile)
 			if err != nil {
 				return err
 			}
 
 			msgSchema := r.Reflect(&bindings.NeutronMsg{})
-			msgJson, err := json.MarshalIndent(msgSchema, "", "  ")
+			msgJSON, err := json.MarshalIndent(msgSchema, prefix, indent)
 			if err != nil {
 				return fmt.Errorf("failed to create jsonschema: %w", err)
 			}
 
-			err = writeToFile(err, msgJson, "wasmbinding/schema/msg.json")
+			err = writeToFile(msgJSON, schemaFolder+msgFile)
 			if err != nil {
 				return fmt.Errorf("failed to write to a file: %w", err)
 			}
@@ -52,13 +62,12 @@ func genWasmbindingSchemaCmd() *cobra.Command {
 	return txCmd
 }
 
-func writeToFile(err error, bts []byte, filepath string) error {
+func writeToFile(bts []byte, filepath string) error {
 	file, err := os.Create(filepath)
-
 	if err != nil {
 		return fmt.Errorf("failed to create file with path=%s: %w", filepath, err)
 	}
-	// Close the file at the end
+
 	defer file.Close()
 
 	_, err = file.Write(bts)
