@@ -14,7 +14,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v4.0.0"
+	UpgradeName = "v4.0.1"
 
 	// MarketMapAuthorityMultisig defines the address of a market-map authority governed by a
 	// multi-sig of contributors.
