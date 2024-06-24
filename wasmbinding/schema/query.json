@@ -42,58 +42,76 @@
     "DexQuery": {
       "properties": {
         "params": {
-          "$ref": "#/$defs/QueryParamsRequest"
+          "$ref": "#/$defs/QueryParamsRequest",
+          "description": "Parameters queries the parameters of the module."
         },
         "limit_order_tranche_user": {
-          "$ref": "#/$defs/QueryGetLimitOrderTrancheUserRequest"
+          "$ref": "#/$defs/QueryGetLimitOrderTrancheUserRequest",
+          "description": "Queries a LimitOrderTrancheUser by index."
         },
         "limit_order_tranche_user_all": {
-          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserRequest"
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserRequest",
+          "description": "Queries a list of LimitOrderTrancheUser items."
         },
         "limit_order_tranche_user_all_by_address": {
-          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserByAddressRequest"
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserByAddressRequest",
+          "description": "Queries a list of LimitOrderTrancheUser items for a given address."
         },
         "limit_order_tranche": {
-          "$ref": "#/$defs/QueryGetLimitOrderTrancheRequest"
+          "$ref": "#/$defs/QueryGetLimitOrderTrancheRequest",
+          "description": "Queries a LimitOrderTranche by index."
         },
         "limit_order_tranche_all": {
-          "$ref": "#/$defs/QueryAllLimitOrderTrancheRequest"
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheRequest",
+          "description": "Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination."
         },
         "user_deposit_all": {
-          "$ref": "#/$defs/QueryAllUserDepositsRequest"
+          "$ref": "#/$defs/QueryAllUserDepositsRequest",
+          "description": "Queries a list of UserDeposits items."
         },
         "tick_liquidity_all": {
-          "$ref": "#/$defs/QueryAllTickLiquidityRequest"
+          "$ref": "#/$defs/QueryAllTickLiquidityRequest",
+          "description": "Queries a list of TickLiquidity items."
         },
         "inactive_limit_order_tranche": {
-          "$ref": "#/$defs/QueryGetInactiveLimitOrderTrancheRequest"
+          "$ref": "#/$defs/QueryGetInactiveLimitOrderTrancheRequest",
+          "description": "Queries a InactiveLimitOrderTranche by index."
         },
         "inactive_limit_order_tranche_all": {
-          "$ref": "#/$defs/QueryAllInactiveLimitOrderTrancheRequest"
+          "$ref": "#/$defs/QueryAllInactiveLimitOrderTrancheRequest",
+          "description": "Queries a list of InactiveLimitOrderTranche items."
         },
         "pool_reserves_all": {
-          "$ref": "#/$defs/QueryAllPoolReservesRequest"
+          "$ref": "#/$defs/QueryAllPoolReservesRequest",
+          "description": "Queries a list of PoolReserves items."
         },
         "pool_reserves": {
-          "$ref": "#/$defs/QueryGetPoolReservesRequest"
+          "$ref": "#/$defs/QueryGetPoolReservesRequest",
+          "description": "Queries a PoolReserve by index"
         },
         "estimate_multi_hop_swap": {
-          "$ref": "#/$defs/QueryEstimateMultiHopSwapRequest"
+          "$ref": "#/$defs/QueryEstimateMultiHopSwapRequest",
+          "description": "Queries the simulated result of a multihop swap"
         },
         "estimate_place_limit_order": {
-          "$ref": "#/$defs/QueryEstimatePlaceLimitOrderRequest"
+          "$ref": "#/$defs/QueryEstimatePlaceLimitOrderRequest",
+          "description": "Queries the simulated result of a PlaceLimit order"
         },
         "pool": {
-          "$ref": "#/$defs/QueryPoolRequest"
+          "$ref": "#/$defs/QueryPoolRequest",
+          "description": "Queries a pool by pair, tick and fee"
         },
         "pool_by_id": {
-          "$ref": "#/$defs/QueryPoolByIDRequest"
+          "$ref": "#/$defs/QueryPoolByIDRequest",
+          "description": "Queries a pool by ID"
         },
         "pool_metadata": {
-          "$ref": "#/$defs/QueryGetPoolMetadataRequest"
+          "$ref": "#/$defs/QueryGetPoolMetadataRequest",
+          "description": "Queries a PoolMetadata by ID"
         },
         "pool_metadata_all": {
-          "$ref": "#/$defs/QueryAllPoolMetadataRequest"
+          "$ref": "#/$defs/QueryAllPoolMetadataRequest",
+          "description": "Queries a list of PoolMetadata items."
         }
       },
       "additionalProperties": false,
@@ -238,47 +256,61 @@
     "NeutronQuery": {
       "properties": {
         "interchain_query_result": {
-          "$ref": "#/$defs/QueryRegisteredQueryResultRequest"
+          "$ref": "#/$defs/QueryRegisteredQueryResultRequest",
+          "description": "Registered Interchain Query Result for specified QueryID"
         },
         "interchain_account_address": {
-          "$ref": "#/$defs/QueryInterchainAccountAddressRequest"
+          "$ref": "#/$defs/QueryInterchainAccountAddressRequest",
+          "description": "Interchain account address for specified ConnectionID and OwnerAddress"
         },
         "registered_interchain_queries": {
-          "$ref": "#/$defs/QueryRegisteredQueriesRequest"
+          "$ref": "#/$defs/QueryRegisteredQueriesRequest",
+          "description": "RegisteredInterchainQueries"
         },
         "registered_interchain_query": {
-          "$ref": "#/$defs/QueryRegisteredQueryRequest"
+          "$ref": "#/$defs/QueryRegisteredQueryRequest",
+          "description": "RegisteredInterchainQuery"
         },
         "total_burned_neutrons_amount": {
-          "$ref": "#/$defs/QueryTotalBurnedNeutronsAmountRequest"
+          "$ref": "#/$defs/QueryTotalBurnedNeutronsAmountRequest",
+          "description": "TotalBurnedNeutronsAmount"
         },
         "min_ibc_fee": {
-          "$ref": "#/$defs/QueryMinIbcFeeRequest"
+          "$ref": "#/$defs/QueryMinIbcFeeRequest",
+          "description": "MinIbcFee"
         },
         "full_denom": {
-          "$ref": "#/$defs/FullDenom"
+          "$ref": "#/$defs/FullDenom",
+          "description": "Token Factory queries\nGiven a subdenom minted by a contract via `NeutronMsg::MintTokens`,\nreturns the full denom as used by `BankMsg::Send`."
         },
         "denom_admin": {
-          "$ref": "#/$defs/DenomAdmin"
+          "$ref": "#/$defs/DenomAdmin",
+          "description": "Returns the admin of a denom, if the denom is a Token Factory denom."
         },
         "before_send_hook": {
-          "$ref": "#/$defs/BeforeSendHook"
+          "$ref": "#/$defs/BeforeSendHook",
+          "description": "Returns the before send hook if it was set before"
         },
         "failures": {
-          "$ref": "#/$defs/Failures"
+          "$ref": "#/$defs/Failures",
+          "description": "Contractmanager queries\nQuery all failures for address"
         },
         "dex": {
-          "$ref": "#/$defs/DexQuery"
+          "$ref": "#/$defs/DexQuery",
+          "description": "dex module queries"
         },
         "oracle": {
-          "$ref": "#/$defs/OracleQuery"
+          "$ref": "#/$defs/OracleQuery",
+          "description": "oracle module queries"
         },
         "market_map": {
-          "$ref": "#/$defs/MarketMapQuery"
+          "$ref": "#/$defs/MarketMapQuery",
+          "description": "marketmap module query"
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "NeutronQuery contains neutron custom queries."
     },
     "OracleQuery": {
       "properties": {
@@ -325,7 +357,8 @@
     "PrecDec": {
       "properties": {},
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "NOTE: never use new(Dec) or else we will panic unmarshalling into the nil embedded big.Int"
     },
     "QueryAllInactiveLimitOrderTrancheRequest": {
       "properties": {
@@ -447,7 +480,8 @@
           "$ref": "#/$defs/PrecDec"
         },
         "pick_best_route": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "If pickBestRoute == true then all routes are run and the route with the\nbest price is chosen otherwise, the first succesful route is used."
         }
       },
       "additionalProperties": false,
@@ -481,7 +515,8 @@
           "type": "string"
         },
         "expiration_time": {
-          "type": "integer"
+          "type": "integer",
+          "description": "expirationTime is only valid iff orderType == GOOD_TIL_TIME."
         },
         "max_amount_out": {
           "$ref": "#/$defs/Int"
@@ -492,7 +527,8 @@
       "required": [
         "amount_in",
         "max_amount_out"
-      ]
+      ],
+      "description": "QueryEstimatePlaceLimitOrderRequest is a copy dextypes.QueryEstimatePlaceLimitOrderRequest with altered ExpirationTime field, it's a preferable way to pass timestamp as unixtime to contracts"
     },
     "QueryGetInactiveLimitOrderTrancheRequest": {
       "properties": {
@@ -575,13 +611,16 @@
     "QueryInterchainAccountAddressRequest": {
       "properties": {
         "owner_address": {
-          "type": "string"
+          "type": "string",
+          "description": "owner_address is the owner of the interchain account on the controller chain"
         },
         "interchain_account_id": {
-          "type": "string"
+          "type": "string",
+          "description": "interchain_account_id is an identifier of your interchain account from which you want to execute msgs"
         },
         "connection_id": {
-          "type": "string"
+          "type": "string",
+          "description": "connection_id is an IBC connection identifier between Neutron and remote chain"
         }
       },
       "additionalProperties": false,
@@ -595,7 +634,8 @@
     "QueryParamsRequest": {
       "properties": {},
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "QueryParamsRequest is request type for the Query/Params RPC method."
     },
     "QueryPoolByIDRequest": {
       "properties": {

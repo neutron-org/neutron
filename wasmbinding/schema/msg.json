@@ -24,7 +24,8 @@
         "name",
         "period",
         "msgs"
-      ]
+      ],
+      "description": "AddSchedule adds new schedule to the cron module"
     },
     "AdminProposal": {
       "properties": {
@@ -47,7 +48,8 @@
           "$ref": "#/$defs/Int"
         },
         "burn_from_address": {
-          "type": "string"
+          "type": "string",
+          "description": "BurnFromAddress must be set to \"\" for now."
         }
       },
       "additionalProperties": false,
@@ -72,7 +74,8 @@
       "required": [
         "denom",
         "new_admin_address"
-      ]
+      ],
+      "description": "ChangeAdmin changes the admin for a factory denom."
     },
     "Coin": {
       "properties": {
@@ -105,7 +108,8 @@
       "type": "object",
       "required": [
         "subdenom"
-      ]
+      ],
+      "description": "CreateDenom creates a new factory denom, of denomination: factory/{creating contract address}/{Subdenom} Subdenom can be of length at most 44 characters, in [0-9a-zA-Z./] The (creating contract address, subdenom) pair must be unique."
     },
     "DenomUnit": {
       "properties": {
@@ -172,13 +176,16 @@
     "Fee": {
       "properties": {
         "recv_fee": {
-          "$ref": "#/$defs/Coins"
+          "$ref": "#/$defs/Coins",
+          "description": "the packet receive fee"
         },
         "ack_fee": {
-          "$ref": "#/$defs/Coins"
+          "$ref": "#/$defs/Coins",
+          "description": "the packet acknowledgement fee"
         },
         "timeout_fee": {
-          "$ref": "#/$defs/Coins"
+          "$ref": "#/$defs/Coins",
+          "description": "the packet timeout fee"
         }
       },
       "additionalProperties": false,
@@ -187,7 +194,8 @@
         "recv_fee",
         "ack_fee",
         "timeout_fee"
-      ]
+      ],
+      "description": "Fee defines the ICS29 receive, acknowledgement and timeout fees"
     },
     "ForceTransfer": {
       "properties": {
@@ -211,7 +219,8 @@
         "amount",
         "transfer_from_address",
         "transfer_to_address"
-      ]
+      ],
+      "description": "ForceTransfer forces transferring of a specific denom is only allowed for the creator of the denom registered during CreateDenom."
     },
     "Height": {
       "properties": {
@@ -233,11 +242,13 @@
     "KVKey": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Path (storage prefix) to the storage where you want to read value by key\n(usually name of cosmos-sdk module: 'staking', 'bank', etc.)"
         },
         "key": {
           "type": "string",
-          "contentEncoding": "base64"
+          "contentEncoding": "base64",
+          "description": "Key you want to read from the storage"
         }
       },
       "additionalProperties": false,
@@ -330,14 +341,17 @@
     "MsgExecuteContract": {
       "properties": {
         "contract": {
-          "type": "string"
+          "type": "string",
+          "description": "Contract is the address of the smart contract"
         },
         "msg": {
-          "type": "string"
+          "type": "string",
+          "description": "Msg json encoded message to be passed to the contract"
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "MsgExecuteContract defined separate from wasmtypes since we can get away with just passing the string into bindings"
     },
     "MsgMultiHopSwap": {
       "properties": {
@@ -360,7 +374,8 @@
           "$ref": "#/$defs/PrecDec"
         },
         "pick_best_route": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "If pickBestRoute == true then all routes are run and the route with the\nbest price is chosen otherwise, the first succesful route is used."
         }
       },
       "additionalProperties": false,
@@ -385,7 +400,8 @@
           "type": "string"
         },
         "tick_index_in_to_out": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Deprecated: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead."
         },
         "amount_in": {
           "$ref": "#/$defs/Int"
@@ -394,13 +410,15 @@
           "type": "string"
         },
         "expiration_time": {
-          "type": "integer"
+          "type": "integer",
+          "description": "expirationTime is only valid iff orderType == GOOD_TIL_TIME."
         },
         "max_amount_out": {
           "$ref": "#/$defs/Int"
         },
         "limit_sell_price": {
-          "type": "string"
+          "type": "string",
+          "description": "Accepts standard decimals and decimals with scientific notation (ie. 1234.23E-7)"
         }
       },
       "additionalProperties": false,
@@ -408,30 +426,38 @@
       "required": [
         "amount_in",
         "max_amount_out"
-      ]
+      ],
+      "description": "MsgPlaceLimitOrder is a copy dextypes.MsgPlaceLimitOrder with altered ExpirationTime field, it's a preferable way to pass timestamp as unixtime to contracts"
     },
     "MsgTransfer": {
       "properties": {
         "source_port": {
-          "type": "string"
+          "type": "string",
+          "description": "the port on which the packet will be sent"
         },
         "source_channel": {
-          "type": "string"
+          "type": "string",
+          "description": "the channel by which the packet will be sent"
         },
         "token": {
-          "$ref": "#/$defs/Coin"
+          "$ref": "#/$defs/Coin",
+          "description": "the tokens to be transferred"
         },
         "sender": {
-          "type": "string"
+          "type": "string",
+          "description": "the sender address"
         },
         "receiver": {
-          "type": "string"
+          "type": "string",
+          "description": "the recipient address on the destination chain"
         },
         "timeout_height": {
-          "$ref": "#/$defs/Height"
+          "$ref": "#/$defs/Height",
+          "description": "Timeout height relative to the current block height.\nThe timeout is disabled when set to 0."
         },
         "timeout_timestamp": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Timeout timestamp in absolute nanoseconds since unix epoch.\nThe timeout is disabled when set to 0."
         },
         "memo": {
           "type": "string"
@@ -535,41 +561,52 @@
           "$ref": "#/$defs/SubmitAdminProposal"
         },
         "create_denom": {
-          "$ref": "#/$defs/CreateDenom"
+          "$ref": "#/$defs/CreateDenom",
+          "description": "Token factory types\n/ Contracts can create denoms, namespaced under the contract's address.\n/ A contract may create any number of independent sub-denoms."
         },
         "change_admin": {
-          "$ref": "#/$defs/ChangeAdmin"
+          "$ref": "#/$defs/ChangeAdmin",
+          "description": "/ Contracts can change the admin of a denom that they are the admin of."
         },
         "mint_tokens": {
-          "$ref": "#/$defs/MintTokens"
+          "$ref": "#/$defs/MintTokens",
+          "description": "/ Contracts can mint native tokens for an existing factory denom\n/ that they are the admin of."
         },
         "burn_tokens": {
-          "$ref": "#/$defs/BurnTokens"
+          "$ref": "#/$defs/BurnTokens",
+          "description": "/ Contracts can burn native tokens for an existing factory denom\n/ that they are the admin of.\n/ Currently, the burn from address must be the admin contract."
         },
         "set_before_send_hook": {
-          "$ref": "#/$defs/SetBeforeSendHook"
+          "$ref": "#/$defs/SetBeforeSendHook",
+          "description": "/ Contracts can set before send hook for an existing factory denom\n/\tthat they are the admin of.\n/\tCurrently, the set before hook call should be performed from address that must be the admin contract."
         },
         "force_transfer": {
-          "$ref": "#/$defs/ForceTransfer"
+          "$ref": "#/$defs/ForceTransfer",
+          "description": "/ Force transferring of a specific denom is only allowed for the creator of the denom registered during CreateDenom."
         },
         "set_denom_metadata": {
-          "$ref": "#/$defs/SetDenomMetadata"
+          "$ref": "#/$defs/SetDenomMetadata",
+          "description": "/ Setting of metadata for a specific denom is only allowed for the admin of the denom.\n/ It allows the overwriting of the denom metadata in the bank module."
         },
         "add_schedule": {
-          "$ref": "#/$defs/AddSchedule"
+          "$ref": "#/$defs/AddSchedule",
+          "description": "Cron types"
         },
         "remove_schedule": {
           "$ref": "#/$defs/RemoveSchedule"
         },
         "resubmit_failure": {
-          "$ref": "#/$defs/ResubmitFailure"
+          "$ref": "#/$defs/ResubmitFailure",
+          "description": "Contractmanager types\n/ A contract that has failed acknowledgement can resubmit it"
         },
         "dex": {
-          "$ref": "#/$defs/Dex"
+          "$ref": "#/$defs/Dex",
+          "description": "dex module bindings"
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "NeutronMsg is used like a sum type to hold one of custom Neutron messages."
     },
     "ParamChange": {
       "properties": {
@@ -612,7 +649,8 @@
     "PrecDec": {
       "properties": {},
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "NOTE: never use new(Dec) or else we will panic unmarshalling into the nil embedded big.Int"
     },
     "ProposalExecuteMessage": {
       "properties": {
@@ -638,7 +676,8 @@
       "required": [
         "type_url",
         "value"
-      ]
+      ],
+      "description": "ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object"
     },
     "RegisterInterchainAccount": {
       "properties": {
@@ -657,7 +696,8 @@
       "required": [
         "connection_id",
         "interchain_account_id"
-      ]
+      ],
+      "description": "RegisterInterchainAccount creates account on remote chain."
     },
     "RegisterInterchainQuery": {
       "properties": {
@@ -688,7 +728,8 @@
         "transactions_filter",
         "connection_id",
         "update_period"
-      ]
+      ],
+      "description": "RegisterInterchainQuery creates a query for remote chain."
     },
     "RemoveInterchainQuery": {
       "properties": {
@@ -712,7 +753,8 @@
       "type": "object",
       "required": [
         "name"
-      ]
+      ],
+      "description": "RemoveSchedule removes existing schedule with given name"
     },
     "ResubmitFailure": {
       "properties": {
@@ -740,7 +782,8 @@
       "required": [
         "denom",
         "contract_addr"
-      ]
+      ],
+      "description": "SetBeforeSendHook Allowing to assign a CosmWasm contract to call with a BeforeSend hook for a specific denom is only allowed for the creator of the denom registered during CreateDenom."
     },
     "SetDenomMetadata": {
       "properties": {
@@ -773,7 +816,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "SetDenomMetadata is sets the denom's bank metadata"
     },
     "SubmitAdminProposal": {
       "properties": {
@@ -820,7 +864,8 @@
         "memo",
         "timeout",
         "fee"
-      ]
+      ],
+      "description": "SubmitTx submits interchain transaction on a remote chain."
     },
     "UpdateInterchainQuery": {
       "properties": {
