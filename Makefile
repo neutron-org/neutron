@@ -287,3 +287,6 @@ check-proto-format:
 		$(DOCKER) run --rm -v $(CURDIR):/workspace \
 		--workdir /workspace $(PROTO_FORMATTER_IMAGE) \
 		format proto -d --exit-code
+
+gen-wasmbinding-json: build
+	./build/neutrond gen-wasmbinding-schema

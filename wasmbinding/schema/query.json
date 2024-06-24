@@ -1,0 +1,666 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/neutron-org/neutron/v4/wasmbinding/bindings/neutron-query",
+  "$ref": "#/$defs/NeutronQuery",
+  "$defs": {
+    "BeforeSendHook": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom"
+      ]
+    },
+    "CurrencyPair": {
+      "properties": {
+        "Base": {
+          "type": "string"
+        },
+        "Quote": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DenomAdmin": {
+      "properties": {
+        "subdenom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "subdenom"
+      ]
+    },
+    "DexQuery": {
+      "properties": {
+        "params": {
+          "$ref": "#/$defs/QueryParamsRequest"
+        },
+        "limit_order_tranche_user": {
+          "$ref": "#/$defs/QueryGetLimitOrderTrancheUserRequest"
+        },
+        "limit_order_tranche_user_all": {
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserRequest"
+        },
+        "limit_order_tranche_user_all_by_address": {
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserByAddressRequest"
+        },
+        "limit_order_tranche": {
+          "$ref": "#/$defs/QueryGetLimitOrderTrancheRequest"
+        },
+        "limit_order_tranche_all": {
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheRequest"
+        },
+        "user_deposit_all": {
+          "$ref": "#/$defs/QueryAllUserDepositsRequest"
+        },
+        "tick_liquidity_all": {
+          "$ref": "#/$defs/QueryAllTickLiquidityRequest"
+        },
+        "inactive_limit_order_tranche": {
+          "$ref": "#/$defs/QueryGetInactiveLimitOrderTrancheRequest"
+        },
+        "inactive_limit_order_tranche_all": {
+          "$ref": "#/$defs/QueryAllInactiveLimitOrderTrancheRequest"
+        },
+        "pool_reserves_all": {
+          "$ref": "#/$defs/QueryAllPoolReservesRequest"
+        },
+        "pool_reserves": {
+          "$ref": "#/$defs/QueryGetPoolReservesRequest"
+        },
+        "estimate_multi_hop_swap": {
+          "$ref": "#/$defs/QueryEstimateMultiHopSwapRequest"
+        },
+        "estimate_place_limit_order": {
+          "$ref": "#/$defs/QueryEstimatePlaceLimitOrderRequest"
+        },
+        "pool": {
+          "$ref": "#/$defs/QueryPoolRequest"
+        },
+        "pool_by_id": {
+          "$ref": "#/$defs/QueryPoolByIDRequest"
+        },
+        "pool_metadata": {
+          "$ref": "#/$defs/QueryGetPoolMetadataRequest"
+        },
+        "pool_metadata_all": {
+          "$ref": "#/$defs/QueryAllPoolMetadataRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "params",
+        "limit_order_tranche_user_all",
+        "limit_order_tranche_user_all_by_address",
+        "limit_order_tranche",
+        "limit_order_tranche_all",
+        "user_deposit_all",
+        "tick_liquidity_all",
+        "inactive_limit_order_tranche",
+        "inactive_limit_order_tranche_all",
+        "pool_reserves_all",
+        "pool_reserves",
+        "estimate_multi_hop_swap",
+        "estimate_place_limit_order",
+        "pool",
+        "pool_by_id",
+        "pool_metadata",
+        "pool_metadata_all"
+      ]
+    },
+    "Failures": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "address"
+      ]
+    },
+    "FullDenom": {
+      "properties": {
+        "creator_addr": {
+          "type": "string"
+        },
+        "subdenom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "creator_addr",
+        "subdenom"
+      ]
+    },
+    "GetAllCurrencyPairsRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "GetPriceRequest": {
+      "properties": {
+        "currency_pair": {
+          "$ref": "#/$defs/CurrencyPair"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "currency_pair"
+      ]
+    },
+    "GetPricesRequest": {
+      "properties": {
+        "currency_pair_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Int": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "LastUpdatedRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MarketMapQuery": {
+      "properties": {
+        "market_map": {
+          "$ref": "#/$defs/MarketMapRequest"
+        },
+        "last_updated": {
+          "$ref": "#/$defs/LastUpdatedRequest"
+        },
+        "params": {
+          "$ref": "#/$defs/ParamsRequest"
+        },
+        "market": {
+          "$ref": "#/$defs/MarketRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MarketMapRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MarketRequest": {
+      "properties": {
+        "currency_pair": {
+          "$ref": "#/$defs/CurrencyPair"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "currency_pair"
+      ]
+    },
+    "MultiHopRoute": {
+      "properties": {
+        "hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NeutronQuery": {
+      "properties": {
+        "interchain_query_result": {
+          "$ref": "#/$defs/QueryRegisteredQueryResultRequest"
+        },
+        "interchain_account_address": {
+          "$ref": "#/$defs/QueryInterchainAccountAddressRequest"
+        },
+        "registered_interchain_queries": {
+          "$ref": "#/$defs/QueryRegisteredQueriesRequest"
+        },
+        "registered_interchain_query": {
+          "$ref": "#/$defs/QueryRegisteredQueryRequest"
+        },
+        "total_burned_neutrons_amount": {
+          "$ref": "#/$defs/QueryTotalBurnedNeutronsAmountRequest"
+        },
+        "min_ibc_fee": {
+          "$ref": "#/$defs/QueryMinIbcFeeRequest"
+        },
+        "full_denom": {
+          "$ref": "#/$defs/FullDenom"
+        },
+        "denom_admin": {
+          "$ref": "#/$defs/DenomAdmin"
+        },
+        "before_send_hook": {
+          "$ref": "#/$defs/BeforeSendHook"
+        },
+        "failures": {
+          "$ref": "#/$defs/Failures"
+        },
+        "dex": {
+          "$ref": "#/$defs/DexQuery"
+        },
+        "oracle": {
+          "$ref": "#/$defs/OracleQuery"
+        },
+        "market_map": {
+          "$ref": "#/$defs/MarketMapQuery"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "OracleQuery": {
+      "properties": {
+        "get_all_currency_pairs": {
+          "$ref": "#/$defs/GetAllCurrencyPairsRequest"
+        },
+        "get_price": {
+          "$ref": "#/$defs/GetPriceRequest"
+        },
+        "get_prices": {
+          "$ref": "#/$defs/GetPricesRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PageRequest": {
+      "properties": {
+        "key": {
+          "type": "string",
+          "contentEncoding": "base64"
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "count_total": {
+          "type": "boolean"
+        },
+        "reverse": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ParamsRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PrecDec": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllInactiveLimitOrderTrancheRequest": {
+      "properties": {
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllLimitOrderTrancheRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllLimitOrderTrancheUserByAddressRequest": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllLimitOrderTrancheUserRequest": {
+      "properties": {
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllPoolMetadataRequest": {
+      "properties": {
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllPoolReservesRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllTickLiquidityRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllUserDepositsRequest": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        },
+        "include_pool_data": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryEstimateMultiHopSwapRequest": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "routes": {
+          "items": {
+            "$ref": "#/$defs/MultiHopRoute"
+          },
+          "type": "array"
+        },
+        "amount_in": {
+          "$ref": "#/$defs/Int"
+        },
+        "exit_limit_price": {
+          "$ref": "#/$defs/PrecDec"
+        },
+        "pick_best_route": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount_in",
+        "exit_limit_price"
+      ]
+    },
+    "QueryEstimatePlaceLimitOrderRequest": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "token_out": {
+          "type": "string"
+        },
+        "tick_index_in_to_out": {
+          "type": "integer"
+        },
+        "amount_in": {
+          "$ref": "#/$defs/Int"
+        },
+        "order_type": {
+          "type": "string"
+        },
+        "expiration_time": {
+          "type": "integer"
+        },
+        "max_amount_out": {
+          "$ref": "#/$defs/Int"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount_in",
+        "max_amount_out"
+      ]
+    },
+    "QueryGetInactiveLimitOrderTrancheRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "tranche_key": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetLimitOrderTrancheRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "tranche_key": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetLimitOrderTrancheUserRequest": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "tranche_key": {
+          "type": "string"
+        },
+        "calc_withdrawable_shares": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetPoolMetadataRequest": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetPoolReservesRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "fee": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryInterchainAccountAddressRequest": {
+      "properties": {
+        "owner_address": {
+          "type": "string"
+        },
+        "interchain_account_id": {
+          "type": "string"
+        },
+        "connection_id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryMinIbcFeeRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryParamsRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryPoolByIDRequest": {
+      "properties": {
+        "pool_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryPoolRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "fee": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryRegisteredQueriesRequest": {
+      "properties": {
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "connection_id": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryRegisteredQueryRequest": {
+      "properties": {
+        "query_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryRegisteredQueryResultRequest": {
+      "properties": {
+        "query_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryTotalBurnedNeutronsAmountRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

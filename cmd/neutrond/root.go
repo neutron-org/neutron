@@ -159,6 +159,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debugCmd,
 		ConfigCmd(),
+		genWasmbindingSchemaCmd(),
 	)
 
 	ac := appCreator{

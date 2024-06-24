@@ -1,0 +1,847 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/neutron-org/neutron/v4/wasmbinding/bindings/neutron-msg",
+  "$ref": "#/$defs/NeutronMsg",
+  "$defs": {
+    "AddSchedule": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "period": {
+          "type": "integer"
+        },
+        "msgs": {
+          "items": {
+            "$ref": "#/$defs/MsgExecuteContract"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "period",
+        "msgs"
+      ]
+    },
+    "AdminProposal": {
+      "properties": {
+        "param_change_proposal": {
+          "$ref": "#/$defs/ParamChangeProposal"
+        },
+        "proposal_execute_message": {
+          "$ref": "#/$defs/ProposalExecuteMessage"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "BurnTokens": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "#/$defs/Int"
+        },
+        "burn_from_address": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom",
+        "amount",
+        "burn_from_address"
+      ]
+    },
+    "ChangeAdmin": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "new_admin_address": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom",
+        "new_admin_address"
+      ]
+    },
+    "Coin": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "#/$defs/Int"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount"
+      ]
+    },
+    "Coins": {
+      "items": {
+        "$ref": "#/$defs/Coin"
+      },
+      "type": "array"
+    },
+    "CreateDenom": {
+      "properties": {
+        "subdenom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "subdenom"
+      ]
+    },
+    "DenomUnit": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "exponent": {
+          "type": "integer"
+        },
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DepositOptions": {
+      "properties": {
+        "disable_autoswap": {
+          "type": "boolean"
+        },
+        "fail_tx_on_bel": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Dex": {
+      "properties": {
+        "deposit": {
+          "$ref": "#/$defs/MsgDeposit"
+        },
+        "withdrawal": {
+          "$ref": "#/$defs/MsgWithdrawal"
+        },
+        "place_limit_order": {
+          "$ref": "#/$defs/MsgPlaceLimitOrder"
+        },
+        "withdraw_filled_limit_order": {
+          "$ref": "#/$defs/MsgWithdrawFilledLimitOrder"
+        },
+        "cancel_limit_order": {
+          "$ref": "#/$defs/MsgCancelLimitOrder"
+        },
+        "multi_hop_swap": {
+          "$ref": "#/$defs/MsgMultiHopSwap"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "deposit",
+        "withdrawal",
+        "place_limit_order",
+        "withdraw_filled_limit_order",
+        "cancel_limit_order",
+        "multi_hop_swap"
+      ]
+    },
+    "Fee": {
+      "properties": {
+        "recv_fee": {
+          "$ref": "#/$defs/Coins"
+        },
+        "ack_fee": {
+          "$ref": "#/$defs/Coins"
+        },
+        "timeout_fee": {
+          "$ref": "#/$defs/Coins"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "recv_fee",
+        "ack_fee",
+        "timeout_fee"
+      ]
+    },
+    "ForceTransfer": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "#/$defs/Int"
+        },
+        "transfer_from_address": {
+          "type": "string"
+        },
+        "transfer_to_address": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom",
+        "amount",
+        "transfer_from_address",
+        "transfer_to_address"
+      ]
+    },
+    "Height": {
+      "properties": {
+        "revision_number": {
+          "type": "integer"
+        },
+        "revision_height": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Int": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "KVKey": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "contentEncoding": "base64"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MintTokens": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "#/$defs/Int"
+        },
+        "mint_to_address": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom",
+        "amount",
+        "mint_to_address"
+      ]
+    },
+    "MsgCancelLimitOrder": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "tranche_key": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MsgDeposit": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "token_a": {
+          "type": "string"
+        },
+        "token_b": {
+          "type": "string"
+        },
+        "amounts_a": {
+          "items": {
+            "$ref": "#/$defs/Int"
+          },
+          "type": "array"
+        },
+        "amounts_b": {
+          "items": {
+            "$ref": "#/$defs/Int"
+          },
+          "type": "array"
+        },
+        "tick_indexes_a_to_b": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "fees": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/DepositOptions"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amounts_a",
+        "amounts_b"
+      ]
+    },
+    "MsgExecuteContract": {
+      "properties": {
+        "contract": {
+          "type": "string"
+        },
+        "msg": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MsgMultiHopSwap": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "routes": {
+          "items": {
+            "$ref": "#/$defs/MultiHopRoute"
+          },
+          "type": "array"
+        },
+        "amount_in": {
+          "$ref": "#/$defs/Int"
+        },
+        "exit_limit_price": {
+          "$ref": "#/$defs/PrecDec"
+        },
+        "pick_best_route": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount_in",
+        "exit_limit_price"
+      ]
+    },
+    "MsgPlaceLimitOrder": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "token_out": {
+          "type": "string"
+        },
+        "tick_index_in_to_out": {
+          "type": "integer"
+        },
+        "amount_in": {
+          "$ref": "#/$defs/Int"
+        },
+        "order_type": {
+          "type": "string"
+        },
+        "expiration_time": {
+          "type": "integer"
+        },
+        "max_amount_out": {
+          "$ref": "#/$defs/Int"
+        },
+        "limit_sell_price": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount_in",
+        "max_amount_out"
+      ]
+    },
+    "MsgTransfer": {
+      "properties": {
+        "source_port": {
+          "type": "string"
+        },
+        "source_channel": {
+          "type": "string"
+        },
+        "token": {
+          "$ref": "#/$defs/Coin"
+        },
+        "sender": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "timeout_height": {
+          "$ref": "#/$defs/Height"
+        },
+        "timeout_timestamp": {
+          "type": "integer"
+        },
+        "memo": {
+          "type": "string"
+        },
+        "fee": {
+          "$ref": "#/$defs/Fee"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "token",
+        "timeout_height",
+        "fee"
+      ]
+    },
+    "MsgWithdrawFilledLimitOrder": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "tranche_key": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MsgWithdrawal": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "token_a": {
+          "type": "string"
+        },
+        "token_b": {
+          "type": "string"
+        },
+        "shares_to_remove": {
+          "items": {
+            "$ref": "#/$defs/Int"
+          },
+          "type": "array"
+        },
+        "tick_indexes_a_to_b": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "fees": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "shares_to_remove"
+      ]
+    },
+    "MultiHopRoute": {
+      "properties": {
+        "hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NeutronMsg": {
+      "properties": {
+        "submit_tx": {
+          "$ref": "#/$defs/SubmitTx"
+        },
+        "register_interchain_account": {
+          "$ref": "#/$defs/RegisterInterchainAccount"
+        },
+        "register_interchain_query": {
+          "$ref": "#/$defs/RegisterInterchainQuery"
+        },
+        "update_interchain_query": {
+          "$ref": "#/$defs/UpdateInterchainQuery"
+        },
+        "remove_interchain_query": {
+          "$ref": "#/$defs/RemoveInterchainQuery"
+        },
+        "ibc_transfer": {
+          "$ref": "#/$defs/MsgTransfer"
+        },
+        "submit_admin_proposal": {
+          "$ref": "#/$defs/SubmitAdminProposal"
+        },
+        "create_denom": {
+          "$ref": "#/$defs/CreateDenom"
+        },
+        "change_admin": {
+          "$ref": "#/$defs/ChangeAdmin"
+        },
+        "mint_tokens": {
+          "$ref": "#/$defs/MintTokens"
+        },
+        "burn_tokens": {
+          "$ref": "#/$defs/BurnTokens"
+        },
+        "set_before_send_hook": {
+          "$ref": "#/$defs/SetBeforeSendHook"
+        },
+        "force_transfer": {
+          "$ref": "#/$defs/ForceTransfer"
+        },
+        "set_denom_metadata": {
+          "$ref": "#/$defs/SetDenomMetadata"
+        },
+        "add_schedule": {
+          "$ref": "#/$defs/AddSchedule"
+        },
+        "remove_schedule": {
+          "$ref": "#/$defs/RemoveSchedule"
+        },
+        "resubmit_failure": {
+          "$ref": "#/$defs/ResubmitFailure"
+        },
+        "dex": {
+          "$ref": "#/$defs/Dex"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ParamChange": {
+      "properties": {
+        "subspace": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ParamChangeProposal": {
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "param_changes": {
+          "items": {
+            "$ref": "#/$defs/ParamChange"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "param_changes"
+      ]
+    },
+    "PrecDec": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ProposalExecuteMessage": {
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ProtobufAny": {
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "contentEncoding": "base64"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "type_url",
+        "value"
+      ]
+    },
+    "RegisterInterchainAccount": {
+      "properties": {
+        "connection_id": {
+          "type": "string"
+        },
+        "interchain_account_id": {
+          "type": "string"
+        },
+        "register_fee": {
+          "$ref": "#/$defs/Coins"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "connection_id",
+        "interchain_account_id"
+      ]
+    },
+    "RegisterInterchainQuery": {
+      "properties": {
+        "query_type": {
+          "type": "string"
+        },
+        "keys": {
+          "items": {
+            "$ref": "#/$defs/KVKey"
+          },
+          "type": "array"
+        },
+        "transactions_filter": {
+          "type": "string"
+        },
+        "connection_id": {
+          "type": "string"
+        },
+        "update_period": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "query_type",
+        "keys",
+        "transactions_filter",
+        "connection_id",
+        "update_period"
+      ]
+    },
+    "RemoveInterchainQuery": {
+      "properties": {
+        "query_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "query_id"
+      ]
+    },
+    "RemoveSchedule": {
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name"
+      ]
+    },
+    "ResubmitFailure": {
+      "properties": {
+        "failure_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "failure_id"
+      ]
+    },
+    "SetBeforeSendHook": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "contract_addr": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom",
+        "contract_addr"
+      ]
+    },
+    "SetDenomMetadata": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "denom_units": {
+          "items": {
+            "$ref": "#/$defs/DenomUnit"
+          },
+          "type": "array"
+        },
+        "base": {
+          "type": "string"
+        },
+        "display": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "uri_hash": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "SubmitAdminProposal": {
+      "properties": {
+        "admin_proposal": {
+          "$ref": "#/$defs/AdminProposal"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "admin_proposal"
+      ]
+    },
+    "SubmitTx": {
+      "properties": {
+        "connection_id": {
+          "type": "string"
+        },
+        "interchain_account_id": {
+          "type": "string"
+        },
+        "msgs": {
+          "items": {
+            "$ref": "#/$defs/ProtobufAny"
+          },
+          "type": "array"
+        },
+        "memo": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "integer"
+        },
+        "fee": {
+          "$ref": "#/$defs/Fee"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "connection_id",
+        "interchain_account_id",
+        "msgs",
+        "memo",
+        "timeout",
+        "fee"
+      ]
+    },
+    "UpdateInterchainQuery": {
+      "properties": {
+        "query_id": {
+          "type": "integer"
+        },
+        "new_keys": {
+          "items": {
+            "$ref": "#/$defs/KVKey"
+          },
+          "type": "array"
+        },
+        "new_update_period": {
+          "type": "integer"
+        },
+        "new_transactions_filter": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
