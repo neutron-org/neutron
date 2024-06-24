@@ -19,6 +19,8 @@ const (
 	// MarketMapAuthorityMultisig defines the address of a market-map authority governed by a
 	// multi-sig of contributors.
 	MarketMapAuthorityMultisig = "neutron1ua63s43u2p4v38pxhcxmps0tj2gudyw2hfeetz"
+
+	DecimalsAdjustment = 1_000_000_000_000
 )
 
 var Upgrade = upgrades.Upgrade{
