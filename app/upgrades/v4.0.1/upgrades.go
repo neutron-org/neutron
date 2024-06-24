@@ -51,7 +51,7 @@ func CreateUpgradeHandler(
 
 		if ctx.ChainID() != "pion-1" {
 			// skip the migration set since
-			// the following changes already were applied on `pion-1` chain during `v4.0.1` release
+			// the following changes already were applied on `pion-1` chain during `v4.0.0-rc3` release
 			ctx.Logger().Info("Setting consensus params...")
 			err = enableVoteExtensions(ctx, keepers.ConsensusKeeper)
 			if err != nil {
@@ -96,7 +96,7 @@ func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper
 }
 
 // NtrnPrices describes prices of any token in NTRN for dynamic fee resolver
-// there are several 18decimals coins, we nned to adjust all the coins with the same base (6 decimals) prior to do any math
+// there are several 18decimals coins, we need to adjust all the coins with the same base (6 decimals) prior to do any math
 // by dividing by 10^12
 var NtrnPrices = sdk.NewDecCoins(
 	// Token,Denom,TWAP30D (USD),Price in NTRN (30d TWAP of DENOM / 30d TWAP of NTRN),Price + 30% premium
