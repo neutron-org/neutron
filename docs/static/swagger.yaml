@@ -20100,6 +20100,31 @@ definitions:
           type: object
         type: array
     type: object
+  slinky.oracle.v1.GetCurrencyPairMappingResponse:
+    description: >-
+      GetCurrencyPairMappingResponse is the GetCurrencyPairMapping response
+      type.
+    properties:
+      currency_pair_mapping:
+        additionalProperties:
+          properties:
+            Base:
+              type: string
+            Quote:
+              type: string
+          title: >-
+            CurrencyPair is the standard representation of a pair of assets,
+            where one
+
+            (Base) is priced in terms of the other (Quote)
+          type: object
+        description: >-
+          currency_pair_mapping is a mapping of the id representing the currency
+          pair
+
+          to the currency pair itself.
+        type: object
+    type: object
   slinky.oracle.v1.GetPriceResponse:
     description: >-
       GetPriceResponse is the response from the GetPrice grpc method exposed
@@ -44705,6 +44730,68 @@ paths:
       summary: >-
         Get all the currency pairs the x/oracle module is tracking price-data
         for.
+      tags:
+        - Query
+  /slinky/oracle/v1/get_currency_pair_mapping:
+    get:
+      operationId: GetCurrencyPairMapping
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GetCurrencyPairMappingResponse is the GetCurrencyPairMapping
+              response type.
+            properties:
+              currency_pair_mapping:
+                additionalProperties:
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                  type: object
+                description: >-
+                  currency_pair_mapping is a mapping of the id representing the
+                  currency pair
+
+                  to the currency pair itself.
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Get the mapping of currency pair ID -> currency pair. This is useful for
+
+        indexers that have access to the ID of a currency pair, but no way to
+        get
+
+        the underlying currency pair from it.
       tags:
         - Query
   /slinky/oracle/v1/get_price:
