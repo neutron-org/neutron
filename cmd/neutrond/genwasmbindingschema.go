@@ -34,43 +34,20 @@ func genWasmbindingSchemaCmd() *cobra.Command {
 			}
 
 			// query
-			querySchema := r.Reflect(&bindings.NeutronQuery{})
-			queryJSON, err := json.MarshalIndent(querySchema, prefix, indent)
-			if err != nil {
-				return fmt.Errorf("failed to create query jsonschema: %w", err)
+			if err := generateJsonToFile(r, &bindings.NeutronQuery{}, queryFile); err != nil {
+				return fmt.Errorf("failed to generate query: %w", err)
 			}
-			if err := writeToFile(queryJSON, schemaFolder+queryFile); err != nil {
-				return err
-			}
-
 			// msg
-			msgSchema := r.Reflect(&bindings.NeutronMsg{})
-			msgJSON, err := json.MarshalIndent(msgSchema, prefix, indent)
-			if err != nil {
-				return fmt.Errorf("failed to create msg jsonschema: %w", err)
+			if err := generateJsonToFile(r, &bindings.NeutronMsg{}, msgFile); err != nil {
+				return fmt.Errorf("failed to generate msg: %w", err)
 			}
-			if err := writeToFile(msgJSON, schemaFolder+msgFile); err != nil {
-				return err
-			}
-
 			// query responses
-			queryResponsesSchema := r.Reflect(&bindings.NeutronQueryResponse{})
-			queryResponsesJSON, err := json.MarshalIndent(queryResponsesSchema, prefix, indent)
-			if err != nil {
-				return fmt.Errorf("failed to create query responses jsonschema: %w", err)
+			if err := generateJsonToFile(r, &bindings.NeutronQueryResponse{}, queryResponsesFile); err != nil {
+				return fmt.Errorf("failed to generate query response: %w", err)
 			}
-			if err := writeToFile(queryResponsesJSON, schemaFolder+queryResponsesFile); err != nil {
-				return err
-			}
-
 			// msg responses
-			msgResponsesSchema := r.Reflect(&bindings.NeutronMsgResponse{})
-			msgResponsesJSON, err := json.MarshalIndent(msgResponsesSchema, prefix, indent)
-			if err != nil {
-				return fmt.Errorf("failed to create msg responses jsonschema: %w", err)
-			}
-			if err := writeToFile(msgResponsesJSON, schemaFolder+msgResponsesFile); err != nil {
-				return err
+			if err := generateJsonToFile(r, &bindings.NeutronMsgResponse{}, msgResponsesFile); err != nil {
+				return fmt.Errorf("failed to generate query response: %w", err)
 			}
 
 			fmt.Println("wasmbinding json schema generated successfully")
@@ -80,6 +57,18 @@ func genWasmbindingSchemaCmd() *cobra.Command {
 	}
 
 	return txCmd
+}
+
+func generateJsonToFile(r *jsonschema.Reflector, reflected any, filename string) error {
+	querySchema := r.Reflect(reflected)
+	queryJSON, err := json.MarshalIndent(querySchema, prefix, indent)
+	if err != nil {
+		return fmt.Errorf("failed to create jsonschema: %w", err)
+	}
+	if err := writeToFile(queryJSON, schemaFolder+filename); err != nil {
+		return fmt.Errorf("failed to write json schema to a file: %w", err)
+	}
+	return err
 }
 
 func writeToFile(bts []byte, filepath string) error {
