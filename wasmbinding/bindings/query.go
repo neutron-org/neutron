@@ -94,6 +94,19 @@ type QueryRegisteredQueryRequest struct {
 
 /* Responses */
 
+type NeutronQueryResponse struct {
+	QueryRegisteredQueryResponse           *QueryRegisteredQueryResponse           `json:"query_registered_query_response,omitempty"`
+	QueryRegisteredQueriesResponse         *QueryRegisteredQueriesResponse         `json:"query_registered_queries_response,omitempty"`
+	QueryTotalBurnedNeutronsAmountResponse *QueryTotalBurnedNeutronsAmountResponse `json:"query_total_burned_neutrons_amount_response,omitempty"`
+	QueryMinIbcFeeResponse                 *QueryMinIbcFeeResponse                 `json:"query_min_ibc_fee_response,omitempty"`
+	QueryInterchainAccountAddressResponse  *QueryInterchainAccountAddressResponse  `json:"query_interchain_account_address_response,omitempty"`
+	QueryRegisteredQueryResultResponse     *QueryRegisteredQueryResultResponse     `json:"query_registered_query_result_response,omitempty"`
+	BeforeSendHookResponse                 *BeforeSendHookResponse                 `json:"before_send_hook_response,omitempty"`
+	DenomAdminResponse                     *DenomAdminResponse                     `json:"denom_admin_response,omitempty"`
+	FullDenomResponse                      *FullDenomResponse                      `json:"full_denom_response,omitempty"`
+	FailuresResponse                       *FailuresResponse                       `json:"failures_response,omitempty"`
+}
+
 type QueryRegisteredQueryResponse struct {
 	RegisteredQuery *RegisteredQuery `json:"registered_query,omitempty"`
 }

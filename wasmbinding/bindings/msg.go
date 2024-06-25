@@ -66,6 +66,16 @@ type NeutronMsg struct {
 	Dex *Dex `json:"dex,omitempty"`
 }
 
+type NeutronMsgResponse struct {
+	RegisterInterchainAccountResponse *RegisterInterchainAccountResponse `json:"register_interchain_account_response,omitempty"`
+	RegisterInterchainQueryResponse   *RegisterInterchainQueryResponse   `json:"register_interchain_query_response,omitempty"`
+	RemoveInterchainQueryResponse     *RemoveInterchainQueryResponse     `json:"remove_interchain_query_response,omitempty"`
+	UpdateInterchainQueryResponse     *UpdateInterchainQueryResponse     `json:"update_interchain_query_response,omitempty"`
+	AddScheduleResponse               *AddScheduleResponse               `json:"add_schedule_response,omitempty"`
+	RemoveScheduleResponse            *RemoveScheduleResponse            `json:"remove_schedule_response,omitempty"`
+	ResubmitFailureResponse           *ResubmitFailureResponse           `json:"resubmit_failure_response,omitempty"`
+}
+
 // SubmitTx submits interchain transaction on a remote chain.
 type SubmitTx struct {
 	ConnectionId        string        `json:"connection_id"`

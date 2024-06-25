@@ -11,13 +11,15 @@ import (
 	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
 )
 
-var (
-	schemaFolder = "wasmbinding/schema/"
-	packageName  = "github.com/neutron-org/neutron/v4"
-	prefix       = ""
-	indent       = "  "
-	queryFile    = "query.json"
-	msgFile      = "msg.json"
+const (
+	schemaFolder       = "wasmbinding/schema/"
+	packageName        = "github.com/neutron-org/neutron/v4"
+	prefix             = ""
+	indent             = "  "
+	queryFile          = "query.json"
+	msgFile            = "msg.json"
+	queryResponsesFile = "query_responses.json"
+	msgResponsesFile   = "msg_responses.json"
 )
 
 func genWasmbindingSchemaCmd() *cobra.Command {
@@ -30,27 +32,45 @@ func genWasmbindingSchemaCmd() *cobra.Command {
 			if err := r.AddGoComments(packageName, "./"); err != nil {
 				return fmt.Errorf("failed to add comments: %w", err)
 			}
-			querySchema := r.Reflect(&bindings.NeutronQuery{})
 
+			// query
+			querySchema := r.Reflect(&bindings.NeutronQuery{})
 			queryJSON, err := json.MarshalIndent(querySchema, prefix, indent)
 			if err != nil {
-				return fmt.Errorf("failed to create jsonschema: %w", err)
+				return fmt.Errorf("failed to create query jsonschema: %w", err)
 			}
-
-			err = writeToFile(queryJSON, schemaFolder+queryFile)
-			if err != nil {
+			if err := writeToFile(queryJSON, schemaFolder+queryFile); err != nil {
 				return err
 			}
 
+			// msg
 			msgSchema := r.Reflect(&bindings.NeutronMsg{})
 			msgJSON, err := json.MarshalIndent(msgSchema, prefix, indent)
 			if err != nil {
-				return fmt.Errorf("failed to create jsonschema: %w", err)
+				return fmt.Errorf("failed to create msg jsonschema: %w", err)
+			}
+			if err := writeToFile(msgJSON, schemaFolder+msgFile); err != nil {
+				return err
 			}
 
-			err = writeToFile(msgJSON, schemaFolder+msgFile)
+			// query responses
+			queryResponsesSchema := r.Reflect(&bindings.NeutronQueryResponse{})
+			queryResponsesJSON, err := json.MarshalIndent(queryResponsesSchema, prefix, indent)
 			if err != nil {
-				return fmt.Errorf("failed to write to a file: %w", err)
+				return fmt.Errorf("failed to create query responses jsonschema: %w", err)
+			}
+			if err := writeToFile(queryResponsesJSON, schemaFolder+queryResponsesFile); err != nil {
+				return err
+			}
+
+			// msg responses
+			msgResponsesSchema := r.Reflect(&bindings.NeutronMsgResponse{})
+			msgResponsesJSON, err := json.MarshalIndent(msgResponsesSchema, prefix, indent)
+			if err != nil {
+				return fmt.Errorf("failed to create msg responses jsonschema: %w", err)
+			}
+			if err := writeToFile(msgResponsesJSON, schemaFolder+msgResponsesFile); err != nil {
+				return err
 			}
 
 			fmt.Println("wasmbinding json schema generated successfully")
