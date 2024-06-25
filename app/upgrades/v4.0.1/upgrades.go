@@ -49,37 +49,33 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		if ctx.ChainID() != "pion-1" {
-			// skip the migration set since
-			// the following changes already were applied on `pion-1` chain during `v4.0.0-rc3` release
-			ctx.Logger().Info("Setting consensus params...")
-			err = enableVoteExtensions(ctx, keepers.ConsensusKeeper)
-			if err != nil {
-				return nil, err
-			}
+		ctx.Logger().Info("Setting consensus params...")
+		err = enableVoteExtensions(ctx, keepers.ConsensusKeeper)
+		if err != nil {
+			return nil, err
+		}
 
-			ctx.Logger().Info("Setting marketmap params...")
-			err = setMarketMapParams(ctx, keepers.MarketmapKeeper)
-			if err != nil {
-				return nil, err
-			}
+		ctx.Logger().Info("Setting marketmap params...")
+		err = setMarketMapParams(ctx, keepers.MarketmapKeeper)
+		if err != nil {
+			return nil, err
+		}
 
-			ctx.Logger().Info("Setting dynamicfees/feemarket params...")
-			err = setFeeMarketParams(ctx, keepers.FeeMarketKeeper)
-			if err != nil {
-				return nil, err
-			}
+		ctx.Logger().Info("Setting dynamicfees/feemarket params...")
+		err = setFeeMarketParams(ctx, keepers.FeeMarketKeeper)
+		if err != nil {
+			return nil, err
+		}
 
-			err = setDynamicFeesParams(ctx, keepers.DynamicfeesKeeper)
-			if err != nil {
-				return nil, err
-			}
+		err = setDynamicFeesParams(ctx, keepers.DynamicfeesKeeper)
+		if err != nil {
+			return nil, err
+		}
 
-			ctx.Logger().Info("Setting marketmap and oracle state...")
-			err = setMarketState(ctx, keepers.MarketmapKeeper)
-			if err != nil {
-				return nil, err
-			}
+		ctx.Logger().Info("Setting marketmap and oracle state...")
+		err = setMarketState(ctx, keepers.MarketmapKeeper)
+		if err != nil {
+			return nil, err
 		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
