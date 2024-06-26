@@ -1,7 +1,6 @@
 module github.com/neutron-org/neutron/v4
 
 go 1.22.3
-
 require (
 	cosmossdk.io/client/v2 v2.0.0-beta.1
 	cosmossdk.io/core v0.11.0
@@ -37,7 +36,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rs/zerolog v1.32.0
-	github.com/skip-mev/block-sdk/v2 v2.1.2
+	github.com/skip-mev/block-sdk/v2 v2.1.4
 	github.com/skip-mev/feemarket v1.0.3
 	github.com/skip-mev/slinky v1.0.3
 	github.com/spf13/cast v1.6.0
