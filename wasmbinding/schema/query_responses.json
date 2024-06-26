@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/neutron-org/neutron/v4/wasmbinding/bindings/neutron-query-response",
+  "$ref": "#/$defs/NeutronQueryResponse",
+  "$defs": {
+    "BeforeSendHookResponse": {
+      "properties": {
+        "contract_addr": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "contract_addr"
+      ]
+    },
+    "Coin": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "#/$defs/Int"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount"
+      ]
+    },
+    "Coins": {
+      "items": {
+        "$ref": "#/$defs/Coin"
+      },
+      "type": "array"
+    },
+    "DenomAdminResponse": {
+      "properties": {
+        "admin": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "admin"
+      ]
+    },
+    "Failure": {
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Address of the failed contract"
+        },
+        "id": {
+          "type": "integer",
+          "description": "Id of the failure under specific address"
+        },
+        "sudo_payload": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Serialized MessageSudoCallback with Packet and Ack(if exists)"
+        },
+        "error": {
+          "type": "string",
+          "description": "Redacted error response of the sudo call. Full error is emitted as an event"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Failure message contains information about ACK failures and can be used to replay ACK in case of requirement."
+    },
+    "FailuresResponse": {
+      "properties": {
+        "failures": {
+          "items": {
+            "$ref": "#/$defs/Failure"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "failures"
+      ]
+    },
+    "Fee": {
+      "properties": {
+        "recv_fee": {
+          "$ref": "#/$defs/Coins",
+          "description": "the packet receive fee"
+        },
+        "ack_fee": {
+          "$ref": "#/$defs/Coins",
+          "description": "the packet acknowledgement fee"
+        },
+        "timeout_fee": {
+          "$ref": "#/$defs/Coins",
+          "description": "the packet timeout fee"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "recv_fee",
+        "ack_fee",
+        "timeout_fee"
+      ],
+      "description": "Fee defines the ICS29 receive, acknowledgement and timeout fees"
+    },
+    "FullDenomResponse": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom"
+      ]
+    },
+    "Height": {
+      "properties": {
+        "revision_number": {
+          "type": "integer"
+        },
+        "revision_height": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Int": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "KVKey": {
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path (storage prefix) to the storage where you want to read value by key\n(usually name of cosmos-sdk module: 'staking', 'bank', etc.)"
+        },
+        "key": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Key you want to read from the storage"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NeutronQueryResponse": {
+      "properties": {
+        "query_registered_query_response": {
+          "$ref": "#/$defs/QueryRegisteredQueryResponse"
+        },
+        "query_registered_queries_response": {
+          "$ref": "#/$defs/QueryRegisteredQueriesResponse"
+        },
+        "query_total_burned_neutrons_amount_response": {
+          "$ref": "#/$defs/QueryTotalBurnedNeutronsAmountResponse"
+        },
+        "query_min_ibc_fee_response": {
+          "$ref": "#/$defs/QueryMinIbcFeeResponse"
+        },
+        "query_interchain_account_address_response": {
+          "$ref": "#/$defs/QueryInterchainAccountAddressResponse"
+        },
+        "query_registered_query_result_response": {
+          "$ref": "#/$defs/QueryRegisteredQueryResultResponse"
+        },
+        "before_send_hook_response": {
+          "$ref": "#/$defs/BeforeSendHookResponse"
+        },
+        "denom_admin_response": {
+          "$ref": "#/$defs/DenomAdminResponse"
+        },
+        "full_denom_response": {
+          "$ref": "#/$defs/FullDenomResponse"
+        },
+        "failures_response": {
+          "$ref": "#/$defs/FailuresResponse"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryInterchainAccountAddressResponse": {
+      "properties": {
+        "interchain_account_address": {
+          "type": "string",
+          "description": "The corresponding interchain account address on the host chain"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Query response for an interchain account address"
+    },
+    "QueryMinIbcFeeResponse": {
+      "properties": {
+        "min_fee": {
+          "$ref": "#/$defs/Fee"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "min_fee"
+      ]
+    },
+    "QueryRegisteredQueriesResponse": {
+      "properties": {
+        "registered_queries": {
+          "items": {
+            "$ref": "#/$defs/RegisteredQuery"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "registered_queries"
+      ]
+    },
+    "QueryRegisteredQueryResponse": {
+      "properties": {
+        "registered_query": {
+          "$ref": "#/$defs/RegisteredQuery"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryRegisteredQueryResultResponse": {
+      "properties": {
+        "result": {
+          "$ref": "#/$defs/QueryResult"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryResult": {
+      "properties": {
+        "kv_results": {
+          "items": {
+            "$ref": "#/$defs/StorageValue"
+          },
+          "type": "array"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "revision": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryTotalBurnedNeutronsAmountResponse": {
+      "properties": {
+        "coin": {
+          "$ref": "#/$defs/Coin"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "coin"
+      ]
+    },
+    "RegisteredQuery": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "The unique id of the registered query."
+        },
+        "owner": {
+          "type": "string",
+          "description": "The address that registered the query."
+        },
+        "keys": {
+          "items": {
+            "$ref": "#/$defs/KVKey"
+          },
+          "type": "array",
+          "description": "The KV-storage keys for which we want to get values from remote chain"
+        },
+        "transactions_filter": {
+          "type": "string",
+          "description": "The filter for transaction search ICQ"
+        },
+        "query_type": {
+          "type": "string",
+          "description": "The query type identifier (i.e. 'kv' or 'tx' for now)."
+        },
+        "connection_id": {
+          "type": "string",
+          "description": "The IBC connection ID for getting ConsensusState to verify proofs."
+        },
+        "update_period": {
+          "type": "integer",
+          "description": "Parameter that defines how often the query must be updated."
+        },
+        "last_submitted_result_local_height": {
+          "type": "integer",
+          "description": "The local chain last block height when the query result was updated."
+        },
+        "last_submitted_result_remote_height": {
+          "$ref": "#/$defs/Height",
+          "description": "The remote chain last block height when the query result was updated."
+        },
+        "deposit": {
+          "$ref": "#/$defs/Coins",
+          "description": "Amount of coins deposited for the query."
+        },
+        "submit_timeout": {
+          "type": "integer",
+          "description": "Timeout before query becomes available for everybody to remove."
+        },
+        "registered_at_height": {
+          "type": "integer",
+          "description": "The local chain height when the query was registered."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "id",
+        "owner",
+        "keys",
+        "transactions_filter",
+        "query_type",
+        "connection_id",
+        "update_period",
+        "last_submitted_result_local_height",
+        "deposit",
+        "submit_timeout",
+        "registered_at_height"
+      ]
+    },
+    "StorageValue": {
+      "properties": {
+        "storage_prefix": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "contentEncoding": "base64"
+        },
+        "value": {
+          "type": "string",
+          "contentEncoding": "base64"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "key",
+        "value"
+      ]
+    }
+  }
+}

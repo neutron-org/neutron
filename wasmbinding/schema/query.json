@@ -1,0 +1,706 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/neutron-org/neutron/v4/wasmbinding/bindings/neutron-query",
+  "$ref": "#/$defs/NeutronQuery",
+  "$defs": {
+    "BeforeSendHook": {
+      "properties": {
+        "denom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "denom"
+      ]
+    },
+    "CurrencyPair": {
+      "properties": {
+        "Base": {
+          "type": "string"
+        },
+        "Quote": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "DenomAdmin": {
+      "properties": {
+        "subdenom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "subdenom"
+      ]
+    },
+    "DexQuery": {
+      "properties": {
+        "params": {
+          "$ref": "#/$defs/QueryParamsRequest",
+          "description": "Parameters queries the parameters of the module."
+        },
+        "limit_order_tranche_user": {
+          "$ref": "#/$defs/QueryGetLimitOrderTrancheUserRequest",
+          "description": "Queries a LimitOrderTrancheUser by index."
+        },
+        "limit_order_tranche_user_all": {
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserRequest",
+          "description": "Queries a list of LimitOrderTrancheUser items."
+        },
+        "limit_order_tranche_user_all_by_address": {
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheUserByAddressRequest",
+          "description": "Queries a list of LimitOrderTrancheUser items for a given address."
+        },
+        "limit_order_tranche": {
+          "$ref": "#/$defs/QueryGetLimitOrderTrancheRequest",
+          "description": "Queries a LimitOrderTranche by index."
+        },
+        "limit_order_tranche_all": {
+          "$ref": "#/$defs/QueryAllLimitOrderTrancheRequest",
+          "description": "Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination."
+        },
+        "user_deposit_all": {
+          "$ref": "#/$defs/QueryAllUserDepositsRequest",
+          "description": "Queries a list of UserDeposits items."
+        },
+        "tick_liquidity_all": {
+          "$ref": "#/$defs/QueryAllTickLiquidityRequest",
+          "description": "Queries a list of TickLiquidity items."
+        },
+        "inactive_limit_order_tranche": {
+          "$ref": "#/$defs/QueryGetInactiveLimitOrderTrancheRequest",
+          "description": "Queries a InactiveLimitOrderTranche by index."
+        },
+        "inactive_limit_order_tranche_all": {
+          "$ref": "#/$defs/QueryAllInactiveLimitOrderTrancheRequest",
+          "description": "Queries a list of InactiveLimitOrderTranche items."
+        },
+        "pool_reserves_all": {
+          "$ref": "#/$defs/QueryAllPoolReservesRequest",
+          "description": "Queries a list of PoolReserves items."
+        },
+        "pool_reserves": {
+          "$ref": "#/$defs/QueryGetPoolReservesRequest",
+          "description": "Queries a PoolReserve by index"
+        },
+        "estimate_multi_hop_swap": {
+          "$ref": "#/$defs/QueryEstimateMultiHopSwapRequest",
+          "description": "Queries the simulated result of a multihop swap"
+        },
+        "estimate_place_limit_order": {
+          "$ref": "#/$defs/QueryEstimatePlaceLimitOrderRequest",
+          "description": "Queries the simulated result of a PlaceLimit order"
+        },
+        "pool": {
+          "$ref": "#/$defs/QueryPoolRequest",
+          "description": "Queries a pool by pair, tick and fee"
+        },
+        "pool_by_id": {
+          "$ref": "#/$defs/QueryPoolByIDRequest",
+          "description": "Queries a pool by ID"
+        },
+        "pool_metadata": {
+          "$ref": "#/$defs/QueryGetPoolMetadataRequest",
+          "description": "Queries a PoolMetadata by ID"
+        },
+        "pool_metadata_all": {
+          "$ref": "#/$defs/QueryAllPoolMetadataRequest",
+          "description": "Queries a list of PoolMetadata items."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "params",
+        "limit_order_tranche_user_all",
+        "limit_order_tranche_user_all_by_address",
+        "limit_order_tranche",
+        "limit_order_tranche_all",
+        "user_deposit_all",
+        "tick_liquidity_all",
+        "inactive_limit_order_tranche",
+        "inactive_limit_order_tranche_all",
+        "pool_reserves_all",
+        "pool_reserves",
+        "estimate_multi_hop_swap",
+        "estimate_place_limit_order",
+        "pool",
+        "pool_by_id",
+        "pool_metadata",
+        "pool_metadata_all"
+      ]
+    },
+    "Failures": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "address"
+      ]
+    },
+    "FullDenom": {
+      "properties": {
+        "creator_addr": {
+          "type": "string"
+        },
+        "subdenom": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "creator_addr",
+        "subdenom"
+      ]
+    },
+    "GetAllCurrencyPairsRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "GetPriceRequest": {
+      "properties": {
+        "currency_pair": {
+          "$ref": "#/$defs/CurrencyPair"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "currency_pair"
+      ]
+    },
+    "GetPricesRequest": {
+      "properties": {
+        "currency_pair_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Int": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "LastUpdatedRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MarketMapQuery": {
+      "properties": {
+        "market_map": {
+          "$ref": "#/$defs/MarketMapRequest"
+        },
+        "last_updated": {
+          "$ref": "#/$defs/LastUpdatedRequest"
+        },
+        "params": {
+          "$ref": "#/$defs/ParamsRequest"
+        },
+        "market": {
+          "$ref": "#/$defs/MarketRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MarketMapRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MarketRequest": {
+      "properties": {
+        "currency_pair": {
+          "$ref": "#/$defs/CurrencyPair"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "currency_pair"
+      ]
+    },
+    "MultiHopRoute": {
+      "properties": {
+        "hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NeutronQuery": {
+      "properties": {
+        "interchain_query_result": {
+          "$ref": "#/$defs/QueryRegisteredQueryResultRequest",
+          "description": "Registered Interchain Query Result for specified QueryID"
+        },
+        "interchain_account_address": {
+          "$ref": "#/$defs/QueryInterchainAccountAddressRequest",
+          "description": "Interchain account address for specified ConnectionID and OwnerAddress"
+        },
+        "registered_interchain_queries": {
+          "$ref": "#/$defs/QueryRegisteredQueriesRequest",
+          "description": "RegisteredInterchainQueries"
+        },
+        "registered_interchain_query": {
+          "$ref": "#/$defs/QueryRegisteredQueryRequest",
+          "description": "RegisteredInterchainQuery"
+        },
+        "total_burned_neutrons_amount": {
+          "$ref": "#/$defs/QueryTotalBurnedNeutronsAmountRequest",
+          "description": "TotalBurnedNeutronsAmount"
+        },
+        "min_ibc_fee": {
+          "$ref": "#/$defs/QueryMinIbcFeeRequest",
+          "description": "MinIbcFee"
+        },
+        "full_denom": {
+          "$ref": "#/$defs/FullDenom",
+          "description": "Token Factory queries\nGiven a subdenom minted by a contract via `NeutronMsg::MintTokens`,\nreturns the full denom as used by `BankMsg::Send`."
+        },
+        "denom_admin": {
+          "$ref": "#/$defs/DenomAdmin",
+          "description": "Returns the admin of a denom, if the denom is a Token Factory denom."
+        },
+        "before_send_hook": {
+          "$ref": "#/$defs/BeforeSendHook",
+          "description": "Returns the before send hook if it was set before"
+        },
+        "failures": {
+          "$ref": "#/$defs/Failures",
+          "description": "Contractmanager queries\nQuery all failures for address"
+        },
+        "dex": {
+          "$ref": "#/$defs/DexQuery",
+          "description": "dex module queries"
+        },
+        "oracle": {
+          "$ref": "#/$defs/OracleQuery",
+          "description": "oracle module queries"
+        },
+        "market_map": {
+          "$ref": "#/$defs/MarketMapQuery",
+          "description": "marketmap module query"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "NeutronQuery contains neutron custom queries."
+    },
+    "OracleQuery": {
+      "properties": {
+        "get_all_currency_pairs": {
+          "$ref": "#/$defs/GetAllCurrencyPairsRequest"
+        },
+        "get_price": {
+          "$ref": "#/$defs/GetPriceRequest"
+        },
+        "get_prices": {
+          "$ref": "#/$defs/GetPricesRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PageRequest": {
+      "properties": {
+        "key": {
+          "type": "string",
+          "contentEncoding": "base64"
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "count_total": {
+          "type": "boolean"
+        },
+        "reverse": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ParamsRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PrecDec": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "NOTE: never use new(Dec) or else we will panic unmarshalling into the nil embedded big.Int"
+    },
+    "QueryAllInactiveLimitOrderTrancheRequest": {
+      "properties": {
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllLimitOrderTrancheRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllLimitOrderTrancheUserByAddressRequest": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllLimitOrderTrancheUserRequest": {
+      "properties": {
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllPoolMetadataRequest": {
+      "properties": {
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllPoolReservesRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllTickLiquidityRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryAllUserDepositsRequest": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        },
+        "include_pool_data": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryEstimateMultiHopSwapRequest": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "routes": {
+          "items": {
+            "$ref": "#/$defs/MultiHopRoute"
+          },
+          "type": "array"
+        },
+        "amount_in": {
+          "$ref": "#/$defs/Int"
+        },
+        "exit_limit_price": {
+          "$ref": "#/$defs/PrecDec"
+        },
+        "pick_best_route": {
+          "type": "boolean",
+          "description": "If pickBestRoute == true then all routes are run and the route with the\nbest price is chosen otherwise, the first succesful route is used."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount_in",
+        "exit_limit_price"
+      ]
+    },
+    "QueryEstimatePlaceLimitOrderRequest": {
+      "properties": {
+        "creator": {
+          "type": "string"
+        },
+        "receiver": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "token_out": {
+          "type": "string"
+        },
+        "tick_index_in_to_out": {
+          "type": "integer"
+        },
+        "amount_in": {
+          "$ref": "#/$defs/Int"
+        },
+        "order_type": {
+          "type": "string"
+        },
+        "expiration_time": {
+          "type": "integer",
+          "description": "expirationTime is only valid iff orderType == GOOD_TIL_TIME."
+        },
+        "max_amount_out": {
+          "$ref": "#/$defs/Int"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "amount_in",
+        "max_amount_out"
+      ],
+      "description": "QueryEstimatePlaceLimitOrderRequest is a copy dextypes.QueryEstimatePlaceLimitOrderRequest with altered ExpirationTime field, it's a preferable way to pass timestamp as unixtime to contracts"
+    },
+    "QueryGetInactiveLimitOrderTrancheRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "tranche_key": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetLimitOrderTrancheRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "tranche_key": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetLimitOrderTrancheUserRequest": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "tranche_key": {
+          "type": "string"
+        },
+        "calc_withdrawable_shares": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetPoolMetadataRequest": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryGetPoolReservesRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "token_in": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "fee": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryInterchainAccountAddressRequest": {
+      "properties": {
+        "owner_address": {
+          "type": "string",
+          "description": "owner_address is the owner of the interchain account on the controller chain"
+        },
+        "interchain_account_id": {
+          "type": "string",
+          "description": "interchain_account_id is an identifier of your interchain account from which you want to execute msgs"
+        },
+        "connection_id": {
+          "type": "string",
+          "description": "connection_id is an IBC connection identifier between Neutron and remote chain"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryMinIbcFeeRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryParamsRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "QueryParamsRequest is request type for the Query/Params RPC method."
+    },
+    "QueryPoolByIDRequest": {
+      "properties": {
+        "pool_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryPoolRequest": {
+      "properties": {
+        "pair_id": {
+          "type": "string"
+        },
+        "tick_index": {
+          "type": "integer"
+        },
+        "fee": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryRegisteredQueriesRequest": {
+      "properties": {
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "connection_id": {
+          "type": "string"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PageRequest"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryRegisteredQueryRequest": {
+      "properties": {
+        "query_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryRegisteredQueryResultRequest": {
+      "properties": {
+        "query_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "QueryTotalBurnedNeutronsAmountRequest": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

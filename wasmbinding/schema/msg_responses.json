@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/neutron-org/neutron/v4/wasmbinding/bindings/neutron-msg-response",
+  "$ref": "#/$defs/NeutronMsgResponse",
+  "$defs": {
+    "AddScheduleResponse": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "AddScheduleResponse holds response AddSchedule"
+    },
+    "NeutronMsgResponse": {
+      "properties": {
+        "register_interchain_account_response": {
+          "$ref": "#/$defs/RegisterInterchainAccountResponse"
+        },
+        "register_interchain_query_response": {
+          "$ref": "#/$defs/RegisterInterchainQueryResponse"
+        },
+        "remove_interchain_query_response": {
+          "$ref": "#/$defs/RemoveInterchainQueryResponse"
+        },
+        "update_interchain_query_response": {
+          "$ref": "#/$defs/UpdateInterchainQueryResponse"
+        },
+        "add_schedule_response": {
+          "$ref": "#/$defs/AddScheduleResponse"
+        },
+        "remove_schedule_response": {
+          "$ref": "#/$defs/RemoveScheduleResponse"
+        },
+        "resubmit_failure_response": {
+          "$ref": "#/$defs/ResubmitFailureResponse"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "RegisterInterchainAccountResponse": {
+      "properties": {
+        "channel_id": {
+          "type": "string"
+        },
+        "port_id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "channel_id",
+        "port_id"
+      ],
+      "description": "RegisterInterchainAccountResponse holds response for RegisterInterchainAccount."
+    },
+    "RegisterInterchainQueryResponse": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "description": "RegisterInterchainQueryResponse holds response for RegisterInterchainQuery"
+    },
+    "RemoveInterchainQueryResponse": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "RemoveScheduleResponse": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "RemoveScheduleResponse holds response RemoveSchedule"
+    },
+    "ResubmitFailureResponse": {
+      "properties": {
+        "failure_id": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "failure_id"
+      ]
+    },
+    "UpdateInterchainQueryResponse": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
