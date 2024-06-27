@@ -255,6 +255,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
 		0,
 		FeeCollectorAddress,
+		tokenfactorytypes.DefaultWhitelistedHooks,
 	))
 	suite.Require().NoError(err)
 

@@ -721,7 +721,7 @@ echo $DAO_CONTRACT_ADDRESS_B64
 
 set_genesis_param admins                                 "[\"$NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS\"]"  # admin module
 set_genesis_param treasury_address                       "\"$DAO_CONTRACT_ADDRESS\""                      # feeburner
-set_genesis_param fee_collector_address                  "\"$DAO_CONTRACT_ADDRESS\""                      # tokenfactory
+set_genesis_param fee_collector_address                  "\"$DAO_CONTRACT_ADDRESS\","                      # tokenfactory
 set_genesis_param security_address                       "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\","    # cron
 set_genesis_param limit                                  5                                                # cron
 #set_genesis_param allow_messages                        "[\"*\"]"                                        # interchainaccounts

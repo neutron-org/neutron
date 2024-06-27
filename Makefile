@@ -121,7 +121,7 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
 
-build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
+build-e2e-docker-image: go.sum $(BUILDDIR)/
 	$(DOCKER) buildx create --name neutronbuilder || true
 	$(DOCKER) buildx use neutronbuilder
 	$(DOCKER) buildx build \
@@ -136,7 +136,12 @@ build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
 		-f Dockerfile.builder .
 
 slinky-e2e-test:
-	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 20m -count=1 ./...
+	@echo "Running e2e slinky tests..."
+	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 30m -count=1 ./...
+
+feemarket-e2e-test:
+	@echo "Running e2e feemarket tests..."
+	@cd ./tests/feemarket &&  go mod tidy && go test -p 1 -v -race -timeout 30m -count=1 ./...
 
 install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond

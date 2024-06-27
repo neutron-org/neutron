@@ -43,6 +43,10 @@ func (gs GenesisState) Validate() error {
 				return errorsmod.Wrapf(ErrInvalidAuthorityMetadata, "Invalid admin address (%s)", err)
 			}
 		}
+
+		if _, err := sdk.AccAddressFromBech32(denom.HookContractAddress); denom.HookContractAddress != "" && err != nil {
+			return errorsmod.Wrapf(ErrInvalidHookContractAddress, "Invalid hook contract address (%s)", err)
+		}
 	}
 
 	return nil

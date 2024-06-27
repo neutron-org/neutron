@@ -14,6 +14,7 @@ func (suite *KeeperTestSuite) TestGenesis() {
 				AuthorityMetadata: types.DenomAuthorityMetadata{
 					Admin: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
 				},
+				HookContractAddress: "",
 			},
 			{
 				Denom: "factory/neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2/diff-admin",
@@ -26,6 +27,7 @@ func (suite *KeeperTestSuite) TestGenesis() {
 				AuthorityMetadata: types.DenomAuthorityMetadata{
 					Admin: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
 				},
+				HookContractAddress: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2",
 			},
 		},
 	}

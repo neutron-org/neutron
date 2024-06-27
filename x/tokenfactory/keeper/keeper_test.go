@@ -57,6 +57,7 @@ func (suite *KeeperTestSuite) Setup() {
 		sdktypes.NewCoins(sdktypes.NewInt64Coin(params.DefaultDenom, TopUpCoinsAmount)),
 		0,
 		FeeCollectorAddress,
+		types.DefaultWhitelistedHooks,
 	))
 	suite.Require().NoError(err)
 
@@ -125,6 +126,47 @@ func (suite *KeeperTestSuite) TestForceTransferMsg() {
 		suite.Require().NoError(err)
 
 		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String(), suite.TestAccs[1].String()))
-		suite.Require().ErrorContains(err, "send from module acc not available")
+		suite.Require().ErrorContains(err, "force transfer from module accounts is forbidden")
+
+		_, err = suite.msgServer.ForceTransfer(suite.ChainA.GetContext(), types.NewMsgForceTransfer(suite.TestAccs[0].String(), mintAmt, suite.TestAccs[1].String(), govModAcc.GetAddress().String()))
+		suite.Require().ErrorContains(err, "force transfer to module accounts is forbidden")
+	})
+}
+
+func (suite *KeeperTestSuite) TestMintToMsg() {
+	suite.Setup()
+
+	// Create a denom
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
+
+	suite.Run("test mint to", func() {
+		mintAmt := sdktypes.NewInt64Coin(suite.defaultDenom, 10)
+
+		govModAcc := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAccount(suite.ChainA.GetContext(), authtypes.FeeCollectorName)
+
+		_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMintTo(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String()))
+		suite.Require().ErrorContains(err, "minting to module accounts is forbidden")
+	})
+}
+
+func (suite *KeeperTestSuite) TestBurnFromMsg() {
+	suite.Setup()
+
+	// Create a denom
+	suite.CreateDefaultDenom(suite.ChainA.GetContext())
+
+	suite.Run("test burn from", func() {
+		mintAmt := sdktypes.NewInt64Coin(suite.defaultDenom, 10)
+
+		_, err := suite.msgServer.Mint(suite.ChainA.GetContext(), types.NewMsgMint(suite.TestAccs[0].String(), mintAmt))
+		suite.Require().NoError(err)
+
+		govModAcc := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAccount(suite.ChainA.GetContext(), authtypes.FeeCollectorName)
+
+		err = suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.SendCoins(suite.ChainA.GetContext(), suite.TestAccs[0], govModAcc.GetAddress(), sdktypes.NewCoins(mintAmt))
+		suite.Require().NoError(err)
+
+		_, err = suite.msgServer.Burn(suite.ChainA.GetContext(), types.NewMsgBurnFrom(suite.TestAccs[0].String(), mintAmt, govModAcc.GetAddress().String()))
+		suite.Require().ErrorContains(err, "burning from module accounts is forbidden")
 	})
 }
