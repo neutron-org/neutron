@@ -72,12 +72,13 @@ func DefaultConfig() network.Config {
 		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
 		nil,
 	)
+	encoding := app.MakeEncodingConfig()
 
 	// app doesn't have these modules anymore, but we need them for test setup, which uses gentx and MsgCreateValidator
-	tempApp.BasicModuleManager[genutiltypes.ModuleName] = genutil.AppModuleBasic{}
-	tempApp.BasicModuleManager[stakingtypes.ModuleName] = staking.AppModuleBasic{}
+	tempApp.BasicModuleManager[genutiltypes.ModuleName] = genutil.AppModule{}
+	tempApp.BasicModuleManager[stakingtypes.ModuleName] = staking.AppModule{}
+	tempApp.BasicModuleManager.RegisterInterfaces(encoding.InterfaceRegistry)
 
-	encoding := app.MakeEncodingConfig()
 	chainID := "chain-" + tmrand.NewRand().Str(6)
 	return network.Config{
 		Codec:             encoding.Marshaler,

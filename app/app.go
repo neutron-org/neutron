@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"io"
 	"io/fs"
 	"net/http"
@@ -246,17 +247,6 @@ var (
 	// 	feeburner.AppModuleBasic{},
 	// 	contractmanager.AppModuleBasic{},
 	// 	cron.AppModuleBasic{},
-	// 	adminmodule.NewAppModuleBasic(
-	// 		govclient.NewProposalHandler(
-	// 			adminmodulecli.NewSubmitParamChangeProposalTxCmd,
-	// 		),
-	// 		govclient.NewProposalHandler(
-	// 			adminmodulecli.NewCmdSubmitUpgradeProposal,
-	// 		),
-	// 		govclient.NewProposalHandler(
-	// 			adminmodulecli.NewCmdSubmitCancelUpgradeProposal,
-	// 		),
-	// 	),
 	// 	ibchooks.AppModuleBasic{},
 	// 	packetforward.AppModuleBasic{},
 	// 	auction.AppModuleBasic{},
@@ -897,6 +887,7 @@ func New(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		tendermint.NewAppModule(),
 		transferModule,
 		consumerModule,
 		icaModule,
