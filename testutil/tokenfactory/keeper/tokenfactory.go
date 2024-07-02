@@ -14,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
+	"github.com/neutron-org/neutron/v4/testutil"
 	"github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
 	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
@@ -43,7 +44,7 @@ func TokenFactoryKeeper(
 		accountKeeper,
 		bankKeeper,
 		contractKeeper,
-		"authority",
+		testutil.TestOwnerAddress,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

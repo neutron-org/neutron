@@ -32,11 +32,5 @@ func (msg *MsgUpdateParams) Validate() error {
 		return errorsmod.Wrap(err, "authority is invalid")
 	}
 
-	// TODO: This is inconsistent. Per Params.Validate() an empty creator address is valid as long as
-	// DenomCreationFee is nil. But This check fails if FeeCollectorAddress is unset.
-	if _, err := sdk.AccAddressFromBech32(msg.Params.FeeCollectorAddress); err != nil {
-		return errorsmod.Wrap(err, "fee_collector_address is invalid")
-	}
-
 	return msg.Params.Validate()
 }
