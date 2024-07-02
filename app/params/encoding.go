@@ -37,6 +37,11 @@ func MakeEncodingConfig() EncodingConfig {
 	if err != nil {
 		panic(err)
 	}
+
+	if err := reg.SigningContext().Validate(); err != nil {
+		panic(err)
+	}
+
 	marshaler := codec.NewProtoCodec(reg)
 	txCfg := tx.NewTxConfig(marshaler, tx.DefaultSignModes)
 

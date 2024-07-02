@@ -2,9 +2,11 @@ package network
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/v4/testutil"
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
@@ -55,12 +57,31 @@ func New(t *testing.T, configs ...network.Config) *network.Network {
 // DefaultConfig will initialize config for the network with custom application,
 // genesis and single validator. All other parameters are inherited from cosmos-sdk/testutil/network.DefaultConfig
 func DefaultConfig() network.Config {
-	// app doesn't have these modules anymore, but we need them for test setup, which uses gentx and MsgCreateValidator
-	app.ModuleBasics[genutiltypes.ModuleName] = genutil.AppModuleBasic{}
-	app.ModuleBasics[stakingtypes.ModuleName] = staking.AppModuleBasic{}
+	memoryDB := db.NewMemDB()
 
-	encoding := app.MakeEncodingConfig()
+	// TODO: move to depinject
+	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
+	// note, this is not necessary when using app wiring, as depinject can be directly used
 	chainID := "chain-" + tmrand.NewRand().Str(6)
+	tempHome := testutil.TestHomeDir(chainID)
+	tempApp := app.New(
+		log.NewNopLogger(),
+		memoryDB,
+		nil,
+		false,
+		map[int64]bool{},
+		tempHome,
+		0,
+		sims.NewAppOptionsWithFlagHome(tempHome),
+		nil,
+	)
+	encoding := app.MakeEncodingConfig()
+
+	// app doesn't have these modules anymore, but we need them for test setup, which uses gentx and MsgCreateValidator
+	tempApp.BasicModuleManager[genutiltypes.ModuleName] = genutil.AppModule{}
+	tempApp.BasicModuleManager[stakingtypes.ModuleName] = staking.AppModule{}
+	tempApp.BasicModuleManager.RegisterInterfaces(encoding.InterfaceRegistry)
+
 	return network.Config{
 		Codec:             encoding.Marshaler,
 		TxConfig:          encoding.TxConfig,
@@ -75,7 +96,6 @@ func DefaultConfig() network.Config {
 
 			return app.New(
 				val.GetCtx().Logger, db.NewMemDB(), nil, true, map[int64]bool{}, val.GetCtx().Config.RootDir, 0,
-				encoding,
 				sims.EmptyAppOptions{},
 				nil,
 				baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
@@ -83,7 +103,7 @@ func DefaultConfig() network.Config {
 				baseapp.SetChainID(chainID),
 			)
 		},
-		GenesisState:  app.ModuleBasics.DefaultGenesis(encoding.Marshaler),
+		GenesisState:  tempApp.BasicModuleManager.DefaultGenesis(encoding.Marshaler),
 		TimeoutCommit: 2 * time.Second,
 		ChainID:       chainID,
 		// Some changes are introduced to make the tests run as if neutron is a standalone chain.

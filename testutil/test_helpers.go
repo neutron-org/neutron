@@ -285,7 +285,7 @@ func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
 	}
 }
 
-func testHomeDir(chainID string) string {
+func TestHomeDir(chainID string) string {
 	projectRoot := utils.RootDir()
 	return path.Join(projectRoot, ".testchains", chainID)
 }
@@ -419,7 +419,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		encoding := app.MakeEncodingConfig()
 		db := db2.NewMemDB()
-		homePath := testHomeDir("testchain-" + tmrand.NewRand().Str(6))
+		homePath := TestHomeDir("testchain-" + tmrand.NewRand().Str(6))
 		testApp := app.New(
 			log.NewNopLogger(),
 			db,
@@ -428,7 +428,6 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 			map[int64]bool{},
 			homePath,
 			0,
-			encoding,
 			sims.EmptyAppOptions{},
 			nil,
 		)
@@ -438,7 +437,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 		// and then we manually init baseapp and load states
 		testApp.LoadLatest()
 
-		genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
+		genesisState := testApp.NewDefaultGenesisState()
 
 		// TODO: why isn't it in the `testApp.TestInitChainer`?
 		// NOTE ibc-go/v7/testing.SetupWithGenesisValSet requires a staking module
