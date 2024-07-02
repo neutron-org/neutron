@@ -49,8 +49,6 @@ import (
 // NewRootCmd creates a new root command for neutrond. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
-	encodingConfig := app.MakeEncodingConfig()
-
 	// create a temporary application for use in constructing query + tx commands
 	initAppOptions := viper.New()
 	tempDir := tempDir()
@@ -66,6 +64,12 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
 		nil,
 	)
+	encodingConfig := params.EncodingConfig{
+		InterfaceRegistry: tempApplication.InterfaceRegistry(),
+		Marshaler:         tempApplication.AppCodec(),
+		TxConfig:          tempApplication.GetTxConfig(),
+		Amino:             tempApplication.LegacyAmino(),
+	}
 	defer func() {
 		if err := tempApplication.Close(); err != nil {
 			panic(err)

@@ -926,6 +926,7 @@ func New(
 		marketmapModule,
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
+		genutil.NewAppModule(app.AccountKeeper, app.ConsumerKeeper, app, encodingConfig.TxConfig),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1076,6 +1077,7 @@ func New(
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
+		genutiltypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1529,6 +1531,14 @@ func (app *App) LegacyAmino() *codec.LegacyAmino {
 // for modules to register their own custom testing types.
 func (app *App) AppCodec() codec.Codec {
 	return app.appCodec
+}
+
+func (app *App) InterfaceRegistry() types.InterfaceRegistry {
+	return app.interfaceRegistry
+}
+
+func (app *App) GetConfigurator() module.Configurator {
+	return app.configurator
 }
 
 // GetKey returns the KVStoreKey for the provided store key.

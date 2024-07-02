@@ -2,8 +2,12 @@ package testutil
 
 import (
 	"bytes"
+	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/testutil/network"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"os"
 	"path"
 	"testing"
@@ -506,4 +510,28 @@ func SetupTransferPath(path *ibctesting.Path) error {
 	}
 
 	return path.EndpointB.ChanOpenConfirm()
+}
+
+// ModifyGenesisClearGenTxs removes MsgCreateValidator messages from a final test genesis
+func ModifyGenesisClearGenTxs(val network.Validator) error {
+	genFile := val.Ctx.Config.GenesisFile()
+	appState, genDoc, err := genutiltypes.GenesisStateFromGenFile(genFile)
+	if err != nil {
+		return errors.Wrap(err, "failed to read genesis from the file")
+	}
+
+	appState[genutiltypes.ModuleName] = []byte(`{"gen_txs":[]}`)
+
+	appStateJSON, err := json.Marshal(appState)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal application genesis state into JSON")
+	}
+
+	genDoc.AppState = appStateJSON
+	err = genutil.ExportGenesisFile(genDoc, genFile)
+	if err != nil {
+		return errors.Wrap(err, "failed to export genesis state")
+	}
+
+	return nil
 }

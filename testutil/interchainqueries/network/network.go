@@ -20,8 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -75,10 +73,13 @@ func DefaultConfig() network.Config {
 		sims.NewAppOptionsWithFlagHome(tempHome),
 		nil,
 	)
-	encoding := app.MakeEncodingConfig()
-
-	// app doesn't have these modules anymore, but we need them for test setup, which uses gentx and MsgCreateValidator
-	tempApp.BasicModuleManager[genutiltypes.ModuleName] = genutil.AppModule{}
+	encoding := params.EncodingConfig{
+		InterfaceRegistry: tempApp.InterfaceRegistry(),
+		Marshaler:         tempApp.AppCodec(),
+		TxConfig:          tempApp.GetTxConfig(),
+		Amino:             tempApp.LegacyAmino(),
+	}
+	// app doesn't have this module, but we need it for test setup, which uses MsgCreateValidator
 	tempApp.BasicModuleManager[stakingtypes.ModuleName] = staking.AppModule{}
 	tempApp.BasicModuleManager.RegisterInterfaces(encoding.InterfaceRegistry)
 
@@ -90,6 +91,11 @@ func DefaultConfig() network.Config {
 		AccountRetriever:  authtypes.AccountRetriever{},
 		AppConstructor: func(val network.ValidatorI) servertypes.Application {
 			err := consumer.ModifyConsumerGenesis(val.(network.Validator))
+			if err != nil {
+				panic(err)
+			}
+
+			err = testutil.ModifyGenesisClearGenTxs(val.(network.Validator))
 			if err != nil {
 				panic(err)
 			}
