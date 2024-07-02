@@ -911,3 +911,70 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestMsgUpdateParamsWhitelistedHooks(t *testing.T) {
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
+
+	tests := []struct {
+		name   string
+		params types.Params
+		error  string
+	}{
+		{
+			"success",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{{DenomCreator: testAddress, CodeID: 1}},
+			},
+			"",
+		},
+		{
+			"success multiple ",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{
+					{DenomCreator: testAddress, CodeID: 1},
+					{DenomCreator: testAddress, CodeID: 2},
+				},
+			},
+			"",
+		},
+		{
+			"invalid denom creator",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{
+					{DenomCreator: "bad_address", CodeID: 1},
+				},
+			},
+			"invalid denom creator",
+		},
+		{
+			"duplicate hooks",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{
+					{DenomCreator: testAddress, CodeID: 1},
+					{DenomCreator: testAddress, CodeID: 1},
+				},
+			},
+			"duplicate whitelisted hook",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			msg := &types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params:    tt.params,
+			}
+			resp, err := k.UpdateParams(ctx, msg)
+			if len(tt.error) > 0 {
+				require.ErrorContains(t, err, tt.error)
+				require.Nil(t, resp)
+
+			} else {
+				require.NoError(t, err)
+				newParams := k.GetParams(ctx)
+				require.Equal(t, tt.params, newParams)
+			}
+		})
+	}
+}
