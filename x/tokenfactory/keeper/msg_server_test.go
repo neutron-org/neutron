@@ -869,24 +869,36 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 			"authority is invalid",
 		},
 		{
-			"empty fee_collector_address",
+			"empty fee_collector_address with denom_creation_fee",
 			types.MsgUpdateParams{
 				Authority: testutil.TestOwnerAddress,
 				Params: types.Params{
 					FeeCollectorAddress: "",
+					DenomCreationFee:    sdktypes.NewCoins(sdktypes.NewCoin("untrn", math.OneInt())),
 				},
 			},
-			"fee_collector_address is invalid",
+			"DenomCreationFee and FeeCollectorAddr must be both set or both unset",
+		},
+		{
+			"fee_collector_address empty denom_creation_fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					FeeCollectorAddress: testAddress,
+				},
+			},
+			"DenomCreationFee and FeeCollectorAddr must be both set or both unset",
 		},
 		{
 			"invalid fee_collector_address",
 			types.MsgUpdateParams{
 				Authority: testutil.TestOwnerAddress,
 				Params: types.Params{
+					DenomCreationFee:    sdktypes.NewCoins(sdktypes.NewCoin("untrn", math.OneInt())),
 					FeeCollectorAddress: "invalid fee_collector_address",
 				},
 			},
-			"fee_collector_address is invalid",
+			"failed to validate FeeCollectorAddress",
 		},
 	}
 
