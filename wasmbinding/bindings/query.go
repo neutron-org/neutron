@@ -278,8 +278,6 @@ type DexQuery struct {
 // QueryEstimatePlaceLimitOrderRequest is a copy dextypes.QueryEstimatePlaceLimitOrderRequest with altered ExpirationTime field,
 // it's a preferable way to pass timestamp as unixtime to contracts
 type QueryEstimatePlaceLimitOrderRequest struct {
-	Creator          string   `json:"creator,omitempty"`
-	Receiver         string   `json:"receiver,omitempty"`
 	TokenIn          string   `json:"token_in,omitempty"`
 	TokenOut         string   `json:"token_out,omitempty"`
 	TickIndexInToOut int64    `json:"tick_index_in_to_out,omitempty"`

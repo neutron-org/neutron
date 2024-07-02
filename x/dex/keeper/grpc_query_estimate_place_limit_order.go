@@ -3,20 +3,19 @@ package keeper
 import (
 	"context"
 
-	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
-// TODO: This doesn't run ValidateBasic() checks.
 func (k Keeper) EstimatePlaceLimitOrder(
 	goCtx context.Context,
 	req *types.QueryEstimatePlaceLimitOrderRequest,
 ) (*types.QueryEstimatePlaceLimitOrderResponse, error) {
 	msg := types.MsgPlaceLimitOrder{
-		Creator:          req.Creator,
-		Receiver:         req.Receiver,
+		// Add a random address so that Validate passes. This address is not used for anything within the query
+		Creator:          "neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
+		Receiver:         "neutron1dft8nwxzr0u27wvr2cknpermjkreqvp9fdy0uz",
 		TokenIn:          req.TokenIn,
 		TokenOut:         req.TokenOut,
 		TickIndexInToOut: req.TickIndexInToOut,
@@ -32,18 +31,13 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	cacheCtx, _ := ctx.CacheContext()
 
-	callerAddr := sdk.MustAccAddressFromBech32(req.Creator)
-	receiverAddr := sdk.MustAccAddressFromBech32(req.Receiver)
-
-	blockTime := cacheCtx.BlockTime()
-	if req.OrderType.IsGoodTil() && !req.ExpirationTime.After(blockTime) {
-		return nil, sdkerrors.Wrapf(types.ErrExpirationTimeInPast,
-			"Current BlockTime: %s; Provided ExpirationTime: %s",
-			blockTime.String(),
-			req.ExpirationTime.String(),
-		)
+	err := msg.ValidateGoodTilExpiration(ctx.BlockTime())
+	if err != nil {
+		return nil, err
 	}
 
+	oldBk := k.bankKeeper
+	k.bankKeeper = NewSimulationBankKeeper(k.bankKeeper)
 	_, totalInCoin, swapInCoin, swapOutCoin, err := k.PlaceLimitOrderCore(
 		cacheCtx,
 		req.TokenIn,
@@ -53,14 +47,15 @@ func (k Keeper) EstimatePlaceLimitOrder(
 		req.OrderType,
 		req.ExpirationTime,
 		req.MaxAmountOut,
-		callerAddr,
-		receiverAddr,
+		[]byte("caller"),
+		[]byte("receiver"),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	// NB: We're only using a cache context so we don't expect any writes to happen.
+	//nolint:staticcheck // Should be unnecessary but out of an abundance of caution we restore the old bankkeeper
+	k.bankKeeper = oldBk
 
 	return &types.QueryEstimatePlaceLimitOrderResponse{
 		TotalInCoin: totalInCoin,

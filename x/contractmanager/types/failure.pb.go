@@ -5,12 +5,11 @@ package types
 
 import (
 	fmt "fmt"
+	proto "github.com/cosmos/gogoproto/proto"
+	_ "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	proto "github.com/cosmos/gogoproto/proto"
-	_ "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

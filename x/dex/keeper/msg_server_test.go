@@ -882,7 +882,7 @@ func (s *DexTestSuite) multiHopSwaps(
 	s.Assert().Nil(err)
 }
 
-func (s *DexTestSuite) aliceEstimatesMultiHopSwap(
+func (s *DexTestSuite) estimateMultiHopSwap(
 	routes [][]string,
 	amountIn int,
 	exitLimitPrice math_utils.PrecDec,
@@ -893,8 +893,6 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwap(
 		multiHopRoutes[i] = &types.MultiHopRoute{Hops: hops}
 	}
 	msg := &types.QueryEstimateMultiHopSwapRequest{
-		Creator:        s.alice.String(),
-		Receiver:       s.alice.String(),
 		Routes:         multiHopRoutes,
 		AmountIn:       sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		ExitLimitPrice: exitLimitPrice,
@@ -905,7 +903,7 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwap(
 	return res.CoinOut
 }
 
-func (s *DexTestSuite) aliceEstimatesMultiHopSwapFails(
+func (s *DexTestSuite) estimateMultiHopSwapFails(
 	expectedErr error,
 	routes [][]string,
 	amountIn int,
@@ -917,8 +915,6 @@ func (s *DexTestSuite) aliceEstimatesMultiHopSwapFails(
 		multiHopRoutes[i] = &types.MultiHopRoute{Hops: hops}
 	}
 	msg := &types.QueryEstimateMultiHopSwapRequest{
-		Creator:        s.alice.String(),
-		Receiver:       s.alice.String(),
 		Routes:         multiHopRoutes,
 		AmountIn:       sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
 		ExitLimitPrice: exitLimitPrice,
