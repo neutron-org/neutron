@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"github.com/neutron-org/neutron/v4/testutil"
 	"testing"
 	"time"
 
@@ -61,15 +62,17 @@ func DefaultConfig() network.Config {
 	// TODO: move to depinject
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used
+	chainID := "chain-" + tmrand.NewRand().Str(6)
+	tempHome := testutil.TestHomeDir(chainID)
 	tempApp := app.New(
 		log.NewNopLogger(),
 		memoryDB,
 		nil,
 		false,
 		map[int64]bool{},
-		app.DefaultNodeHome,
+		tempHome,
 		0,
-		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
+		sims.NewAppOptionsWithFlagHome(tempHome),
 		nil,
 	)
 	encoding := app.MakeEncodingConfig()
@@ -79,7 +82,6 @@ func DefaultConfig() network.Config {
 	tempApp.BasicModuleManager[stakingtypes.ModuleName] = staking.AppModule{}
 	tempApp.BasicModuleManager.RegisterInterfaces(encoding.InterfaceRegistry)
 
-	chainID := "chain-" + tmrand.NewRand().Str(6)
 	return network.Config{
 		Codec:             encoding.Marshaler,
 		TxConfig:          encoding.TxConfig,

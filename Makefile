@@ -111,7 +111,7 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
-		--build-arg BUILD_TAGS=$(build_tags_comma_sep) \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep),muslc \
 		--platform linux/amd64 \
 		-t neutron-amd64 \
 		--load \
@@ -120,6 +120,28 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) create -ti --name neutronbinary neutron-amd64
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
+
+build-e2e-docker-image: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name neutronbuilder || true
+	$(DOCKER) buildx use neutronbuilder
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+		--build-arg BUILD_TAGS=$(build_tags_comma_sep),skip_ccv_msg_filter,muslc \
+		--build-arg RUNNER_IMAGE="alpine:3.18" \
+		--platform linux/amd64 \
+		-t neutron-node \
+		--load \
+		-f Dockerfile.builder .
+
+slinky-e2e-test:
+	@echo "Running e2e slinky tests..."
+	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 30m -count=1 ./...
+
+feemarket-e2e-test:
+	@echo "Running e2e feemarket tests..."
+	@cd ./tests/feemarket &&  go mod tidy && go test -p 1 -v -race -timeout 30m -count=1 ./...
 
 install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond

@@ -7,7 +7,7 @@ import (
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	keeper2 "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
@@ -19,7 +19,7 @@ import (
 
 	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
-	adminkeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
 	"github.com/neutron-org/neutron/v4/app/params"
 
@@ -76,6 +76,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
 		0,
 		FeeCollectorAddress,
+		tokenfactorytypes.DefaultWhitelistedHooks,
 	))
 	suite.Require().NoError(err)
 
@@ -602,11 +603,10 @@ func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
 	msg, err := json.Marshal(bindings.NeutronMsg{
 		SubmitAdminProposal: &bindings.SubmitAdminProposal{
 			AdminProposal: bindings.AdminProposal{
-				ClientUpdateProposal: &bindings.ClientUpdateProposal{
-					Title:              "aaa",
-					Description:        "ddafds",
-					SubjectClientId:    "sdfsdf",
-					SubstituteClientId: "sdfsd",
+				ParamChangeProposal: &bindings.ParamChangeProposal{
+					Title:        "aaa",
+					Description:  "ddafds",
+					ParamChanges: nil,
 				},
 				ProposalExecuteMessage: &bindings.ProposalExecuteMessage{Message: executeMsg},
 			},

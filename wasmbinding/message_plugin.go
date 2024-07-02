@@ -13,6 +13,7 @@ import (
 
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 
@@ -25,18 +26,17 @@ import (
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	softwareUpgrade "cosmossdk.io/x/upgrade/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
-	admintypes "github.com/cosmos/admin-module/x/adminmodule/types"
+	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
+	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	//nolint:staticcheck
 
 	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
 	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
@@ -224,10 +224,11 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 		return handleDexMsg(ctx, dex.Withdrawal, m.DexMsgServer.Withdrawal)
 	case dex.PlaceLimitOrder != nil:
 		msg := dextypes.MsgPlaceLimitOrder{
-			Creator:          contractAddr.String(),
-			Receiver:         dex.PlaceLimitOrder.Receiver,
-			TokenIn:          dex.PlaceLimitOrder.TokenIn,
-			TokenOut:         dex.PlaceLimitOrder.TokenOut,
+			Creator:  contractAddr.String(),
+			Receiver: dex.PlaceLimitOrder.Receiver,
+			TokenIn:  dex.PlaceLimitOrder.TokenIn,
+			TokenOut: dex.PlaceLimitOrder.TokenOut,
+			//nolint: staticcheck // TODO: remove in next release
 			TickIndexInToOut: dex.PlaceLimitOrder.TickIndexInToOut,
 			AmountIn:         dex.PlaceLimitOrder.AmountIn,
 			MaxAmountOut:     dex.PlaceLimitOrder.MaxAmountOut,
@@ -247,6 +248,15 @@ func (m *CustomMessenger) dispatchDexMsg(ctx sdk.Context, contractAddr sdk.AccAd
 			t := time.Unix(int64(*(dex.PlaceLimitOrder.ExpirationTime)), 0)
 			msg.ExpirationTime = &t
 		}
+
+		if limitPriceStr := dex.PlaceLimitOrder.LimitSellPrice; limitPriceStr != "" {
+			limitPriceDec, err := dexutils.ParsePrecDecScientificNotation(limitPriceStr)
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "cannot parse string %s for limit price", limitPriceStr)
+			}
+			msg.LimitSellPrice = &limitPriceDec
+		}
+
 		return handleDexMsg(ctx, &msg, m.DexMsgServer.PlaceLimitOrder)
 	case dex.CancelLimitOrder != nil:
 		dex.CancelLimitOrder.Creator = contractAddr.String()
@@ -516,32 +526,6 @@ func (m *CustomMessenger) performSubmitAdminProposalLegacy(ctx sdk.Context, cont
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set content on ParameterChangeProposal")
 		}
-	case proposal.UpgradeProposal != nil:
-		p := proposal.UpgradeProposal
-		err := msg.SetContent(&ibcclienttypes.UpgradeProposal{ //nolint:staticcheck
-			Title:       p.Title,
-			Description: p.Description,
-			Plan: softwareUpgrade.Plan{
-				Name:   p.Plan.Name,
-				Height: p.Plan.Height,
-				Info:   p.Plan.Info,
-			},
-			UpgradedClientState: p.UpgradedClientState,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on UpgradeProposal")
-		}
-	case proposal.ClientUpdateProposal != nil:
-		p := proposal.ClientUpdateProposal
-		err := msg.SetContent(&ibcclienttypes.ClientUpdateProposal{ //nolint:staticcheck
-			Title:              p.Title,
-			Description:        p.Description,
-			SubjectClientId:    p.SubjectClientId,
-			SubstituteClientId: p.SubstituteClientId,
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to set content on ClientUpdateProposal")
-		}
 	default:
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "unexpected legacy admin proposal structure: %+v", proposal)
 	}
@@ -701,25 +685,20 @@ func (m *CustomMessenger) setBeforeSendHook(ctx sdk.Context, contractAddr sdk.Ac
 }
 
 // PerformMint used with mintTokens to validate the mint message and mint through token factory.
-func PerformMint(f *tokenfactorykeeper.Keeper, b *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
+func PerformMint(f *tokenfactorykeeper.Keeper, _ *bankkeeper.BaseKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, mint *bindings.MintTokens) error {
 	rcpt, err := parseAddress(mint.MintToAddress)
 	if err != nil {
 		return err
 	}
 
 	coin := sdk.Coin{Denom: mint.Denom, Amount: mint.Amount}
-	sdkMsg := tokenfactorytypes.NewMsgMint(contractAddr.String(), coin)
+	sdkMsg := tokenfactorytypes.NewMsgMintTo(contractAddr.String(), coin, rcpt.String())
 
 	// Mint through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
 	_, err = msgServer.Mint(ctx, sdkMsg)
 	if err != nil {
 		return errors.Wrap(err, "minting coins from message")
-	}
-
-	err = b.SendCoins(ctx, contractAddr, rcpt, sdk.NewCoins(coin))
-	if err != nil {
-		return errors.Wrap(err, "sending newly minted coins from message")
 	}
 
 	return nil
@@ -970,12 +949,6 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 	if proposal.ParamChangeProposal != nil {
 		qty++
 	}
-	if proposal.ClientUpdateProposal != nil {
-		qty++
-	}
-	if proposal.UpgradeProposal != nil {
-		qty++
-	}
 	if proposal.ProposalExecuteMessage != nil {
 		qty++
 	}
@@ -992,9 +965,7 @@ func (m *CustomMessenger) validateProposalQty(proposal *bindings.AdminProposal) 
 
 func (m *CustomMessenger) isLegacyProposal(proposal *bindings.AdminProposal) bool {
 	switch {
-	case proposal.ParamChangeProposal != nil,
-		proposal.UpgradeProposal != nil,
-		proposal.ClientUpdateProposal != nil:
+	case proposal.ParamChangeProposal != nil:
 		return true
 	default:
 		return false

@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - "*"
+    branches:
+      - "main"
+      - "releases/v3.x"
+      - "chore/fix-ci"
+  pull_request:
+    branches:
+      - "main"
+      - "releases/v3.x"
+      - "chore/fix-ci"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to run the workflow for'
+        required: false
+        default: ''
+
+jobs:
+  docker:
+    runs-on: self-hosted
+    env:
+      DOCKER_BUILDKIT: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq curl git
+
+      - name: Install Go
+        run: |
+          GO_VERSION=1.22.4
+          curl -LO https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz
+          sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+          echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
+          source $HOME/.profile
+        shell: bash
+
+      - name: Download Buildx with Hydrobuilder support
+        run: |
+          ARCH=amd64
+          BUILDX_URL=$(curl -s https://raw.githubusercontent.com/docker/actions-toolkit/main/.github/buildx-lab-releases.json | jq -r ".latest.assets[] | select(endswith(\"linux-$ARCH\"))")
+          mkdir -vp ~/.docker/cli-plugins/
+          curl --silent -L --output ~/.docker/cli-plugins/docker-buildx $BUILDX_URL
+          chmod a+x ~/.docker/cli-plugins/docker-buildx
+
+      - name: Get version from git tags or input
+        id: get_version
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            VERSION=${{ github.event.inputs.tag }}
+          else
+            VERSION=$(git describe --tags --abbrev=0)
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: "lab:latest"
+          driver: cloud
+          endpoint: "neutronorg/neutron"
+          install: true
+
+      - name: Build and push Docker image
+        env:
+          VERSION: ${{ env.VERSION }}
+          BUILDER: ${{ steps.buildx.outputs.name }}
+        run: |
+          docker buildx use $BUILDER
+          make build-static-linux-amd64
+          docker tag neutron-amd64:latest neutronorg/neutron:${{ env.VERSION }}
+          docker push neutronorg/neutron:${{ env.VERSION }}
+
+      - name: Cleanup temporary container
+        run: docker rm -f neutronbinary || true

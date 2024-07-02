@@ -13876,6 +13876,17 @@ definitions:
       QueryAllContractStateResponse is the response type for the
       Query/AllContractState RPC method
     type: object
+  cosmwasm.wasm.v1.QueryBuildAddressResponse:
+    description: >-
+      QueryBuildAddressResponse is the response type for the Query/BuildAddress
+      RPC
+
+      method.
+    properties:
+      address:
+        title: Address is the contract address
+        type: string
+    type: object
   cosmwasm.wasm.v1.QueryCodeResponse:
     properties:
       code_info:
@@ -14299,6 +14310,296 @@ definitions:
     title: |-
       QuerySmartContractStateResponse is the response type for the
       Query/SmartContractState RPC method
+    type: object
+  feemarket.feemarket.v1.GasPriceResponse:
+    description: |-
+      GasPriceResponse is the response type for the Query/GasPrice RPC method.
+      Returns a gas price in specified denom.
+    properties:
+      price:
+        description: |-
+          DecCoin defines a token with a denomination and a decimal amount.
+
+          NOTE: The amount field is an Dec which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+    type: object
+  feemarket.feemarket.v1.GasPricesResponse:
+    description: |-
+      GasPricesResponse is the response type for the Query/GasPrices RPC method.
+      Returns a gas price in all available denoms.
+    properties:
+      prices:
+        items:
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+    type: object
+  feemarket.feemarket.v1.Params:
+    description: |-
+      Params contains the required set of parameters for the EIP1559 fee market
+      plugin implementation.
+    properties:
+      alpha:
+        description: |-
+          Alpha is the amount we additively increase the learning rate
+          when it is above or below the target +/- threshold.
+
+          Must be > 0.
+        type: string
+      beta:
+        description: |-
+          Beta is the amount we multiplicatively decrease the learning rate
+          when it is within the target +/- threshold.
+
+          Must be [0, 1].
+        type: string
+      delta:
+        description: >-
+          Delta is the amount we additively increase/decrease the gas price when
+          the
+
+          net block utilization difference in the window is above/below the
+          target
+
+          utilization.
+        type: string
+      distribute_fees:
+        description: >-
+          DistributeFees is a boolean that determines whether the fees are
+          burned or
+
+          distributed to all stakers.
+        type: boolean
+      enabled:
+        description: |-
+          Enabled is a boolean that determines whether the EIP1559 fee market is
+          enabled.
+        type: boolean
+      fee_denom:
+        description: FeeDenom is the denom that will be used for all fee payments.
+        type: string
+      gamma:
+        description: |-
+          Gamma is the threshold for the learning rate. If the learning rate is
+          above or below the target +/- threshold, we additively increase the
+          learning rate by Alpha. Otherwise, we multiplicatively decrease the
+          learning rate by Beta.
+
+          Must be [0, 0.5].
+        type: string
+      max_block_utilization:
+        description: MaxBlockUtilization is the maximum block utilization.
+        format: uint64
+        type: string
+      max_learning_rate:
+        description: MaxLearningRate is the upper bound for the learning rate.
+        type: string
+      min_base_gas_price:
+        description: |-
+          MinBaseGasPrice determines the initial gas price of the module and the
+          global minimum for the network.
+        type: string
+      min_learning_rate:
+        description: MinLearningRate is the lower bound for the learning rate.
+        type: string
+      window:
+        description: >-
+          Window defines the window size for calculating an adaptive learning
+          rate
+
+          over a moving window of blocks.
+        format: uint64
+        type: string
+    type: object
+  feemarket.feemarket.v1.ParamsResponse:
+    description: ParamsResponse is the response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: >-
+          Params contains the required set of parameters for the EIP1559 fee
+          market
+
+          plugin implementation.
+        properties:
+          alpha:
+            description: |-
+              Alpha is the amount we additively increase the learning rate
+              when it is above or below the target +/- threshold.
+
+              Must be > 0.
+            type: string
+          beta:
+            description: |-
+              Beta is the amount we multiplicatively decrease the learning rate
+              when it is within the target +/- threshold.
+
+              Must be [0, 1].
+            type: string
+          delta:
+            description: >-
+              Delta is the amount we additively increase/decrease the gas price
+              when the
+
+              net block utilization difference in the window is above/below the
+              target
+
+              utilization.
+            type: string
+          distribute_fees:
+            description: >-
+              DistributeFees is a boolean that determines whether the fees are
+              burned or
+
+              distributed to all stakers.
+            type: boolean
+          enabled:
+            description: >-
+              Enabled is a boolean that determines whether the EIP1559 fee
+              market is
+
+              enabled.
+            type: boolean
+          fee_denom:
+            description: FeeDenom is the denom that will be used for all fee payments.
+            type: string
+          gamma:
+            description: >-
+              Gamma is the threshold for the learning rate. If the learning rate
+              is
+
+              above or below the target +/- threshold, we additively increase
+              the
+
+              learning rate by Alpha. Otherwise, we multiplicatively decrease
+              the
+
+              learning rate by Beta.
+
+
+              Must be [0, 0.5].
+            type: string
+          max_block_utilization:
+            description: MaxBlockUtilization is the maximum block utilization.
+            format: uint64
+            type: string
+          max_learning_rate:
+            description: MaxLearningRate is the upper bound for the learning rate.
+            type: string
+          min_base_gas_price:
+            description: >-
+              MinBaseGasPrice determines the initial gas price of the module and
+              the
+
+              global minimum for the network.
+            type: string
+          min_learning_rate:
+            description: MinLearningRate is the lower bound for the learning rate.
+            type: string
+          window:
+            description: >-
+              Window defines the window size for calculating an adaptive
+              learning rate
+
+              over a moving window of blocks.
+            format: uint64
+            type: string
+        type: object
+    type: object
+  feemarket.feemarket.v1.State:
+    description: >-
+      State is utilized to track the current state of the fee market. This
+      includes
+
+      the current base fee, learning rate, and block utilization within the
+
+      specified AIMD window.
+    properties:
+      base_gas_price:
+        description: >-
+          BaseGasPrice is the current base fee. This is denominated in the fee
+          per
+
+          gas unit.
+        type: string
+      index:
+        description: >-
+          Index is the index of the current block in the block utilization
+          window.
+        format: uint64
+        type: string
+      learning_rate:
+        description: LearningRate is the current learning rate.
+        type: string
+      window:
+        description: >-
+          Window contains a list of the last blocks' utilization values. This is
+          used
+
+          to calculate the next base fee. This stores the number of units of gas
+
+          consumed per block.
+        items:
+          format: uint64
+          type: string
+        type: array
+    type: object
+  feemarket.feemarket.v1.StateResponse:
+    description: StateResponse is the response type for the Query/State RPC method.
+    properties:
+      state:
+        description: >-
+          State is utilized to track the current state of the fee market. This
+          includes
+
+          the current base fee, learning rate, and block utilization within the
+
+          specified AIMD window.
+        properties:
+          base_gas_price:
+            description: >-
+              BaseGasPrice is the current base fee. This is denominated in the
+              fee per
+
+              gas unit.
+            type: string
+          index:
+            description: >-
+              Index is the index of the current block in the block utilization
+              window.
+            format: uint64
+            type: string
+          learning_rate:
+            description: LearningRate is the current learning rate.
+            type: string
+          window:
+            description: >-
+              Window contains a list of the last blocks' utilization values.
+              This is used
+
+              to calculate the next base fee. This stores the number of units of
+              gas
+
+              consumed per block.
+            items:
+              format: uint64
+              type: string
+            type: array
+        type: object
     type: object
   gaia.globalfee.v1beta1.Params:
     description: Params defines the set of module parameters.
@@ -15608,8 +15909,14 @@ definitions:
           format: uint64
           type: string
         type: array
-      max_true_taker_spread:
+      good_til_purge_allowance:
+        format: uint64
         type: string
+      max_jits_per_block:
+        format: uint64
+        type: string
+      paused:
+        type: boolean
     type: object
   neutron.dex.Pool:
     properties:
@@ -16569,8 +16876,14 @@ definitions:
               format: uint64
               type: string
             type: array
-          max_true_taker_spread:
+          good_til_purge_allowance:
+            format: uint64
             type: string
+          max_jits_per_block:
+            format: uint64
+            type: string
+          paused:
+            type: boolean
         type: object
     type: object
   neutron.dex.QueryPoolResponse:
@@ -16706,6 +17019,68 @@ definitions:
         type: string
       taker_denom:
         type: string
+    type: object
+  neutron.dynamicfees.v1.Params:
+    description: Params defines the parameters for the module.
+    properties:
+      ntrn_prices:
+        items:
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        title: >-
+          List of asset prices by the NTRN
+
+          it's used in cooperation with feemarket module
+
+          ntrn_prices is a data source to convert gas_price from feemarket's
+          base_denom (untrn)
+
+          into a given asset
+        type: array
+    type: object
+  neutron.dynamicfees.v1.QueryParamsResponse:
+    description: QueryParamsResponse is response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: params holds all the parameters of this module.
+        properties:
+          ntrn_prices:
+            items:
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            title: >-
+              List of asset prices by the NTRN
+
+              it's used in cooperation with feemarket module
+
+              ntrn_prices is a data source to convert gas_price from feemarket's
+              base_denom (untrn)
+
+              into a given asset
+            type: array
+        type: object
     type: object
   neutron.feeburner.Params:
     description: Params defines the parameters for the module.
@@ -18262,17 +18637,7 @@ definitions:
             type: array
         type: object
     type: object
-  osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
-    description: |-
-      DenomAuthorityMetadata specifies metadata for addresses that have specific
-      capabilities over a token factory denom. Right now there is only one Admin
-      permission, but is planned to be extended to the future.
-    properties:
-      Admin:
-        title: Can be empty for no admin, or a valid osmosis address
-        type: string
-    type: object
-  osmosis.tokenfactory.v1beta1.Params:
+  osmosis.tokenfactory.Params:
     description: Params defines the parameters for the tokenfactory module.
     properties:
       denom_creation_fee:
@@ -18310,6 +18675,52 @@ definitions:
           creation
 
           are sent to
+        type: string
+      whitelisted_hooks:
+        items:
+          properties:
+            code_id:
+              format: uint64
+              type: string
+            denom_creator:
+              type: string
+          title: >-
+            WhitelistedHook describes a beforeSendHook which is allowed to be
+            added and executed
+
+            SetBeforeSendHook can only be called on denoms where the denom
+            creator and
+
+            code_id for the `contract_addr` match a WhitelistedHook
+          type: object
+        title: >-
+          whitelisted_hooks is the list of hooks which are allowed to be added
+          and executed
+        type: array
+    type: object
+  osmosis.tokenfactory.WhitelistedHook:
+    properties:
+      code_id:
+        format: uint64
+        type: string
+      denom_creator:
+        type: string
+    title: >-
+      WhitelistedHook describes a beforeSendHook which is allowed to be added
+      and executed
+
+      SetBeforeSendHook can only be called on denoms where the denom creator and
+
+      code_id for the `contract_addr` match a WhitelistedHook
+    type: object
+  osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
+    description: |-
+      DenomAuthorityMetadata specifies metadata for addresses that have specific
+      capabilities over a token factory denom. Right now there is only one Admin
+      permission, but is planned to be extended to the future.
+    properties:
+      Admin:
+        title: Can be empty for no admin, or a valid osmosis address
         type: string
     type: object
   osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse:
@@ -18399,6 +18810,27 @@ definitions:
 
               are sent to
             type: string
+          whitelisted_hooks:
+            items:
+              properties:
+                code_id:
+                  format: uint64
+                  type: string
+                denom_creator:
+                  type: string
+              title: >-
+                WhitelistedHook describes a beforeSendHook which is allowed to
+                be added and executed
+
+                SetBeforeSendHook can only be called on denoms where the denom
+                creator and
+
+                code_id for the `contract_addr` match a WhitelistedHook
+              type: object
+            title: >-
+              whitelisted_hooks is the list of hooks which are allowed to be
+              added and executed
+            type: array
         type: object
     type: object
   packetforward.v1.Params:
@@ -18563,6 +18995,1521 @@ definitions:
           Distribution is a map of lane to the number of transactions in the
           mempool for that lane.
         type: object
+    type: object
+  slinky.alerts.v1.Alert:
+    description: >-
+      Alert defines the basic meta-data necessary for the alerts module to
+      resolve
+
+      a claim that the price of a CurrencyPair on-chain is deviating from the
+      price
+
+      off-chain.
+    properties:
+      currency_pair:
+        description: >-
+          currency_pair is the currency-pair that this claim asserts is
+          deviating
+
+          from the price off-chain.
+        properties:
+          Base:
+            type: string
+          Quote:
+            type: string
+        title: >-
+          CurrencyPair is the standard representation of a pair of assets, where
+          one
+
+          (Base) is priced in terms of the other (Quote)
+        type: object
+      height:
+        description: height represents the height for which the alert is filed.
+        format: uint64
+        type: string
+      signer:
+        description: >-
+          signer is the signer of this alert, this is the address that will
+          receive
+
+          the reward in the case of a positive conclusion, or whose bond will
+          get
+
+          slashed in the event of a negative conclusion.
+        type: string
+    type: object
+  slinky.alerts.v1.AlertParams:
+    description: >-
+      AlertParams is the set of parameters for the x/Alerts module's Alerting.
+      It
+
+      defines whether or not Alerts can be submitted, and if so, the minimum
+
+      bond amount required to submit an Alert.
+    properties:
+      bond_amount:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: |-
+          BondAmount is the minimum amount of bond required to submit an
+          Alert
+      enabled:
+        title: |-
+          Enabled is a boolean defining whether or not Alerts can be submitted
+          to the module
+        type: boolean
+      max_block_age:
+        description: >-
+          MaxBlockAge defines the maximum age of an Alert before it is pruned,
+          notice
+
+          this is defined wrt. the height that the Alert references, i.e Alerts
+          are
+
+          only relevant until Alert.Height + MaxBlockAge is reached.
+        format: uint64
+        type: string
+    type: object
+  slinky.alerts.v1.AlertStatusID:
+    default: CONCLUSION_STATUS_UNSPECIFIED
+    description: >-
+      AlertStatus is the type for the status of an Alert, it can be Unconcluded
+      or
+
+      Concluded.
+    enum:
+      - CONCLUSION_STATUS_UNSPECIFIED
+      - CONCLUSION_STATUS_UNCONCLUDED
+      - CONCLUSION_STATUS_CONCLUDED
+    type: string
+  slinky.alerts.v1.AlertsResponse:
+    description: |-
+      AlertsResponse is the response type for the Query.Alerts RPC method, it
+      contains the list of Alerts that are being tracked by the alerts module.
+    properties:
+      alerts:
+        items:
+          description: >-
+            Alert defines the basic meta-data necessary for the alerts module to
+            resolve
+
+            a claim that the price of a CurrencyPair on-chain is deviating from
+            the price
+
+            off-chain.
+          properties:
+            currency_pair:
+              description: >-
+                currency_pair is the currency-pair that this claim asserts is
+                deviating
+
+                from the price off-chain.
+              properties:
+                Base:
+                  type: string
+                Quote:
+                  type: string
+              title: >-
+                CurrencyPair is the standard representation of a pair of assets,
+                where one
+
+                (Base) is priced in terms of the other (Quote)
+              type: object
+            height:
+              description: height represents the height for which the alert is filed.
+              format: uint64
+              type: string
+            signer:
+              description: >-
+                signer is the signer of this alert, this is the address that
+                will receive
+
+                the reward in the case of a positive conclusion, or whose bond
+                will get
+
+                slashed in the event of a negative conclusion.
+              type: string
+          type: object
+        type: array
+    type: object
+  slinky.alerts.v1.Params:
+    description: Params is the set of parameters for the x/Alerts module.
+    properties:
+      alert_params:
+        description: >-
+          AlertParams is the set of parameters for the x/Alerts module's
+          Alerting.
+        properties:
+          bond_amount:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: |-
+              BondAmount is the minimum amount of bond required to submit an
+              Alert
+          enabled:
+            title: >-
+              Enabled is a boolean defining whether or not Alerts can be
+              submitted
+
+              to the module
+            type: boolean
+          max_block_age:
+            description: >-
+              MaxBlockAge defines the maximum age of an Alert before it is
+              pruned, notice
+
+              this is defined wrt. the height that the Alert references, i.e
+              Alerts are
+
+              only relevant until Alert.Height + MaxBlockAge is reached.
+            format: uint64
+            type: string
+        type: object
+      conclusion_verification_params:
+        properties:
+          type_url:
+            type: string
+          value:
+            format: byte
+            type: string
+        type: object
+        description: |-
+          ConclusionVerificationParams is the set of parameters for the x/Alerts
+          module's conclusion verification.
+      pruning_params:
+        description: >-
+          PruningParams is the set of parameters for the x/Alerts module's
+          pruning.
+        properties:
+          blocks_to_prune:
+            description: >-
+              BlocksToPrune defines the number of blocks until an Alert will be
+              pruned
+
+              from state, notice this is defined wrt. the current block height,
+              i.e
+
+              Alerts will be stored in state until current_height +
+              BlocksToPrune is
+
+              reached.
+            format: uint64
+            type: string
+          enabled:
+            title: Enabled defines whether Alerts are to be pruned
+            type: boolean
+        type: object
+    type: object
+  slinky.alerts.v1.ParamsResponse:
+    description: |-
+      ParamsResponse is the response type for the Query.Params RPC method, it
+      contains the Params of the module.
+    properties:
+      params:
+        description: Params is the set of parameters for the x/Alerts module.
+        properties:
+          alert_params:
+            description: >-
+              AlertParams is the set of parameters for the x/Alerts module's
+              Alerting.
+            properties:
+              bond_amount:
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                properties:
+                  amount:
+                    type: string
+                  denom:
+                    type: string
+                type: object
+                title: |-
+                  BondAmount is the minimum amount of bond required to submit an
+                  Alert
+              enabled:
+                title: >-
+                  Enabled is a boolean defining whether or not Alerts can be
+                  submitted
+
+                  to the module
+                type: boolean
+              max_block_age:
+                description: >-
+                  MaxBlockAge defines the maximum age of an Alert before it is
+                  pruned, notice
+
+                  this is defined wrt. the height that the Alert references, i.e
+                  Alerts are
+
+                  only relevant until Alert.Height + MaxBlockAge is reached.
+                format: uint64
+                type: string
+            type: object
+          conclusion_verification_params:
+            properties:
+              type_url:
+                type: string
+              value:
+                format: byte
+                type: string
+            type: object
+            description: >-
+              ConclusionVerificationParams is the set of parameters for the
+              x/Alerts
+
+              module's conclusion verification.
+          pruning_params:
+            description: >-
+              PruningParams is the set of parameters for the x/Alerts module's
+              pruning.
+            properties:
+              blocks_to_prune:
+                description: >-
+                  BlocksToPrune defines the number of blocks until an Alert will
+                  be pruned
+
+                  from state, notice this is defined wrt. the current block
+                  height, i.e
+
+                  Alerts will be stored in state until current_height +
+                  BlocksToPrune is
+
+                  reached.
+                format: uint64
+                type: string
+              enabled:
+                title: Enabled defines whether Alerts are to be pruned
+                type: boolean
+            type: object
+        type: object
+    type: object
+  slinky.alerts.v1.PruningParams:
+    description: PruningParams defines the criterion for pruning Alerts from the state.
+    properties:
+      blocks_to_prune:
+        description: >-
+          BlocksToPrune defines the number of blocks until an Alert will be
+          pruned
+
+          from state, notice this is defined wrt. the current block height, i.e
+
+          Alerts will be stored in state until current_height + BlocksToPrune is
+
+          reached.
+        format: uint64
+        type: string
+      enabled:
+        title: Enabled defines whether Alerts are to be pruned
+        type: boolean
+    type: object
+  slinky.incentives.v1.GetAllIncentivesResponse:
+    description: >-
+      GetAllIncentivesResponse is the response type for the
+      Query/GetAllIncentives
+
+      RPC method.
+    properties:
+      registry:
+        description: Registry is the list of all incentives, grouped by type.
+        items:
+          description: >-
+            IncentivesByType encapsulates a list of incentives by type. Each of
+            the
+
+            entries here must correspond to the same incentive type defined
+            here.
+          properties:
+            entries:
+              description: Entries is a list of incentive bytes.
+              items:
+                format: byte
+                type: string
+              type: array
+            incentive_type:
+              description: |-
+                IncentiveType is the incentive type i.e. (BadPriceIncentiveType,
+                GoodPriceIncentiveType).
+              type: string
+          type: object
+        type: array
+    type: object
+  slinky.incentives.v1.GetIncentivesByTypeResponse:
+    description: |-
+      GetIncentivesByTypeResponse is the response type for the
+      Query/GetIncentivesByType RPC method.
+    properties:
+      entries:
+        description: Entries is the list of incentives of the given type.
+        items:
+          format: byte
+          type: string
+        type: array
+    type: object
+  slinky.incentives.v1.IncentivesByType:
+    description: |-
+      IncentivesByType encapsulates a list of incentives by type. Each of the
+      entries here must correspond to the same incentive type defined here.
+    properties:
+      entries:
+        description: Entries is a list of incentive bytes.
+        items:
+          format: byte
+          type: string
+        type: array
+      incentive_type:
+        description: |-
+          IncentiveType is the incentive type i.e. (BadPriceIncentiveType,
+          GoodPriceIncentiveType).
+        type: string
+    type: object
+  slinky.marketmap.v1.LastUpdatedResponse:
+    description: |-
+      LastUpdatedResponse is the response type for the Query/LastUpdated RPC
+      method.
+    properties:
+      last_updated:
+        format: uint64
+        type: string
+    type: object
+  slinky.marketmap.v1.Market:
+    description: Market encapsulates a Ticker and its provider-specific configuration.
+    properties:
+      provider_configs:
+        description: >-
+          ProviderConfigs is the list of provider-specific configs for this
+          Market.
+        items:
+          properties:
+            invert:
+              title: >-
+                Invert is a boolean indicating if the BASE and QUOTE of the
+                market should
+
+                be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+              type: boolean
+            metadata_JSON:
+              description: >-
+                MetadataJSON is a string of JSON that encodes any extra
+                configuration
+
+                for the given provider config.
+              type: string
+            name:
+              description: >-
+                Name corresponds to the name of the provider for which the
+                configuration is
+
+                being set.
+              type: string
+            normalize_by_pair:
+              description: >-
+                NormalizeByPair is the currency pair for this ticker to be
+                normalized by.
+
+                For example, if the desired Ticker is BTC/USD, this market could
+                be reached
+
+                using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD This
+                field is
+
+                optional and nullable.
+              properties:
+                Base:
+                  type: string
+                Quote:
+                  type: string
+              title: >-
+                CurrencyPair is the standard representation of a pair of assets,
+                where one
+
+                (Base) is priced in terms of the other (Quote)
+              type: object
+            off_chain_ticker:
+              description: >-
+                OffChainTicker is the off-chain representation of the ticker
+                i.e. BTC/USD.
+
+                The off-chain ticker is unique to a given provider and is used
+                to fetch the
+
+                price of the ticker from the provider.
+              type: string
+          type: object
+        type: array
+      ticker:
+        description: >-
+          Ticker represents a price feed for a given asset pair i.e. BTC/USD.
+          The
+
+          price feed is scaled to a number of decimal places and has a minimum
+          number
+
+          of providers required to consider the ticker valid.
+        properties:
+          currency_pair:
+            description: CurrencyPair is the currency pair for this ticker.
+            properties:
+              Base:
+                type: string
+              Quote:
+                type: string
+            title: >-
+              CurrencyPair is the standard representation of a pair of assets,
+              where one
+
+              (Base) is priced in terms of the other (Quote)
+            type: object
+          decimals:
+            description: >-
+              Decimals is the number of decimal places for the ticker. The
+              number of
+
+              decimal places is used to convert the price to a human-readable
+              format.
+            format: uint64
+            type: string
+          enabled:
+            description: >-
+              Enabled is the flag that denotes if the Ticker is enabled for
+              price
+
+              fetching by an oracle.
+            type: boolean
+          metadata_JSON:
+            description: >-
+              MetadataJSON is a string of JSON that encodes any extra
+              configuration
+
+              for the given ticker.
+            type: string
+          min_provider_count:
+            description: >-
+              MinProviderCount is the minimum number of providers required to
+              consider
+
+              the ticker valid.
+            format: uint64
+            type: string
+        type: object
+    type: object
+  slinky.marketmap.v1.MarketMap:
+    description: MarketMap maps ticker strings to their Markets.
+    properties:
+      markets:
+        additionalProperties:
+          description: >-
+            Market encapsulates a Ticker and its provider-specific
+            configuration.
+          properties:
+            provider_configs:
+              description: >-
+                ProviderConfigs is the list of provider-specific configs for
+                this Market.
+              items:
+                properties:
+                  invert:
+                    title: >-
+                      Invert is a boolean indicating if the BASE and QUOTE of
+                      the market should
+
+                      be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                    type: boolean
+                  metadata_JSON:
+                    description: >-
+                      MetadataJSON is a string of JSON that encodes any extra
+                      configuration
+
+                      for the given provider config.
+                    type: string
+                  name:
+                    description: >-
+                      Name corresponds to the name of the provider for which the
+                      configuration is
+
+                      being set.
+                    type: string
+                  normalize_by_pair:
+                    description: >-
+                      NormalizeByPair is the currency pair for this ticker to be
+                      normalized by.
+
+                      For example, if the desired Ticker is BTC/USD, this market
+                      could be reached
+
+                      using: OffChainTicker = BTC/USDT NormalizeByPair =
+                      USDT/USD This field is
+
+                      optional and nullable.
+                    properties:
+                      Base:
+                        type: string
+                      Quote:
+                        type: string
+                    title: >-
+                      CurrencyPair is the standard representation of a pair of
+                      assets, where one
+
+                      (Base) is priced in terms of the other (Quote)
+                    type: object
+                  off_chain_ticker:
+                    description: >-
+                      OffChainTicker is the off-chain representation of the
+                      ticker i.e. BTC/USD.
+
+                      The off-chain ticker is unique to a given provider and is
+                      used to fetch the
+
+                      price of the ticker from the provider.
+                    type: string
+                type: object
+              type: array
+            ticker:
+              description: >-
+                Ticker represents a price feed for a given asset pair i.e.
+                BTC/USD. The
+
+                price feed is scaled to a number of decimal places and has a
+                minimum number
+
+                of providers required to consider the ticker valid.
+              properties:
+                currency_pair:
+                  description: CurrencyPair is the currency pair for this ticker.
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                  type: object
+                decimals:
+                  description: >-
+                    Decimals is the number of decimal places for the ticker. The
+                    number of
+
+                    decimal places is used to convert the price to a
+                    human-readable format.
+                  format: uint64
+                  type: string
+                enabled:
+                  description: >-
+                    Enabled is the flag that denotes if the Ticker is enabled
+                    for price
+
+                    fetching by an oracle.
+                  type: boolean
+                metadata_JSON:
+                  description: >-
+                    MetadataJSON is a string of JSON that encodes any extra
+                    configuration
+
+                    for the given ticker.
+                  type: string
+                min_provider_count:
+                  description: >-
+                    MinProviderCount is the minimum number of providers required
+                    to consider
+
+                    the ticker valid.
+                  format: uint64
+                  type: string
+              type: object
+          type: object
+        description: >-
+          Markets is the full list of tickers and their associated
+          configurations
+
+          to be stored on-chain.
+        type: object
+    type: object
+  slinky.marketmap.v1.MarketMapResponse:
+    description: MarketMapResponse is the query response for the MarketMap query.
+    properties:
+      chain_id:
+        description: ChainId is the chain identifier for the market map.
+        type: string
+      last_updated:
+        description: >-
+          LastUpdated is the last block height that the market map was updated.
+
+          This field can be used as an optimization for clients checking if
+          there
+
+          is a new update to the map.
+        format: uint64
+        type: string
+      market_map:
+        description: >-
+          MarketMap defines the global set of market configurations for all
+          providers
+
+          and markets.
+        properties:
+          markets:
+            additionalProperties:
+              description: >-
+                Market encapsulates a Ticker and its provider-specific
+                configuration.
+              properties:
+                provider_configs:
+                  description: >-
+                    ProviderConfigs is the list of provider-specific configs for
+                    this Market.
+                  items:
+                    properties:
+                      invert:
+                        title: >-
+                          Invert is a boolean indicating if the BASE and QUOTE
+                          of the market should
+
+                          be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                        type: boolean
+                      metadata_JSON:
+                        description: >-
+                          MetadataJSON is a string of JSON that encodes any
+                          extra configuration
+
+                          for the given provider config.
+                        type: string
+                      name:
+                        description: >-
+                          Name corresponds to the name of the provider for which
+                          the configuration is
+
+                          being set.
+                        type: string
+                      normalize_by_pair:
+                        description: >-
+                          NormalizeByPair is the currency pair for this ticker
+                          to be normalized by.
+
+                          For example, if the desired Ticker is BTC/USD, this
+                          market could be reached
+
+                          using: OffChainTicker = BTC/USDT NormalizeByPair =
+                          USDT/USD This field is
+
+                          optional and nullable.
+                        properties:
+                          Base:
+                            type: string
+                          Quote:
+                            type: string
+                        title: >-
+                          CurrencyPair is the standard representation of a pair
+                          of assets, where one
+
+                          (Base) is priced in terms of the other (Quote)
+                        type: object
+                      off_chain_ticker:
+                        description: >-
+                          OffChainTicker is the off-chain representation of the
+                          ticker i.e. BTC/USD.
+
+                          The off-chain ticker is unique to a given provider and
+                          is used to fetch the
+
+                          price of the ticker from the provider.
+                        type: string
+                    type: object
+                  type: array
+                ticker:
+                  description: >-
+                    Ticker represents a price feed for a given asset pair i.e.
+                    BTC/USD. The
+
+                    price feed is scaled to a number of decimal places and has a
+                    minimum number
+
+                    of providers required to consider the ticker valid.
+                  properties:
+                    currency_pair:
+                      description: CurrencyPair is the currency pair for this ticker.
+                      properties:
+                        Base:
+                          type: string
+                        Quote:
+                          type: string
+                      title: >-
+                        CurrencyPair is the standard representation of a pair of
+                        assets, where one
+
+                        (Base) is priced in terms of the other (Quote)
+                      type: object
+                    decimals:
+                      description: >-
+                        Decimals is the number of decimal places for the ticker.
+                        The number of
+
+                        decimal places is used to convert the price to a
+                        human-readable format.
+                      format: uint64
+                      type: string
+                    enabled:
+                      description: >-
+                        Enabled is the flag that denotes if the Ticker is
+                        enabled for price
+
+                        fetching by an oracle.
+                      type: boolean
+                    metadata_JSON:
+                      description: >-
+                        MetadataJSON is a string of JSON that encodes any extra
+                        configuration
+
+                        for the given ticker.
+                      type: string
+                    min_provider_count:
+                      description: >-
+                        MinProviderCount is the minimum number of providers
+                        required to consider
+
+                        the ticker valid.
+                      format: uint64
+                      type: string
+                  type: object
+              type: object
+            description: >-
+              Markets is the full list of tickers and their associated
+              configurations
+
+              to be stored on-chain.
+            type: object
+        type: object
+    type: object
+  slinky.marketmap.v1.MarketResponse:
+    description: MarketResponse is the query response for the Market query.
+    properties:
+      market:
+        description: Market encapsulates a Ticker and its provider-specific configuration.
+        properties:
+          provider_configs:
+            description: >-
+              ProviderConfigs is the list of provider-specific configs for this
+              Market.
+            items:
+              properties:
+                invert:
+                  title: >-
+                    Invert is a boolean indicating if the BASE and QUOTE of the
+                    market should
+
+                    be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                  type: boolean
+                metadata_JSON:
+                  description: >-
+                    MetadataJSON is a string of JSON that encodes any extra
+                    configuration
+
+                    for the given provider config.
+                  type: string
+                name:
+                  description: >-
+                    Name corresponds to the name of the provider for which the
+                    configuration is
+
+                    being set.
+                  type: string
+                normalize_by_pair:
+                  description: >-
+                    NormalizeByPair is the currency pair for this ticker to be
+                    normalized by.
+
+                    For example, if the desired Ticker is BTC/USD, this market
+                    could be reached
+
+                    using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD
+                    This field is
+
+                    optional and nullable.
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                  type: object
+                off_chain_ticker:
+                  description: >-
+                    OffChainTicker is the off-chain representation of the ticker
+                    i.e. BTC/USD.
+
+                    The off-chain ticker is unique to a given provider and is
+                    used to fetch the
+
+                    price of the ticker from the provider.
+                  type: string
+              type: object
+            type: array
+          ticker:
+            description: >-
+              Ticker represents a price feed for a given asset pair i.e.
+              BTC/USD. The
+
+              price feed is scaled to a number of decimal places and has a
+              minimum number
+
+              of providers required to consider the ticker valid.
+            properties:
+              currency_pair:
+                description: CurrencyPair is the currency pair for this ticker.
+                properties:
+                  Base:
+                    type: string
+                  Quote:
+                    type: string
+                title: >-
+                  CurrencyPair is the standard representation of a pair of
+                  assets, where one
+
+                  (Base) is priced in terms of the other (Quote)
+                type: object
+              decimals:
+                description: >-
+                  Decimals is the number of decimal places for the ticker. The
+                  number of
+
+                  decimal places is used to convert the price to a
+                  human-readable format.
+                format: uint64
+                type: string
+              enabled:
+                description: >-
+                  Enabled is the flag that denotes if the Ticker is enabled for
+                  price
+
+                  fetching by an oracle.
+                type: boolean
+              metadata_JSON:
+                description: >-
+                  MetadataJSON is a string of JSON that encodes any extra
+                  configuration
+
+                  for the given ticker.
+                type: string
+              min_provider_count:
+                description: >-
+                  MinProviderCount is the minimum number of providers required
+                  to consider
+
+                  the ticker valid.
+                format: uint64
+                type: string
+            type: object
+        type: object
+    type: object
+  slinky.marketmap.v1.Params:
+    description: Params defines the parameters for the x/marketmap module.
+    properties:
+      admin:
+        description: >-
+          Admin is an address that can remove addresses from the
+          MarketAuthorities
+
+          list. Only governance can add to the MarketAuthorities or change the
+          Admin.
+        type: string
+      market_authorities:
+        description: |-
+          MarketAuthorities is the list of authority accounts that are able to
+          control updating the marketmap.
+        items:
+          type: string
+        type: array
+    type: object
+  slinky.marketmap.v1.ParamsResponse:
+    description: ParamsResponse is the response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: Params defines the parameters for the x/marketmap module.
+        properties:
+          admin:
+            description: >-
+              Admin is an address that can remove addresses from the
+              MarketAuthorities
+
+              list. Only governance can add to the MarketAuthorities or change
+              the Admin.
+            type: string
+          market_authorities:
+            description: >-
+              MarketAuthorities is the list of authority accounts that are able
+              to
+
+              control updating the marketmap.
+            items:
+              type: string
+            type: array
+        type: object
+    type: object
+  slinky.marketmap.v1.ProviderConfig:
+    properties:
+      invert:
+        title: >-
+          Invert is a boolean indicating if the BASE and QUOTE of the market
+          should
+
+          be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+        type: boolean
+      metadata_JSON:
+        description: |-
+          MetadataJSON is a string of JSON that encodes any extra configuration
+          for the given provider config.
+        type: string
+      name:
+        description: >-
+          Name corresponds to the name of the provider for which the
+          configuration is
+
+          being set.
+        type: string
+      normalize_by_pair:
+        description: >-
+          NormalizeByPair is the currency pair for this ticker to be normalized
+          by.
+
+          For example, if the desired Ticker is BTC/USD, this market could be
+          reached
+
+          using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD This field
+          is
+
+          optional and nullable.
+        properties:
+          Base:
+            type: string
+          Quote:
+            type: string
+        title: >-
+          CurrencyPair is the standard representation of a pair of assets, where
+          one
+
+          (Base) is priced in terms of the other (Quote)
+        type: object
+      off_chain_ticker:
+        description: >-
+          OffChainTicker is the off-chain representation of the ticker i.e.
+          BTC/USD.
+
+          The off-chain ticker is unique to a given provider and is used to
+          fetch the
+
+          price of the ticker from the provider.
+        type: string
+    type: object
+  slinky.marketmap.v1.Ticker:
+    description: >-
+      Ticker represents a price feed for a given asset pair i.e. BTC/USD. The
+      price
+
+      feed is scaled to a number of decimal places and has a minimum number of
+
+      providers required to consider the ticker valid.
+    properties:
+      currency_pair:
+        description: CurrencyPair is the currency pair for this ticker.
+        properties:
+          Base:
+            type: string
+          Quote:
+            type: string
+        title: >-
+          CurrencyPair is the standard representation of a pair of assets, where
+          one
+
+          (Base) is priced in terms of the other (Quote)
+        type: object
+      decimals:
+        description: >-
+          Decimals is the number of decimal places for the ticker. The number of
+
+          decimal places is used to convert the price to a human-readable
+          format.
+        format: uint64
+        type: string
+      enabled:
+        description: |-
+          Enabled is the flag that denotes if the Ticker is enabled for price
+          fetching by an oracle.
+        type: boolean
+      metadata_JSON:
+        description: |-
+          MetadataJSON is a string of JSON that encodes any extra configuration
+          for the given ticker.
+        type: string
+      min_provider_count:
+        description: >-
+          MinProviderCount is the minimum number of providers required to
+          consider
+
+          the ticker valid.
+        format: uint64
+        type: string
+    type: object
+  slinky.oracle.v1.GetAllCurrencyPairsResponse:
+    description: |-
+      GetAllCurrencyPairsResponse returns all CurrencyPairs that the module is
+      currently tracking.
+    properties:
+      currency_pairs:
+        items:
+          properties:
+            Base:
+              type: string
+            Quote:
+              type: string
+          title: >-
+            CurrencyPair is the standard representation of a pair of assets,
+            where one
+
+            (Base) is priced in terms of the other (Quote)
+          type: object
+        type: array
+    type: object
+  slinky.oracle.v1.GetCurrencyPairMappingResponse:
+    description: >-
+      GetCurrencyPairMappingResponse is the GetCurrencyPairMapping response
+      type.
+    properties:
+      currency_pair_mapping:
+        additionalProperties:
+          properties:
+            Base:
+              type: string
+            Quote:
+              type: string
+          title: >-
+            CurrencyPair is the standard representation of a pair of assets,
+            where one
+
+            (Base) is priced in terms of the other (Quote)
+          type: object
+        description: >-
+          currency_pair_mapping is a mapping of the id representing the currency
+          pair
+
+          to the currency pair itself.
+        type: object
+    type: object
+  slinky.oracle.v1.GetPriceResponse:
+    description: >-
+      GetPriceResponse is the response from the GetPrice grpc method exposed
+      from
+
+      the x/oracle query service.
+    properties:
+      decimals:
+        description: |-
+          decimals represents the number of decimals that the quote-price is
+          represented in. For Pairs where ETHEREUM is the quote this will be 18,
+          otherwise it will be 8.
+        format: uint64
+        type: string
+      id:
+        description: ID represents the identifier for the CurrencyPair.
+        format: uint64
+        type: string
+      nonce:
+        format: uint64
+        title: nonce represents the nonce for the CurrencyPair if it exists in state
+        type: string
+      price:
+        title: |-
+          QuotePrice represents the quote-price for the CurrencyPair given in
+          GetPriceRequest (possibly nil if no update has been made)
+        properties:
+          block_height:
+            format: uint64
+            title: BlockHeight is height of block mentioned above
+            type: string
+          block_timestamp:
+            format: date-time
+            title: >-
+              BlockTimestamp tracks the block height associated with this price
+              update.
+
+              We include block timestamp alongside the price to ensure that
+              smart
+
+              contracts and applications are not utilizing stale oracle prices
+            type: string
+          price:
+            type: string
+        type: object
+    type: object
+  slinky.oracle.v1.GetPricesResponse:
+    description: >-
+      GetPricesResponse is the response from the GetPrices grpc method exposed
+      from
+
+      the x/oracle query service.
+    properties:
+      prices:
+        items:
+          description: >-
+            GetPriceResponse is the response from the GetPrice grpc method
+            exposed from
+
+            the x/oracle query service.
+          properties:
+            decimals:
+              description: >-
+                decimals represents the number of decimals that the quote-price
+                is
+
+                represented in. For Pairs where ETHEREUM is the quote this will
+                be 18,
+
+                otherwise it will be 8.
+              format: uint64
+              type: string
+            id:
+              description: ID represents the identifier for the CurrencyPair.
+              format: uint64
+              type: string
+            nonce:
+              format: uint64
+              title: >-
+                nonce represents the nonce for the CurrencyPair if it exists in
+                state
+              type: string
+            price:
+              title: >-
+                QuotePrice represents the quote-price for the CurrencyPair given
+                in
+
+                GetPriceRequest (possibly nil if no update has been made)
+              properties:
+                block_height:
+                  format: uint64
+                  title: BlockHeight is height of block mentioned above
+                  type: string
+                block_timestamp:
+                  format: date-time
+                  title: >-
+                    BlockTimestamp tracks the block height associated with this
+                    price update.
+
+                    We include block timestamp alongside the price to ensure
+                    that smart
+
+                    contracts and applications are not utilizing stale oracle
+                    prices
+                  type: string
+                price:
+                  type: string
+              type: object
+          type: object
+        type: array
+    type: object
+  slinky.oracle.v1.QuotePrice:
+    properties:
+      block_height:
+        format: uint64
+        title: BlockHeight is height of block mentioned above
+        type: string
+      block_timestamp:
+        format: date-time
+        title: >-
+          BlockTimestamp tracks the block height associated with this price
+          update.
+
+          We include block timestamp alongside the price to ensure that smart
+
+          contracts and applications are not utilizing stale oracle prices
+        type: string
+      price:
+        type: string
+    title: >-
+      QuotePrice is the representation of the aggregated prices for a
+      CurrencyPair,
+
+      where price represents the price of Base in terms of Quote
+    type: object
+  slinky.sla.v1.GetAllSLAsResponse:
+    description: |-
+      QueryAllSLAsResponse is the response type for the Query/GetAllSLAs RPC
+      method.
+    properties:
+      slas:
+        items:
+          description: >-
+            PriceFeedSLA defines the the desired SLA for a given set of price
+            feeds. A
+
+            price feed is defined to be a set of price prices for the same
+            (currency
+
+            pair, validator).
+          properties:
+            expected_uptime:
+              description: >-
+                ExpectedUptime is the expected uptime for the given validator
+                and price
+
+                feed.
+              type: string
+            frequency:
+              description: Frequency is the frequency at which we will check the SLA.
+              format: uint64
+              type: string
+            id:
+              description: ID is the unique identifier for the SLA.
+              type: string
+            maximum_viable_window:
+              description: >-
+                MaximumViableWindow is the maximum time window that we are
+                interested
+
+                for the SLA. This is used to determine the moving window of
+                blocks that
+
+                we are interested in.
+              format: uint64
+              type: string
+            minimum_block_updates:
+              description: |-
+                MinimumBlockUpdates is the minimum number of blocks that the
+                validator had to have voted on in the maximum viable window
+                in order to be considered for the SLA.
+              format: uint64
+              type: string
+            slash_constant:
+              description: >-
+                SlashConstant is the constant by which we will multiply the
+                deviation from
+
+                the expected uptime.
+              type: string
+          type: object
+        type: array
+    type: object
+  slinky.sla.v1.GetPriceFeedsResponse:
+    description: >-
+      QueryGetPriceFeedsResponse is the response type for the
+      Query/GetPriceFeeds
+
+      RPC method.
+    properties:
+      price_feeds:
+        description: PriceFeeds defines the price feeds for the given SLA.
+        items:
+          description: >-
+            PriceFeed defines the object type that will be utilized to monitor
+            how
+
+            frequently validators are voting with price updates across the
+            network.
+          properties:
+            currency_pair:
+              properties:
+                Base:
+                  type: string
+                Quote:
+                  type: string
+              title: >-
+                CurrencyPair is the standard representation of a pair of assets,
+                where one
+
+                (Base) is priced in terms of the other (Quote)
+              type: object
+              description: >-
+                CurrencyPair represents the currency pair that this SLA
+                corresponds to.
+            id:
+              description: >-
+                ID corresponds to the SLA ID that this price feed corresponds
+                to.
+              type: string
+            inclusion_map:
+              description: >-
+                InclusionMap represents the relevant moving window of blocks
+                that the
+
+                validator has voted on.
+              format: byte
+              type: string
+            index:
+              description: Index corresponds to the current index into the bitmap.
+              format: uint64
+              type: string
+            maximum_viable_window:
+              description: >-
+                MaximumViableWindow represents the maximum number of blocks that
+                can be
+
+                represented by the bit map.
+              format: uint64
+              type: string
+            update_map:
+              description: >-
+                UpdateMap represents the relevant moving window of price feed
+                updates.
+              format: byte
+              type: string
+            validator:
+              description: Validator represents the validator that this SLA corresponds to.
+              format: byte
+              type: string
+          type: object
+        type: array
+    type: object
+  slinky.sla.v1.Params:
+    description: Params defines the parameters for the sla module.
+    properties:
+      enabled:
+        description: Enabled is a flag to enable or disable the sla module.
+        type: boolean
+    type: object
+  slinky.sla.v1.ParamsResponse:
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: Params defines the parameters for the sla module.
+        properties:
+          enabled:
+            description: Enabled is a flag to enable or disable the sla module.
+            type: boolean
+        type: object
+    type: object
+  slinky.sla.v1.PriceFeed:
+    description: |-
+      PriceFeed defines the object type that will be utilized to monitor how
+      frequently validators are voting with price updates across the network.
+    properties:
+      currency_pair:
+        properties:
+          Base:
+            type: string
+          Quote:
+            type: string
+        title: >-
+          CurrencyPair is the standard representation of a pair of assets, where
+          one
+
+          (Base) is priced in terms of the other (Quote)
+        type: object
+        description: >-
+          CurrencyPair represents the currency pair that this SLA corresponds
+          to.
+      id:
+        description: ID corresponds to the SLA ID that this price feed corresponds to.
+        type: string
+      inclusion_map:
+        description: |-
+          InclusionMap represents the relevant moving window of blocks that the
+          validator has voted on.
+        format: byte
+        type: string
+      index:
+        description: Index corresponds to the current index into the bitmap.
+        format: uint64
+        type: string
+      maximum_viable_window:
+        description: >-
+          MaximumViableWindow represents the maximum number of blocks that can
+          be
+
+          represented by the bit map.
+        format: uint64
+        type: string
+      update_map:
+        description: UpdateMap represents the relevant moving window of price feed updates.
+        format: byte
+        type: string
+      validator:
+        description: Validator represents the validator that this SLA corresponds to.
+        format: byte
+        type: string
+    type: object
+  slinky.sla.v1.PriceFeedSLA:
+    description: |-
+      PriceFeedSLA defines the the desired SLA for a given set of price feeds. A
+      price feed is defined to be a set of price prices for the same (currency
+      pair, validator).
+    properties:
+      expected_uptime:
+        description: >-
+          ExpectedUptime is the expected uptime for the given validator and
+          price
+
+          feed.
+        type: string
+      frequency:
+        description: Frequency is the frequency at which we will check the SLA.
+        format: uint64
+        type: string
+      id:
+        description: ID is the unique identifier for the SLA.
+        type: string
+      maximum_viable_window:
+        description: >-
+          MaximumViableWindow is the maximum time window that we are interested
+
+          for the SLA. This is used to determine the moving window of blocks
+          that
+
+          we are interested in.
+        format: uint64
+        type: string
+      minimum_block_updates:
+        description: |-
+          MinimumBlockUpdates is the minimum number of blocks that the
+          validator had to have voted on in the maximum viable window
+          in order to be considered for the SLA.
+        format: uint64
+        type: string
+      slash_constant:
+        description: >-
+          SlashConstant is the constant by which we will multiply the deviation
+          from
+
+          the expected uptime.
+        type: string
+    type: object
+  slinky.types.v1.CurrencyPair:
+    properties:
+      Base:
+        type: string
+      Quote:
+        type: string
+    title: |-
+      CurrencyPair is the standard representation of a pair of assets, where one
+      (Base) is priced in terms of the other (Quote)
     type: object
   tendermint.abci.Event:
     description: |-
@@ -35203,6 +37150,74 @@ paths:
       summary: PinnedCodes gets the pinned code ids
       tags:
         - Query
+  /cosmwasm/wasm/v1/contract/build_address:
+    get:
+      operationId: BuildAddress
+      parameters:
+        - description: CodeHash is the hash of the code.
+          in: query
+          name: code_hash
+          required: false
+          type: string
+        - description: CreatorAddress is the address of the contract instantiator.
+          in: query
+          name: creator_address
+          required: false
+          type: string
+        - description: Salt is a hex encoded salt.
+          in: query
+          name: salt
+          required: false
+          type: string
+        - description: >-
+            InitArgs are optional json encoded init args to be used in contract
+            address
+
+            building if provided.
+          format: byte
+          in: query
+          name: init_args
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryBuildAddressResponse is the response type for the
+              Query/BuildAddress RPC
+
+              method.
+            properties:
+              address:
+                title: Address is the contract address
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: BuildAddress builds a contract address
+      tags:
+        - Query
   /cosmwasm/wasm/v1/contract/{address}:
     get:
       operationId: ContractInfo
@@ -35851,6 +37866,338 @@ paths:
                 type: string
             type: object
       summary: ContractsByCreator gets the contracts by creator
+      tags:
+        - Query
+  /feemarket/v1/gas_price/{denom}:
+    get:
+      operationId: GasPrice
+      parameters:
+        - description: denom we are querying gas price in
+          in: path
+          name: denom
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GasPriceResponse is the response type for the Query/GasPrice RPC
+              method.
+
+              Returns a gas price in specified denom.
+            properties:
+              price:
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+                properties:
+                  amount:
+                    type: string
+                  denom:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        GasPrice returns the current feemarket module gas price
+        for specified denom.
+      tags:
+        - Query
+  /feemarket/v1/gas_prices:
+    get:
+      operationId: GasPrices
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GasPricesResponse is the response type for the Query/GasPrices RPC
+              method.
+
+              Returns a gas price in all available denoms.
+            properties:
+              prices:
+                items:
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+                  properties:
+                    amount:
+                      type: string
+                    denom:
+                      type: string
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        GasPrices returns the current feemarket module list of gas prices
+        in all available denoms.
+      tags:
+        - Query
+  /feemarket/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              ParamsResponse is the response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: >-
+                  Params contains the required set of parameters for the EIP1559
+                  fee market
+
+                  plugin implementation.
+                properties:
+                  alpha:
+                    description: >-
+                      Alpha is the amount we additively increase the learning
+                      rate
+
+                      when it is above or below the target +/- threshold.
+
+
+                      Must be > 0.
+                    type: string
+                  beta:
+                    description: >-
+                      Beta is the amount we multiplicatively decrease the
+                      learning rate
+
+                      when it is within the target +/- threshold.
+
+
+                      Must be [0, 1].
+                    type: string
+                  delta:
+                    description: >-
+                      Delta is the amount we additively increase/decrease the
+                      gas price when the
+
+                      net block utilization difference in the window is
+                      above/below the target
+
+                      utilization.
+                    type: string
+                  distribute_fees:
+                    description: >-
+                      DistributeFees is a boolean that determines whether the
+                      fees are burned or
+
+                      distributed to all stakers.
+                    type: boolean
+                  enabled:
+                    description: >-
+                      Enabled is a boolean that determines whether the EIP1559
+                      fee market is
+
+                      enabled.
+                    type: boolean
+                  fee_denom:
+                    description: >-
+                      FeeDenom is the denom that will be used for all fee
+                      payments.
+                    type: string
+                  gamma:
+                    description: >-
+                      Gamma is the threshold for the learning rate. If the
+                      learning rate is
+
+                      above or below the target +/- threshold, we additively
+                      increase the
+
+                      learning rate by Alpha. Otherwise, we multiplicatively
+                      decrease the
+
+                      learning rate by Beta.
+
+
+                      Must be [0, 0.5].
+                    type: string
+                  max_block_utilization:
+                    description: MaxBlockUtilization is the maximum block utilization.
+                    format: uint64
+                    type: string
+                  max_learning_rate:
+                    description: MaxLearningRate is the upper bound for the learning rate.
+                    type: string
+                  min_base_gas_price:
+                    description: >-
+                      MinBaseGasPrice determines the initial gas price of the
+                      module and the
+
+                      global minimum for the network.
+                    type: string
+                  min_learning_rate:
+                    description: MinLearningRate is the lower bound for the learning rate.
+                    type: string
+                  window:
+                    description: >-
+                      Window defines the window size for calculating an adaptive
+                      learning rate
+
+                      over a moving window of blocks.
+                    format: uint64
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Params returns the current feemarket module parameters.
+      tags:
+        - Query
+  /feemarket/v1/state:
+    get:
+      operationId: State
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: StateResponse is the response type for the Query/State RPC method.
+            properties:
+              state:
+                description: >-
+                  State is utilized to track the current state of the fee
+                  market. This includes
+
+                  the current base fee, learning rate, and block utilization
+                  within the
+
+                  specified AIMD window.
+                properties:
+                  base_gas_price:
+                    description: >-
+                      BaseGasPrice is the current base fee. This is denominated
+                      in the fee per
+
+                      gas unit.
+                    type: string
+                  index:
+                    description: >-
+                      Index is the index of the current block in the block
+                      utilization window.
+                    format: uint64
+                    type: string
+                  learning_rate:
+                    description: LearningRate is the current learning rate.
+                    type: string
+                  window:
+                    description: >-
+                      Window contains a list of the last blocks' utilization
+                      values. This is used
+
+                      to calculate the next base fee. This stores the number of
+                      units of gas
+
+                      consumed per block.
+                    items:
+                      format: uint64
+                      type: string
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: State returns the current feemarket module state.
       tags:
         - Query
   /gaia/globalfee/v1beta1/params:
@@ -38981,8 +41328,14 @@ paths:
                       format: uint64
                       type: string
                     type: array
-                  max_true_taker_spread:
+                  good_til_purge_allowance:
+                    format: uint64
                     type: string
+                  max_jits_per_block:
+                    format: uint64
+                    type: string
+                  paused:
+                    type: boolean
                 type: object
             type: object
         default:
@@ -40208,6 +42561,74 @@ paths:
       summary: Queries a list of LimitOrderTrancheUser items for a given address.
       tags:
         - Query
+  /neutron/dynamicfees/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryParamsResponse is response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: params holds all the parameters of this module.
+                properties:
+                  ntrn_prices:
+                    items:
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    title: >-
+                      List of asset prices by the NTRN
+
+                      it's used in cooperation with feemarket module
+
+                      ntrn_prices is a data source to convert gas_price from
+                      feemarket's base_denom (untrn)
+
+                      into a given asset
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Parameters queries the parameters of the module.
+      tags:
+        - Query
   /neutron/feeburner/params:
     get:
       operationId: Params
@@ -41403,6 +43824,27 @@ paths:
 
                       are sent to
                     type: string
+                  whitelisted_hooks:
+                    items:
+                      properties:
+                        code_id:
+                          format: uint64
+                          type: string
+                        denom_creator:
+                          type: string
+                      title: >-
+                        WhitelistedHook describes a beforeSendHook which is
+                        allowed to be added and executed
+
+                        SetBeforeSendHook can only be called on denoms where the
+                        denom creator and
+
+                        code_id for the `contract_addr` match a WhitelistedHook
+                      type: object
+                    title: >-
+                      whitelisted_hooks is the list of hooks which are allowed
+                      to be added and executed
+                    type: array
                 type: object
             type: object
         default:
@@ -41432,6 +43874,1379 @@ paths:
         module's
 
         parameters.
+      tags:
+        - Query
+  /slinky/alerts/v1/alerts:
+    get:
+      operationId: Alerts
+      parameters:
+        - default: CONCLUSION_STATUS_UNSPECIFIED
+          enum:
+            - CONCLUSION_STATUS_UNSPECIFIED
+            - CONCLUSION_STATUS_UNCONCLUDED
+            - CONCLUSION_STATUS_CONCLUDED
+          in: query
+          name: status
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              AlertsResponse is the response type for the Query.Alerts RPC
+              method, it
+
+              contains the list of Alerts that are being tracked by the alerts
+              module.
+            properties:
+              alerts:
+                items:
+                  description: >-
+                    Alert defines the basic meta-data necessary for the alerts
+                    module to resolve
+
+                    a claim that the price of a CurrencyPair on-chain is
+                    deviating from the price
+
+                    off-chain.
+                  properties:
+                    currency_pair:
+                      description: >-
+                        currency_pair is the currency-pair that this claim
+                        asserts is deviating
+
+                        from the price off-chain.
+                      properties:
+                        Base:
+                          type: string
+                        Quote:
+                          type: string
+                      title: >-
+                        CurrencyPair is the standard representation of a pair of
+                        assets, where one
+
+                        (Base) is priced in terms of the other (Quote)
+                      type: object
+                    height:
+                      description: >-
+                        height represents the height for which the alert is
+                        filed.
+                      format: uint64
+                      type: string
+                    signer:
+                      description: >-
+                        signer is the signer of this alert, this is the address
+                        that will receive
+
+                        the reward in the case of a positive conclusion, or
+                        whose bond will get
+
+                        slashed in the event of a negative conclusion.
+                      type: string
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        Alerts gets all alerts in state under the given status. If no status is
+        given, all Alerts are returned
+      tags:
+        - Query
+  /slinky/alerts/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              ParamsResponse is the response type for the Query.Params RPC
+              method, it
+
+              contains the Params of the module.
+            properties:
+              params:
+                description: Params is the set of parameters for the x/Alerts module.
+                properties:
+                  alert_params:
+                    description: >-
+                      AlertParams is the set of parameters for the x/Alerts
+                      module's Alerting.
+                    properties:
+                      bond_amount:
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                        properties:
+                          amount:
+                            type: string
+                          denom:
+                            type: string
+                        type: object
+                        title: >-
+                          BondAmount is the minimum amount of bond required to
+                          submit an
+
+                          Alert
+                      enabled:
+                        title: >-
+                          Enabled is a boolean defining whether or not Alerts
+                          can be submitted
+
+                          to the module
+                        type: boolean
+                      max_block_age:
+                        description: >-
+                          MaxBlockAge defines the maximum age of an Alert before
+                          it is pruned, notice
+
+                          this is defined wrt. the height that the Alert
+                          references, i.e Alerts are
+
+                          only relevant until Alert.Height + MaxBlockAge is
+                          reached.
+                        format: uint64
+                        type: string
+                    type: object
+                  conclusion_verification_params:
+                    properties:
+                      type_url:
+                        type: string
+                      value:
+                        format: byte
+                        type: string
+                    type: object
+                    description: >-
+                      ConclusionVerificationParams is the set of parameters for
+                      the x/Alerts
+
+                      module's conclusion verification.
+                  pruning_params:
+                    description: >-
+                      PruningParams is the set of parameters for the x/Alerts
+                      module's pruning.
+                    properties:
+                      blocks_to_prune:
+                        description: >-
+                          BlocksToPrune defines the number of blocks until an
+                          Alert will be pruned
+
+                          from state, notice this is defined wrt. the current
+                          block height, i.e
+
+                          Alerts will be stored in state until current_height +
+                          BlocksToPrune is
+
+                          reached.
+                        format: uint64
+                        type: string
+                      enabled:
+                        title: Enabled defines whether Alerts are to be pruned
+                        type: boolean
+                    type: object
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      tags:
+        - Query
+  /slinky/incentives/v1/get_all_incentives:
+    get:
+      operationId: GetAllIncentives
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GetAllIncentivesResponse is the response type for the
+              Query/GetAllIncentives
+
+              RPC method.
+            properties:
+              registry:
+                description: Registry is the list of all incentives, grouped by type.
+                items:
+                  description: >-
+                    IncentivesByType encapsulates a list of incentives by type.
+                    Each of the
+
+                    entries here must correspond to the same incentive type
+                    defined here.
+                  properties:
+                    entries:
+                      description: Entries is a list of incentive bytes.
+                      items:
+                        format: byte
+                        type: string
+                      type: array
+                    incentive_type:
+                      description: >-
+                        IncentiveType is the incentive type i.e.
+                        (BadPriceIncentiveType,
+
+                        GoodPriceIncentiveType).
+                      type: string
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: GetAllIncentives returns all incentives.
+      tags:
+        - Query
+  /slinky/incentives/v1/get_incentives_by_type/{incentive_type}:
+    get:
+      operationId: GetIncentivesByType
+      parameters:
+        - description: |-
+            IncentiveType is the incentive type i.e. (BadPriceIncentiveType,
+            GoodPriceIncentiveType).
+          in: path
+          name: incentive_type
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: |-
+              GetIncentivesByTypeResponse is the response type for the
+              Query/GetIncentivesByType RPC method.
+            properties:
+              entries:
+                description: Entries is the list of incentives of the given type.
+                items:
+                  format: byte
+                  type: string
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        GetIncentivesByType returns all incentives of a given type. If the type
+        is
+
+        not registered with the module, an error is returned.
+      tags:
+        - Query
+  /slinky/marketmap/v1/last_updated:
+    get:
+      operationId: LastUpdated
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              LastUpdatedResponse is the response type for the Query/LastUpdated
+              RPC
+
+              method.
+            properties:
+              last_updated:
+                format: uint64
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: LastUpdated returns the last height the market map was updated at.
+      tags:
+        - Query
+  /slinky/marketmap/v1/market:
+    get:
+      operationId: Market
+      parameters:
+        - in: query
+          name: currency_pair.Base
+          required: false
+          type: string
+        - in: query
+          name: currency_pair.Quote
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: MarketResponse is the query response for the Market query.
+            properties:
+              market:
+                description: >-
+                  Market encapsulates a Ticker and its provider-specific
+                  configuration.
+                properties:
+                  provider_configs:
+                    description: >-
+                      ProviderConfigs is the list of provider-specific configs
+                      for this Market.
+                    items:
+                      properties:
+                        invert:
+                          title: >-
+                            Invert is a boolean indicating if the BASE and QUOTE
+                            of the market should
+
+                            be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                          type: boolean
+                        metadata_JSON:
+                          description: >-
+                            MetadataJSON is a string of JSON that encodes any
+                            extra configuration
+
+                            for the given provider config.
+                          type: string
+                        name:
+                          description: >-
+                            Name corresponds to the name of the provider for
+                            which the configuration is
+
+                            being set.
+                          type: string
+                        normalize_by_pair:
+                          description: >-
+                            NormalizeByPair is the currency pair for this ticker
+                            to be normalized by.
+
+                            For example, if the desired Ticker is BTC/USD, this
+                            market could be reached
+
+                            using: OffChainTicker = BTC/USDT NormalizeByPair =
+                            USDT/USD This field is
+
+                            optional and nullable.
+                          properties:
+                            Base:
+                              type: string
+                            Quote:
+                              type: string
+                          title: >-
+                            CurrencyPair is the standard representation of a
+                            pair of assets, where one
+
+                            (Base) is priced in terms of the other (Quote)
+                          type: object
+                        off_chain_ticker:
+                          description: >-
+                            OffChainTicker is the off-chain representation of
+                            the ticker i.e. BTC/USD.
+
+                            The off-chain ticker is unique to a given provider
+                            and is used to fetch the
+
+                            price of the ticker from the provider.
+                          type: string
+                      type: object
+                    type: array
+                  ticker:
+                    description: >-
+                      Ticker represents a price feed for a given asset pair i.e.
+                      BTC/USD. The
+
+                      price feed is scaled to a number of decimal places and has
+                      a minimum number
+
+                      of providers required to consider the ticker valid.
+                    properties:
+                      currency_pair:
+                        description: CurrencyPair is the currency pair for this ticker.
+                        properties:
+                          Base:
+                            type: string
+                          Quote:
+                            type: string
+                        title: >-
+                          CurrencyPair is the standard representation of a pair
+                          of assets, where one
+
+                          (Base) is priced in terms of the other (Quote)
+                        type: object
+                      decimals:
+                        description: >-
+                          Decimals is the number of decimal places for the
+                          ticker. The number of
+
+                          decimal places is used to convert the price to a
+                          human-readable format.
+                        format: uint64
+                        type: string
+                      enabled:
+                        description: >-
+                          Enabled is the flag that denotes if the Ticker is
+                          enabled for price
+
+                          fetching by an oracle.
+                        type: boolean
+                      metadata_JSON:
+                        description: >-
+                          MetadataJSON is a string of JSON that encodes any
+                          extra configuration
+
+                          for the given ticker.
+                        type: string
+                      min_provider_count:
+                        description: >-
+                          MinProviderCount is the minimum number of providers
+                          required to consider
+
+                          the ticker valid.
+                        format: uint64
+                        type: string
+                    type: object
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        Market returns a market stored in the x/marketmap
+        module.
+      tags:
+        - Query
+  /slinky/marketmap/v1/marketmap:
+    get:
+      operationId: MarketMap
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: MarketMapResponse is the query response for the MarketMap query.
+            properties:
+              chain_id:
+                description: ChainId is the chain identifier for the market map.
+                type: string
+              last_updated:
+                description: >-
+                  LastUpdated is the last block height that the market map was
+                  updated.
+
+                  This field can be used as an optimization for clients checking
+                  if there
+
+                  is a new update to the map.
+                format: uint64
+                type: string
+              market_map:
+                description: >-
+                  MarketMap defines the global set of market configurations for
+                  all providers
+
+                  and markets.
+                properties:
+                  markets:
+                    additionalProperties:
+                      description: >-
+                        Market encapsulates a Ticker and its provider-specific
+                        configuration.
+                      properties:
+                        provider_configs:
+                          description: >-
+                            ProviderConfigs is the list of provider-specific
+                            configs for this Market.
+                          items:
+                            properties:
+                              invert:
+                                title: >-
+                                  Invert is a boolean indicating if the BASE and
+                                  QUOTE of the market should
+
+                                  be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                                type: boolean
+                              metadata_JSON:
+                                description: >-
+                                  MetadataJSON is a string of JSON that encodes
+                                  any extra configuration
+
+                                  for the given provider config.
+                                type: string
+                              name:
+                                description: >-
+                                  Name corresponds to the name of the provider
+                                  for which the configuration is
+
+                                  being set.
+                                type: string
+                              normalize_by_pair:
+                                description: >-
+                                  NormalizeByPair is the currency pair for this
+                                  ticker to be normalized by.
+
+                                  For example, if the desired Ticker is BTC/USD,
+                                  this market could be reached
+
+                                  using: OffChainTicker = BTC/USDT
+                                  NormalizeByPair = USDT/USD This field is
+
+                                  optional and nullable.
+                                properties:
+                                  Base:
+                                    type: string
+                                  Quote:
+                                    type: string
+                                title: >-
+                                  CurrencyPair is the standard representation of
+                                  a pair of assets, where one
+
+                                  (Base) is priced in terms of the other (Quote)
+                                type: object
+                              off_chain_ticker:
+                                description: >-
+                                  OffChainTicker is the off-chain representation
+                                  of the ticker i.e. BTC/USD.
+
+                                  The off-chain ticker is unique to a given
+                                  provider and is used to fetch the
+
+                                  price of the ticker from the provider.
+                                type: string
+                            type: object
+                          type: array
+                        ticker:
+                          description: >-
+                            Ticker represents a price feed for a given asset
+                            pair i.e. BTC/USD. The
+
+                            price feed is scaled to a number of decimal places
+                            and has a minimum number
+
+                            of providers required to consider the ticker valid.
+                          properties:
+                            currency_pair:
+                              description: >-
+                                CurrencyPair is the currency pair for this
+                                ticker.
+                              properties:
+                                Base:
+                                  type: string
+                                Quote:
+                                  type: string
+                              title: >-
+                                CurrencyPair is the standard representation of a
+                                pair of assets, where one
+
+                                (Base) is priced in terms of the other (Quote)
+                              type: object
+                            decimals:
+                              description: >-
+                                Decimals is the number of decimal places for the
+                                ticker. The number of
+
+                                decimal places is used to convert the price to a
+                                human-readable format.
+                              format: uint64
+                              type: string
+                            enabled:
+                              description: >-
+                                Enabled is the flag that denotes if the Ticker
+                                is enabled for price
+
+                                fetching by an oracle.
+                              type: boolean
+                            metadata_JSON:
+                              description: >-
+                                MetadataJSON is a string of JSON that encodes
+                                any extra configuration
+
+                                for the given ticker.
+                              type: string
+                            min_provider_count:
+                              description: >-
+                                MinProviderCount is the minimum number of
+                                providers required to consider
+
+                                the ticker valid.
+                              format: uint64
+                              type: string
+                          type: object
+                      type: object
+                    description: >-
+                      Markets is the full list of tickers and their associated
+                      configurations
+
+                      to be stored on-chain.
+                    type: object
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        MarketMap returns the full market map stored in the x/marketmap
+        module.
+      tags:
+        - Query
+  /slinky/marketmap/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              ParamsResponse is the response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: Params defines the parameters for the x/marketmap module.
+                properties:
+                  admin:
+                    description: >-
+                      Admin is an address that can remove addresses from the
+                      MarketAuthorities
+
+                      list. Only governance can add to the MarketAuthorities or
+                      change the Admin.
+                    type: string
+                  market_authorities:
+                    description: >-
+                      MarketAuthorities is the list of authority accounts that
+                      are able to
+
+                      control updating the marketmap.
+                    items:
+                      type: string
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Params returns the current x/marketmap module parameters.
+      tags:
+        - Query
+  /slinky/oracle/v1/get_all_tickers:
+    get:
+      operationId: GetAllCurrencyPairs
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GetAllCurrencyPairsResponse returns all CurrencyPairs that the
+              module is
+
+              currently tracking.
+            properties:
+              currency_pairs:
+                items:
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Get all the currency pairs the x/oracle module is tracking price-data
+        for.
+      tags:
+        - Query
+  /slinky/oracle/v1/get_currency_pair_mapping:
+    get:
+      operationId: GetCurrencyPairMapping
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GetCurrencyPairMappingResponse is the GetCurrencyPairMapping
+              response type.
+            properties:
+              currency_pair_mapping:
+                additionalProperties:
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                  type: object
+                description: >-
+                  currency_pair_mapping is a mapping of the id representing the
+                  currency pair
+
+                  to the currency pair itself.
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Get the mapping of currency pair ID -> currency pair. This is useful for
+
+        indexers that have access to the ID of a currency pair, but no way to
+        get
+
+        the underlying currency pair from it.
+      tags:
+        - Query
+  /slinky/oracle/v1/get_price:
+    get:
+      operationId: GetPrice
+      parameters:
+        - in: query
+          name: currency_pair.Base
+          required: false
+          type: string
+        - in: query
+          name: currency_pair.Quote
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GetPriceResponse is the response from the GetPrice grpc method
+              exposed from
+
+              the x/oracle query service.
+            properties:
+              decimals:
+                description: >-
+                  decimals represents the number of decimals that the
+                  quote-price is
+
+                  represented in. For Pairs where ETHEREUM is the quote this
+                  will be 18,
+
+                  otherwise it will be 8.
+                format: uint64
+                type: string
+              id:
+                description: ID represents the identifier for the CurrencyPair.
+                format: uint64
+                type: string
+              nonce:
+                format: uint64
+                title: >-
+                  nonce represents the nonce for the CurrencyPair if it exists
+                  in state
+                type: string
+              price:
+                title: >-
+                  QuotePrice represents the quote-price for the CurrencyPair
+                  given in
+
+                  GetPriceRequest (possibly nil if no update has been made)
+                properties:
+                  block_height:
+                    format: uint64
+                    title: BlockHeight is height of block mentioned above
+                    type: string
+                  block_timestamp:
+                    format: date-time
+                    title: >-
+                      BlockTimestamp tracks the block height associated with
+                      this price update.
+
+                      We include block timestamp alongside the price to ensure
+                      that smart
+
+                      contracts and applications are not utilizing stale oracle
+                      prices
+                    type: string
+                  price:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Given a CurrencyPair (or its identifier) return the latest QuotePrice
+        for
+
+        that CurrencyPair.
+      tags:
+        - Query
+  /slinky/oracle/v1/get_prices:
+    get:
+      operationId: GetPrices
+      parameters:
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: currency_pair_ids
+          required: false
+          type: array
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GetPricesResponse is the response from the GetPrices grpc method
+              exposed from
+
+              the x/oracle query service.
+            properties:
+              prices:
+                items:
+                  description: >-
+                    GetPriceResponse is the response from the GetPrice grpc
+                    method exposed from
+
+                    the x/oracle query service.
+                  properties:
+                    decimals:
+                      description: >-
+                        decimals represents the number of decimals that the
+                        quote-price is
+
+                        represented in. For Pairs where ETHEREUM is the quote
+                        this will be 18,
+
+                        otherwise it will be 8.
+                      format: uint64
+                      type: string
+                    id:
+                      description: ID represents the identifier for the CurrencyPair.
+                      format: uint64
+                      type: string
+                    nonce:
+                      format: uint64
+                      title: >-
+                        nonce represents the nonce for the CurrencyPair if it
+                        exists in state
+                      type: string
+                    price:
+                      title: >-
+                        QuotePrice represents the quote-price for the
+                        CurrencyPair given in
+
+                        GetPriceRequest (possibly nil if no update has been
+                        made)
+                      properties:
+                        block_height:
+                          format: uint64
+                          title: BlockHeight is height of block mentioned above
+                          type: string
+                        block_timestamp:
+                          format: date-time
+                          title: >-
+                            BlockTimestamp tracks the block height associated
+                            with this price update.
+
+                            We include block timestamp alongside the price to
+                            ensure that smart
+
+                            contracts and applications are not utilizing stale
+                            oracle prices
+                          type: string
+                        price:
+                          type: string
+                      type: object
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      tags:
+        - Query
+  /slinky/sla/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: Params defines the parameters for the sla module.
+                properties:
+                  enabled:
+                    description: Enabled is a flag to enable or disable the sla module.
+                    type: boolean
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Params returns the current SLA module parameters.
+      tags:
+        - Query
+  /slinky/sla/v1/price_feeds:
+    get:
+      operationId: GetPriceFeeds
+      parameters:
+        - description: ID defines the SLA to query price feeds for.
+          in: query
+          name: id
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryGetPriceFeedsResponse is the response type for the
+              Query/GetPriceFeeds
+
+              RPC method.
+            properties:
+              price_feeds:
+                description: PriceFeeds defines the price feeds for the given SLA.
+                items:
+                  description: >-
+                    PriceFeed defines the object type that will be utilized to
+                    monitor how
+
+                    frequently validators are voting with price updates across
+                    the network.
+                  properties:
+                    currency_pair:
+                      properties:
+                        Base:
+                          type: string
+                        Quote:
+                          type: string
+                      title: >-
+                        CurrencyPair is the standard representation of a pair of
+                        assets, where one
+
+                        (Base) is priced in terms of the other (Quote)
+                      type: object
+                      description: >-
+                        CurrencyPair represents the currency pair that this SLA
+                        corresponds to.
+                    id:
+                      description: >-
+                        ID corresponds to the SLA ID that this price feed
+                        corresponds to.
+                      type: string
+                    inclusion_map:
+                      description: >-
+                        InclusionMap represents the relevant moving window of
+                        blocks that the
+
+                        validator has voted on.
+                      format: byte
+                      type: string
+                    index:
+                      description: Index corresponds to the current index into the bitmap.
+                      format: uint64
+                      type: string
+                    maximum_viable_window:
+                      description: >-
+                        MaximumViableWindow represents the maximum number of
+                        blocks that can be
+
+                        represented by the bit map.
+                      format: uint64
+                      type: string
+                    update_map:
+                      description: >-
+                        UpdateMap represents the relevant moving window of price
+                        feed updates.
+                      format: byte
+                      type: string
+                    validator:
+                      description: >-
+                        Validator represents the validator that this SLA
+                        corresponds to.
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        GetPriceFeeds returns all price feeds that the module is currently
+        tracking. This request type inputs the SLA ID to query price feeds for.
+      tags:
+        - Query
+  /slinky/sla/v1/slas:
+    get:
+      operationId: GetAllSLAs
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryAllSLAsResponse is the response type for the Query/GetAllSLAs
+              RPC
+
+              method.
+            properties:
+              slas:
+                items:
+                  description: >-
+                    PriceFeedSLA defines the the desired SLA for a given set of
+                    price feeds. A
+
+                    price feed is defined to be a set of price prices for the
+                    same (currency
+
+                    pair, validator).
+                  properties:
+                    expected_uptime:
+                      description: >-
+                        ExpectedUptime is the expected uptime for the given
+                        validator and price
+
+                        feed.
+                      type: string
+                    frequency:
+                      description: >-
+                        Frequency is the frequency at which we will check the
+                        SLA.
+                      format: uint64
+                      type: string
+                    id:
+                      description: ID is the unique identifier for the SLA.
+                      type: string
+                    maximum_viable_window:
+                      description: >-
+                        MaximumViableWindow is the maximum time window that we
+                        are interested
+
+                        for the SLA. This is used to determine the moving window
+                        of blocks that
+
+                        we are interested in.
+                      format: uint64
+                      type: string
+                    minimum_block_updates:
+                      description: >-
+                        MinimumBlockUpdates is the minimum number of blocks that
+                        the
+
+                        validator had to have voted on in the maximum viable
+                        window
+
+                        in order to be considered for the SLA.
+                      format: uint64
+                      type: string
+                    slash_constant:
+                      description: >-
+                        SlashConstant is the constant by which we will multiply
+                        the deviation from
+
+                        the expected uptime.
+                      type: string
+                  type: object
+                type: array
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: GetAllSLAs returns all SLAs that the module is currently enforcing.
       tags:
         - Query
 produces:

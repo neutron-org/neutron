@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -56,6 +57,7 @@ func (k Keeper) SaveTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
 	} else {
 		k.SetInactiveLimitOrderTranche(ctx, tranche)
 		k.RemoveLimitOrderTranche(ctx, tranche.Key)
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(tranche.Key.TradePairId))
 	}
 
 	ctx.EventManager().EmitEvent(types.CreateTickUpdateLimitOrderTranche(tranche))
@@ -116,7 +118,7 @@ func (k Keeper) RemoveLimitOrderTranche(ctx sdk.Context, trancheKey *types.Limit
 	store.Delete(trancheKey.KeyMarshal())
 }
 
-func (k Keeper) GetPlaceTranche(
+func (k Keeper) GetGTCPlaceTranche(
 	sdkCtx sdk.Context,
 	tradePairID *types.TradePairID,
 	tickIndexTakerToMaker int64,
@@ -132,7 +134,8 @@ func (k Keeper) GetPlaceTranche(
 		var tick types.TickLiquidity
 		k.cdc.MustUnmarshal(iter.Value(), &tick)
 		tranche := tick.GetLimitOrderTranche()
-		if tranche.IsPlaceTranche() {
+		// Make sure tranche has not been traded through and is a GTC tranche
+		if tranche.IsPlaceTranche() && !tranche.HasExpiration() {
 			return tranche
 		}
 	}
@@ -219,6 +222,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, &JITGoodTilTime)
+		ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
 	case types.LimitOrderType_GOOD_TIL_TIME:
 		limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
@@ -226,8 +230,9 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 			TrancheKey:            NewTrancheKey(ctx),
 		}
 		placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, goodTil)
+		ctx.EventManager().EmitEvents(types.GetEventsIncExpiringOrders(tradePairID))
 	default:
-		placeTranche = k.GetPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
+		placeTranche = k.GetGTCPlaceTranche(ctx, tradePairID, tickIndexTakerToMaker)
 		if placeTranche == nil {
 			limitOrderTrancheKey := &types.LimitOrderTrancheKey{
 				TradePairId:           tradePairID,
@@ -235,6 +240,7 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 				TrancheKey:            NewTrancheKey(ctx),
 			}
 			placeTranche, err = NewLimitOrderTranche(limitOrderTrancheKey, nil)
+			ctx.EventManager().EmitEvents(types.GetEventsIncTotalOrders(tradePairID))
 			if err != nil {
 				return nil, err
 			}
@@ -245,4 +251,33 @@ func (k Keeper) GetOrInitPlaceTranche(ctx sdk.Context,
 	}
 
 	return placeTranche, nil
+}
+
+// GetJITsInBlockCount gets the total number of JIT LimitOrders placed in a block
+func (k Keeper) GetJITsInBlockCount(ctx sdk.Context) uint64 {
+	store := prefix.NewStore(ctx.TransientStore(k.tKey), []byte{})
+	byteKey := types.KeyPrefix(types.JITsInBlockKey)
+	bz := store.Get(byteKey)
+
+	// Count doesn't exist: no element
+	if bz == nil {
+		return 0
+	}
+
+	// Parse bytes
+	return binary.BigEndian.Uint64(bz)
+}
+
+// SetJITsInBlockCount sets the total number of JIT LimitOrders placed in a block
+func (k Keeper) SetJITsInBlockCount(ctx sdk.Context, count uint64) {
+	store := prefix.NewStore(ctx.TransientStore(k.tKey), []byte{})
+	byteKey := types.KeyPrefix(types.JITsInBlockKey)
+	bz := make([]byte, 8)
+	binary.BigEndian.PutUint64(bz, count)
+	store.Set(byteKey, bz)
+}
+
+func (k Keeper) IncrementJITsInBlock(ctx sdk.Context) {
+	currentCount := k.GetJITsInBlockCount(ctx)
+	k.SetJITsInBlockCount(ctx, currentCount+1)
 }

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
+
 	"github.com/neutron-org/neutron/v4/utils"
 
 	"github.com/neutron-org/neutron/v4/app/config"
@@ -284,7 +285,7 @@ func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
 	}
 }
 
-func testHomeDir(chainID string) string {
+func TestHomeDir(chainID string) string {
 	projectRoot := utils.RootDir()
 	return path.Join(projectRoot, ".testchains", chainID)
 }
@@ -418,7 +419,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		encoding := app.MakeEncodingConfig()
 		db := db2.NewMemDB()
-		homePath := testHomeDir("testchain-" + tmrand.NewRand().Str(6))
+		homePath := TestHomeDir("testchain-" + tmrand.NewRand().Str(6))
 		testApp := app.New(
 			log.NewNopLogger(),
 			db,

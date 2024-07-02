@@ -26,7 +26,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
-	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -41,6 +40,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/neutron-org/neutron/v4/app"
 	"github.com/neutron-org/neutron/v4/app/params"
@@ -51,21 +51,26 @@ import (
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := app.MakeEncodingConfig()
 
-	// TODO: move to depinject
-	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
-	// note, this is not necessary when using app wiring, as depinject can be directly used
-	memoryDB := cosmosdb.NewMemDB()
-	tempApp := app.New(
+	// create a temporary application for use in constructing query + tx commands
+	initAppOptions := viper.New()
+	tempDir := tempDir()
+	initAppOptions.Set(flags.FlagHome, tempDir)
+	tempApplication := app.New(
 		log.NewNopLogger(),
-		memoryDB,
+		cosmosdb.NewMemDB(),
 		nil,
-		false,
-		map[int64]bool{},
-		app.DefaultNodeHome,
+		true,
+		nil,
+		tempDir,
 		0,
 		sims.NewAppOptionsWithFlagHome(app.DefaultNodeHome),
 		nil,
 	)
+	defer func() {
+		if err := tempApplication.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
@@ -104,14 +109,21 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			customTemplate, customNeutronConfig := initAppConfig()
-			return InterceptConfigsPreRunHandler(cmd, customTemplate, customNeutronConfig, tmcfg.DefaultConfig())
+			neutronAppConfig, neutronAppConfigTemplate := initAppConfig()
+			return InterceptConfigsPreRunHandler(cmd, neutronAppConfigTemplate, neutronAppConfig, tmcfg.DefaultConfig())
 		},
 	}
 
-	initRootCmd(rootCmd, encodingConfig, tempApp.BasicModuleManager)
+	initRootCmd(rootCmd, encodingConfig, tempApplication.BasicModuleManager)
+	initClientCtx, err := config.ReadDefaultValuesFromDefaultClientConfig(initClientCtx)
+	if err != nil {
+		panic(err)
+	}
+	if err := tempApplication.AutoCLIOpts(initClientCtx).EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
 
-	autoCliOpts := tempApp.AutoCliOpts()
+	autoCliOpts := tempApplication.AutoCliOpts()
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
 	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
 	autoCliOpts.ClientCtx = initClientCtx
@@ -123,10 +135,14 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	return rootCmd, encodingConfig
 }
 
-func initAppConfig() (string, interface{}) {
-	srvCfg := serverconfig.DefaultConfig()
+func tempDir() string {
+	dir, err := os.MkdirTemp("", "neutrond")
+	if err != nil {
+		dir = app.DefaultNodeHome
+	}
+	defer os.RemoveAll(dir)
 
-	return serverconfig.DefaultConfigTemplate, srvCfg
+	return dir
 }
 
 func initRootCmd(rootCmd *cobra.Command,
@@ -266,7 +282,7 @@ func (ac appCreator) newApp(
 	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
 	if chainID == "" {
 		// fallback to genesis chain-id
-		appGenesis, err := genutiltypes.AppGenesisFromFile(filepath.Join(homeDir, "config", "genesis.json"))
+		appGenesis, err := genutiltypes.AppGenesisFromFile(filepath.Join(homeDir, cast.ToString(appOpts.Get("genesis_file"))))
 		if err != nil {
 			panic(err)
 		}
@@ -275,7 +291,7 @@ func (ac appCreator) newApp(
 	}
 
 	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
-		cast.ToString(appOpts.Get(flags.FlagHome)),
+		homeDir,
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		appOpts,
 		wasmOpts,

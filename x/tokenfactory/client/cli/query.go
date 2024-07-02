@@ -27,6 +27,7 @@ func GetQueryCmd() *cobra.Command {
 		GetParams(),
 		GetCmdDenomAuthorityMetadata(),
 		GetCmdDenomsFromCreator(),
+		GetCmdBeforeSendHook(),
 	)
 
 	return cmd
@@ -124,10 +125,10 @@ func GetCmdDenomsFromCreator() *cobra.Command {
 	return cmd
 }
 
-// GetCmdDenomAuthorityMetadata returns the authority metadata for a queried denom
+// GetCmdBeforeSendHook returns the BeforeSendHook for a queried denom
 func GetCmdBeforeSendHook() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "before-send-hiik [denom] [flags]",
+		Use:   "before-send-hook [denom] [flags]",
 		Short: "Get the before send hook for a specific denom",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -137,15 +138,15 @@ func GetCmdBeforeSendHook() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			denom := strings.Split(args[0], "/")
-
-			if len(denom) != 3 {
-				return fmt.Errorf("invalid denom format, expected format: factory/[creator]/[subdenom]")
+			denom := args[0]
+			creator, subdenom, err := types.DeconstructDenom(denom)
+			if err != nil {
+				return err
 			}
 
 			res, err := queryClient.BeforeSendHookAddress(cmd.Context(), &types.QueryBeforeSendHookAddressRequest{
-				Creator:  denom[1],
-				Subdenom: denom[2],
+				Creator:  creator,
+				Subdenom: subdenom,
 			})
 			if err != nil {
 				return err

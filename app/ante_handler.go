@@ -9,13 +9,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
 	globalfeeante "github.com/neutron-org/neutron/v4/x/globalfee/ante"
 	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
@@ -26,16 +24,13 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 
+	AccountKeeper         feemarketante.AccountKeeper
 	IBCKeeper             *ibckeeper.Keeper
 	ConsumerKeeper        ibcconsumerkeeper.Keeper
 	GlobalFeeKeeper       globalfeekeeper.Keeper
 	WasmConfig            *wasmTypes.WasmConfig
 	TXCounterStoreService corestoretypes.KVStoreService
-
-	// dependencies for the x/auction ante-handler
-	AuctionKeeper auctionkeeper.Keeper
-	TxEncoder     sdk.TxEncoder
-	MEVLane       auctionante.MEVLane
+	FeeMarketKeeper       feemarketante.FeeMarketKeeper
 }
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
@@ -55,8 +50,8 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "tx counter store service is required for ante builder")
 	}
 
-	if options.MEVLane == nil {
-		return nil, errors.Wrap(sdkerrors.ErrLogic, "mev lane is required for AnteHandler")
+	if options.FeeMarketKeeper == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "feemarket keeper is required for ante builder")
 	}
 
 	sigGasConsumer := options.SigGasConsumer
@@ -74,9 +69,10 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
-
-		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		feemarketante.NewFeeMarketCheckDecorator(
+			options.FeeMarketKeeper,
+			NewFeeDecoratorWithSwitch(options),
+		),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
@@ -84,11 +80,6 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
-		auctionante.NewAuctionDecorator(
-			options.AuctionKeeper,
-			options.TxEncoder,
-			options.MEVLane,
-		),
 	}
 
 	// Don't delete it even if IDE tells you so.
@@ -100,4 +91,30 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
+}
+
+// FeeDecoratorWithSwitch is a fee ante decorator which switches between globalfee ante handler
+// and feemarket's one, depending on the `params.Enabled` field feemarket's module.
+// If feemarket is enabled, we don't need to perform checks for min gas prices, since they are handled by feemarket
+// so we switch the execution directly to feemarket ante handler
+// If feemarket is disabled, we call globalfee + native cosmos fee ante handler where min gas prices will be checked
+// via globalfee and then they will be deducted via native cosmos fee ante handler.
+type FeeDecoratorWithSwitch struct {
+	globalfeeDecorator globalfeeante.FeeDecorator
+	cosmosFeeDecorator ante.DeductFeeDecorator
+}
+
+func NewFeeDecoratorWithSwitch(options HandlerOptions) FeeDecoratorWithSwitch {
+	return FeeDecoratorWithSwitch{
+		globalfeeDecorator: globalfeeante.NewFeeDecorator(options.GlobalFeeKeeper),
+		cosmosFeeDecorator: ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+	}
+}
+
+func (d FeeDecoratorWithSwitch) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	// If feemarket is disabled, we call globalfee + native cosmos fee ante handler where min gas prices will be checked
+	// via globalfee and then they will be deducted via native cosmos fee ante handler.
+	return d.globalfeeDecorator.AnteHandle(ctx, tx, simulate, func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+		return d.cosmosFeeDecorator.AnteHandle(ctx, tx, simulate, next)
+	})
 }
