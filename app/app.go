@@ -231,45 +231,6 @@ var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
 
-	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
-	// non-dependant module elements, such as codec registration
-	// and genesis verification.
-	// ModuleBasics = module.NewBasicManager(
-	// 	auth.AppModuleBasic{},
-	// 	authzmodule.AppModuleBasic{},
-	// 	bank.AppModuleBasic{},
-	// 	capability.AppModuleBasic{},
-	// 	genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-	// 	params.AppModuleBasic{},
-	// 	crisis.AppModuleBasic{},
-	// 	slashing.AppModuleBasic{},
-	// 	feegrantmodule.AppModuleBasic{},
-	// 	ibc.AppModuleBasic{},
-	// 	ica.AppModuleBasic{},
-	// 	tendermint.AppModuleBasic{},
-	// 	upgrade.AppModuleBasic{},
-	// 	evidence.AppModuleBasic{},
-	// 	transferSudo.AppModuleBasic{},
-	// 	vesting.AppModuleBasic{},
-	// 	ccvconsumer.AppModuleBasic{},
-	// 	wasm.AppModuleBasic{},
-	// 	tokenfactory.AppModuleBasic{},
-	// 	interchainqueries.AppModuleBasic{},
-	// 	interchaintxs.AppModuleBasic{},
-	// 	feerefunder.AppModuleBasic{},
-	// 	feeburner.AppModuleBasic{},
-	// 	contractmanager.AppModuleBasic{},
-	// 	cron.AppModuleBasic{},
-	// 	ibchooks.AppModuleBasic{},
-	// 	packetforward.AppModuleBasic{},
-	// 	auction.AppModuleBasic{},
-	// 	globalfee.AppModule{},
-	// 	dex.AppModuleBasic{},
-	// 	ibcswap.AppModuleBasic{},
-	// 	oracle.AppModuleBasic{},
-	// 	marketmap.AppModuleBasic{},
-	// )
-
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:                    nil,
