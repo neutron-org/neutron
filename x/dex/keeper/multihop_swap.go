@@ -17,6 +17,13 @@ type MultihopStep struct {
 	tradePairID        *types.TradePairID
 }
 
+type routeOutput struct {
+	write   func()
+	coinOut sdk.Coin
+	route   []string
+	dust    sdk.Coins
+}
+
 func (k Keeper) HopsToRouteData(
 	ctx sdk.Context,
 	hops []string,
