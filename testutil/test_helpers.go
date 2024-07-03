@@ -2,16 +2,18 @@ package testutil
 
 import (
 	"bytes"
-	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/testutil/network"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	"cosmossdk.io/errors"
+
+	"github.com/cosmos/cosmos-sdk/testutil/network"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 

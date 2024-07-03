@@ -3,13 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	"github.com/neutron-org/neutron/v4/x/dynamicfees"
 	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"

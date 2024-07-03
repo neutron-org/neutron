@@ -2,9 +2,10 @@ package network
 
 import (
 	"fmt"
-	"github.com/neutron-org/neutron/v4/testutil"
 	"testing"
 	"time"
+
+	"github.com/neutron-org/neutron/v4/testutil"
 
 	"github.com/neutron-org/neutron/v4/app/config"
 

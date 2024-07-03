@@ -2,12 +2,14 @@ package network
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/neutron-org/neutron/v4/testutil"
-	"testing"
-	"time"
 
 	db "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
@@ -22,6 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/neutron-org/neutron/v4/app/params"
 
 	"github.com/neutron-org/neutron/v4/app"
