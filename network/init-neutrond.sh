@@ -733,7 +733,6 @@ NUM_MARKETS=$(echo "$MARKETS" | jq '.markets | length + 1')
 
 NUM_MARKETS=$NUM_MARKETS; jq --arg num "$NUM_MARKETS" '.app_state["oracle"]["next_id"] = $num' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
 MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["marketmap"]["market_map"] = ($markets | fromjson)' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
-jq '.app_state["marketmap"]["last_updated"] = 1' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
 MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pair_genesis"] += [$markets | fromjson | .markets | values | .[].ticker.currency_pair | {"currency_pair": {"Base": .Base, "Quote": .Quote}, "currency_pair_price": null, "nonce": 0} ]' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
 MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pair_genesis"] |= (to_entries | map(.value += {id: (.key + 1)} | .value))' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
 
