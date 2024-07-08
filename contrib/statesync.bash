@@ -70,4 +70,4 @@ NEUTROND_P2P_SEEDS=$(curl -s https://raw.githubusercontent.com/cosmos/chain-regi
 export NEUTROND_P2P_SEEDS
 
 # Start chain.
-neutrond start --x-crisis-skip-assert-invariants --iavl-disable-fastnode false 
+neutrond start --x-crisis-skip-assert-invariants --iavl-disable-fastnode false --minimum-gas-prices 0untrn

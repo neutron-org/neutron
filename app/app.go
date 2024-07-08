@@ -36,7 +36,7 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
+	v401 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
 	"github.com/neutron-org/neutron/v4/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
@@ -225,7 +225,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v400.Upgrade}
+	Upgrades = []upgrades.Upgrade{v401.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -1094,8 +1094,8 @@ func New(
 		crontypes.ModuleName,
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
-		marketmaptypes.ModuleName,
 		oracletypes.ModuleName,
+		marketmaptypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,

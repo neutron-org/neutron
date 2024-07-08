@@ -18637,17 +18637,7 @@ definitions:
             type: array
         type: object
     type: object
-  osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
-    description: |-
-      DenomAuthorityMetadata specifies metadata for addresses that have specific
-      capabilities over a token factory denom. Right now there is only one Admin
-      permission, but is planned to be extended to the future.
-    properties:
-      Admin:
-        title: Can be empty for no admin, or a valid osmosis address
-        type: string
-    type: object
-  osmosis.tokenfactory.v1beta1.Params:
+  osmosis.tokenfactory.Params:
     description: Params defines the parameters for the tokenfactory module.
     properties:
       denom_creation_fee:
@@ -18685,6 +18675,52 @@ definitions:
           creation
 
           are sent to
+        type: string
+      whitelisted_hooks:
+        items:
+          properties:
+            code_id:
+              format: uint64
+              type: string
+            denom_creator:
+              type: string
+          title: >-
+            WhitelistedHook describes a beforeSendHook which is allowed to be
+            added and executed
+
+            SetBeforeSendHook can only be called on denoms where the denom
+            creator and
+
+            code_id for the `contract_addr` match a WhitelistedHook
+          type: object
+        title: >-
+          whitelisted_hooks is the list of hooks which are allowed to be added
+          and executed
+        type: array
+    type: object
+  osmosis.tokenfactory.WhitelistedHook:
+    properties:
+      code_id:
+        format: uint64
+        type: string
+      denom_creator:
+        type: string
+    title: >-
+      WhitelistedHook describes a beforeSendHook which is allowed to be added
+      and executed
+
+      SetBeforeSendHook can only be called on denoms where the denom creator and
+
+      code_id for the `contract_addr` match a WhitelistedHook
+    type: object
+  osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata:
+    description: |-
+      DenomAuthorityMetadata specifies metadata for addresses that have specific
+      capabilities over a token factory denom. Right now there is only one Admin
+      permission, but is planned to be extended to the future.
+    properties:
+      Admin:
+        title: Can be empty for no admin, or a valid osmosis address
         type: string
     type: object
   osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse:
@@ -18774,6 +18810,27 @@ definitions:
 
               are sent to
             type: string
+          whitelisted_hooks:
+            items:
+              properties:
+                code_id:
+                  format: uint64
+                  type: string
+                denom_creator:
+                  type: string
+              title: >-
+                WhitelistedHook describes a beforeSendHook which is allowed to
+                be added and executed
+
+                SetBeforeSendHook can only be called on denoms where the denom
+                creator and
+
+                code_id for the `contract_addr` match a WhitelistedHook
+              type: object
+            title: >-
+              whitelisted_hooks is the list of hooks which are allowed to be
+              added and executed
+            type: array
         type: object
     type: object
   packetforward.v1.Params:
@@ -20042,6 +20099,31 @@ definitions:
             (Base) is priced in terms of the other (Quote)
           type: object
         type: array
+    type: object
+  slinky.oracle.v1.GetCurrencyPairMappingResponse:
+    description: >-
+      GetCurrencyPairMappingResponse is the GetCurrencyPairMapping response
+      type.
+    properties:
+      currency_pair_mapping:
+        additionalProperties:
+          properties:
+            Base:
+              type: string
+            Quote:
+              type: string
+          title: >-
+            CurrencyPair is the standard representation of a pair of assets,
+            where one
+
+            (Base) is priced in terms of the other (Quote)
+          type: object
+        description: >-
+          currency_pair_mapping is a mapping of the id representing the currency
+          pair
+
+          to the currency pair itself.
+        type: object
     type: object
   slinky.oracle.v1.GetPriceResponse:
     description: >-
@@ -43742,6 +43824,27 @@ paths:
 
                       are sent to
                     type: string
+                  whitelisted_hooks:
+                    items:
+                      properties:
+                        code_id:
+                          format: uint64
+                          type: string
+                        denom_creator:
+                          type: string
+                      title: >-
+                        WhitelistedHook describes a beforeSendHook which is
+                        allowed to be added and executed
+
+                        SetBeforeSendHook can only be called on denoms where the
+                        denom creator and
+
+                        code_id for the `contract_addr` match a WhitelistedHook
+                      type: object
+                    title: >-
+                      whitelisted_hooks is the list of hooks which are allowed
+                      to be added and executed
+                    type: array
                 type: object
             type: object
         default:
@@ -44627,6 +44730,68 @@ paths:
       summary: >-
         Get all the currency pairs the x/oracle module is tracking price-data
         for.
+      tags:
+        - Query
+  /slinky/oracle/v1/get_currency_pair_mapping:
+    get:
+      operationId: GetCurrencyPairMapping
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              GetCurrencyPairMappingResponse is the GetCurrencyPairMapping
+              response type.
+            properties:
+              currency_pair_mapping:
+                additionalProperties:
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                  type: object
+                description: >-
+                  currency_pair_mapping is a mapping of the id representing the
+                  currency pair
+
+                  to the currency pair itself.
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Get the mapping of currency pair ID -> currency pair. This is useful for
+
+        indexers that have access to the ID of a currency pair, but no way to
+        get
+
+        the underlying currency pair from it.
       tags:
         - Query
   /slinky/oracle/v1/get_price:

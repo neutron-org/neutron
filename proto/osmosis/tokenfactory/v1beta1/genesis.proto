@@ -2,8 +2,8 @@ syntax = "proto3";
 package osmosis.tokenfactory.v1beta1;
 
 import "gogoproto/gogo.proto";
+import "osmosis/tokenfactory/params.proto";
 import "osmosis/tokenfactory/v1beta1/authorityMetadata.proto";
-import "osmosis/tokenfactory/v1beta1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/tokenfactory/types";
 
@@ -29,4 +29,6 @@ message GenesisDenom {
     (gogoproto.moretags) = "yaml:\"authority_metadata\"",
     (gogoproto.nullable) = false
   ];
+
+  string hook_contract_address = 3 [(gogoproto.nullable) = true];
 }

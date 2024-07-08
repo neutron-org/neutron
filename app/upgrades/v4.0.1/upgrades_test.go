@@ -16,7 +16,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.0"
+	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
 	"github.com/neutron-org/neutron/v4/testutil"
 )
 
@@ -132,13 +132,6 @@ func (suite *UpgradeTestSuite) TestDynamicFeesUpgrade() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	ctx := suite.ChainA.GetContext()
 	t := suite.T()
-
-	oldParams, err := app.ConsensusParamsKeeper.Params(ctx, &types.QueryParamsRequest{})
-	suite.Require().NoError(err)
-	// it is automatically tracked in upgrade handler, we need to set it manually for tests
-	oldParams.Params.Version = &comettypes.VersionParams{App: 0}
-	// we need to properly set consensus params for tests or we get a panic
-	suite.Require().NoError(app.ConsensusParamsKeeper.ParamsStore.Set(ctx, *oldParams.Params))
 
 	upgrade := upgradetypes.Plan{
 		Name:   v400.UpgradeName,

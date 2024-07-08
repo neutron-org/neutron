@@ -121,7 +121,7 @@ build-static-linux-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) cp neutronbinary:/bin/neutrond $(BUILDDIR)/neutrond-linux-amd64
 	$(DOCKER) rm -f neutronbinary
 
-build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
+build-e2e-docker-image: go.sum $(BUILDDIR)/
 	$(DOCKER) buildx create --name neutronbuilder || true
 	$(DOCKER) buildx use neutronbuilder
 	$(DOCKER) buildx build \
@@ -136,7 +136,12 @@ build-slinky-e2e-docker-image: go.sum $(BUILDDIR)/
 		-f Dockerfile.builder .
 
 slinky-e2e-test:
-	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 20m -count=1 ./...
+	@echo "Running e2e slinky tests..."
+	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 30m -count=1 ./...
+
+feemarket-e2e-test:
+	@echo "Running e2e feemarket tests..."
+	@cd ./tests/feemarket &&  go mod tidy && go test -p 1 -v -race -timeout 30m -count=1 ./...
 
 install-test-binary: check_version go.sum
 	go install -mod=readonly $(BUILD_FLAGS_TEST_BINARY) ./cmd/neutrond
@@ -197,15 +202,14 @@ test-sim-multi-seed-short: runsim
 ###############################################################################
 
 lint:
-	golangci-lint run
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*_test.go" | xargs gofmt -d -s
+	golangci-lint run --skip-files ".*.pb.go"
+	find . -name '*.go' -not -name "*.pb.go" -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*_test.go" | xargs gofmt -d -s
 
 format:
 	@go install mvdan.cc/gofumpt@latest
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name "*.pb.go" -not -name "*.pb.gw.go" -not -name "*.pulsar.go" -not -path "./crypto/keys/secp256k1/*" | xargs gofumpt -w -l
-	golangci-lint run --fix
-	goimports -w -local github.com/neutron-org .
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name "*.pb.go" -not -name "*.pb.gw.go" -not -name "*.pulsar.go" -not -path "./crypto/keys/secp256k1/*" | xargs -I % sh -c 'gofumpt -w -l % && goimports -w -local github.com/neutron-org %'
+	golangci-lint run --fix --skip-files ".*.pb.go"
 
 .PHONY: format
 
