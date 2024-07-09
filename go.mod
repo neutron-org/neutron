@@ -15,14 +15,14 @@ require (
 	cosmossdk.io/x/upgrade v0.1.3
 	github.com/CosmWasm/wasmd v0.51.0
 	github.com/CosmWasm/wasmvm/v2 v2.0.1
-	github.com/cometbft/cometbft v0.38.7
+	github.com/cometbft/cometbft v0.38.9
 	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/cosmos-sdk v0.50.7
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.2
-	github.com/cosmos/ibc-go/modules/capability v1.0.0
+	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/v8 v8.2.1
 	github.com/cosmos/ics23/go v0.10.0
 	github.com/cosmos/interchain-security/v5 v5.0.0
@@ -177,6 +177,7 @@ require (
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
