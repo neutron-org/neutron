@@ -38,7 +38,7 @@ func (k Keeper) MultiHopSwapCore(
 ) (coinOut sdk.Coin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	bestRoute, initialInCoin, err := k.ExecuteMultiHopSwap(ctx, amountIn, routes, exitLimitPrice, pickBestRoute)
+	bestRoute, initialInCoin, err := k.CalulateMultiHopSwap(ctx, amountIn, routes, exitLimitPrice, pickBestRoute)
 	if err != nil {
 		return sdk.Coin{}, err
 	}
@@ -80,9 +80,9 @@ func (k Keeper) MultiHopSwapCore(
 	return bestRoute.coinOut, nil
 }
 
-// ExecuteMultiHopSwap handles the core logic for MultiHopSwap -- simulating swap operations across all routes (when applicable)
-// and picking the best route to execute. IT DOES NOT PERFORM ANY BANKING OPERATIONS.
-func (k Keeper) ExecuteMultiHopSwap(
+// CalulateMultiHopSwap handles the core logic for MultiHopSwap -- simulating swap operations across all routes (when applicable)
+// and picking the best route to execute. It uses a cache and does not modify state.
+func (k Keeper) CalulateMultiHopSwap(
 	ctx sdk.Context,
 	amountIn math.Int,
 	routes []*types.MultiHopRoute,
