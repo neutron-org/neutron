@@ -22,7 +22,7 @@ func (k Keeper) WithdrawCore(
 ) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	totalReserve0ToRemove, totalReserve1ToRemove, sharesToRemove, poolDenom, events, err := k.ExecuteWithdraw(
+	totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, err := k.ExecuteWithdraw(
 		ctx,
 		pairID,
 		callerAddr,
@@ -37,10 +37,8 @@ func (k Keeper) WithdrawCore(
 
 	ctx.EventManager().EmitEvents(events)
 
-	if sharesToRemove.IsPositive() {
-		if err := k.BurnShares(ctx, callerAddr, sharesToRemove, poolDenom); err != nil {
-			return err
-		}
+	if err := k.BurnShares(ctx, callerAddr, coinsToBurn); err != nil {
+		return err
 	}
 
 	if totalReserve0ToRemove.IsPositive() {
@@ -88,7 +86,7 @@ func (k Keeper) ExecuteWithdraw(
 	sharesToRemoveList []math.Int,
 	tickIndicesNormalized []int64,
 	fees []uint64,
-) (totalReserves0ToRemove, totalReserves1ToRemove math.Int, sharesToRemove math.Int, poolDenom string, events sdk.Events, err error) {
+) (totalReserves0ToRemove, totalReserves1ToRemove math.Int, coinsToBurn sdk.Coins, events sdk.Events, err error) {
 	totalReserve0ToRemove := math.ZeroInt()
 	totalReserve1ToRemove := math.ZeroInt()
 
@@ -98,14 +96,17 @@ func (k Keeper) ExecuteWithdraw(
 
 		pool, err := k.GetOrInitPool(ctx, pairID, tickIndex, fee)
 		if err != nil {
-			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), "", nil, err
+			return math.ZeroInt(), math.ZeroInt(), nil, nil, err
 		}
 
 		poolDenom := pool.GetPoolDenom()
 
-		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount
+		// TODO: this is a bit hacky. Since it is possible to have multiple withdrawals from the same pool we have to artificially update the bank balance
+		// In the future we should enforce only one withdraw operation per pool in the message validation
+		alreadyWithdrawnOfDenom := coinsToBurn.AmountOf(poolDenom)
+		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
 		if totalShares.LT(sharesToRemove) {
-			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), poolDenom, nil, sdkerrors.Wrapf(
+			return math.ZeroInt(), math.ZeroInt(), nil, nil, sdkerrors.Wrapf(
 				types.ErrInsufficientShares,
 				"%s does not have %s shares of type %s",
 				callerAddr,
@@ -120,6 +121,8 @@ func (k Keeper) ExecuteWithdraw(
 		totalReserve0ToRemove = totalReserve0ToRemove.Add(outAmount0)
 		totalReserve1ToRemove = totalReserve1ToRemove.Add(outAmount1)
 
+		coinsToBurn = coinsToBurn.Add(sdk.NewCoin(poolDenom, sharesToRemove))
+
 		withdrawEvent := types.CreateWithdrawEvent(
 			callerAddr,
 			receiverAddr,
@@ -133,5 +136,5 @@ func (k Keeper) ExecuteWithdraw(
 		)
 		events = append(events, withdrawEvent)
 	}
-	return totalReserve0ToRemove, totalReserve1ToRemove, sharesToRemove, poolDenom, events, nil
+	return totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, nil
 }
