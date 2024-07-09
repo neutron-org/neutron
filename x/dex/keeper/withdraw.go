@@ -22,7 +22,7 @@ func (k Keeper) WithdrawCore(
 ) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	totalReserve0ToRemove, totalReserve1ToRemove, events, err := k.ExecuteWithdraw(
+	totalReserve0ToRemove, totalReserve1ToRemove, sharesToRemove, poolDenom, events, err := k.ExecuteWithdraw(
 		ctx,
 		pairID,
 		callerAddr,
@@ -36,6 +36,12 @@ func (k Keeper) WithdrawCore(
 	}
 
 	ctx.EventManager().EmitEvents(events)
+
+	if sharesToRemove.IsPositive() {
+		if err := k.BurnShares(ctx, callerAddr, sharesToRemove, poolDenom); err != nil {
+			return err
+		}
+	}
 
 	if totalReserve0ToRemove.IsPositive() {
 		coin0 := sdk.NewCoin(pairID.Token0, totalReserve0ToRemove)
@@ -82,7 +88,7 @@ func (k Keeper) ExecuteWithdraw(
 	sharesToRemoveList []math.Int,
 	tickIndicesNormalized []int64,
 	fees []uint64,
-) (totalReserves0ToRemove, totalReserves1ToRemove math.Int, events sdk.Events, err error) {
+) (totalReserves0ToRemove, totalReserves1ToRemove math.Int, sharesToRemove math.Int, poolDenom string, events sdk.Events, err error) {
 	totalReserve0ToRemove := math.ZeroInt()
 	totalReserve1ToRemove := math.ZeroInt()
 
@@ -92,14 +98,14 @@ func (k Keeper) ExecuteWithdraw(
 
 		pool, err := k.GetOrInitPool(ctx, pairID, tickIndex, fee)
 		if err != nil {
-			return math.ZeroInt(), math.ZeroInt(), nil, err
+			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), "", nil, err
 		}
 
 		poolDenom := pool.GetPoolDenom()
 
 		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount
 		if totalShares.LT(sharesToRemove) {
-			return math.ZeroInt(), math.ZeroInt(), nil, sdkerrors.Wrapf(
+			return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), poolDenom, nil, sdkerrors.Wrapf(
 				types.ErrInsufficientShares,
 				"%s does not have %s shares of type %s",
 				callerAddr,
@@ -110,12 +116,6 @@ func (k Keeper) ExecuteWithdraw(
 
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
 		k.SetPool(ctx, pool)
-
-		if sharesToRemove.IsPositive() {
-			if err := k.BurnShares(ctx, callerAddr, sharesToRemove, poolDenom); err != nil {
-				return math.ZeroInt(), math.ZeroInt(), nil, err
-			}
-		}
 
 		totalReserve0ToRemove = totalReserve0ToRemove.Add(outAmount0)
 		totalReserve1ToRemove = totalReserve1ToRemove.Add(outAmount1)
@@ -133,5 +133,5 @@ func (k Keeper) ExecuteWithdraw(
 		)
 		events = append(events, withdrawEvent)
 	}
-	return totalReserve0ToRemove, totalReserve1ToRemove, events, nil
+	return totalReserve0ToRemove, totalReserve1ToRemove, sharesToRemove, poolDenom, events, nil
 }
