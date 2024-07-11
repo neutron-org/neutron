@@ -15,6 +15,7 @@ func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
 		return err
 	}
 
+	mintToAcc, err := sdk.AccAddressFromBech32(mintTo)
 	if err != nil {
 		return err
 	}
