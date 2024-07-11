@@ -174,6 +174,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		server.ShowAddressCmd(),
 		queryCommand(),
 		txCommand(),
+		ExportFixCmd(ac.appExport, app.DefaultNodeHome),
 		keys.Commands(),
 	)
 }
