@@ -55,21 +55,21 @@ func loadPrecomputedPricesFromFile() error {
 }
 
 // Calculates the price for a swap from token 0 to token 1 given a relative tick
-// tickIndex refers to the index of a specified tick such that x * 1.0001 ^(-1 * t) = y
+// tickIndex refers to the index of a specified tick such that x * 1.0001 ^(1 * t) = y
 // Lower ticks offer better prices.
 func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 	if IsTickOutOfRange(relativeTickIndex) {
 		return math_utils.ZeroPrecDec(), ErrTickOutsideRange
 	}
 	if relativeTickIndex < 0 {
-		return utils.BasePrice().Power(uint64(-1 * relativeTickIndex)), nil
+		return math_utils.OnePrecDec().Quo(PrecomputedPrices[-relativeTickIndex]), nil
 	}
 	// else
-	return math_utils.OnePrecDec().Quo(utils.BasePrice().Power(uint64(relativeTickIndex))), nil
+	return PrecomputedPrices[relativeTickIndex], nil
 }
 
 func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
-	if price.GT(math_utils.OnePrecDec()) {
+	if price.LT(math_utils.OnePrecDec()) {
 		panic("Can only lookup prices <= 1")
 	}
 	var left uint64 // = 0
@@ -81,9 +81,9 @@ func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 		case PrecomputedPrices[mid].Equal(price):
 			return mid
 		case PrecomputedPrices[mid].LT(price):
-			right = mid - 1
-		default:
 			left = mid + 1
+		default:
+			right = mid - 1
 
 		}
 	}
@@ -97,7 +97,7 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 		return 0, ErrPriceOutsideRange
 	}
 
-	if price.GT(math_utils.OnePrecDec()) {
+	if price.LT(math_utils.OnePrecDec()) {
 		// We only have a lookup table for prices <= 1
 		// So we invert the price for the lookup
 		invPrice := math_utils.OnePrecDec().Quo(price)
@@ -142,7 +142,7 @@ func ValidateTickFee(tick int64, fee uint64) error {
 }
 
 func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
-	amountOut := price.MulInt(amountIn)
+	amountOut := math_utils.NewPrecDecFromInt(amountIn).Quo(price)
 	if amountOut.LT(math_utils.OnePrecDec()) {
 		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}

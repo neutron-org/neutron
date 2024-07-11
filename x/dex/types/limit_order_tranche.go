@@ -111,7 +111,7 @@ func (t LimitOrderTranche) Price() math_utils.PrecDec {
 }
 
 func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
-	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
+	amountFilled := math_utils.NewPrecDecFromInt(t.TotalTakerDenom).Quo(t.MakerPrice)
 	ratioFilled := amountFilled.QuoInt(t.TotalMakerDenom)
 
 	// Cap ratio filled at 100% so that makers cannot over withdraw
@@ -119,7 +119,7 @@ func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
 }
 
 func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
-	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
+	amountFilled := math_utils.NewPrecDecFromInt(t.TotalTakerDenom).Quo(t.MakerPrice)
 	trueAmountUnfilled := math_utils.NewPrecDecFromInt(t.TotalMakerDenom).Sub(amountFilled)
 
 	// It is possible for a tranche to be overfilled due to rounding. Thus we cap the unfilled amount at 0
@@ -148,7 +148,7 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 	ratioFilled := t.RatioFilled()
 	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned)
 	sharesToWithdrawDec := maxAllowedToWithdraw.Sub(math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn))
-	amountOutTokenOutDec := sharesToWithdrawDec.Quo(t.PriceTakerToMaker)
+	amountOutTokenOutDec := sharesToWithdrawDec.Mul(t.MakerPrice)
 
 	// Round shares withdrawn up and amountOut down to ensure math favors dex
 	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec.TruncateInt()
@@ -168,14 +168,14 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *m
 	reservesTokenOut := &t.ReservesMakerDenom
 	fillTokenIn := &t.ReservesTakerDenom
 	totalTokenIn := &t.TotalTakerDenom
-	maxOutGivenIn := t.PriceTakerToMaker.MulInt(maxAmountTakerIn).TruncateInt()
+	maxOutGivenIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(t.MakerPrice).TruncateInt()
 	possibleOutAmounts := []math.Int{*reservesTokenOut, maxOutGivenIn}
 	if maxAmountMakerOut != nil {
 		possibleOutAmounts = append(possibleOutAmounts, *maxAmountMakerOut)
 	}
 	outAmount = utils.MinIntArr(possibleOutAmounts)
 
-	inAmount = math_utils.NewPrecDecFromInt(outAmount).Quo(t.PriceTakerToMaker).Ceil().TruncateInt()
+	inAmount = t.MakerPrice.MulInt(outAmount).Ceil().TruncateInt()
 
 	*fillTokenIn = fillTokenIn.Add(inAmount)
 	*totalTokenIn = totalTokenIn.Add(inAmount)

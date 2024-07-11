@@ -85,7 +85,7 @@ func (p *Pool) Swap(
 		return math.ZeroInt(), math.ZeroInt()
 	}
 
-	maxOutGivenTakerIn := makerReserves.PriceTakerToMaker.MulInt(maxAmountTakerIn).TruncateInt()
+	maxOutGivenTakerIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(makerReserves.MakerPrice).TruncateInt()
 	possibleAmountsMakerOut := []math.Int{makerReserves.ReservesMakerDenom, maxOutGivenTakerIn}
 	if maxAmountMakerOut != nil {
 		possibleAmountsMakerOut = append(possibleAmountsMakerOut, *maxAmountMakerOut)
@@ -97,10 +97,7 @@ func (p *Pool) Swap(
 	// c) The maximum amount the user wants out (maxAmountOut1)
 	amountMakerOut = utils.MinIntArr(possibleAmountsMakerOut)
 
-	amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
-		Quo(makerReserves.PriceTakerToMaker).
-		Ceil().
-		TruncateInt()
+	amountTakerIn = makerReserves.MakerPrice.MulInt(amountMakerOut).Ceil().TruncateInt()
 	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
 	makerReserves.ReservesMakerDenom = makerReserves.ReservesMakerDenom.Sub(amountMakerOut)
 
@@ -158,10 +155,10 @@ func (p *Pool) GetPoolDenom() string {
 
 func (p *Pool) Price(tradePairID *TradePairID) math_utils.PrecDec {
 	if tradePairID.IsTakerDenomToken0() {
-		return p.UpperTick1.PriceTakerToMaker
+		return p.UpperTick1.MakerPrice
 	}
 
-	return p.LowerTick0.PriceTakerToMaker
+	return p.LowerTick0.MakerPrice
 }
 
 func (p *Pool) MustCalcPrice1To0Center() math_utils.PrecDec {
@@ -203,7 +200,7 @@ func (p *Pool) CalcResidualSharesMinted(
 	valueMintedToken0, err := CalcResidualValue(
 		residualAmount0,
 		residualAmount1,
-		p.LowerTick0.PriceTakerToMaker,
+		p.LowerTick0.MakerPrice,
 		fee,
 	)
 	if err != nil {
@@ -269,16 +266,16 @@ func CalcGreatestMatchingRatio(
 
 func CalcResidualValue(
 	amount0, amount1 math.Int,
-	priceLowerTakerToMaker math_utils.PrecDec,
+	makerPriceToken0 math_utils.PrecDec,
 	fee int64,
 ) (math_utils.PrecDec, error) {
-	// ResidualValue = Amount0 * (Price1to0Center / Price1to0Upper) + Amount1 * Price1to0Lower
+	// ResidualValue = Amount0 * (Price1to0Center / Price1to0Upper) + Amount1 / MakerPriceToken0
 	amount0Discount, err := CalcPrice(-fee)
 	if err != nil {
 		return math_utils.ZeroPrecDec(), err
 	}
 
-	return amount0Discount.MulInt(amount0).Add(priceLowerTakerToMaker.MulInt(amount1)), nil
+	return amount0Discount.MulInt(amount0).Add(math_utils.NewPrecDecFromInt(amount1).Quo(makerPriceToken0)), nil
 }
 
 func CalcFee(upperTickIndex, lowerTickIndex int64) int64 {
