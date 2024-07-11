@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	dbm "github.com/cosmos/cosmos-db"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	dbm "github.com/cosmos/cosmos-db"
 
 	"cosmossdk.io/log"
 
