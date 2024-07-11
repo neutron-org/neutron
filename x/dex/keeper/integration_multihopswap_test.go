@@ -502,3 +502,7 @@ func (s *DexTestSuite) TestMultiHopSwapEventsEmitted() {
 	// 8 tickUpdateEvents are emitted 4x for pool setup 4x for two swaps
 	s.AssertNEventValuesEmitted(types.TickUpdateEventKey, 8)
 }
+
+func (s *DexTestSuite) TestGP() {
+	types.WritePrecomputedPricesToFile()
+}

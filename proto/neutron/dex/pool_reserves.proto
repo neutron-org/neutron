@@ -26,10 +26,10 @@ message PoolReserves {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_taker_to_maker"
   ];
-  string price_opposite_taker_to_maker = 4 [
-    (gogoproto.moretags) = "yaml:\"price_opposite_taker_to_maker\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
-    (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "price_opposite_taker_to_maker"
-  ];
+  string maker_price = 4 [
+                                   (gogoproto.moretags) = "yaml:\"maker_price\"",
+                                   (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+                                   (gogoproto.nullable) = false,
+                                   (gogoproto.jsontag) = "maker_price"
+                                   ];
 }

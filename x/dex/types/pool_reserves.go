@@ -13,31 +13,25 @@ func NewPoolReservesFromCounterpart(
 ) *PoolReserves {
 	thisID := counterpart.Key.Counterpart()
 	return &PoolReserves{
-		Key:                       thisID,
-		ReservesMakerDenom:        math.ZeroInt(),
-		PriceTakerToMaker:         counterpart.PriceOppositeTakerToMaker,
-		PriceOppositeTakerToMaker: counterpart.PriceTakerToMaker,
+		Key:                thisID,
+		ReservesMakerDenom: math.ZeroInt(),
+		//TODO: Is this safe?
+		MakerPrice: MustCalcPrice(thisID.TickIndexTakerToMaker),
 	}
 }
 
 func NewPoolReserves(
 	poolReservesID *PoolReservesKey,
 ) (*PoolReserves, error) {
-	priceTakerToMaker, err := poolReservesID.PriceTakerToMaker()
-	if err != nil {
-		return nil, err
-	}
-	counterpartID := poolReservesID.Counterpart()
-	priceOppositeTakerToMaker, err := counterpartID.PriceTakerToMaker()
+	makerPrice, err := poolReservesID.Price()
 	if err != nil {
 		return nil, err
 	}
 
 	return &PoolReserves{
-		Key:                       poolReservesID,
-		ReservesMakerDenom:        math.ZeroInt(),
-		PriceTakerToMaker:         priceTakerToMaker,
-		PriceOppositeTakerToMaker: priceOppositeTakerToMaker,
+		Key:                poolReservesID,
+		ReservesMakerDenom: math.ZeroInt(),
+		MakerPrice:         makerPrice,
 	}, nil
 }
 

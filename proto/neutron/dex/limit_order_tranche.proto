@@ -55,4 +55,10 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_taker_to_maker"
   ];
+  string maker_price = 8 [
+                                   (gogoproto.moretags) = "yaml:\"maker_price\"",
+                                   (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+                                   (gogoproto.nullable) = false,
+                                   (gogoproto.jsontag) = "maker_price"
+                                   ];
 }

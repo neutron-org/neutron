@@ -24,7 +24,7 @@ func NewLimitOrderTranche(
 	if err != nil {
 		return nil, err
 	}
-	priceTakerToMaker, err := tradePairID.PriceTakerToMaker(tickIndex)
+	makerPrice, err := tradePairID.MakerPrice(tickIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func NewLimitOrderTranche(
 		ReservesTakerDenom: reservesTakerDenom,
 		TotalMakerDenom:    totalMakerDenom,
 		TotalTakerDenom:    totalTakerDenom,
-		PriceTakerToMaker:  priceTakerToMaker,
+		MakerPrice:         makerPrice,
 	}, nil
 }
 
@@ -107,7 +107,7 @@ func (t LimitOrderTranche) HasTokenOut() bool {
 }
 
 func (t LimitOrderTranche) Price() math_utils.PrecDec {
-	return t.PriceTakerToMaker
+	return t.MakerPrice
 }
 
 func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {

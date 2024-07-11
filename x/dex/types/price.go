@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"encoding/gob"
 	fmt "fmt"
+	"os"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -149,32 +150,33 @@ func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
 }
 
 // Used for generating the precomputedPrice.gob file
+const PrecomputedPricesFile = "../types/precomputed_prices.gob"
 
-// func generatePrecomputedPrices() []math_utils.PrecDec {
-//	precomputedPowers := make([]math_utils.PrecDec, MaxTickExp+1)
-//	precomputedPowers[0] = math_utils.OnePrecDec() // 1.0001^0 = 1
-//	for i := 1; i <= int(MaxTickExp); i++ {
-//		precomputedPowers[i] = precomputedPowers[i-1].Quo(utils.BasePrice())
-//	}
-//	return precomputedPowers
-// }
+func generatePrecomputedPrices() []math_utils.PrecDec {
+	precomputedPowers := make([]math_utils.PrecDec, MaxTickExp+1)
+	precomputedPowers[0] = math_utils.OnePrecDec() // 1.0001^0 = 1
+	for i := 1; i <= int(MaxTickExp); i++ {
+		precomputedPowers[i] = precomputedPowers[i-1].Mul(utils.BasePrice())
+	}
+	return precomputedPowers
+}
 
-// func WritePrecomputedPricesToFile() error {
-//	computedPrices := generatePrecomputedPrices()
-//	file, err := os.Create(PrecomputedPricesFile)
-//	if err != nil {
-//		panic(fmt.Sprintf("Error creating precomputed power file: %v", err.Error()))
-//	}
-//	defer file.Close()
-//	stringPowers := make([]string, len(computedPrices))
-//	for i, power := range computedPrices {
-//		stringPowers[i] = power.String()
-//	}
+func WritePrecomputedPricesToFile() error {
+	computedPrices := generatePrecomputedPrices()
+	file, err := os.Create(PrecomputedPricesFile)
+	if err != nil {
+		panic(fmt.Sprintf("Error creating precomputed power file: %v", err.Error()))
+	}
+	defer file.Close()
+	stringPowers := make([]string, len(computedPrices))
+	for i, power := range computedPrices {
+		stringPowers[i] = power.String()
+	}
 
-//	encoder := gob.NewEncoder(file)
-//	err = encoder.Encode(stringPowers)
-//	if err != nil {
-//		panic(fmt.Sprintf("Error writing precomputed powers to file: %v", err.Error()))
-//	}
-//	return nil
-// }
+	encoder := gob.NewEncoder(file)
+	err = encoder.Encode(stringPowers)
+	if err != nil {
+		panic(fmt.Sprintf("Error writing precomputed powers to file: %v", err.Error()))
+	}
+	return nil
+}

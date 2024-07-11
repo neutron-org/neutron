@@ -18,7 +18,7 @@ func NewLimitOrderTranche(
 	limitOrderTrancheKey *types.LimitOrderTrancheKey,
 	goodTil *time.Time,
 ) (*types.LimitOrderTranche, error) {
-	priceTakerToMaker, err := limitOrderTrancheKey.PriceTakerToMaker()
+	price, err := limitOrderTrancheKey.Price()
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func NewLimitOrderTranche(
 		TotalMakerDenom:    math.ZeroInt(),
 		TotalTakerDenom:    math.ZeroInt(),
 		ExpirationTime:     goodTil,
-		PriceTakerToMaker:  priceTakerToMaker,
+		MakerPrice:         price,
 	}, nil
 }
 
