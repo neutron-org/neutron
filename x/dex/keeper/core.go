@@ -351,23 +351,24 @@ func (k Keeper) PlaceLimitOrderCore(
 
 	// This is ok because tokenOut is provided to the constructor of PairID above
 	takerTradePairID := pairID.MustTradePairIDFromMaker(tokenOut)
-	var limitPrice math_utils.PrecDec
-	limitPrice, err = types.CalcPrice(tickIndexInToOut)
+	// flip price the other way for swap
+	var invLimitPrice math_utils.PrecDec
+	invLimitPrice, err = types.CalcPrice(-tickIndexInToOut)
 	if err != nil {
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
 	// Ensure that after rounding user will get at least 1 token out.
-	err = types.ValidateFairOutput(amountIn, limitPrice)
+	err = types.ValidateFairOutput(amountIn, invLimitPrice)
 	if err != nil {
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
 
 	var orderFilled bool
 	if orderType.IsTakerOnly() {
-		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, orderType)
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, invLimitPrice, orderType)
 	} else {
-		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice)
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, invLimitPrice)
 	}
 	if err != nil {
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
@@ -390,7 +391,7 @@ func (k Keeper) PlaceLimitOrderCore(
 
 	// This is ok because pairID was constructed from tokenIn above.
 	makerTradePairID := pairID.MustTradePairIDFromMaker(tokenIn)
-	makerTickIndexTakerToMaker := tickIndexInToOut * -1
+	makerTickIndexTakerToMaker := tickIndexInToOut
 	var placeTranche *types.LimitOrderTranche
 	placeTranche, err = k.GetOrInitPlaceTranche(
 		ctx,
@@ -422,7 +423,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		// NOTE: This does mean that a successful taker leg of the trade will be thrown away since the entire tx will fail.
 		// In most circumstances this seems preferable to executing the taker leg and exiting early before placing a maker
 		// order with the remaining liquidity.
-		err = types.ValidateFairOutput(amountLeft, limitPrice)
+		err = types.ValidateFairOutput(amountLeft, invLimitPrice)
 		if err != nil {
 			return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 		}

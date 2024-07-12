@@ -284,6 +284,7 @@ func CalcFee(upperTickIndex, lowerTickIndex int64) int64 {
 
 func CalcAmountAsToken0(amount0, amount1 math.Int, price1To0 math_utils.PrecDec) math_utils.PrecDec {
 	amount0Dec := math_utils.NewPrecDecFromInt(amount0)
+	amount1Dec := math_utils.NewPrecDecFromInt(amount1)
 
-	return amount0Dec.Add(price1To0.MulInt(amount1))
+	return amount0Dec.Add(amount1Dec.Quo(price1To0))
 }

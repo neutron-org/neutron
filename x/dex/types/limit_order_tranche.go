@@ -39,6 +39,7 @@ func NewLimitOrderTranche(
 		TotalMakerDenom:    totalMakerDenom,
 		TotalTakerDenom:    totalTakerDenom,
 		MakerPrice:         makerPrice,
+		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(makerPrice),
 	}, nil
 }
 

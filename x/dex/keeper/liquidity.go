@@ -150,7 +150,7 @@ func (k Keeper) TakerLimitOrderSwap(
 
 	truePrice := math_utils.NewPrecDecFromInt(totalInCoin.Amount).QuoInt(totalOutCoin.Amount)
 
-	if truePrice.LT(limitPrice) {
+	if truePrice.GT(limitPrice) {
 		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
 	}
 
@@ -180,9 +180,9 @@ func (k Keeper) MakerLimitOrderSwap(
 		remainingIn := amountIn.Sub(totalInCoin.Amount)
 		expectedOutMakerPortion := limitPrice.MulInt(remainingIn).Ceil()
 		totalExpectedOut := expectedOutMakerPortion.Add(math_utils.NewPrecDecFromInt(totalOutCoin.Amount))
-		truePrice := totalExpectedOut.QuoInt(amountIn)
+		truePrice := math_utils.NewPrecDecFromInt(amountIn).Quo(totalExpectedOut)
 
-		if truePrice.LT(limitPrice) {
+		if truePrice.GT(limitPrice) {
 			return sdk.Coin{}, sdk.Coin{}, false, types.ErrLimitPriceNotSatisfied
 		}
 	}

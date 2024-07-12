@@ -2,6 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/math"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
 func (p PoolReserves) HasToken() bool {
@@ -12,11 +13,13 @@ func NewPoolReservesFromCounterpart(
 	counterpart *PoolReserves,
 ) *PoolReserves {
 	thisID := counterpart.Key.Counterpart()
+	//TODO: Is this safe?
+	makerPrice := MustCalcPrice(thisID.TickIndexTakerToMaker)
 	return &PoolReserves{
 		Key:                thisID,
 		ReservesMakerDenom: math.ZeroInt(),
-		//TODO: Is this safe?
-		MakerPrice: MustCalcPrice(thisID.TickIndexTakerToMaker),
+		MakerPrice:         makerPrice,
+		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(makerPrice),
 	}
 }
 
@@ -32,6 +35,7 @@ func NewPoolReserves(
 		Key:                poolReservesID,
 		ReservesMakerDenom: math.ZeroInt(),
 		MakerPrice:         makerPrice,
+		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(makerPrice),
 	}, nil
 }
 
