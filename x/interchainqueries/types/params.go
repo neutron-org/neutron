@@ -3,30 +3,31 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 
-	"github.com/neutron-org/neutron/v3/app/params"
+	"github.com/neutron-org/neutron/v4/app/params"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyQuerySubmitTimeout                = []byte("QuerySubmitTimeout")
-	DefaultQuerySubmitTimeout            = uint64(1036800) // One month, with block_time = 2.5s
-	KeyQueryDeposit                      = []byte("QueryDeposit")
-	DefaultQueryDeposit        sdk.Coins = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(1_000_000))))
-	KeyTxQueryRemovalLimit               = []byte("TxQueryRemovalLimit")
-	DefaultTxQueryRemovalLimit           = uint64(10_000)
+	KeyQuerySubmitTimeout      = []byte("QuerySubmitTimeout")
+	DefaultQuerySubmitTimeout  = uint64(1036800) // One month, with block_time = 2.5s
+	KeyQueryDeposit            = []byte("QueryDeposit")
+	DefaultQueryDeposit        = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000))))
+	KeyTxQueryRemovalLimit     = []byte("TxQueryRemovalLimit")
+	DefaultTxQueryRemovalLimit = uint64(10_000)
 )
 
 // ParamKeyTable the param key table for launch module
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable(
-		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, DefaultQuerySubmitTimeout, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, DefaultQuerySubmitTimeout, func(_ interface{}) error { return nil }),
 		paramtypes.NewParamSetPair(KeyQueryDeposit, sdk.Coins{}, validateCoins),
-		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, DefaultTxQueryRemovalLimit, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, DefaultTxQueryRemovalLimit, func(_ interface{}) error { return nil }),
 	)
 }
 
@@ -47,9 +48,9 @@ func DefaultParams() Params {
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, &p.QuerySubmitTimeout, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyQuerySubmitTimeout, &p.QuerySubmitTimeout, func(_ interface{}) error { return nil }),
 		paramtypes.NewParamSetPair(KeyQueryDeposit, &p.QueryDeposit, validateCoins),
-		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, &p.TxQueryRemovalLimit, func(value interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyTxQueryRemovalLimit, &p.TxQueryRemovalLimit, func(_ interface{}) error { return nil }),
 	}
 }
 

@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (k Keeper) Swap(
@@ -15,7 +15,7 @@ func (k Keeper) Swap(
 	maxAmountMakerDenom *math.Int,
 	limitPrice *math_utils.PrecDec,
 ) (totalTakerCoin, totalMakerCoin sdk.Coin, orderFilled bool, err error) {
-	params := k.GetParams(ctx)
+	gasBefore := ctx.GasMeter().GasConsumed()
 	useMaxOut := maxAmountMakerDenom != nil
 	var remainingMakerDenom *math.Int
 	if useMaxOut {
@@ -43,20 +43,6 @@ func (k Keeper) Swap(
 
 		inAmount, outAmount := liq.Swap(remainingTakerDenom, remainingMakerDenom)
 
-		// If (due to rounding) the actual price given to the maker is demonstrably unfair
-		// we do not save the results of the swap and we exit.
-		// While the decrease in price quality for the maker is semi-linear with the amount
-		// being swapped, it is possible that the next swap could yield a "fair" price.
-		// Nonethless, once the remainingTakerDenom gets small enough to start causing unfair swaps
-		// it is much simpler to just abort.
-		if inAmount.IsZero() || isUnfairTruePrice(params.MaxTrueTakerSpread, inAmount, outAmount, liq) {
-			// If they've already swapped just end the swap
-			if remainingTakerDenom.LT(maxAmountTakerDenom) {
-				break
-			}
-			// If they have not swapped anything return informative error
-			return sdk.Coin{}, sdk.Coin{}, false, types.ErrSwapAmountTooSmall
-		}
 		k.SaveLiquidity(ctx, liq)
 
 		remainingTakerDenom = remainingTakerDenom.Sub(inAmount)
@@ -69,7 +55,7 @@ func (k Keeper) Swap(
 		// NOTE: In theory this check should be: price * remainingTakerDenom < 1
 		// but due to rounding and inaccuracy of fixed decimal math, it is possible
 		// for liq.swap to use the full the amount of taker liquidity and have a leftover
-		// amount amount of the taker Denom > than 1 token worth of maker denom
+		// amount of the taker Denom > than 1 token worth of maker denom
 		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
@@ -87,6 +73,9 @@ func (k Keeper) Swap(
 		}
 	}
 	totalTakerDenom := maxAmountTakerDenom.Sub(remainingTakerDenom)
+
+	gasAfter := ctx.GasMeter().GasConsumed()
+	ctx.EventManager().EmitEvents(types.GetEventsGasConsumed(gasBefore, gasAfter))
 
 	return sdk.NewCoin(
 			tradePairID.TakerDenom,
@@ -130,15 +119,73 @@ func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 	}
 }
 
-func isUnfairTruePrice(
-	maxTrueTakerSpread math_utils.PrecDec,
-	inAmount, outAmount math.Int,
-	liq types.Liquidity,
-) bool {
-	bookPrice := liq.Price()
-	truePrice := math_utils.NewPrecDecFromInt(outAmount).QuoInt(inAmount)
-	priceDiffFromExpected := truePrice.Sub(bookPrice)
-	pctDiff := priceDiffFromExpected.Quo(bookPrice)
+// Wrapper for taker LimitOrders
+// Ensures Fok behavior is correct and that the output >= limit price output
+func (k Keeper) TakerLimitOrderSwap(
+	ctx sdk.Context,
+	tradePairID types.TradePairID,
+	amountIn math.Int,
+	maxAmountOut *math.Int,
+	limitPrice math_utils.PrecDec,
+	orderType types.LimitOrderType,
+) (totalInCoin, totalOutCoin sdk.Coin, err error) {
+	totalInCoin, totalOutCoin, orderFilled, err := k.SwapWithCache(
+		ctx,
+		&tradePairID,
+		amountIn,
+		maxAmountOut,
+		&limitPrice,
+	)
+	if err != nil {
+		return sdk.Coin{}, sdk.Coin{}, err
+	}
 
-	return pctDiff.GT(maxTrueTakerSpread)
+	if orderType.IsFoK() && !orderFilled {
+		return sdk.Coin{}, sdk.Coin{}, types.ErrFoKLimitOrderNotFilled
+	}
+
+	if totalInCoin.Amount.IsZero() {
+		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+	}
+
+	truePrice := math_utils.NewPrecDecFromInt(totalOutCoin.Amount).QuoInt(totalInCoin.Amount)
+
+	if truePrice.LT(limitPrice) {
+		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+	}
+
+	return totalInCoin, totalOutCoin, nil
+}
+
+// Wrapper for maker LimitOrders
+// Ensures the swap portion + maker portion of the limit order will have an output >= the limit price output
+func (k Keeper) MakerLimitOrderSwap(
+	ctx sdk.Context,
+	tradePairID types.TradePairID,
+	amountIn math.Int,
+	limitPrice math_utils.PrecDec,
+) (totalInCoin, totalOutCoin sdk.Coin, filled bool, err error) {
+	totalInCoin, totalOutCoin, filled, err = k.SwapWithCache(
+		ctx,
+		&tradePairID,
+		amountIn,
+		nil,
+		&limitPrice,
+	)
+	if err != nil {
+		return sdk.Coin{}, sdk.Coin{}, filled, err
+	}
+
+	if totalInCoin.Amount.IsPositive() {
+		remainingIn := amountIn.Sub(totalInCoin.Amount)
+		expectedOutMakerPortion := limitPrice.MulInt(remainingIn).Ceil()
+		totalExpectedOut := expectedOutMakerPortion.Add(math_utils.NewPrecDecFromInt(totalOutCoin.Amount))
+		truePrice := totalExpectedOut.QuoInt(amountIn)
+
+		if truePrice.LT(limitPrice) {
+			return sdk.Coin{}, sdk.Coin{}, false, types.ErrLimitPriceNotSatisfied
+		}
+	}
+
+	return totalInCoin, totalOutCoin, filled, nil
 }

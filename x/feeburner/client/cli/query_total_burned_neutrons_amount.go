@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/feeburner/types"
+	"github.com/neutron-org/neutron/v4/x/feeburner/types"
 )
 
 func CmdQueryTotalBurnedNeutronsAmount() *cobra.Command {
@@ -15,7 +15,7 @@ func CmdQueryTotalBurnedNeutronsAmount() *cobra.Command {
 		Use:   "total-burned-neutrons-amount",
 		Short: "shows total amount of burned neutrons",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)

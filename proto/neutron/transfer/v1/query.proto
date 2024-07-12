@@ -5,7 +5,7 @@ package neutron.transfer;
 import "google/api/annotations.proto";
 import "ibc/applications/transfer/v1/query.proto";
 
-option go_package = "github.com/neutron-org/neutron/v3/x/transfer/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/transfer/types";
 
 // Query provides defines the gRPC querier service.
 service Query {

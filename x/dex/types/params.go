@@ -1,20 +1,23 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
-
-	math_utils "github.com/neutron-org/neutron/v3/utils/math"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyFeeTiers               = []byte("FeeTiers")
-	DefaultFeeTiers           = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
-	DefaultMaxTrueTakerSpread = math_utils.MustNewPrecDecFromStr("0.005")
+	KeyFeeTiers                         = []byte("FeeTiers")
+	DefaultFeeTiers                     = []uint64{0, 1, 2, 3, 4, 5, 10, 20, 50, 100, 150, 200}
+	KeyPaused                           = []byte("Paused")
+	DefaultPaused                       = false
+	KeyMaxJITsPerBlock                  = []byte("MaxJITs")
+	DefaultMaxJITsPerBlock       uint64 = 25
+	KeyGoodTilPurgeAllowance            = []byte("PurgeAllowance")
+	DefaultGoodTilPurgeAllowance uint64 = 540_000
 )
 
 // ParamKeyTable the param key table for launch module
@@ -23,22 +26,27 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(feeTiers []uint64, maxTrueTakerSpread math_utils.PrecDec) Params {
+func NewParams(feeTiers []uint64, paused bool, maxJITsPerBlock, goodTilPurgeAllowance uint64) Params {
 	return Params{
-		FeeTiers:           feeTiers,
-		MaxTrueTakerSpread: maxTrueTakerSpread,
+		FeeTiers:              feeTiers,
+		Paused:                paused,
+		MaxJitsPerBlock:       maxJITsPerBlock,
+		GoodTilPurgeAllowance: goodTilPurgeAllowance,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultFeeTiers, DefaultMaxTrueTakerSpread)
+	return NewParams(DefaultFeeTiers, DefaultPaused, DefaultMaxJITsPerBlock, DefaultGoodTilPurgeAllowance)
 }
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyFeeTiers, &p.FeeTiers, validateFeeTiers),
+		paramtypes.NewParamSetPair(KeyPaused, &p.Paused, validatePaused),
+		paramtypes.NewParamSetPair(KeyMaxJITsPerBlock, &p.MaxJitsPerBlock, validateMaxJITsPerBlock),
+		paramtypes.NewParamSetPair(KeyGoodTilPurgeAllowance, &p.GoodTilPurgeAllowance, validatePurgeAllowance),
 	}
 }
 
@@ -50,7 +58,22 @@ func (p Params) String() string {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	return validateFeeTiers(p.FeeTiers)
+	err := validateFeeTiers(p.FeeTiers)
+	if err != nil {
+		return fmt.Errorf("invalid fee tiers: %w", err)
+	}
+
+	err = validatePaused(p.Paused)
+	if err != nil {
+		return fmt.Errorf("invalid paused: %w", err)
+	}
+	if err := validateMaxJITsPerBlock(p.MaxJitsPerBlock); err != nil {
+		return err
+	}
+	if err := validatePurgeAllowance(p.GoodTilPurgeAllowance); err != nil {
+		return err
+	}
+	return nil
 }
 
 func validateFeeTiers(v interface{}) error {
@@ -66,5 +89,32 @@ func validateFeeTiers(v interface{}) error {
 		}
 		feeTierMap[f] = true
 	}
+	return nil
+}
+
+func validatePaused(v interface{}) error {
+	_, ok := v.(bool)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", v)
+	}
+
+	return nil
+}
+
+func validateMaxJITsPerBlock(v interface{}) error {
+	_, ok := v.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", v)
+	}
+
+	return nil
+}
+
+func validatePurgeAllowance(v interface{}) error {
+	_, ok := v.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", v)
+	}
+
 	return nil
 }

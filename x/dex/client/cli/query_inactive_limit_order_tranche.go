@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func CmdListInactiveLimitOrderTranche() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-filled-limit-order-tranche",
 		Short: "list all InactiveLimitOrderTranche",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			pageReq, err := client.ReadPageRequest(cmd.Flags())

@@ -5,13 +5,13 @@ import "gogoproto/gogo.proto";
 import "neutron/dex/pair_id.proto";
 import "neutron/dex/pool.proto";
 
-option go_package = "github.com/neutron-org/neutron/v3/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/dex/types";
 
 message DepositRecord {
   PairID pair_id = 1;
   string shares_owned = 2 [
     (gogoproto.moretags) = "yaml:\"shares_owned\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_owned"
   ];
@@ -21,7 +21,7 @@ message DepositRecord {
   uint64 fee = 6;
   string total_shares = 7 [
     (gogoproto.moretags) = "yaml:\"total_shares\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "total_shares"
   ];

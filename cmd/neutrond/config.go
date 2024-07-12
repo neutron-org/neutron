@@ -7,11 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
+	"time"
 
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client"
 	scconfig "github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,6 +32,31 @@ type NeutronCustomClient struct {
 	// FeePayer   string `mapstructure:"fee-payer" json:"fee-payer"`
 
 	Note string `mapstructure:"note" json:"note"`
+}
+
+// NeutronAppConfig defines the config structure of the neutrond app.toml file. Specifically,
+// it wraps the default app.toml config with additional slinky application config params.
+type NeutronAppConfig struct {
+	serverconfig.Config
+	Oracle oracleconfig.AppConfig `mapstructure:"oracle" json:"oracle"`
+}
+
+// initAppConfig initializes a default application configuration for neutrond.
+// And a config template string (for how the config will ultimately look on disk).
+func initAppConfig() (*NeutronAppConfig, string) {
+	srvConfig := serverconfig.DefaultConfig()
+
+	oracleConfig := oracleconfig.AppConfig{
+		Enabled:        true,
+		OracleAddress:  "localhost:8080",
+		ClientTimeout:  time.Second * 2,
+		MetricsEnabled: true,
+	}
+
+	return &NeutronAppConfig{
+		Config: *srvConfig,
+		Oracle: oracleConfig,
+	}, serverconfig.DefaultConfigTemplate + oracleconfig.DefaultConfigTemplate
 }
 
 // ConfigCmd returns a CLI command to interactively create an application CLI

@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func CmdListUserLimitOrders() *cobra.Command {
@@ -24,8 +24,14 @@ func CmdListUserLimitOrders() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryAllUserLimitOrdersRequest{
-				Address: reqAddress,
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			params := &types.QueryAllLimitOrderTrancheUserByAddressRequest{
+				Address:    reqAddress,
+				Pagination: pageReq,
 			}
 
 			res, err := queryClient.LimitOrderTrancheUserAllByAddress(cmd.Context(), params)

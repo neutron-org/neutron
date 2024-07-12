@@ -7,23 +7,23 @@ import (
 	"cosmossdk.io/errors"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
+	clientkeeper "github.com/cosmos/ibc-go/v8/modules/core/02-client/keeper"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/merkle"
 	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v7/modules/core/exported"
-	tendermintLightClientTypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	tendermintLightClientTypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v3/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 )
 
-// deterministicResponseDeliverTx strips non-deterministic fields from
-// ResponseDeliverTx and returns another ResponseDeliverTx.
-func deterministicResponseDeliverTx(response *abci.ResponseDeliverTx) *abci.ResponseDeliverTx {
-	return &abci.ResponseDeliverTx{
+// deterministicExecTxResult strips non-deterministic fields from
+// ExecTxResult and returns another ExecTxResult.
+func deterministicExecTxResult(response *abci.ExecTxResult) *abci.ExecTxResult {
+	return &abci.ExecTxResult{
 		Code:      response.Code,
 		Data:      response.Data,
 		GasWanted: response.GasWanted,
@@ -164,7 +164,7 @@ type TransactionVerifier struct{}
 // * transaction is included in block - header.DataHash merkle root contains transactions hash;
 // * transactions was executed successfully - transaction's responseDeliveryTx.Code == 0;
 // * transaction's responseDeliveryTx is legitimate - nextHeaderLastResultsDataHash merkle root contains
-// deterministicResponseDeliverTx(ResponseDeliveryTx).Bytes()
+// deterministicExecTxResult(ResponseDeliveryTx).Bytes()
 func (v TransactionVerifier) VerifyTransaction(
 	header *tendermintLightClientTypes.Header,
 	nextHeader *tendermintLightClientTypes.Header,
@@ -186,7 +186,7 @@ func (v TransactionVerifier) VerifyTransaction(
 		return errors.Wrapf(types.ErrInvalidType, "failed to convert proto proof to merkle proof: %v", err)
 	}
 
-	responseTx := deterministicResponseDeliverTx(tx.Response)
+	responseTx := deterministicExecTxResult(tx.Response)
 
 	responseTxBz, err := responseTx.Marshal()
 	if err != nil {

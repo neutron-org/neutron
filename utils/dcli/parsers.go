@@ -13,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/pflag"
 
-	utils "github.com/neutron-org/neutron/v3/utils"
+	"github.com/neutron-org/neutron/v4/utils"
 )
 
 // Parses arguments 1-1 from args
@@ -350,10 +350,10 @@ func ParseSdkInt(arg, fieldName string) (math.Int, error) {
 	return i, nil
 }
 
-func ParseSdkDec(arg, fieldName string) (sdk.Dec, error) {
-	i, err := sdk.NewDecFromStr(arg)
+func ParseSdkDec(arg, fieldName string) (math.LegacyDec, error) {
+	i, err := math.LegacyNewDecFromStr(arg)
 	if err != nil {
-		return sdk.Dec{}, fmt.Errorf("could not parse %s as sdk.Dec for field %s: %w", arg, fieldName, err)
+		return math.LegacyDec{}, fmt.Errorf("could not parse %s as sdk.Dec for field %s: %w", arg, fieldName, err)
 	}
 	return i, nil
 }

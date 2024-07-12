@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
@@ -15,12 +15,12 @@ func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
 		return err
 	}
 
-	addr, err := sdk.AccAddressFromBech32(mintTo)
+	mintToAcc, err := sdk.AccAddressFromBech32(mintTo)
 	if err != nil {
 		return err
 	}
 
-	if k.isModuleAccount(ctx, addr) {
+	if k.isModuleAccount(ctx, mintToAcc) {
 		return status.Errorf(codes.Internal, "minting to module accounts is forbidden")
 	}
 
@@ -30,7 +30,7 @@ func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
 	}
 
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
-		addr,
+		mintToAcc,
 		sdk.NewCoins(amount))
 }
 
@@ -41,17 +41,17 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 		return err
 	}
 
-	burnFromAddr, err := sdk.AccAddressFromBech32(burnFrom)
+	burnFromAcc, err := sdk.AccAddressFromBech32(burnFrom)
 	if err != nil {
 		return err
 	}
 
-	if k.isModuleAccount(ctx, burnFromAddr) {
+	if k.isModuleAccount(ctx, burnFromAcc) {
 		return status.Errorf(codes.Internal, "burning from module accounts is forbidden")
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx,
-		burnFromAddr,
+		burnFromAcc,
 		types.ModuleName,
 		sdk.NewCoins(amount))
 	if err != nil {
@@ -68,25 +68,25 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 		return err
 	}
 
-	fromSdkAddr, err := sdk.AccAddressFromBech32(fromAddr)
+	transferFromAcc, err := sdk.AccAddressFromBech32(fromAddr)
 	if err != nil {
 		return err
 	}
 
-	toSdkAddr, err := sdk.AccAddressFromBech32(toAddr)
+	transferToAcc, err := sdk.AccAddressFromBech32(toAddr)
 	if err != nil {
 		return err
 	}
 
-	if k.isModuleAccount(ctx, fromSdkAddr) {
-		return status.Errorf(codes.Internal, "force transfer from module acc not available")
+	if k.isModuleAccount(ctx, transferFromAcc) {
+		return status.Errorf(codes.Internal, "force transfer from module accounts is forbidden")
 	}
 
-	if k.isModuleAccount(ctx, toSdkAddr) {
-		return status.Errorf(codes.Internal, "force transfer to module acc not available")
+	if k.isModuleAccount(ctx, transferToAcc) {
+		return status.Errorf(codes.Internal, "force transfer to module accounts is forbidden")
 	}
 
-	return k.bankKeeper.SendCoins(ctx, fromSdkAddr, toSdkAddr, sdk.NewCoins(amount))
+	return k.bankKeeper.SendCoins(ctx, transferFromAcc, transferToAcc, sdk.NewCoins(amount))
 }
 
 func (k Keeper) isModuleAccount(ctx sdk.Context, addr sdk.AccAddress) bool {

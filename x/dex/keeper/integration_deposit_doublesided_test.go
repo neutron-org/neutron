@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (s *DexTestSuite) TestDepositDoubleSidedInSpreadCurrTickAdjusted() {
@@ -98,50 +98,6 @@ func (s *DexTestSuite) TestDepositDoubleSidedHalfInSpreadCurrTick1To0Adjusted() 
 	s.assertCurr0To1(4)
 }
 
-func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbBelow() {
-	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
-
-	// GIVEN
-	// deposit 10 of token A at tick 0 fee 1
-	s.aliceDeposits(NewDeposit(10, 0, 0, 1))
-	s.assertAliceBalances(40, 50)
-	s.assertDexBalances(10, 0)
-	s.assertPoolLiquidity(10, 0, 0, 1)
-
-	// WHEN
-	// depositing below enemy lines at tick -5
-	// THEN
-	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
-
-	s.aliceDeposits(NewDeposit(10, 11, -5, 1))
-
-	// buying liquidity behind enemy lines doesn't break anything
-	s.bobLimitSells("TokenA", 0, 10, types.LimitOrderType_FILL_OR_KILL)
-}
-
-func (s *DexTestSuite) TestDepositDoubleSidedCreatingArbAbove() {
-	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
-
-	// GIVEN
-	// deposit 10 of token A at tick 0 fee 1
-	s.aliceDeposits(NewDeposit(0, 10, 0, 1))
-	s.assertAliceBalances(50, 40)
-	s.assertDexBalances(0, 10)
-	s.assertPoolLiquidity(0, 10, 0, 1)
-
-	// WHEN
-	// depositing above enemy lines at tick 5
-	// THEN
-	// deposit should not fail with BEL error, balances and liquidity should not change at deposited tick
-
-	s.aliceDeposits(NewDeposit(11, 10, 5, 1))
-
-	// buying liquidity behind enemy lines doesn't break anything
-	s.bobLimitSells("TokenB", 0, 10, types.LimitOrderType_FILL_OR_KILL)
-}
-
 func (s *DexTestSuite) TestDepositDoubleSidedFirstSharesMintedTotal() {
 	s.fundAliceBalances(50, 50)
 
@@ -228,24 +184,24 @@ func (s *DexTestSuite) TestDepositValueAccural() {
 
 	for i := 0; i < 100; i++ {
 		if i%2 == 0 {
-			s.bobLimitSells("TokenB", -10, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+			s.bobLimitSells("TokenB", -11, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		} else {
-			s.bobLimitSells("TokenA", 10, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+			s.bobLimitSells("TokenA", 11, 1000, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 		}
 	}
-	s.assertLiquidityAtTickInt(math.NewInt(110516491), math.ZeroInt(), 0, 10)
-	s.assertDexBalancesInt(math.NewInt(110516491), math.ZeroInt())
+	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
+	s.assertDexBalancesInt(math.NewInt(110516593), math.ZeroInt())
 
-	s.assertLiquidityAtTickInt(math.NewInt(110516491), math.ZeroInt(), 0, 10)
+	s.assertLiquidityAtTickInt(math.NewInt(110516593), math.ZeroInt(), 0, 10)
 	// Carol deposits 100TokenA @tick0
 	s.carolDeposits(NewDeposit(100, 0, 0, 10))
-	s.assertLiquidityAtTickInt(math.NewInt(210516491), math.ZeroInt(), 0, 10)
-	s.assertAccountSharesInt(s.carol, 0, 10, math.NewInt(90484233))
+	s.assertLiquidityAtTickInt(math.NewInt(210516593), math.ZeroInt(), 0, 10)
+	s.assertAccountSharesInt(s.carol, 0, 10, math.NewInt(90484150))
 
 	// Alice gets back 100% of the accrued trade value
 	s.aliceWithdraws(NewWithdrawal(100, 0, 10))
-	s.assertAliceBalancesInt(math.NewInt(110516491), math.NewInt(0))
+	s.assertAliceBalancesInt(math.NewInt(110516593), math.NewInt(0))
 	// AND carol get's back only what she put in
-	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484233), 0, 10))
+	s.carolWithdraws(NewWithdrawalInt(math.NewInt(90484150), 0, 10))
 	s.assertCarolBalances(100, 1)
 }

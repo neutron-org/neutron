@@ -10,13 +10,13 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	wrapkeeper "github.com/neutron-org/neutron/v3/x/transfer/keeper"
-	neutrontypes "github.com/neutron-org/neutron/v3/x/transfer/types"
+	wrapkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
+	neutrontypes "github.com/neutron-org/neutron/v4/x/transfer/types"
 )
 
 /*
@@ -106,6 +106,14 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 	if err := cfg.RegisterMigration(types.ModuleName, 2, m.MigrateTotalEscrowForDenom); err != nil {
 		panic(fmt.Sprintf("failed to migrate transfer app from version 2 to 3: %v", err))
+	}
+
+	if err := cfg.RegisterMigration(types.ModuleName, 3, m.MigrateParams); err != nil {
+		panic(fmt.Sprintf("failed to migrate transfer app version 3 to 4: %v", err))
+	}
+
+	if err := cfg.RegisterMigration(types.ModuleName, 4, m.MigrateDenomMetadata); err != nil {
+		panic(fmt.Sprintf("failed to migrate transfer app from version 4 to 5: %v", err))
 	}
 }
 

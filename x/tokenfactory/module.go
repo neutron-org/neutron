@@ -19,13 +19,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/client/cli"
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/keeper"
-	"github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/client/cli"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
 var (
-	_ module.AppModule      = AppModule{}
+	_ appmodule.AppModule   = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
@@ -135,6 +135,10 @@ func (AppModule) QuerierRoute() string { return types.QuerierRoute }
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	m := keeper.NewMigrator(am.keeper)
+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/tokenfactory from version 1 to 2: %v", err))
+	}
 }
 
 // RegisterInvariants registers the tokenfactory module's invariants.
@@ -161,10 +165,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the tokenfactory module.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(_ sdk.Context) {}
 
 // EndBlock executes all ABCI EndBlock logic respective to the tokenfactory module. It
 // returns no validator updates.
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(_ sdk.Context) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }

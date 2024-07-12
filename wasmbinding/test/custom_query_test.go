@@ -5,24 +5,25 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v3/app/params"
-	feerefundertypes "github.com/neutron-org/neutron/v3/x/feerefunder/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v3/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v4/app/params"
+	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-	ibchost "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v3/app"
-	"github.com/neutron-org/neutron/v3/testutil"
-	"github.com/neutron-org/neutron/v3/wasmbinding/bindings"
-	icqtypes "github.com/neutron-org/neutron/v3/x/interchainqueries/types"
-	ictxtypes "github.com/neutron-org/neutron/v3/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v4/app"
+	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
+	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 )
 
 type CustomQuerierTestSuite struct {
@@ -58,12 +59,13 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 	err := neutron.InterchainQueriesKeeper.SaveQuery(ctx, registeredQuery)
 	suite.Require().NoError(err)
 
-	chainBResp := suite.ChainB.App.Query(abci.RequestQuery{
+	chainBResp, err := suite.ChainB.App.Query(ctx, &abci.RequestQuery{
 		Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
 		Height: suite.ChainB.LastHeader.Header.Height - 1,
 		Data:   clientKey,
 		Prove:  true,
 	})
+	suite.Require().NoError(err)
 
 	expectedQueryResult := &icqtypes.QueryResult{
 		KvResults: []*icqtypes.StorageValue{{
@@ -207,10 +209,10 @@ func (suite *CustomQuerierTestSuite) TestMinIbcFee() {
 		feerefundertypes.Fee{
 			RecvFee: sdk.Coins{},
 			AckFee: sdk.Coins{
-				sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1000)},
+				sdk.Coin{Denom: "untrn", Amount: math.NewInt(1000)},
 			},
 			TimeoutFee: sdk.Coins{
-				sdk.Coin{Denom: "untrn", Amount: sdk.NewInt(1000)},
+				sdk.Coin{Denom: "untrn", Amount: math.NewInt(1000)},
 			},
 		},
 		resp.MinFee,
@@ -253,6 +255,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
 		0,
 		FeeCollectorAddress,
+		tokenfactorytypes.DefaultWhitelistedHooks,
 	))
 	suite.Require().NoError(err)
 
@@ -262,7 +265,7 @@ func (suite *CustomQuerierTestSuite) TestDenomAdmin() {
 	suite.Require().NotEmpty(contractAddress)
 
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
-	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, sdk.NewInt(int64(10_000_000))))
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
 	bankKeeper := neutron.BankKeeper
 	err = bankKeeper.SendCoins(ctx, senderAddress, contractAddress, coinsAmnt)
 	suite.NoError(err)

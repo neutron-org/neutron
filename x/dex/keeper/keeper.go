@@ -3,13 +3,12 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cometbft/cometbft/libs/log"
-
+	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 type (
@@ -17,6 +16,7 @@ type (
 		cdc        codec.BinaryCodec
 		storeKey   storetypes.StoreKey
 		memKey     storetypes.StoreKey
+		tKey       storetypes.StoreKey
 		bankKeeper types.BankKeeper
 		authority  string
 	}
@@ -26,6 +26,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
+	tKey storetypes.StoreKey,
 	bankKeeper types.BankKeeper,
 	authority string,
 ) *Keeper {
@@ -33,6 +34,7 @@ func NewKeeper(
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
+		tKey:       tKey,
 		bankKeeper: bankKeeper,
 		authority:  authority,
 	}

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/neutron-org/neutron/v3/x/ibc-hooks/utils"
+	"github.com/neutron-org/neutron/v4/x/ibc-hooks/utils"
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/neutron-org/neutron/v3/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,7 +46,7 @@ $ %s query ibc-hooks wasm-hooks-sender channel-42 juno12smx2wdlyttvyzvzg54y2vnqw
 			),
 		),
 		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			channelID := args[0]
 			originalSender := args[1]
 			// TODO: Make this flexible as an arg

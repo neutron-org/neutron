@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/neutron-org/neutron/v3/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func CmdListPoolReserves() *cobra.Command {
@@ -29,16 +29,16 @@ func CmdListPoolReserves() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryAllPoolReservesRequest{
-				PairId:  reqPairID,
-				TokenIn: reqTokenIn,
-			}
-
 			pageReq, err := client.ReadPageRequest(cmd.Flags())
 			if err != nil {
 				return err
 			}
-			params.Pagination = pageReq
+
+			params := &types.QueryAllPoolReservesRequest{
+				PairId:     reqPairID,
+				TokenIn:    reqTokenIn,
+				Pagination: pageReq,
+			}
 
 			res, err := queryClient.PoolReservesAll(cmd.Context(), params)
 			if err != nil {
@@ -49,6 +49,7 @@ func CmdListPoolReserves() *cobra.Command {
 		},
 	}
 
+	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
