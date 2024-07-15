@@ -54,10 +54,10 @@ CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
 
 # Slinky genesis configs
-USE_CORE_MARKETS=true
-USE_RAYDIUM_MARKETS=false
-USE_UNISWAPV3_BASE_MARKETS=false
-USE_COINGECKO_MARKETS=false
+USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
+USE_RAYDIUM_MARKETS=${USE_RAYDIUM_MARKETS:-false}
+USE_UNISWAPV3_BASE_MARKETS=${USE_UNISWAPV3_BASE_MARKETS:-true}
+USE_COINGECKO_MARKETS=${USE_COINGECKO_MARKETS:-true}
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
@@ -735,8 +735,6 @@ NUM_MARKETS=$NUM_MARKETS; jq --arg num "$NUM_MARKETS" '.app_state["oracle"]["nex
 MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["marketmap"]["market_map"] = ($markets | fromjson)' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
 MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pair_genesis"] += [$markets | fromjson | .markets | values | .[].ticker.currency_pair | {"currency_pair": {"Base": .Base, "Quote": .Quote}, "currency_pair_price": null, "nonce": 0} ]' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
 MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pair_genesis"] |= (to_entries | map(.value += {id: (.key + 1)} | .value))' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
-
-cat markets.json
 
 rm markets.json
 
