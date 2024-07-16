@@ -22,8 +22,6 @@ func GetQueryCmd(_ string) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(CmdQueryParams())
-	cmd.AddCommand(CmdFailures())
 	cmd.AddCommand(CmdFailureDetails())
 	// this line is used by starport scaffolding # 1
 

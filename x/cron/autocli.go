@@ -31,10 +31,5 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			},
 			EnhanceCustomCommand: true,
 		},
-		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service:              "neutron.cron.Msg",
-			RpcCommandOptions:    []*autocliv1.RpcCommandOptions{},
-			EnhanceCustomCommand: true,
-		},
 	}
 }
