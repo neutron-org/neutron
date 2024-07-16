@@ -3,6 +3,7 @@ module github.com/neutron-org/neutron/v4
 go 1.22.3
 
 require (
+	cosmossdk.io/api v0.7.5
 	cosmossdk.io/client/v2 v2.0.0-beta.1
 	cosmossdk.io/core v0.11.0
 	cosmossdk.io/errors v1.0.1
@@ -95,7 +96,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.8 // indirect
 	cloud.google.com/go/storage v1.41.0 // indirect
-	cosmossdk.io/api v0.7.5 // indirect
 	cosmossdk.io/collections v0.4.0 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
 	cosmossdk.io/x/circuit v0.1.1 // indirect
@@ -255,7 +255,7 @@ require (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.0
-	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.0
+	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.1-0.20240716114745-c4b55d77ee0b
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.7-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0

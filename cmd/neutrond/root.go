@@ -24,7 +24,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -115,19 +114,14 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	initRootCmd(rootCmd, encodingConfig)
 	initClientCtx, err := config.ReadDefaultValuesFromDefaultClientConfig(initClientCtx)
+	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
 	if err != nil {
 		panic(err)
 	}
-	if err := tempApplication.AutoCLIOpts(initClientCtx).EnhanceRootCommand(rootCmd); err != nil {
-		panic(err)
-	}
 
-	autoCliOpts := tempApplication.AutoCliOpts()
-	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
-	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
-	autoCliOpts.ClientCtx = initClientCtx
-
-	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+	autoCliOpts := tempApplication.AutoCLIOpts(initClientCtx)
+	err = autoCliOpts.EnhanceRootCommand(rootCmd)
+	if err != nil {
 		panic(err)
 	}
 
