@@ -4,13 +4,14 @@ on:
   push:
     tags:
       - "*"
+    release:
+      types:
+        - created
     branches:
-      - "main"
       - "releases/v3.x"
       - "chore/fix-ci"
   pull_request:
     branches:
-      - "main"
       - "releases/v3.x"
       - "chore/fix-ci"
   workflow_dispatch:

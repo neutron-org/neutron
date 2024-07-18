@@ -869,24 +869,36 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 			"authority is invalid",
 		},
 		{
-			"empty fee_collector_address",
+			"empty fee_collector_address with denom_creation_fee",
 			types.MsgUpdateParams{
 				Authority: testutil.TestOwnerAddress,
 				Params: types.Params{
 					FeeCollectorAddress: "",
+					DenomCreationFee:    sdktypes.NewCoins(sdktypes.NewCoin("untrn", math.OneInt())),
 				},
 			},
-			"fee_collector_address is invalid",
+			"DenomCreationFee and FeeCollectorAddr must be both set or both unset",
+		},
+		{
+			"fee_collector_address empty denom_creation_fee",
+			types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params: types.Params{
+					FeeCollectorAddress: testAddress,
+				},
+			},
+			"DenomCreationFee and FeeCollectorAddr must be both set or both unset",
 		},
 		{
 			"invalid fee_collector_address",
 			types.MsgUpdateParams{
 				Authority: testutil.TestOwnerAddress,
 				Params: types.Params{
+					DenomCreationFee:    sdktypes.NewCoins(sdktypes.NewCoin("untrn", math.OneInt())),
 					FeeCollectorAddress: "invalid fee_collector_address",
 				},
 			},
-			"fee_collector_address is invalid",
+			"failed to validate FeeCollectorAddress",
 		},
 	}
 
@@ -896,6 +908,73 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 			resp, err := k.UpdateParams(ctx, &tt.msg)
 			require.ErrorContains(t, err, tt.expectedErr)
 			require.Nil(t, resp)
+		})
+	}
+}
+
+func TestMsgUpdateParamsWhitelistedHooks(t *testing.T) {
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
+
+	tests := []struct {
+		name   string
+		params types.Params
+		error  string
+	}{
+		{
+			"success",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{{DenomCreator: testAddress, CodeID: 1}},
+			},
+			"",
+		},
+		{
+			"success multiple ",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{
+					{DenomCreator: testAddress, CodeID: 1},
+					{DenomCreator: testAddress, CodeID: 2},
+				},
+			},
+			"",
+		},
+		{
+			"invalid denom creator",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{
+					{DenomCreator: "bad_address", CodeID: 1},
+				},
+			},
+			"invalid denom creator",
+		},
+		{
+			"duplicate hooks",
+			types.Params{
+				WhitelistedHooks: []*types.WhitelistedHook{
+					{DenomCreator: testAddress, CodeID: 1},
+					{DenomCreator: testAddress, CodeID: 1},
+				},
+			},
+			"duplicate whitelisted hook",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			msg := &types.MsgUpdateParams{
+				Authority: testutil.TestOwnerAddress,
+				Params:    tt.params,
+			}
+			resp, err := k.UpdateParams(ctx, msg)
+			if len(tt.error) > 0 {
+				require.ErrorContains(t, err, tt.error)
+				require.Nil(t, resp)
+
+			} else {
+				require.NoError(t, err)
+				newParams := k.GetParams(ctx)
+				require.Equal(t, tt.params, newParams)
+			}
 		})
 	}
 }

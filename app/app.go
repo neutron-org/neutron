@@ -1198,7 +1198,7 @@ func New(
 	baseLane.WithOptions(opts...)
 
 	// set the block-sdk prepare / process-proposal handlers
-	blockSdkProposalHandler := blocksdkabci.NewProposalHandler(
+	blockSdkProposalHandler := blocksdkabci.NewDefaultProposalHandler(
 		app.Logger(),
 		app.GetTxConfig().TxDecoder(),
 		app.GetTxConfig().TxEncoder(),
@@ -1265,6 +1265,7 @@ func New(
 		mempool,
 		app.GetTxConfig().TxDecoder(),
 		app.BaseApp.CheckTx,
+		app.BaseApp,
 	)
 
 	app.SetCheckTx(parityCheckTx.CheckTx())
