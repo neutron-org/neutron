@@ -112,6 +112,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		},
 	}
 
+	genAutoCompleteCmd(rootCmd)
+
 	initRootCmd(rootCmd, encodingConfig)
 	initClientCtx, err := config.ReadDefaultValuesFromDefaultClientConfig(initClientCtx)
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
@@ -378,4 +380,36 @@ func setCustomEnvVariablesFromClientToml(ctx client.Context) {
 	setEnvFromConfig("fee-account", "NEUTROND_FEE_ACCOUNT")
 	// memo
 	setEnvFromConfig("note", "NEUTROND_NOTE")
+}
+
+func genAutoCompleteCmd(rootCmd *cobra.Command) {
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "enable-cli-autocomplete [bash|zsh|fish|powershell]",
+		Short: "Generates cli completion scripts",
+		Long: `To configure your shell to load completions for each session, add to your profile:
+
+# bash example
+echo '. <(neutrond enable-cli-autocomplete bash)' >> ~/.bash_profile
+source ~/.bash_profile
+
+# zsh example
+echo '. <(neutrond enable-cli-autocomplete zsh)' >> ~/.zshrc
+source ~/.zshrc
+`,
+		DisableFlagsInUseLine: true,
+		ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
+		Args:                  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			switch args[0] {
+			case "bash":
+				_ = cmd.Root().GenBashCompletion(os.Stdout)
+			case "zsh":
+				_ = cmd.Root().GenZshCompletion(os.Stdout)
+			case "fish":
+				_ = cmd.Root().GenFishCompletion(os.Stdout, true)
+			case "powershell":
+				_ = cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout)
+			}
+		},
+	})
 }
