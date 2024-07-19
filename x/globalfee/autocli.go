@@ -10,7 +10,7 @@ var _ autocli.HasAutoCLIConfig = AppModule{}
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: "neutron.globalfee.Query",
+			Service: "gaia.globalfee.v1beta1.Query",
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "Params",
