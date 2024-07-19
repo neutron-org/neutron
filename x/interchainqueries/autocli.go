@@ -51,28 +51,24 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service: "neutron.interchainqueries.Msg",
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
-				// TODO: no cmd was in the cli before?
-				//{
-				//	RpcMethod: "RegisterInterchainQuery",
-				//	Use:       "",
-				//	Short:     "",
-				//},
 				{
 					RpcMethod:      "RemoveInterchainQuery",
 					Use:            "remove-interchain-query [query-id]",
 					Short:          "Remove interchain query",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "query_id"}},
 				},
-				//{
-				//	RpcMethod: "UpdateInterchainQuery",
-				//	Use:       "",
-				//	Short:     "",
-				//},
-				//{
-				//	RpcMethod: "UpdateParams",
-				//	Use:       "",
-				//	Short:     "",
-				//},
+				{
+					RpcMethod: "RegisterInterchainQuery",
+					Skip:      true,
+				},
+				{
+					RpcMethod: "UpdateInterchainQuery",
+					Skip:      true,
+				},
+				{
+					RpcMethod: "UpdateParams",
+					Skip:      true,
+				},
 			},
 			EnhanceCustomCommand: true,
 		},
