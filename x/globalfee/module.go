@@ -9,10 +9,8 @@ import (
 
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
-
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -22,7 +20,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v4/x/globalfee/client/cli"
 	"github.com/neutron-org/neutron/v4/x/globalfee/keeper"
 	"github.com/neutron-org/neutron/v4/x/globalfee/types"
 )
@@ -69,14 +66,6 @@ func (a AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux 
 		// same behavior as in cosmos-sdk
 		panic(err)
 	}
-}
-
-func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	return nil
-}
-
-func (a AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd()
 }
 
 func (a AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
