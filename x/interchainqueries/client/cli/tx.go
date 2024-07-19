@@ -25,36 +25,6 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(SubmitQueryResultCmd())
-	cmd.AddCommand(RemoveInterchainQueryCmd())
-
-	return cmd
-}
-
-func RemoveInterchainQueryCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "remove-interchain-query [query-id]",
-		Short:   "Remove interchain query",
-		Aliases: []string{"remove", "r"},
-		Args:    cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			sender := clientCtx.GetFromAddress().String()
-			queryID, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return fmt.Errorf("failed to parse query id: %w", err)
-			}
-
-			msg := types.NewMsgRemoveInterchainQuery(sender, queryID)
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
 }
