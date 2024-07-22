@@ -57,7 +57,6 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 
 				genesisState.Provider.InitialValSet = initialValset
 				genesisState.Provider.ConsensusState.NextValidatorsHash = tmtypes.NewValidatorSet(vals).Hash()
-				state.AppGenesis.Consensus.Validators = []tmtypes.GenesisValidator{{Address: pk.Address(), PubKey: pk, Power: 100}}
 
 				state.ConsumerModuleState = genesisState
 
