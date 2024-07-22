@@ -24,7 +24,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod:      "RegisteredQuery",
-					Use:            "registered-query",
+					Use:            "registered-query [query_id]",
 					Short:          "Queries registered interchain query by id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "query_id"}},
 				},
