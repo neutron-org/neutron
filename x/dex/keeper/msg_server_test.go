@@ -521,29 +521,30 @@ func NewDepositWithOptions(
 	}
 }
 
-func (s *DexTestSuite) aliceDeposits(deposits ...*Deposit) {
-	s.depositsSuccess(s.alice, deposits)
+func (s *DexTestSuite) aliceDeposits(deposits ...*Deposit) *types.MsgDepositResponse {
+	return s.depositsSuccess(s.alice, deposits)
 }
 
-func (s *DexTestSuite) bobDeposits(deposits ...*Deposit) {
-	s.depositsSuccess(s.bob, deposits)
+func (s *DexTestSuite) bobDeposits(deposits ...*Deposit) *types.MsgDepositResponse {
+	return s.depositsSuccess(s.bob, deposits)
 }
 
-func (s *DexTestSuite) carolDeposits(deposits ...*Deposit) {
-	s.depositsSuccess(s.carol, deposits)
+func (s *DexTestSuite) carolDeposits(deposits ...*Deposit) *types.MsgDepositResponse {
+	return s.depositsSuccess(s.carol, deposits)
 }
 
-func (s *DexTestSuite) danDeposits(deposits ...*Deposit) {
-	s.depositsSuccess(s.dan, deposits)
+func (s *DexTestSuite) danDeposits(deposits ...*Deposit) *types.MsgDepositResponse {
+	return s.depositsSuccess(s.dan, deposits)
 }
 
 func (s *DexTestSuite) depositsSuccess(
 	account sdk.AccAddress,
 	deposits []*Deposit,
 	pairID ...types.PairID,
-) {
-	_, err := s.deposits(account, deposits, pairID...)
+) *types.MsgDepositResponse {
+	resp, err := s.deposits(account, deposits, pairID...)
 	s.Assert().Nil(err)
+	return resp
 }
 
 func (s *DexTestSuite) deposits(
