@@ -36,6 +36,9 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	}
 
 	takerTradePairID, err := types.NewTradePairID(req.TokenIn, req.TokenOut)
+	if err != nil {
+		return nil, err
+	}
 
 	cacheCtx, _ := ctx.CacheContext()
 	_, totalIn, swapInCoin, swapOutCoin, _, err := k.ExecutePlaceLimitOrder(
