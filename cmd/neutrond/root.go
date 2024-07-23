@@ -277,17 +277,6 @@ func (ac appCreator) newApp(
 		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
 	}
 
-	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
-	if chainID == "" {
-		// fallback to genesis chain-id
-		appGenesis, err := genutiltypes.AppGenesisFromFile(filepath.Join(homeDir, cast.ToString(appOpts.Get("genesis_file"))))
-		if err != nil {
-			panic(err)
-		}
-
-		chainID = appGenesis.ChainID
-	}
-
 	return app.New(logger, db, traceStore, true, skipUpgradeHeights,
 		homeDir,
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
@@ -303,7 +292,6 @@ func (ac appCreator) newApp(
 		baseapp.SetTrace(cast.ToBool(appOpts.Get(server.FlagTrace))),
 		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
 		baseapp.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{Interval: cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval)), KeepRecent: cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))}),
-		baseapp.SetChainID(chainID),
 	)
 }
 
