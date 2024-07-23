@@ -28,23 +28,16 @@ func (k Keeper) EstimateMultiHopSwap(
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	cacheCtx, _ := ctx.CacheContext()
 
-	oldBk := k.bankKeeper
-	k.bankKeeper = NewSimulationBankKeeper(k.bankKeeper)
-	coinOut, err := k.MultiHopSwapCore(
+	bestRoute, _, err := k.CalulateMultiHopSwap(
 		cacheCtx,
 		req.AmountIn,
 		req.Routes,
 		req.ExitLimitPrice,
 		req.PickBestRoute,
-		[]byte("caller"),
-		[]byte("receiver"),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	//nolint:staticcheck // Should be unnecessary but out of an abundance of caution we restore the old bankkeeper
-	k.bankKeeper = oldBk
-
-	return &types.QueryEstimateMultiHopSwapResponse{CoinOut: coinOut}, nil
+	return &types.QueryEstimateMultiHopSwapResponse{CoinOut: bestRoute.coinOut}, nil
 }

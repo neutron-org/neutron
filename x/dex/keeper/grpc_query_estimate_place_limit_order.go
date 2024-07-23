@@ -29,34 +29,30 @@ func (k Keeper) EstimatePlaceLimitOrder(
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	cacheCtx, _ := ctx.CacheContext()
 
 	err := msg.ValidateGoodTilExpiration(ctx.BlockTime())
 	if err != nil {
 		return nil, err
 	}
 
-	oldBk := k.bankKeeper
-	k.bankKeeper = NewSimulationBankKeeper(k.bankKeeper)
-	_, totalInCoin, swapInCoin, swapOutCoin, err := k.PlaceLimitOrderCore(
+	takerTradePairID, err := types.NewTradePairID(req.TokenIn, req.TokenOut)
+
+	cacheCtx, _ := ctx.CacheContext()
+	_, totalIn, swapInCoin, swapOutCoin, _, err := k.ExecutePlaceLimitOrder(
 		cacheCtx,
-		req.TokenIn,
-		req.TokenOut,
+		takerTradePairID,
 		req.AmountIn,
 		req.TickIndexInToOut,
 		req.OrderType,
 		req.ExpirationTime,
 		req.MaxAmountOut,
-		[]byte("caller"),
 		[]byte("receiver"),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	//nolint:staticcheck // Should be unnecessary but out of an abundance of caution we restore the old bankkeeper
-	k.bankKeeper = oldBk
-
+	totalInCoin := sdk.NewCoin(req.TokenIn, totalIn)
 	return &types.QueryEstimatePlaceLimitOrderResponse{
 		TotalInCoin: totalInCoin,
 		SwapInCoin:  swapInCoin,
