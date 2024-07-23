@@ -39,7 +39,7 @@ var (
 
 	oracleImage = ibc.DockerImage{
 		Repository: "ghcr.io/skip-mev/slinky-sidecar",
-		Version:    "latest",
+		Version:    "v1.0.0",
 		UidGid:     "1000:1000",
 	}
 	encodingConfig = testutil.MakeTestEncodingConfig(
@@ -61,6 +61,10 @@ var (
 		{
 			Key:   "consensus.params.block.max_gas",
 			Value: "1000000000",
+		},
+		{
+			Key:   "app_state.feemarket.params.enabled",
+			Value: false,
 		},
 	}
 

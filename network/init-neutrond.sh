@@ -7,6 +7,7 @@ CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
+FEEMARKET_ENABLED=${FEEMARKET_ENABLED:-true}
 
 # IMPORTANT! minimum_gas_prices should always contain at least one record, otherwise the chain will not start or halt
 # ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2 denom is required by intgration tests (test:tokenomics)
@@ -51,6 +52,12 @@ CW4_VOTING_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_voting.wasm
 CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
 NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
+
+# Slinky genesis configs
+USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
+USE_RAYDIUM_MARKETS=${USE_RAYDIUM_MARKETS:-false}
+USE_UNISWAPV3_BASE_MARKETS=${USE_UNISWAPV3_BASE_MARKETS:-false}
+USE_COINGECKO_MARKETS=${USE_COINGECKO_MARKETS:-false}
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home "$CHAIN_DIR"
@@ -718,12 +725,25 @@ function convert_bech32_base64_esc() {
 DAO_CONTRACT_ADDRESS_B64=$(convert_bech32_base64_esc "$DAO_CONTRACT_ADDRESS")
 echo $DAO_CONTRACT_ADDRESS_B64
 
+echo "Adding marketmap into genesis..."
+go run network/slinky_genesis.go --use-core=$USE_CORE_MARKETS --use-raydium=$USE_RAYDIUM_MARKETS --use-uniswapv3-base=$USE_UNISWAPV3_BASE_MARKETS --use-coingecko=$USE_COINGECKO_MARKETS --temp-file=markets.json
+MARKETS=$(cat markets.json)
+
+NUM_MARKETS=$(echo "$MARKETS" | jq '.markets | length + 1')
+
+NUM_MARKETS=$NUM_MARKETS; jq --arg num "$NUM_MARKETS" '.app_state["oracle"]["next_id"] = $num' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
+MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["marketmap"]["market_map"] = ($markets | fromjson)' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
+MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pair_genesis"] += [$markets | fromjson | .markets | values | .[].ticker.currency_pair | {"currency_pair": {"Base": .Base, "Quote": .Quote}, "currency_pair_price": null, "nonce": 0} ]' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
+MARKETS=$MARKETS; jq --arg markets "$MARKETS" '.app_state["oracle"]["currency_pair_genesis"] |= (to_entries | map(.value += {id: (.key + 1)} | .value))' "$GENESIS_PATH" > genesis_tmp.json && mv genesis_tmp.json "$GENESIS_PATH"
+
+rm markets.json
+
+echo "Setting the rest of Neutron genesis params..."
 set_genesis_param admins                                 "[\"$NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS\"]"  # admin module
 set_genesis_param treasury_address                       "\"$DAO_CONTRACT_ADDRESS\""                      # feeburner
-set_genesis_param fee_collector_address                  "\"$DAO_CONTRACT_ADDRESS\""                      # tokenfactory
+set_genesis_param fee_collector_address                  "\"$DAO_CONTRACT_ADDRESS\","                      # tokenfactory
 set_genesis_param security_address                       "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\","    # cron
 set_genesis_param limit                                  5                                                # cron
-#set_genesis_param allow_messages                        "[\"*\"]"                                        # interchainaccounts
 set_genesis_param signed_blocks_window                   "\"$SLASHING_SIGNED_BLOCKS_WINDOW\","            # slashing
 set_genesis_param min_signed_per_window                  "\"$SLASHING_MIN_SIGNED\","                      # slashing
 set_genesis_param slash_fraction_double_sign             "\"$SLASHING_FRACTION_DOUBLE_SIGN\","            # slashing
@@ -738,6 +758,12 @@ set_genesis_param max_gas                               "\"1000000000\""        
 set_genesis_param vote_extensions_enable_height         "\"1\""                                           # consensus_params
 set_genesis_param_jq ".app_state.marketmap.params.admin" "\"$ADMIN_MODULE_ADDRESS\""                      # marketmap
 set_genesis_param_jq ".app_state.marketmap.params.market_authorities" "[\"$ADMIN_MODULE_ADDRESS\"]"       # marketmap
+set_genesis_param_jq ".app_state.feemarket.params.min_base_gas_price"    "\"0.0025\""                     # feemarket
+set_genesis_param_jq ".app_state.feemarket.params.fee_denom"       "\"untrn\""                            # feemarket
+set_genesis_param_jq ".app_state.feemarket.params.max_learning_rate" "\"0.5\""                            # feemarket
+set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                            # feemarket
+set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
+set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2

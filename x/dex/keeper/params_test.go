@@ -22,8 +22,7 @@ func TestSetParams(t *testing.T) {
 
 	newParams := types.Params{
 		FeeTiers:              []uint64{0, 1},
-		MaxTrueTakerSpread:    math_utils.MustNewPrecDecFromStr("0.111"),
-		Max_JITsPerBlock:      0,
+		MaxJitsPerBlock:       0,
 		GoodTilPurgeAllowance: 0,
 	}
 	err := k.SetParams(ctx, newParams)

@@ -10,7 +10,7 @@ import (
 	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
 	feerefunderkeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
 
-	adminmodulekeeper "github.com/cosmos/admin-module/x/adminmodule/keeper"
+	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
