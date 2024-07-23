@@ -3,6 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"io"
 	"os"
 	"path/filepath"
@@ -28,6 +31,7 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
+	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
@@ -103,6 +107,24 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
+			// This needs to go after ReadFromClientConfig, as that function
+			// sets the RPC client needed for SIGN_MODE_TEXTUAL. This sign mode
+			// is only available if the client is online.
+			if !initClientCtx.Offline {
+				txConfigOpts := tx.ConfigOptions{
+					EnabledSignModes:           append(tx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL),
+					TextualCoinMetadataQueryFn: authtxconfig.NewGRPCCoinMetadataQueryFn(initClientCtx),
+				}
+				txConfigWithTextual, err := tx.NewTxConfigWithOptions(
+					initClientCtx.Codec,
+					txConfigOpts,
+				)
+				if err != nil {
+					return err
+				}
+				initClientCtx = initClientCtx.WithTxConfig(txConfigWithTextual)
+			}
+
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
@@ -114,14 +136,41 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	genAutoCompleteCmd(rootCmd)
 
-	initRootCmd(rootCmd, encodingConfig)
 	initClientCtx, err := config.ReadDefaultValuesFromDefaultClientConfig(initClientCtx)
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
 	if err != nil {
 		panic(err)
 	}
 
+	// This needs to go after ReadFromClientConfig, as that function
+	// sets the RPC client needed for SIGN_MODE_TEXTUAL. This sign mode
+	// is only available if the client is online.
+	if !initClientCtx.Offline {
+		txConfigOpts := tx.ConfigOptions{
+			EnabledSignModes:           append(tx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL),
+			TextualCoinMetadataQueryFn: authtxconfig.NewGRPCCoinMetadataQueryFn(initClientCtx),
+		}
+		txConfigWithTextual, err := tx.NewTxConfigWithOptions(
+			initClientCtx.Codec,
+			txConfigOpts,
+		)
+		if err != nil {
+			panic(err)
+		}
+		initClientCtx = initClientCtx.WithTxConfig(txConfigWithTextual)
+	}
+
+	initRootCmd(rootCmd, encodingConfig)
 	autoCliOpts := tempApplication.AutoCLIOpts(initClientCtx)
+	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	if err != nil {
+		panic(err)
+	}
+	autoCliOpts.Keyring = cliKR
+	autoCliOpts.TxConfigOpts = tx.ConfigOptions{
+		EnabledSignModes:           tx.DefaultSignModes,
+		TextualCoinMetadataQueryFn: authtxconfig.NewGRPCCoinMetadataQueryFn(initClientCtx),
+	}
 	err = autoCliOpts.EnhanceRootCommand(rootCmd)
 	if err != nil {
 		panic(err)
