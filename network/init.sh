@@ -76,6 +76,10 @@ sed -i -e 's/swagger = false/swagger = true/g' "$CHAIN_DIR/config/app.toml"
 sed -i -e "s/minimum-gas-prices = \"\"/minimum-gas-prices = \"0.0025$STAKEDENOM,0.0025ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2\"/g" "$CHAIN_DIR/config/app.toml"
 sed -i -e 's/enabled = false/enabled = true/g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' "$CHAIN_DIR/config/app.toml"
+sed -i -e 's/pruning = "default"/pruning = "custom"/g' "$CHAIN_DIR/config/app.toml"
+sed -i -e 's/pruning-keep-recent = "0"/pruning-keep-recent = "10"/g' "$CHAIN_DIR/config/app.toml"
+sed -i -e 's/pruning-interval = "0"/pruning-interval = "10"/g' "$CHAIN_DIR/config/app.toml"
+
 
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://0.0.0.0:'"$P2PPORT"'"#g' "$CHAIN_DIR/config/config.toml"
 sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:'"$RPCPORT"'"#g' "$CHAIN_DIR/config/config.toml"
