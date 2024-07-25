@@ -35,13 +35,13 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQuery) (*types.MsgRegisterInterchainQueryResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
-
-	if err := msg.Validate(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate MsgRegisterInterchainQuery")
-	}
-
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("RegisterInterchainQuery", "msg", msg)
+	params := m.GetParams(ctx)
+
+	if err := msg.Validate(params); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgRegisterInterchainQuery")
+	}
 
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -61,8 +61,6 @@ func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 
 	lastID := m.GetLastRegisteredQueryKey(ctx)
 	lastID++
-
-	params := m.GetParams(ctx)
 
 	registeredQuery := &types.RegisteredQuery{
 		Id:                 lastID,
@@ -122,12 +120,13 @@ func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 }
 
 func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUpdateInterchainQueryRequest) (*types.MsgUpdateInterchainQueryResponse, error) {
-	if err := msg.Validate(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate MsgUpdateInterchainQueryRequest")
-	}
-
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("UpdateInterchainQuery", "msg", msg)
+	params := m.GetParams(ctx)
+
+	if err := msg.Validate(params); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateInterchainQueryRequest")
+	}
 
 	query, err := m.GetQueryByID(ctx, msg.GetQueryId())
 	if err != nil {

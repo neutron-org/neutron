@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	storetypes "cosmossdk.io/store/types"
+
 	"cosmossdk.io/core/appmodule"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -103,6 +105,7 @@ var _ appmodule.AppModule = AppModule{}
 type AppModule struct {
 	AppModuleBasic
 
+	storeKey      storetypes.StoreKey
 	keeper        keeper.Keeper
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
@@ -110,12 +113,14 @@ type AppModule struct {
 
 func NewAppModule(
 	cdc codec.Codec,
+	storeKey storetypes.StoreKey,
 	keeper keeper.Keeper,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
+		storeKey:       storeKey,
 		keeper:         keeper,
 		accountKeeper:  accountKeeper,
 		bankKeeper:     bankKeeper,
@@ -141,6 +146,12 @@ func (AppModule) QuerierRoute() string { return types.QuerierRoute }
 // RegisterServices registers a GRPC query service to respond to the
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
+	m := keeper.NewMigrator(am.cdc, am.storeKey)
+
+	if err := cfg.RegisterMigration(types.ModuleName, 2, m.Migrate2to3); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/interchainqueries from version 2 to 3: %v", err))
+	}
+
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 }

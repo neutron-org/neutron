@@ -11,10 +11,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-const (
-	MaxKVQueryKeysCount = 32
-)
-
 var (
 	_ sdk.Msg                            = &MsgSubmitQueryResult{}
 	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
@@ -90,7 +86,7 @@ func (msg MsgRegisterInterchainQuery) Type() string {
 	return "register-interchain-query"
 }
 
-func (msg MsgRegisterInterchainQuery) Validate() error {
+func (msg MsgRegisterInterchainQuery) Validate(params Params) error {
 	if msg.UpdatePeriod == 0 {
 		return errors.Wrap(ErrInvalidUpdatePeriod, "update period can not be equal to zero")
 	}
@@ -115,13 +111,13 @@ func (msg MsgRegisterInterchainQuery) Validate() error {
 		if len(msg.Keys) == 0 {
 			return errors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 		}
-		if err := validateKeys(msg.GetKeys()); err != nil {
+		if err := validateKeys(msg.GetKeys(), params.MaxKvQueryKeysCount); err != nil {
 			return err
 		}
 	}
 
 	if InterchainQueryType(msg.QueryType).IsTX() {
-		if err := ValidateTransactionsFilter(msg.TransactionsFilter); err != nil {
+		if err := ValidateTransactionsFilter(msg.TransactionsFilter, params.MaxTransactionsFilters); err != nil {
 			return errors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 		}
 	}
@@ -144,7 +140,7 @@ func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 
 var _ sdk.Msg = &MsgUpdateInterchainQueryRequest{}
 
-func (msg MsgUpdateInterchainQueryRequest) Validate() error {
+func (msg MsgUpdateInterchainQueryRequest) Validate(params Params) error {
 	if msg.GetQueryId() == 0 {
 		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
@@ -167,13 +163,13 @@ func (msg MsgUpdateInterchainQueryRequest) Validate() error {
 	}
 
 	if len(newKeys) != 0 {
-		if err := validateKeys(newKeys); err != nil {
+		if err := validateKeys(newKeys, params.MaxKvQueryKeysCount); err != nil {
 			return err
 		}
 	}
 
 	if newTxFilter != "" {
-		if err := ValidateTransactionsFilter(newTxFilter); err != nil {
+		if err := ValidateTransactionsFilter(newTxFilter, params.MaxTransactionsFilters); err != nil {
 			return errors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 		}
 	}
@@ -230,9 +226,9 @@ func (msg *MsgUpdateParams) Validate() error {
 	return nil
 }
 
-func validateKeys(keys []*KVKey) error {
-	if uint64(len(keys)) > MaxKVQueryKeysCount {
-		return errors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", MaxKVQueryKeysCount)
+func validateKeys(keys []*KVKey, maxKVQueryKeysCount uint64) error {
+	if uint64(len(keys)) > maxKVQueryKeysCount {
+		return errors.Wrapf(ErrTooManyKVQueryKeys, "keys count cannot be more than %d", maxKVQueryKeysCount)
 	}
 
 	duplicates := make(map[string]struct{})
