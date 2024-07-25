@@ -2,6 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/math"
+
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 )
 
@@ -13,7 +14,7 @@ func NewPoolReservesFromCounterpart(
 	counterpart *PoolReserves,
 ) *PoolReserves {
 	thisID := counterpart.Key.Counterpart()
-	//TODO: Is this safe?
+	// Pool tickIndex has already been validated so this will never throw
 	makerPrice := MustCalcPrice(thisID.TickIndexTakerToMaker)
 	return &PoolReserves{
 		Key:                thisID,
