@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"io"
@@ -162,15 +161,15 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	initRootCmd(rootCmd, encodingConfig)
 	autoCliOpts := tempApplication.AutoCLIOpts(initClientCtx)
-	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
-	if err != nil {
-		panic(err)
-	}
-	autoCliOpts.Keyring = cliKR
-	autoCliOpts.TxConfigOpts = tx.ConfigOptions{
-		EnabledSignModes:           tx.DefaultSignModes,
-		TextualCoinMetadataQueryFn: authtxconfig.NewGRPCCoinMetadataQueryFn(initClientCtx),
-	}
+	//cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//autoCliOpts.Keyring = cliKR
+	//autoCliOpts.TxConfigOpts = tx.ConfigOptions{
+	//	EnabledSignModes:           tx.DefaultSignModes,
+	//	TextualCoinMetadataQueryFn: authtxconfig.NewGRPCCoinMetadataQueryFn(initClientCtx),
+	//}
 	err = autoCliOpts.EnhanceRootCommand(rootCmd)
 	if err != nil {
 		panic(err)

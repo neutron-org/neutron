@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"cosmossdk.io/client/v2/autocli"
 	"fmt"
 	"io"
 	"io/fs"
@@ -17,7 +18,7 @@ import (
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
-	"cosmossdk.io/client/v2/autocli"
+	//"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
@@ -216,7 +217,6 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
@@ -423,10 +423,10 @@ func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 		}
 	}
 
-	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
-	if err != nil {
-		panic(err)
-	}
+	//cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	return autocli.AppOptions{
 		Modules:               modules,
@@ -434,7 +434,6 @@ func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-		Keyring:               cliKR,
 		ClientCtx:             initClientCtx,
 	}
 }

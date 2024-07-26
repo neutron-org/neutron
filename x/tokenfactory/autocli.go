@@ -43,8 +43,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
-					Use:       "update-params [--params JSON]",
-					Short:     "Updates params. Must be a adminmodule admin to do so.",
+					Skip:      true,
 				},
 				{
 					RpcMethod:      "CreateDenom",
