@@ -91,6 +91,7 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 		Address:               s.alice.String(),
 		SharesOwned:           math.NewInt(10_000_000),
 		SharesWithdrawn:       math.NewInt(0),
+		SharesCancelled:       math.ZeroInt(),
 	},
 		LOList[0],
 	)
@@ -101,6 +102,7 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 		Address:               s.alice.String(),
 		SharesOwned:           math.NewInt(10_000_000),
 		SharesWithdrawn:       math.NewInt(0),
+		SharesCancelled:       math.ZeroInt(),
 	},
 		LOList[1],
 	)
