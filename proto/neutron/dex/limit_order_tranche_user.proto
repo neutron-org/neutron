@@ -24,5 +24,12 @@ message LimitOrderTrancheUser {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "shares_withdrawn"
   ];
+  // TODO: remove this in next release. It is no longer used
+  string shares_cancelled = 7 [
+    (gogoproto.moretags) = "yaml:\"shares_cancelled\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "shares_cancelled"
+  ];
   LimitOrderType order_type = 8;
 }
