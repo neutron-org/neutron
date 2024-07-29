@@ -27,7 +27,6 @@ func TestGenesis(t *testing.T) {
 				Address:               "fakeAddr",
 				SharesOwned:           math.NewInt(10),
 				SharesWithdrawn:       math.NewInt(0),
-				SharesCancelled:       math.NewInt(0),
 			},
 			{
 				TradePairId: &types.TradePairID{
@@ -39,7 +38,6 @@ func TestGenesis(t *testing.T) {
 				Address:               "fakeAddr",
 				SharesOwned:           math.NewInt(10),
 				SharesWithdrawn:       math.NewInt(0),
-				SharesCancelled:       math.NewInt(0),
 			},
 		},
 		TickLiquidityList: []*types.TickLiquidity{
