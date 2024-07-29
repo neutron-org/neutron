@@ -191,9 +191,9 @@ func (s *DexTestSuite) TestCancelPartiallyFilled() {
 	// WHEN alice cancels her limit order
 	s.aliceCancelsLimitSell(trancheKey)
 
-	// Then alice gets back remaining 25 TokenA LO reserves
-	s.assertAliceBalances(25, 0)
-	s.assertDexBalances(0, 25)
+	// Then alice gets back remaining 25 TokenA LO reserves & 25 TokenB taker tokens
+	s.assertAliceBalances(25, 25)
+	s.assertDexBalances(0, 0)
 }
 
 func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
@@ -215,12 +215,12 @@ func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
 	s.aliceCancelsLimitSell(trancheKey)
 	s.carolCancelsLimitSell(trancheKey)
 
-	// THEN alice gets back ~41 BIGTokenA (125 * 1/3)
-	s.assertAliceBalancesInt(sdkmath.NewInt(41_666_666), sdkmath.ZeroInt())
+	// THEN alice gets back ~41 BIGTokenA (125 * 1/3) & ~8.3 BIGTokenB Taker tokens (25 * 1/3)
+	s.assertAliceBalancesInt(sdkmath.NewInt(41_666_666), sdkmath.NewInt(8333333))
 
-	// Carol gets back 83 TokenA (125 * 2/3)
-	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.ZeroInt())
-	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.NewInt(25_000_000))
+	// Carol gets back 83 TokenA (125 * 2/3) & ~16.6 BIGTokenB Taker tokens (25 * 2/3)
+	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.NewInt(16666666))
+	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.OneInt())
 }
 
 func (s *DexTestSuite) TestCancelGoodTil() {
@@ -283,22 +283,4 @@ func (s *DexTestSuite) TestCancelJITNextBlock() {
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
 	s.assertAliceBalances(0, 0)
-}
-
-func (s *DexTestSuite) TestCancelWithdraw() {
-	s.fundAliceBalances(100, 100)
-	s.fundCarolBalances(100, 0)
-
-	s.carolLimitSells("TokenA", 0, 100)
-	tk := s.aliceLimitSells("TokenA", 0, 100)
-	s.aliceLimitSells("TokenB", -1, 2)
-	s.aliceCancelsLimitSell(tk)
-	s.assertAliceBalances(101, 98)
-	s.aliceLimitSells("TokenB", -1, 96)
-	s.assertAliceBalances(197, 2)
-	s.aliceWithdrawsLimitSell(tk)
-	s.assertAliceBalances(197, 51)
-	s.assertCarolBalances(0, 0)
-	s.carolWithdrawsLimitSell(tk)
-	s.assertCarolBalances(0, 49)
 }
