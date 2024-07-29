@@ -514,6 +514,10 @@ func (k Keeper) CancelLimitOrderCore(
 
 	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
+	// Remove the canceled shares from the limitOrder
+	tranche.TotalMakerDenom = tranche.TotalMakerDenom.Sub(trancheUser.SharesOwned)
+	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(takerAmountOut)
+
 	if makerAmountToReturn.IsPositive() || takerAmountOut.IsPositive() {
 		makerCoinOut := sdk.NewCoin(tradePairID.MakerDenom, makerAmountToReturn)
 		takerCoinOut := sdk.NewCoin(tradePairID.TakerDenom, takerAmountOut)
