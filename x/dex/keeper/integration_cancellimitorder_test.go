@@ -194,6 +194,10 @@ func (s *DexTestSuite) TestCancelPartiallyFilled() {
 	// Then alice gets back remaining 25 TokenA LO reserves & 25 TokenB taker tokens
 	s.assertAliceBalances(25, 25)
 	s.assertDexBalances(0, 0)
+
+	// Assert that the LimitOrderTrancheUser has been deleted
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
+	s.Assert().False(found)
 }
 
 func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
@@ -221,6 +225,12 @@ func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
 	// Carol gets back 83 TokenA (125 * 2/3) & ~16.6 BIGTokenB Taker tokens (25 * 2/3)
 	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.NewInt(16666666))
 	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.OneInt())
+
+	// Assert that the LimitOrderTrancheUsers has been deleted
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
+	s.Assert().False(found)
+	_, found = s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.carol.String(), trancheKey)
+	s.Assert().False(found)
 }
 
 func (s *DexTestSuite) TestCancelGoodTil() {
