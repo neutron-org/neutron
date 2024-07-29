@@ -509,17 +509,21 @@ func (k Keeper) CancelLimitOrderCore(
 		return types.ErrActiveLimitOrderNotFound
 	}
 
-	amountToCancel := tranche.RemoveTokenIn(trancheUser)
-	trancheUser.SharesCancelled = trancheUser.SharesCancelled.Add(amountToCancel)
+	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
+	_, takerAmountOut := tranche.Withdraw(trancheUser)
 
-	if amountToCancel.IsPositive() {
-		coinOut := sdk.NewCoin(tradePairID.MakerDenom, amountToCancel)
+	//TODO: delete me
+	trancheUser.SharesOwned = math.ZeroInt()
 
+	if makerAmountToReturn.IsPositive() || takerAmountOut.IsPositive() {
+		makerCoinOut := sdk.NewCoin(tradePairID.MakerDenom, makerAmountToReturn)
+		takerCoinOut := sdk.NewCoin(tradePairID.TakerDenom, takerAmountOut)
+		coinsOut := sdk.NewCoins(makerCoinOut, takerCoinOut)
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(
 			ctx,
 			types.ModuleName,
 			callerAddr,
-			sdk.Coins{coinOut},
+			coinsOut,
 		)
 		if err != nil {
 			return err
@@ -528,23 +532,23 @@ func (k Keeper) CancelLimitOrderCore(
 		k.SaveTrancheUser(ctx, trancheUser)
 		k.SaveTranche(ctx, tranche)
 
+		pairID := tradePairID.MustPairID()
+		ctx.EventManager().EmitEvent(types.CancelLimitOrderEvent(
+			callerAddr,
+			pairID.Token0,
+			pairID.Token1,
+			tradePairID.MakerDenom,
+			tradePairID.TakerDenom,
+			coinsOut,
+			trancheKey,
+		))
+
 		if trancheUser.OrderType.HasExpiration() {
 			k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())
 		}
 	} else {
 		return sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
 	}
-
-	pairID := tradePairID.MustPairID()
-	ctx.EventManager().EmitEvent(types.CancelLimitOrderEvent(
-		callerAddr,
-		pairID.Token0,
-		pairID.Token1,
-		tradePairID.MakerDenom,
-		tradePairID.TakerDenom,
-		amountToCancel,
-		trancheKey,
-	))
 
 	return nil
 }
