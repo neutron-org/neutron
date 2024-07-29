@@ -512,8 +512,7 @@ func (k Keeper) CancelLimitOrderCore(
 	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
 	_, takerAmountOut := tranche.Withdraw(trancheUser)
 
-	//TODO: delete me
-	trancheUser.SharesOwned = math.ZeroInt()
+	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
 	if makerAmountToReturn.IsPositive() || takerAmountOut.IsPositive() {
 		makerCoinOut := sdk.NewCoin(tradePairID.MakerDenom, makerAmountToReturn)
@@ -594,15 +593,13 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 			// This is only relevant for inactive JIT and GoodTil limit orders
 			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
 			k.SaveInactiveTranche(ctx, tranche)
-
-			// Treat the removed tokenIn as cancelled shares
-			trancheUser.SharesCancelled = trancheUser.SharesCancelled.Add(remainingTokenIn)
-
+			// Since the order has already been filled we treat this as a complete withdrawal
+			trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 		} else {
 			k.SetLimitOrderTranche(ctx, tranche)
+			trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 		}
 
-		trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 	}
 
 	k.SaveTrancheUser(ctx, trancheUser)

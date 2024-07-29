@@ -284,3 +284,21 @@ func (s *DexTestSuite) TestCancelJITNextBlock() {
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
 	s.assertAliceBalances(0, 0)
 }
+
+func (s *DexTestSuite) TestCancelWithdraw() {
+	s.fundAliceBalances(100, 100)
+	s.fundCarolBalances(100, 0)
+
+	s.carolLimitSells("TokenA", 0, 100)
+	tk := s.aliceLimitSells("TokenA", 0, 100)
+	s.aliceLimitSells("TokenB", -1, 2)
+	s.aliceCancelsLimitSell(tk)
+	s.assertAliceBalances(101, 98)
+	s.aliceLimitSells("TokenB", -1, 96)
+	s.assertAliceBalances(197, 2)
+	s.aliceWithdrawsLimitSell(tk)
+	s.assertAliceBalances(197, 51)
+	s.assertCarolBalances(0, 0)
+	s.carolWithdrawsLimitSell(tk)
+	s.assertCarolBalances(0, 49)
+}

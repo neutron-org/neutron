@@ -24,7 +24,6 @@ func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int)
 			TickIndexTakerToMaker: int64(i),
 			SharesOwned:           math.NewInt(100),
 			SharesWithdrawn:       math.ZeroInt(),
-			SharesCancelled:       math.ZeroInt(),
 		}
 		items[i] = val
 		keeper.SetLimitOrderTrancheUser(ctx, items[i])
@@ -43,7 +42,6 @@ func createNLimitOrderTrancheUserWithAddress(keeper *keeper.Keeper, ctx sdk.Cont
 			TickIndexTakerToMaker: 0,
 			SharesOwned:           math.ZeroInt(),
 			SharesWithdrawn:       math.ZeroInt(),
-			SharesCancelled:       math.ZeroInt(),
 		}
 		items[i] = val
 		keeper.SetLimitOrderTrancheUser(ctx, items[i])
@@ -93,7 +91,6 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 		Address:               s.alice.String(),
 		SharesOwned:           math.NewInt(10_000_000),
 		SharesWithdrawn:       math.NewInt(0),
-		SharesCancelled:       math.NewInt(0),
 	},
 		LOList[0],
 	)
@@ -104,7 +101,6 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 		Address:               s.alice.String(),
 		SharesOwned:           math.NewInt(10_000_000),
 		SharesWithdrawn:       math.NewInt(0),
-		SharesCancelled:       math.NewInt(0),
 	},
 		LOList[1],
 	)
