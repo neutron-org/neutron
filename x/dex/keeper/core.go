@@ -509,17 +509,24 @@ func (k Keeper) CancelLimitOrderCore(
 		return types.ErrActiveLimitOrderNotFound
 	}
 
-	amountToCancel := tranche.RemoveTokenIn(trancheUser)
-	trancheUser.SharesCancelled = trancheUser.SharesCancelled.Add(amountToCancel)
+	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
+	_, takerAmountOut := tranche.Withdraw(trancheUser)
 
-	if amountToCancel.IsPositive() {
-		coinOut := sdk.NewCoin(tradePairID.MakerDenom, amountToCancel)
+	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
+	// Remove the canceled shares from the limitOrder
+	tranche.TotalMakerDenom = tranche.TotalMakerDenom.Sub(trancheUser.SharesOwned)
+	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(takerAmountOut)
+
+	if makerAmountToReturn.IsPositive() || takerAmountOut.IsPositive() {
+		makerCoinOut := sdk.NewCoin(tradePairID.MakerDenom, makerAmountToReturn)
+		takerCoinOut := sdk.NewCoin(tradePairID.TakerDenom, takerAmountOut)
+		coinsOut := sdk.NewCoins(makerCoinOut, takerCoinOut)
 		err := k.bankKeeper.SendCoinsFromModuleToAccount(
 			ctx,
 			types.ModuleName,
 			callerAddr,
-			sdk.Coins{coinOut},
+			coinsOut,
 		)
 		if err != nil {
 			return err
@@ -528,23 +535,23 @@ func (k Keeper) CancelLimitOrderCore(
 		k.SaveTrancheUser(ctx, trancheUser)
 		k.SaveTranche(ctx, tranche)
 
+		pairID := tradePairID.MustPairID()
+		ctx.EventManager().EmitEvent(types.CancelLimitOrderEvent(
+			callerAddr,
+			pairID.Token0,
+			pairID.Token1,
+			tradePairID.MakerDenom,
+			tradePairID.TakerDenom,
+			coinsOut,
+			trancheKey,
+		))
+
 		if trancheUser.OrderType.HasExpiration() {
 			k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())
 		}
 	} else {
 		return sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
 	}
-
-	pairID := tradePairID.MustPairID()
-	ctx.EventManager().EmitEvent(types.CancelLimitOrderEvent(
-		callerAddr,
-		pairID.Token0,
-		pairID.Token1,
-		tradePairID.MakerDenom,
-		tradePairID.TakerDenom,
-		amountToCancel,
-		trancheKey,
-	))
 
 	return nil
 }
@@ -590,15 +597,13 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 			// This is only relevant for inactive JIT and GoodTil limit orders
 			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
 			k.SaveInactiveTranche(ctx, tranche)
-
-			// Treat the removed tokenIn as cancelled shares
-			trancheUser.SharesCancelled = trancheUser.SharesCancelled.Add(remainingTokenIn)
-
+			// Since the order has already been filled we treat this as a complete withdrawal
+			trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 		} else {
 			k.SetLimitOrderTranche(ctx, tranche)
+			trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 		}
 
-		trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 	}
 
 	k.SaveTrancheUser(ctx, trancheUser)
