@@ -119,7 +119,7 @@ func CmdQueryRegisteredQueryResult() *cobra.Command {
 				return fmt.Errorf("failed to parse query id: %w", err)
 			}
 
-			res, err := queryClient.QueryResult(context.Background(), &types.QueryRegisteredQueryResultRequest{QueryId: queryID})
+			res, err := queryClient.QueryResult(context.Background(), &types.QueryQueryResultRequest{QueryId: queryID})
 			if err != nil {
 				return err
 			}
@@ -142,7 +142,7 @@ func CmdQueryLastRemoteHeight() *cobra.Command {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			connectionID := args[0]
 			queryClient := types.NewQueryClient(clientCtx)
-			res, err := queryClient.LastRemoteHeight(context.Background(), &types.QueryLastRemoteHeight{ConnectionId: connectionID})
+			res, err := queryClient.LastRemoteHeight(context.Background(), &types.QueryLastRemoteHeightRequest{ConnectionId: connectionID})
 			if err != nil {
 				return err
 			}

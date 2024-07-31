@@ -25,7 +25,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			"wrong connection id",
 			func() {
 				ctx := suite.ChainA.GetContext()
-				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeight{ConnectionId: "test"})
+				_, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeightRequest{ConnectionId: "test"})
 				suite.Require().Error(err)
 			},
 		},
@@ -34,7 +34,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 			func() {
 				ctx := suite.ChainA.GetContext()
 
-				oldHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
+				oldHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeightRequest{ConnectionId: suite.Path.EndpointA.ConnectionID})
 				suite.Require().NoError(err)
 				suite.Require().Greater(oldHeight.Height, uint64(0))
 
@@ -44,7 +44,7 @@ func (suite *KeeperTestSuite) TestRemoteLastHeight() {
 					suite.NoError(suite.Path.EndpointA.UpdateClient())
 				}
 
-				updatedHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeight{ConnectionId: suite.Path.EndpointA.ConnectionID})
+				updatedHeight, err := keeper.Keeper.LastRemoteHeight(suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper, ctx, &iqtypes.QueryLastRemoteHeightRequest{ConnectionId: suite.Path.EndpointA.ConnectionID})
 				suite.Require().Equal(updatedHeight.Height, oldHeight.Height+N) // check that last remote height really equals oldHeight+N
 				suite.Require().NoError(err)
 			},
@@ -478,7 +478,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	contractOwner := wasmKeeper.RandomAccountAddress(suite.T())
 	codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
 	contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
-	registerMsg := iqtypes.MsgRegisterInterchainQuery{
+	registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 		ConnectionId: suite.Path.EndpointA.ConnectionID,
 		Keys: []*iqtypes.KVKey{
 			{Path: ibchost.StoreKey, Key: clientKey},
@@ -508,7 +508,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	})
 	suite.Require().NoError(err)
 
-	msg := iqtypes.MsgSubmitQueryResult{
+	msg := iqtypes.MsgSubmitQueryResultRequest{
 		QueryId:  regQuery1.Id,
 		Sender:   contractAddress.String(),
 		ClientId: suite.Path.EndpointA.ClientID,
@@ -530,7 +530,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	_, err = msgSrv.SubmitQueryResult(ctx, &msg)
 	suite.NoError(err)
 
-	queryResultResponse, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryRegisteredQueryResultRequest{
+	queryResultResponse, err := suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryQueryResultRequest{
 		QueryId: regQuery1.Id,
 	})
 	suite.NoError(err)
@@ -547,12 +547,12 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	}
 	suite.Equal(len(expectKvResults), len(queryKvResult))
 
-	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryRegisteredQueryResultRequest{
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryQueryResultRequest{
 		QueryId: regQuery2.Id,
 	})
 	suite.ErrorContains(err, "no query result")
 
-	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryRegisteredQueryResultRequest{
+	_, err = suite.GetNeutronZoneApp(suite.ChainA).InterchainQueriesKeeper.QueryResult(ctx, &iqtypes.QueryQueryResultRequest{
 		QueryId: regQuery2.Id + 1,
 	})
 	suite.ErrorContains(err, "invalid query id")

@@ -927,7 +927,7 @@ func (m *CustomMessenger) registerInterchainQuery(ctx sdk.Context, contractAddr 
 }
 
 func (m *CustomMessenger) performRegisterInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainQuery) (*icqtypes.MsgRegisterInterchainQueryResponse, error) {
-	msg := icqtypes.MsgRegisterInterchainQuery{
+	msg := icqtypes.MsgRegisterInterchainQueryRequest{
 		Keys:               reg.Keys,
 		TransactionsFilter: reg.TransactionsFilter,
 		QueryType:          reg.QueryType,

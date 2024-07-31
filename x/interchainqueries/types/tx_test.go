@@ -21,7 +21,7 @@ func TestMsgRegisterInterchainQueryGetSigners(t *testing.T) {
 		{
 			"valid_signer",
 			func() sdktypes.LegacyMsg {
-				return &iqtypes.MsgRegisterInterchainQuery{
+				return &iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId:       "connection-0",
 					TransactionsFilter: "{}",
 					Keys:               nil,
@@ -48,7 +48,7 @@ func TestMsgSubmitQueryResultGetSigners(t *testing.T) {
 		{
 			"valid_signer",
 			func() sdktypes.LegacyMsg {
-				return &iqtypes.MsgSubmitQueryResult{
+				return &iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  1,
 					Sender:   TestAddress,
 					ClientId: "client-id",

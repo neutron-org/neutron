@@ -84,7 +84,7 @@ func SubmitQueryResultCmd() *cobra.Command {
 				return fmt.Errorf("failed to read query result file: %w", err)
 			}
 
-			msg := types.MsgSubmitQueryResult{QueryId: queryID, Sender: string(sender)}
+			msg := types.MsgSubmitQueryResultRequest{QueryId: queryID, Sender: string(sender)}
 			if err := json.Unmarshal(result, &msg.Result); err != nil {
 				return fmt.Errorf("failed to unmarshal query result: %w", err)
 			}
