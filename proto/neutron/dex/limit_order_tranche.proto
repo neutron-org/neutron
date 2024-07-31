@@ -55,7 +55,7 @@ message LimitOrderTranche {
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "price_taker_to_maker"
   ];
-  // This is the price of the liquidity denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+  // This is the price of the LimitOrder denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
   string maker_price = 8 [
     (gogoproto.moretags) = "yaml:\"maker_price\"",
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
