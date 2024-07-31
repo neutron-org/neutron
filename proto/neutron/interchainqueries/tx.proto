@@ -21,7 +21,7 @@ service Msg {
   // automatically in the amount defined as the module's query deposit parameter. The deposit is
   // paid back on the query removal. Make sure to have enough assets on the contract's account
   // at the time of the message execution.
-  // 
+  //
   // Returns an ID assigned to the registered query. Handle this message response via a reply
   // handler in order to make use of the ID.
   rpc RegisterInterchainQuery(MsgRegisterInterchainQueryRequest) returns (MsgRegisterInterchainQueryResponse);
