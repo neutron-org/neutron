@@ -84,7 +84,7 @@ func (k Keeper) ExecuteCancelLimitOrder(
 	tranche.TotalMakerDenom = tranche.TotalMakerDenom.Sub(trancheUser.SharesOwned)
 	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(takerAmountOut)
 
-	if !makerAmountToReturn.IsPositive() || !takerAmountOut.IsPositive() {
+	if !makerAmountToReturn.IsPositive() && !takerAmountOut.IsPositive() {
 		return sdk.Coin{}, sdk.Coin{}, nil, sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
 	}
 
