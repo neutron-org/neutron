@@ -1426,8 +1426,8 @@ type QueryEstimatePlaceLimitOrderRequest struct {
 	AmountIn         cosmossdk_io_math.Int `protobuf:"bytes,6,opt,name=amount_in,json=amountIn,proto3,customtype=cosmossdk.io/math.Int" json:"amount_in" yaml:"amount_in"`
 	OrderType        LimitOrderType        `protobuf:"varint,7,opt,name=order_type,json=orderType,proto3,enum=neutron.dex.LimitOrderType" json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
-	ExpirationTime *time.Time             `protobuf:"bytes,9,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
-	MaxAmountOut   *cosmossdk_io_math.Int `protobuf:"bytes,8,opt,name=max_amount_out,json=maxAmountOut,proto3,customtype=cosmossdk.io/math.Int" json:"max_amount_out" yaml:"max_amount_out"`
+	ExpirationTime *time.Time             `protobuf:"bytes,8,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
+	MaxAmountOut   *cosmossdk_io_math.Int `protobuf:"bytes,9,opt,name=max_amount_out,json=maxAmountOut,proto3,customtype=cosmossdk.io/math.Int" json:"max_amount_out" yaml:"max_amount_out"`
 }
 
 func (m *QueryEstimatePlaceLimitOrderRequest) Reset()         { *m = QueryEstimatePlaceLimitOrderRequest{} }
@@ -2004,9 +2004,9 @@ var fileDescriptor_b6613ea5fce61e9c = []byte{
 	0xb9, 0x1f, 0xca, 0xf6, 0x96, 0xc3, 0xe4, 0x63, 0x51, 0x34, 0xd8, 0xe7, 0x28, 0xba, 0x86, 0x10,
 	0xe4, 0xf4, 0xba, 0x4b, 0x72, 0xa7, 0xe6, 0xa4, 0xc5, 0x33, 0xab, 0xd3, 0x49, 0x09, 0xbd, 0xee,
 	0x12, 0x75, 0xd8, 0x09, 0x1f, 0xf1, 0x0d, 0x74, 0x96, 0x1c, 0xb8, 0xa6, 0xc7, 0x13, 0x86, 0x46,
-	0xcd, 0x2a, 0xc9, 0x0d, 0x73, 0x17, 0xe5, 0x8b, 0x41, 0x9f, 0xac, 0x18, 0xf6, 0xc9, 0x8a, 0x5b,
+	0xcd, 0x2a, 0xc9, 0x0d, 0x71, 0x17, 0xe5, 0x8b, 0x41, 0x9f, 0xac, 0x18, 0xf6, 0xc9, 0x8a, 0x5b,
 	0x61, 0x9f, 0xac, 0x34, 0xc4, 0x36, 0xe0, 0x83, 0xbf, 0x15, 0x24, 0x16, 0x38, 0xa1, 0x32, 0x9b,
-	0xc6, 0x36, 0x3a, 0x53, 0xd5, 0x0f, 0x34, 0x80, 0xc9, 0x18, 0x19, 0xe2, 0xc6, 0x5e, 0x4f, 0xeb,
+	0xc6, 0x36, 0x3a, 0x53, 0xd5, 0x0f, 0x34, 0x80, 0xc9, 0x18, 0x19, 0xe6, 0xc6, 0x5e, 0x4f, 0xeb,
 	0x44, 0xb4, 0xa9, 0x1d, 0x36, 0x0a, 0x53, 0x81, 0xc5, 0xf1, 0x71, 0x59, 0x1d, 0xad, 0xea, 0x07,
 	0x6b, 0xfc, 0x9d, 0xf9, 0xf9, 0xdf, 0x59, 0x68, 0x3d, 0x24, 0xfa, 0x19, 0x62, 0xf0, 0x7b, 0x12,
 	0x3a, 0x4d, 0x1d, 0xaa, 0x5b, 0xcc, 0x59, 0x2c, 0x4a, 0xd2, 0x23, 0xf1, 0xad, 0xa3, 0x47, 0x62,
@@ -2062,7 +2062,7 @@ var fileDescriptor_b6613ea5fce61e9c = []byte{
 	0xcd, 0xe0, 0x7c, 0x32, 0xa2, 0xd2, 0xc6, 0x07, 0x0f, 0x67, 0xa5, 0x0f, 0x1f, 0xce, 0x4a, 0x7f,
 	0x7f, 0x38, 0x2b, 0x3d, 0x78, 0x34, 0x7b, 0xe2, 0xc3, 0x47, 0xb3, 0x27, 0xfe, 0xfc, 0x68, 0xf6,
 	0xc4, 0xad, 0xe5, 0xf4, 0x06, 0xe1, 0x41, 0x70, 0xb8, 0xb2, 0xca, 0x7b, 0x7b, 0x90, 0xf7, 0x73,
-	0x3e, 0xf3, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x95, 0x3b, 0x6f, 0x5f, 0xad, 0x25, 0x00, 0x00,
+	0x3e, 0xf3, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x0b, 0x3f, 0x0c, 0xeb, 0xad, 0x25, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -3969,16 +3969,6 @@ func (m *QueryEstimatePlaceLimitOrderRequest) MarshalToSizedBuffer(dAtA []byte) 
 	_ = i
 	var l int
 	_ = l
-	if m.ExpirationTime != nil {
-		n21, err21 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(*m.ExpirationTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(*m.ExpirationTime):])
-		if err21 != nil {
-			return 0, err21
-		}
-		i -= n21
-		i = encodeVarintQuery(dAtA, i, uint64(n21))
-		i--
-		dAtA[i] = 0x4a
-	}
 	if m.MaxAmountOut != nil {
 		{
 			size := m.MaxAmountOut.Size()
@@ -3988,6 +3978,16 @@ func (m *QueryEstimatePlaceLimitOrderRequest) MarshalToSizedBuffer(dAtA []byte) 
 			}
 			i = encodeVarintQuery(dAtA, i, uint64(size))
 		}
+		i--
+		dAtA[i] = 0x4a
+	}
+	if m.ExpirationTime != nil {
+		n21, err21 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(*m.ExpirationTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(*m.ExpirationTime):])
+		if err21 != nil {
+			return 0, err21
+		}
+		i -= n21
+		i = encodeVarintQuery(dAtA, i, uint64(n21))
 		i--
 		dAtA[i] = 0x42
 	}
@@ -4821,12 +4821,12 @@ func (m *QueryEstimatePlaceLimitOrderRequest) Size() (n int) {
 	if m.OrderType != 0 {
 		n += 1 + sovQuery(uint64(m.OrderType))
 	}
-	if m.MaxAmountOut != nil {
-		l = m.MaxAmountOut.Size()
-		n += 1 + l + sovQuery(uint64(l))
-	}
 	if m.ExpirationTime != nil {
 		l = github_com_cosmos_gogoproto_types.SizeOfStdTime(*m.ExpirationTime)
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.MaxAmountOut != nil {
+		l = m.MaxAmountOut.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
@@ -8221,42 +8221,6 @@ func (m *QueryEstimatePlaceLimitOrderRequest) Unmarshal(dAtA []byte) error {
 			}
 		case 8:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxAmountOut", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v cosmossdk_io_math.Int
-			m.MaxAmountOut = &v
-			if err := m.MaxAmountOut.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 9:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ExpirationTime", wireType)
 			}
 			var msglen int
@@ -8288,6 +8252,42 @@ func (m *QueryEstimatePlaceLimitOrderRequest) Unmarshal(dAtA []byte) error {
 				m.ExpirationTime = new(time.Time)
 			}
 			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(m.ExpirationTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxAmountOut", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v cosmossdk_io_math.Int
+			m.MaxAmountOut = &v
+			if err := m.MaxAmountOut.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
