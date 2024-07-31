@@ -156,8 +156,9 @@ func CancelLimitOrderEvent(
 	token0 string,
 	token1 string,
 	makerDenom string,
-	tokenOut string,
-	coinsOut sdk.Coins,
+	takerDenom string,
+	makerAmountOut math.Int,
+	takerAmountOut math.Int,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -167,8 +168,9 @@ func CancelLimitOrderEvent(
 		sdk.NewAttribute(CancelLimitOrderEventToken0, token0),
 		sdk.NewAttribute(CancelLimitOrderEventToken1, token1),
 		sdk.NewAttribute(CancelLimitOrderEventTokenIn, makerDenom),
-		sdk.NewAttribute(CancelLimitOrderEventTokenOut, tokenOut),
-		sdk.NewAttribute(CancelLimitOrderEventAmountOut, coinsOut.String()),
+		sdk.NewAttribute(CancelLimitOrderEventTokenOut, takerDenom),
+		sdk.NewAttribute(CancelLimitOrderEventTokenInAmountOut, makerAmountOut.String()),
+		sdk.NewAttribute(CancelLimitOrderEventTokenOutAmountOut, takerAmountOut.String()),
 		sdk.NewAttribute(CancelLimitOrderEventTrancheKey, trancheKey),
 	}
 
