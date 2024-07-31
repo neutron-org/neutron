@@ -2,15 +2,24 @@ name: CI
 
 on:
   push:
+    tags:
+      - "*"
+    release:
+      types:
+        - created
     branches:
-      - "main"
       - "releases/v3.x"
       - "chore/fix-ci"
   pull_request:
     branches:
-      - "main"
       - "releases/v3.x"
       - "chore/fix-ci"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to run the workflow for'
+        required: false
+        default: ''
 
 jobs:
   docker:
@@ -23,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y jq curl git
@@ -44,9 +54,15 @@ jobs:
           curl --silent -L --output ~/.docker/cli-plugins/docker-buildx $BUILDX_URL
           chmod a+x ~/.docker/cli-plugins/docker-buildx
 
-      - name: Get version from git tags
+      - name: Get version from git tags or input
         id: get_version
-        run: echo "VERSION=v$(git describe --tags --abbrev=0 | sed 's/^v//')" >> $GITHUB_ENV
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            VERSION=${{ github.event.inputs.tag }}
+          else
+            VERSION=$(git describe --tags --abbrev=0)
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
@@ -60,16 +76,6 @@ jobs:
           endpoint: "neutronorg/neutron"
           install: true
 
-#      - name: Build and push
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          file: Dockerfile.builder
-#          tags: "${{ env.VERSION }}"
-#          # For pull requests, export results to the build cache.
-#          # Otherwise, push to a registry.
-#          outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry,push=true' }}
-
       - name: Build and push Docker image
         env:
           VERSION: ${{ env.VERSION }}
@@ -82,4 +88,3 @@ jobs:
 
       - name: Cleanup temporary container
         run: docker rm -f neutronbinary || true
-
