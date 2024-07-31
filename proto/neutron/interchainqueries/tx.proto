@@ -29,9 +29,9 @@ service Msg {
   // include passing of the result to the query's owner smart contract for processing which might
   // be a pretty gas-consumable operation.
   rpc SubmitQueryResult(MsgSubmitQueryResultRequest) returns (MsgSubmitQueryResultResponse);
-  // Removes a given Interchain Query from the module. Can be removed only by the owner of the
-  // query during the query's submit timeout, and by anyone after the query has been timed out.
-  // The query deposit is returned to the caller on a success call.
+  // Removes a given Interchain Query and its results from the module. Can be removed only by the
+  // owner of the query during the query's submit timeout, and by anyone after the query has been
+  // timed out. The query deposit is returned to the caller on a success call.
   rpc RemoveInterchainQuery(MsgRemoveInterchainQueryRequest) returns (MsgRemoveInterchainQueryResponse);
   // Updates parameters of a registered Interchain Query. Only callable by the owner of the query.
   rpc UpdateInterchainQuery(MsgUpdateInterchainQueryRequest) returns (MsgUpdateInterchainQueryResponse);

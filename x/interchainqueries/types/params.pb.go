@@ -5,14 +5,13 @@ package types
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -26,16 +25,15 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Params defines the parameters for the module.
+// The parameters for the module.
 type Params struct {
-	// Defines amount of blocks required before query becomes available for
-	// removal by anybody
+	// The amount of blocks required to pass since an Interchain Query registration/update for the
+	// query to become available for removal by anybody.
 	QuerySubmitTimeout uint64 `protobuf:"varint,1,opt,name=query_submit_timeout,json=querySubmitTimeout,proto3" json:"query_submit_timeout,omitempty"`
-	// Amount of coins deposited for the query.
+	// Amount of coins required to be provided as deposit on Interchain Query registration.
 	QueryDeposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=query_deposit,json=queryDeposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"query_deposit"`
-	// Amount of tx hashes to be removed during a single EndBlock. Can vary to
-	// balance between network cleaning speed and EndBlock duration. A zero value
-	// means no limit.
+	// Amount of tx hashes to be removed during a single EndBlock. Can vary to balance between
+	// network cleaning speed and EndBlock duration. A zero value means no limit.
 	TxQueryRemovalLimit uint64 `protobuf:"varint,3,opt,name=tx_query_removal_limit,json=txQueryRemovalLimit,proto3" json:"tx_query_removal_limit,omitempty"`
 }
 

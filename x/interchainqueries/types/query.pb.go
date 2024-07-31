@@ -6,10 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	query "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -18,6 +14,9 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -31,7 +30,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// Request type for the Query/Params RPC method.
 type QueryParamsRequest struct {
 }
 
@@ -68,9 +67,9 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// Response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
-	// params holds all the parameters of this module.
+	// Stores all parameters of the module.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }
 
@@ -114,10 +113,19 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
+// Request type for the Query/RegisteredQueries RPC method.
 type QueryRegisteredQueriesRequest struct {
-	Owners       []string           `protobuf:"bytes,1,rep,name=owners,proto3" json:"owners,omitempty"`
-	ConnectionId string             `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	Pagination   *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	// A list of owners of Interchain Queries. Query response will contain only Interchain Queries
+	// that are owned by one of the owners in the list. If none, Interchain Queries are not filtered
+	// out by the owner field.
+	Owners []string `protobuf:"bytes,1,rep,name=owners,proto3" json:"owners,omitempty"`
+	// IBC connection ID. Query response will contain only Interchain Queries that have the same IBC
+	// connection ID parameter. If none, Interchain Queries are not filtered out by the connection ID
+	// field.
+	ConnectionId string `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+	// Pagination parameters for the request. Use values from previous response in the next request
+	// in consecutive requests with paginated responses.
+	Pagination *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryRegisteredQueriesRequest) Reset()         { *m = QueryRegisteredQueriesRequest{} }
@@ -174,9 +182,12 @@ func (m *QueryRegisteredQueriesRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
+// Response type for the Query/RegisteredQueries RPC method.
 type QueryRegisteredQueriesResponse struct {
+	// A list of registered Interchain Queries.
 	RegisteredQueries []RegisteredQuery `protobuf:"bytes,1,rep,name=registered_queries,json=registeredQueries,proto3" json:"registered_queries"`
-	// pagination defines the pagination in the response.
+	// Current page information. Use values from previous response in the next request in consecutive
+	// requests with paginated responses.
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -227,7 +238,9 @@ func (m *QueryRegisteredQueriesResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
+// Request type for the Query/RegisteredQuery RPC method.
 type QueryRegisteredQueryRequest struct {
+	// ID of an Interchain Query.
 	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
 }
 
@@ -271,7 +284,9 @@ func (m *QueryRegisteredQueryRequest) GetQueryId() uint64 {
 	return 0
 }
 
+// Response type for the Query/RegisteredQuery RPC method.
 type QueryRegisteredQueryResponse struct {
+	// A registered Interchain Query.
 	RegisteredQuery *RegisteredQuery `protobuf:"bytes,1,opt,name=registered_query,json=registeredQuery,proto3" json:"registered_query,omitempty"`
 }
 
@@ -315,22 +330,24 @@ func (m *QueryRegisteredQueryResponse) GetRegisteredQuery() *RegisteredQuery {
 	return nil
 }
 
-type QueryRegisteredQueryResultRequest struct {
+// Request type for the Query/QueryResult RPC method.
+type QueryQueryResultRequest struct {
+	// ID of an Interchain Query.
 	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
 }
 
-func (m *QueryRegisteredQueryResultRequest) Reset()         { *m = QueryRegisteredQueryResultRequest{} }
-func (m *QueryRegisteredQueryResultRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryRegisteredQueryResultRequest) ProtoMessage()    {}
-func (*QueryRegisteredQueryResultRequest) Descriptor() ([]byte, []int) {
+func (m *QueryQueryResultRequest) Reset()         { *m = QueryQueryResultRequest{} }
+func (m *QueryQueryResultRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryQueryResultRequest) ProtoMessage()    {}
+func (*QueryQueryResultRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2254be23ba3ff3b4, []int{6}
 }
-func (m *QueryRegisteredQueryResultRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryQueryResultRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryRegisteredQueryResultRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryQueryResultRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryRegisteredQueryResultRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryQueryResultRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -340,41 +357,43 @@ func (m *QueryRegisteredQueryResultRequest) XXX_Marshal(b []byte, deterministic 
 		return b[:n], nil
 	}
 }
-func (m *QueryRegisteredQueryResultRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryRegisteredQueryResultRequest.Merge(m, src)
+func (m *QueryQueryResultRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueryResultRequest.Merge(m, src)
 }
-func (m *QueryRegisteredQueryResultRequest) XXX_Size() int {
+func (m *QueryQueryResultRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryRegisteredQueryResultRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryRegisteredQueryResultRequest.DiscardUnknown(m)
+func (m *QueryQueryResultRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueryResultRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryRegisteredQueryResultRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryQueryResultRequest proto.InternalMessageInfo
 
-func (m *QueryRegisteredQueryResultRequest) GetQueryId() uint64 {
+func (m *QueryQueryResultRequest) GetQueryId() uint64 {
 	if m != nil {
 		return m.QueryId
 	}
 	return 0
 }
 
-type QueryRegisteredQueryResultResponse struct {
+// Response type for the Query/QueryResult RPC method.
+type QueryQueryResultResponse struct {
+	// The last successfully submitted result of an Interchain Query.
 	Result *QueryResult `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
 }
 
-func (m *QueryRegisteredQueryResultResponse) Reset()         { *m = QueryRegisteredQueryResultResponse{} }
-func (m *QueryRegisteredQueryResultResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryRegisteredQueryResultResponse) ProtoMessage()    {}
-func (*QueryRegisteredQueryResultResponse) Descriptor() ([]byte, []int) {
+func (m *QueryQueryResultResponse) Reset()         { *m = QueryQueryResultResponse{} }
+func (m *QueryQueryResultResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryQueryResultResponse) ProtoMessage()    {}
+func (*QueryQueryResultResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2254be23ba3ff3b4, []int{7}
 }
-func (m *QueryRegisteredQueryResultResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryQueryResultResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryRegisteredQueryResultResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryQueryResultResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryRegisteredQueryResultResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryQueryResultResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -384,101 +403,44 @@ func (m *QueryRegisteredQueryResultResponse) XXX_Marshal(b []byte, deterministic
 		return b[:n], nil
 	}
 }
-func (m *QueryRegisteredQueryResultResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryRegisteredQueryResultResponse.Merge(m, src)
+func (m *QueryQueryResultResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueryResultResponse.Merge(m, src)
 }
-func (m *QueryRegisteredQueryResultResponse) XXX_Size() int {
+func (m *QueryQueryResultResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryRegisteredQueryResultResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryRegisteredQueryResultResponse.DiscardUnknown(m)
+func (m *QueryQueryResultResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueryResultResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryRegisteredQueryResultResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryQueryResultResponse proto.InternalMessageInfo
 
-func (m *QueryRegisteredQueryResultResponse) GetResult() *QueryResult {
+func (m *QueryQueryResultResponse) GetResult() *QueryResult {
 	if m != nil {
 		return m.Result
 	}
 	return nil
 }
 
-type Transaction struct {
-	Id     uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Height uint64 `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
-	Data   []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
-}
-
-func (m *Transaction) Reset()         { *m = Transaction{} }
-func (m *Transaction) String() string { return proto.CompactTextString(m) }
-func (*Transaction) ProtoMessage()    {}
-func (*Transaction) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2254be23ba3ff3b4, []int{8}
-}
-func (m *Transaction) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Transaction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Transaction.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Transaction) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Transaction.Merge(m, src)
-}
-func (m *Transaction) XXX_Size() int {
-	return m.Size()
-}
-func (m *Transaction) XXX_DiscardUnknown() {
-	xxx_messageInfo_Transaction.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Transaction proto.InternalMessageInfo
-
-func (m *Transaction) GetId() uint64 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-func (m *Transaction) GetHeight() uint64 {
-	if m != nil {
-		return m.Height
-	}
-	return 0
-}
-
-func (m *Transaction) GetData() []byte {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-type QueryLastRemoteHeight struct {
+// Request type for the Query/LastRemoteHeight RPC method.
+type QueryLastRemoteHeightRequest struct {
+	// Connection ID of an IBC connection to a remote chain. Determines the IBC client used in query
+	// handling.
 	ConnectionId string `protobuf:"bytes,1,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
 }
 
-func (m *QueryLastRemoteHeight) Reset()         { *m = QueryLastRemoteHeight{} }
-func (m *QueryLastRemoteHeight) String() string { return proto.CompactTextString(m) }
-func (*QueryLastRemoteHeight) ProtoMessage()    {}
-func (*QueryLastRemoteHeight) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2254be23ba3ff3b4, []int{9}
+func (m *QueryLastRemoteHeightRequest) Reset()         { *m = QueryLastRemoteHeightRequest{} }
+func (m *QueryLastRemoteHeightRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryLastRemoteHeightRequest) ProtoMessage()    {}
+func (*QueryLastRemoteHeightRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2254be23ba3ff3b4, []int{8}
 }
-func (m *QueryLastRemoteHeight) XXX_Unmarshal(b []byte) error {
+func (m *QueryLastRemoteHeightRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryLastRemoteHeight) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryLastRemoteHeightRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryLastRemoteHeight.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryLastRemoteHeightRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -488,34 +450,38 @@ func (m *QueryLastRemoteHeight) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *QueryLastRemoteHeight) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryLastRemoteHeight.Merge(m, src)
+func (m *QueryLastRemoteHeightRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLastRemoteHeightRequest.Merge(m, src)
 }
-func (m *QueryLastRemoteHeight) XXX_Size() int {
+func (m *QueryLastRemoteHeightRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryLastRemoteHeight) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryLastRemoteHeight.DiscardUnknown(m)
+func (m *QueryLastRemoteHeightRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLastRemoteHeightRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryLastRemoteHeight proto.InternalMessageInfo
+var xxx_messageInfo_QueryLastRemoteHeightRequest proto.InternalMessageInfo
 
-func (m *QueryLastRemoteHeight) GetConnectionId() string {
+func (m *QueryLastRemoteHeightRequest) GetConnectionId() string {
 	if m != nil {
 		return m.ConnectionId
 	}
 	return ""
 }
 
+// Response type for the Query/LastRemoteHeight RPC method.
 type QueryLastRemoteHeightResponse struct {
+	// The height of the chain that the IBC client is currently on.
 	Height uint64 `protobuf:"varint,1,opt,name=height,proto3" json:"height,omitempty"`
+	// The revision of the chain that the IBC client is currently on.
+	Revision uint64 `protobuf:"varint,2,opt,name=revision,proto3" json:"revision,omitempty"`
 }
 
 func (m *QueryLastRemoteHeightResponse) Reset()         { *m = QueryLastRemoteHeightResponse{} }
 func (m *QueryLastRemoteHeightResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryLastRemoteHeightResponse) ProtoMessage()    {}
 func (*QueryLastRemoteHeightResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2254be23ba3ff3b4, []int{10}
+	return fileDescriptor_2254be23ba3ff3b4, []int{9}
 }
 func (m *QueryLastRemoteHeightResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -551,6 +517,13 @@ func (m *QueryLastRemoteHeightResponse) GetHeight() uint64 {
 	return 0
 }
 
+func (m *QueryLastRemoteHeightResponse) GetRevision() uint64 {
+	if m != nil {
+		return m.Revision
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "neutron.interchainqueries.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "neutron.interchainqueries.QueryParamsResponse")
@@ -558,10 +531,9 @@ func init() {
 	proto.RegisterType((*QueryRegisteredQueriesResponse)(nil), "neutron.interchainqueries.QueryRegisteredQueriesResponse")
 	proto.RegisterType((*QueryRegisteredQueryRequest)(nil), "neutron.interchainqueries.QueryRegisteredQueryRequest")
 	proto.RegisterType((*QueryRegisteredQueryResponse)(nil), "neutron.interchainqueries.QueryRegisteredQueryResponse")
-	proto.RegisterType((*QueryRegisteredQueryResultRequest)(nil), "neutron.interchainqueries.QueryRegisteredQueryResultRequest")
-	proto.RegisterType((*QueryRegisteredQueryResultResponse)(nil), "neutron.interchainqueries.QueryRegisteredQueryResultResponse")
-	proto.RegisterType((*Transaction)(nil), "neutron.interchainqueries.Transaction")
-	proto.RegisterType((*QueryLastRemoteHeight)(nil), "neutron.interchainqueries.QueryLastRemoteHeight")
+	proto.RegisterType((*QueryQueryResultRequest)(nil), "neutron.interchainqueries.QueryQueryResultRequest")
+	proto.RegisterType((*QueryQueryResultResponse)(nil), "neutron.interchainqueries.QueryQueryResultResponse")
+	proto.RegisterType((*QueryLastRemoteHeightRequest)(nil), "neutron.interchainqueries.QueryLastRemoteHeightRequest")
 	proto.RegisterType((*QueryLastRemoteHeightResponse)(nil), "neutron.interchainqueries.QueryLastRemoteHeightResponse")
 }
 
@@ -570,55 +542,53 @@ func init() {
 }
 
 var fileDescriptor_2254be23ba3ff3b4 = []byte{
-	// 758 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0x4d, 0x4f, 0x14, 0x4d,
-	0x10, 0xde, 0x5e, 0xf6, 0x5d, 0x5e, 0x6a, 0x79, 0x5f, 0xa0, 0x45, 0x03, 0x2b, 0xae, 0x30, 0x44,
-	0x58, 0x30, 0x3b, 0xc3, 0x87, 0x0a, 0x46, 0xc4, 0x84, 0x83, 0x4a, 0xe2, 0x01, 0x26, 0xe2, 0xc1,
-	0xcb, 0xa6, 0x77, 0xb7, 0x33, 0x3b, 0x09, 0xdb, 0xbd, 0xcc, 0xf4, 0x22, 0x73, 0xf5, 0xe6, 0xcd,
-	0xe8, 0x5f, 0xf0, 0x07, 0x78, 0xf3, 0xe0, 0xc1, 0x2b, 0xf1, 0x44, 0xe2, 0xc5, 0x93, 0x31, 0xe0,
-	0x0f, 0x31, 0xd3, 0xdd, 0xfb, 0xfd, 0xc5, 0x72, 0x9a, 0xee, 0x9e, 0x7a, 0xaa, 0x9e, 0x7a, 0xaa,
-	0xaa, 0x1b, 0xee, 0x30, 0x5a, 0x11, 0x1e, 0x67, 0x96, 0xcb, 0x04, 0xf5, 0xf2, 0x45, 0xe2, 0xb2,
-	0xa3, 0x0a, 0xf5, 0x5c, 0xea, 0x5b, 0xe1, 0x37, 0x30, 0xcb, 0x1e, 0x17, 0x1c, 0x4f, 0x6b, 0x33,
-	0xb3, 0xcd, 0x2c, 0xb9, 0x9c, 0xe7, 0x7e, 0x89, 0xfb, 0x56, 0x8e, 0xf8, 0x54, 0x61, 0xac, 0xe3,
-	0xd5, 0x1c, 0x15, 0x64, 0xd5, 0x2a, 0x13, 0xc7, 0x65, 0x44, 0xb8, 0x9c, 0x29, 0x37, 0xc9, 0x49,
-	0x87, 0x3b, 0x5c, 0x2e, 0xad, 0x70, 0xa5, 0x4f, 0x67, 0x1c, 0xce, 0x9d, 0x43, 0x6a, 0x91, 0xb2,
-	0x6b, 0x11, 0xc6, 0xb8, 0x90, 0x10, 0x5f, 0xff, 0x5d, 0xec, 0xce, 0xd0, 0xa1, 0x8c, 0xfa, 0x6e,
-	0xd5, 0x70, 0xa1, 0xbb, 0x61, 0x99, 0x78, 0xa4, 0x54, 0xb5, 0x33, 0xba, 0xdb, 0x89, 0x13, 0x65,
-	0x63, 0x4c, 0x02, 0xde, 0x0f, 0x53, 0xd9, 0x93, 0x40, 0x9b, 0x1e, 0x55, 0xa8, 0x2f, 0x8c, 0x57,
-	0x70, 0xad, 0xe9, 0xd4, 0x2f, 0x73, 0xe6, 0x53, 0xfc, 0x04, 0xe2, 0x2a, 0xc0, 0x14, 0x9a, 0x45,
-	0xe9, 0xc4, 0xda, 0x9c, 0xd9, 0x55, 0x2d, 0x53, 0x41, 0x77, 0x62, 0xa7, 0xbf, 0x6e, 0x47, 0x6c,
-	0x0d, 0x33, 0x3e, 0x21, 0xb8, 0x25, 0x1d, 0xdb, 0xd4, 0x71, 0x7d, 0x41, 0x3d, 0x5a, 0xd8, 0x57,
-	0xf6, 0x3a, 0x32, 0xbe, 0x01, 0x71, 0xfe, 0x86, 0x51, 0x2f, 0x0c, 0x31, 0x94, 0x1e, 0xb1, 0xf5,
-	0x0e, 0xcf, 0xc3, 0x7f, 0x79, 0xce, 0x18, 0xcd, 0x87, 0x8a, 0x65, 0xdd, 0xc2, 0x54, 0x74, 0x16,
-	0xa5, 0x47, 0xec, 0xd1, 0xfa, 0xe1, 0x6e, 0x01, 0x3f, 0x05, 0xa8, 0x57, 0x62, 0x6a, 0x48, 0x72,
-	0x5c, 0x30, 0x55, 0xd9, 0xcc, 0xb0, 0x6c, 0xa6, 0x2a, 0xb5, 0x2e, 0x9b, 0xb9, 0x47, 0x1c, 0xaa,
-	0x03, 0xdb, 0x0d, 0x48, 0xe3, 0x3b, 0x82, 0x54, 0x37, 0x9a, 0x5a, 0x8a, 0x2c, 0x60, 0xaf, 0xf6,
-	0x33, 0xab, 0x93, 0x96, 0x9c, 0x13, 0x6b, 0xcb, 0x3d, 0x64, 0x69, 0xf6, 0x18, 0x68, 0x7d, 0x26,
-	0xbc, 0xd6, 0x40, 0xf8, 0x59, 0x53, 0x2e, 0x51, 0x99, 0xcb, 0x62, 0xdf, 0x5c, 0x14, 0xbb, 0xa6,
-	0x64, 0x36, 0xe1, 0x66, 0x87, 0x5c, 0x82, 0xaa, 0xe0, 0xd3, 0xf0, 0xaf, 0x74, 0x14, 0x6a, 0x1a,
-	0x56, 0x35, 0x66, 0x0f, 0xcb, 0xfd, 0x6e, 0xc1, 0xa8, 0xc0, 0x4c, 0x67, 0xa4, 0xd6, 0xe0, 0x00,
-	0xc6, 0x5b, 0x34, 0x08, 0x74, 0x63, 0x0c, 0xa0, 0x80, 0x3d, 0xd6, 0x9c, 0x7b, 0x60, 0x6c, 0xc3,
-	0x5c, 0x97, 0xb0, 0x95, 0x43, 0x71, 0x09, 0xda, 0x05, 0x30, 0x7a, 0xe1, 0x35, 0xf9, 0x6d, 0x88,
-	0x7b, 0xf2, 0x44, 0x53, 0x5e, 0xe8, 0x41, 0xb9, 0x11, 0xaf, 0x51, 0xc6, 0x2e, 0x24, 0x5e, 0x7a,
-	0x84, 0xf9, 0x44, 0x36, 0x1f, 0xfe, 0x1f, 0xa2, 0x35, 0x26, 0x51, 0xb7, 0x10, 0xf6, 0x71, 0x91,
-	0xba, 0x4e, 0x51, 0xc8, 0xd2, 0xc5, 0x6c, 0xbd, 0xc3, 0x18, 0x62, 0x05, 0x22, 0x88, 0x6c, 0xce,
-	0x51, 0x5b, 0xae, 0x8d, 0x2d, 0xb8, 0x2e, 0x23, 0xbc, 0x20, 0xbe, 0xb0, 0x69, 0x89, 0x0b, 0xfa,
-	0x5c, 0x19, 0xb7, 0x35, 0x3d, 0x6a, 0x6f, 0x7a, 0x63, 0x43, 0x8f, 0x54, 0x2b, 0xba, 0x96, 0x69,
-	0x9d, 0x0a, 0x6a, 0xa4, 0xb2, 0xf6, 0x6e, 0x18, 0xfe, 0x91, 0x48, 0xfc, 0x01, 0x41, 0x5c, 0xcd,
-	0x2b, 0xce, 0xf4, 0x93, 0xa1, 0xe9, 0xa2, 0x48, 0x9a, 0x97, 0x35, 0x57, 0x5c, 0x8c, 0xa5, 0xb7,
-	0x3f, 0xfe, 0x7c, 0x8c, 0xce, 0xe3, 0x39, 0xab, 0xdf, 0x1d, 0x86, 0xbf, 0x21, 0x98, 0x68, 0x9b,
-	0x3f, 0xbc, 0xd9, 0xbf, 0x4c, 0x9d, 0x6f, 0x96, 0xe4, 0xc3, 0x2b, 0x20, 0x35, 0xeb, 0xfb, 0x92,
-	0xb5, 0x85, 0x33, 0x3d, 0x58, 0xb7, 0xdf, 0x06, 0xf8, 0x0b, 0x82, 0xb1, 0x96, 0x26, 0xc4, 0x0f,
-	0x06, 0x63, 0x51, 0x1d, 0xd3, 0xe4, 0xc6, 0xc0, 0x38, 0xcd, 0x7d, 0x5d, 0x72, 0xcf, 0xe0, 0xbb,
-	0x97, 0xe7, 0x1e, 0xe0, 0xaf, 0x08, 0x12, 0x0d, 0x4d, 0x8f, 0xb7, 0x06, 0x8f, 0x5e, 0x9f, 0xd5,
-	0xe4, 0xe3, 0x2b, 0xa2, 0x75, 0x06, 0x96, 0xcc, 0x60, 0x09, 0x2f, 0x5a, 0x7d, 0x9e, 0xf0, 0xac,
-	0x1a, 0x4d, 0xfc, 0x19, 0xc1, 0x78, 0xdb, 0x2c, 0xad, 0xf4, 0x23, 0xd1, 0x8a, 0x48, 0x6e, 0x0e,
-	0x8a, 0xa8, 0x31, 0x5e, 0x91, 0x8c, 0x97, 0x71, 0xba, 0xa7, 0xe6, 0x21, 0x30, 0xab, 0x66, 0x71,
-	0xe7, 0xe0, 0xf4, 0x3c, 0x85, 0xce, 0xce, 0x53, 0xe8, 0xf7, 0x79, 0x0a, 0xbd, 0xbf, 0x48, 0x45,
-	0xce, 0x2e, 0x52, 0x91, 0x9f, 0x17, 0xa9, 0xc8, 0xeb, 0x47, 0x8e, 0x2b, 0x8a, 0x95, 0x9c, 0x99,
-	0xe7, 0xa5, 0xaa, 0xb7, 0x0c, 0xf7, 0x9c, 0x9a, 0xe7, 0xe3, 0x7b, 0xd6, 0x49, 0xa7, 0x07, 0x3e,
-	0x28, 0x53, 0x3f, 0x17, 0x97, 0x8f, 0xfc, 0xfa, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x60, 0x57,
-	0x58, 0xcf, 0xfd, 0x08, 0x00, 0x00,
+	// 732 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0x41, 0x4f, 0x13, 0x41,
+	0x14, 0xee, 0x02, 0xae, 0x30, 0x68, 0x80, 0x91, 0x60, 0x59, 0x71, 0x85, 0x25, 0x42, 0xc1, 0x74,
+	0x47, 0x0a, 0x2a, 0xc6, 0x44, 0x13, 0x4c, 0x54, 0x12, 0x0f, 0xb0, 0x06, 0x0f, 0x5c, 0x9a, 0x6d,
+	0x3b, 0xd9, 0x6e, 0x42, 0x67, 0xca, 0xce, 0x14, 0xd9, 0xab, 0xbf, 0xc0, 0xe8, 0x5f, 0x30, 0xf1,
+	0x27, 0x78, 0xf4, 0x4a, 0x3c, 0x91, 0x78, 0xf1, 0x64, 0x0c, 0xf8, 0x33, 0x3c, 0x98, 0x9d, 0x99,
+	0x2d, 0xb4, 0xdb, 0x76, 0x5b, 0x4f, 0x9d, 0x79, 0x7d, 0xdf, 0x7b, 0xdf, 0xfb, 0xde, 0x7b, 0x3b,
+	0xe0, 0x2e, 0xc1, 0x0d, 0x1e, 0x50, 0x82, 0x7c, 0xc2, 0x71, 0x50, 0xae, 0xba, 0x3e, 0x39, 0x6c,
+	0xe0, 0xc0, 0xc7, 0x0c, 0x45, 0xbf, 0xa1, 0x5d, 0x0f, 0x28, 0xa7, 0x70, 0x56, 0xb9, 0xd9, 0x09,
+	0x37, 0x63, 0xb5, 0x4c, 0x59, 0x8d, 0x32, 0x54, 0x72, 0x19, 0x96, 0x18, 0x74, 0xb4, 0x56, 0xc2,
+	0xdc, 0x5d, 0x43, 0x75, 0xd7, 0xf3, 0x89, 0xcb, 0x7d, 0x4a, 0x64, 0x18, 0x63, 0xda, 0xa3, 0x1e,
+	0x15, 0x47, 0x14, 0x9d, 0x94, 0x75, 0xce, 0xa3, 0xd4, 0x3b, 0xc0, 0xc8, 0xad, 0xfb, 0xc8, 0x25,
+	0x84, 0x72, 0x01, 0x61, 0xea, 0xdf, 0xe5, 0xee, 0x0c, 0x3d, 0x4c, 0x30, 0xf3, 0x63, 0xc7, 0xa5,
+	0xee, 0x8e, 0x75, 0x37, 0x70, 0x6b, 0xb1, 0x9f, 0xd5, 0xdd, 0x8f, 0x1f, 0x4b, 0x1f, 0x6b, 0x1a,
+	0xc0, 0xdd, 0xa8, 0x94, 0x1d, 0x01, 0x74, 0xf0, 0x61, 0x03, 0x33, 0x6e, 0xbd, 0x05, 0x37, 0x5a,
+	0xac, 0xac, 0x4e, 0x09, 0xc3, 0xf0, 0x19, 0xd0, 0x65, 0x82, 0xac, 0x36, 0xaf, 0xe5, 0xc6, 0x0b,
+	0x0b, 0x76, 0x57, 0xb5, 0x6c, 0x09, 0xdd, 0x1a, 0x39, 0xf9, 0x75, 0x27, 0xe3, 0x28, 0x98, 0xf5,
+	0x59, 0x03, 0xb7, 0x45, 0x60, 0x07, 0x7b, 0x3e, 0xe3, 0x38, 0xc0, 0x95, 0x5d, 0xe9, 0xaf, 0x32,
+	0xc3, 0x19, 0xa0, 0xd3, 0x77, 0x04, 0x07, 0x51, 0x8a, 0xe1, 0xdc, 0x98, 0xa3, 0x6e, 0x70, 0x11,
+	0x5c, 0x2f, 0x53, 0x42, 0x70, 0x39, 0x52, 0xac, 0xe8, 0x57, 0xb2, 0x43, 0xf3, 0x5a, 0x6e, 0xcc,
+	0xb9, 0x76, 0x61, 0xdc, 0xae, 0xc0, 0x17, 0x00, 0x5c, 0x74, 0x22, 0x3b, 0x2c, 0x38, 0x2e, 0xd9,
+	0xb2, 0x6d, 0x76, 0xd4, 0x36, 0x5b, 0xb6, 0x5a, 0xb5, 0xcd, 0xde, 0x71, 0x3d, 0xac, 0x12, 0x3b,
+	0x97, 0x90, 0xd6, 0x77, 0x0d, 0x98, 0xdd, 0x68, 0x2a, 0x29, 0x8a, 0x00, 0x06, 0xcd, 0x3f, 0x8b,
+	0xaa, 0x68, 0xc1, 0x79, 0xbc, 0xb0, 0xda, 0x43, 0x96, 0xd6, 0x88, 0xa1, 0xd2, 0x67, 0x2a, 0x68,
+	0x4f, 0x04, 0x5f, 0xb6, 0xd4, 0x32, 0x24, 0x6a, 0x59, 0x4e, 0xad, 0x45, 0xb2, 0x6b, 0x29, 0x66,
+	0x13, 0xdc, 0xea, 0x50, 0x4b, 0x18, 0x0b, 0x3e, 0x0b, 0x46, 0x45, 0xa0, 0x48, 0xd3, 0xa8, 0xab,
+	0x23, 0xce, 0x55, 0x71, 0xdf, 0xae, 0x58, 0x0d, 0x30, 0xd7, 0x19, 0xa9, 0x34, 0xd8, 0x03, 0x93,
+	0x6d, 0x1a, 0x84, 0x6a, 0x30, 0x06, 0x50, 0xc0, 0x99, 0x68, 0xad, 0x3d, 0xb4, 0x36, 0xc0, 0x4d,
+	0x71, 0x88, 0x93, 0x35, 0x0e, 0x78, 0x1f, 0x64, 0xf7, 0x41, 0x36, 0x89, 0x52, 0x44, 0x9f, 0x02,
+	0x3d, 0x10, 0x16, 0x45, 0x6f, 0xa9, 0x07, 0xbd, 0xcb, 0x78, 0x85, 0xb2, 0x9e, 0x2b, 0x21, 0x5e,
+	0xbb, 0x8c, 0x3b, 0xb8, 0x46, 0x39, 0x7e, 0x85, 0x7d, 0xaf, 0xda, 0xa4, 0x95, 0x18, 0x4e, 0x2d,
+	0x39, 0x9c, 0xd6, 0x1b, 0x35, 0xfa, 0xc9, 0x20, 0x8a, 0xe5, 0x0c, 0xd0, 0xab, 0xc2, 0xa2, 0x4a,
+	0x53, 0x37, 0x68, 0x80, 0xd1, 0x00, 0x1f, 0xf9, 0x2c, 0x9e, 0x83, 0x11, 0xa7, 0x79, 0x2f, 0xfc,
+	0xd5, 0xc1, 0x15, 0x11, 0x15, 0x7e, 0xd4, 0x80, 0x2e, 0x77, 0x0e, 0xe6, 0xd3, 0xca, 0x6b, 0x59,
+	0x76, 0xc3, 0xee, 0xd7, 0x5d, 0xf2, 0xb4, 0x56, 0xde, 0xff, 0xf8, 0xf3, 0x69, 0x68, 0x11, 0x2e,
+	0xa0, 0xb4, 0xef, 0x10, 0xfc, 0xa6, 0x81, 0xa9, 0xc4, 0x0e, 0xc1, 0xcd, 0x74, 0xf9, 0x3b, 0x7f,
+	0x1d, 0x8c, 0xc7, 0xff, 0x81, 0x54, 0xac, 0x1f, 0x08, 0xd6, 0x08, 0xe6, 0x7b, 0xb0, 0x4e, 0x6e,
+	0x34, 0xfc, 0xaa, 0x81, 0x89, 0xb6, 0x89, 0x85, 0x0f, 0x07, 0x63, 0x11, 0xaf, 0x9a, 0xf1, 0x68,
+	0x60, 0x9c, 0xe2, 0xbe, 0x2e, 0xb8, 0xe7, 0xe1, 0xbd, 0xfe, 0xb9, 0x87, 0xf0, 0x8b, 0x06, 0xc6,
+	0x2f, 0x0d, 0x33, 0x2c, 0xa4, 0x65, 0x4f, 0xee, 0x9b, 0xb1, 0x3e, 0x10, 0x46, 0xb1, 0x45, 0x82,
+	0xed, 0x0a, 0x5c, 0x46, 0x29, 0x4f, 0x6e, 0x51, 0xae, 0x57, 0xa4, 0xf1, 0x64, 0xfb, 0x56, 0xc0,
+	0x54, 0xb1, 0xba, 0x2c, 0xa3, 0xb1, 0x39, 0x38, 0x50, 0x11, 0xbf, 0x2f, 0x88, 0xaf, 0xc2, 0x5c,
+	0x4f, 0x99, 0x23, 0x60, 0x51, 0xae, 0xe6, 0xd6, 0xde, 0xc9, 0x99, 0xa9, 0x9d, 0x9e, 0x99, 0xda,
+	0xef, 0x33, 0x53, 0xfb, 0x70, 0x6e, 0x66, 0x4e, 0xcf, 0xcd, 0xcc, 0xcf, 0x73, 0x33, 0xb3, 0xff,
+	0xc4, 0xf3, 0x79, 0xb5, 0x51, 0xb2, 0xcb, 0xb4, 0x16, 0x47, 0xcb, 0xd3, 0xc0, 0x6b, 0x46, 0x3e,
+	0xda, 0x40, 0xc7, 0x9d, 0xde, 0xe5, 0xb0, 0x8e, 0x59, 0x49, 0x17, 0x6f, 0xf3, 0xfa, 0xbf, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0x40, 0x9d, 0x80, 0xce, 0xb4, 0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -633,12 +603,17 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Parameters queries the parameters of the module.
+	// Queries the current parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	// Queries all the registered Interchain Queries in the module with filtration by owner and/or
+	// connection ID.
 	RegisteredQueries(ctx context.Context, in *QueryRegisteredQueriesRequest, opts ...grpc.CallOption) (*QueryRegisteredQueriesResponse, error)
+	// Queries a registered Interchain Query by ID.
 	RegisteredQuery(ctx context.Context, in *QueryRegisteredQueryRequest, opts ...grpc.CallOption) (*QueryRegisteredQueryResponse, error)
-	QueryResult(ctx context.Context, in *QueryRegisteredQueryResultRequest, opts ...grpc.CallOption) (*QueryRegisteredQueryResultResponse, error)
-	LastRemoteHeight(ctx context.Context, in *QueryLastRemoteHeight, opts ...grpc.CallOption) (*QueryLastRemoteHeightResponse, error)
+	// Queries the last successfully submitted result of an Interchain Query.
+	QueryResult(ctx context.Context, in *QueryQueryResultRequest, opts ...grpc.CallOption) (*QueryQueryResultResponse, error)
+	// Queries the last height of a remote chain known to the IBC client behind a given connection ID.
+	LastRemoteHeight(ctx context.Context, in *QueryLastRemoteHeightRequest, opts ...grpc.CallOption) (*QueryLastRemoteHeightResponse, error)
 }
 
 type queryClient struct {
@@ -676,8 +651,8 @@ func (c *queryClient) RegisteredQuery(ctx context.Context, in *QueryRegisteredQu
 	return out, nil
 }
 
-func (c *queryClient) QueryResult(ctx context.Context, in *QueryRegisteredQueryResultRequest, opts ...grpc.CallOption) (*QueryRegisteredQueryResultResponse, error) {
-	out := new(QueryRegisteredQueryResultResponse)
+func (c *queryClient) QueryResult(ctx context.Context, in *QueryQueryResultRequest, opts ...grpc.CallOption) (*QueryQueryResultResponse, error) {
+	out := new(QueryQueryResultResponse)
 	err := c.cc.Invoke(ctx, "/neutron.interchainqueries.Query/QueryResult", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -685,7 +660,7 @@ func (c *queryClient) QueryResult(ctx context.Context, in *QueryRegisteredQueryR
 	return out, nil
 }
 
-func (c *queryClient) LastRemoteHeight(ctx context.Context, in *QueryLastRemoteHeight, opts ...grpc.CallOption) (*QueryLastRemoteHeightResponse, error) {
+func (c *queryClient) LastRemoteHeight(ctx context.Context, in *QueryLastRemoteHeightRequest, opts ...grpc.CallOption) (*QueryLastRemoteHeightResponse, error) {
 	out := new(QueryLastRemoteHeightResponse)
 	err := c.cc.Invoke(ctx, "/neutron.interchainqueries.Query/LastRemoteHeight", in, out, opts...)
 	if err != nil {
@@ -696,12 +671,17 @@ func (c *queryClient) LastRemoteHeight(ctx context.Context, in *QueryLastRemoteH
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Parameters queries the parameters of the module.
+	// Queries the current parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	// Queries all the registered Interchain Queries in the module with filtration by owner and/or
+	// connection ID.
 	RegisteredQueries(context.Context, *QueryRegisteredQueriesRequest) (*QueryRegisteredQueriesResponse, error)
+	// Queries a registered Interchain Query by ID.
 	RegisteredQuery(context.Context, *QueryRegisteredQueryRequest) (*QueryRegisteredQueryResponse, error)
-	QueryResult(context.Context, *QueryRegisteredQueryResultRequest) (*QueryRegisteredQueryResultResponse, error)
-	LastRemoteHeight(context.Context, *QueryLastRemoteHeight) (*QueryLastRemoteHeightResponse, error)
+	// Queries the last successfully submitted result of an Interchain Query.
+	QueryResult(context.Context, *QueryQueryResultRequest) (*QueryQueryResultResponse, error)
+	// Queries the last height of a remote chain known to the IBC client behind a given connection ID.
+	LastRemoteHeight(context.Context, *QueryLastRemoteHeightRequest) (*QueryLastRemoteHeightResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -717,10 +697,10 @@ func (*UnimplementedQueryServer) RegisteredQueries(ctx context.Context, req *Que
 func (*UnimplementedQueryServer) RegisteredQuery(ctx context.Context, req *QueryRegisteredQueryRequest) (*QueryRegisteredQueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisteredQuery not implemented")
 }
-func (*UnimplementedQueryServer) QueryResult(ctx context.Context, req *QueryRegisteredQueryResultRequest) (*QueryRegisteredQueryResultResponse, error) {
+func (*UnimplementedQueryServer) QueryResult(ctx context.Context, req *QueryQueryResultRequest) (*QueryQueryResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryResult not implemented")
 }
-func (*UnimplementedQueryServer) LastRemoteHeight(ctx context.Context, req *QueryLastRemoteHeight) (*QueryLastRemoteHeightResponse, error) {
+func (*UnimplementedQueryServer) LastRemoteHeight(ctx context.Context, req *QueryLastRemoteHeightRequest) (*QueryLastRemoteHeightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LastRemoteHeight not implemented")
 }
 
@@ -783,7 +763,7 @@ func _Query_RegisteredQuery_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _Query_QueryResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRegisteredQueryResultRequest)
+	in := new(QueryQueryResultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -795,13 +775,13 @@ func _Query_QueryResult_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/neutron.interchainqueries.Query/QueryResult",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryResult(ctx, req.(*QueryRegisteredQueryResultRequest))
+		return srv.(QueryServer).QueryResult(ctx, req.(*QueryQueryResultRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Query_LastRemoteHeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLastRemoteHeight)
+	in := new(QueryLastRemoteHeightRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -813,7 +793,7 @@ func _Query_LastRemoteHeight_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/neutron.interchainqueries.Query/LastRemoteHeight",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).LastRemoteHeight(ctx, req.(*QueryLastRemoteHeight))
+		return srv.(QueryServer).LastRemoteHeight(ctx, req.(*QueryLastRemoteHeightRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1066,7 +1046,7 @@ func (m *QueryRegisteredQueryResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryRegisteredQueryResultRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryQueryResultRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1076,12 +1056,12 @@ func (m *QueryRegisteredQueryResultRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryRegisteredQueryResultRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryQueryResultRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryRegisteredQueryResultRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryQueryResultRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1094,7 +1074,7 @@ func (m *QueryRegisteredQueryResultRequest) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryRegisteredQueryResultResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryQueryResultResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1104,12 +1084,12 @@ func (m *QueryRegisteredQueryResultResponse) Marshal() (dAtA []byte, err error) 
 	return dAtA[:n], nil
 }
 
-func (m *QueryRegisteredQueryResultResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryQueryResultResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryRegisteredQueryResultResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryQueryResultResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1129,7 +1109,7 @@ func (m *QueryRegisteredQueryResultResponse) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 
-func (m *Transaction) Marshal() (dAtA []byte, err error) {
+func (m *QueryLastRemoteHeightRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1139,52 +1119,12 @@ func (m *Transaction) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Transaction) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryLastRemoteHeightRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Data) > 0 {
-		i -= len(m.Data)
-		copy(dAtA[i:], m.Data)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Data)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if m.Height != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Id != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.Id))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryLastRemoteHeight) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryLastRemoteHeight) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryLastRemoteHeight) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryLastRemoteHeightRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1219,6 +1159,11 @@ func (m *QueryLastRemoteHeightResponse) MarshalToSizedBuffer(dAtA []byte) (int, 
 	_ = i
 	var l int
 	_ = l
+	if m.Revision != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.Revision))
+		i--
+		dAtA[i] = 0x10
+	}
 	if m.Height != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
 		i--
@@ -1325,7 +1270,7 @@ func (m *QueryRegisteredQueryResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryRegisteredQueryResultRequest) Size() (n int) {
+func (m *QueryQueryResultRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1337,7 +1282,7 @@ func (m *QueryRegisteredQueryResultRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryRegisteredQueryResultResponse) Size() (n int) {
+func (m *QueryQueryResultResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1350,26 +1295,7 @@ func (m *QueryRegisteredQueryResultResponse) Size() (n int) {
 	return n
 }
 
-func (m *Transaction) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Id != 0 {
-		n += 1 + sovQuery(uint64(m.Id))
-	}
-	if m.Height != 0 {
-		n += 1 + sovQuery(uint64(m.Height))
-	}
-	l = len(m.Data)
-	if l > 0 {
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	return n
-}
-
-func (m *QueryLastRemoteHeight) Size() (n int) {
+func (m *QueryLastRemoteHeightRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1390,6 +1316,9 @@ func (m *QueryLastRemoteHeightResponse) Size() (n int) {
 	_ = l
 	if m.Height != 0 {
 		n += 1 + sovQuery(uint64(m.Height))
+	}
+	if m.Revision != 0 {
+		n += 1 + sovQuery(uint64(m.Revision))
 	}
 	return n
 }
@@ -1958,7 +1887,7 @@ func (m *QueryRegisteredQueryResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryRegisteredQueryResultRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryQueryResultRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1981,10 +1910,10 @@ func (m *QueryRegisteredQueryResultRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryRegisteredQueryResultRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryQueryResultRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryRegisteredQueryResultRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryQueryResultRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2027,7 +1956,7 @@ func (m *QueryRegisteredQueryResultRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryRegisteredQueryResultResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryQueryResultResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2050,10 +1979,10 @@ func (m *QueryRegisteredQueryResultResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryRegisteredQueryResultResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryQueryResultResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryRegisteredQueryResultResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryQueryResultResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2113,7 +2042,7 @@ func (m *QueryRegisteredQueryResultResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Transaction) Unmarshal(dAtA []byte) error {
+func (m *QueryLastRemoteHeightRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2136,132 +2065,10 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Transaction: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryLastRemoteHeightRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Transaction: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
-			}
-			m.Id = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Id |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
-			}
-			m.Height = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Height |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
-			if m.Data == nil {
-				m.Data = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryLastRemoteHeight) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryLastRemoteHeight: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryLastRemoteHeight: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryLastRemoteHeightRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2361,6 +2168,25 @@ func (m *QueryLastRemoteHeightResponse) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Height |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Revision", wireType)
+			}
+			m.Revision = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Revision |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
