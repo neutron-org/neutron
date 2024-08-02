@@ -22,7 +22,9 @@ func TestCCVTestSuite(t *testing.T) {
 		// Pass in ibctesting.AppIniters for provider and consumer.
 		icssimapp.ProviderAppIniter, testutil.SetupValSetAppIniter,
 		// TODO: These three tests just don't work in IS, so skip them for now
-		[]string{"TestSendRewardsRetries", "TestRewardsDistribution", "TestEndBlockRD"})
+		//[]string{"TestSendRewardsRetries", "TestRewardsDistribution", "TestEndBlockRD"
+		[]string{"TestRewardsDistribution"},
+	)
 
 	// Run tests
 	suite.Run(t, ccvSuite)

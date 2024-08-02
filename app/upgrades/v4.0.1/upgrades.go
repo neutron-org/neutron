@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/skip-mev/slinky/cmd/constants/marketmaps"
+
 	appparams "github.com/neutron-org/neutron/v4/app/params"
 
 	"cosmossdk.io/errors"
@@ -27,8 +29,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/consensus/types"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-
-	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 )
@@ -204,7 +204,7 @@ func setFeeMarketParams(ctx sdk.Context, feemarketKeeper *feemarketkeeper.Keeper
 }
 
 func setMarketState(ctx sdk.Context, mmKeeper *marketmapkeeper.Keeper) error {
-	markets := marketMapToDeterministicallyOrderedMarkets(slinkyconstants.CoreMarketMap)
+	markets := marketMapToDeterministicallyOrderedMarkets(marketmaps.CoreMarketMap)
 	for _, market := range markets {
 		if err := mmKeeper.CreateMarket(ctx, market); err != nil {
 			return err
