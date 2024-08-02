@@ -21,8 +21,7 @@ func TestCCVTestSuite(t *testing.T) {
 	ccvSuite := e2e.NewCCVTestSuite[*appProvider.App, *appConsumer.App](
 		// Pass in ibctesting.AppIniters for provider and consumer.
 		icssimapp.ProviderAppIniter, testutil.SetupValSetAppIniter,
-		// TODO: These three tests just don't work in IS, so skip them for now
-		//[]string{"TestSendRewardsRetries", "TestRewardsDistribution", "TestEndBlockRD"
+		// TODO: These test just doesn't work in IS, so skip it for now
 		[]string{"TestRewardsDistribution"},
 	)
 
