@@ -1135,7 +1135,6 @@ func New(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
-	app.SetPreBlocker(app.oraclePreBlockHandler.WrappedPreBlocker(app.mm))
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
@@ -1289,6 +1288,8 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
+
+	app.SetPreBlocker(app.oraclePreBlockHandler.WrappedPreBlocker(app.mm))
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
