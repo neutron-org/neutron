@@ -271,13 +271,17 @@ func (s *DexTestSuite) TestDepositSingleSidedMultiA() {
 
 	// WHEN
 	// multi deposit
-	s.aliceDeposits(
+	resp := s.aliceDeposits(
 		NewDeposit(10, 0, 0, 1),
 		NewDeposit(10, 0, 0, 3),
 	)
 
 	// THEN
 	// assert 20 of token B deposited at tick 1 fee 0 and ticks unchanged
+	s.True(resp.Reserve0Deposited[0].Equal(sdkmath.NewInt(10000000)))
+	s.True(resp.Reserve0Deposited[1].Equal(sdkmath.NewInt(10000000)))
+	s.EqualValues([]sdkmath.Int{sdkmath.ZeroInt(), sdkmath.ZeroInt()}, resp.Reserve1Deposited)
+	s.EqualValues([]*types.FailedDeposit(nil), resp.FailedDeposits)
 	s.assertAliceBalances(20, 50)
 	s.assertDexBalances(30, 0)
 	s.assertPoolLiquidity(20, 0, 0, 1)
@@ -300,13 +304,17 @@ func (s *DexTestSuite) TestDepositSingleSidedMultiB() {
 
 	// WHEN
 	// multi deposit at
-	s.aliceDeposits(
+	resp := s.aliceDeposits(
 		NewDeposit(0, 10, 0, 1),
 		NewDeposit(0, 10, 0, 3),
 	)
 
 	// THEN
 	// assert 20 of token B deposited at tick 1 fee 0 and ticks unchanged
+	s.EqualValues([]sdkmath.Int{sdkmath.ZeroInt(), sdkmath.ZeroInt()}, resp.Reserve0Deposited)
+	s.True(resp.Reserve1Deposited[0].Equal(sdkmath.NewInt(10000000)))
+	s.True(resp.Reserve1Deposited[1].Equal(sdkmath.NewInt(10000000)))
+	s.EqualValues([]*types.FailedDeposit(nil), resp.FailedDeposits)
 	s.assertAliceBalances(50, 20)
 	s.assertDexBalances(0, 30)
 	s.assertPoolLiquidity(0, 20, 0, 1)

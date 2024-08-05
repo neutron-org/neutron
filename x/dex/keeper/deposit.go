@@ -72,7 +72,7 @@ func (k Keeper) ExecuteDeposit(
 	tickIndices []int64,
 	fees []uint64,
 	options []*types.DepositOptions) (
-	amounts0Deposit, amounts1Deposit []math.Int,
+	amounts0Deposited, amounts1Deposited []math.Int,
 	totalAmountReserve0, totalAmountReserve1 math.Int,
 	sharesIssued sdk.Coins,
 	events sdk.Events,
@@ -81,8 +81,8 @@ func (k Keeper) ExecuteDeposit(
 ) {
 	totalAmountReserve0 = math.ZeroInt()
 	totalAmountReserve1 = math.ZeroInt()
-	amounts0Deposited := make([]math.Int, len(amounts0))
-	amounts1Deposited := make([]math.Int, len(amounts1))
+	amounts0Deposited = make([]math.Int, len(amounts0))
+	amounts1Deposited = make([]math.Int, len(amounts1))
 	sharesIssued = sdk.Coins{}
 
 	for i := 0; i < len(amounts0); i++ {
@@ -162,5 +162,5 @@ func (k Keeper) ExecuteDeposit(
 	// At this point shares issued is not sorted and may have duplicates
 	// we must sanitize to convert it to a valid set of coins
 	sharesIssued = utils.SanitizeCoins(sharesIssued)
-	return amounts0Deposit, amounts1Deposit, totalAmountReserve0, totalAmountReserve1, sharesIssued, events, failedDeposits, nil
+	return amounts0Deposited, amounts1Deposited, totalAmountReserve0, totalAmountReserve1, sharesIssued, events, failedDeposits, nil
 }
