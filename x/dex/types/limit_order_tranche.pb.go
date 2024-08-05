@@ -100,7 +100,8 @@ type LimitOrderTranche struct {
 	// Order deletion still functions the same and the orders will be deleted at the end of the block
 	ExpirationTime    *time.Time                                           `protobuf:"bytes,6,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
 	PriceTakerToMaker github_com_neutron_org_neutron_v4_utils_math.PrecDec `protobuf:"bytes,7,opt,name=price_taker_to_maker,json=priceTakerToMaker,proto3,customtype=github.com/neutron-org/neutron/v4/utils/math.PrecDec" json:"price_taker_to_maker" yaml:"price_taker_to_maker"`
-	MakerPrice        github_com_neutron_org_neutron_v4_utils_math.PrecDec `protobuf:"bytes,8,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v4/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
+	// This is the price of the LimitOrder denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+	MakerPrice github_com_neutron_org_neutron_v4_utils_math.PrecDec `protobuf:"bytes,8,opt,name=maker_price,json=makerPrice,proto3,customtype=github.com/neutron-org/neutron/v4/utils/math.PrecDec" json:"maker_price" yaml:"maker_price"`
 }
 
 func (m *LimitOrderTranche) Reset()         { *m = LimitOrderTranche{} }
