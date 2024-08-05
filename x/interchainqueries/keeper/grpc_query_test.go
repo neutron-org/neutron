@@ -509,9 +509,8 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	suite.Require().NoError(err)
 
 	msg := iqtypes.MsgSubmitQueryResult{
-		QueryId:  regQuery1.Id,
-		Sender:   contractAddress.String(),
-		ClientId: suite.Path.EndpointA.ClientID,
+		QueryId: regQuery1.Id,
+		Sender:  contractAddress.String(),
 		Result: &iqtypes.QueryResult{
 			KvResults: []*iqtypes.StorageValue{{
 				Key:           resp.Key,
