@@ -60,7 +60,7 @@ message MsgSubmitQueryResult {
   // is the IBC client ID for an IBC connection between Neutron chain and target
   // chain (where the result was obtained from)
   // Deprecated: populating this field does not make any affect
-  string client_id = 3 [ deprecated = true ];
+  string client_id = 3 [deprecated = true];
   QueryResult result = 4;
 }
 
