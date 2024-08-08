@@ -59,7 +59,7 @@ func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresReque
 	return &types.QueryFailuresResponse{Failures: failures, Pagination: pageRes}, nil
 }
 
-func (k Keeper) AddressFailure(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
+func (k Keeper) AddressFailure(c context.Context, req *types.QueryFailureRequest) (*types.QueryFailuresResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request field must not be empty")
 	}

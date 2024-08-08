@@ -56,7 +56,7 @@ var (
 )
 
 func request_Query_AddressFailure_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryFailuresRequest
+	var protoReq QueryFailureRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -101,7 +101,7 @@ func request_Query_AddressFailure_0(ctx context.Context, marshaler runtime.Marsh
 }
 
 func local_request_Query_AddressFailure_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryFailuresRequest
+	var protoReq QueryFailureRequest
 	var metadata runtime.ServerMetadata
 
 	var (
