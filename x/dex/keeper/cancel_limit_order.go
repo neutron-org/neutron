@@ -6,6 +6,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -78,11 +79,23 @@ func (k Keeper) ExecuteCancelLimitOrder(
 	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
 	_, takerAmountOut := tranche.Withdraw(trancheUser)
 
-	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
-
-	// Remove the canceled shares from the limitOrder
+	// Remove the canceled shares from the maker side of the limitOrder
 	tranche.TotalMakerDenom = tranche.TotalMakerDenom.Sub(trancheUser.SharesOwned)
+
+	// Calculate total number of shares removed previously withdrawn by the user (denominated in takerDenom)
+	sharesWithdrawnTakerDenom := math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn).
+		Quo(tranche.PriceTakerToMaker).
+		TruncateInt()
+
+	// Calculate the total amount removed (denominated in takerDenom)
+	totalAmountOutTakerDenom := sharesWithdrawnTakerDenom.Add(takerAmountOut)
+	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(totalAmountOutTakerDenom)
+
+	// Decrease the tranche TotalTakerDenom by the amount being removed
 	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(takerAmountOut)
+
+	// Set TrancheUser to 100% shares withdrawn
+	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
 	if !makerAmountToReturn.IsPositive() && !takerAmountOut.IsPositive() {
 		return sdk.Coin{}, sdk.Coin{}, nil, sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
