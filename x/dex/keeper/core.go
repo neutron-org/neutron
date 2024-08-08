@@ -512,11 +512,14 @@ func (k Keeper) CancelLimitOrderCore(
 	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
 	_, takerAmountOut := tranche.Withdraw(trancheUser)
 
-	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
-
 	// Remove the canceled shares from the limitOrder
 	tranche.TotalMakerDenom = tranche.TotalMakerDenom.Sub(trancheUser.SharesOwned)
-	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(takerAmountOut)
+	sharesWithdrawnTakerDenom := math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn).
+		Quo(tranche.PriceTakerToMaker).
+		TruncateInt()
+	totalAmountOut := sharesWithdrawnTakerDenom.Add(takerAmountOut)
+	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(totalAmountOut)
+	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
 	if makerAmountToReturn.IsPositive() || takerAmountOut.IsPositive() {
 		makerCoinOut := sdk.NewCoin(tradePairID.MakerDenom, makerAmountToReturn)
