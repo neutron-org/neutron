@@ -191,9 +191,39 @@ func (s *DexTestSuite) TestCancelPartiallyFilled() {
 	// WHEN alice cancels her limit order
 	s.aliceCancelsLimitSell(trancheKey)
 
-	// Then alice gets back remaining 25 TokenA LO reserves
-	s.assertAliceBalances(25, 0)
-	s.assertDexBalances(0, 25)
+	// Then alice gets back remaining 25 TokenA LO reserves & 25 TokenB taker tokens
+	s.assertAliceBalances(25, 25)
+	s.assertDexBalances(0, 0)
+
+	// Assert that the LimitOrderTrancheUser has been deleted
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
+	s.Assert().False(found)
+}
+
+func (s *DexTestSuite) TestCancelPartiallyFilledWithdrawFails() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(0, 10)
+
+	// GIVEN alice limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 2000, 50)
+	// Bob swaps 10 TokenB for TokenA
+	s.bobLimitSells("TokenB", -2001, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	s.assertDexBalancesInt(sdkmath.NewInt(37786095), sdkmath.NewInt(10000000))
+	s.assertAliceBalances(0, 0)
+
+	// WHEN alice cancels her limit order
+	s.aliceCancelsLimitSell(trancheKey)
+
+	// Then alice gets back remaining ~37 BIGTokenA LO reserves & 10 BIGTokenB taker tokens
+	s.assertAliceBalancesInt(sdkmath.NewInt(37786094), sdkmath.NewInt(10000000))
+	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.ZeroInt())
+
+	// Assert that the LimitOrderTrancheUser has been deleted
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
+	s.Assert().False(found)
+
+	s.aliceWithdrawLimitSellFails(types.ErrValidLimitOrderTrancheNotFound, trancheKey)
 }
 
 func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
@@ -215,12 +245,82 @@ func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser() {
 	s.aliceCancelsLimitSell(trancheKey)
 	s.carolCancelsLimitSell(trancheKey)
 
-	// THEN alice gets back ~41 BIGTokenA (125 * 1/3)
-	s.assertAliceBalancesInt(sdkmath.NewInt(41_666_666), sdkmath.ZeroInt())
+	// THEN alice gets back ~41 BIGTokenA (125 * 1/3) & ~8.3 BIGTokenB Taker tokens (25 * 1/3)
+	s.assertAliceBalancesInt(sdkmath.NewInt(41_666_666), sdkmath.NewInt(8333333))
 
-	// Carol gets back 83 TokenA (125 * 2/3)
-	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.ZeroInt())
-	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.NewInt(25_000_000))
+	// Carol gets back 83 TokenA (125 * 2/3) & ~16.6 BIGTokenB Taker tokens (25 * 2/3)
+	s.assertCarolBalancesInt(sdkmath.NewInt(83_333_333), sdkmath.NewInt(16666667))
+	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.ZeroInt())
+
+	// Assert that the LimitOrderTrancheUsers has been deleted
+	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
+	s.Assert().False(found)
+	_, found = s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.carol.String(), trancheKey)
+	s.Assert().False(found)
+}
+
+func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser2() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 2000, 50)
+	s.bobLimitSells("TokenA", 2000, 50)
+	// carol swaps 20 TokenB for TokenA
+	s.carolLimitSells("TokenB", -2001, 20, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice cancels her limit order
+	s.aliceCancelsLimitSell(trancheKey)
+
+	// THEN alice gets back remaining ~38 BIGTokenA LO reserves & 10 BIGTokenB taker tokens
+	s.assertAliceBalancesInt(sdkmath.NewInt(37786094), sdkmath.NewInt(10000000))
+	s.assertDexBalancesInt(sdkmath.NewInt(37786096), sdkmath.NewInt(10000000))
+
+	// THEN carol swap through more of the limitorder
+	s.carolLimitSells("TokenB", -2001, 20, types.LimitOrderType_FILL_OR_KILL)
+
+	// And bob can withdraw his portion
+	s.bobWithdrawsLimitSell(trancheKey)
+	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(30000000))
+}
+
+func (s *DexTestSuite) TestCancelFirstMultiCancel() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 0, 50)
+	s.bobLimitSells("TokenA", 0, 50)
+	s.bobCancelsLimitSell(trancheKey)
+	// carol swaps 10 TokenB for TokenA
+	s.carolLimitSells("TokenB", -1, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice cancels her limit order
+	s.aliceCancelsLimitSell(trancheKey)
+
+	// THEN alice gets back remaining 40 tokenA  10 TokenB taker tokens
+	s.assertAliceBalances(40, 10)
+}
+
+func (s *DexTestSuite) TestCancelFirstMultiWithdraw() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 0, 50)
+	s.bobLimitSells("TokenA", 0, 50)
+	s.bobCancelsLimitSell(trancheKey)
+	// carol swaps 10 TokenB for TokenA
+	s.carolLimitSells("TokenB", -1, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice withdraws her limit order
+	s.aliceWithdrawsLimitSell(trancheKey)
+
+	// THEN alice gets 10 TokenB
+	s.assertAliceBalances(0, 10)
 }
 
 func (s *DexTestSuite) TestCancelGoodTil() {
@@ -283,4 +383,68 @@ func (s *DexTestSuite) TestCancelJITNextBlock() {
 	// THEN alice cancellation fails
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
 	s.assertAliceBalances(0, 0)
+}
+
+func (s *DexTestSuite) TestWithdrawThenCancel() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 0, 50)
+	s.bobLimitSells("TokenA", 0, 50)
+
+	s.carolLimitSells("TokenB", -1, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice withdraws and  cancels her limit order
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.aliceCancelsLimitSell(trancheKey)
+	s.assertAliceBalances(45, 5)
+
+	s.bobWithdrawsLimitSell(trancheKey)
+	s.assertBobBalances(0, 5)
+	s.bobCancelsLimitSell(trancheKey)
+	s.assertBobBalances(45, 5)
+}
+
+func (s *DexTestSuite) TestWithdrawThenCancel2() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 0, 50)
+	s.bobLimitSells("TokenA", 0, 50)
+
+	s.carolLimitSells("TokenB", -1, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice withdraws and  cancels her limit order
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.aliceCancelsLimitSell(trancheKey)
+	s.assertAliceBalances(45, 5)
+
+	s.bobCancelsLimitSell(trancheKey)
+	s.assertBobBalances(45, 5)
+}
+
+func (s *DexTestSuite) TestWithdrawThenCancelLowTick() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 20000, 50)
+	s.bobLimitSells("TokenA", 20000, 50)
+
+	s.carolLimitSells("TokenB", -20001, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice withdraws and  cancels her limit order
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.aliceCancelsLimitSell(trancheKey)
+	s.assertAliceBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
+
+	s.bobWithdrawsLimitSell(trancheKey)
+	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(4999999))
+	s.bobCancelsLimitSell(trancheKey)
+	s.assertBobBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
 }
