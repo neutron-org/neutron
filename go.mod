@@ -253,6 +253,7 @@ require (
 )
 
 replace (
+	cosmossdk.io/store => github.com/neutron-org/cosmos-sdk/store v0.1.0-alpha.1.0.20240812165501-33ed9b7586f2
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.1
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.0
