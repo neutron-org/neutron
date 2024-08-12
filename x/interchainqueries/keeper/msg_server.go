@@ -33,7 +33,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQuery) (*types.MsgRegisterInterchainQueryResponse, error) {
+func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.MsgRegisterInterchainQueryRequest) (*types.MsgRegisterInterchainQueryResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
 
 	if err := msg.Validate(); err != nil {
@@ -167,7 +167,7 @@ func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUp
 	return &types.MsgUpdateInterchainQueryResponse{}, nil
 }
 
-func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResult) (*types.MsgSubmitQueryResultResponse, error) {
+func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmitQueryResultRequest) (*types.MsgSubmitQueryResultResponse, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelRegisterInterchainQuery)
 
 	if err := msg.Validate(); err != nil {
@@ -328,7 +328,7 @@ func (m msgServer) validateUpdateInterchainQueryParams(
 }
 
 // UpdateParams updates the module parameters
-func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParamsRequest) (*types.MsgUpdateParamsResponse, error) {
 	if err := req.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}

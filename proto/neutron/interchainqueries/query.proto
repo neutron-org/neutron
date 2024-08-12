@@ -10,78 +10,99 @@ import "neutron/interchainqueries/tx.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/interchainqueries/types";
 
-// Query defines the gRPC querier service.
+// Defines the Query interface of the module.
 service Query {
-  // Parameters queries the parameters of the module.
+  // Queries the current parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/params";
   }
-
+  // Queries all the registered Interchain Queries in the module with filtration by owner and/or
+  // connection ID.
   rpc RegisteredQueries(QueryRegisteredQueriesRequest) returns (QueryRegisteredQueriesResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/registered_queries";
   }
-
+  // Queries a registered Interchain Query by ID.
   rpc RegisteredQuery(QueryRegisteredQueryRequest) returns (QueryRegisteredQueryResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/registered_query";
   }
-
-  rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
+  // Queries the last successfully submitted result of an Interchain Query.
+  rpc QueryResult(QueryQueryResultRequest) returns (QueryQueryResultResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/query_result";
   }
-
-  rpc LastRemoteHeight(QueryLastRemoteHeight) returns (QueryLastRemoteHeightResponse) {
+  // Queries the last height of a remote chain known to the IBC client behind a given connection ID.
+  rpc LastRemoteHeight(QueryLastRemoteHeightRequest) returns (QueryLastRemoteHeightResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/remote_height";
   }
 }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// Request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// Response type for the Query/Params RPC method.
 message QueryParamsResponse {
-  // params holds all the parameters of this module.
+  // Stores all parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
+// Request type for the Query/RegisteredQueries RPC method.
 message QueryRegisteredQueriesRequest {
+  // A list of owners of Interchain Queries. Query response will contain only Interchain Queries
+  // that are owned by one of the owners in the list. If none, Interchain Queries are not filtered
+  // out by the owner field.
   repeated string owners = 1;
+  // IBC connection ID. Query response will contain only Interchain Queries that have the same IBC
+  // connection ID parameter. If none, Interchain Queries are not filtered out by the connection ID
+  // field.
   string connection_id = 2;
+  // Pagination parameters for the request. Use values from previous response in the next request
+  // in consecutive requests with paginated responses.
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
+// Response type for the Query/RegisteredQueries RPC method.
 message QueryRegisteredQueriesResponse {
+  // A list of registered Interchain Queries.
   repeated RegisteredQuery registered_queries = 1 [(gogoproto.nullable) = false];
-
-  // pagination defines the pagination in the response.
+  // Current page information. Use values from previous response in the next request in consecutive
+  // requests with paginated responses.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
+// Request type for the Query/RegisteredQuery RPC method.
 message QueryRegisteredQueryRequest {
+  // ID of an Interchain Query.
   uint64 query_id = 1;
 }
 
+// Response type for the Query/RegisteredQuery RPC method.
 message QueryRegisteredQueryResponse {
+  // A registered Interchain Query.
   RegisteredQuery registered_query = 1;
 }
 
-message QueryRegisteredQueryResultRequest {
+// Request type for the Query/QueryResult RPC method.
+message QueryQueryResultRequest {
+  // ID of an Interchain Query.
   uint64 query_id = 1;
 }
 
-message QueryRegisteredQueryResultResponse {
+// Response type for the Query/QueryResult RPC method.
+message QueryQueryResultResponse {
+  // The last successfully submitted result of an Interchain Query.
   QueryResult result = 1;
 }
 
-message Transaction {
-  uint64 id = 1;
-  uint64 height = 2;
-  bytes data = 3;
-}
-
-message QueryLastRemoteHeight {
+// Request type for the Query/LastRemoteHeight RPC method.
+message QueryLastRemoteHeightRequest {
+  // Connection ID of an IBC connection to a remote chain. Determines the IBC client used in query
+  // handling.
   string connection_id = 1;
 }
 
+// Response type for the Query/LastRemoteHeight RPC method.
 message QueryLastRemoteHeightResponse {
+  // The height of the chain that the IBC client is currently on.
   uint64 height = 1;
+  // The revision of the chain that the IBC client is currently on.
+  uint64 revision = 2;
 }

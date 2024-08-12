@@ -20,12 +20,12 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		msg         types.MsgRegisterInterchainQuery
+		msg         types.MsgRegisterInterchainQueryRequest
 		expectedErr error
 	}{
 		{
 			"invalid update period",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -37,7 +37,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -49,7 +49,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -61,7 +61,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty connection id",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -73,7 +73,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid query type",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          "invalid_type",
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -85,7 +85,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty keys",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -97,7 +97,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"too many keys",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               make([]*types.KVKey, types.MaxKVQueryKeysCount+1),
 				TransactionsFilter: "[]",
@@ -109,7 +109,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"nil key",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte("key1"), Path: "path1"}, nil},
 				TransactionsFilter: "[]",
@@ -121,7 +121,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"duplicated keys",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte("key1"), Path: "path1"}, {Key: []byte("key1"), Path: "path1"}},
 				TransactionsFilter: "[]",
@@ -133,7 +133,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty key path",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte("key1"), Path: ""}},
 				TransactionsFilter: "[]",
@@ -145,7 +145,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty key id",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte(""), Path: "path"}},
 				TransactionsFilter: "[]",
@@ -157,7 +157,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid transactions filter format",
-			types.MsgRegisterInterchainQuery{
+			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "&)(^Y(*&(*&(&(*",
@@ -185,12 +185,12 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		msg         types.MsgSubmitQueryResult
+		msg         types.MsgSubmitQueryResultRequest
 		expectedErr error
 	}{
 		{
 			"empty result",
-			types.MsgSubmitQueryResult{
+			types.MsgSubmitQueryResultRequest{
 				QueryId:  1,
 				Sender:   testutil.TestOwnerAddress,
 				ClientId: "client-id",
@@ -200,7 +200,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty kv results and block result",
-			types.MsgSubmitQueryResult{
+			types.MsgSubmitQueryResultRequest{
 				QueryId:  1,
 				Sender:   testutil.TestOwnerAddress,
 				ClientId: "client-id",
@@ -215,7 +215,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"zero query id",
-			types.MsgSubmitQueryResult{
+			types.MsgSubmitQueryResultRequest{
 				QueryId:  0,
 				Sender:   testutil.TestOwnerAddress,
 				ClientId: "client-id",
@@ -241,7 +241,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			types.MsgSubmitQueryResult{
+			types.MsgSubmitQueryResultRequest{
 				QueryId:  1,
 				Sender:   "",
 				ClientId: "client-id",
@@ -267,7 +267,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			types.MsgSubmitQueryResult{
+			types.MsgSubmitQueryResultRequest{
 				QueryId:  1,
 				Sender:   "invalid_sender",
 				ClientId: "client-id",
@@ -293,7 +293,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty client id",
-			types.MsgSubmitQueryResult{
+			types.MsgSubmitQueryResultRequest{
 				QueryId:  1,
 				Sender:   testutil.TestOwnerAddress,
 				ClientId: "",
@@ -507,19 +507,19 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		msg         types.MsgUpdateParams
+		msg         types.MsgUpdateParamsRequest
 		expectedErr string
 	}{
 		{
 			"empty authority",
-			types.MsgUpdateParams{
+			types.MsgUpdateParamsRequest{
 				Authority: "",
 			},
 			"authority is invalid",
 		},
 		{
 			"invalid authority",
-			types.MsgUpdateParams{
+			types.MsgUpdateParamsRequest{
 				Authority: "invalid authority",
 			},
 			"authority is invalid",

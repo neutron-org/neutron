@@ -8,57 +8,56 @@ import "neutron/interchainqueries/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/interchainqueries/types";
 
+// Information about an Interchain Query registered in the interchainqueries module.
 message RegisteredQuery {
   // The unique id of the registered query.
   uint64 id = 1;
-
-  // The address that registered the query.
+  // The address of the contract that registered the query.
   string owner = 2;
-
-  // The query type identifier: `kv` or `tx` now
+  // The query type identifier: `kv` or `tx`.
   string query_type = 3;
-
-  // The KV-storage keys for which we want to get values from remote chain
+  // The KV-storage keys for which to get values from the remote chain. Only applicable for the
+  // KV-typed Interchain Queries.
   repeated KVKey keys = 4;
-
-  // The filter for transaction search ICQ
+  // A stringified list of filters for remote transactions search. Only applicable for the TX-typed
+  // Interchain Queries. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
   string transactions_filter = 5;
-
-  // The IBC connection ID for getting ConsensusState to verify proofs
+  // The IBC connection ID to the remote chain (the source of querying data). Is used for getting
+  // ConsensusState from the respective IBC client to verify query result proofs.
   string connection_id = 6;
-
-  // Parameter that defines how often the query must be updated.
+  // Parameter that defines the minimal delay between consecutive query executions (i.e. the
+  // minimal delay between query results update).
   uint64 update_period = 7;
-
-  // The local chain last block height when the query result was updated.
+  // The local chain block height of the last query results update.
   uint64 last_submitted_result_local_height = 8;
-
-  // The remote chain last block height when the query result was updated.
+  // The remote chain block height that corresponds to the last query result update.
   ibc.core.client.v1.Height last_submitted_result_remote_height = 9;
-
-  // Amount of coins deposited for the query.
+  // Amount of coins paid for the Interchain Query registration. The deposit is paid back to the
+  // remover. The remover can be either the query owner (during the submit timeout) or anybody.
   repeated cosmos.base.v1beta1.Coin deposit = 10 [
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable) = false
   ];
-
-  // Timeout before query becomes available for everybody to remove.
+  // Duration in blocks that is required to pass since the query registration/update for the
+  // query to become available for anybody to be removed.
   uint64 submit_timeout = 11;
-
-  // The local chain height when the query was registered.
+  // The local chain block height of the Interchain Query registration.
   uint64 registered_at_height = 12;
 }
 
+// A path to an IAVL storage node.
 message KVKey {
-  // Path (storage prefix) to the storage where you want to read value by key
-  // (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+  // The first half of the storage path. It is supposed to be a substore name for the query
+  // (e.g. bank, staking, etc.).
   string path = 1;
-  // Key you want to read from the storage
+  // The second half of the storage path. The remaining part of a full path to an IAVL storage node.
   bytes key = 2;
 }
 
-// GenesisState defines the interchainqueries module's genesis state.
+// The interchainqueries module's genesis state model.
 message GenesisState {
+  // The parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
+  // A list of registered Interchain Queries.
   repeated RegisteredQuery registered_queries = 2;
 }

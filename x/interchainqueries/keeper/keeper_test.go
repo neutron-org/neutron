@@ -33,7 +33,7 @@ type KeeperTestSuite struct {
 }
 
 func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
-	var msg iqtypes.MsgRegisterInterchainQuery
+	var msg iqtypes.MsgRegisterInterchainQueryRequest
 
 	tests := []struct {
 		name         string
@@ -45,7 +45,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			"invalid connection",
 			true,
 			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
+				msg = iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId:       "unknown",
 					TransactionsFilter: "[]",
 					Keys:               nil,
@@ -60,7 +60,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			"insufficient funds for deposit",
 			false,
 			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
+				msg = iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
 					Keys:               nil,
@@ -75,7 +75,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			"not a contract address",
 			false,
 			func(_ string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
+				msg = iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
 					Keys:               nil,
@@ -90,7 +90,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			"invalid bech32 sender address",
 			false,
 			func(_ string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
+				msg = iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
 					Keys:               nil,
@@ -105,7 +105,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 			"valid",
 			true,
 			func(sender string) {
-				msg = iqtypes.MsgRegisterInterchainQuery{
+				msg = iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					TransactionsFilter: "[]",
 					Keys:               nil,
@@ -164,7 +164,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 
 func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 	var msg iqtypes.MsgUpdateInterchainQueryRequest
-	originalKVQuery := iqtypes.MsgRegisterInterchainQuery{
+	originalKVQuery := iqtypes.MsgRegisterInterchainQueryRequest{
 		QueryType: string(iqtypes.InterchainQueryTypeKV),
 		Keys: []*iqtypes.KVKey{
 			{
@@ -178,7 +178,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		Sender:             "",
 	}
 
-	originalTXQuery := iqtypes.MsgRegisterInterchainQuery{
+	originalTXQuery := iqtypes.MsgRegisterInterchainQueryRequest{
 		QueryType:          string(iqtypes.InterchainQueryTypeTX),
 		Keys:               nil,
 		TransactionsFilter: "[]",
@@ -194,7 +194,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		expectedPeriod        uint64
 		expectedQueryKeys     []*iqtypes.KVKey
 		expectedQueryTXFilter string
-		query                 iqtypes.MsgRegisterInterchainQuery
+		query                 iqtypes.MsgRegisterInterchainQueryRequest
 	}{
 		{
 			"valid update period for kv",
@@ -450,7 +450,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	suite.SetupTest()
 
 	var msg iqtypes.MsgRemoveInterchainQueryRequest
-	var query iqtypes.MsgRegisterInterchainQuery
+	var query iqtypes.MsgRegisterInterchainQueryRequest
 	var txQueryHashes [][]byte
 
 	tests := []struct {
@@ -465,7 +465,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					QueryId: 1,
 					Sender:  sender,
 				}
-				query = iqtypes.MsgRegisterInterchainQuery{
+				query = iqtypes.MsgRegisterInterchainQueryRequest{
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					Keys:               nil,
 					TransactionsFilter: "[]",
@@ -487,7 +487,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					QueryId: 1,
 					Sender:  sender,
 				}
-				query = iqtypes.MsgRegisterInterchainQuery{
+				query = iqtypes.MsgRegisterInterchainQueryRequest{
 					QueryType:          string(iqtypes.InterchainQueryTypeTX),
 					Keys:               nil,
 					TransactionsFilter: "[]",
@@ -512,7 +512,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					QueryId: 1,
 					Sender:  sender,
 				}
-				query = iqtypes.MsgRegisterInterchainQuery{
+				query = iqtypes.MsgRegisterInterchainQueryRequest{
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
 					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 					TransactionsFilter: "",
@@ -530,7 +530,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					QueryId: 2,
 					Sender:  sender,
 				}
-				query = iqtypes.MsgRegisterInterchainQuery{
+				query = iqtypes.MsgRegisterInterchainQueryRequest{
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
 					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 					TransactionsFilter: "",
@@ -555,7 +555,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 					QueryId: 1,
 					Sender:  newContractAddress.String(),
 				}
-				query = iqtypes.MsgRegisterInterchainQuery{
+				query = iqtypes.MsgRegisterInterchainQueryRequest{
 					QueryType:          string(iqtypes.InterchainQueryTypeKV),
 					Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 					TransactionsFilter: "",
@@ -748,7 +748,7 @@ func (suite *KeeperTestSuite) TestGetAllRegisteredQueries() {
 }
 
 func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
-	var msg iqtypes.MsgSubmitQueryResult
+	var msg iqtypes.MsgSubmitQueryResultRequest
 
 	tests := []struct {
 		name          string
@@ -768,7 +768,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  1,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -792,7 +792,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"valid KV storage proof",
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -818,7 +818,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -843,7 +843,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"invalid number of KvResults",
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -869,7 +869,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -899,7 +899,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"invalid query type",
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId:       suite.Path.EndpointA.ConnectionID,
 					Keys:               nil,
 					TransactionsFilter: "[]",
@@ -924,7 +924,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -949,7 +949,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"nil proof",
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -975,7 +975,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1001,7 +1001,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -1026,7 +1026,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1051,7 +1051,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -1077,7 +1077,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1103,7 +1103,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string, ctx sdk.Context) {
 				clientKey := []byte("non_existed_key")
 
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -1130,7 +1130,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender, // A bit weird that query owner submits the results, but it doesn't really matter
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1155,7 +1155,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"header with invalid height",
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -1181,7 +1181,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1205,7 +1205,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			"invalid KV storage value",
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -1231,7 +1231,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1256,7 +1256,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -1285,7 +1285,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1310,7 +1310,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 			func(sender string, ctx sdk.Context) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointB.ClientID)
 
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: clientKey},
@@ -1342,7 +1342,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender,
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1370,7 +1370,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				keyWithSpecialBytes, err := hex.DecodeString("0220c746274d3fe20c2c9d06c017e15f8e03f92598fca39d7540aab02244073efe26756a756e6f78")
 				suite.Require().NoError(err)
 
-				registerMsg := iqtypes.MsgRegisterInterchainQuery{
+				registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
 					ConnectionId: suite.Path.EndpointA.ConnectionID,
 					Keys: []*iqtypes.KVKey{
 						{Path: ibchost.StoreKey, Key: keyWithSpecialBytes},
@@ -1397,7 +1397,7 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				})
 				suite.Require().NoError(err)
 
-				msg = iqtypes.MsgSubmitQueryResult{
+				msg = iqtypes.MsgSubmitQueryResultRequest{
 					QueryId:  res.Id,
 					Sender:   sender, // A bit weird that query owner submits the results, but it doesn't really matter
 					ClientId: suite.Path.EndpointA.ClientID,
@@ -1716,7 +1716,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 	suite.Require().NoError(err)
 	msgSrv := keeper.NewMsgServerImpl(iqkeeper)
 
-	resRegister, err := msgSrv.RegisterInterchainQuery(ctx, &iqtypes.MsgRegisterInterchainQuery{
+	resRegister, err := msgSrv.RegisterInterchainQuery(ctx, &iqtypes.MsgRegisterInterchainQueryRequest{
 		QueryType:          string(iqtypes.InterchainQueryTypeKV),
 		Keys:               []*iqtypes.KVKey{{Key: []byte("key1"), Path: "path1"}},
 		TransactionsFilter: "",

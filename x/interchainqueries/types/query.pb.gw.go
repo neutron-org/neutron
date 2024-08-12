@@ -128,7 +128,7 @@ var (
 )
 
 func request_Query_QueryResult_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryRegisteredQueryResultRequest
+	var protoReq QueryQueryResultRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -144,7 +144,7 @@ func request_Query_QueryResult_0(ctx context.Context, marshaler runtime.Marshale
 }
 
 func local_request_Query_QueryResult_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryRegisteredQueryResultRequest
+	var protoReq QueryQueryResultRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -164,7 +164,7 @@ var (
 )
 
 func request_Query_LastRemoteHeight_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLastRemoteHeight
+	var protoReq QueryLastRemoteHeightRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -180,7 +180,7 @@ func request_Query_LastRemoteHeight_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func local_request_Query_LastRemoteHeight_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLastRemoteHeight
+	var protoReq QueryLastRemoteHeightRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {

@@ -8,18 +8,18 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgRegisterInterchainQuery{}, "interchainqueries/RegisterQuery", nil)
-	cdc.RegisterConcrete(&MsgUpdateParams{}, "interchainqueries/MsgUpdateParams", nil)
+	cdc.RegisterConcrete(&MsgRegisterInterchainQueryRequest{}, "interchainqueries/RegisterQuery", nil)
+	cdc.RegisterConcrete(&MsgUpdateParamsRequest{}, "interchainqueries/MsgUpdateParams", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgRegisterInterchainQuery{},
-		&MsgSubmitQueryResult{},
+		&MsgRegisterInterchainQueryRequest{},
+		&MsgSubmitQueryResultRequest{},
 		&MsgUpdateInterchainQueryRequest{},
 		&MsgRemoveInterchainQueryRequest{},
-		&MsgUpdateParams{},
+		&MsgUpdateParamsRequest{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
