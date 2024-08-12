@@ -869,13 +869,13 @@ func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, cont
 	// parse incoming ordering. If nothing passed, use ORDERED by default
 	var orderValue types1.Order
 	if reg.Ordering == "" {
+		orderValue = types1.ORDERED
+	} else {
 		orderValueInt, ok := types1.Order_value[reg.Ordering]
 		if !ok {
 			return nil, fmt.Errorf("failed to register interchain account: incorrect order value passed: %s", reg.Ordering)
 		}
 		orderValue = types1.Order(orderValueInt)
-	} else {
-		orderValue = types1.ORDERED
 	}
 
 	msg := ictxtypes.MsgRegisterInterchainAccount{
