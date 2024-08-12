@@ -14,7 +14,7 @@ replace (
 
 require (
 	github.com/cosmos/cosmos-sdk v0.50.8
-	github.com/skip-mev/slinky v1.0.6
+	github.com/skip-mev/slinky v1.0.7
 	github.com/skip-mev/slinky/tests/integration v1.1.1-0.20240614013955-8d008bc600dd
 	github.com/strangelove-ventures/interchaintest/v8 v8.4.0
 	github.com/stretchr/testify v1.9.0
@@ -238,7 +238,7 @@ require (
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.21.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect

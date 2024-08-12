@@ -18,7 +18,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.8
 	github.com/skip-mev/feemarket v1.0.1
 	github.com/skip-mev/feemarket/tests/e2e v1.10.0
-	github.com/skip-mev/slinky v1.0.6
+	github.com/skip-mev/slinky v1.0.7
 	github.com/strangelove-ventures/interchaintest/v8 v8.4.0
 	github.com/stretchr/testify v1.9.0
 )
@@ -242,7 +242,7 @@ require (
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.20.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
