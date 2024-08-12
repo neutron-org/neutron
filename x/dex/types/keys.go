@@ -265,14 +265,15 @@ const (
 
 // Cancel LimitOrder Event Attributes
 const (
-	CancelLimitOrderEventKey        = "CancelLimitOrder"
-	CancelLimitOrderEventCreator    = "Creator"
-	CancelLimitOrderEventToken0     = "TokenZero"
-	CancelLimitOrderEventToken1     = "TokenOne"
-	CancelLimitOrderEventTokenIn    = "TokenIn"
-	CancelLimitOrderEventTokenOut   = "TokenOut"
-	CancelLimitOrderEventTrancheKey = "TrancheKey"
-	CancelLimitOrderEventAmountOut  = "AmountOut"
+	CancelLimitOrderEventKey               = "CancelLimitOrder"
+	CancelLimitOrderEventCreator           = "Creator"
+	CancelLimitOrderEventToken0            = "TokenZero"
+	CancelLimitOrderEventToken1            = "TokenOne"
+	CancelLimitOrderEventTokenIn           = "TokenIn"
+	CancelLimitOrderEventTokenOut          = "TokenOut"
+	CancelLimitOrderEventTrancheKey        = "TrancheKey"
+	CancelLimitOrderEventTokenInAmountOut  = "TokenInAmountOut"
+	CancelLimitOrderEventTokenOutAmountOut = "TokenOutAmountOut"
 )
 
 // Tick Update Event Attributes

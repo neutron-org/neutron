@@ -339,9 +339,6 @@ func (s *DexTestSuite) TestWithdrawPartiallyFilledCancelled() {
 
 	// AND alice cancels the remainder
 	s.aliceCancelsLimitSell(trancheKey)
-
-	// THEN she can withdraw the unused portion
-	s.aliceWithdrawsLimitSell(trancheKey)
 	s.assertAliceBalances(1, 1)
 
 	// AND her LimitOrderTrancheUser is removed
