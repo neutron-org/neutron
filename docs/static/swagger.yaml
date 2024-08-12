@@ -15860,6 +15860,7 @@ definitions:
           - GOOD_TIL_TIME
         type: string
       shares_cancelled:
+        title: 'TODO: remove this in next release. It is no longer used'
         type: string
       shares_owned:
         type: string
@@ -16193,6 +16194,7 @@ definitions:
                 - GOOD_TIL_TIME
               type: string
             shares_cancelled:
+              title: 'TODO: remove this in next release. It is no longer used'
               type: string
             shares_owned:
               type: string
@@ -16256,6 +16258,7 @@ definitions:
                 - GOOD_TIL_TIME
               type: string
             shares_cancelled:
+              title: 'TODO: remove this in next release. It is no longer used'
               type: string
             shares_owned:
               type: string
@@ -16794,6 +16797,7 @@ definitions:
               - GOOD_TIL_TIME
             type: string
           shares_cancelled:
+            title: 'TODO: remove this in next release. It is no longer used'
             type: string
           shares_owned:
             type: string
@@ -41155,6 +41159,7 @@ paths:
                         - GOOD_TIL_TIME
                       type: string
                     shares_cancelled:
+                      title: 'TODO: remove this in next release. It is no longer used'
                       type: string
                     shares_owned:
                       type: string
@@ -41263,6 +41268,7 @@ paths:
                       - GOOD_TIL_TIME
                     type: string
                   shares_cancelled:
+                    title: 'TODO: remove this in next release. It is no longer used'
                     type: string
                   shares_owned:
                     type: string
@@ -42488,6 +42494,7 @@ paths:
                         - GOOD_TIL_TIME
                       type: string
                     shares_cancelled:
+                      title: 'TODO: remove this in next release. It is no longer used'
                       type: string
                     shares_owned:
                       type: string
