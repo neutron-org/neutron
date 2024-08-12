@@ -6,7 +6,7 @@ require (
 	cosmossdk.io/client/v2 v2.0.0-beta.1
 	cosmossdk.io/core v0.11.0
 	cosmossdk.io/errors v1.0.1
-	cosmossdk.io/log v1.3.1
+	cosmossdk.io/log v1.4.0
 	cosmossdk.io/math v1.3.0
 	cosmossdk.io/store v1.1.0
 	cosmossdk.io/x/evidence v0.1.1
@@ -14,7 +14,7 @@ require (
 	cosmossdk.io/x/tx v0.13.4
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/CosmWasm/wasmd v0.51.0
-	github.com/CosmWasm/wasmvm/v2 v2.0.1
+	github.com/CosmWasm/wasmvm/v2 v2.0.2
 	github.com/cometbft/cometbft v0.38.10
 	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
 	github.com/cosmos/cosmos-db v1.0.2
@@ -36,11 +36,11 @@ require (
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.1
-	github.com/rs/zerolog v1.32.0
+	github.com/rs/zerolog v1.33.0
 	github.com/skip-mev/block-sdk/v2 v2.1.5
 	github.com/skip-mev/feemarket v1.0.4
 	github.com/skip-mev/slinky v1.0.3
-	github.com/spf13/cast v1.6.0
+	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
@@ -237,7 +237,7 @@ require (
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
@@ -254,7 +254,7 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.0
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.1
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.0
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.8-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
