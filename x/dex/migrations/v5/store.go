@@ -65,38 +65,35 @@ func migrateLimitOrderTrancheAccounting(ctx sdk.Context, cdc codec.BinaryCodec, 
 	trancheUpdateData := make(map[string]TrancheData)
 	trancheUsersToDelete := make([][]byte, 0)
 
+	//Sum up the total SharesWithdrawn for each tranche
 	for ; iterator.Valid(); iterator.Next() {
 		var trancheUser types.LimitOrderTrancheUser
 		cdc.MustUnmarshal(iterator.Value(), &trancheUser)
 
-		//Sum up the total SharesWithdrawn for each tranche
-		if trancheUser.SharesWithdrawn.IsPositive() {
-			val, ok := trancheUpdateData[trancheUser.TrancheKey]
-			if !ok {
-				tranche, found, err := fetchTrancheByTrancheUser(ctx, trancheUser, cdc, storeKey)
-				if err != nil {
-					return err
-				}
-
-				// Due to an earlier error in our rounding behavior / tranche accounting
-				// there are trancheUsers that have dust amounts of un-withdrawn shares but the tranche has already been deleted
-				// FWIW this issue only exists on pion-1
-				// We can safely delete these trancheUsers
-				if !found {
-					trancheUsersToDelete = append(trancheUsersToDelete, iterator.Key())
-					continue
-				}
-
-				trancheUpdateData[trancheUser.TrancheKey] = TrancheData{SharesWithdrawn: trancheUser.SharesWithdrawn, Tranche: *tranche}
-			} else {
-				newVal := TrancheData{
-					SharesWithdrawn: val.SharesWithdrawn.Add(trancheUser.SharesWithdrawn),
-					Tranche:         val.Tranche,
-				}
-				trancheUpdateData[trancheUser.TrancheKey] = newVal
+		val, ok := trancheUpdateData[trancheUser.TrancheKey]
+		if !ok {
+			tranche, found, err := fetchTrancheByTrancheUser(ctx, trancheUser, cdc, storeKey)
+			if err != nil {
+				return err
 			}
-		}
 
+			// Due to an earlier error in our rounding behavior / tranche accounting
+			// there are trancheUsers that have dust amounts of un-withdrawn shares but the tranche has already been deleted
+			// FWIW this issue only exists on pion-1
+			// We can safely delete these trancheUsers
+			if !found {
+				trancheUsersToDelete = append(trancheUsersToDelete, iterator.Key())
+				continue
+			}
+
+			trancheUpdateData[trancheUser.TrancheKey] = TrancheData{SharesWithdrawn: trancheUser.SharesWithdrawn, Tranche: *tranche}
+		} else {
+			newVal := TrancheData{
+				SharesWithdrawn: val.SharesWithdrawn.Add(trancheUser.SharesWithdrawn),
+				Tranche:         val.Tranche,
+			}
+			trancheUpdateData[trancheUser.TrancheKey] = newVal
+		}
 	}
 
 	err := iterator.Close()

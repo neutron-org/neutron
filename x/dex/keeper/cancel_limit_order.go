@@ -87,12 +87,11 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		Quo(tranche.PriceTakerToMaker).
 		TruncateInt()
 
-	// Calculate the total amount removed (denominated in takerDenom)
+	// Calculate the total amount removed including prior withdrawals (denominated in takerDenom)
 	totalAmountOutTakerDenom := sharesWithdrawnTakerDenom.Add(takerAmountOut)
-	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(totalAmountOutTakerDenom)
 
 	// Decrease the tranche TotalTakerDenom by the amount being removed
-	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(takerAmountOut)
+	tranche.TotalTakerDenom = tranche.TotalTakerDenom.Sub(totalAmountOutTakerDenom)
 
 	// Set TrancheUser to 100% shares withdrawn
 	trancheUser.SharesWithdrawn = trancheUser.SharesOwned
