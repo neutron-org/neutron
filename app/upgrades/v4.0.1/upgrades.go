@@ -28,7 +28,7 @@ import (
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
+	slinkyconstants "github.com/skip-mev/slinky/cmd/constants/marketmaps"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 )
