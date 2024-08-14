@@ -22,7 +22,8 @@ on:
 
 jobs:
   docker:
-    runs-on: self-hosted
+    runs-on:
+      group: Neutron-Core
     env:
       DOCKER_BUILDKIT: 1
 

@@ -14,7 +14,7 @@ on:
 jobs:
   dispatch:
     name: Dispatch Tests Workflow
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Evaluate PR Merged Status and Labels
         run: |
