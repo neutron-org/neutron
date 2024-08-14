@@ -25,7 +25,7 @@ func (suite *V5DexMigrationTestSuite) TestUnswappedTranche() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
-		ctx      = suite.ChainA.GetContext()
+		ctx      = suite.ChainA.GetContext().WithChainID("pion-1")
 		cdc      = app.AppCodec()
 	)
 
@@ -37,7 +37,7 @@ func (suite *V5DexMigrationTestSuite) TestUnswappedTranche() {
 	}
 	tranche := &types.LimitOrderTranche{
 		Key:               trancheKey,
-		PriceTakerToMaker: math.ZeroPrecDec(),
+		PriceTakerToMaker: math.MustNewPrecDecFromStr("0.9950127279"),
 		TotalMakerDenom:   sdkmath.NewInt(100),
 	}
 	app.DexKeeper.SetLimitOrderTranche(ctx, tranche)
@@ -83,7 +83,7 @@ func (suite *V5DexMigrationTestSuite) TestSwappedUnwithdrawnTranche() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
-		ctx      = suite.ChainA.GetContext()
+		ctx      = suite.ChainA.GetContext().WithChainID("pion-1")
 		cdc      = app.AppCodec()
 	)
 
@@ -95,7 +95,7 @@ func (suite *V5DexMigrationTestSuite) TestSwappedUnwithdrawnTranche() {
 	}
 	tranche := &types.LimitOrderTranche{
 		Key:                trancheKey,
-		PriceTakerToMaker:  math.ZeroPrecDec(),
+		PriceTakerToMaker:  math.MustNewPrecDecFromStr("0.9950127279"),
 		TotalMakerDenom:    sdkmath.NewInt(20),
 		TotalTakerDenom:    sdkmath.NewInt(80),
 		ReservesTakerDenom: sdkmath.NewInt(80),
@@ -143,7 +143,7 @@ func (suite *V5DexMigrationTestSuite) TestSwappedWithdrawnTranche() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
-		ctx      = suite.ChainA.GetContext()
+		ctx      = suite.ChainA.GetContext().WithChainID("pion-1")
 		cdc      = app.AppCodec()
 	)
 
@@ -155,7 +155,7 @@ func (suite *V5DexMigrationTestSuite) TestSwappedWithdrawnTranche() {
 	}
 	tranche := &types.LimitOrderTranche{
 		Key:                trancheKey,
-		PriceTakerToMaker:  math.ZeroPrecDec(),
+		PriceTakerToMaker:  math.MustNewPrecDecFromStr("0.9950127279"),
 		TotalMakerDenom:    sdkmath.NewInt(100),
 		TotalTakerDenom:    sdkmath.NewInt(80),
 		ReservesTakerDenom: sdkmath.NewInt(0),
@@ -202,7 +202,7 @@ func (suite *V5DexMigrationTestSuite) TestSwappedCanceledTranche() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
-		ctx      = suite.ChainA.GetContext()
+		ctx      = suite.ChainA.GetContext().WithChainID("pion-1")
 		cdc      = app.AppCodec()
 	)
 
@@ -215,7 +215,7 @@ func (suite *V5DexMigrationTestSuite) TestSwappedCanceledTranche() {
 	}
 	tranche := &types.LimitOrderTranche{
 		Key:                trancheKey,
-		PriceTakerToMaker:  math.ZeroPrecDec(),
+		PriceTakerToMaker:  math.MustNewPrecDecFromStr("0.9950127279"),
 		TotalMakerDenom:    sdkmath.NewInt(100),
 		TotalTakerDenom:    sdkmath.NewInt(65),
 		ReservesTakerDenom: sdkmath.NewInt(60),
@@ -251,7 +251,7 @@ func (suite *V5DexMigrationTestSuite) TestOrphanedTrancheUser() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
-		ctx      = suite.ChainA.GetContext()
+		ctx      = suite.ChainA.GetContext().WithChainID("pion-1")
 		cdc      = app.AppCodec()
 	)
 
@@ -267,9 +267,9 @@ func (suite *V5DexMigrationTestSuite) TestOrphanedTrancheUser() {
 		TradePairId:           trancheKey.TradePairId,
 		TickIndexTakerToMaker: trancheKey.TickIndexTakerToMaker,
 		TrancheKey:            trancheKey.TrancheKey,
-		Address:               addr2,
+		Address:               addr1,
 		SharesOwned:           sdkmath.NewInt(75),
-		SharesWithdrawn:       sdkmath.ZeroInt(),
+		SharesWithdrawn:       sdkmath.OneInt(),
 	}
 	app.DexKeeper.SetLimitOrderTrancheUser(ctx, trancheUser1)
 	trancheUser2 := &types.LimitOrderTrancheUser{
@@ -278,7 +278,7 @@ func (suite *V5DexMigrationTestSuite) TestOrphanedTrancheUser() {
 		TrancheKey:            trancheKey.TrancheKey,
 		Address:               addr2,
 		SharesOwned:           sdkmath.NewInt(75),
-		SharesWithdrawn:       sdkmath.ZeroInt(),
+		SharesWithdrawn:       sdkmath.OneInt(),
 	}
 	app.DexKeeper.SetLimitOrderTrancheUser(ctx, trancheUser2)
 
