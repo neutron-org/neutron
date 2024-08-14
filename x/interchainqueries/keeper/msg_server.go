@@ -184,6 +184,11 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 		return nil, errors.Wrapf(err, "failed to get query by id: %v", err)
 	}
 
+	connection, ok := m.ibcKeeper.ConnectionKeeper.GetConnection(ctx, query.ConnectionId)
+	if !ok {
+		return nil, errors.Wrapf(types.ErrInvalidConnectionID, "registered query %d has invalid connection id: %s", query.Id, query.ConnectionId)
+	}
+
 	queryOwner, err := sdk.AccAddressFromBech32(query.Owner)
 	if err != nil {
 		ctx.Logger().Error("SubmitQueryResult: failed to decode AccAddressFromBech32",
@@ -226,7 +231,7 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, errors.Wrapf(sdkerrors.ErrUnpackAny, "failed to cast interface exported.ConsensusState to type *tendermint.ConsensusState")
 		}
 
-		clientState, err := m.GetClientState(ctx, msg.ClientId)
+		clientState, err := m.GetClientState(ctx, connection.ClientId)
 		if err != nil {
 			return nil, err
 		}
@@ -293,7 +298,7 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 			return nil, errors.Wrapf(types.ErrInvalidType, "invalid query result for query type: %s", query.QueryType)
 		}
 
-		if err := m.ProcessBlock(ctx, queryOwner, msg.QueryId, msg.ClientId, msg.Result.Block); err != nil {
+		if err := m.ProcessBlock(ctx, queryOwner, msg.QueryId, connection.ClientId, msg.Result.Block); err != nil {
 			ctx.Logger().Debug("SubmitQueryResult: failed to ProcessBlock",
 				"error", err, "query", query, "message", msg)
 			return nil, errors.Wrapf(err, "failed to ProcessBlock: %v", err)
