@@ -67,19 +67,32 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 // ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equal to Params.Limit)
 // and executes messages in each one
 // NOTE that errors in contract calls rollback all already executed messages
-func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
+func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, isBeginBlocker bool) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelExecuteReadySchedules)
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
-		err := k.executeSchedule(ctx, schedule)
-		recordExecutedSchedule(err, schedule)
+		if isBeginBlocker && (schedule.Blocker == types.BlockerType_BEGIN || schedule.Blocker == types.BlockerType_BOTH) {
+			err := k.executeSchedule(ctx, schedule)
+			recordExecutedSchedule(err, schedule)
+		}
+
+		if !isBeginBlocker && (schedule.Blocker == types.BlockerType_END || schedule.Blocker == types.BlockerType_BOTH) {
+			err := k.executeSchedule(ctx, schedule)
+			recordExecutedSchedule(err, schedule)
+		}
 	}
 }
 
 // AddSchedule adds new schedule to execution for every block `period`.
 // First schedule execution is supposed to be on `now + period` block.
-func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []types.MsgExecuteContract) error {
+func (k *Keeper) AddSchedule(
+	ctx sdk.Context,
+	name string,
+	period uint64,
+	msgs []types.MsgExecuteContract,
+	blocker uint64,
+) error {
 	if k.scheduleExists(ctx, name) {
 		return fmt.Errorf("schedule already exists with name=%v", name)
 	}
@@ -90,6 +103,16 @@ func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs [
 		Msgs:              msgs,
 		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
 	}
+
+	switch blocker {
+	case 0:
+		schedule.Blocker = types.BlockerType_BEGIN
+	case 2:
+		schedule.Blocker = types.BlockerType_BOTH
+	default:
+		schedule.Blocker = types.BlockerType_END
+	}
+
 	k.storeSchedule(ctx, schedule)
 	k.changeTotalCount(ctx, 1)
 

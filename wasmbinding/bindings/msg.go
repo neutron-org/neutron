@@ -195,9 +195,10 @@ type ForceTransfer struct {
 
 // AddSchedule adds new schedule to the cron module
 type AddSchedule struct {
-	Name   string               `json:"name"`
-	Period uint64               `json:"period"`
-	Msgs   []MsgExecuteContract `json:"msgs"`
+	Name    string               `json:"name"`
+	Period  uint64               `json:"period"`
+	Msgs    []MsgExecuteContract `json:"msgs"`
+	Blocker uint64               `json:"blocker"`
 }
 
 // AddScheduleResponse holds response AddSchedule

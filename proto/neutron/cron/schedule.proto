@@ -5,6 +5,13 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/cron/types";
 
+// BlockerType defines when messages will be executed in the block
+enum BlockerType {
+  BEGIN = 0;
+  END = 1;
+  BOTH = 2;
+}
+
 message Schedule {
   // Name of schedule
   string name = 1;
@@ -14,6 +21,8 @@ message Schedule {
   repeated MsgExecuteContract msgs = 3 [(gogoproto.nullable) = false];
   // Last execution's block height
   uint64 last_execute_height = 4;
+  // Blocker where the messages will be executed
+  BlockerType blocker = 5;
 }
 
 message MsgExecuteContract {

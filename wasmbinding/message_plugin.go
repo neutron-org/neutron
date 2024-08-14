@@ -985,7 +985,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		})
 	}
 
-	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs, addSchedule.Blocker)
 	if err != nil {
 		ctx.Logger().Error("failed to addSchedule",
 			"from_address", contractAddr.String(),
