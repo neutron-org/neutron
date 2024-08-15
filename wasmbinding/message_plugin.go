@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	types1 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"strings"
 	"time"
+
+	types1 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/cosmos/gogoproto/proto"
 
