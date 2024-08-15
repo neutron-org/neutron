@@ -15075,16 +15075,8 @@ definitions:
             type: array
           soft_opt_out_threshold:
             title: >-
-              The threshold for the percentage of validators at the bottom of
-              the set who
-
-              can opt out of running the consumer chain without being punished.
-              For
-
-              example, a value of 0.05 means that the validators in the bottom
-              5% of the
-
-              set can opt out
+              !!! DEPRECATED !!! soft_opt_out_threshold is deprecated. see
+              docs/docs/adrs/adr-015-partial-set-security.md
             type: string
           transfer_timeout_period:
             title: Sent transfer related IBC packets will timeout after this duration
@@ -15396,15 +15388,8 @@ definitions:
         type: array
       soft_opt_out_threshold:
         title: >-
-          The threshold for the percentage of validators at the bottom of the
-          set who
-
-          can opt out of running the consumer chain without being punished. For
-
-          example, a value of 0.05 means that the validators in the bottom 5% of
-          the
-
-          set can opt out
+          !!! DEPRECATED !!! soft_opt_out_threshold is deprecated. see
+          docs/docs/adrs/adr-015-partial-set-security.md
         type: string
       transfer_timeout_period:
         title: Sent transfer related IBC packets will timeout after this duration
@@ -38821,16 +38806,8 @@ paths:
                     type: array
                   soft_opt_out_threshold:
                     title: >-
-                      The threshold for the percentage of validators at the
-                      bottom of the set who
-
-                      can opt out of running the consumer chain without being
-                      punished. For
-
-                      example, a value of 0.05 means that the validators in the
-                      bottom 5% of the
-
-                      set can opt out
+                      !!! DEPRECATED !!! soft_opt_out_threshold is deprecated.
+                      see docs/docs/adrs/adr-015-partial-set-security.md
                     type: string
                   transfer_timeout_period:
                     title: >-
