@@ -157,7 +157,7 @@ func (am AppModule) BeginBlock(_ sdk.Context) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(wctx context.Context) ([]abci.ValidatorUpdate, error) {
-	ctx := sdk.UnwrapSDKContext(wctx)
-	am.keeper.BurnAndDistribute(ctx)
+	//ctx := sdk.UnwrapSDKContext(wctx)
+	//am.keeper.BurnAndDistribute(ctx)
 	return []abci.ValidatorUpdate{}, nil
 }

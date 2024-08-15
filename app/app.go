@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"io"
 	"io/fs"
 	"net/http"
@@ -92,6 +94,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -178,7 +182,6 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 
-	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
@@ -250,7 +253,7 @@ var (
 		evidence.AppModuleBasic{},
 		transferSudo.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		ccvconsumer.AppModuleBasic{},
+		staking.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		tokenfactory.AppModuleBasic{},
 		interchainqueries.AppModuleBasic{},
@@ -284,23 +287,25 @@ var (
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:                    nil,
-		auctiontypes.ModuleName:                       nil,
-		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
-		icatypes.ModuleName:                           nil,
-		wasmtypes.ModuleName:                          {},
-		interchainqueriesmoduletypes.ModuleName:       nil,
-		feetypes.ModuleName:                           nil,
-		feeburnertypes.ModuleName:                     nil,
-		ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
-		ccvconsumertypes.ConsumerToSendToProviderName: nil,
-		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
-		crontypes.ModuleName:                          nil,
-		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner},
-		ibcswaptypes.ModuleName:                       {authtypes.Burner},
-		oracletypes.ModuleName:                        nil,
-		marketmaptypes.ModuleName:                     nil,
-		feemarkettypes.FeeCollectorName:               nil,
+		authtypes.FeeCollectorName:              nil,
+		auctiontypes.ModuleName:                 nil,
+		ibctransfertypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		icatypes.ModuleName:                     nil,
+		wasmtypes.ModuleName:                    {},
+		interchainqueriesmoduletypes.ModuleName: nil,
+		feetypes.ModuleName:                     nil,
+		feeburnertypes.ModuleName:               nil,
+		stakingtypes.BondedPoolName:             {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName:          {authtypes.Burner, authtypes.Staking},
+		//ccvconsumertypes.ConsumerRedistributeName:     {authtypes.Burner},
+		//ccvconsumertypes.ConsumerToSendToProviderName: nil,
+		tokenfactorytypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		crontypes.ModuleName:            nil,
+		dextypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		ibcswaptypes.ModuleName:         {authtypes.Burner},
+		oracletypes.ModuleName:          nil,
+		marketmaptypes.ModuleName:       nil,
+		feemarkettypes.FeeCollectorName: nil,
 	}
 )
 
@@ -365,6 +370,7 @@ type App struct {
 	FeeKeeper           *feekeeper.Keeper
 	FeeBurnerKeeper     *feeburnerkeeper.Keeper
 	ConsumerKeeper      ccvconsumerkeeper.Keeper
+	StakingKeeper       *stakingkeeper.Keeper
 	TokenFactoryKeeper  *tokenfactorykeeper.Keeper
 	CronKeeper          cronkeeper.Keeper
 	PFMKeeper           *pfmkeeper.Keeper
@@ -488,7 +494,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey,
+		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -547,11 +553,13 @@ func New(
 		logger,
 	)
 
+	app.StakingKeeper = stakingkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[stakingtypes.StoreKey]), app.AccountKeeper, app.BankKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), interfaceRegistry.SigningContext().ValidatorAddressCodec(), authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()))
+
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec,
 		legacyAmino,
 		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
-		&app.ConsumerKeeper,
+		app.StakingKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	app.CrisisKeeper = *crisiskeeper.NewKeeper(
@@ -589,15 +597,15 @@ func New(
 	// which would panic on nil or zero keeper
 	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe
 	// communication over IBC is not affected by these changes
-	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
-		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
-	)
+	//app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
+	//	appCodec,
+	//	keys[ccvconsumertypes.StoreKey],
+	//	app.GetSubspace(ccvconsumertypes.ModuleName),
+	//)
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
@@ -686,34 +694,35 @@ func New(
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
-		appCodec, runtime.NewKVStoreService(keys[evidencetypes.StoreKey]), &app.ConsumerKeeper, app.SlashingKeeper,
+		appCodec, runtime.NewKVStoreService(keys[evidencetypes.StoreKey]), app.StakingKeeper, app.SlashingKeeper,
 		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()), runtime.ProvideCometInfoService(),
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
-		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
-		scopedCCVConsumerKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		app.IBCKeeper.ConnectionKeeper,
-		app.IBCKeeper.ClientKeeper,
-		app.SlashingKeeper,
-		&app.BankKeeper,
-		app.AccountKeeper,
-		app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
-		// Since the keeper is only used to send reward to provider chain
-		app.IBCKeeper,
-		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
-		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-	)
-	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
-	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
+	//app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
+	//	appCodec,
+	//	keys[ccvconsumertypes.StoreKey],
+	//	app.GetSubspace(ccvconsumertypes.ModuleName),
+	//	scopedCCVConsumerKeeper,
+	//	app.IBCKeeper.ChannelKeeper,
+	//	app.IBCKeeper.PortKeeper,
+	//	app.IBCKeeper.ConnectionKeeper,
+	//	app.IBCKeeper.ClientKeeper,
+	//	app.SlashingKeeper,
+	//	&app.BankKeeper,
+	//	app.AccountKeeper,
+	//	app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
+	//	// Since the keeper is only used to send reward to provider chain
+	//	app.IBCKeeper,
+	//	authtypes.FeeCollectorName,
+	//	authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	//	address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+	//	address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
+	//)
+	app.StakingKeeper.SetHooks(app.SlashingKeeper.Hooks())
+	//consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
+	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
 
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,
@@ -926,8 +935,8 @@ func New(
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, ibcStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
-		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
-		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
+		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper))
+	//AddRoute(ccvconsumertypes.ModuleName, consumerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
@@ -948,14 +957,15 @@ func New(
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.ConsumerKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		upgrade.NewAppModule(&app.UpgradeKeeper, address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())),
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		consumerModule,
+		stakingModule,
+		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, encodingConfig.TxConfig),
 		icaModule,
 		app.PFMModule,
 		interchainQueriesModule,
@@ -1002,7 +1012,7 @@ func New(
 		crisistypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
-		ccvconsumertypes.ModuleName,
+		stakingtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
@@ -1038,7 +1048,7 @@ func New(
 		upgradetypes.ModuleName,
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
-		ccvconsumertypes.ModuleName,
+		stakingtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
@@ -1072,14 +1082,14 @@ func New(
 		authz.ModuleName,
 		banktypes.ModuleName,
 		vestingtypes.ModuleName,
-		slashingtypes.ModuleName,
-		crisistypes.ModuleName,
 		ibchost.ModuleName,
 		evidencetypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		feegrant.ModuleName,
-		ccvconsumertypes.ModuleName,
+		stakingtypes.ModuleName,
+		slashingtypes.ModuleName,
+		genutiltypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		icatypes.ModuleName,
 		interchainqueriesmoduletypes.ModuleName,
@@ -1099,6 +1109,7 @@ func New(
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
+		crisistypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1123,7 +1134,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		consumerModule,
+		stakingModule,
 		icaModule,
 		app.PFMModule,
 		interchainQueriesModule,
@@ -1236,7 +1247,7 @@ func New(
 	}
 
 	// Create special kind of store to implement ValidatorStore interfaces for ConsumerKeeper (as we don't have StakingKeeper)
-	ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
+	//ccvconsumerCompatKeeper := voteweighted.NewCCVConsumerCompatKeeper(app.ConsumerKeeper)
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
@@ -1244,7 +1255,7 @@ func New(
 		app.Logger(),
 		blockSdkProposalHandler.PrepareProposalHandler(),
 		baseapp.NoOpProcessProposal(),
-		ve.NewDefaultValidateVoteExtensionsFn(ccvconsumerCompatKeeper),
+		ve.NewDefaultValidateVoteExtensionsFn(app.StakingKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
@@ -1274,7 +1285,7 @@ func New(
 	// from each validator.
 	aggregatorFn := voteweighted.MedianFromContext(
 		app.Logger(),
-		ccvconsumerCompatKeeper,
+		app.StakingKeeper,
 		voteweighted.DefaultPowerThreshold,
 	)
 
@@ -1675,7 +1686,7 @@ func (app *App) GetIBCKeeper() *ibckeeper.Keeper {
 
 // GetStakingKeeper implements the TestingApp interface.
 func (app *App) GetStakingKeeper() ibctestingtypes.StakingKeeper {
-	return app.ConsumerKeeper
+	return app.StakingKeeper
 }
 
 // GetScopedIBCKeeper implements the TestingApp interface.

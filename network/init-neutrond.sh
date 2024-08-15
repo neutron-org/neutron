@@ -59,8 +59,11 @@ USE_RAYDIUM_MARKETS=${USE_RAYDIUM_MARKETS:-false}
 USE_UNISWAPV3_BASE_MARKETS=${USE_UNISWAPV3_BASE_MARKETS:-false}
 USE_COINGECKO_MARKETS=${USE_COINGECKO_MARKETS:-false}
 
-echo "Add consumer section..."
-$BINARY add-consumer-section --home "$CHAIN_DIR"
+#echo "Add consumer section..."
+#$BINARY add-consumer-section --home "$CHAIN_DIR"
+echo "Creating and collecting gentx..."
+$BINARY  gentx val1 "1000000$STAKEDENOM" --home "$CHAIN_DIR" --chain-id "$CHAINID" --keyring-backend test
+$BINARY  collect-gentxs --home "$CHAIN_DIR"
 ### PARAMETERS SECTION
 
 ## slashing params
