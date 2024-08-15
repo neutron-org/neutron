@@ -163,7 +163,7 @@ func (suite *UpgradeTestSuite) TestSwappedUnwithdrawnTranche() {
 	}
 	tranche := &dextypes.LimitOrderTranche{
 		Key:                trancheKey,
-		PriceTakerToMaker:  math.ZeroPrecDec(),
+		PriceTakerToMaker:  math.MustNewPrecDecFromStr("0.9950127279"),
 		TotalMakerDenom:    sdkmath.NewInt(20),
 		TotalTakerDenom:    sdkmath.NewInt(80),
 		ReservesTakerDenom: sdkmath.NewInt(80),
