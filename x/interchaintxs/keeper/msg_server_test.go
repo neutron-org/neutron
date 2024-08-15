@@ -113,6 +113,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 		FromAddress:         testutil.TestOwnerAddress,
 		ConnectionId:        "connection-0",
 		InterchainAccountId: "ica0",
+		Ordering:            channeltypes.ORDERED,
 	}
 	contractAddress := sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress)
 	icaOwner := types.NewICAOwnerFromAddress(contractAddress, msgRegAcc.InterchainAccountId)
