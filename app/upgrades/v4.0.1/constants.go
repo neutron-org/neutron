@@ -8,7 +8,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "NextUpgrade"
+	UpgradeName = "sovereign"
 )
 
 var Upgrade = upgrades.Upgrade{

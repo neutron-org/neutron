@@ -10,6 +10,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -89,6 +90,7 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*feemarkettypes.MsgParams,
 		*dynamicfeestypes.MsgUpdateParams,
 		*ibctransfertypes.MsgUpdateParams,
+		*stakingtypes.MsgUpdateParams,
 		*globalfeetypes.MsgUpdateParams:
 		return true
 	}

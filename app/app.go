@@ -700,26 +700,26 @@ func New(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	//app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
-	//	appCodec,
-	//	keys[ccvconsumertypes.StoreKey],
-	//	app.GetSubspace(ccvconsumertypes.ModuleName),
-	//	scopedCCVConsumerKeeper,
-	//	app.IBCKeeper.ChannelKeeper,
-	//	app.IBCKeeper.PortKeeper,
-	//	app.IBCKeeper.ConnectionKeeper,
-	//	app.IBCKeeper.ClientKeeper,
-	//	app.SlashingKeeper,
-	//	&app.BankKeeper,
-	//	app.AccountKeeper,
-	//	app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
-	//	// Since the keeper is only used to send reward to provider chain
-	//	app.IBCKeeper,
-	//	authtypes.FeeCollectorName,
-	//	authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	//	address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
-	//	address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-	//)
+	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
+		appCodec,
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
+		scopedCCVConsumerKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.ConnectionKeeper,
+		app.IBCKeeper.ClientKeeper,
+		app.SlashingKeeper,
+		&app.BankKeeper,
+		app.AccountKeeper,
+		app.TransferKeeper.Keeper, // we cant use our transfer wrapper type here because of interface incompatibility, it looks safe to use underlying transfer keeper.
+		// Since the keeper is only used to send reward to provider chain
+		app.IBCKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
+	)
 	app.StakingKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	//consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
@@ -1422,6 +1422,7 @@ func (app *App) setupUpgradeHandlers() {
 					MarketmapKeeper:     app.MarketMapKeeper,
 					FeeMarketKeeper:     app.FeeMarkerKeeper,
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
+					StakingKeeper:       app.StakingKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},

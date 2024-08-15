@@ -11,6 +11,7 @@ import (
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
@@ -64,6 +65,7 @@ type UpgradeKeepers struct {
 	MarketmapKeeper    *marketmapkeeper.Keeper
 	FeeMarketKeeper    *feemarketkeeper.Keeper
 	DynamicfeesKeeper  *dynamicfeeskeeper.Keeper
+	StakingKeeper      *stakingkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace
