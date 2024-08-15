@@ -199,7 +199,7 @@ func (p *Pool) CalcResidualSharesMinted(
 	residualAmount0 math.Int,
 	residualAmount1 math.Int,
 ) (sharesMinted sdk.Coin, err error) {
-	fee := CalcFee(p.UpperTick1.Key.TickIndexTakerToMaker, p.LowerTick0.Key.TickIndexTakerToMaker)
+	fee := p.Fee()
 	valueMintedToken0, err := CalcResidualValue(
 		residualAmount0,
 		residualAmount1,
@@ -270,19 +270,15 @@ func CalcGreatestMatchingRatio(
 func CalcResidualValue(
 	amount0, amount1 math.Int,
 	priceLowerTakerToMaker math_utils.PrecDec,
-	fee int64,
+	fee uint64,
 ) (math_utils.PrecDec, error) {
-	// ResidualValue = Amount0 * (Price1to0Center / Price1to0Upper) + Amount1 * Price1to0Lower
-	amount0Discount, err := CalcPrice(-fee)
+	feeInt64 := utils.MustSafeUint64ToInt64(fee)
+	amount0Discount, err := CalcPrice(feeInt64)
 	if err != nil {
 		return math_utils.ZeroPrecDec(), err
 	}
-
+	// ResidualValue = Amount0 * (Price1to0Center / Price1to0Upper) + Amount1 * Price1to0Lower
 	return amount0Discount.MulInt(amount0).Add(priceLowerTakerToMaker.MulInt(amount1)), nil
-}
-
-func CalcFee(upperTickIndex, lowerTickIndex int64) int64 {
-	return (upperTickIndex - lowerTickIndex) / 2
 }
 
 func CalcAmountAsToken0(amount0, amount1 math.Int, price1To0 math_utils.PrecDec) math_utils.PrecDec {
