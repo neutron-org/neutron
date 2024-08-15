@@ -138,7 +138,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		},
 		MinSelfDelegation: math.NewInt(1_000_000),
 		DelegatorAddress:  "",
-		ValidatorAddress:  "neutronvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk5tccmr",
+		ValidatorAddress:  "neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx",
 		Pubkey:            pubkey,
 		// кто оплатит?
 		Value: sdk.Coin{

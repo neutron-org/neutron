@@ -40,12 +40,12 @@ rm -rf ./tmp-swagger-gen/cosmos/tx/v1beta1/service.swagger.json
 rm -rf ./tmp-swagger-gen/cosmos/autocli/v1/query.swagger.json
 
 # remove unnecessary modules and their proto files
-rm -rf tmp-swagger-gen/cosmos/staking
 rm -rf tmp-swagger-gen/cosmos/distribution
 rm -rf tmp-swagger-gen/cosmos/gov
 rm -rf tmp-swagger-gen/cosmos/mint
 rm -rf tmp-swagger-gen/cosmos/group
 rm -rf tmp-swagger-gen/interchain_security/ccv/provider
+rm -rf tmp-swagger-gen/interchain_security/ccv/consumer
 
 # Convert all *.swagger.json files into a single folder _all
 files=$(find ./tmp-swagger-gen -name '*.swagger.json' -print0 | xargs -0)
