@@ -9,9 +9,9 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/api/http.proto";
 import "google/protobuf/any.proto";
+import "ibc/core/channel/v1/channel.proto";
 import "neutron/feerefunder/fee.proto";
 import "neutron/interchaintxs/v1/params.proto";
-import "ibc/core/channel/v1/channel.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/interchaintxs/types";
 
@@ -37,7 +37,7 @@ message MsgRegisterInterchainAccount {
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  ibc.core.channel.v1.Order ordering      = 5;
+  ibc.core.channel.v1.Order ordering = 5;
 }
 
 // MsgRegisterInterchainAccountResponse is the response type for
