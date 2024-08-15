@@ -10,6 +10,8 @@ import (
 	"time"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 
 	"github.com/neutron-org/neutron/v4/utils"
 
@@ -110,6 +112,11 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		ccv.DefaultCCVTimeoutPeriod,
 		ccv.DefaultTransferTimeoutPeriod,
 		ccv.DefaultConsumerUnbondingPeriod,
+		95,
+		100,
+		0,
+		nil,
+		nil,
 	).(*providertypes.ConsumerAdditionProposal) //nolint:staticcheck
 
 	return prop
@@ -399,8 +406,13 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 		return fmt.Errorf("not NeutronZoneApp")
 	}
 
-	// TODO(pr0n00gler): are we sure it's okay?
-	if err := a.ICAControllerKeeper.RegisterInterchainAccount(ctx, endpoint.ConnectionID, icaOwner.String(), ""); err != nil {
+	icaMsgServer := icacontrollerkeeper.NewMsgServerImpl(&a.ICAControllerKeeper)
+	if _, err = icaMsgServer.RegisterInterchainAccount(ctx, &icacontrollertypes.MsgRegisterInterchainAccount{
+		Owner:        icaOwner.String(),
+		ConnectionId: endpoint.ConnectionID,
+		Version:      TestVersion,
+		Ordering:     channeltypes.ORDERED,
+	}); err != nil {
 		return err
 	}
 
