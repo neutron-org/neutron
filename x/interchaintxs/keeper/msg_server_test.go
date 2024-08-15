@@ -2,9 +2,10 @@ package keeper_test
 
 import (
 	"fmt"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"testing"
 	"time"
+
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"cosmossdk.io/math"
 
@@ -13,6 +14,7 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+
 	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
 	"github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
 
