@@ -7,11 +7,11 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	v402 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.2"
+
+	v402 "github.com/neutron-org/neutron/v4/app/upgrades/v4.2.0"
 	"github.com/neutron-org/neutron/v4/testutil"
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
 	"github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -94,12 +94,12 @@ func (suite *UpgradeTestSuite) TestSwappedWithdrawnTranche() {
 	)
 
 	// Create tranche with that has been swapped through
-	trancheKey := &types.LimitOrderTrancheKey{
-		TradePairId:           types.MustNewTradePairID("TokenA", "TokenB"),
+	trancheKey := &dextypes.LimitOrderTrancheKey{
+		TradePairId:           dextypes.MustNewTradePairID("TokenA", "TokenB"),
 		TickIndexTakerToMaker: -50,
 		TrancheKey:            "123",
 	}
-	tranche := &types.LimitOrderTranche{
+	tranche := &dextypes.LimitOrderTranche{
 		Key:                trancheKey,
 		PriceTakerToMaker:  math.MustNewPrecDecFromStr("0.9950127279"),
 		TotalMakerDenom:    sdkmath.NewInt(100),
@@ -111,7 +111,7 @@ func (suite *UpgradeTestSuite) TestSwappedWithdrawnTranche() {
 	// Create a couple trancheUsers for the tranche; both users have withdrawn the swap profit
 	addr1 := sample.AccAddress()
 	addr2 := sample.AccAddress()
-	trancheUser1 := &types.LimitOrderTrancheUser{
+	trancheUser1 := &dextypes.LimitOrderTrancheUser{
 		TradePairId:           trancheKey.TradePairId,
 		TickIndexTakerToMaker: trancheKey.TickIndexTakerToMaker,
 		TrancheKey:            trancheKey.TrancheKey,
@@ -119,7 +119,7 @@ func (suite *UpgradeTestSuite) TestSwappedWithdrawnTranche() {
 		SharesOwned:           sdkmath.NewInt(25),
 		SharesWithdrawn:       sdkmath.NewInt(20),
 	}
-	trancheUser2 := &types.LimitOrderTrancheUser{
+	trancheUser2 := &dextypes.LimitOrderTrancheUser{
 		TradePairId:           trancheKey.TradePairId,
 		TickIndexTakerToMaker: trancheKey.TickIndexTakerToMaker,
 		TrancheKey:            trancheKey.TrancheKey,
@@ -209,7 +209,6 @@ func (suite *UpgradeTestSuite) TestSwappedUnwithdrawnTranche() {
 	suite.True(found)
 	_, found = app.DexKeeper.GetLimitOrderTrancheUser(ctx, addr2, trancheKey.TrancheKey)
 	suite.True(found)
-
 }
 
 func (suite *UpgradeTestSuite) TestSwappedCanceledTranche() {

@@ -8,9 +8,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 
 	"cosmossdk.io/math"
+
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
@@ -35,9 +37,7 @@ func CreateUpgradeHandler(
 		// Only run this migration for testnet.
 		// NEUTRON-1 HAS ALREADY BEEN UPGRADED AND RE-RUNNING THE MIGRATION WOULD BREAK STATE!
 		if ctx.ChainID() == "pion-1" {
-			if err := migrateLimitOrderTrancheAccounting(ctx, *keepers.DexKeeper); err != nil {
-				return nil, err
-			}
+			migrateLimitOrderTrancheAccounting(ctx, *keepers.DexKeeper)
 		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
@@ -65,7 +65,7 @@ func fetchTrancheByTrancheUser(
 }
 
 // Due to a bug in our limitorder accounting we must update the TotalTakerDenom to ensure correct accounting for withdrawals
-func migrateLimitOrderTrancheAccounting(ctx sdk.Context, k dexkeeper.Keeper) error {
+func migrateLimitOrderTrancheAccounting(ctx sdk.Context, k dexkeeper.Keeper) {
 	ctx.Logger().Info("Migrating LimitOrderTranches...")
 
 	trancheUpdateData := make(map[string]TrancheData)
@@ -74,7 +74,7 @@ func migrateLimitOrderTrancheAccounting(ctx sdk.Context, k dexkeeper.Keeper) err
 	allTrancheUsers := k.GetAllLimitOrderTrancheUser(ctx)
 
 	// Iterate through all limitOrderTrancheUsers
-	//Sum up the total SharesWithdrawn for each tranche
+	// Sum up the total SharesWithdrawn for each tranche
 	for _, trancheUser := range allTrancheUsers {
 		val, ok := trancheUpdateData[trancheUser.TrancheKey]
 		if !ok {
@@ -114,10 +114,8 @@ func migrateLimitOrderTrancheAccounting(ctx sdk.Context, k dexkeeper.Keeper) err
 
 	}
 
-	//Delete the orphaned trancheUsers
+	// Delete the orphaned trancheUsers
 	for _, trancheUser := range trancheUsersToDelete {
 		k.RemoveLimitOrderTrancheUser(ctx, trancheUser)
 	}
-
-	return nil
 }

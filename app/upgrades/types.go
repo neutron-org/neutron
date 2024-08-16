@@ -27,6 +27,7 @@ import (
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 )
 
