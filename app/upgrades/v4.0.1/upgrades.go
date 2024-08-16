@@ -8,6 +8,7 @@ import (
 	"fmt"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -54,7 +55,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 	}
 	params := types.Params{
 		UnbondingTime:     21 * 24 * time.Hour,
-		MaxValidators:     100,
+		MaxValidators:     1,
 		MaxEntries:        100,
 		HistoricalEntries: 100,
 		BondDenom:         "untrn",
@@ -92,14 +93,28 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 			},
 			MinSelfDelegation: math.NewInt(1_000_000),
 			DelegatorAddress:  "",
-			ValidatorAddress:  add,
-			Pubkey:            v.GetPubkey(),
-			// кто оплатит?
+			// WARN: у оператора должно быть достаточно денег для selfbond
+			ValidatorAddress: add,
+			Pubkey:           v.GetPubkey(),
 			Value: sdk.Coin{
 				Denom:  "untrn",
 				Amount: math.NewInt(1_000_000),
 			},
 		})
+		if err != nil {
+			return err
+		}
+
+		err = sk.SetLastValidatorPower(ctx, v.GetAddress(), 1)
+		if err != nil {
+			return err
+		}
+
+		savedVal, err := sk.GetValidator(ctx, v.GetAddress())
+		if err != nil {
+			return err
+		}
+		_, err = bondValidator(ctx, sk, savedVal)
 		if err != nil {
 			return err
 		}
@@ -138,8 +153,9 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		},
 		MinSelfDelegation: math.NewInt(1_000_000),
 		DelegatorAddress:  "",
-		ValidatorAddress:  "neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx",
-		Pubkey:            pubkey,
+		// WARN: у оператора должно быть достаточно денег для selfbond
+		ValidatorAddress: "neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx",
+		Pubkey:           pubkey,
 		// кто оплатит?
 		Value: sdk.Coin{
 			Denom:  "untrn",
@@ -152,4 +168,44 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 
 	sk.SetLastTotalPower(ctx, math.NewInt(1))
 	return nil
+}
+
+func bondValidator(ctx context.Context, k stakingkeeper.Keeper, validator types.Validator) (types.Validator, error) {
+	// delete the validator by power index, as the key will change
+	if err := k.DeleteValidatorByPowerIndex(ctx, validator); err != nil {
+		return validator, err
+	}
+
+	validator = validator.UpdateStatus(types.Bonded)
+
+	// save the now bonded validator record to the two referenced stores
+	if err := k.SetValidator(ctx, validator); err != nil {
+		return validator, err
+	}
+
+	if err := k.SetValidatorByPowerIndex(ctx, validator); err != nil {
+		return validator, err
+	}
+
+	// delete from queue if present
+	if err := k.DeleteValidatorQueue(ctx, validator); err != nil {
+		return validator, err
+	}
+
+	// trigger hook
+	consAddr, err := validator.GetConsAddr()
+	if err != nil {
+		return validator, err
+	}
+	codec := address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+	str, err := codec.StringToBytes(validator.GetOperator())
+	if err != nil {
+		return validator, err
+	}
+
+	if err := k.Hooks().AfterValidatorBonded(ctx, consAddr, str); err != nil {
+		return validator, err
+	}
+
+	return validator, err
 }
