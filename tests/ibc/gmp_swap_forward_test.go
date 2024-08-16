@@ -10,7 +10,7 @@ import (
 	swaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
 )
 
-// TestGMPSwap_Success asserts that the swap middleware works as intended when the original message is sent via GMP
+// TestGMPSwapAndForward_Success asserts that the swap middleware works as intended when the original message is sent via GMP
 func (s *IBCTestSuite) TestGMPSwapAndForward_Success() {
 	// Send an IBC transfer from provider to Neutron, so we can initialize a pool with the IBC denom token + native Neutron token
 	s.IBCTransferProviderToNeutron(s.providerAddr, s.neutronAddr, nativeDenom, ibcTransferAmount, "")
