@@ -28,13 +28,13 @@ func (k msgServer) AddSchedule(goCtx context.Context, req *types.MsgAddSchedule)
 		return nil, errors.Wrap(err, "failed to validate MsgAddSchedule")
 	}
 
-	authority, reqAuthority := k.GetAuthority(), req.GetAuthority()
-	if authority != reqAuthority {
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, reqAuthority)
+	authority := k.GetAuthority()
+	if authority != req.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.Keeper.AddSchedule(ctx, req.GetName(), req.GetPeriod(), req.GetMsgs(), uint64(req.GetBlocker())); err != nil {
+	if err := k.Keeper.AddSchedule(ctx, req.Name, req.Period, req.Msgs, uint64(req.Blocker)); err != nil {
 		return nil, err
 	}
 
@@ -47,13 +47,13 @@ func (k msgServer) RemoveSchedule(goCtx context.Context, req *types.MsgRemoveSch
 		return nil, errors.Wrap(err, "failed to validate MsgRemoveSchedule")
 	}
 
-	authority, reqAuthority := k.GetAuthority(), req.GetAuthority()
-	if authority != reqAuthority {
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, reqAuthority)
+	authority := k.GetAuthority()
+	if authority != req.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.Keeper.RemoveSchedule(ctx, req.GetName())
+	k.Keeper.RemoveSchedule(ctx, req.Name)
 
 	return &types.MsgRemoveScheduleResponse{}, nil
 }
@@ -64,9 +64,9 @@ func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
 
-	authority, reqAuthority := k.GetAuthority(), req.GetAuthority()
-	if authority != reqAuthority {
-		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, reqAuthority)
+	authority := k.GetAuthority()
+	if authority != req.Authority {
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)

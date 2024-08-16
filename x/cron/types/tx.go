@@ -17,7 +17,7 @@ func (msg *MsgAddSchedule) Type() string {
 }
 
 func (msg *MsgAddSchedule) GetSigners() []sdk.AccAddress {
-	authority, err := sdk.AccAddressFromBech32(msg.GetAuthority())
+	authority, err := sdk.AccAddressFromBech32(msg.Authority)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
 	}
@@ -29,19 +29,19 @@ func (msg *MsgAddSchedule) GetSignBytes() []byte {
 }
 
 func (msg *MsgAddSchedule) Validate() error {
-	if _, err := sdk.AccAddressFromBech32(msg.GetAuthority()); err != nil {
+	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}
 
-	if msg.GetName() == "" {
+	if msg.Name == "" {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "name is invalid")
 	}
 
-	if msg.GetPeriod() == 0 {
+	if msg.Period == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "period is invalid")
 	}
 
-	if len(msg.GetMsgs()) == 0 {
+	if len(msg.Msgs) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "msgs should not be empty")
 	}
 
@@ -61,7 +61,7 @@ func (msg *MsgRemoveSchedule) Type() string {
 }
 
 func (msg *MsgRemoveSchedule) GetSigners() []sdk.AccAddress {
-	authority, err := sdk.AccAddressFromBech32(msg.GetAuthority())
+	authority, err := sdk.AccAddressFromBech32(msg.Authority)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
 	}
@@ -73,11 +73,11 @@ func (msg *MsgRemoveSchedule) GetSignBytes() []byte {
 }
 
 func (msg *MsgRemoveSchedule) Validate() error {
-	if _, err := sdk.AccAddressFromBech32(msg.GetAuthority()); err != nil {
+	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}
 
-	if msg.GetName() == "" {
+	if msg.Name == "" {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "name is invalid")
 	}
 
@@ -97,7 +97,7 @@ func (msg *MsgUpdateParams) Type() string {
 }
 
 func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
-	authority, err := sdk.AccAddressFromBech32(msg.GetAuthority())
+	authority, err := sdk.AccAddressFromBech32(msg.Authority)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
 	}
@@ -109,11 +109,11 @@ func (msg *MsgUpdateParams) GetSignBytes() []byte {
 }
 
 func (msg *MsgUpdateParams) Validate() error {
-	if _, err := sdk.AccAddressFromBech32(msg.GetAuthority()); err != nil {
+	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}
 
-	if _, err := sdk.AccAddressFromBech32(msg.GetParams().SecurityAddress); err != nil {
+	if _, err := sdk.AccAddressFromBech32(msg.Params.SecurityAddress); err != nil {
 		return errors.Wrap(err, "security_address is invalid")
 	}
 
