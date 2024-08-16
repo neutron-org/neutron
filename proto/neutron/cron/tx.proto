@@ -6,6 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "neutron/cron/params.proto";
+import "neutron/cron/schedule.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
@@ -15,9 +16,47 @@ option go_package = "github.com/neutron-org/neutron/v4/x/cron/types";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
+  // Adds new schedule.
+  rpc AddSchedule(MsgAddSchedule) returns (MsgAddScheduleResponse);
+  // Removes schedule.
+  rpc RemoveSchedule(MsgRemoveSchedule) returns (MsgRemoveScheduleResponse);
+  // Updates the module parameters.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
   // this line is used by starport scaffolding # proto/tx/rpc
 }
+
+// MsgAddSchedule is the MsgAddSchedule request type.
+message MsgAddSchedule {
+  option (amino.name) = "cron/MsgAddSchedule";
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // Authority is the address of the governance account.
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  string name = 2;
+	uint64 period = 3;
+	repeated MsgExecuteContract msgs = 4 [(gogoproto.nullable) = false];
+	BlockerType blocker = 5;
+}
+
+// MsgAddScheduleResponse defines the response structure for executing a
+// MsgAddSchedule message.
+message MsgAddScheduleResponse {}
+
+// MsgRemoveSchedule is the MsgRemoveSchedule request type.
+message MsgRemoveSchedule {
+  option (amino.name) = "cron/MsgRemoveSchedule";
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // Authority is the address of the governance account.
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  string name = 2;
+}
+
+// MsgRemoveScheduleResponse defines the response structure for executing a
+// MsgRemoveSchedule message.
+message MsgRemoveScheduleResponse {}
 
 // this line is used by starport scaffolding # proto/tx/message
 
