@@ -1,7 +1,7 @@
 package dex_state_test
 
 import (
-	"fmt"
+	"strconv"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -13,17 +13,34 @@ import (
 type depositTestParams struct {
 	SharedParams
 	// State Conditions
-	ExistingShareHolders  string
-	LiquidityDistribution LiquidityDistribution
-	PoolValueIncrease     LiquidityDistribution
+	ExistingShareHolders          string
+	ExistingLiquidityDistribution LiquidityDistribution
+	PoolValueIncrease             LiquidityDistribution
 	// Message Variants
 	DisableAutoswap bool
 	FailTxOnBEL     bool
 	DepositAmounts  LiquidityDistribution
 }
 
+func (p depositTestParams) printTestInfo(t *testing.T) {
+	t.Logf(`
+		Existing Shareholders: %s
+		Existing Liquidity Distribution: %v
+		Pool Value Increase: %v
+		Disable Autoswap: %t
+		Fail Tx on BEL: %t
+		Deposit Amounts: %v`,
+		p.ExistingShareHolders,
+		p.ExistingLiquidityDistribution,
+		p.PoolValueIncrease,
+		p.DisableAutoswap,
+		p.FailTxOnBEL,
+		p.DepositAmounts,
+	)
+}
+
 func (s *DexStateTestSuite) setupDepositState(params depositTestParams) {
-	liquidityDistr := params.LiquidityDistribution
+	liquidityDistr := params.ExistingLiquidityDistribution
 
 	switch params.ExistingShareHolders {
 	case None:
@@ -53,8 +70,8 @@ func (s *DexStateTestSuite) setupDepositState(params depositTestParams) {
 
 func CalcTotalPreDepositLiquidity(params depositTestParams) LiquidityDistribution {
 	return LiquidityDistribution{
-		TokenA: params.LiquidityDistribution.TokenA.Add(params.PoolValueIncrease.TokenA),
-		TokenB: params.LiquidityDistribution.TokenB.Add(params.PoolValueIncrease.TokenB),
+		TokenA: params.ExistingLiquidityDistribution.TokenA.Add(params.PoolValueIncrease.TokenA),
+		TokenB: params.ExistingLiquidityDistribution.TokenB.Add(params.PoolValueIncrease.TokenB),
 	}
 }
 
@@ -78,11 +95,9 @@ func CalcDepositOutput(params depositTestParams) (resultAmountA, resultAmountB m
 		return depositA, math.ZeroInt()
 	// Pool has a ratio of A and B, deposit must match this ratio
 	case existingA.IsPositive() && existingB.IsPositive():
-		targetRatioA := math.LegacyNewDecFromInt(existingA).Quo(math.LegacyNewDecFromInt(existingB))
-		maxAmountA := math.LegacyNewDecFromInt(depositB).Mul(targetRatioA).TruncateInt()
+		maxAmountA := math.LegacyNewDecFromInt(depositB).MulInt(existingA).QuoInt(existingB).TruncateInt()
 		resultAmountA = math.MinInt(depositA, maxAmountA)
-		targetRatioB := math.LegacyOneDec().Quo(targetRatioA)
-		maxAmountB := math.LegacyNewDecFromInt(depositA).Mul(targetRatioB).TruncateInt()
+		maxAmountB := math.LegacyNewDecFromInt(depositA).MulInt(existingB).QuoInt(existingA).TruncateInt()
 		resultAmountB = math.MinInt(depositB, maxAmountB)
 
 		return resultAmountA, resultAmountB
@@ -92,8 +107,8 @@ func CalcDepositOutput(params depositTestParams) (resultAmountA, resultAmountB m
 }
 
 func calcCurrentShareValue(params depositTestParams) math_utils.PrecDec {
-	initialValueA := params.LiquidityDistribution.TokenA.Amount
-	initialValueB := params.LiquidityDistribution.TokenB.Amount
+	initialValueA := params.ExistingLiquidityDistribution.TokenA.Amount
+	initialValueB := params.ExistingLiquidityDistribution.TokenB.Amount
 
 	existingShares := calcDepositValueAsToken0(params.Tick, initialValueA, initialValueB).TruncateInt()
 	if existingShares.IsZero() {
@@ -104,6 +119,7 @@ func calcCurrentShareValue(params depositTestParams) math_utils.PrecDec {
 	totalValueB := initialValueB.Add(params.PoolValueIncrease.TokenB.Amount)
 
 	totalPreDepositValue := calcDepositValueAsToken0(params.Tick, totalValueA, totalValueB)
+
 	currentShareValue := math_utils.NewPrecDecFromInt(existingShares).Quo(totalPreDepositValue)
 
 	return currentShareValue
@@ -189,12 +205,12 @@ func HydrateDepositTestCase(params map[string]string, pairID *dextypes.PairID) d
 	}
 
 	return depositTestParams{
-		ExistingShareHolders:  existingShareHolders,
-		LiquidityDistribution: liquidityDistribution,
-		DisableAutoswap:       parseBool(params["DisableAutoswap"]),
-		PoolValueIncrease:     valueIncrease,
-		DepositAmounts:        parseLiquidityDistribution(params["DepositAmounts"], pairID),
-		SharedParams:          DefaultSharedParams,
+		ExistingShareHolders:          existingShareHolders,
+		ExistingLiquidityDistribution: liquidityDistribution,
+		DisableAutoswap:               parseBool(params["DisableAutoswap"]),
+		PoolValueIncrease:             valueIncrease,
+		DepositAmounts:                parseLiquidityDistribution(params["DepositAmounts"], pairID),
+		SharedParams:                  DefaultSharedParams,
 	}
 }
 
@@ -242,10 +258,11 @@ func TestDeposit(t *testing.T) {
 	s.SetT(t)
 	s.SetupTest(t)
 
-	for _, tc := range testCases {
-		testName := fmt.Sprintf("%v", tc)
-		t.Run(testName, func(t *testing.T) {
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			s.SetT(t)
+
+			tc.printTestInfo(t)
 
 			s.setupDepositState(tc)
 

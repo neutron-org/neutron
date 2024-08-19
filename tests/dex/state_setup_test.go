@@ -59,9 +59,10 @@ const (
 var BaseTokenAmountInt = math.NewInt(BaseTokenAmount)
 
 type SharedParams struct {
-	Tick   int64
-	Fee    uint64
-	PairID *dextypes.PairID
+	Tick     int64
+	Fee      uint64
+	PairID   *dextypes.PairID
+	TestName string
 }
 
 var DefaultSharedParams SharedParams = SharedParams{
