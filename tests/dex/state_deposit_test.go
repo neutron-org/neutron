@@ -6,9 +6,10 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	"github.com/stretchr/testify/require"
 )
 
 type depositTestParams struct {
@@ -83,7 +84,8 @@ func (s *DexStateTestSuite) setupDepositState(params depositTestParams) {
 		s.App.DexKeeper.SetPool(s.Ctx, pool)
 
 		// Add fund dex with the additional balance
-		s.App.BankKeeper.MintCoins(s.Ctx, dextypes.ModuleName, sdk.NewCoins(params.PoolValueIncrease.TokenA, params.PoolValueIncrease.TokenB))
+		err := s.App.BankKeeper.MintCoins(s.Ctx, dextypes.ModuleName, sdk.NewCoins(params.PoolValueIncrease.TokenA, params.PoolValueIncrease.TokenB))
+		s.NoError(err)
 	}
 }
 
@@ -103,7 +105,7 @@ func CalcDepositOutput(params depositTestParams) (resultAmountA, resultAmountB m
 	existingB := existingLiquidity.TokenB.Amount
 
 	switch {
-	//Pool is empty can deposit full amounts
+	// Pool is empty can deposit full amounts
 	case existingA.IsZero() && existingB.IsZero():
 		return depositA, depositB
 	// Pool only has TokenB, can deposit all of depositB
@@ -170,7 +172,6 @@ func calcAutoSwapResidualValue(params depositTestParams, residual0, residual1 ma
 }
 
 func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBAmount, sharesIssued math.Int) {
-
 	amountAWithoutAutoswap, amountBWithoutAutoswap := CalcDepositOutput(params)
 
 	sharesIssuedWithoutAutoswap := calcDepositValue(params, amountAWithoutAutoswap, amountBWithoutAutoswap)
@@ -208,7 +209,7 @@ func (s *DexStateTestSuite) handleBaseFailureCases(params depositTestParams, err
 	s.NoError(err)
 }
 
-func HydrateDepositTestCase(params map[string]string, pairID *dextypes.PairID) depositTestParams {
+func hydrateDepositTestCase(params map[string]string, pairID *dextypes.PairID) depositTestParams {
 	existingShareHolders := params["ExistingShareHolders"]
 	var liquidityDistribution LiquidityDistribution
 
@@ -235,11 +236,11 @@ func HydrateDepositTestCase(params map[string]string, pairID *dextypes.PairID) d
 	}
 }
 
-func HydrateAllDepositTestCases(paramsList []map[string]string) []depositTestParams {
+func hydrateAllDepositTestCases(paramsList []map[string]string) []depositTestParams {
 	allTCs := make([]depositTestParams, 0)
 	for i, paramsRaw := range paramsList {
 		pairID := generatePairID(i)
-		tc := HydrateDepositTestCase(paramsRaw, pairID)
+		tc := hydrateDepositTestCase(paramsRaw, pairID)
 		tc.PairID = pairID
 		allTCs = append(allTCs, tc)
 	}
@@ -273,11 +274,11 @@ func TestDeposit(t *testing.T) {
 		}},
 	}
 	testCasesRaw := generatePermutations(testParams)
-	testCases := HydrateAllDepositTestCases(testCasesRaw)
+	testCases := hydrateAllDepositTestCases(testCasesRaw)
 
 	s := new(DexStateTestSuite)
 	s.SetT(t)
-	s.SetupTest(t)
+	s.SetupTest()
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -305,7 +306,7 @@ func TestDeposit(t *testing.T) {
 
 			expectedDepositA, expectedDepositB, expectedShares := calcExpectedDepositAmounts(tc)
 
-			//Check that response is correct
+			// Check that response is correct
 			s.intsEqual("Response Deposit0", expectedDepositA, resp.Reserve0Deposited[0])
 			s.intsEqual("Response Deposit1", expectedDepositB, resp.Reserve1Deposited[0])
 
@@ -325,9 +326,6 @@ func TestDeposit(t *testing.T) {
 			s.assertPoolBalance(tc.PairID, tc.Tick, tc.Fee, expectedDexBalanceA, expectedDexBalanceB)
 			s.assertDexBalance(tc.PairID.Token0, expectedDexBalanceA)
 			s.assertDexBalance(tc.PairID.Token1, expectedDexBalanceB)
-
 		})
-
 	}
-
 }

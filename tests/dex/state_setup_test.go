@@ -2,10 +2,10 @@ package dex_state_test
 
 import (
 	"fmt"
-	"testing"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v4/testutil/apptesting"
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
@@ -17,36 +17,38 @@ import (
 
 // Bools
 const (
-	True  string = "True"
-	False        = "False"
+	True  = "True"
+	False = "False"
 )
 
 // Percents
 const (
-	ZeroPCT    string = "0"
-	FiftyPCT          = "50"
-	HundredPct        = "100"
+	ZeroPCT    = "0"
+	FiftyPCT   = "50"
+	HundredPct = "100"
 )
 
 // ExistingShareHolders
 const (
-	None               string = "None"
-	Creator                   = "Creator"
-	OneOther                  = "OneOther"
-	OneOtherAndCreator        = "OneOtherAndCreator"
+	None               = "None"
+	Creator            = "Creator"
+	OneOther           = "OneOther"
+	OneOtherAndCreator = "OneOtherAndCreator"
 )
 
 // LiquidityDistribution
+//
+//nolint:gosec
 const (
-	TokenA0TokenB0 string = "TokenA0TokenB0"
-	TokenA0TokenB1        = "TokenA0TokenB1"
-	TokenA0TokenB2        = "TokenA0TokenB2"
-	TokenA1TokenB0        = "TokenA1TokenB0"
-	TokenA1TokenB1        = "TokenA1TokenB1"
-	TokenA1TokenB2        = "TokenA1TokenB2"
-	TokenA2TokenB0        = "TokenA2TokenB0"
-	TokenA2TokenB1        = "TokenA2TokenB1"
-	TokenA2TokenB2        = "TokenA2TokenB2"
+	TokenA0TokenB0 = "TokenA0TokenB0"
+	TokenA0TokenB1 = "TokenA0TokenB1"
+	TokenA0TokenB2 = "TokenA0TokenB2"
+	TokenA1TokenB0 = "TokenA1TokenB0"
+	TokenA1TokenB1 = "TokenA1TokenB1"
+	TokenA1TokenB2 = "TokenA1TokenB2"
+	TokenA2TokenB0 = "TokenA2TokenB0"
+	TokenA2TokenB1 = "TokenA2TokenB1"
+	TokenA2TokenB2 = "TokenA2TokenB2"
 )
 
 // Default Values
@@ -69,7 +71,7 @@ type SharedParams struct {
 	TestName string
 }
 
-var DefaultSharedParams SharedParams = SharedParams{
+var DefaultSharedParams = SharedParams{
 	Tick: DefaultTick,
 	Fee:  DefaultFee,
 }
@@ -108,16 +110,13 @@ func splitLiquidityDistribution(liquidityDistribution LiquidityDistribution, n i
 
 	result := make([]LiquidityDistribution, n)
 	for i := range n {
-
 		result[i] = LiquidityDistribution{
 			TokenA: sdk.NewCoin(liquidityDistribution.TokenA.Denom, amount0),
 			TokenB: sdk.NewCoin(liquidityDistribution.TokenB.Denom, amount1),
 		}
-
 	}
 
 	return result
-
 }
 
 // State Parsers //////////////////////////////////////////////////////////////
@@ -164,7 +163,6 @@ func parseLiquidityDistribution(liquidityDistribution string, pairID *dextypes.P
 // Misc. Helpers //////////////////////////////////////////////////////////////
 func (s *DexStateTestSuite) makeDeposit(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) (*dextypes.MsgDepositResponse, error) {
 	return s.msgServer.Deposit(s.Ctx, &dextypes.MsgDeposit{
-
 		Creator:         addr.String(),
 		Receiver:        addr.String(),
 		TokenA:          depositAmts.TokenA.Denom,
@@ -190,7 +188,6 @@ func calcDepositValueAsToken0(tick int64, amount0, amount1 math.Int) math_utils.
 	depositValue := amount1ValueAsToken0.Add(math_utils.NewPrecDecFromInt(amount0))
 
 	return depositValue
-
 }
 
 func generatePairID(i int) *dextypes.PairID {
@@ -246,7 +243,7 @@ type DexStateTestSuite struct {
 	alice     sdk.AccAddress
 }
 
-func (s *DexStateTestSuite) SetupTest(t *testing.T) {
+func (s *DexStateTestSuite) SetupTest() {
 	s.Setup()
 	s.creator = sdk.MustAccAddressFromBech32(sample.AccAddress())
 	s.alice = sdk.MustAccAddressFromBech32(sample.AccAddress())
@@ -275,7 +272,6 @@ func generatePermutations(testStates []testParams) []map[string]string {
 
 	var generate func(int, map[string]string)
 	generate = func(index int, current map[string]string) {
-
 		// Base Case
 		if index == len(testStates) {
 			result = append(result, current)
@@ -289,7 +285,6 @@ func generatePermutations(testStates []testParams) []map[string]string {
 			temp[fieldName] = value
 			generate(index+1, temp)
 		}
-
 	}
 	emptyMap := make(map[string]string)
 	generate(0, emptyMap)
