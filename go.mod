@@ -255,6 +255,7 @@ require (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.1
+	github.com/cometbft/cometbft-db => github.com/sotnikov-s/cometbft-db v0.11.0-no-leveldb-compression
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.0
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.8-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
