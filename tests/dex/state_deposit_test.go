@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	"github.com/stretchr/testify/require"
@@ -40,19 +41,34 @@ func (p depositTestParams) printTestInfo(t *testing.T) {
 }
 
 func (s *DexStateTestSuite) setupDepositState(params depositTestParams) {
+	// NOTE: for setup we know the deposit will be completely used so we fund the accounts before the deposit
+	// so the expected account balance is unaffected.
 	liquidityDistr := params.ExistingLiquidityDistribution
 
 	switch params.ExistingShareHolders {
 	case None:
 		break
 	case Creator:
+		coins := sdk.NewCoins(liquidityDistr.TokenA, liquidityDistr.TokenB)
+		s.FundAcc(s.creator, coins)
+
 		s.makeDepositSuccess(s.creator, liquidityDistr, false)
 	case OneOther:
+		coins := sdk.NewCoins(liquidityDistr.TokenA, liquidityDistr.TokenB)
+		s.FundAcc(s.alice, coins)
+
 		s.makeDepositSuccess(s.alice, liquidityDistr, false)
 	case OneOtherAndCreator:
 		liqDistrArr := splitLiquidityDistribution(liquidityDistr, 2)
-		s.makeDepositSuccess(s.creator, liqDistrArr[1], false)
-		s.makeDepositSuccess(s.alice, liqDistrArr[0], false)
+
+		coins := sdk.NewCoins(liqDistrArr[0].TokenA, liqDistrArr[0].TokenB)
+		s.FundAcc(s.creator, coins)
+
+		coins = sdk.NewCoins(liqDistrArr[1].TokenA, liqDistrArr[1].TokenB)
+		s.FundAcc(s.alice, coins)
+
+		s.makeDepositSuccess(s.creator, liqDistrArr[0], false)
+		s.makeDepositSuccess(s.alice, liqDistrArr[1], false)
 	}
 
 	// handle pool value increase
@@ -65,6 +81,9 @@ func (s *DexStateTestSuite) setupDepositState(params depositTestParams) {
 		pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(params.PoolValueIncrease.TokenA.Amount)
 		pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(params.PoolValueIncrease.TokenB.Amount)
 		s.App.DexKeeper.SetPool(s.Ctx, pool)
+
+		// Add fund dex with the additional balance
+		s.App.BankKeeper.MintCoins(s.Ctx, dextypes.ModuleName, sdk.NewCoins(params.PoolValueIncrease.TokenA, params.PoolValueIncrease.TokenB))
 	}
 }
 
@@ -185,6 +204,8 @@ func (s *DexStateTestSuite) handleBaseFailureCases(params depositTestParams, err
 			s.T().Skip("Ending test due to expected error")
 		}
 	}
+
+	s.NoError(err)
 }
 
 func HydrateDepositTestCase(params map[string]string, pairID *dextypes.PairID) depositTestParams {
@@ -261,29 +282,26 @@ func TestDeposit(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			s.SetT(t)
-
 			tc.printTestInfo(t)
 
 			s.setupDepositState(tc)
+			s.fundCreatorBalanceDefault(tc.PairID)
 
 			poolID, found := s.App.DexKeeper.GetPoolIDByParams(s.Ctx, tc.PairID, tc.Tick, tc.Fee)
-
 			if tc.ExistingShareHolders == None {
 				// This is the ID that will be used when the pool is created
 				poolID = s.App.DexKeeper.GetPoolCount(s.Ctx)
 			} else {
 				require.True(t, found, "Pool not found after deposit")
 			}
-
 			poolDenom := dextypes.NewPoolDenom(poolID)
-
 			existingSharesOwned := s.App.BankKeeper.GetBalance(s.Ctx, s.creator, poolDenom)
 
 			// Do the actual deposit
 			resp, err := s.makeDeposit(s.creator, tc.DepositAmounts, tc.DisableAutoswap)
 
+			// Assert new state is correct
 			s.handleBaseFailureCases(tc, err)
-			s.NoError(err)
 
 			expectedDepositA, expectedDepositB, expectedShares := calcExpectedDepositAmounts(tc)
 
@@ -291,12 +309,23 @@ func TestDeposit(t *testing.T) {
 			s.intsEqual("Response Deposit0", expectedDepositA, resp.Reserve0Deposited[0])
 			s.intsEqual("Response Deposit1", expectedDepositB, resp.Reserve1Deposited[0])
 
-			newSharesOwned := s.App.BankKeeper.GetBalance(s.Ctx, s.creator, poolDenom)
-			sharesIssued := newSharesOwned.Sub(existingSharesOwned)
-			s.intsEqual("Shares Issued", expectedShares, sharesIssued.Amount)
+			expectedTotalShares := existingSharesOwned.Amount.Add(expectedShares)
+			s.assertCreatorBalance(poolDenom, expectedTotalShares)
 
-			// TODO: balance checks for tokens
-			// TODO: maybe check actual dex state
+			// Assert Creator Balance is correct
+			expectedBalanceA := DefaultStartingBalanceInt.Sub(expectedDepositA)
+			expectedBalanceB := DefaultStartingBalanceInt.Sub(expectedDepositB)
+			s.assertCreatorBalance(tc.PairID.Token0, expectedBalanceA)
+			s.assertCreatorBalance(tc.PairID.Token1, expectedBalanceB)
+
+			// Assert dex state is correct
+			dexBalanceBeforeDeposit := CalcTotalPreDepositLiquidity(tc)
+			expectedDexBalanceA := dexBalanceBeforeDeposit.TokenA.Amount.Add(expectedDepositA)
+			expectedDexBalanceB := dexBalanceBeforeDeposit.TokenB.Amount.Add(expectedDepositB)
+			s.assertPoolBalance(tc.PairID, tc.Tick, tc.Fee, expectedDexBalanceA, expectedDexBalanceB)
+			s.assertDexBalance(tc.PairID.Token0, expectedDexBalanceA)
+			s.assertDexBalance(tc.PairID.Token1, expectedDexBalanceB)
+
 		})
 
 	}

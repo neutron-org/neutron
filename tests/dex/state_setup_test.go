@@ -51,12 +51,16 @@ const (
 
 // Default Values
 const (
-	BaseTokenAmount = 1_000_000
-	DefaultTick     = 0
-	DefaultFee      = 1
+	BaseTokenAmount        = 1_000_000
+	DefaultTick            = 0
+	DefaultFee             = 1
+	DefaultStartingBalance = 10_000_000
 )
 
-var BaseTokenAmountInt = math.NewInt(BaseTokenAmount)
+var (
+	BaseTokenAmountInt        = math.NewInt(BaseTokenAmount)
+	DefaultStartingBalanceInt = math.NewInt(DefaultStartingBalance)
+)
 
 type SharedParams struct {
 	Tick     int64
@@ -158,15 +162,7 @@ func parseLiquidityDistribution(liquidityDistribution string, pairID *dextypes.P
 }
 
 // Misc. Helpers //////////////////////////////////////////////////////////////
-
-func (s *DexStateTestSuite) intsEqual(field string, expected, actual math.Int) {
-	s.True(actual.Equal(expected), "For %v: Expected %v Got %v", field, expected, actual)
-}
-
 func (s *DexStateTestSuite) makeDeposit(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) (*dextypes.MsgDepositResponse, error) {
-	coins := sdk.NewCoins(depositAmts.TokenA, depositAmts.TokenB)
-	s.FundAcc(addr, coins)
-
 	return s.msgServer.Deposit(s.Ctx, &dextypes.MsgDeposit{
 
 		Creator:         addr.String(),
@@ -201,6 +197,44 @@ func generatePairID(i int) *dextypes.PairID {
 	token0 := fmt.Sprintf("TokenA%d", i)
 	token1 := fmt.Sprintf("TokenB%d", i+1)
 	return dextypes.MustNewPairID(token0, token1)
+}
+
+func (s *DexStateTestSuite) fundCreatorBalanceDefault(pairID *dextypes.PairID) {
+	coins := sdk.NewCoins(
+		sdk.NewCoin(pairID.Token0, DefaultStartingBalanceInt),
+		sdk.NewCoin(pairID.Token1, DefaultStartingBalanceInt),
+	)
+	s.FundAcc(s.creator, coins)
+}
+
+// Assertions /////////////////////////////////////////////////////////////////
+
+func (s *DexStateTestSuite) intsEqual(field string, expected, actual math.Int) {
+	s.True(actual.Equal(expected), "For %v: Expected %v Got %v", field, expected, actual)
+}
+
+func (s *DexStateTestSuite) assertBalance(addr sdk.AccAddress, denom string, expected math.Int) {
+	trueBalance := s.App.BankKeeper.GetBalance(s.Ctx, addr, denom)
+	s.intsEqual(fmt.Sprintf("Balance %s", denom), expected, trueBalance.Amount)
+}
+
+func (s *DexStateTestSuite) assertCreatorBalance(denom string, expected math.Int) {
+	s.assertBalance(s.creator, denom, expected)
+}
+
+func (s *DexStateTestSuite) assertDexBalance(denom string, expected math.Int) {
+	s.assertBalance(s.App.AccountKeeper.GetModuleAddress("dex"), denom, expected)
+}
+
+func (s *DexStateTestSuite) assertPoolBalance(pairID *dextypes.PairID, tick int64, fee uint64, expectedA, expectedB math.Int) {
+	pool, found := s.App.DexKeeper.GetPool(s.Ctx, pairID, tick, fee)
+	s.True(found, "Pool not found")
+
+	reservesA := pool.LowerTick0.ReservesMakerDenom
+	reservesB := pool.UpperTick1.ReservesMakerDenom
+
+	s.intsEqual("Pool ReservesA", expectedA, reservesA)
+	s.intsEqual("Pool ReservesB", expectedB, reservesB)
 }
 
 // Core Test Setup ////////////////////////////////////////////////////////////
