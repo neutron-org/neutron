@@ -12,15 +12,15 @@ import (
 	v1types "github.com/neutron-org/neutron/v4/x/cron/types/v1"
 )
 
-type V4CronMigrationTestSuite struct {
+type V2CronMigrationTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(V4CronMigrationTestSuite))
+	suite.Run(t, new(V2CronMigrationTestSuite))
 }
 
-func (suite *V4CronMigrationTestSuite) TestScheduleUpgrade() {
+func (suite *V2CronMigrationTestSuite) TestScheduleUpgrade() {
 	var (
 		app      = suite.GetNeutronZoneApp(suite.ChainA)
 		storeKey = app.GetKey(types.StoreKey)
@@ -47,7 +47,7 @@ func (suite *V4CronMigrationTestSuite) TestScheduleUpgrade() {
 	// Run migration
 	suite.NoError(v2.MigrateStore(ctx, cdc, storeKey))
 
-	// Check Schedule has correct Blocker
+	// Check Schedule has correct ExecutionStage
 	newSchedule, _ := app.CronKeeper.GetSchedule(ctx, schedule.Name)
-	suite.Equal(newSchedule.Blocker, types.BlockerType_END)
+	suite.Equal(newSchedule.ExecutionStage, types.ExecutionStage_END_BLOCKER)
 }

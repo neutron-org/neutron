@@ -67,17 +67,12 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 // ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equal to Params.Limit)
 // and executes messages in each one
 // NOTE that errors in contract calls rollback all already executed messages
-func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, isBeginBlocker bool) {
+func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.ExecutionStage) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelExecuteReadySchedules)
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
-		if isBeginBlocker && (schedule.Blocker == types.BlockerType_BEGIN || schedule.Blocker == types.BlockerType_BOTH) {
-			err := k.executeSchedule(ctx, schedule)
-			recordExecutedSchedule(err, schedule)
-		}
-
-		if !isBeginBlocker && (schedule.Blocker == types.BlockerType_END || schedule.Blocker == types.BlockerType_BOTH) {
+		if isExecutableAtTheStage(schedule, executionStage) {
 			err := k.executeSchedule(ctx, schedule)
 			recordExecutedSchedule(err, schedule)
 		}
@@ -91,7 +86,7 @@ func (k *Keeper) AddSchedule(
 	name string,
 	period uint64,
 	msgs []types.MsgExecuteContract,
-	blocker uint64,
+	executionStage types.ExecutionStage,
 ) error {
 	if k.scheduleExists(ctx, name) {
 		return fmt.Errorf("schedule already exists with name=%v", name)
@@ -102,15 +97,11 @@ func (k *Keeper) AddSchedule(
 		Period:            period,
 		Msgs:              msgs,
 		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
+		ExecutionStage:    executionStage,
 	}
 
-	switch blocker {
-	case 0:
-		schedule.Blocker = types.BlockerType_BEGIN
-	case 2:
-		schedule.Blocker = types.BlockerType_BOTH
-	default:
-		schedule.Blocker = types.BlockerType_END
+	if _, ok := types.ExecutionStage_name[int32(executionStage)]; !ok {
+		schedule.ExecutionStage = types.ExecutionStage_END_BLOCKER
 	}
 
 	k.storeSchedule(ctx, schedule)
@@ -190,6 +181,10 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 	}
 
 	return res
+}
+
+func isExecutableAtTheStage(schedule types.Schedule, executionStage types.ExecutionStage) bool {
+	return schedule.ExecutionStage == executionStage || schedule.ExecutionStage == types.ExecutionStage_BOTH_BLOCKERS
 }
 
 // executeSchedule executes all msgs in a given schedule and changes LastExecuteHeight

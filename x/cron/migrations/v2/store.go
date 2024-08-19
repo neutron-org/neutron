@@ -1,7 +1,7 @@
 package v2
 
 import (
-	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -11,7 +11,7 @@ import (
 )
 
 // MigrateStore performs in-place store migrations.
-// The migration adds Blocker for execution to schedules.
+// The migration adds execution stage for schedules.
 func MigrateStore(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetypes.StoreKey) error {
 	return migrateSchedules(ctx, cdc, storeKey)
 }
@@ -32,7 +32,7 @@ func migrateSchedules(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetype
 		var schedule types.Schedule
 		cdc.MustUnmarshal(iterator.Value(), &schedule)
 		// Set execution in EndBlocker
-		schedule.Blocker = types.BlockerType_END
+		schedule.ExecutionStage = types.ExecutionStage_END_BLOCKER
 
 		schedulesToUpdate = append(schedulesToUpdate, migrationUpdate{
 			key: iterator.Key(),
@@ -42,7 +42,7 @@ func migrateSchedules(ctx sdk.Context, cdc codec.BinaryCodec, storeKey storetype
 
 	err := iterator.Close()
 	if err != nil {
-		return errorsmod.Wrap(err, "iterator failed to close during migration")
+		return errors.Wrap(err, "iterator failed to close during migration")
 	}
 
 	// Store the updated Schedules

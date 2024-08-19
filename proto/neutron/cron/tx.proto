@@ -36,7 +36,7 @@ message MsgAddSchedule {
   string name = 2;
   uint64 period = 3;
   repeated MsgExecuteContract msgs = 4 [(gogoproto.nullable) = false];
-  BlockerType blocker = 5;
+  ExecutionStage execution_stage = 5;
 }
 
 // MsgAddScheduleResponse defines the response structure for executing a

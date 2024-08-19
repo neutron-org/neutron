@@ -1,16 +1,9 @@
 syntax = "proto3";
-package neutron.cron;
+package neutron.cron.v1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/cron/types";
-
-// ExecutionStage defines when messages will be executed in the block
-enum ExecutionStage {
-  BEGIN_BLOCKER = 0;
-  END_BLOCKER = 1;
-  BOTH_BLOCKERS = 2;
-}
+option go_package = "github.com/neutron-org/neutron/v4/x/cron/types/v1";
 
 message Schedule {
   // Name of schedule
@@ -21,8 +14,6 @@ message Schedule {
   repeated MsgExecuteContract msgs = 3 [(gogoproto.nullable) = false];
   // Last execution's block height
   uint64 last_execute_height = 4;
-  // Execution stage when messages will be executed
-  ExecutionStage execution_stage = 5;
 }
 
 message MsgExecuteContract {
