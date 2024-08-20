@@ -88,14 +88,14 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
 			k.SaveInactiveTranche(ctx, tranche)
 
-			// Treat the removed tokenIn as cancelled shares
-			trancheUser.SharesCancelled = trancheUser.SharesCancelled.Add(remainingTokenIn)
+			// Since the order has already been filled we treat this as a complete withdrawal
+			trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
 		} else {
 			k.SetLimitOrderTranche(ctx, tranche)
+			trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 		}
 
-		trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 	}
 
 	k.SaveTrancheUser(ctx, trancheUser)

@@ -136,10 +136,9 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
 ) (amountToRemove math.Int) {
 	amountUnfilled := t.AmountUnfilled()
-	maxAmountToRemove := amountUnfilled.MulInt(trancheUser.SharesOwned).
+	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).
 		QuoInt(t.TotalMakerDenom).
 		TruncateInt()
-	amountToRemove = maxAmountToRemove.Sub(trancheUser.SharesCancelled)
 	t.ReservesMakerDenom = t.ReservesMakerDenom.Sub(amountToRemove)
 
 	return amountToRemove
