@@ -19,6 +19,8 @@ const (
 	AttributeTokenOut             = "TokenOut"
 	AttributeAmountIn             = "AmountIn"
 	AttributeAmountOut            = "AmountOut"
+	AttributeTokenInAmountOut     = "TokenInAmountOut"
+	AttributeTokenOutAmountOut    = "TokenOutAmountOut"
 	AttributeTickIndex            = "TickIndex"
 	AttributeFee                  = "Fee"
 	AttributeTrancheKey           = "TrancheKey"
@@ -211,7 +213,8 @@ func CancelLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOut math.Int,
+	amountOutMaker math.Int,
+	amountOutTaker math.Int,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -223,7 +226,8 @@ func CancelLimitOrderEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
-		sdk.NewAttribute(AttributeAmountOut, amountOut.String()),
+		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
+		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
 	}
 

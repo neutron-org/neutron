@@ -31,8 +31,9 @@ type LimitOrderTrancheUser struct {
 	Address               string                `protobuf:"bytes,4,opt,name=address,proto3" json:"address,omitempty"`
 	SharesOwned           cosmossdk_io_math.Int `protobuf:"bytes,5,opt,name=shares_owned,json=sharesOwned,proto3,customtype=cosmossdk.io/math.Int" json:"shares_owned" yaml:"shares_owned"`
 	SharesWithdrawn       cosmossdk_io_math.Int `protobuf:"bytes,6,opt,name=shares_withdrawn,json=sharesWithdrawn,proto3,customtype=cosmossdk.io/math.Int" json:"shares_withdrawn" yaml:"shares_withdrawn"`
-	SharesCancelled       cosmossdk_io_math.Int `protobuf:"bytes,7,opt,name=shares_cancelled,json=sharesCancelled,proto3,customtype=cosmossdk.io/math.Int" json:"shares_cancelled" yaml:"shares_cancelled"`
-	OrderType             LimitOrderType        `protobuf:"varint,8,opt,name=order_type,json=orderType,proto3,enum=neutron.dex.LimitOrderType" json:"order_type,omitempty"`
+	// TODO: remove this in next release. It is no longer used
+	SharesCancelled cosmossdk_io_math.Int `protobuf:"bytes,7,opt,name=shares_cancelled,json=sharesCancelled,proto3,customtype=cosmossdk.io/math.Int" json:"shares_cancelled" yaml:"shares_cancelled"`
+	OrderType       LimitOrderType        `protobuf:"varint,8,opt,name=order_type,json=orderType,proto3,enum=neutron.dex.LimitOrderType" json:"order_type,omitempty"`
 }
 
 func (m *LimitOrderTrancheUser) Reset()         { *m = LimitOrderTrancheUser{} }
