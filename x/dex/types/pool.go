@@ -49,7 +49,7 @@ func MustNewPool(
 	return pool
 }
 
-func (p *Pool) CenterTickIndex() int64 {
+func (p *Pool) CenterTickIndexToken1() int64 {
 	feeInt64 := utils.MustSafeUint64ToInt64(p.Fee())
 	return p.UpperTick1.Key.TickIndexTakerToMaker - feeInt64
 }
@@ -129,8 +129,9 @@ func (p *Pool) Deposit(
 		return math.ZeroInt(), math.ZeroInt(), sdk.Coin{Denom: p.GetPoolDenom()}
 	}
 
-	outShares = p.CalcSharesMinted(inAmount0, inAmount1, existingShares)
-
+	centerPrice1To0 := p.MustCalcPrice1To0Center()
+	depositValueAsToken0 := CalcAmountAsToken0(inAmount0, inAmount1, centerPrice1To0)
+	autoswapFee := math_utils.ZeroPrecDec()
 	if autoswap {
 		residualAmount0 := maxAmount0.Sub(inAmount0)
 		residualAmount1 := maxAmount1.Sub(inAmount1)
@@ -138,14 +139,15 @@ func (p *Pool) Deposit(
 		// NOTE: Currently not doing anything with the error,
 		// but added error handling to all of the new functions for autoswap.
 		// Open to changing it however.
-		residualShares, _ := p.CalcResidualSharesMinted(residualAmount0, residualAmount1)
-
-		outShares = outShares.Add(residualShares)
+		residualDepositValueAsToken0 := CalcAmountAsToken0(residualAmount0, residualAmount1, centerPrice1To0)
+		autoswapFee, _ = p.CalcAutoswapFee(residualDepositValueAsToken0)
+		depositValueAsToken0 = depositValueAsToken0.Add(residualDepositValueAsToken0.Sub(autoswapFee))
 
 		inAmount0 = maxAmount0
 		inAmount1 = maxAmount1
 	}
 
+	outShares = p.CalcSharesMinted(depositValueAsToken0, existingShares, autoswapFee)
 	*lowerReserve0 = lowerReserve0.Add(inAmount0)
 	*upperReserve1 = upperReserve1.Add(inAmount1)
 
@@ -167,50 +169,33 @@ func (p *Pool) Price(tradePairID *TradePairID) math_utils.PrecDec {
 func (p *Pool) MustCalcPrice1To0Center() math_utils.PrecDec {
 	// NOTE: We can safely call the error-less version of CalcPrice here because the pool object
 	// has already been initialized with an upper and lower tick which satisfy a check for IsTickOutOfRange
-	return MustCalcPrice(-1 * p.CenterTickIndex())
+	return MustCalcPrice(-1 * p.CenterTickIndexToken1())
 }
 
 func (p *Pool) CalcSharesMinted(
-	amount0 math.Int,
-	amount1 math.Int,
+	depositValueAsToken0 math_utils.PrecDec,
 	existingShares math.Int,
+	autoswapFee math_utils.PrecDec,
 ) (sharesMinted sdk.Coin) {
 	price1To0Center := p.MustCalcPrice1To0Center()
-	valueMintedToken0 := CalcAmountAsToken0(amount0, amount1, price1To0Center)
 
 	valueExistingToken0 := CalcAmountAsToken0(
 		p.LowerTick0.ReservesMakerDenom,
 		p.UpperTick1.ReservesMakerDenom,
 		price1To0Center,
 	)
+
+	totalValueWithAutoswapFeeToken0 := valueExistingToken0.Add(autoswapFee)
 	var sharesMintedAmount math.Int
 	if valueExistingToken0.GT(math_utils.ZeroPrecDec()) {
-		sharesMintedAmount = valueMintedToken0.MulInt(existingShares).
-			Quo(valueExistingToken0).
+		sharesMintedAmount = depositValueAsToken0.MulInt(existingShares).
+			Quo(totalValueWithAutoswapFeeToken0).
 			TruncateInt()
 	} else {
-		sharesMintedAmount = valueMintedToken0.TruncateInt()
+		sharesMintedAmount = depositValueAsToken0.TruncateInt()
 	}
 
 	return sdk.Coin{Denom: p.GetPoolDenom(), Amount: sharesMintedAmount}
-}
-
-func (p *Pool) CalcResidualSharesMinted(
-	residualAmount0 math.Int,
-	residualAmount1 math.Int,
-) (sharesMinted sdk.Coin, err error) {
-	fee := CalcFee(p.UpperTick1.Key.TickIndexTakerToMaker, p.LowerTick0.Key.TickIndexTakerToMaker)
-	valueMintedToken0, err := CalcResidualValue(
-		residualAmount0,
-		residualAmount1,
-		p.LowerTick0.PriceTakerToMaker,
-		fee,
-	)
-	if err != nil {
-		return sdk.Coin{Denom: p.GetPoolDenom()}, err
-	}
-
-	return sdk.Coin{Denom: p.GetPoolDenom(), Amount: valueMintedToken0.TruncateInt()}, nil
 }
 
 func (p *Pool) RedeemValue(sharesToRemove, totalShares math.Int) (outAmount0, outAmount1 math.Int) {
@@ -267,22 +252,17 @@ func CalcGreatestMatchingRatio(
 	return resultAmount0, resultAmount1
 }
 
-func CalcResidualValue(
-	amount0, amount1 math.Int,
-	priceLowerTakerToMaker math_utils.PrecDec,
-	fee int64,
+func (p *Pool) CalcAutoswapFee(
+	depositValueAsToken0 math_utils.PrecDec,
 ) (math_utils.PrecDec, error) {
-	// ResidualValue = Amount0 * (Price1to0Center / Price1to0Upper) + Amount1 * Price1to0Lower
-	amount0Discount, err := CalcPrice(-fee)
+	feeInt64 := utils.MustSafeUint64ToInt64(p.Fee())
+	feeAsPrice, err := CalcPrice(feeInt64)
+	autoSwapFee := math_utils.OnePrecDec().Sub(feeAsPrice)
 	if err != nil {
 		return math_utils.ZeroPrecDec(), err
 	}
-
-	return amount0Discount.MulInt(amount0).Add(priceLowerTakerToMaker.MulInt(amount1)), nil
-}
-
-func CalcFee(upperTickIndex, lowerTickIndex int64) int64 {
-	return (upperTickIndex - lowerTickIndex) / 2
+	// fee = depositValueAsToken0 * (1 - p(fee) )
+	return autoSwapFee.Mul(depositValueAsToken0), nil
 }
 
 func CalcAmountAsToken0(amount0, amount1 math.Int, price1To0 math_utils.PrecDec) math_utils.PrecDec {
