@@ -8,6 +8,11 @@ import (
 	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
+type PoolShareholder struct {
+	Address string
+	Shares  math.Int
+}
+
 func NewPool(
 	pairID *PairID,
 	centerTickIndexNormalized int64,
