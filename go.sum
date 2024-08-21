@@ -942,8 +942,8 @@ github.com/neutron-org/admin-module/v2 v2.0.2 h1:XDDFWjvkVBKRf3lBFCazT1zAXZ3dHX8
 github.com/neutron-org/admin-module/v2 v2.0.2/go.mod h1:RfOyabXsdJ5btcOKyKPZDYiZhtuKFubbJMOb8EJZtvA=
 github.com/neutron-org/cosmos-sdk v0.50.8-neutron h1:L+4obYi/KkkmS05gBlXNF+FhipHYTl0iO3EkmpMBXkE=
 github.com/neutron-org/cosmos-sdk v0.50.8-neutron/go.mod h1:Zb+DgHtiByNwgj71IlJBXwOq6dLhtyAq3AgqpXm/jHo=
-github.com/neutron-org/wasmd v0.51.2-0.20240821101153-465a2a832752 h1:qT0kD+OBsUVBQAharqf8iYs0r7qec6djua7TY30wvFw=
-github.com/neutron-org/wasmd v0.51.2-0.20240821101153-465a2a832752/go.mod h1:7TSaj5HoolghujuVWeExqmcUKgpcYWEySGLSODbnnwY=
+github.com/neutron-org/wasmd v0.51.2-neutron h1:+Ih6AzySHeB+ArGmmmpXVQNaiX/fvK5ZSbbaMY7+IEE=
+github.com/neutron-org/wasmd v0.51.2-neutron/go.mod h1:7TSaj5HoolghujuVWeExqmcUKgpcYWEySGLSODbnnwY=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nkovacs/streamquote v1.0.0/go.mod h1:BN+NaZ2CmdKqUuTUXUEm9j95B2TRbpOWpxbJYzzgUsc=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
