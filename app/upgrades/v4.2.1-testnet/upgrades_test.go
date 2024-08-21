@@ -1,4 +1,4 @@
-package v400_test
+package v421testnet_test
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	v402 "github.com/neutron-org/neutron/v4/app/upgrades/v4.2.0"
+	v421testnet "github.com/neutron-org/neutron/v4/app/upgrades/v4.2.1-testnet"
 	"github.com/neutron-org/neutron/v4/testutil"
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
 	"github.com/neutron-org/neutron/v4/utils/math"
@@ -70,7 +70,7 @@ func (suite *UpgradeTestSuite) TestUnswappedTranche() {
 
 	// Run upgrade
 	upgrade := upgradetypes.Plan{
-		Name:   v402.UpgradeName,
+		Name:   v421testnet.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -132,7 +132,7 @@ func (suite *UpgradeTestSuite) TestSwappedWithdrawnTranche() {
 
 	// Run Upgrade
 	upgrade := upgradetypes.Plan{
-		Name:   v402.UpgradeName,
+		Name:   v421testnet.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -194,7 +194,7 @@ func (suite *UpgradeTestSuite) TestSwappedUnwithdrawnTranche() {
 
 	// Run Upgrade
 	upgrade := upgradetypes.Plan{
-		Name:   v402.UpgradeName,
+		Name:   v421testnet.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -248,7 +248,7 @@ func (suite *UpgradeTestSuite) TestSwappedCanceledTranche() {
 
 	// Run Upgrade
 	upgrade := upgradetypes.Plan{
-		Name:   v402.UpgradeName,
+		Name:   v421testnet.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -298,7 +298,7 @@ func (suite *UpgradeTestSuite) TestOrphanedTrancheUser() {
 
 	// Run Upgrade
 	upgrade := upgradetypes.Plan{
-		Name:   v402.UpgradeName,
+		Name:   v421testnet.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}

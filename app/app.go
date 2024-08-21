@@ -37,7 +37,7 @@ import (
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
 	v401 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
-	v402 "github.com/neutron-org/neutron/v4/app/upgrades/v4.2.0"
+	v421testnet "github.com/neutron-org/neutron/v4/app/upgrades/v4.2.1-testnet"
 	"github.com/neutron-org/neutron/v4/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
@@ -226,7 +226,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v401.Upgrade, v402.Upgrade}
+	Upgrades = []upgrades.Upgrade{v401.Upgrade, v421testnet.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string

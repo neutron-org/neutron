@@ -1,4 +1,4 @@
-package v400
+package v421testnet
 
 import (
 	storetypes "cosmossdk.io/store/types"
@@ -8,7 +8,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v4.2.0"
+	UpgradeName = "v4.2.1-testnet"
 )
 
 var Upgrade = upgrades.Upgrade{
