@@ -130,10 +130,6 @@ func (p *Pool) Deposit(
 		maxAmount1,
 	)
 
-	if inAmount0.Equal(math.ZeroInt()) && inAmount1.Equal(math.ZeroInt()) {
-		return math.ZeroInt(), math.ZeroInt(), sdk.Coin{Denom: p.GetPoolDenom()}
-	}
-
 	centerPrice1To0 := p.MustCalcPrice1To0Center()
 	depositValueAsToken0 := CalcAmountAsToken0(inAmount0, inAmount1, centerPrice1To0)
 	autoswapFee := math_utils.ZeroPrecDec()
