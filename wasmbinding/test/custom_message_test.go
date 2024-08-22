@@ -3,8 +3,9 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 	"testing"
+
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
