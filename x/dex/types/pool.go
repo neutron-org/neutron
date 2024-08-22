@@ -224,7 +224,7 @@ func (p *Pool) Withdraw(sharesToRemove, totalShares math.Int) (outAmount0, outAm
 	return outAmount0, outAmount1
 }
 
-// Balance trueAmount1 to the pool ratio
+// Balance deposit amounts to match the existing ratio in the pool. If pool is empty allow any ratio.
 func CalcGreatestMatchingRatio(
 	targetAmount0 math.Int,
 	targetAmount1 math.Int,

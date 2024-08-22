@@ -1,109 +1,106 @@
 package keeper_test
 
-import "github.com/neutron-org/neutron/v4/x/dex/types"
+import (
+	"cosmossdk.io/math"
+)
 
-func (s *DexTestSuite) TestAutoswapperWithdraws() {
+func (s *DexTestSuite) TestAutoswapSingleSided0To1() {
 	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
+	s.fundBobBalances(50, 0)
 
-	// GIVEN
-	// create spread around -1, 1
-	bobDep0 := 10
-	bobDep1 := 10
-	tickIndex := 200
-	fee := 5
+	//GIVEN a pool with double-sided liquidity
+	s.aliceDeposits(NewDeposit(50, 50, 2000, 2))
+	s.assertAccountSharesInt(s.alice, 2000, 2, math.NewInt(111069527))
 
-	bobSharesMinted := s.calcSharesMinted(int64(tickIndex), int64(bobDep0), int64(bobDep1))
+	// WHEN bob deposits only TokenA
+	s.bobDeposits(NewDeposit(50, 0, 2000, 2))
+	s.assertPoolLiquidity(100, 50, 2000, 2)
 
-	s.bobDeposits(NewDeposit(bobDep0, bobDep1, tickIndex, fee))
-	s.assertBobBalances(40, 40)
-	s.assertDexBalances(10, 10)
+	// THEN his deposit is autoswapped
+	// He receives 49.985501 shares
+	// depositValue = depositAmount - (autoswapedAmountAsToken0 * fee)
+	//              = 50 - 50 * (1 - 1.0001^-2)
+	//              = 49.9900014998
+	// SharesIssued = depositValue * existing shares / (existingValue + autoSwapFee)
+	//              = 49.9900014998 * 111.069527 / (111.069527 + 0.0099985002)
+	//              = 49.985501
 
-	// Alice deposits at a different balance ratio
-	s.aliceDeposits(NewDepositWithOptions(12, 5, tickIndex, fee, types.DepositOptions{DisableAutoswap: false}))
-	s.assertAliceBalances(38, 45)
-	s.assertDexBalances(22, 15)
+	s.assertAccountSharesInt(s.bob, 2000, 2, math.NewInt(49985501))
 
-	// Calculated expected amounts out
-	autoswapSharesMinted := s.calcAutoswapSharesMinted(int64(tickIndex), uint64(fee), 7, 0, 5, 5, bobSharesMinted.Int64(), bobSharesMinted.Int64())
-	// totalShares := autoswapSharesMinted.Add(math.NewInt(20))
-
-	aliceExpectedBalance0, aliceExpectedBalance1, dexExpectedBalance0, dexExpectedBalance1 := s.calcExpectedBalancesAfterWithdrawOnePool(autoswapSharesMinted, s.alice, int64(tickIndex), uint64(fee))
-
-	s.aliceWithdraws(NewWithdrawalInt(autoswapSharesMinted, int64(tickIndex), uint64(fee)))
-
-	s.assertAliceBalancesInt(aliceExpectedBalance0, aliceExpectedBalance1)
-	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
 }
 
-func (s *DexTestSuite) TestAutoswapOtherDepositorWithdraws() {
+func (s *DexTestSuite) TestAutoswapSingleSided1To0() {
 	s.fundAliceBalances(50, 50)
-	s.fundBobBalances(50, 50)
+	s.fundBobBalances(0, 50)
 
-	// GIVEN
-	// create spread around -1, 1
-	bobDep0 := 10
-	bobDep1 := 10
-	tickIndex := 150
-	fee := 10
+	//GIVEN a pool with double-sided liquidity
+	s.aliceDeposits(NewDeposit(50, 50, 2000, 2))
+	s.assertAccountSharesInt(s.alice, 2000, 2, math.NewInt(111069527))
 
-	bobSharesMinted := s.calcSharesMinted(int64(tickIndex), int64(bobDep0), int64(bobDep1))
+	// WHEN bob deposits only TokenB
+	s.bobDeposits(NewDeposit(0, 50, 2000, 2))
+	s.assertPoolLiquidity(50, 100, 2000, 2)
 
-	s.bobDeposits(NewDeposit(bobDep0, bobDep1, tickIndex, fee))
-	s.assertBobBalances(40, 40)
-	s.assertDexBalances(10, 10)
+	// THEN his deposit is autoswapped
+	// He receives 61.0 shares
+	//depositAmountAsToken0 = 50 * 1.0001^2000 = 61.06952725039
+	// depositValue = depositAmountAsToken0 - (autoswapedAmountAsToken0 * fee)
+	//              = 61.06952725039 - 61.06952725039 * (1 - 1.0001^-2)
+	//              = 61.05731517678
+	// SharesIssued = depositValue * existing shares / (existingValue + autoSwapFee)
+	//              = 61.05731517678 * 111.069527 / (111.069527 + 0.01221207361)
+	//              = 61.050602
 
-	// Alice deposits at a different balance ratio
-	s.aliceDeposits(NewDepositWithOptions(10, 7, tickIndex, fee, types.DepositOptions{DisableAutoswap: false}))
-	s.assertAliceBalances(40, 43)
-	s.assertDexBalances(20, 17)
+	s.assertAccountSharesInt(s.bob, 2000, 2, math.NewInt(61050602))
 
-	// Calculated expected amounts out
-
-	bobExpectedBalance0, bobExpectedBalance1, dexExpectedBalance0, dexExpectedBalance1 := s.calcExpectedBalancesAfterWithdrawOnePool(bobSharesMinted, s.bob, int64(tickIndex), uint64(fee))
-
-	s.bobWithdraws(NewWithdrawalInt(bobSharesMinted, int64(tickIndex), uint64(fee)))
-
-	s.assertBobBalancesInt(bobExpectedBalance0, bobExpectedBalance1)
-	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
 }
 
-func (s *DexTestSuite) TestAutoswapBothWithdraws() {
-	s.fundAliceBalances(50, 50)
+func (s *DexTestSuite) TestAutoswapDoubleSided0To1() {
+	s.fundAliceBalances(30, 50)
 	s.fundBobBalances(50, 50)
 
-	// GIVEN
-	// create spread around -1, 1
-	bobDep0 := 10
-	bobDep1 := 10
-	tickIndex := 10000
-	fee := 5
+	//GIVEN a pool with double-sided liquidity
+	s.aliceDeposits(NewDeposit(30, 50, -4000, 10))
+	s.assertAccountSharesInt(s.alice, -4000, 10, math.NewInt(63516672))
 
-	s.bobDeposits(NewDeposit(bobDep0, bobDep1, tickIndex, fee))
-	bobSharesMinted := s.getAccountShares(s.bob, "TokenA", "TokenB", int64(tickIndex), uint64(fee))
-	s.assertBobBalances(40, 40)
-	s.assertDexBalances(10, 10)
+	// WHEN bob deposits a ratio of 1:1 tokenA and B
+	s.bobDeposits(NewDeposit(50, 50, -4000, 10))
+	s.assertPoolLiquidity(80, 100, -4000, 10)
 
-	// Alice deposits at a different balance ratio
-	s.aliceDeposits(NewDepositWithOptions(10, 5, tickIndex, fee, types.DepositOptions{DisableAutoswap: false}))
-	s.assertAliceBalances(40, 45)
-	s.assertDexBalances(20, 15)
+	// THEN his deposit is autoswapped
+	// He receives 83.5 shares
+	// depositValue = depositAmountAsToken0 - (autoswapedAmountAsToken0 * fee)
+	//              = 83.5166725838 -  20 * (1 - 1.0001^-10)
+	//              = 83.4966835794
+	// SharesIssued = depositValue * existing shares / (existingValue + autoSwapFee)
+	//              = 83.4966835794 * 63.516672 / (63.5166725838 + 0.0199890044)
+	//              = 83.470414
 
-	// Calculated expected amounts out
-	autoswapSharesMinted := s.getAccountShares(s.alice, "TokenA", "TokenB", int64(tickIndex), uint64(fee))
-	// totalShares := autoswapSharesMinted.Add(math.NewInt(20))
+	s.assertAccountSharesInt(s.bob, -4000, 10, math.NewInt(83470414))
 
-	bobExpectedBalance0, bobExpectedBalance1, dexExpectedBalance0, dexExpectedBalance1 := s.calcExpectedBalancesAfterWithdrawOnePool(bobSharesMinted, s.bob, int64(tickIndex), uint64(fee))
+}
 
-	s.bobWithdraws(NewWithdrawalInt(bobSharesMinted, int64(tickIndex), uint64(fee)))
+func (s *DexTestSuite) TestAutoswapDoubleSided1To0() {
+	s.fundAliceBalances(50, 30)
+	s.fundBobBalances(50, 50)
 
-	s.assertBobBalancesInt(bobExpectedBalance0, bobExpectedBalance1)
-	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
+	//GIVEN a pool with double-sided liquidity
+	s.aliceDeposits(NewDeposit(50, 30, -4000, 10))
+	s.assertAccountSharesInt(s.alice, -4000, 10, math.NewInt(70110003))
 
-	aliceExpectedBalance0, aliceExpectedBalance1, dexExpectedBalance0, dexExpectedBalance1 := s.calcExpectedBalancesAfterWithdrawOnePool(autoswapSharesMinted, s.alice, int64(tickIndex), uint64(fee))
+	// WHEN bob deposits a ratio of 1:1 tokenA and B
+	s.bobDeposits(NewDeposit(50, 50, -4000, 10))
+	s.assertPoolLiquidity(100, 80, -4000, 10)
 
-	s.aliceWithdraws(NewWithdrawalInt(autoswapSharesMinted, int64(tickIndex), uint64(fee)))
+	// THEN his deposit is autoswapped
+	// He receives 83.5 shares
+	// depositValue = depositAmountAsToken0 - (autoswapedAmountAsToken0 * fee)
+	//              = 83.5166725838 -  13.4066690335 * (1 - 1.0001^-10)
+	//              = 83.5032732855
+	// SharesIssued = depositValue * existing shares / (existingValue + autoSwapFee)
+	//              = 83.5032732855 * 70.110003 / (70.1100035503 + 0.01339929831)
+	//              = 83.487316
 
-	s.assertAliceBalancesInt(aliceExpectedBalance0, aliceExpectedBalance1)
-	s.assertDexBalancesInt(dexExpectedBalance0, dexExpectedBalance1)
+	s.assertAccountSharesInt(s.bob, -4000, 10, math.NewInt(83487316))
+
 }
