@@ -7,9 +7,11 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v4/testutil"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 	v5 "github.com/neutron-org/neutron/v4/x/dex/migrations/v5"
 	"github.com/neutron-org/neutron/v4/x/dex/types"
@@ -34,7 +36,7 @@ func (suite *V4DexMigrationTestSuite) TestPoolMigrationSingleShareHolder() {
 
 	// create a pool with 1 shareholder
 	FundAccount(app.BankKeeper, ctx, alice, sdk.NewCoins(sdk.NewCoin("TokenA", depositAmount)))
-	shares, err := makeDeposit(ctx, app.DexKeeper, alice, pairID, depositAmount, math.ZeroInt(), 0, 1)
+	shares, err := suite.makeDeposit(ctx, app.DexKeeper, alice, pairID, depositAmount, math.ZeroInt(), 0, 1)
 	suite.NoError(err)
 
 	// run migrations
@@ -65,12 +67,12 @@ func (suite *V4DexMigrationTestSuite) TestPoolMigrationMultiShareHolder() {
 	FundAccount(app.BankKeeper, ctx, bob, initialBalance)
 
 	// create a pool with 2 shareholders
-	shares, err := makeDeposit(ctx, app.DexKeeper, alice, pairID, depositAmount, math.ZeroInt(), 0, 1)
+	shares, err := suite.makeDeposit(ctx, app.DexKeeper, alice, pairID, depositAmount, math.ZeroInt(), 0, 1)
 	suite.NoError(err)
 	aliceBalance := app.BankKeeper.GetAllBalances(ctx, alice)
 	suite.True(aliceBalance.Equal(shares))
 
-	shares, err = makeDeposit(ctx, app.DexKeeper, bob, pairID, depositAmount, math.ZeroInt(), 0, 1)
+	shares, err = suite.makeDeposit(ctx, app.DexKeeper, bob, pairID, depositAmount, math.ZeroInt(), 0, 1)
 	suite.NoError(err)
 	bobBalance := app.BankKeeper.GetAllBalances(ctx, bob)
 	suite.True(bobBalance.Equal(shares))
@@ -103,15 +105,18 @@ func FundAccount(bankKeeper bankkeeper.Keeper, ctx sdk.Context, addr sdk.AccAddr
 	}
 }
 
-func makeDeposit(
+func (suite *V4DexMigrationTestSuite) makeDeposit(
 	ctx sdk.Context,
 	k dexkeeper.Keeper,
 	addr sdk.AccAddress,
 	pairID *types.PairID,
 	amount0, amount1 math.Int,
 	tick int64,
-	fee uint64) (sharesIssued sdk.Coins, err error) {
-	_, _, sharesIssued, _, err = k.DepositCore(ctx, pairID, addr, addr, []math.Int{amount0}, []math.Int{amount1}, []int64{tick}, []uint64{fee}, []*types.DepositOptions{{}})
+	fee uint64,
+) (sharesIssued sdk.Coins, err error) {
+	deposit0, deposit1, sharesIssued, _, err := k.DepositCore(ctx, pairID, addr, addr, []math.Int{amount0}, []math.Int{amount1}, []int64{tick}, []uint64{fee}, []*types.DepositOptions{{}})
+	suite.True(deposit0[0].Equal(amount0))
+	suite.True(deposit1[0].Equal(amount1))
 
 	return sharesIssued, err
 }

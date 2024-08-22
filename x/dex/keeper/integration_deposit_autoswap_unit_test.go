@@ -8,7 +8,7 @@ func (s *DexTestSuite) TestAutoswapSingleSided0To1() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(50, 0)
 
-	//GIVEN a pool with double-sided liquidity
+	// GIVEN a pool with double-sided liquidity
 	s.aliceDeposits(NewDeposit(50, 50, 2000, 2))
 	s.assertAccountSharesInt(s.alice, 2000, 2, math.NewInt(111069527))
 
@@ -26,14 +26,13 @@ func (s *DexTestSuite) TestAutoswapSingleSided0To1() {
 	//              = 49.985501
 
 	s.assertAccountSharesInt(s.bob, 2000, 2, math.NewInt(49985501))
-
 }
 
 func (s *DexTestSuite) TestAutoswapSingleSided1To0() {
 	s.fundAliceBalances(50, 50)
 	s.fundBobBalances(0, 50)
 
-	//GIVEN a pool with double-sided liquidity
+	// GIVEN a pool with double-sided liquidity
 	s.aliceDeposits(NewDeposit(50, 50, 2000, 2))
 	s.assertAccountSharesInt(s.alice, 2000, 2, math.NewInt(111069527))
 
@@ -43,7 +42,7 @@ func (s *DexTestSuite) TestAutoswapSingleSided1To0() {
 
 	// THEN his deposit is autoswapped
 	// He receives 61.0 shares
-	//depositAmountAsToken0 = 50 * 1.0001^2000 = 61.06952725039
+	// depositAmountAsToken0 = 50 * 1.0001^2000 = 61.06952725039
 	// depositValue = depositAmountAsToken0 - (autoswapedAmountAsToken0 * fee)
 	//              = 61.06952725039 - 61.06952725039 * (1 - 1.0001^-2)
 	//              = 61.05731517678
@@ -52,14 +51,13 @@ func (s *DexTestSuite) TestAutoswapSingleSided1To0() {
 	//              = 61.050602
 
 	s.assertAccountSharesInt(s.bob, 2000, 2, math.NewInt(61050602))
-
 }
 
 func (s *DexTestSuite) TestAutoswapDoubleSided0To1() {
 	s.fundAliceBalances(30, 50)
 	s.fundBobBalances(50, 50)
 
-	//GIVEN a pool with double-sided liquidity
+	// GIVEN a pool with double-sided liquidity
 	s.aliceDeposits(NewDeposit(30, 50, -4000, 10))
 	s.assertAccountSharesInt(s.alice, -4000, 10, math.NewInt(63516672))
 
@@ -77,14 +75,13 @@ func (s *DexTestSuite) TestAutoswapDoubleSided0To1() {
 	//              = 83.470414
 
 	s.assertAccountSharesInt(s.bob, -4000, 10, math.NewInt(83470414))
-
 }
 
 func (s *DexTestSuite) TestAutoswapDoubleSided1To0() {
 	s.fundAliceBalances(50, 30)
 	s.fundBobBalances(50, 50)
 
-	//GIVEN a pool with double-sided liquidity
+	// GIVEN a pool with double-sided liquidity
 	s.aliceDeposits(NewDeposit(50, 30, -4000, 10))
 	s.assertAccountSharesInt(s.alice, -4000, 10, math.NewInt(70110003))
 
@@ -102,5 +99,4 @@ func (s *DexTestSuite) TestAutoswapDoubleSided1To0() {
 	//              = 83.487316
 
 	s.assertAccountSharesInt(s.bob, -4000, 10, math.NewInt(83487316))
-
 }

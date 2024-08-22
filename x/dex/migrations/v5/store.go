@@ -2,11 +2,11 @@ package v5
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -35,7 +35,7 @@ func migratePools(ctx sdk.Context, k DexKeeperI) error {
 		if len(shareholders) > 1 {
 			pool, found := k.GetPoolByID(ctx, poolID)
 			if !found {
-				return errors.New(fmt.Sprintf("Cannot find pool with ID %d", poolID))
+				return fmt.Errorf("cannot find pool with ID %d", poolID)
 			}
 			for _, shareholder := range shareholders {
 				addr := sdk.MustAccAddressFromBech32(shareholder.Address)
@@ -45,9 +45,8 @@ func migratePools(ctx sdk.Context, k DexKeeperI) error {
 				nShares := shareholder.Shares
 
 				err := k.WithdrawCore(ctx, pairID, addr, addr, []math.Int{nShares}, []int64{tick}, []uint64{fee})
-
 				if err != nil {
-					return errors.New(fmt.Sprintf("User %s failed to withdraw from pool %d", addr, poolID))
+					return fmt.Errorf("user %s failed to withdraw from pool %d", addr, poolID)
 				}
 
 				ctx.Logger().Info(
