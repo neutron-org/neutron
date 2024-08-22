@@ -216,7 +216,6 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
@@ -413,7 +412,7 @@ type App struct {
 
 // AutoCLIOpts returns options based upon the modules in the neutron v4 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
-	modules := make(map[string]appmodule.AppModule, 0)
+	modules := make(map[string]appmodule.AppModule)
 	for _, m := range app.mm.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
@@ -423,18 +422,12 @@ func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 		}
 	}
 
-	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
-	if err != nil {
-		panic(err)
-	}
-
 	return autocli.AppOptions{
 		Modules:               modules,
 		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.mm.Modules),
 		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-		Keyring:               cliKR,
 		ClientCtx:             initClientCtx,
 	}
 }
@@ -615,6 +608,7 @@ func New(
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
+	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
 
 	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
 		appCodec,
@@ -1141,7 +1135,6 @@ func New(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
-	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
@@ -1295,6 +1288,8 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
+
+	app.SetPreBlocker(app.oraclePreBlockHandler.WrappedPreBlocker(app.mm))
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
@@ -1459,17 +1454,6 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 
 // GetBaseApp returns the base app of the application
 func (app *App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
-
-// PreBlocker application updates every pre block
-func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	rsp, err := app.mm.PreBlock(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
-	return rsp, err
-}
 
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {

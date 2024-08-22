@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   tests:
     name: Test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.22
         uses: actions/setup-go@v4
