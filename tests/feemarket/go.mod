@@ -18,7 +18,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.9
 	github.com/skip-mev/feemarket v1.0.1
 	github.com/skip-mev/feemarket/tests/e2e v1.10.0
-	github.com/skip-mev/slinky v1.0.8
+	github.com/skip-mev/slinky v1.0.10
 	github.com/strangelove-ventures/interchaintest/v8 v8.4.0
 	github.com/stretchr/testify v1.9.0
 )

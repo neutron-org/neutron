@@ -35,7 +35,7 @@ func (k Keeper) GetPoolReserves(
 	return tick.GetPoolReserves(), true
 }
 
-// RemoveTickLiquidity removes a tickLiquidity from the store
+// RemovePoolReserves removes a tickLiquidity from the store
 func (k Keeper) RemovePoolReserves(ctx sdk.Context, poolReservesID *types.PoolReservesKey) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.TickLiquidityKeyPrefix))
 	store.Delete(poolReservesID.KeyMarshal())
