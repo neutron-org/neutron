@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -543,7 +544,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.NoError(err)
 
 	var response ictxtypes.MsgSubmitTxResponse
-	err = json.Unmarshal(data, &response)
+	err = response.Unmarshal(data)
 	suite.NoError(err)
 	suite.Equal(uint64(1), response.SequenceId)
 	suite.Equal("channel-2", response.Channel)
@@ -594,11 +595,10 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
-		ProposalId: 1,
-	})
+	var expected admintypes.MsgSubmitProposalResponse
+	err = expected.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected.ProposalId, uint64(1))
 
 	// Test with other proposer that is not admin should return failure
 	_, err = suite.executeNeutronMsg(anotherContract, msg)
@@ -623,11 +623,10 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	data, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
-		ProposalId: 2,
-	})
+	var expected2 admintypes.MsgSubmitProposalResponse
+	err = expected2.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected2.ProposalId, uint64(2))
 }
 
 func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
@@ -745,9 +744,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
+	var expected contractmanagertypes.Failure
+	err = expected.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected.Id, failureID)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
@@ -769,9 +769,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
+	var expected contractmanagertypes.Failure
+	err = expected.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected.Id, failureID)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract() {
