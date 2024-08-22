@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	types1 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/cosmos/gogoproto/proto"
 
@@ -868,15 +868,16 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 
 func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
 	// parse incoming ordering. If nothing passed, use ORDERED by default
-	var orderValue types1.Order
+	var orderValue channeltypes.Order
 	if reg.Ordering == "" {
-		orderValue = types1.ORDERED
+		orderValue = channeltypes.ORDERED
 	} else {
-		orderValueInt, ok := types1.Order_value[reg.Ordering]
+		orderValueInt, ok := channeltypes.Order_value[reg.Ordering]
+
 		if !ok {
 			return nil, fmt.Errorf("failed to register interchain account: incorrect order value passed: %s", reg.Ordering)
 		}
-		orderValue = types1.Order(orderValueInt)
+		orderValue = channeltypes.Order(orderValueInt)
 	}
 
 	msg := ictxtypes.MsgRegisterInterchainAccount{
