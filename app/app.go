@@ -12,6 +12,10 @@ import (
 
 	"github.com/neutron-org/neutron/v4/x/dynamicfees"
 	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	"github.com/neutron-org/neutron/v4/x/lastlook"
+	lastlookpreblocker "github.com/neutron-org/neutron/v4/x/lastlook/abci/preblock"
+	"github.com/neutron-org/neutron/v4/x/lastlook/abci/proposals"
+	lastlooktypes "github.com/neutron-org/neutron/v4/x/lastlook/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -20,6 +24,8 @@ import (
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+
+	lastlookkeeper "github.com/neutron-org/neutron/v4/x/lastlook/keeper"
 
 	appconfig "github.com/neutron-org/neutron/v4/app/config"
 
@@ -199,8 +205,6 @@ import (
 	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
 	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
 
-	// Block-sdk imports
-	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
 	blocksdk "github.com/skip-mev/block-sdk/v2/block"
 	"github.com/skip-mev/block-sdk/v2/x/auction"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
@@ -279,6 +283,7 @@ var (
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
+		lastlook.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -370,6 +375,9 @@ type App struct {
 	DexKeeper           dexkeeper.Keeper
 	SwapKeeper          ibcswapkeeper.Keeper
 	GlobalFeeKeeper     globalfeekeeper.Keeper
+	LastLookKeeper      *lastlookkeeper.Keeper
+
+	LastLookPreBlockHandler *lastlookpreblocker.PreBlockHandler
 
 	PFMModule packetforward.AppModule
 
@@ -481,7 +489,7 @@ func New(
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
-		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey,
+		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, lastlooktypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -568,6 +576,8 @@ func New(
 	)
 
 	app.DynamicFeesKeeper = dynamicfeeskeeper.NewKeeper(appCodec, keys[dynamicfeestypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+
+	app.LastLookKeeper = lastlookkeeper.NewKeeper(appCodec, keys[lastlooktypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 
 	app.FeeMarkerKeeper = feemarketkeeper.NewKeeper(
 		appCodec,
@@ -969,6 +979,7 @@ func New(
 		marketmapModule,
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
+		lastlook.NewAppModule(appCodec, *app.LastLookKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1015,6 +1026,7 @@ func New(
 		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		lastlooktypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -1051,6 +1063,7 @@ func New(
 		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		lastlooktypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1093,6 +1106,7 @@ func New(
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
+		lastlooktypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1190,12 +1204,10 @@ func New(
 	}
 	baseLane.WithOptions(opts...)
 
-	// set the block-sdk prepare / process-proposal handlers
-	blockSdkProposalHandler := blocksdkabci.NewDefaultProposalHandler(
+	// set the lastlook prepare / process-proposal handlers
+	lastlookProposalHandler := proposals.NewProposalHandler(
 		app.Logger(),
-		app.GetTxConfig().TxDecoder(),
-		app.GetTxConfig().TxEncoder(),
-		mempool,
+		app.LastLookKeeper,
 	)
 
 	// Read general config from app-opts, and construct oracle service.
@@ -1235,8 +1247,8 @@ func New(
 	// transactions and oracle data.
 	oracleProposalHandler := slinkyproposals.NewProposalHandler(
 		app.Logger(),
-		blockSdkProposalHandler.PrepareProposalHandler(),
-		baseapp.NoOpProcessProposal(),
+		lastlookProposalHandler.PrepareProposalHandler(),
+		lastlookProposalHandler.ProcessProposalHandler(),
 		ve.NewDefaultValidateVoteExtensionsFn(ccvconsumerCompatKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
@@ -1289,7 +1301,10 @@ func New(
 		),
 	)
 
-	app.SetPreBlocker(app.oraclePreBlockHandler.WrappedPreBlocker(app.mm))
+	app.LastLookPreBlockHandler = lastlookpreblocker.NewOraclePreBlockHandler(
+		app.Logger(), app.LastLookKeeper, &app.ConsensusParamsKeeper)
+
+	app.SetPreBlocker(app.PreBlocker)
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
@@ -1349,6 +1364,24 @@ func New(
 	app.ScopedCCVConsumerKeeper = scopedCCVConsumerKeeper
 
 	return app
+}
+
+// PreBlocker application updates every pre block
+func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	rsp, err := app.mm.PreBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := app.oraclePreBlockHandler.PreBlocker()(ctx, req); err != nil {
+		return nil, err
+	}
+
+	if _, err := app.LastLookPreBlockHandler.PreBlocker()(ctx, req); err != nil {
+		return nil, err
+	}
+
+	return rsp, nil
 }
 
 func (app *App) LoadLatest() {
