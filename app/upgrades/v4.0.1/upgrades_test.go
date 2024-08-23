@@ -4,9 +4,9 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/skip-mev/slinky/cmd/constants/marketmaps"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	slinkyconstants "github.com/skip-mev/slinky/cmd/constants"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -44,7 +44,7 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	// we need to properly set consensus params for tests or we get a panic
 	suite.Require().NoError(app.ConsensusParamsKeeper.ParamsStore.Set(ctx, *oldParams.Params))
 
-	markets := slinkyconstants.CoreMarketMap.Markets
+	markets := marketmaps.CoreMarketMap.Markets
 	suite.Require().NoError(err)
 
 	upgrade := upgradetypes.Plan{
@@ -64,7 +64,7 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	mm, err := app.MarketMapKeeper.GetAllMarkets(ctx)
 	gotMM := marketmaptypes.MarketMap{Markets: mm}
 	suite.Require().NoError(err)
-	suite.Require().True(slinkyconstants.CoreMarketMap.Equal(gotMM))
+	suite.Require().True(marketmaps.CoreMarketMap.Equal(gotMM))
 
 	numCps, err := app.OracleKeeper.GetNumCurrencyPairs(ctx)
 	suite.Require().NoError(err)
