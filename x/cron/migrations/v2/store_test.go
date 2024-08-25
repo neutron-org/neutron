@@ -49,5 +49,5 @@ func (suite *V2CronMigrationTestSuite) TestScheduleUpgrade() {
 
 	// Check Schedule has correct ExecutionStage
 	newSchedule, _ := app.CronKeeper.GetSchedule(ctx, schedule.Name)
-	suite.Equal(newSchedule.ExecutionStage, types.ExecutionStage_END_BLOCKER)
+	suite.Equal(newSchedule.ExecutionStages, []types.ExecutionStage{types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER})
 }

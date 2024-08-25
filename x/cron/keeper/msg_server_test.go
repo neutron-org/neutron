@@ -32,7 +32,9 @@ func TestMsgAddScheduleValidate(t *testing.T) {
 						Msg:      "msg",
 					},
 				},
-				ExecutionStage: types.ExecutionStage_BEGIN_BLOCKER,
+				ExecutionStages: []types.ExecutionStage{
+					types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+				},
 			},
 			"authority is invalid",
 		},
@@ -48,7 +50,9 @@ func TestMsgAddScheduleValidate(t *testing.T) {
 						Msg:      "msg",
 					},
 				},
-				ExecutionStage: types.ExecutionStage_BEGIN_BLOCKER,
+				ExecutionStages: []types.ExecutionStage{
+					types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+				},
 			},
 			"authority is invalid",
 		},
@@ -64,7 +68,9 @@ func TestMsgAddScheduleValidate(t *testing.T) {
 						Msg:      "msg",
 					},
 				},
-				ExecutionStage: types.ExecutionStage_BEGIN_BLOCKER,
+				ExecutionStages: []types.ExecutionStage{
+					types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+				},
 			},
 			"name is invalid",
 		},
@@ -80,20 +86,40 @@ func TestMsgAddScheduleValidate(t *testing.T) {
 						Msg:      "msg",
 					},
 				},
-				ExecutionStage: types.ExecutionStage_BEGIN_BLOCKER,
+				ExecutionStages: []types.ExecutionStage{
+					types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+				},
 			},
 			"period is invalid",
 		},
 		{
 			"empty msgs",
 			types.MsgAddSchedule{
-				Authority:      testutil.TestOwnerAddress,
-				Name:           "name",
-				Period:         3,
-				Msgs:           []types.MsgExecuteContract{},
-				ExecutionStage: types.ExecutionStage_BEGIN_BLOCKER,
+				Authority: testutil.TestOwnerAddress,
+				Name:      "name",
+				Period:    3,
+				Msgs:      []types.MsgExecuteContract{},
+				ExecutionStages: []types.ExecutionStage{
+					types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+				},
 			},
 			"msgs should not be empty",
+		},
+		{
+			"empty execution stages",
+			types.MsgAddSchedule{
+				Authority: testutil.TestOwnerAddress,
+				Name:      "name",
+				Period:    3,
+				Msgs: []types.MsgExecuteContract{
+					{
+						Contract: "contract",
+						Msg:      "msg",
+					},
+				},
+				ExecutionStages: []types.ExecutionStage{},
+			},
+			"execution stages should not be empty",
 		},
 	}
 

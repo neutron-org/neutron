@@ -23,12 +23,13 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Schedule defines the schedule for execution
 type Schedule struct {
 	// Name of schedule
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Period in blocks
 	Period uint64 `protobuf:"varint,2,opt,name=period,proto3" json:"period,omitempty"`
-	// Msgs that will be executed every period amount of time
+	// Msgs that will be executed every certain number of blocks, specified in the `period` field
 	Msgs []MsgExecuteContract `protobuf:"bytes,3,rep,name=msgs,proto3" json:"msgs"`
 	// Last execution's block height
 	LastExecuteHeight uint64 `protobuf:"varint,4,opt,name=last_execute_height,json=lastExecuteHeight,proto3" json:"last_execute_height,omitempty"`
@@ -95,6 +96,7 @@ func (m *Schedule) GetLastExecuteHeight() uint64 {
 	return 0
 }
 
+// MsgExecuteContract defines the contract and the message to pass
 type MsgExecuteContract struct {
 	// Contract is the address of the smart contract
 	Contract string `protobuf:"bytes,1,opt,name=contract,proto3" json:"contract,omitempty"`
@@ -149,6 +151,7 @@ func (m *MsgExecuteContract) GetMsg() string {
 	return ""
 }
 
+// ScheduleCount defines the number of current schedules
 type ScheduleCount struct {
 	// Count is the number of current schedules
 	Count int32 `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`

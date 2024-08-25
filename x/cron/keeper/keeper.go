@@ -27,6 +27,8 @@ var (
 
 	MetricLabelSuccess      = "success"
 	MetricLabelScheduleName = "schedule_name"
+
+	schedulesExecutionStages map[string]map[types.ExecutionStage]struct{}
 )
 
 type (
@@ -47,6 +49,8 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	authority string,
 ) *Keeper {
+	schedulesExecutionStages = make(map[string]map[types.ExecutionStage]struct{})
+
 	return &Keeper{
 		cdc:           cdc,
 		storeKey:      storeKey,
@@ -66,30 +70,42 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equal to Params.Limit)
 // and executes messages in each one
-// NOTE that errors in contract calls rollback all already executed messages
 func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.ExecutionStage) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelExecuteReadySchedules)
 	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
-		if isExecutableAtTheStage(schedule, executionStage) {
+		if _, ok := schedulesExecutionStages[schedule.Name][executionStage]; ok {
 			err := k.executeSchedule(ctx, schedule)
 			recordExecutedSchedule(err, schedule)
 		}
 	}
 }
 
-// AddSchedule adds new schedule to execution for every block `period`.
+// AddSchedule adds a new schedule to be executed every certain number of blocks, specified in the `period`.
 // First schedule execution is supposed to be on `now + period` block.
 func (k *Keeper) AddSchedule(
 	ctx sdk.Context,
 	name string,
 	period uint64,
 	msgs []types.MsgExecuteContract,
-	executionStage types.ExecutionStage,
+	executionStages []types.ExecutionStage,
 ) error {
 	if k.scheduleExists(ctx, name) {
 		return fmt.Errorf("schedule already exists with name=%v", name)
+	}
+
+	schedulesExecutionStages[name] = make(map[types.ExecutionStage]struct{})
+	execStages := make([]types.ExecutionStage, 0)
+	for _, executionStage := range executionStages {
+		if _, ok := types.ExecutionStage_name[int32(executionStage)]; !ok {
+			executionStage = types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER
+		}
+
+		if _, ok := schedulesExecutionStages[name][executionStage]; !ok {
+			schedulesExecutionStages[name][executionStage] = struct{}{}
+			execStages = append(execStages, executionStage)
+		}
 	}
 
 	schedule := types.Schedule{
@@ -97,11 +113,7 @@ func (k *Keeper) AddSchedule(
 		Period:            period,
 		Msgs:              msgs,
 		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
-		ExecutionStage:    executionStage,
-	}
-
-	if _, ok := types.ExecutionStage_name[int32(executionStage)]; !ok {
-		schedule.ExecutionStage = types.ExecutionStage_END_BLOCKER
+		ExecutionStages:   execStages,
 	}
 
 	k.storeSchedule(ctx, schedule)
@@ -115,6 +127,8 @@ func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 	if !k.scheduleExists(ctx, name) {
 		return
 	}
+
+	delete(schedulesExecutionStages, name)
 
 	k.changeTotalCount(ctx, -1)
 	k.removeSchedule(ctx, name)
@@ -181,10 +195,6 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 	}
 
 	return res
-}
-
-func isExecutableAtTheStage(schedule types.Schedule, executionStage types.ExecutionStage) bool {
-	return schedule.ExecutionStage == executionStage || schedule.ExecutionStage == types.ExecutionStage_BOTH_BLOCKERS
 }
 
 // executeSchedule executes all msgs in a given schedule and changes LastExecuteHeight
