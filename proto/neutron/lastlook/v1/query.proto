@@ -4,6 +4,7 @@ package neutron.lastlook.v1;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "neutron/lastlook/v1/params.proto";
+import "neutron/lastlook/v1/batch.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/lastlook/types";
 
@@ -13,6 +14,19 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/lastlook/v1/params";
   }
+
+  rpc Batch(QueryBatchRequest) returns (QueryBatchResponse) {
+    option (google.api.http).get = "/neutron/lastlook/v1/batch";
+  }
+}
+
+// QueryBatchRequest is request type for the Query/Params RPC method.
+message QueryBatchRequest {
+  int64 height = 1;
+}
+
+message QueryBatchResponse {
+  Batch batch = 1;
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
