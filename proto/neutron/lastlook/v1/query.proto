@@ -3,8 +3,8 @@ package neutron.lastlook.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "neutron/lastlook/v1/params.proto";
 import "neutron/lastlook/v1/batch.proto";
+import "neutron/lastlook/v1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/lastlook/types";
 
