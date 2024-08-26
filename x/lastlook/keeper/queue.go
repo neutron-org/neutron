@@ -7,9 +7,10 @@ import (
 	"github.com/neutron-org/neutron/v4/x/lastlook/types"
 )
 
-func (k *Keeper) StoreTxs(ctx sdk.Context, proposer sdk.Address, txs [][]byte) error {
+// StoreBatch stores a slice of txs and an address of a proposer who proposed a block into a queue
+func (k *Keeper) StoreBatch(ctx sdk.Context, proposer sdk.Address, txs [][]byte) error {
 	store := ctx.KVStore(k.storeKey)
-	blob := types.TxsBlob{
+	blob := types.Batch{
 		Proposer: proposer.Bytes(),
 		Txs:      txs,
 	}
@@ -24,10 +25,11 @@ func (k *Keeper) StoreTxs(ctx sdk.Context, proposer sdk.Address, txs [][]byte) e
 	return nil
 }
 
-func (k *Keeper) GetTxsBlob(ctx sdk.Context, blockHeight int64) (*types.TxsBlob, error) {
+// GetBatch returns a batch of txs that must be inserted into a block at `blockHeight`
+func (k *Keeper) GetBatch(ctx sdk.Context, blockHeight int64) (*types.Batch, error) {
 	store := ctx.KVStore(k.storeKey)
 
-	var blob types.TxsBlob
+	var blob types.Batch
 
 	if blockHeight == 1 {
 		return &blob, nil
@@ -45,8 +47,9 @@ func (k *Keeper) GetTxsBlob(ctx sdk.Context, blockHeight int64) (*types.TxsBlob,
 	return &blob, nil
 }
 
+// GetProposerForBlock returns a proposer who proposed to insert a batch of txs into a block at height `blockHeight`
 func (k *Keeper) GetProposerForBlock(ctx sdk.Context, blockHeight int64) (sdk.Address, error) {
-	blob, err := k.GetTxsBlob(ctx, blockHeight)
+	blob, err := k.GetBatch(ctx, blockHeight)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get txs blob for block height %d: %v", blockHeight, err)
 	}
@@ -54,7 +57,8 @@ func (k *Keeper) GetProposerForBlock(ctx sdk.Context, blockHeight int64) (sdk.Ad
 	return sdk.AccAddress(blob.Proposer), nil
 }
 
-func (k *Keeper) RemoveTxsBlob(ctx sdk.Context, blockHeight int64) error {
+// RemoveBatch removes a batch from a queue
+func (k *Keeper) RemoveBatch(ctx sdk.Context, blockHeight int64) error {
 	store := ctx.KVStore(k.storeKey)
 
 	store.Delete(types.GetTxsQueueKey(blockHeight))

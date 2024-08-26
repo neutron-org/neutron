@@ -22,21 +22,21 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type TxsBlob struct {
+type Batch struct {
 	Proposer []byte   `protobuf:"bytes,1,opt,name=proposer,proto3" json:"proposer,omitempty"`
 	Txs      [][]byte `protobuf:"bytes,2,rep,name=txs,proto3" json:"txs,omitempty"`
 }
 
-func (m *TxsBlob) Reset()         { *m = TxsBlob{} }
-func (m *TxsBlob) String() string { return proto.CompactTextString(m) }
-func (*TxsBlob) ProtoMessage()    {}
-func (*TxsBlob) Descriptor() ([]byte, []int) {
+func (m *Batch) Reset()         { *m = Batch{} }
+func (m *Batch) String() string { return proto.CompactTextString(m) }
+func (*Batch) ProtoMessage()    {}
+func (*Batch) Descriptor() ([]byte, []int) {
 	return fileDescriptor_4de048def67b5e7f, []int{0}
 }
-func (m *TxsBlob) XXX_Unmarshal(b []byte) error {
+func (m *Batch) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TxsBlob) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *Batch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_TxsBlob.Marshal(b, m, deterministic)
 	} else {
@@ -48,26 +48,26 @@ func (m *TxsBlob) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *TxsBlob) XXX_Merge(src proto.Message) {
+func (m *Batch) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_TxsBlob.Merge(m, src)
 }
-func (m *TxsBlob) XXX_Size() int {
+func (m *Batch) XXX_Size() int {
 	return m.Size()
 }
-func (m *TxsBlob) XXX_DiscardUnknown() {
+func (m *Batch) XXX_DiscardUnknown() {
 	xxx_messageInfo_TxsBlob.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_TxsBlob proto.InternalMessageInfo
 
-func (m *TxsBlob) GetProposer() []byte {
+func (m *Batch) GetProposer() []byte {
 	if m != nil {
 		return m.Proposer
 	}
 	return nil
 }
 
-func (m *TxsBlob) GetTxs() [][]byte {
+func (m *Batch) GetTxs() [][]byte {
 	if m != nil {
 		return m.Txs
 	}
@@ -75,7 +75,7 @@ func (m *TxsBlob) GetTxs() [][]byte {
 }
 
 func init() {
-	proto.RegisterType((*TxsBlob)(nil), "neutron.lastlook.v1.TxsBlob")
+	proto.RegisterType((*Batch)(nil), "neutron.lastlook.v1.Batch")
 }
 
 func init() { proto.RegisterFile("neutron/lastlook/v1/types.proto", fileDescriptor_4de048def67b5e7f) }
@@ -96,7 +96,7 @@ var fileDescriptor_4de048def67b5e7f = []byte{
 	0x00, 0x00,
 }
 
-func (m *TxsBlob) Marshal() (dAtA []byte, err error) {
+func (m *Batch) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -106,12 +106,12 @@ func (m *TxsBlob) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TxsBlob) MarshalTo(dAtA []byte) (int, error) {
+func (m *Batch) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TxsBlob) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *Batch) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -146,7 +146,7 @@ func encodeVarintTypes(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *TxsBlob) Size() (n int) {
+func (m *Batch) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -171,7 +171,7 @@ func sovTypes(x uint64) (n int) {
 func sozTypes(x uint64) (n int) {
 	return sovTypes(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *TxsBlob) Unmarshal(dAtA []byte) error {
+func (m *Batch) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -194,10 +194,10 @@ func (m *TxsBlob) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TxsBlob: wiretype end group for non-group")
+			return fmt.Errorf("proto: Batch: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TxsBlob: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Batch: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

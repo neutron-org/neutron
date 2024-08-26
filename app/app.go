@@ -377,7 +377,7 @@ type App struct {
 	GlobalFeeKeeper     globalfeekeeper.Keeper
 	LastLookKeeper      *lastlookkeeper.Keeper
 
-	LastLookPreBlockHandler *lastlookpreblocker.PreBlockHandler
+	LastLookPreBlockHandler *lastlookpreblocker.LastLookPreBlockHandler
 
 	PFMModule packetforward.AppModule
 
@@ -1301,7 +1301,7 @@ func New(
 		),
 	)
 
-	app.LastLookPreBlockHandler = lastlookpreblocker.NewOraclePreBlockHandler(
+	app.LastLookPreBlockHandler = lastlookpreblocker.NewLastLookPreBlockHandler(
 		app.Logger(), app.LastLookKeeper, &app.ConsensusParamsKeeper)
 
 	app.SetPreBlocker(app.PreBlocker)
@@ -1373,11 +1373,12 @@ func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sd
 		return nil, err
 	}
 
-	if _, err := app.oraclePreBlockHandler.PreBlocker()(ctx, req); err != nil {
+	//nolint:staticcheck
+	if _, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req); err != nil {
 		return nil, err
 	}
 
-	if _, err := app.LastLookPreBlockHandler.PreBlocker()(ctx, req); err != nil {
+	if _, err = app.LastLookPreBlockHandler.PreBlocker()(ctx, req); err != nil {
 		return nil, err
 	}
 

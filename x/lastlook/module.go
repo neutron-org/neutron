@@ -151,7 +151,7 @@ func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
-	if err := am.keeper.RemoveTxsBlob(sdk.UnwrapSDKContext(ctx), sdk.UnwrapSDKContext(ctx).BlockHeight()-1); err != nil {
+	if err := am.keeper.RemoveBatch(sdk.UnwrapSDKContext(ctx), sdk.UnwrapSDKContext(ctx).BlockHeight()-1); err != nil {
 		return nil, err
 	}
 
