@@ -32,7 +32,7 @@ func CmdQueryBatch() *cobra.Command {
 				height = int64(h)
 			}
 
-			res, err := queryClient.Batch(context.Background(), &types.QueryBatchRequest{height})
+			res, err := queryClient.Batch(context.Background(), &types.QueryBatchRequest{Height: height})
 			if err != nil {
 				return err
 			}
