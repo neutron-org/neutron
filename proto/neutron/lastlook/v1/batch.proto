@@ -1,0 +1,12 @@
+syntax = "proto3";
+package neutron.lastlook.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/v4/x/lastlook/types";
+
+// Params defines the parameters for the module.
+message Batch {
+  bytes proposer = 1;
+  repeated bytes txs = 2;
+}
