@@ -18626,6 +18626,43 @@ definitions:
             type: array
         type: object
     type: object
+  neutron.lastlook.v1.Batch:
+    description: Params defines the parameters for the module.
+    properties:
+      proposer:
+        format: byte
+        type: string
+      txs:
+        items:
+          format: byte
+          type: string
+        type: array
+    type: object
+  neutron.lastlook.v1.Params:
+    description: Params defines the parameters for the module.
+    type: object
+  neutron.lastlook.v1.QueryBatchResponse:
+    properties:
+      batch:
+        description: Params defines the parameters for the module.
+        properties:
+          proposer:
+            format: byte
+            type: string
+          txs:
+            items:
+              format: byte
+              type: string
+            type: array
+        type: object
+    type: object
+  neutron.lastlook.v1.QueryParamsResponse:
+    description: QueryParamsResponse is response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: params holds all the parameters of this module.
+        type: object
+    type: object
   osmosis.tokenfactory.Params:
     description: Params defines the parameters for the tokenfactory module.
     properties:
@@ -43583,6 +43620,97 @@ paths:
               message:
                 type: string
             type: object
+      tags:
+        - Query
+  /neutron/lastlook/v1/batch:
+    get:
+      operationId: Batch
+      parameters:
+        - format: int64
+          in: query
+          name: height
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              batch:
+                description: Params defines the parameters for the module.
+                properties:
+                  proposer:
+                    format: byte
+                    type: string
+                  txs:
+                    items:
+                      format: byte
+                      type: string
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      tags:
+        - Query
+  /neutron/lastlook/v1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              QueryParamsResponse is response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: params holds all the parameters of this module.
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Parameters queries the parameters of the module.
       tags:
         - Query
   /osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/authority_metadata:

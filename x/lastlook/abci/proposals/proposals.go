@@ -49,76 +49,64 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			return nil, sdkerrors.ErrInvalidRequest
 		}
 
-		currentBlob, err := h.lastlookKeeper.GetBatch(ctx, req.Height)
+		currentBatch, err := h.lastlookKeeper.GetBatch(ctx, req.Height)
 		if err != nil {
 			h.logger.Error("GetBatch returned an error", "err", err)
 			return nil, err
 		}
 
-		// An inclusion of a tx is delayed for 1 block and because of that CometBFT does not see a tx in a block immediately
-		// and tries to include a tx in two blocks in a row.
-		// At a block X a tx is added into the queue, at a block X+1 a tx is finally is included into a block.
-		// BUT IT PROPOSED BY CometBFT two times, thus we need to filter it out second time to be sure it's not introduced on chain twice.
-		filteredTxs := make([][]byte, 0)
+		consumedBytes := int64(0)
+		// increase consumedBytes counter by a size of all transaction from a batch that must be inserted to a block
+		for _, tx := range req.Txs {
+			consumedBytes += int64(len(tx))
+		}
+
+		newBatch := types.Batch{
+			Proposer: req.ProposerAddress,
+			Txs:      make([][]byte, 0, len(req.Txs)),
+		}
+
 		for _, mempoolTx := range req.Txs {
 			containsFunc := func(item []byte) bool {
 				return bytes.Equal(item, mempoolTx)
 			}
-			if !slices.ContainsFunc(currentBlob.Txs, containsFunc) {
-				filteredTxs = append(filteredTxs, mempoolTx)
+
+			// An inclusion of a tx is delayed for 1 block and because of that CometBFT does not see a tx in a block immediately
+			// and tries to include a tx in two blocks in a row.
+			// At a block X a tx is added into the queue, at a block X+1 a tx is finally included into a block.
+			// BUT IT IS PROPOSED BY CometBFT two times, thus we need to filter it out second time to be sure it's not introduced on chain twice.
+			if slices.ContainsFunc(currentBatch.Txs, containsFunc) {
+				continue
+			}
+
+			newBatch.Txs = append(newBatch.Txs, mempoolTx)
+
+			// if final size of a serialised tx is too big to insert into a block, remove last inserted tx and continue
+			// iterating over txs from mempool, maybe there is some small tx we can still fit in
+			if int64(newBatch.XXX_Size())+consumedBytes > req.MaxTxBytes {
+				newBatch.Txs = newBatch.Txs[:len(newBatch.Txs)-1]
 			}
 		}
 
-		newBlob := types.Batch{
-			Proposer: req.ProposerAddress,
-			Txs:      filteredTxs,
-		}
-
-		newBlobBz, err := h.lastlookKeeper.GetCodec().Marshal(&newBlob)
+		newBatchBz, err := h.lastlookKeeper.GetCodec().Marshal(&newBatch)
 		if err != nil {
-			h.logger.Error("failed to marshal txs blob", "err", err)
+			h.logger.Error("failed to marshal txs batch", "err", err)
 			return nil, err
 		}
 
-		resp := cometabci.ResponsePrepareProposal{}
+		resp := cometabci.ResponsePrepareProposal{
+			// preallocate memory for all transactions from the current batch + 1 place for a new batch
+			Txs: make([][]byte, 0, len(currentBatch.Txs)+1),
+		}
 
-		resp.Txs = h.injectAndResize(currentBlob.Txs, newBlobBz, req.MaxTxBytes+int64(len(newBlobBz)))
+		// a new batch must the first
+		resp.Txs = append(resp.Txs, newBatchBz)
+
+		// and then all txs from the current batch
+		resp.Txs = append(resp.Txs, currentBatch.Txs...)
 
 		return &resp, nil
 	}
-}
-
-// injectAndResize returns a tx array containing the injectTx at the beginning followed by appTxs.
-// The returned transaction array is bounded by maxSizeBytes, and the function is idempotent meaning the
-// injectTx will only appear once regardless of how many times you attempt to inject it.
-// If injectTx is large enough, all originalTxs may end up being excluded from the returned tx array.
-func (h *ProposalHandler) injectAndResize(appTxs [][]byte, injectTx []byte, maxSizeBytes int64) [][]byte {
-	//nolint: prealloc
-	var (
-		returnedTxs   [][]byte
-		consumedBytes int64
-	)
-
-	// If VEs are enabled and our VE Tx isn't already in the appTxs, inject it here
-	if len(injectTx) != 0 && (len(appTxs) < 1 || !bytes.Equal(appTxs[0], injectTx)) {
-		injectBytes := int64(len(injectTx))
-		// Ensure the VE Tx is in the response if we have room.
-		// We may want to be more aggressive in the future about dedicating block space for application-specific Txs.
-		// However, the VE Tx size should be relatively stable so MaxTxBytes should be set w/ plenty of headroom.
-		if injectBytes <= maxSizeBytes {
-			consumedBytes += injectBytes
-			returnedTxs = append(returnedTxs, injectTx)
-		}
-	}
-	// Add as many appTxs to the returned proposal as possible given our maxSizeBytes constraint
-	for _, tx := range appTxs {
-		consumedBytes += int64(len(tx))
-		if consumedBytes > maxSizeBytes {
-			return returnedTxs
-		}
-		returnedTxs = append(returnedTxs, tx)
-	}
-	return returnedTxs
 }
 
 // ProcessProposalHandler returns a ProcessProposalHandler that will be called
