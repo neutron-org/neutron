@@ -769,9 +769,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  1,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: 1,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -819,9 +818,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -870,9 +868,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -925,9 +922,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -976,9 +972,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1027,9 +1022,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1078,9 +1072,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1131,9 +1124,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender, // A bit weird that query owner submits the results, but it doesn't really matter
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender, // A bit weird that query owner submits the results, but it doesn't really matter
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1182,9 +1174,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1232,9 +1223,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1286,9 +1276,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1343,9 +1332,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender,
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
@@ -1398,9 +1386,8 @@ func (suite *KeeperTestSuite) TestSubmitInterchainQueryResult() {
 				suite.Require().NoError(err)
 
 				msg = iqtypes.MsgSubmitQueryResult{
-					QueryId:  res.Id,
-					Sender:   sender, // A bit weird that query owner submits the results, but it doesn't really matter
-					ClientId: suite.Path.EndpointA.ClientID,
+					QueryId: res.Id,
+					Sender:  sender, // A bit weird that query owner submits the results, but it doesn't really matter
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key:           resp.Key,
