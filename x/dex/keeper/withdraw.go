@@ -19,7 +19,7 @@ func (k Keeper) WithdrawCore(
 	sharesToRemoveList []math.Int,
 	tickIndicesNormalized []int64,
 	fees []uint64,
-) error {
+) (reserves0ToRemoved, reserves1ToRemoved math.Int, sharesBurned sdk.Coins, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, err := k.ExecuteWithdraw(
@@ -32,13 +32,13 @@ func (k Keeper) WithdrawCore(
 		fees,
 	)
 	if err != nil {
-		return err
+		return math.ZeroInt(), math.ZeroInt(), nil, err
 	}
 
 	ctx.EventManager().EmitEvents(events)
 
 	if err := k.BurnShares(ctx, callerAddr, coinsToBurn); err != nil {
-		return err
+		return math.ZeroInt(), math.ZeroInt(), nil, err
 	}
 
 	if totalReserve0ToRemove.IsPositive() {
@@ -52,7 +52,7 @@ func (k Keeper) WithdrawCore(
 		)
 		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin0}))
 		if err != nil {
-			return err
+			return math.ZeroInt(), math.ZeroInt(), nil, err
 		}
 	}
 
@@ -66,11 +66,11 @@ func (k Keeper) WithdrawCore(
 		)
 		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin1}))
 		if err != nil {
-			return err
+			return math.ZeroInt(), math.ZeroInt(), nil, err
 		}
 	}
 
-	return nil
+	return totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, nil
 }
 
 // ExecuteWithdraw handles the core Withdraw logic including calculating and withdrawing reserve0,reserve1 from a specified tick

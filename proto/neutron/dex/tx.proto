@@ -102,13 +102,13 @@ message MsgWithdrawal {
 }
 
 message MsgWithdrawalResponse {
-repeated string reserve0_withdrawn = 1 [
+string reserve0_withdrawn = 1 [
                                           (gogoproto.moretags) = "yaml:\"reserve0_withdrawn\"",
                                           (gogoproto.customtype) = "cosmossdk.io/math.Int",
                                           (gogoproto.nullable) = false,
                                           (gogoproto.jsontag) = "reserve0_deposited"
                                           ];
-  repeated string reserve1_withdrawn = 2 [
+  string reserve1_withdrawn = 2 [
                                           (gogoproto.moretags) = "yaml:\"reserve1_withdrawn\"",
                                           (gogoproto.customtype) = "cosmossdk.io/math.Int",
                                           (gogoproto.nullable) = false,

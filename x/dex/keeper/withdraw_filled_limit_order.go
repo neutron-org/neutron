@@ -15,22 +15,22 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	goCtx context.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) error {
+) (takerCoinOut, makerCoinOut sdk.Coin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	amountOutTokenOut, remainingTokenIn, tradePairID, err := k.ExecuteWithdrawFilledLimitOrder(ctx, trancheKey, callerAddr)
 	if err != nil {
-		return err
+		return sdk.Coin{}, sdk.Coin{}, err
 	}
 
-	coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
-	coinMakerDenomRefund := sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
+	takerCoinOut = sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
+	makerCoinOut = sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 	// NOTE: it is possible for coinTakerDenomOut xor coinMakerDenomOut to be zero. These are removed by the sanitize call in sdk.NewCoins
 	// ExecuteWithdrawFilledLimitOrder ensures that at least one of these has am amount > 0.
-	coins := sdk.NewCoins(coinTakerDenomOut, coinMakerDenomRefund)
-	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(coinTakerDenomOut)))
+	coins := sdk.NewCoins(takerCoinOut, makerCoinOut)
+	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(takerCoinOut)))
 	if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
-		return err
+		return sdk.Coin{}, sdk.Coin{}, err
 	}
 
 	// This will never panic since TradePairID has already been successfully constructed by ExecuteWithdrawFilledLimitOrder
@@ -45,7 +45,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		trancheKey,
 	))
 
-	return nil
+	return takerCoinOut, makerCoinOut, nil
 }
 
 // ExecuteWithdrawFilledLimitOrder handles the for logic for WithdrawFilledLimitOrder -- calculates and sends filled liquidity from module to user,
