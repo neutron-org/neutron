@@ -985,12 +985,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		})
 	}
 
-	executionStages := make([]crontypes.ExecutionStage, 0, len(addSchedule.ExecutionStages))
-	for _, executionStage := range addSchedule.ExecutionStages {
-		executionStages = append(executionStages, crontypes.ExecutionStage(crontypes.ExecutionStage_value[executionStage]))
-	}
-
-	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs, executionStages)
+	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs, crontypes.ExecutionStage(crontypes.ExecutionStage_value[addSchedule.ExecutionStage]))
 	if err != nil {
 		ctx.Logger().Error("failed to addSchedule",
 			"from_address", contractAddr.String(),

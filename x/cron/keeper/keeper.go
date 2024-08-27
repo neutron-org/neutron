@@ -27,8 +27,6 @@ var (
 
 	MetricLabelSuccess      = "success"
 	MetricLabelScheduleName = "schedule_name"
-
-	schedulesExecutionStages map[string]map[types.ExecutionStage]struct{}
 )
 
 type (
@@ -49,8 +47,6 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	authority string,
 ) *Keeper {
-	schedulesExecutionStages = make(map[string]map[types.ExecutionStage]struct{})
-
 	return &Keeper{
 		cdc:           cdc,
 		storeKey:      storeKey,
@@ -72,13 +68,11 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 // and executes messages in each one
 func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.ExecutionStage) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelExecuteReadySchedules)
-	schedules := k.getSchedulesReadyForExecution(ctx)
+	schedules := k.getSchedulesReadyForExecution(ctx, executionStage)
 
 	for _, schedule := range schedules {
-		if _, ok := schedulesExecutionStages[schedule.Name][executionStage]; ok {
-			err := k.executeSchedule(ctx, schedule)
-			recordExecutedSchedule(err, schedule)
-		}
+		err := k.executeSchedule(ctx, schedule)
+		recordExecutedSchedule(err, schedule)
 	}
 }
 
@@ -89,23 +83,10 @@ func (k *Keeper) AddSchedule(
 	name string,
 	period uint64,
 	msgs []types.MsgExecuteContract,
-	executionStages []types.ExecutionStage,
+	executionStage types.ExecutionStage,
 ) error {
 	if k.scheduleExists(ctx, name) {
 		return fmt.Errorf("schedule already exists with name=%v", name)
-	}
-
-	schedulesExecutionStages[name] = make(map[types.ExecutionStage]struct{})
-	execStages := make([]types.ExecutionStage, 0)
-	for _, executionStage := range executionStages {
-		if _, ok := types.ExecutionStage_name[int32(executionStage)]; !ok {
-			executionStage = types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER
-		}
-
-		if _, ok := schedulesExecutionStages[name][executionStage]; !ok {
-			schedulesExecutionStages[name][executionStage] = struct{}{}
-			execStages = append(execStages, executionStage)
-		}
 	}
 
 	schedule := types.Schedule{
@@ -113,7 +94,11 @@ func (k *Keeper) AddSchedule(
 		Period:            period,
 		Msgs:              msgs,
 		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
-		ExecutionStages:   execStages,
+		ExecutionStage:    executionStage,
+	}
+
+	if _, ok := types.ExecutionStage_name[int32(executionStage)]; !ok {
+		schedule.ExecutionStage = types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER
 	}
 
 	k.storeSchedule(ctx, schedule)
@@ -127,8 +112,6 @@ func (k *Keeper) RemoveSchedule(ctx sdk.Context, name string) {
 	if !k.scheduleExists(ctx, name) {
 		return
 	}
-
-	delete(schedulesExecutionStages, name)
 
 	k.changeTotalCount(ctx, -1)
 	k.removeSchedule(ctx, name)
@@ -169,7 +152,7 @@ func (k *Keeper) GetScheduleCount(ctx sdk.Context) int32 {
 	return k.getScheduleCount(ctx)
 }
 
-func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
+func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context, executionStage types.ExecutionStage) []types.Schedule {
 	params := k.GetParams(ctx)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 	count := uint64(0)
@@ -183,7 +166,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule
 		var schedule types.Schedule
 		k.cdc.MustUnmarshal(iterator.Value(), &schedule)
 
-		if k.intervalPassed(ctx, schedule) {
+		if k.intervalPassed(ctx, schedule) && schedule.ExecutionStage == executionStage {
 			res = append(res, schedule)
 			count++
 

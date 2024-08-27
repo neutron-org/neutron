@@ -133,9 +133,9 @@ func createNSchedule(t *testing.T, ctx sdk.Context, k *cronkeeper.Keeper, n int3
 		item.Period = 1000
 		item.Msgs = nil
 		item.LastExecuteHeight = uint64(ctx.BlockHeight())
-		item.ExecutionStages = []types.ExecutionStage{types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER}
+		item.ExecutionStage = types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER
 
-		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.ExecutionStages)
+		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.ExecutionStage)
 		require.NoError(t, err)
 
 		res[idx] = item

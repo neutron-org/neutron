@@ -34,8 +34,8 @@ func (k msgServer) AddSchedule(goCtx context.Context, req *types.MsgAddSchedule)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.Keeper.AddSchedule(ctx, req.Name, req.Period, req.Msgs, req.ExecutionStages); err != nil {
-		return nil, err
+	if err := k.Keeper.AddSchedule(ctx, req.Name, req.Period, req.Msgs, req.ExecutionStage); err != nil {
+		return nil, errors.Wrap(err, "failed to add schedule")
 	}
 
 	return &types.MsgAddScheduleResponse{}, nil
