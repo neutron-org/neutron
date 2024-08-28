@@ -35,6 +35,7 @@ func (k Keeper) SimulateDeposit(
 
 	tickIndexes := NormalizeAllTickIndexes(msg.TokenA, pairID.Token0, msg.TickIndexesAToB)
 
+	//nolint:dogsled
 	reserve0Deposited, reserve1Deposited, _, _, sharesIssued, _, failedDeposits, err := k.ExecuteDeposit(
 		cacheCtx,
 		pairID,
@@ -46,7 +47,6 @@ func (k Keeper) SimulateDeposit(
 		msg.Fees,
 		msg.Options,
 	)
-
 	if err != nil {
 		return nil, err
 	}

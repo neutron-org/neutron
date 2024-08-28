@@ -3,19 +3,21 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 func (s *DexTestSuite) TestSimulateDeposit() {
-	req := &types.QuerySimulateDepositRequest{Msg: &types.MsgDeposit{
-		TokenA:          "TokenA",
-		TokenB:          "TokenB",
-		AmountsA:        []math.Int{math.OneInt(), math.OneInt()},
-		AmountsB:        []math.Int{math.ZeroInt(), math.ZeroInt()},
-		TickIndexesAToB: []int64{0, 1},
-		Fees:            []uint64{1, 1},
-		Options:         []*types.DepositOptions{{}, {}},
-	},
+	req := &types.QuerySimulateDepositRequest{
+		Msg: &types.MsgDeposit{
+			TokenA:          "TokenA",
+			TokenB:          "TokenB",
+			AmountsA:        []math.Int{math.OneInt(), math.OneInt()},
+			AmountsB:        []math.Int{math.ZeroInt(), math.ZeroInt()},
+			TickIndexesAToB: []int64{0, 1},
+			Fees:            []uint64{1, 1},
+			Options:         []*types.DepositOptions{{}, {}},
+		},
 	}
 	resp, err := s.App.DexKeeper.SimulateDeposit(s.Ctx, req)
 	s.NoError(err)
@@ -33,15 +35,16 @@ func (s *DexTestSuite) TestSimulateDeposit() {
 }
 
 func (s *DexTestSuite) TestSimulateDepositPartialFailure() {
-	req := &types.QuerySimulateDepositRequest{Msg: &types.MsgDeposit{
-		TokenA:          "TokenA",
-		TokenB:          "TokenB",
-		AmountsA:        []math.Int{math.OneInt(), math.ZeroInt()},
-		AmountsB:        []math.Int{math.ZeroInt(), math.OneInt()},
-		TickIndexesAToB: []int64{3, 0},
-		Fees:            []uint64{1, 1},
-		Options:         []*types.DepositOptions{{}, {}},
-	},
+	req := &types.QuerySimulateDepositRequest{
+		Msg: &types.MsgDeposit{
+			TokenA:          "TokenA",
+			TokenB:          "TokenB",
+			AmountsA:        []math.Int{math.OneInt(), math.ZeroInt()},
+			AmountsB:        []math.Int{math.ZeroInt(), math.OneInt()},
+			TickIndexesAToB: []int64{3, 0},
+			Fees:            []uint64{1, 1},
+			Options:         []*types.DepositOptions{{}, {}},
+		},
 	}
 	resp, err := s.App.DexKeeper.SimulateDeposit(s.Ctx, req)
 	s.NoError(err)
@@ -58,15 +61,16 @@ func (s *DexTestSuite) TestSimulateDepositPartialFailure() {
 }
 
 func (s *DexTestSuite) TestSimulateDepositFails() {
-	req := &types.QuerySimulateDepositRequest{Msg: &types.MsgDeposit{
-		TokenA:          "TokenA",
-		TokenB:          "TokenB",
-		AmountsA:        []math.Int{math.OneInt(), math.ZeroInt()},
-		AmountsB:        []math.Int{math.ZeroInt(), math.OneInt()},
-		TickIndexesAToB: []int64{3, 0},
-		Fees:            []uint64{1, 1},
-		Options:         []*types.DepositOptions{{}, {FailTxOnBel: true}},
-	},
+	req := &types.QuerySimulateDepositRequest{
+		Msg: &types.MsgDeposit{
+			TokenA:          "TokenA",
+			TokenB:          "TokenB",
+			AmountsA:        []math.Int{math.OneInt(), math.ZeroInt()},
+			AmountsB:        []math.Int{math.ZeroInt(), math.OneInt()},
+			TickIndexesAToB: []int64{3, 0},
+			Fees:            []uint64{1, 1},
+			Options:         []*types.DepositOptions{{}, {FailTxOnBel: true}},
+		},
 	}
 	resp, err := s.App.DexKeeper.SimulateDeposit(s.Ctx, req)
 	s.Error(err, types.ErrDepositBehindEnemyLines)

@@ -420,22 +420,20 @@ message QuerySimulateDepositResponse {
   MsgDepositResponse resp = 1;
 }
 
-
 message QuerySimulateWithdrawalRequest {
   MsgWithdrawal msg = 1;
 }
 
 message QuerySimulateWithdrawalResponse {
-  MsgWithdrawalResponse resp =1;
+  MsgWithdrawalResponse resp = 1;
 }
 
-
 message QuerySimulatePlaceLimitOrderRequest {
-  MsgPlaceLimitOrder  msg  =1;
+  MsgPlaceLimitOrder msg = 1;
 }
 
 message QuerySimulatePlaceLimitOrderResponse {
-  MsgPlaceLimitOrderResponse  resp  =1;
+  MsgPlaceLimitOrderResponse resp = 1;
 }
 
 message QuerySimulateWithdrawFilledLimitOrderRequest {

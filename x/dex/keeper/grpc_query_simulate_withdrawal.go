@@ -39,7 +39,6 @@ func (k Keeper) SimulateWithdrawal(
 		tickIndexes,
 		msg.Fees,
 	)
-
 	if err != nil {
 		return nil, err
 	}

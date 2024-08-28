@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -18,7 +19,8 @@ func (s *DexTestSuite) TestSimulateCancelLimitOrder() {
 		Msg: &types.MsgCancelLimitOrder{
 			Creator:    s.alice.String(),
 			TrancheKey: trancheKey,
-		}}
+		},
+	}
 
 	resp, err := s.App.DexKeeper.SimulateCancelLimitOrder(s.Ctx, req)
 	s.NoError(err)
@@ -41,7 +43,8 @@ func (s *DexTestSuite) TestSimulateCancelLimitOrderFails() {
 		Msg: &types.MsgCancelLimitOrder{
 			Creator:    s.bob.String(),
 			TrancheKey: trancheKey,
-		}}
+		},
+	}
 
 	resp, err := s.App.DexKeeper.SimulateCancelLimitOrder(s.Ctx, req)
 	s.ErrorIs(err, types.ErrActiveLimitOrderNotFound)

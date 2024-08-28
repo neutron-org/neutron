@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
@@ -59,5 +60,4 @@ func (s *DexTestSuite) TestSimulateWithdrawalFails() {
 	resp, err := s.App.DexKeeper.SimulateWithdrawal(s.Ctx, req)
 	s.Error(err, types.ErrInsufficientShares)
 	s.Nil(resp)
-
 }

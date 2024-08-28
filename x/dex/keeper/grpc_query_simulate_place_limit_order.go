@@ -31,6 +31,9 @@ func (k Keeper) SimulatePlaceLimitOrder(
 
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 	takerTradePairID, err := types.NewTradePairID(msg.TokenIn, msg.TokenOut)
+	if err != nil {
+		return nil, err
+	}
 	tickIndex := msg.TickIndexInToOut
 	if msg.LimitSellPrice != nil {
 		tickIndex, err = types.CalcTickIndexFromPrice(*msg.LimitSellPrice)
