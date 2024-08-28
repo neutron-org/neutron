@@ -208,7 +208,7 @@ func (k MsgServer) CancelLimitOrder(
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
-	takerCoinOut, makerCoinOut, err := k.CancelLimitOrderCore(
+	makerCoinOut, takerCoinOut, err := k.CancelLimitOrderCore(
 		goCtx,
 		msg.TrancheKey,
 		callerAddr,

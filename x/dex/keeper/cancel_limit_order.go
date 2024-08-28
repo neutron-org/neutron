@@ -14,7 +14,7 @@ func (k Keeper) CancelLimitOrderCore(
 	goCtx context.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (takerCoinOut, makerCoinOut sdk.Coin, err error) {
+) (makerCoinOut, takerCoinOut sdk.Coin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	makerCoinOut, takerCoinOut, err = k.ExecuteCancelLimitOrder(ctx, trancheKey, callerAddr)
@@ -48,7 +48,7 @@ func (k Keeper) CancelLimitOrderCore(
 		trancheKey,
 	))
 
-	return takerCoinOut, makerCoinOut, nil
+	return makerCoinOut, takerCoinOut, nil
 }
 
 // ExecuteCancelLimitOrder handles the core logic for CancelLimitOrder -- removing remaining TokenIn from the

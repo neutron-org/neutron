@@ -16,7 +16,6 @@ func (k Keeper) SimulateWithdrawFilledLimitOrder(
 	cacheCtx, _ := ctx.CacheContext()
 
 	msg := req.Msg
-	msg.Creator = types.DummyAddress
 
 	if err := msg.Validate(); err != nil {
 		return nil, err

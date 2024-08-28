@@ -16,8 +16,6 @@ func (k Keeper) SimulateWithdrawal(
 	cacheCtx, _ := ctx.CacheContext()
 
 	msg := req.Msg
-	msg.Creator = types.DummyAddress
-	msg.Receiver = types.DummyAddress
 
 	if err := msg.Validate(); err != nil {
 		return nil, err

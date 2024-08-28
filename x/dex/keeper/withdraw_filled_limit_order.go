@@ -104,8 +104,8 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 		return takerCoinOut, makerCoinOut, types.ErrWithdrawEmptyLimitOrder
 	}
 
-	makerCoinOut = sdk.NewCoin(tradePairID.MakerDenom, amountOutTokenOut)
-	takerCoinOut = sdk.NewCoin(tradePairID.TakerDenom, remainingTokenIn)
+	takerCoinOut = sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
+	makerCoinOut = sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 
-	return makerCoinOut, takerCoinOut, nil
+	return takerCoinOut, makerCoinOut, nil
 }

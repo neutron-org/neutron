@@ -16,14 +16,13 @@ func (k Keeper) SimulateCancelLimitOrder(
 	cacheCtx, _ := ctx.CacheContext()
 
 	msg := req.Msg
-	msg.Creator = types.DummyAddress
 
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
-	takerCoinOut, makerCoinOut, err := k.ExecuteCancelLimitOrder(
+	makerCoinOut, takerCoinOut, err := k.ExecuteCancelLimitOrder(
 		cacheCtx,
 		msg.TrancheKey,
 		callerAddr,
