@@ -281,44 +281,6 @@ func (s *DexStateTestSuite) makemakePlaceLOSuccess(addr sdk.AccAddress, depositA
 	return resp
 }
 
-func (s *DexStateTestSuite) makeWithdraw(addr sdk.AccAddress, tokenA string, tokenB string, sharesToRemove math.Int) (*dextypes.MsgWithdrawalResponse, error) {
-	return s.msgServer.Withdrawal(s.Ctx, &dextypes.MsgWithdrawal{
-		Creator:         addr.String(),
-		Receiver:        addr.String(),
-		TokenA:          tokenA,
-		TokenB:          tokenB,
-		SharesToRemove:  []math.Int{sharesToRemove},
-		TickIndexesAToB: []int64{DefaultTick},
-		Fees:            []uint64{DefaultFee},
-	})
-}
-
-func (s *DexStateTestSuite) makePlaceLO(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut string, sellPrice string, orderType dextypes.LimitOrderType, expTime *time.Time) (*dextypes.MsgPlaceLimitOrderResponse, error) {
-	p, err := math_utils.NewPrecDecFromStr(sellPrice)
-	if err != nil {
-		panic(err)
-	}
-	return s.msgServer.PlaceLimitOrder(s.Ctx, &dextypes.MsgPlaceLimitOrder{
-		Creator:          addr.String(),
-		Receiver:         addr.String(),
-		TokenIn:          amountIn.Denom,
-		TokenOut:         tokenOut,
-		TickIndexInToOut: 0,
-		AmountIn:         amountIn.Amount,
-		OrderType:        orderType,
-		ExpirationTime:   expTime,
-		MaxAmountOut:     nil,
-		LimitSellPrice:   &p,
-	})
-}
-
-func (s *DexStateTestSuite) makemakePlaceLOSuccess(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) *dextypes.MsgDepositResponse {
-	resp, err := s.makeDeposit(addr, depositAmts, disableAutoSwap)
-	s.NoError(err)
-
-	return resp
-}
-
 func calcDepositValueAsToken0(tick int64, amount0, amount1 math.Int) math_utils.PrecDec {
 	price1To0CenterTick := dextypes.MustCalcPrice(-1 * tick)
 	amount1ValueAsToken0 := price1To0CenterTick.MulInt(amount1)
