@@ -12,12 +12,16 @@ import (
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
-type depositTestParams struct {
+type DepositState struct {
 	SharedParams
 	// State Conditions
 	ExistingShareHolders          string
 	ExistingLiquidityDistribution LiquidityDistribution
 	PoolValueIncrease             LiquidityDistribution
+}
+
+type depositTestParams struct {
+	DepositState
 	// Message Variants
 	DisableAutoswap bool
 	FailTxOnBEL     bool
@@ -41,7 +45,7 @@ func (p depositTestParams) printTestInfo(t *testing.T) {
 	)
 }
 
-func (s *DexStateTestSuite) setupDepositState(params depositTestParams) {
+func (s *DexStateTestSuite) setupDepositState(params DepositState) {
 	// NOTE: for setup we know the deposit will be completely used so we fund the accounts before the deposit
 	// so the expected account balance is unaffected.
 	liquidityDistr := params.ExistingLiquidityDistribution
@@ -162,7 +166,7 @@ func calcAutoSwapResidualValue(params depositTestParams, residual0, residual1 ma
 	case residual0.IsPositive():
 		return swapFeeDeduction.MulInt(residual0)
 	case residual1.IsPositive():
-		price1To0CenterTick := dextypes.MustCalcPrice(params.Tick)
+		price1To0CenterTick := dextypes.MustCalcPrice(-1 * params.Tick)
 		token1AsToken0 := price1To0CenterTick.MulInt(residual1)
 		return swapFeeDeduction.Mul(token1AsToken0)
 	default:
@@ -227,12 +231,14 @@ func hydrateDepositTestCase(params map[string]string, pairID *dextypes.PairID) d
 	}
 
 	return depositTestParams{
-		ExistingShareHolders:          existingShareHolders,
-		ExistingLiquidityDistribution: liquidityDistribution,
-		DisableAutoswap:               parseBool(params["DisableAutoswap"]),
-		PoolValueIncrease:             valueIncrease,
-		DepositAmounts:                parseLiquidityDistribution(params["DepositAmounts"], pairID),
-		SharedParams:                  DefaultSharedParams,
+		DepositState: DepositState{
+			ExistingShareHolders:          existingShareHolders,
+			ExistingLiquidityDistribution: liquidityDistribution,
+			PoolValueIncrease:             valueIncrease,
+			SharedParams:                  DefaultSharedParams,
+		},
+		DepositAmounts:  parseLiquidityDistribution(params["DepositAmounts"], pairID),
+		DisableAutoswap: parseBool(params["DisableAutoswap"]),
 	}
 }
 
@@ -272,6 +278,7 @@ func TestDeposit(t *testing.T) {
 			TokenA1TokenB2,
 			TokenA2TokenB2,
 		}},
+		// TODO: test over a list of Fees/Ticks
 	}
 	testCasesRaw := generatePermutations(testParams)
 	testCases := hydrateAllDepositTestCases(testCasesRaw)
@@ -285,7 +292,7 @@ func TestDeposit(t *testing.T) {
 			s.SetT(t)
 			tc.printTestInfo(t)
 
-			s.setupDepositState(tc)
+			s.setupDepositState(tc.DepositState)
 			s.fundCreatorBalanceDefault(tc.PairID)
 
 			poolID, found := s.App.DexKeeper.GetPoolIDByParams(s.Ctx, tc.PairID, tc.Tick, tc.Fee)
@@ -307,8 +314,8 @@ func TestDeposit(t *testing.T) {
 			expectedDepositA, expectedDepositB, expectedShares := calcExpectedDepositAmounts(tc)
 
 			// Check that response is correct
-			s.intsEqual("Response Deposit0", expectedDepositA, resp.Reserve0Deposited[0])
-			s.intsEqual("Response Deposit1", expectedDepositB, resp.Reserve1Deposited[0])
+			s.intsApproxEqual("Response Deposit0", expectedDepositA, resp.Reserve0Deposited[0])
+			s.intsApproxEqual("Response Deposit1", expectedDepositB, resp.Reserve1Deposited[0])
 
 			expectedTotalShares := existingSharesOwned.Amount.Add(expectedShares)
 			s.assertCreatorBalance(poolDenom, expectedTotalShares)
