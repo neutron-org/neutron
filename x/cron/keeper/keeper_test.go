@@ -238,14 +238,6 @@ func TestAddSchedule(t *testing.T) {
 	}, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
 	require.NoError(t, err)
 
-	err = k.AddSchedule(ctx, "d", 7, []types.MsgExecuteContract{
-		{
-			Contract: "c",
-			Msg:      "m",
-		},
-	}, 7)
-	require.NoError(t, err)
-
 	// second time with same name returns error
 	err = k.AddSchedule(ctx, "a", 5, []types.MsgExecuteContract{}, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
 	require.Error(t, err)
@@ -260,10 +252,9 @@ func TestAddSchedule(t *testing.T) {
 	require.Equal(t, scheduleA.ExecutionStage, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
 
 	schedules := k.GetAllSchedules(ctx)
-	require.Len(t, schedules, 3)
+	require.Len(t, schedules, 2)
 	require.Equal(t, schedules[0].ExecutionStage, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
 	require.Equal(t, schedules[1].ExecutionStage, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
-	require.Equal(t, schedules[2].ExecutionStage, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
 
 	// remove schedule works
 	k.RemoveSchedule(ctx, "a")

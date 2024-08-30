@@ -979,8 +979,6 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
-	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
-
 	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
 		msgs = append(msgs, crontypes.MsgExecuteContract{
@@ -990,7 +988,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 	}
 
 	_, err := m.Cronmsgserver.AddSchedule(ctx, &crontypes.MsgAddSchedule{
-		Authority:      authority.String(),
+		Authority:      contractAddr.String(),
 		Name:           addSchedule.Name,
 		Period:         addSchedule.Period,
 		Msgs:           msgs,
@@ -1001,7 +999,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 			"from_address", contractAddr.String(),
 			"error", err,
 		)
-		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrap(err, "failed to addSchedule")
 	}
 
 	ctx.Logger().Debug("schedule added",
@@ -1016,20 +1014,25 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
 	params, err := m.Cronqueryserver.Params(ctx, &crontypes.QueryParamsRequest{})
 	if err != nil {
-		ctx.Logger().Error("failed to get params", "error", err)
-		return nil, nil, nil, err
+		ctx.Logger().Error("failed to removeSchedule", "error", err)
+		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
 	}
 
 	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.Params.SecurityAddress {
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
-	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
-
-	m.Cronmsgserver.RemoveSchedule(ctx, &crontypes.MsgRemoveSchedule{
-		Authority: authority.String(),
+	_, err = m.Cronmsgserver.RemoveSchedule(ctx, &crontypes.MsgRemoveSchedule{
+		Authority: contractAddr.String(),
 		Name:      removeSchedule.Name,
 	})
+	if err != nil {
+		ctx.Logger().Error("failed to removeSchedule",
+			"from_address", contractAddr.String(),
+			"error", err,
+		)
+		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
+	}
 
 	ctx.Logger().Debug("schedule removed",
 		"from_address", contractAddr.String(),
