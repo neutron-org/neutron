@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/cron/types";
 
-// ExecutionStage defines when messages will be executed in the block
+// Defines when messages will be executed in the block
 enum ExecutionStage {
   // Execution at the end of the block
   EXECUTION_STAGE_END_BLOCKER = 0;
@@ -13,7 +13,7 @@ enum ExecutionStage {
   EXECUTION_STAGE_BEGIN_BLOCKER = 1;
 }
 
-// Schedule defines the schedule for execution
+// Defines the schedule for execution
 message Schedule {
   // Name of schedule
   string name = 1;
@@ -23,20 +23,20 @@ message Schedule {
   repeated MsgExecuteContract msgs = 3 [(gogoproto.nullable) = false];
   // Last execution's block height
   uint64 last_execute_height = 4;
-  // Execution stage when messages will be executed
+  // Stage when messages will be executed
   ExecutionStage execution_stage = 5;
 }
 
-// MsgExecuteContract defines the contract and the message to pass
+// Defines the contract and the message to pass
 message MsgExecuteContract {
-  // Contract is the address of the smart contract
+  // The address of the smart contract
   string contract = 1;
-  // Msg is json encoded message to be passed to the contract
+  // JSON encoded message to be passed to the contract
   string msg = 2;
 }
 
-// ScheduleCount defines the number of current schedules
+// Defines the number of current schedules
 message ScheduleCount {
-  // Count is the number of current schedules
+  // The number of current schedules
   int32 count = 1;
 }

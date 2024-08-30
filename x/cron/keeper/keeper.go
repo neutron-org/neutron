@@ -97,10 +97,6 @@ func (k *Keeper) AddSchedule(
 		ExecutionStage:    executionStage,
 	}
 
-	if _, ok := types.ExecutionStage_name[int32(executionStage)]; !ok {
-		schedule.ExecutionStage = types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER
-	}
-
 	k.storeSchedule(ctx, schedule)
 	k.changeTotalCount(ctx, 1)
 

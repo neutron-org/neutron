@@ -23,7 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// ExecutionStage defines when messages will be executed in the block
+// Defines when messages will be executed in the block
 type ExecutionStage int32
 
 const (
@@ -51,7 +51,7 @@ func (ExecutionStage) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_49ace1b59de613ef, []int{0}
 }
 
-// Schedule defines the schedule for execution
+// Defines the schedule for execution
 type Schedule struct {
 	// Name of schedule
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -61,7 +61,7 @@ type Schedule struct {
 	Msgs []MsgExecuteContract `protobuf:"bytes,3,rep,name=msgs,proto3" json:"msgs"`
 	// Last execution's block height
 	LastExecuteHeight uint64 `protobuf:"varint,4,opt,name=last_execute_height,json=lastExecuteHeight,proto3" json:"last_execute_height,omitempty"`
-	// Execution stage when messages will be executed
+	// Stage when messages will be executed
 	ExecutionStage ExecutionStage `protobuf:"varint,5,opt,name=execution_stage,json=executionStage,proto3,enum=neutron.cron.ExecutionStage" json:"execution_stage,omitempty"`
 }
 
@@ -133,11 +133,11 @@ func (m *Schedule) GetExecutionStage() ExecutionStage {
 	return ExecutionStage_EXECUTION_STAGE_END_BLOCKER
 }
 
-// MsgExecuteContract defines the contract and the message to pass
+// Defines the contract and the message to pass
 type MsgExecuteContract struct {
-	// Contract is the address of the smart contract
+	// The address of the smart contract
 	Contract string `protobuf:"bytes,1,opt,name=contract,proto3" json:"contract,omitempty"`
-	// Msg is json encoded message to be passed to the contract
+	// JSON encoded message to be passed to the contract
 	Msg string `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 }
 
@@ -188,9 +188,9 @@ func (m *MsgExecuteContract) GetMsg() string {
 	return ""
 }
 
-// ScheduleCount defines the number of current schedules
+// Defines the number of current schedules
 type ScheduleCount struct {
-	// Count is the number of current schedules
+	// The number of current schedules
 	Count int32 `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
 }
 

@@ -95,6 +95,22 @@ func TestMsgAddScheduleValidate(t *testing.T) {
 			},
 			"msgs should not be empty",
 		},
+		{
+			"invalid execution stage",
+			types.MsgAddSchedule{
+				Authority: testutil.TestOwnerAddress,
+				Name:      "name",
+				Period:    3,
+				Msgs: []types.MsgExecuteContract{
+					{
+						Contract: "contract",
+						Msg:      "msg",
+					},
+				},
+				ExecutionStage: 7,
+			},
+			"execution stage is invalid",
+		},
 	}
 
 	for _, tt := range tests {

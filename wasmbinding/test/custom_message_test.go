@@ -21,6 +21,8 @@ import (
 
 	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+
 	"github.com/neutron-org/neutron/v4/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -65,7 +67,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.messenger.Bank = &suite.neutron.BankKeeper
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
-	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
+	suite.messenger.Cronmsgserver = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
+	suite.messenger.Cronqueryserver = suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
