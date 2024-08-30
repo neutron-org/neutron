@@ -979,6 +979,8 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
 	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
 		msgs = append(msgs, crontypes.MsgExecuteContract{
@@ -988,7 +990,7 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 	}
 
 	_, err := m.Cronmsgserver.AddSchedule(ctx, &crontypes.MsgAddSchedule{
-		Authority:      contractAddr.String(),
+		Authority:      authority.String(),
 		Name:           addSchedule.Name,
 		Period:         addSchedule.Period,
 		Msgs:           msgs,
@@ -1022,8 +1024,10 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
 	_, err = m.Cronmsgserver.RemoveSchedule(ctx, &crontypes.MsgRemoveSchedule{
-		Authority: contractAddr.String(),
+		Authority: authority.String(),
 		Name:      removeSchedule.Name,
 	})
 	if err != nil {
