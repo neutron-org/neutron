@@ -191,19 +191,17 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"empty result",
 			types.MsgSubmitQueryResult{
-				QueryId:  1,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "client-id",
-				Result:   nil,
+				QueryId: 1,
+				Sender:  testutil.TestOwnerAddress,
+				Result:  nil,
 			},
 			types.ErrEmptyResult,
 		},
 		{
 			"empty kv results and block result",
 			types.MsgSubmitQueryResult{
-				QueryId:  1,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "client-id",
+				QueryId: 1,
+				Sender:  testutil.TestOwnerAddress,
 				Result: &types.QueryResult{
 					KvResults: nil,
 					Block:     nil,
@@ -216,9 +214,8 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"zero query id",
 			types.MsgSubmitQueryResult{
-				QueryId:  0,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "client-id",
+				QueryId: 0,
+				Sender:  testutil.TestOwnerAddress,
 				Result: &types.QueryResult{
 					KvResults: []*types.StorageValue{{
 						Key: []byte{10},
@@ -242,9 +239,8 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"empty sender",
 			types.MsgSubmitQueryResult{
-				QueryId:  1,
-				Sender:   "",
-				ClientId: "client-id",
+				QueryId: 1,
+				Sender:  "",
 				Result: &types.QueryResult{
 					KvResults: []*types.StorageValue{{
 						Key: []byte{10},
@@ -268,9 +264,8 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"invalid sender",
 			types.MsgSubmitQueryResult{
-				QueryId:  1,
-				Sender:   "invalid_sender",
-				ClientId: "client-id",
+				QueryId: 1,
+				Sender:  "invalid_sender",
 				Result: &types.QueryResult{
 					KvResults: []*types.StorageValue{{
 						Key: []byte{10},
@@ -290,25 +285,6 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 				},
 			},
 			sdkerrors.ErrInvalidAddress,
-		},
-		{
-			"empty client id",
-			types.MsgSubmitQueryResult{
-				QueryId:  1,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "",
-				Result: &types.QueryResult{
-					KvResults: nil,
-					Block: &types.Block{
-						NextBlockHeader: nil,
-						Header:          nil,
-						Tx:              nil,
-					},
-					Height:   100,
-					Revision: 1,
-				},
-			},
-			types.ErrInvalidClientID,
 		},
 	}
 

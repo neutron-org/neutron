@@ -756,12 +756,8 @@ func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 
 // PerformBurn performs token burning after validating tokenBurn message.
 func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) error {
-	if burn.BurnFromAddress != "" && burn.BurnFromAddress != contractAddr.String() {
-		return wasmvmtypes.InvalidRequest{Err: "BurnFromAddress must be \"\""}
-	}
-
 	coin := sdk.Coin{Denom: burn.Denom, Amount: burn.Amount}
-	sdkMsg := tokenfactorytypes.NewMsgBurn(contractAddr.String(), coin)
+	sdkMsg := tokenfactorytypes.NewMsgBurnFrom(contractAddr.String(), coin, burn.BurnFromAddress)
 
 	// Burn through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)

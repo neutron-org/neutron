@@ -25,7 +25,6 @@ func (k Keeper) GetOrInitLimitOrderTrancheUser(
 			Address:               receiver,
 			SharesOwned:           math.ZeroInt(),
 			SharesWithdrawn:       math.ZeroInt(),
-			SharesCancelled:       math.ZeroInt(),
 			TickIndexTakerToMaker: tickIndex,
 			TradePairId:           tradePairID,
 			OrderType:             orderType,

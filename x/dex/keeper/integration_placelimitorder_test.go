@@ -271,30 +271,18 @@ func (s *DexTestSuite) TestLimitOrderPartialFillDepositCancel() {
 
 	s.aliceCancelsLimitSell(trancheKey0)
 
-	s.assertAliceBalances(100, 40)
+	s.assertAliceBalances(110, 40)
 	s.assertBobBalances(90, 110)
-	s.assertDexBalances(10, 50)
+	s.assertDexBalances(0, 50)
 	s.assertCurrentTicks(math.MinInt64, 0)
 
 	s.bobLimitSells("TokenA", 10, 10, types.LimitOrderType_FILL_OR_KILL)
 
-	s.assertAliceBalances(100, 40)
+	s.assertAliceBalances(110, 40)
 	s.assertBobBalances(80, 120)
-	s.assertDexBalances(20, 40)
+	s.assertDexBalances(10, 40)
 
 	s.aliceCancelsLimitSell(trancheKey1)
-
-	s.assertAliceBalances(100, 80)
-	s.assertBobBalances(80, 120)
-	s.assertDexBalances(20, 0)
-
-	s.aliceWithdrawsLimitSell(trancheKey0)
-
-	s.assertAliceBalances(110, 80)
-	s.assertBobBalances(80, 120)
-	s.assertDexBalances(10, 0)
-
-	s.aliceWithdrawsLimitSell(trancheKey1)
 
 	s.assertAliceBalances(120, 80)
 	s.assertBobBalances(80, 120)

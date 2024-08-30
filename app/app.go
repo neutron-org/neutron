@@ -183,6 +183,7 @@ import (
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
@@ -216,7 +217,6 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
@@ -280,6 +280,7 @@ var (
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
+		consensus.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -413,7 +414,7 @@ type App struct {
 
 // AutoCLIOpts returns options based upon the modules in the neutron v4 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
-	modules := make(map[string]appmodule.AppModule, 0)
+	modules := make(map[string]appmodule.AppModule)
 	for _, m := range app.mm.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
@@ -423,18 +424,12 @@ func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 		}
 	}
 
-	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
-	if err != nil {
-		panic(err)
-	}
-
 	return autocli.AppOptions{
 		Modules:               modules,
 		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.mm.Modules),
 		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-		Keyring:               cliKR,
 		ClientCtx:             initClientCtx,
 	}
 }
@@ -615,6 +610,7 @@ func New(
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
+	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
 
 	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
 		appCodec,
@@ -981,6 +977,7 @@ func New(
 		marketmapModule,
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
+		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1027,6 +1024,7 @@ func New(
 		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -1063,6 +1061,7 @@ func New(
 		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1105,6 +1104,7 @@ func New(
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1147,7 +1147,6 @@ func New(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
-	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
@@ -1165,11 +1164,11 @@ func New(
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
-				BankKeeper:      app.BankKeeper,
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
+			BankKeeper:            app.BankKeeper,
 			AccountKeeper:         app.AccountKeeper,
 			IBCKeeper:             app.IBCKeeper,
 			GlobalFeeKeeper:       app.GlobalFeeKeeper,
@@ -1188,7 +1187,6 @@ func New(
 	postHandlerOptions := PostHandlerOptions{
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
-		FeeGrantKeeper:  app.FeeGrantKeeper,
 		FeeMarketKeeper: app.FeeMarkerKeeper,
 	}
 	postHandler, err := NewPostHandler(postHandlerOptions)
@@ -1301,6 +1299,8 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
+
+	app.SetPreBlocker(app.oraclePreBlockHandler.WrappedPreBlocker(app.mm))
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
@@ -1465,17 +1465,6 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 
 // GetBaseApp returns the base app of the application
 func (app *App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
-
-// PreBlocker application updates every pre block
-func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	rsp, err := app.mm.PreBlock(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
-	return rsp, err
-}
 
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
