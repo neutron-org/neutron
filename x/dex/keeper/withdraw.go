@@ -104,8 +104,8 @@ func (k Keeper) ExecuteWithdraw(
 		// TODO: this is a bit hacky. Since it is possible to have multiple withdrawals from the same pool we have to artificially update the bank balance
 		// In the future we should enforce only one withdraw operation per pool in the message validation
 		alreadyWithdrawnOfDenom := coinsToBurn.AmountOf(poolDenom)
-		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
-		if totalShares.LT(sharesToRemove) {
+		sharesOwned := k.bankKeeper.GetBalance(ctx, callerAddr, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
+		if sharesOwned.LT(sharesToRemove) {
 			return math.ZeroInt(), math.ZeroInt(), nil, nil, sdkerrors.Wrapf(
 				types.ErrInsufficientShares,
 				"%s does not have %s shares of type %s",
@@ -115,6 +115,7 @@ func (k Keeper) ExecuteWithdraw(
 			)
 		}
 
+		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
 		k.SetPool(ctx, pool)
 
