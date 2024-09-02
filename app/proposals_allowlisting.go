@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	consensustypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -63,6 +64,7 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*wasmtypes.MsgUpdateParams,
 		*wasmtypes.MsgPinCodes,
 		*wasmtypes.MsgUnpinCodes,
+		*consensustypes.MsgUpdateParams,
 		*upgradetypes.MsgSoftwareUpgrade,
 		*upgradetypes.MsgCancelUpgrade,
 		*ibcclienttypes.MsgRecoverClient,
