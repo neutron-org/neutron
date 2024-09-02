@@ -67,8 +67,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.messenger.Bank = &suite.neutron.BankKeeper
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
-	suite.messenger.Cronmsgserver = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
-	suite.messenger.Cronqueryserver = suite.neutron.CronKeeper
+	suite.messenger.CronMsgServer = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
+	suite.messenger.CronQueryServer = suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
