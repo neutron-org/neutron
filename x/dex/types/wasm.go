@@ -203,3 +203,57 @@ func (t *QueryAllLimitOrderTrancheUserByAddressResponse) MarshalBinding() ([]byt
 	}
 	return json.Marshal(&allLimitOrders)
 }
+
+func (t *QuerySimulateDepositRequest) MarshalBinding() ([]byte, error) {
+	type QuerySimulateDepositRequestBinding struct {
+		Msg *MsgDeposit `json:"msg,omitempty"`
+	}
+
+	metadata := QuerySimulateDepositRequestBinding(*t)
+	return json.Marshal(&metadata)
+}
+
+func (t *QuerySimulateWithdrawalRequest) MarshalBinding() ([]byte, error) {
+	type QuerySimulateWithdrawalRequestBinding struct {
+		Msg *MsgWithdrawal `json:"msg,omitempty"`
+	}
+
+	metadata := QuerySimulateWithdrawalRequestBinding(*t)
+	return json.Marshal(&metadata)
+}
+
+func (t *QuerySimulatePlaceLimitOrderRequest) MarshalBinding() ([]byte, error) {
+	type QuerySimulatePlaceLimitOrderRequestBinding struct {
+		Msg *MsgPlaceLimitOrder `json:"msg,omitempty"`
+	}
+
+	metadata := QuerySimulatePlaceLimitOrderRequestBinding(*t)
+	return json.Marshal(&metadata)
+}
+
+func (t *QuerySimulateWithdrawFilledLimitOrderRequest) MarshalBinding() ([]byte, error) {
+	type QuerySimulateWithdrawFilledLimitOrderRequestBinding struct {
+		Msg *MsgWithdrawFilledLimitOrder `json:"msg,omitempty"`
+	}
+
+	metadata := QuerySimulateWithdrawFilledLimitOrderRequestBinding(*t)
+	return json.Marshal(&metadata)
+}
+
+func (t *QuerySimulateCancelLimitOrderRequest) MarshalBinding() ([]byte, error) {
+	type QuerySimulateCancelLimitOrderRequestBinding struct {
+		Msg *MsgCancelLimitOrder `json:"msg,omitempty"`
+	}
+
+	metadata := QuerySimulateCancelLimitOrderRequestBinding(*t)
+	return json.Marshal(&metadata)
+}
+
+func (t *QuerySimulateMultiHopSwapRequest) MarshalBinding() ([]byte, error) {
+	type QuerySimulateMultiHopSwapRequestBinding struct {
+		Msg *MsgMultiHopSwap `json:"msg,omitempty"`
+	}
+
+	metadata := QuerySimulateMultiHopSwapRequestBinding(*t)
+	return json.Marshal(&metadata)
+}

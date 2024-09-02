@@ -201,6 +201,18 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 		data, err = dexQuery(ctx, query.TickLiquidityAll, qp.dexKeeper.TickLiquidityAll)
 	case query.UserDepositsAll != nil:
 		data, err = dexQuery(ctx, query.UserDepositsAll, qp.dexKeeper.UserDepositsAll)
+	case query.SimulateDeposit != nil:
+		data, err = dexQuery(ctx, query.SimulateDeposit, qp.dexKeeper.SimulateDeposit)
+	case query.SimulateWithdrawal != nil:
+		data, err = dexQuery(ctx, query.SimulateWithdrawal, qp.dexKeeper.SimulateWithdrawal)
+	case query.SimulatePlaceLimitOrder != nil:
+		data, err = dexQuery(ctx, query.SimulatePlaceLimitOrder, qp.dexKeeper.SimulatePlaceLimitOrder)
+	case query.SimulateWithdrawFilledLimitOrder != nil:
+		data, err = dexQuery(ctx, query.SimulateWithdrawFilledLimitOrder, qp.dexKeeper.SimulateWithdrawFilledLimitOrder)
+	case query.SimulateCancelLimitOrder != nil:
+		data, err = dexQuery(ctx, query.SimulateCancelLimitOrder, qp.dexKeeper.SimulateCancelLimitOrder)
+	case query.SimulateMultiHopSwap != nil:
+		data, err = dexQuery(ctx, query.SimulateMultiHopSwap, qp.dexKeeper.SimulateMultiHopSwap)
 
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.dex query type"}
