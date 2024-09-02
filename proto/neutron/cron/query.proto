@@ -10,7 +10,7 @@ import "neutron/cron/schedule.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/cron/types";
 
-// Query defines the gRPC querier service.
+// Defines the gRPC querier service.
 service Query {
   // Queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {

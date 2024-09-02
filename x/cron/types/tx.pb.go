@@ -31,9 +31,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// MsgAddSchedule is the MsgAddSchedule request type.
+// The MsgAddSchedule request type.
 type MsgAddSchedule struct {
-	// Authority is the address of the governance account.
+	// The address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
 	// Name of the schedule
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -41,7 +41,7 @@ type MsgAddSchedule struct {
 	Period uint64 `protobuf:"varint,3,opt,name=period,proto3" json:"period,omitempty"`
 	// Msgs that will be executed every certain number of blocks, specified in the `period` field
 	Msgs []MsgExecuteContract `protobuf:"bytes,4,rep,name=msgs,proto3" json:"msgs"`
-	// Execution stage when messages will be executed
+	// Stage when messages will be executed
 	ExecutionStage ExecutionStage `protobuf:"varint,5,opt,name=execution_stage,json=executionStage,proto3,enum=neutron.cron.ExecutionStage" json:"execution_stage,omitempty"`
 }
 
@@ -113,8 +113,7 @@ func (m *MsgAddSchedule) GetExecutionStage() ExecutionStage {
 	return ExecutionStage_EXECUTION_STAGE_END_BLOCKER
 }
 
-// MsgAddScheduleResponse defines the response structure for executing a
-// MsgAddSchedule message.
+// Defines the response structure for executing a MsgAddSchedule message.
 type MsgAddScheduleResponse struct {
 }
 
@@ -151,9 +150,9 @@ func (m *MsgAddScheduleResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgAddScheduleResponse proto.InternalMessageInfo
 
-// MsgRemoveSchedule is the MsgRemoveSchedule request type.
+// The MsgRemoveSchedule request type.
 type MsgRemoveSchedule struct {
-	// Authority is the address of the governance account.
+	// The address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
 	// Name of the schedule
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -206,8 +205,7 @@ func (m *MsgRemoveSchedule) GetName() string {
 	return ""
 }
 
-// MsgRemoveScheduleResponse defines the response structure for executing a
-// MsgRemoveSchedule message.
+// Defines the response structure for executing a MsgRemoveSchedule message.
 type MsgRemoveScheduleResponse struct {
 }
 
@@ -244,13 +242,13 @@ func (m *MsgRemoveScheduleResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgRemoveScheduleResponse proto.InternalMessageInfo
 
-// MsgUpdateParams is the MsgUpdateParams request type.
+// The MsgUpdateParams request type.
 //
 // Since: 0.47
 type MsgUpdateParams struct {
-	// Authority is the address of the governance account.
+	// The address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/cron parameters to update.
+	// Defines the x/cron parameters to update.
 	//
 	// NOTE: All parameters must be supplied.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
@@ -303,8 +301,7 @@ func (m *MsgUpdateParams) GetParams() Params {
 	return Params{}
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
+// Defines the response structure for executing a MsgUpdateParams message.
 //
 // Since: 0.47
 type MsgUpdateParamsResponse struct {

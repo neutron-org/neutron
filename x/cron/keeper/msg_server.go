@@ -11,13 +11,13 @@ import (
 )
 
 type msgServer struct {
-	Keeper
+	keeper Keeper
 }
 
 // NewMsgServerImpl returns an implementation of the MsgServer interface
 // for the provided Keeper.
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper}
+	return &msgServer{keeper: keeper}
 }
 
 var _ types.MsgServer = msgServer{}
@@ -28,13 +28,13 @@ func (k msgServer) AddSchedule(goCtx context.Context, req *types.MsgAddSchedule)
 		return nil, errors.Wrap(err, "failed to validate MsgAddSchedule")
 	}
 
-	authority := k.GetAuthority()
+	authority := k.keeper.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.Keeper.AddSchedule(ctx, req.Name, req.Period, req.Msgs, req.ExecutionStage); err != nil {
+	if err := k.keeper.AddSchedule(ctx, req.Name, req.Period, req.Msgs, req.ExecutionStage); err != nil {
 		return nil, errors.Wrap(err, "failed to add schedule")
 	}
 
@@ -47,13 +47,13 @@ func (k msgServer) RemoveSchedule(goCtx context.Context, req *types.MsgRemoveSch
 		return nil, errors.Wrap(err, "failed to validate MsgRemoveSchedule")
 	}
 
-	authority := k.GetAuthority()
+	authority := k.keeper.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	k.Keeper.RemoveSchedule(ctx, req.Name)
+	k.keeper.RemoveSchedule(ctx, req.Name)
 
 	return &types.MsgRemoveScheduleResponse{}, nil
 }
@@ -64,13 +64,13 @@ func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
 	}
 
-	authority := k.GetAuthority()
+	authority := k.keeper.GetAuthority()
 	if authority != req.Authority {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.SetParams(ctx, req.Params); err != nil {
+	if err := k.keeper.SetParams(ctx, req.Params); err != nil {
 		return nil, err
 	}
 
