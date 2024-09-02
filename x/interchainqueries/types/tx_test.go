@@ -49,9 +49,8 @@ func TestMsgSubmitQueryResultGetSigners(t *testing.T) {
 			"valid_signer",
 			func() sdktypes.LegacyMsg {
 				return &iqtypes.MsgSubmitQueryResult{
-					QueryId:  1,
-					Sender:   TestAddress,
-					ClientId: "client-id",
+					QueryId: 1,
+					Sender:  TestAddress,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key: []byte{10},
