@@ -34,14 +34,14 @@ func (gs GenesisState) Validate() error {
 
 		switch val.QueryType {
 		case string(InterchainQueryTypeTX):
-			if err := ValidateTransactionsFilter(val.TransactionsFilter); err != nil {
+			if err := ValidateTransactionsFilter(val.TransactionsFilter, gs.Params.MaxTransactionsFilters); err != nil {
 				return errors.Wrap(ErrInvalidTransactionsFilter, err.Error())
 			}
 		case string(InterchainQueryTypeKV):
 			if len(val.Keys) == 0 {
 				return errors.Wrap(ErrEmptyKeys, "keys cannot be empty")
 			}
-			if err := validateKeys(val.GetKeys()); err != nil {
+			if err := validateKeys(val.GetKeys(), gs.Params.MaxKvQueryKeysCount); err != nil {
 				return err
 			}
 		default:
