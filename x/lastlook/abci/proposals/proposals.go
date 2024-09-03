@@ -57,7 +57,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 
 		consumedBytes := int64(0)
 		// increase consumedBytes counter by a size of all transaction from a batch that must be inserted to a block
-		for _, tx := range req.Txs {
+		for _, tx := range currentBatch.Txs {
 			consumedBytes += int64(len(tx))
 		}
 
@@ -81,14 +81,15 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 
 			newBatch.Txs = append(newBatch.Txs, mempoolTx)
 
+			batchSize := int64(newBatch.XXX_Size())
 			// if final size of a serialised tx is too big to insert into a block, remove last inserted tx and continue
 			// iterating over txs from mempool, maybe there is some small tx we can still fit in
-			if int64(newBatch.XXX_Size())+consumedBytes > req.MaxTxBytes {
+			if batchSize+consumedBytes > req.MaxTxBytes {
 				newBatch.Txs = newBatch.Txs[:len(newBatch.Txs)-1]
 			}
 		}
 
-		newBatchBz, err := h.lastlookKeeper.GetCodec().Marshal(&newBatch)
+		newBatchBz, err := newBatch.Marshal()
 		if err != nil {
 			h.logger.Error("failed to marshal txs batch", "err", err)
 			return nil, err

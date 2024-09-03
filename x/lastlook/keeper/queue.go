@@ -8,7 +8,7 @@ import (
 )
 
 // StoreBatch stores a slice of txs and an address of a proposer who proposed a block into a queue
-func (k *Keeper) StoreBatch(ctx sdk.Context, proposer sdk.Address, txs [][]byte) error {
+func (k *Keeper) StoreBatch(ctx sdk.Context, height int64, proposer sdk.Address, txs [][]byte) error {
 	store := ctx.KVStore(k.storeKey)
 	blob := types.Batch{
 		Proposer: proposer.Bytes(),
@@ -20,7 +20,7 @@ func (k *Keeper) StoreBatch(ctx sdk.Context, proposer sdk.Address, txs [][]byte)
 		return errors.Wrapf(types.ErrProtoMarshal, "failed to marshal txs blob: %v", err)
 	}
 
-	store.Set(types.GetTxsQueueKey(ctx.BlockHeight()+1), bz)
+	store.Set(types.GetTxsQueueKey(height), bz)
 
 	return nil
 }
@@ -31,17 +31,17 @@ func (k *Keeper) GetBatch(ctx sdk.Context, blockHeight int64) (*types.Batch, err
 
 	var blob types.Batch
 
-	if blockHeight == 1 {
+	if blockHeight <= 1 {
 		return &blob, nil
 	}
 
 	bz := store.Get(types.GetTxsQueueKey(blockHeight))
 	if bz == nil {
-		return nil, errors.Wrapf(types.ErrNoBlob, "no txs blob found for a block %d", blockHeight)
+		return nil, errors.Wrapf(types.ErrNoBlob, "no txs batch found for a block %d", blockHeight)
 	}
 
 	if err := k.cdc.Unmarshal(bz, &blob); err != nil {
-		return nil, errors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal tx blob: %v", err)
+		return nil, errors.Wrapf(types.ErrProtoUnmarshal, "failed to unmarshal tx batch: %v", err)
 	}
 
 	return &blob, nil

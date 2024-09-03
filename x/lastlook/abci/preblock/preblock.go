@@ -93,7 +93,7 @@ func (h *LastLookPreBlockHandler) PreBlocker() sdk.PreBlocker {
 			return &sdk.ResponsePreBlock{}, nil
 		}
 
-		if err := h.keeper.StoreBatch(ctx, sdk.AccAddress(txBlob.Proposer), txBlob.Txs); err != nil {
+		if err := h.keeper.StoreBatch(ctx, ctx.BlockHeight()+1, sdk.AccAddress(txBlob.Proposer), txBlob.Txs); err != nil {
 			h.logger.Error("failed to store txs", "err", err)
 			return nil, err
 		}
