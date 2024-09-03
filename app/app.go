@@ -942,6 +942,13 @@ func New(
 	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
 	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
 
+	// RateLimiting IBC Middleware
+	rateLimitingTransferModule := ibcratelimit.NewIBCModule(ibcStack, app.RateLimitingICS4Wrapper)
+
+	// Hooks Middleware
+	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
+	app.HooksTransferIBCModule = &hooksTransferModule
+
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, ibcStack).
