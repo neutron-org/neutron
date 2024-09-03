@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/api/tendermint/abci"
+	abcit "github.com/cometbft/cometbft/abci/types"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -31,6 +31,7 @@ import (
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -539,7 +540,7 @@ func SetupTransferPath(path *ibctesting.Path) error {
 }
 
 // SendMsgsNoCheck is an alternative to ibctesting.TestChain.SendMsgs so that it doesn't check for errors. That should be handled by the caller
-func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain, msgs ...sdk.Msg) (*abci.ExecTxResult, error) {
+func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain, msgs ...sdk.Msg) (*abcit.ExecTxResult, error) {
 	// ensure the suite has the latest time
 	suite.Coordinator.UpdateTimeForChain(chain)
 
@@ -551,12 +552,12 @@ func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain
 		}
 	}()
 
-	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{suite.SenderAccount.GetSequence()}, suite.CurrentHeader.GetTime(), suite.NextVals.Hash(), suite.SenderPrivKey)
+	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{suite.ChainA.SenderAccount.GetSequence()}, suite.ChainA.CurrentHeader.GetTime(), suite.ChainA.NextVals.Hash(), suite.ChainA.SenderPrivKey)
 	if err != nil {
 		return nil, err
 	}
 
-	chain.commitBlock(resp)
+	//chain.commitBlock(resp)
 
 	suite.Coordinator.IncrementTime()
 
@@ -584,7 +585,7 @@ func SignAndDeliver(
 	blockTime time.Time,
 	nextValHash []byte,
 	priv ...cryptotypes.PrivKey,
-) (res *abci.ResponseFinalizeBlock, err error) {
+) (res *abcit.ResponseFinalizeBlock, err error) {
 	tb.Helper()
 	tx, err := simtestutil.GenSignedMockTx(
 		rand.New(rand.NewSource(time.Now().UnixNano())),
@@ -607,10 +608,17 @@ func SignAndDeliver(
 		return nil, err
 	}
 
-	return app.FinalizeBlock(&abci.RequestFinalizeBlock{
+	return app.FinalizeBlock(&abcit.RequestFinalizeBlock{
 		Height:             app.LastBlockHeight() + 1,
 		Time:               blockTime,
 		NextValidatorsHash: nextValHash,
 		Txs:                [][]byte{txBytes},
 	})
+
+}
+
+func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAddress, msg []byte, funds sdk.Coins) ([]byte, error) {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	return contractKeeper.Execute(suite.ChainA.GetContext(), contract, sender, msg, funds)
 }
