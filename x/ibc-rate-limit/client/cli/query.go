@@ -6,8 +6,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-
 	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 )
 
@@ -31,27 +29,27 @@ func GetQueryCmd() *cobra.Command {
 
 // GetParams returns the params for the module
 func GetParams() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "params [flags]",
-		Short: "Get the params for the x/ibc-rate-limit module",
-		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
+	//cmd := &cobra.Command{
+	//	Use:   "params [flags]",
+	//	Short: "Get the params for the x/ibc-rate-limit module",
+	//	Args:  cobra.ExactArgs(0),
+	//	RunE: func(cmd *cobra.Command, _ []string) error {
+	//		clientCtx, err := client.GetClientQueryContext(cmd)
+	//		if err != nil {
+	//			return err
+	//		}
+	//		queryClient := types.NewQueryClient(clientCtx)
+	//
+	//		res, err := queryClient.Params(cmd.Context(), &types.QueryParamsRequest{})
+	//		if err != nil {
+	//			return err
+	//		}
+	//
+	//		return clientCtx.PrintProto(res)
+	//	},
+	//}
+	//
+	//flags.AddQueryFlagsToCmd(cmd)
 
-			res, err := queryClient.Params(cmd.Context(), &types.QueryParamsRequest{})
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-
-	return cmd
+	return nil
 }

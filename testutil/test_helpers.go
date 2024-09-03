@@ -141,7 +141,7 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
-	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
+	//suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
 	suite.ProviderApp = suite.ChainProvider.App.(*appProvider.App)
 	suite.ChainAApp = suite.ChainA.App.(*app.App)
 	suite.ChainBApp = suite.ChainB.App.(*app.App)
@@ -230,7 +230,7 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 
 	suite.Coordinator.SetupConnections(suite.Path)
 
-	suite.PathAC = NewICAPath(suite.ChainA, suite.ChainC, suite.ChainProvider)
+	//suite.PathAC = NewICAPath(suite.ChainA, suite.ChainC, suite.ChainProvider)
 
 	suite.Coordinator.SetupConnections(suite.Path)
 

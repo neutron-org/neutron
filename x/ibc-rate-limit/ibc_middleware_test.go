@@ -8,8 +8,11 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -361,11 +364,12 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	fmt.Printf("Testing send rate limiting for denom=%s, channelValue=%s, quota=%s, sendAmount=%s\n", denom, channelValue, quota, sendAmount)
 
 	// Setup contract
-	suite.ChainA.StoreContractCode(&suite.Suite, "./bytecode/rate_limiter.wasm")
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", channel, denom, 604800, 5, 5)
 	fmt.Println(quotas)
-	addr := suite.ChainA.InstantiateRLContract(&suite.Suite, quotas)
-	suite.ChainA.RegisterRateLimitingContract(addr)
+	addr := suite.InstantiateRLContract(quotas)
+	suite.RegisterRateLimitingContract(addr)
 
 	// send 2.5% (quota is 5%)
 	fmt.Printf("Sending %s from A to B. Represented in chain A as wrapped? %v\n", denom, !native)
@@ -454,10 +458,12 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	fmt.Printf("Testing recv rate limiting for denom=%s, channelValue=%s, quota=%s, sendAmount=%s\n", localDenom, channelValue, quota, sendAmount)
 
 	// Setup contract
-	suite.ChainA.StoreContractCode(&suite.Suite, "./bytecode/rate_limiter.wasm")
+	suite.GetNeutronZoneApp(suite.ChainA)
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", channel, localDenom, 604800, 4, 4)
-	addr := suite.ChainA.InstantiateRLContract(&suite.Suite, quotas)
-	suite.ChainA.RegisterRateLimitingContract(addr)
+	addr := suite.InstantiateRLContract(quotas)
+	suite.RegisterRateLimitingContract(addr)
 
 	// receive 2.5% (quota is 5%)
 	fmt.Printf("Sending %s from B to A. Represented in chain A as wrapped? %v\n", sendDenom, native)
@@ -490,9 +496,11 @@ func (suite *MiddlewareTestSuite) TestRecvTransferWithRateLimitingNonNative() {
 // Test no rate limiting occurs when the contract is set, but no quotas are configured for the path
 func (suite *MiddlewareTestSuite) TestSendTransferNoQuota() {
 	// Setup contract
-	suite.ChainA.StoreContractCode(&suite.Suite, "./bytecode/rate_limiter.wasm")
-	addr := suite.ChainA.InstantiateRLContract(&suite.Suite, ``)
-	suite.ChainA.RegisterRateLimitingContract(addr)
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
+	addr := suite.InstantiateRLContract(``)
+	suite.RegisterRateLimitingContract(addr)
 
 	// send 1 token.
 	// If the contract doesn't have a quota for the current channel, all transfers are allowed
@@ -504,10 +512,12 @@ func (suite *MiddlewareTestSuite) TestSendTransferNoQuota() {
 func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	suite.initializeEscrow()
 	// Setup contract
-	suite.ChainA.StoreContractCode(&suite.Suite, "./bytecode/rate_limiter.wasm")
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
-	addr := suite.ChainA.InstantiateRLContract(&suite.Suite, quotas)
-	suite.ChainA.RegisterRateLimitingContract(addr)
+	addr := suite.InstantiateRLContract(quotas)
+	suite.RegisterRateLimitingContract(addr)
 
 	// Get the escrowed amount
 	osmosisApp := suite.GetNeutronZoneApp(suite.ChainA)
@@ -571,14 +581,15 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 
 func (suite *MiddlewareTestSuite) TestUnsetRateLimitingContract() {
 	// Setup contract
-	suite.ChainA.StoreContractCode(&suite.Suite, "./bytecode/rate_limiter.wasm")
-	addr := suite.ChainA.InstantiateRLContract(&suite.Suite, "")
-	suite.ChainA.RegisterRateLimitingContract(addr)
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
+	addr := suite.InstantiateRLContract("")
+	suite.RegisterRateLimitingContract(addr)
 
 	// Unset the contract param
 	params, err := types.NewParams("")
 	suite.Require().NoError(err)
-	app := suite.GetNeutronZoneApp(suite.ChainA)
 	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
 	suite.Require().True(ok)
 	// N.B.: this panics if validation fails.
@@ -589,15 +600,15 @@ func (suite *MiddlewareTestSuite) TestUnsetRateLimitingContract() {
 func (suite *MiddlewareTestSuite) TestNonICS20() {
 	suite.initializeEscrow()
 	// Setup contract
-	suite.ChainA.StoreContractCode(&suite.Suite, "./bytecode/rate_limiter.wasm")
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
-	addr := suite.ChainA.InstantiateRLContract(&suite.Suite, quotas)
-	suite.ChainA.RegisterRateLimitingContract(addr)
-
-	osmosisApp := suite.GetNeutronZoneApp(suite.ChainA)
+	addr := suite.InstantiateRLContract(quotas)
+	suite.RegisterRateLimitingContract(addr)
 
 	data := []byte("{}")
-	_, err := osmosisApp.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), capabilitytypes.NewCapability(1), "wasm.osmo1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
+	_, err := app.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), capabilitytypes.NewCapability(1), "wasm.osmo1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
 
 	suite.Require().Error(err)
 	// This will error out, but not because of rate limiting
@@ -607,10 +618,12 @@ func (suite *MiddlewareTestSuite) TestNonICS20() {
 
 func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 	// Setup contract
-	suite.ChainA.StoreContractCode(&suite.Suite, "./bytecode/rate_limiter.wasm")
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
-	contractAddr := suite.ChainA.InstantiateRLContract(&suite.Suite, quotas)
-	suite.ChainA.RegisterRateLimitingContract(contractAddr)
+	contractAddr := suite.InstantiateRLContract(quotas)
+	suite.RegisterRateLimitingContract(contractAddr)
 	osmosisApp := suite.GetNeutronZoneApp(suite.ChainA)
 	govModule := osmosisApp.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
 
@@ -628,7 +641,7 @@ func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 
 	// Add a restriction that only allows sending on the accepted channel
 	restrictionMsg := fmt.Sprintf(`{"set_denom_restrictions": {"denom":"%s","allowed_channels":["%s"]}}`, denom, acceptedChannel)
-	_, err = suite.ChainA.ExecuteContract(contractAddr, govModule, []byte(restrictionMsg), sdk.Coins{})
+	_, err = suite.ExecuteContract(contractAddr, govModule, []byte(restrictionMsg), sdk.Coins{})
 	suite.Require().NoError(err)
 
 	// Sending on the accepted channel should succeed
@@ -641,11 +654,75 @@ func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 
 	// Unset the restriction and verify that sending on other channels works again
 	unsetMsg := fmt.Sprintf(`{"unset_denom_restrictions": {"denom":"%s"}}`, denom)
-	_, err = suite.ChainA.ExecuteContract(contractAddr, govModule, []byte(unsetMsg), sdk.Coins{})
+	_, err = suite.ExecuteContract(contractAddr, govModule, []byte(unsetMsg), sdk.Coins{})
 	suite.Require().NoError(err, "Unsetting denom restriction should succeed")
 
 	// Sending again on the previously blocked channel should now succeed
 	_, _, err = suite.FullSendAToC(suite.MessageFromAToC(denom, sendAmount))
 	suite.Require().NoError(err, "Send on previously blocked channel should succeed after unsetting restriction")
 
+}
+
+func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAddress {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	transferModule := app.AccountKeeper.GetModuleAddress(transfertypes.ModuleName)
+	govModule := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+
+	initMsgBz := []byte(fmt.Sprintf(`{
+           "gov_module":  "%s",
+           "ibc_module":"%s",
+           "paths": [%s]
+        }`,
+		govModule, transferModule, quotas))
+
+	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	codeID := uint64(1)
+	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
+	addr, _, err := contractKeeper.Instantiate(suite.ChainA.GetContext(), codeID, creator, creator, initMsgBz, "rate limiting contract", nil)
+	suite.Require().NoError(err)
+	return addr
+}
+
+func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
+	addrStr, err := sdk.Bech32ifyAddressBytes("neutron", addr)
+	require.NoError(suite.ChainA.TB, err)
+	params, err := types.NewParams(addrStr)
+	require.NoError(suite.ChainA.TB, err)
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
+	require.True(suite.ChainA.TB, ok)
+	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
+}
+
+// AssertEventEmitted asserts that ctx's event manager has emitted the given number of events
+// of the given type.
+func (s *MiddlewareTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
+	allEvents := ctx.EventManager().Events()
+	// filter out other events
+	actualEvents := make([]sdk.Event, 0)
+	for _, event := range allEvents {
+		if event.Type == eventTypeExpected {
+			actualEvents = append(actualEvents, event)
+		}
+	}
+	s.Require().Equal(numEventsExpected, len(actualEvents))
+}
+
+func (s *MiddlewareTestSuite) FindEvent(events []abci.Event, name string) abci.Event {
+	index := slices.IndexFunc(events, func(e abci.Event) bool { return e.Type == name })
+	if index == -1 {
+		return abci.Event{}
+	}
+	return events[index]
+}
+
+func (s *MiddlewareTestSuite) ExtractAttributes(event abci.Event) map[string]string {
+	attrs := make(map[string]string)
+	if event.Attributes == nil {
+		return attrs
+	}
+	for _, a := range event.Attributes {
+		attrs[a.Key] = a.Value
+	}
+	return attrs
 }
