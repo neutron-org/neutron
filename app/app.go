@@ -12,7 +12,6 @@ import (
 
 	"github.com/neutron-org/neutron/v4/x/dynamicfees"
 	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
-
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
@@ -130,6 +129,8 @@ import (
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	ibcratelimit "github.com/neutron-org/neutron/v4/x/ibc-rate-limit"
+	ibcratelimittypes "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 
 	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
@@ -375,8 +376,10 @@ type App struct {
 
 	PFMModule packetforward.AppModule
 
-	HooksTransferIBCModule *ibchooks.IBCMiddleware
-	HooksICS4Wrapper       ibchooks.ICS4Middleware
+	HooksTransferIBCModule  *ibchooks.IBCMiddleware
+	Ics20WasmHooks          *ibchooks.WasmHooks
+	RateLimitingICS4Wrapper *ibcratelimit.ICS4Wrapper
+	HooksICS4Wrapper        ibchooks.ICS4Middleware
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -391,7 +394,8 @@ type App struct {
 
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	WasmKeeper wasmkeeper.Keeper
+	WasmKeeper     wasmkeeper.Keeper
+	ContractKeeper *wasmkeeper.PermissionedKeeper
 
 	// slinky
 	MarketMapKeeper       *marketmapkeeper.Keeper
@@ -595,9 +599,20 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
+	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
+		app.HooksICS4Wrapper,
+		&app.AccountKeeper,
+		// wasm keeper we set later.
+		nil,
+		&app.BankKeeper,
+		app.GetSubspace(ibcratelimittypes.ModuleName),
+	)
+	app.RateLimitingICS4Wrapper = &rateLimitingICS4Wrapper
+
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
+		app.RateLimitingICS4Wrapper, // may be replaced with middleware such as ics29 feerefunder
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -605,7 +620,7 @@ func New(
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
+		app.RateLimitingICS4Wrapper, // may be replaced with middleware such as ics29 feerefunder
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -665,7 +680,7 @@ func New(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.HooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
+		app.RateLimitingICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -862,7 +877,7 @@ func New(
 		&app.BankKeeper,
 		nil,
 		nil,
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
+		app.RateLimitingICS4Wrapper, // may be replaced with middleware such as ics29 feerefunder
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		scopedWasmKeeper,
@@ -876,6 +891,9 @@ func New(
 		wasmOpts...,
 	)
 	wasmHooks.ContractKeeper = &app.WasmKeeper
+	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	app.RateLimitingICS4Wrapper.ContractKeeper = app.ContractKeeper
+	app.Ics20WasmHooks.ContractKeeper = &app.WasmKeeper
 
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
