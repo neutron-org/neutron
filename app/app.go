@@ -599,6 +599,24 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	// PFMKeeper must be created before TransferKeeper
+	app.PFMKeeper = pfmkeeper.NewKeeper(
+		appCodec,
+		app.keys[pfmtypes.StoreKey],
+		app.TransferKeeper.Keeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.FeeBurnerKeeper,
+		&app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+		app.IBCKeeper.ChannelKeeper,
+		app.PFMKeeper,
+		&wasmHooks,
+	)
+
 	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
 	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
 		app.HooksICS4Wrapper,
@@ -656,24 +674,6 @@ func New(
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-
-	// PFMKeeper must be created before TransferKeeper
-	app.PFMKeeper = pfmkeeper.NewKeeper(
-		appCodec,
-		app.keys[pfmtypes.StoreKey],
-		app.TransferKeeper.Keeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.FeeBurnerKeeper,
-		&app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
-	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
-		app.IBCKeeper.ChannelKeeper,
-		app.PFMKeeper,
-		&wasmHooks,
-	)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = wrapkeeper.NewKeeper(
@@ -905,7 +905,6 @@ func New(
 	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
 	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
 	app.HooksTransferIBCModule = &ibcHooksMiddleware
-
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
 
@@ -941,13 +940,6 @@ func New(
 
 	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
 	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
-
-	// RateLimiting IBC Middleware
-	rateLimitingTransferModule := ibcratelimit.NewIBCModule(ibcStack, app.RateLimitingICS4Wrapper)
-
-	// Hooks Middleware
-	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
-	app.HooksTransferIBCModule = &hooksTransferModule
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
