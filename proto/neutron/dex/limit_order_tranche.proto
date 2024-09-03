@@ -49,11 +49,13 @@ message LimitOrderTranche {
     (gogoproto.stdtime) = true,
     (gogoproto.nullable) = true
   ];
+  // DEPRECATED: price_taker_to_maker will be removed in future release, `maker_price` should always be used.
   string price_taker_to_maker = 7 [
     (gogoproto.moretags) = "yaml:\"price_taker_to_maker\"",
     (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
     (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = "price_taker_to_maker"
+    (gogoproto.jsontag) = "price_taker_to_maker",
+    deprecated = true
   ];
   // This is the price of the LimitOrder denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
   string maker_price = 8 [
