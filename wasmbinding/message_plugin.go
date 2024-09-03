@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
 	"github.com/cosmos/gogoproto/proto"
 
 	"golang.org/x/exp/maps"
@@ -861,11 +863,25 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 }
 
 func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
+	// parse incoming ordering. If nothing passed, use ORDERED by default
+	var orderValue channeltypes.Order
+	if reg.Ordering == "" {
+		orderValue = channeltypes.ORDERED
+	} else {
+		orderValueInt, ok := channeltypes.Order_value[reg.Ordering]
+
+		if !ok {
+			return nil, fmt.Errorf("failed to register interchain account: incorrect order value passed: %s", reg.Ordering)
+		}
+		orderValue = channeltypes.Order(orderValueInt)
+	}
+
 	msg := ictxtypes.MsgRegisterInterchainAccount{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
 		RegisterFee:         getRegisterFee(reg.RegisterFee),
+		Ordering:            orderValue,
 	}
 
 	response, err := m.Ictxmsgserver.RegisterInterchainAccount(ctx, &msg)
