@@ -900,7 +900,13 @@ func New(
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
-	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
+	interchainQueriesModule := interchainqueries.NewAppModule(
+		appCodec,
+		keys[interchainqueriesmoduletypes.StoreKey],
+		app.InterchainQueriesKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)

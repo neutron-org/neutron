@@ -77,6 +77,7 @@ type RegisterInterchainAccount struct {
 	ConnectionId        string    `json:"connection_id"`
 	InterchainAccountId string    `json:"interchain_account_id"`
 	RegisterFee         sdk.Coins `json:"register_fee,omitempty"`
+	Ordering            string    `json:"ordering,omitempty"`
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
