@@ -23,7 +23,7 @@ func (k Keeper) SimulateWithdrawal(
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
-	pairID, err := types.NewPairIDFromUnsorted(msg.TokenA, msg.TokenB)
+	pairID, err := types.NewPairID(msg.TokenA, msg.TokenB)
 	if err != nil {
 		return nil, err
 	}
