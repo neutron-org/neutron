@@ -23,4 +23,10 @@ message Params {
   // balance between network cleaning speed and EndBlock duration. A zero value
   // means no limit.
   uint64 tx_query_removal_limit = 3;
+
+  // Maximum amount of keys in a registered key value query
+  uint64 max_kv_query_keys_count = 4;
+
+  // max_transactions_filters defines maximum allowed amount of tx filters in msgRegisterInterchainQuery
+  uint64 max_transactions_filters = 5;
 }
