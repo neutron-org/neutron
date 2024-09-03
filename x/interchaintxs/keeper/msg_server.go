@@ -66,7 +66,8 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		Owner:        icaOwner,
 		ConnectionId: msg.ConnectionId,
 		Version:      "", // FIXME: empty version string doesn't look good
-		Ordering:     channeltypes.ORDERED,
+		// underlying controller uses ORDER_ORDERED as default in case msg's ordering is NONE // TODO: check now
+		Ordering: msg.Ordering,
 	})
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to RegisterInterchainAccount:", "error", err, "owner", icaOwner, "msg", &msg)
