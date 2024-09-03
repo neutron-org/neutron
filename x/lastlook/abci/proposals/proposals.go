@@ -121,8 +121,8 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 			return nil, sdkerrors.ErrInvalidRequest
 		}
 
-		var txBlob types.Batch
-		if err := h.lastlookKeeper.GetCodec().Unmarshal(req.Txs[lastlookabcitypes.TxBlobIndex], &txBlob); err != nil {
+		var txsBatch types.Batch
+		if err := h.lastlookKeeper.GetCodec().Unmarshal(req.Txs[lastlookabcitypes.TxBatchIndex], &txsBatch); err != nil {
 			h.logger.Error("failed to unmarshal txs blob", "err", err)
 			return nil, err
 		}
@@ -145,8 +145,8 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 			}
 		}
 
-		if !bytes.Equal(req.ProposerAddress, txBlob.Proposer) {
-			return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, fmt.Errorf("req.ProposerAddress != proposer in current blob: %v != %v", req.ProposerAddress, txBlob.Proposer)
+		if !bytes.Equal(req.ProposerAddress, txsBatch.Proposer) {
+			return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, fmt.Errorf("req.ProposerAddress != proposer in current batch: %v != %v", req.ProposerAddress, txsBatch.Proposer)
 		}
 
 		return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_ACCEPT}, nil
