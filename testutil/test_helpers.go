@@ -4,14 +4,20 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"path"
 	"testing"
 	"time"
 
+	"cosmossdk.io/api/tendermint/abci"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/client"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	"github.com/stretchr/testify/require"
 
 	"github.com/neutron-org/neutron/v4/utils"
 
@@ -48,6 +54,7 @@ import (
 	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	cmttypes "github.com/cometbft/cometbft/types"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 )
 
 var (
@@ -85,14 +92,17 @@ type IBCConnectionTestSuite struct {
 	ChainProvider *ibctesting.TestChain
 	ChainA        *ibctesting.TestChain
 	ChainB        *ibctesting.TestChain
+	ChainC        *ibctesting.TestChain
 
 	ProviderApp e2e.ProviderApp
 	ChainAApp   e2e.ConsumerApp
 	ChainBApp   e2e.ConsumerApp
+	ChainCApp   e2e.ConsumerApp
 
 	CCVPathA     *ibctesting.Path
 	CCVPathB     *ibctesting.Path
 	Path         *ibctesting.Path
+	PathAC       *ibctesting.Path
 	TransferPath *ibctesting.Path
 }
 
@@ -130,9 +140,11 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
+	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
 	suite.ProviderApp = suite.ChainProvider.App.(*appProvider.App)
 	suite.ChainAApp = suite.ChainA.App.(*app.App)
 	suite.ChainBApp = suite.ChainB.App.(*app.App)
+	suite.ChainCApp = suite.ChainB.App.(*app.App)
 
 	providerKeeper := suite.ProviderApp.GetProviderKeeper()
 	consumerKeeperA := suite.ChainAApp.GetConsumerKeeper()
@@ -216,6 +228,11 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
 
 	suite.Coordinator.SetupConnections(suite.Path)
+
+	suite.PathAC = NewICAPath(suite.ChainA, suite.ChainC, suite.ChainProvider)
+
+	suite.Coordinator.SetupConnections(suite.Path)
+
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
@@ -519,4 +536,81 @@ func SetupTransferPath(path *ibctesting.Path) error {
 	}
 
 	return path.EndpointB.ChanOpenConfirm()
+}
+
+// SendMsgsNoCheck is an alternative to ibctesting.TestChain.SendMsgs so that it doesn't check for errors. That should be handled by the caller
+func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain, msgs ...sdk.Msg) (*abci.ExecTxResult, error) {
+	// ensure the suite has the latest time
+	suite.Coordinator.UpdateTimeForChain(chain)
+
+	// increment acc sequence regardless of success or failure tx execution
+	defer func() {
+		err := suite.ChainA.SenderAccount.SetSequence(chain.SenderAccount.GetSequence() + 1)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{suite.SenderAccount.GetSequence()}, suite.CurrentHeader.GetTime(), suite.NextVals.Hash(), suite.SenderPrivKey)
+	if err != nil {
+		return nil, err
+	}
+
+	chain.commitBlock(resp)
+
+	suite.Coordinator.IncrementTime()
+
+	require.Len(chain.TB, resp.TxResults, 1)
+	txResult := resp.TxResults[0]
+
+	if txResult.Code != 0 {
+		return txResult, fmt.Errorf("%s/%d: %q", txResult.Codespace, txResult.Code, txResult.Log)
+	}
+
+	suite.Coordinator.IncrementTime()
+
+	return txResult, nil
+}
+
+// SignAndDeliver signs and delivers a transaction without asserting the results. This overrides the function
+// from ibctesting
+func SignAndDeliver(
+	tb testing.TB,
+	txCfg client.TxConfig,
+	app *baseapp.BaseApp,
+	msgs []sdk.Msg,
+	chainID string,
+	accNums, accSeqs []uint64,
+	blockTime time.Time,
+	nextValHash []byte,
+	priv ...cryptotypes.PrivKey,
+) (res *abci.ResponseFinalizeBlock, err error) {
+	tb.Helper()
+	tx, err := simtestutil.GenSignedMockTx(
+		rand.New(rand.NewSource(time.Now().UnixNano())),
+		txCfg,
+		msgs,
+		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)},
+		simtestutil.DefaultGenTxGas,
+		chainID,
+		accNums,
+		accSeqs,
+		priv...,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	txBytes, err := txCfg.TxEncoder()(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	return app.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height:             app.LastBlockHeight() + 1,
+		Time:               blockTime,
+		NextValidatorsHash: nextValHash,
+		Txs:                [][]byte{txBytes},
+	})
 }

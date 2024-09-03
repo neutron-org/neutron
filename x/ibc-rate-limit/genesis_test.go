@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v4/app/apptesting"
+	"github.com/neutron-org/neutron/v4/testutil/apptesting"
 	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 )
 
