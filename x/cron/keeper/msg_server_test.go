@@ -143,7 +143,7 @@ func TestMsgRemoveScheduleValidate(t *testing.T) {
 		{
 			"invalid authority",
 			types.MsgRemoveSchedule{
-				Authority: "",
+				Authority: "invalid authority",
 				Name:      "name",
 			},
 			"authority is invalid",

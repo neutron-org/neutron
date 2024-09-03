@@ -71,8 +71,8 @@ func CustomMessageDecorator(
 			Adminserver:           adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
 			Bank:                  bankKeeper,
 			TokenFactory:          tokenFactoryKeeper,
-			Cronmsgserver:         cronkeeper.NewMsgServerImpl(*cronKeeper),
-			Cronqueryserver:       cronKeeper,
+			CronMsgServer:         cronkeeper.NewMsgServerImpl(*cronKeeper),
+			CronQueryServer:       cronKeeper,
 			AdminKeeper:           adminKeeper,
 			ContractmanagerKeeper: contractmanagerKeeper,
 			DexMsgServer:          dexkeeper.NewMsgServerImpl(*dexKeeper),
@@ -89,8 +89,8 @@ type CustomMessenger struct {
 	Adminserver           admintypes.MsgServer
 	Bank                  *bankkeeper.BaseKeeper
 	TokenFactory          *tokenfactorykeeper.Keeper
-	Cronmsgserver         crontypes.MsgServer
-	Cronqueryserver       crontypes.QueryServer
+	CronMsgServer         crontypes.MsgServer
+	CronQueryServer       crontypes.QueryServer
 	AdminKeeper           *adminmodulekeeper.Keeper
 	ContractmanagerKeeper *contractmanagerkeeper.Keeper
 	DexMsgServer          dextypes.MsgServer
