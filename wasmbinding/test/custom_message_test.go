@@ -645,40 +645,6 @@ func (suite *CustomMessengerTestSuite) TestNoProposals() {
 	suite.ErrorContains(err, "no admin proposal type is present in message")
 }
 
-func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
-	// Set admin so that we can execute this proposal without permission error
-	suite.neutron.AdminmoduleKeeper.SetAdmin(suite.ctx, suite.contractAddress.String())
-
-	// Craft AddSchedule message
-	msg := bindings.NeutronMsg{
-		AddSchedule: &bindings.AddSchedule{
-			Name:   "schedule1",
-			Period: 5,
-			Msgs: []bindings.MsgExecuteContract{
-				{
-					Contract: suite.contractAddress.String(),
-					Msg:      "{\"send\": { \"to\": \"asdf\", \"amount\": 1000 }}",
-				},
-			},
-		},
-	}
-
-	// Dispatch AddSchedule message
-	_, err := suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.NoError(err)
-
-	// Craft RemoveSchedule message
-	msg = bindings.NeutronMsg{
-		RemoveSchedule: &bindings.RemoveSchedule{
-			Name: "schedule1",
-		},
-	}
-
-	// Dispatch AddSchedule message
-	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.NoError(err)
-}
-
 func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	// Add failure
 	packet := ibcchanneltypes.Packet{}

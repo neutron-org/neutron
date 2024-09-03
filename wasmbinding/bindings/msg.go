@@ -54,10 +54,6 @@ type NeutronMsg struct {
 	/// It allows the overwriting of the denom metadata in the bank module.
 	SetDenomMetadata *SetDenomMetadata `json:"set_denom_metadata,omitempty"`
 
-	// Cron types
-	AddSchedule    *AddSchedule    `json:"add_schedule,omitempty"`
-	RemoveSchedule *RemoveSchedule `json:"remove_schedule,omitempty"`
-
 	// Contractmanager types
 	/// A contract that has failed acknowledgement can resubmit it
 	ResubmitFailure *ResubmitFailure `json:"resubmit_failure,omitempty"`
