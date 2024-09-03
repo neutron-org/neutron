@@ -88,8 +88,8 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		return sdk.Coin{}, sdk.Coin{}, nil, sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
 	}
 
-	k.SaveTrancheUser(ctx, trancheUser)
-	k.SaveTranche(ctx, tranche)
+	k.SaveOrRemoveTrancheUser(ctx, trancheUser)
+	k.SaveOrMakeInactiveTranche(ctx, tranche)
 
 	if trancheUser.OrderType.HasExpiration() {
 		k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())

@@ -87,7 +87,7 @@ func (k Keeper) RemoveLimitOrderTrancheUser(ctx sdk.Context, trancheUser *types.
 	)
 }
 
-func (k Keeper) SaveTrancheUser(ctx sdk.Context, trancheUser *types.LimitOrderTrancheUser) {
+func (k Keeper) SaveOrRemoveTrancheUser(ctx sdk.Context, trancheUser *types.LimitOrderTrancheUser) {
 	if trancheUser.IsEmpty() {
 		k.RemoveLimitOrderTrancheUser(ctx, trancheUser)
 	} else {

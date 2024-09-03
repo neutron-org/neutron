@@ -58,7 +58,7 @@ func (k Keeper) GetAllInactiveLimitOrderTranche(ctx sdk.Context) (list []*types.
 	return
 }
 
-func (k Keeper) SaveInactiveTranche(sdkCtx sdk.Context, tranche *types.LimitOrderTranche) {
+func (k Keeper) SaveOrRemoveInactiveTranche(sdkCtx sdk.Context, tranche *types.LimitOrderTranche) {
 	if tranche.HasTokenIn() || tranche.HasTokenOut() {
 		k.SetInactiveLimitOrderTranche(sdkCtx, tranche)
 	} else {

@@ -174,13 +174,13 @@ func (k Keeper) ExecutePlaceLimitOrder(
 			ctx.GasMeter().ConsumeGas(types.ExpiringLimitOrderGas, "Expiring LimitOrder Fee")
 		}
 
-		k.SaveTranche(ctx, placeTranche)
+		k.SaveOrMakeInactiveTranche(ctx, placeTranche)
 
 		totalIn = totalIn.Add(amountLeft)
 		sharesIssued = amountLeft
 	}
 
-	k.SaveTrancheUser(ctx, trancheUser)
+	k.SaveOrRemoveTrancheUser(ctx, trancheUser)
 
 	if orderType.IsJIT() {
 		err = k.AssertCanPlaceJIT(ctx)

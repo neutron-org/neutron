@@ -110,10 +110,9 @@ func (k Keeper) SwapWithCache(
 func (k Keeper) SaveLiquidity(sdkCtx sdk.Context, liquidityI types.Liquidity) {
 	switch liquidity := liquidityI.(type) {
 	case *types.LimitOrderTranche:
-		k.SaveTranche(sdkCtx, liquidity)
-
+		k.SaveOrMakeInactiveTranche(sdkCtx, liquidity)
 	case *types.PoolLiquidity:
-		k.SetPool(sdkCtx, liquidity.Pool)
+		k.SaveOrRemovePool(sdkCtx, liquidity.Pool)
 	default:
 		panic("Invalid liquidity type")
 	}

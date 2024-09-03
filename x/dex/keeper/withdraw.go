@@ -116,7 +116,7 @@ func (k Keeper) ExecuteWithdraw(
 		}
 
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
-		k.SetPool(ctx, pool)
+		k.SaveOrRemovePool(ctx, pool)
 
 		totalReserve0ToRemove = totalReserve0ToRemove.Add(outAmount0)
 		totalReserve1ToRemove = totalReserve1ToRemove.Add(outAmount1)
