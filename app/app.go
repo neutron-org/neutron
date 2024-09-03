@@ -612,6 +612,7 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	app.Ics20WasmHooks = &wasmHooks
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
 		app.PFMKeeper,
@@ -945,8 +946,8 @@ func New(
 	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
 	app.HooksTransferIBCModule = &hooksTransferModule
 
-	wasmHooks.ContractKeeper = &app.WasmKeeper
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+
 	app.RateLimitingICS4Wrapper.ContractKeeper = app.ContractKeeper
 	app.Ics20WasmHooks.ContractKeeper = &app.WasmKeeper
 
