@@ -41,8 +41,8 @@ func (k Keeper) CancelLimitOrderCore(
 		pairID.Token1,
 		tradePairID.MakerDenom,
 		tradePairID.TakerDenom,
-		makerCoinOut.Amount,
 		takerCoinOut.Amount,
+		makerCoinOut.Amount,
 		trancheKey,
 	))
 

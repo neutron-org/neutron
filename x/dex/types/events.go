@@ -3,6 +3,7 @@ package types
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"cosmossdk.io/math"
 	"cosmossdk.io/store/types"
@@ -19,6 +20,8 @@ const (
 	AttributeTokenOut             = "TokenOut"
 	AttributeAmountIn             = "AmountIn"
 	AttributeAmountOut            = "AmountOut"
+	AttributeSwapAmountIn         = "SwapAmountIn"
+	AttributeSwapAmountOut        = "SwapAmountOut"
 	AttributeTokenInAmountOut     = "TokenInAmountOut"
 	AttributeTokenOutAmountOut    = "TokenOutAmountOut"
 	AttributeTickIndex            = "TickIndex"
@@ -47,6 +50,7 @@ const (
 	AttributeInc                  = "inc"
 	AttributeDec                  = "dec"
 	AttributePairID               = "pair_id"
+	AttributeTimestamp            = "Timestamp"
 )
 
 // Event Keys
@@ -63,6 +67,12 @@ const (
 	// EventTypeNeutronMessage defines the event type used by the Interchain Queries module events.
 	EventTypeNeutronMessage = "neutron"
 )
+
+func EmitEventWithTimestamp(ctx sdk.Context, event sdk.Event) {
+	timestamp := sdk.NewAttribute(AttributeTimestamp, ctx.BlockTime().Format(time.RFC3339))
+	event = event.AppendAttributes(timestamp)
+	ctx.EventManager().EmitEvent(event)
+}
 
 func CreateDepositEvent(
 	creator sdk.AccAddress,
@@ -162,6 +172,8 @@ func CreatePlaceLimitOrderEvent(
 	orderType string,
 	shares math.Int,
 	trancheKey string,
+	swapAmountIn math.Int,
+	swapAmountOut math.Int,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
@@ -177,6 +189,8 @@ func CreatePlaceLimitOrderEvent(
 		sdk.NewAttribute(AttributeOrderType, orderType),
 		sdk.NewAttribute(AttributeShares, shares.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
+		sdk.NewAttribute(AttributeSwapAmountIn, swapAmountIn.String()),
+		sdk.NewAttribute(AttributeSwapAmountOut, swapAmountOut.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
@@ -188,7 +202,8 @@ func WithdrawFilledLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOut math.Int,
+	amountOutTaker math.Int,
+	amountOutMaker math.Int,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -201,7 +216,10 @@ func WithdrawFilledLimitOrderEvent(
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
-		sdk.NewAttribute(AttributeAmountOut, amountOut.String()),
+		// DEPRECATED: `AmountOut` will be removed in the next release
+		sdk.NewAttribute(AttributeAmountOut, amountOutTaker.String()),
+		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
+		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)
@@ -213,8 +231,8 @@ func CancelLimitOrderEvent(
 	token1 string,
 	makerDenom string,
 	tokenOut string,
-	amountOutMaker math.Int,
 	amountOutTaker math.Int,
+	amountOutMaker math.Int,
 	trancheKey string,
 ) sdk.Event {
 	attrs := []sdk.Attribute{
@@ -226,8 +244,8 @@ func CancelLimitOrderEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
-		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
 		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
+		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
 	}
 

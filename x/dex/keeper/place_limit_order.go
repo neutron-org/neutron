@@ -72,19 +72,24 @@ func (k Keeper) PlaceLimitOrderCore(
 
 	// This will never panic because we've already successfully constructed a TradePairID above
 	pairID := takerTradePairID.MustPairID()
-	ctx.EventManager().EmitEvent(types.CreatePlaceLimitOrderEvent(
-		callerAddr,
-		receiverAddr,
-		pairID.Token0,
-		pairID.Token1,
-		tokenIn,
-		tokenOut,
-		totalIn,
-		tickIndexInToOut,
-		orderType.String(),
-		sharesIssued,
-		trancheKey,
-	))
+	types.EmitEventWithTimestamp(
+		ctx,
+		types.CreatePlaceLimitOrderEvent(
+			callerAddr,
+			receiverAddr,
+			pairID.Token0,
+			pairID.Token1,
+			tokenIn,
+			tokenOut,
+			totalIn,
+			tickIndexInToOut,
+			orderType.String(),
+			sharesIssued,
+			trancheKey,
+			swapInCoin.Amount,
+			swapOutCoin.Amount,
+		),
+	)
 
 	return trancheKey, totalInCoin, swapInCoin, swapOutCoin, nil
 }

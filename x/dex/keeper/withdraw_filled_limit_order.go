@@ -42,6 +42,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		tradePairID.MakerDenom,
 		tradePairID.TakerDenom,
 		amountOutTokenOut,
+		remainingTokenIn,
 		trancheKey,
 	))
 
