@@ -35,7 +35,7 @@ func (k Keeper) CancelLimitOrderCore(
 
 	makerDenom := makerCoinOut.Denom
 	takerDenom := takerCoinOut.Denom
-	// This will never panic since TradePairID has already been successfully constructed by ExecuteWithdrawFilledLimitOrder
+	// This will never panic since PairID has already been successfully constructed during tranche creation
 	pairID := types.MustNewPairID(makerDenom, takerDenom)
 	ctx.EventManager().EmitEvent(types.CancelLimitOrderEvent(
 		callerAddr,
