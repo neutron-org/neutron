@@ -98,7 +98,7 @@ type IBCConnectionTestSuite struct {
 	ProviderApp e2e.ProviderApp
 	ChainAApp   e2e.ConsumerApp
 	ChainBApp   e2e.ConsumerApp
-	ChainCApp   e2e.ConsumerApp
+	//ChainCApp   e2e.ConsumerApp
 
 	CCVPathA     *ibctesting.Path
 	CCVPathB     *ibctesting.Path
@@ -145,7 +145,7 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ProviderApp = suite.ChainProvider.App.(*appProvider.App)
 	suite.ChainAApp = suite.ChainA.App.(*app.App)
 	suite.ChainBApp = suite.ChainB.App.(*app.App)
-	suite.ChainCApp = suite.ChainB.App.(*app.App)
+	//suite.ChainCApp = suite.ChainB.App.(*app.App)
 
 	providerKeeper := suite.ProviderApp.GetProviderKeeper()
 	consumerKeeperA := suite.ChainAApp.GetConsumerKeeper()

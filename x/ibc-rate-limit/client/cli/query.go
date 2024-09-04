@@ -1,30 +1,25 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
-
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd() *cobra.Command {
 	// Group ibc-rate-limit queries under a subcommand
-	cmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
-		DisableFlagParsing:         true,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
-	}
+	//cmd := &cobra.Command{
+	//	Use:                        types.ModuleName,
+	//	Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
+	//	DisableFlagParsing:         true,
+	//	SuggestionsMinimumDistance: 2,
+	//	RunE:                       client.ValidateCmd,
+	//}
 
-	cmd.AddCommand(
-		GetParams(),
-	)
+	//cmd.AddCommand(
+	//	GetParams(),
+	//)
 
-	return cmd
+	return nil
 }
 
 // GetParams returns the params for the module
