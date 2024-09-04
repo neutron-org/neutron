@@ -600,6 +600,9 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
+	app.WireICS20PreWasmKeeper(appCodec)
+
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.RateLimitingICS4Wrapper, // may be replaced with middleware such as ics29 feerefunder
@@ -646,8 +649,6 @@ func New(
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-
-	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -872,9 +873,7 @@ func New(
 	ibcRateLimitmodule := ibcratelimitmodule.NewAppModule(*app.RateLimitingICS4Wrapper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
-	app.WireICS20PreWasmKeeper(appCodec)
-
+	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 
 	app.RateLimitingICS4Wrapper.ContractKeeper = app.ContractKeeper
@@ -1683,7 +1682,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		appCodec,
 		app.keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.RateLimitingICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
+		app.RateLimitingICS4Wrapper,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -1693,8 +1692,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-
-	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
 
 	// PFMKeeper must be created before TransferKeeper
 	app.PFMKeeper = pfmkeeper.NewKeeper(
@@ -1707,6 +1704,9 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.HooksICS4Wrapper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
+
+	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
+
 	// app.RawIcs20TransferAppModule = transfer.NewAppModule(*appKeepers.TransferKeeper) ??
 
 	// Packet Forward Middleware
