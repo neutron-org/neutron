@@ -78,7 +78,7 @@ func CmdFailureDetails() *cobra.Command {
 			queryClient := contractmanagertypes.NewQueryClient(clientCtx)
 			if _, err = queryClient.AddressFailure(
 				cmd.Context(),
-				&contractmanagertypes.QueryFailuresRequest{Address: address, FailureId: failureID},
+				&contractmanagertypes.QueryFailureRequest{Address: address, FailureId: failureID},
 			); err != nil {
 				return err
 			}

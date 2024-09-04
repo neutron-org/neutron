@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"testing"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
+	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 
 	keeper2 "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
