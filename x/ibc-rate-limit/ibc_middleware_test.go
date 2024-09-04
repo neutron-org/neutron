@@ -9,6 +9,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/neutron-org/neutron/v4/testutil"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
@@ -70,8 +71,8 @@ func (suite *MiddlewareTestSuite) MessageFromAToB(denom string, amount sdkmath.I
 
 func (suite *MiddlewareTestSuite) MessageFromBToA(denom string, amount sdkmath.Int) sdk.Msg {
 	coin := sdk.NewCoin(denom, amount)
-	port := suite.Path.EndpointB.ChannelConfig.PortID
-	channel := suite.Path.EndpointB.ChannelID
+	port := suite.TransferPath.EndpointB.ChannelConfig.PortID
+	channel := suite.TransferPath.EndpointB.ChannelID
 	accountFrom := suite.ChainB.SenderAccount.GetAddress().String()
 	accountTo := suite.ChainA.SenderAccount.GetAddress().String()
 	timeoutHeight := clienttypes.NewHeight(10, 100)
@@ -273,6 +274,7 @@ func (suite *MiddlewareTestSuite) BuildChannelQuota(name, channel, denom string,
 
 // Test that Sending IBC messages works when the middleware isn't configured
 func (suite *MiddlewareTestSuite) TestSendTransferNoContract() {
+	suite.ConfigureTransferChannel()
 	one := sdkmath.NewInt(1)
 	_, err := suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, one))
 	suite.Require().NoError(err)
@@ -280,6 +282,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferNoContract() {
 
 // Test that Receiving IBC messages works when the middleware isn't configured
 func (suite *MiddlewareTestSuite) TestReceiveTransferNoContract() {
+	suite.ConfigureTransferChannel()
 	one := sdkmath.NewInt(1)
 	_, err := suite.AssertReceive(true, suite.MessageFromBToA(sdk.DefaultBondDenom, one))
 	suite.Require().NoError(err)
@@ -301,7 +304,7 @@ func (suite *MiddlewareTestSuite) initializeEscrow() (totalEscrow, expectedSed s
 	// Send from A to B
 	_, _, err := suite.FullSendAToB(suite.MessageFromAToB(sdk.DefaultBondDenom, transferAmount.Sub(sendAmount)))
 	suite.Require().NoError(err)
-	// Send from A to B
+	// Send from B to A
 	_, _, err = suite.FullSendBToA(suite.MessageFromBToA(sdk.DefaultBondDenom, transferAmount.Sub(sendAmount)))
 	suite.Require().NoError(err)
 
@@ -364,12 +367,14 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 
 // Test rate limiting on sends
 func (suite *MiddlewareTestSuite) TestSendTransferWithRateLimitingNative() {
+	suite.ConfigureTransferChannel()
 	// Sends denom=stake from A->B. Rate limit receives "stake" in the packet. Nothing to do in the contract
 	suite.fullSendTest(true)
 }
 
 // Test rate limiting on sends
 func (suite *MiddlewareTestSuite) TestSendTransferWithRateLimitingNonNative() {
+	suite.ConfigureTransferChannel()
 	// Sends denom=ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878 from A->B.
 	// Rate limit receives "transfer/channel-0/stake" in the packet (because transfer.relay.SendTransfer is called before the middleware)
 	// and should hash it before calculating the value
@@ -378,6 +383,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferWithRateLimitingNonNative() {
 
 // Test rate limits are reset when the specified time period has passed
 func (suite *MiddlewareTestSuite) TestSendTransferReset() {
+	suite.ConfigureTransferChannel()
 	// Same test as above, but the quotas get reset after time passes
 	attrs := suite.fullSendTest(true)
 	parts := strings.Split(attrs["weekly_period_end"], ".") // Splitting timestamp into secs and nanos
@@ -427,8 +433,8 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 
 	// Setup contract
 	suite.GetNeutronZoneApp(suite.ChainA)
-	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
-	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
+	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", channel, localDenom, 604800, 4, 4)
 	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
@@ -448,6 +454,7 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 }
 
 func (suite *MiddlewareTestSuite) TestRecvTransferWithRateLimitingNative() {
+	suite.ConfigureTransferChannel()
 	// Sends denom=stake from B->A.
 	// Rate limit receives "stake" in the packet and should wrap it before calculating the value
 	// types.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) should return false => Wrap the token
@@ -455,6 +462,7 @@ func (suite *MiddlewareTestSuite) TestRecvTransferWithRateLimitingNative() {
 }
 
 func (suite *MiddlewareTestSuite) TestRecvTransferWithRateLimitingNonNative() {
+	suite.ConfigureTransferChannel()
 	// Sends denom=ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878 from B->A.
 	// Rate limit receives "transfer/channel-0/stake" in the packet and should turn it into "stake"
 	// types.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) should return true => unprefix. If unprefixed is not local, hash.
@@ -463,8 +471,8 @@ func (suite *MiddlewareTestSuite) TestRecvTransferWithRateLimitingNonNative() {
 
 // Test no rate limiting occurs when the contract is set, but no quotas are configured for the path
 func (suite *MiddlewareTestSuite) TestSendTransferNoQuota() {
+	suite.ConfigureTransferChannel()
 	// Setup contract
-	//app := suite.GetNeutronZoneApp(suite.ChainA)
 	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	addr := suite.InstantiateRLContract(``)
@@ -481,9 +489,8 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	suite.ConfigureTransferChannel()
 	suite.initializeEscrow()
 	// Setup contract
-	app := suite.GetNeutronZoneApp(suite.ChainA)
-	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
-	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
+	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
 	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
@@ -498,8 +505,8 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 
 	// Use the whole quota
 	coins := sdk.NewCoin(sdk.DefaultBondDenom, quota)
-	port := suite.Path.EndpointA.ChannelConfig.PortID
-	channel := suite.Path.EndpointA.ChannelID
+	port := suite.TransferPath.EndpointA.ChannelConfig.PortID
+	channel := suite.TransferPath.EndpointA.ChannelID
 	accountFrom := suite.ChainA.SenderAccount.GetAddress().String()
 	timeoutHeight := clienttypes.NewHeight(10, 100)
 	msg := transfertypes.NewMsgTransfer(port, channel, coins, accountFrom, "INVALID", timeoutHeight, 0, "")
@@ -550,11 +557,13 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 
 func (suite *MiddlewareTestSuite) TestUnsetRateLimitingContract() {
 	// Setup contract
-	app := suite.GetNeutronZoneApp(suite.ChainA)
-	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
-	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
+	suite.ConfigureTransferChannel()
+	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	addr := suite.InstantiateRLContract("")
 	suite.RegisterRateLimitingContract(addr)
+
+	app := suite.GetNeutronZoneApp(suite.ChainA)
 
 	// Unset the contract param
 	params, err := types.NewParams("")
@@ -566,24 +575,25 @@ func (suite *MiddlewareTestSuite) TestUnsetRateLimitingContract() {
 }
 
 // Test rate limits are reverted if a "send" fails
-//func (suite *MiddlewareTestSuite) TestNonICS20() {
-//	suite.initializeEscrow()
-//	// Setup contract
-//	app := suite.GetNeutronZoneApp(suite.ChainA)
-//	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
-//	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
-//	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
-//	addr := suite.InstantiateRLContract(quotas)
-//	suite.RegisterRateLimitingContract(addr)
-//
-//	data := []byte("{}")
-//	_, err := app.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), capabilitytypes.NewCapability(1), "wasm.neutron1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
-//
-//	suite.Require().Error(err)
-//	// This will error out, but not because of rate limiting
-//	suite.Require().NotContains(err.Error(), "rate limit")
-//	suite.Require().Contains(err.Error(), "channel not found")
-//}
+func (suite *MiddlewareTestSuite) TestNonICS20() {
+	suite.ConfigureTransferChannel()
+	suite.initializeEscrow()
+	// Setup contract
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
+	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
+	addr := suite.InstantiateRLContract(quotas)
+	suite.RegisterRateLimitingContract(addr)
+
+	data := []byte("{}")
+	_, err := app.RateLimitingICS4Wrapper.SendPacket(suite.ChainA.GetContext(), capabilitytypes.NewCapability(1), "wasm.neutron1873ls0d60tg7hk00976teq9ywhzv45u3hk2urw8t3eau9eusa4eqtun9xn", "channel-0", clienttypes.NewHeight(0, 0), 1, data)
+
+	suite.Require().Error(err)
+	// This will error out, but not because of rate limiting
+	suite.Require().NotContains(err.Error(), "rate limit")
+	suite.Require().Contains(err.Error(), "channel not found")
+}
 
 //func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 //	// Setup contract
