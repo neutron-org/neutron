@@ -163,7 +163,7 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrders() {
 	updateEvent := s.FindEvent(ctx.EventManager().Events(), types.TickUpdateEventKey)
 	eventAttrs := s.ExtractAttributes(updateEvent)
 	// Event has Reserves == 0
-	s.Equal(eventAttrs[types.TickUpdateEventReserves], "0")
+	s.Equal(eventAttrs[types.AttributeReserves], "0")
 }
 
 func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimit() {
@@ -230,5 +230,5 @@ func (s *DexTestSuite) TestPurgeExpiredLimitOrdersAtBlockGasLimitOnlyJIT() {
 	s.Equal(0, len(expList))
 
 	// AND GoodTilPurgeHitGasLimit event is not been emitted
-	s.AssertEventValueNotEmitted(types.GoodTilPurgeHitGasLimitEventGas, "Hit gas limit purging JIT expirations")
+	s.AssertEventValueNotEmitted(types.EventTypeGoodTilPurgeHitGasLimit, "Hit gas limit purging JIT expirations")
 }

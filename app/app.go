@@ -183,6 +183,7 @@ import (
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
@@ -279,6 +280,7 @@ var (
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
+		consensus.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -898,7 +900,13 @@ func New(
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
-	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
+	interchainQueriesModule := interchainqueries.NewAppModule(
+		appCodec,
+		keys[interchainqueriesmoduletypes.StoreKey],
+		app.InterchainQueriesKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
@@ -969,6 +977,7 @@ func New(
 		marketmapModule,
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
+		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1015,6 +1024,7 @@ func New(
 		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -1051,6 +1061,7 @@ func New(
 		feemarkettypes.ModuleName,
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1093,6 +1104,7 @@ func New(
 		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1152,11 +1164,11 @@ func New(
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
-				BankKeeper:      app.BankKeeper,
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
+			BankKeeper:            app.BankKeeper,
 			AccountKeeper:         app.AccountKeeper,
 			IBCKeeper:             app.IBCKeeper,
 			GlobalFeeKeeper:       app.GlobalFeeKeeper,
@@ -1175,7 +1187,6 @@ func New(
 	postHandlerOptions := PostHandlerOptions{
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
-		FeeGrantKeeper:  app.FeeGrantKeeper,
 		FeeMarketKeeper: app.FeeMarkerKeeper,
 	}
 	postHandler, err := NewPostHandler(postHandlerOptions)

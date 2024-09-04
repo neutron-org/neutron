@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
 	"github.com/cosmos/gogoproto/proto"
 
 	"golang.org/x/exp/maps"
@@ -756,12 +758,8 @@ func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 
 // PerformBurn performs token burning after validating tokenBurn message.
 func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) error {
-	if burn.BurnFromAddress != "" && burn.BurnFromAddress != contractAddr.String() {
-		return wasmvmtypes.InvalidRequest{Err: "BurnFromAddress must be \"\""}
-	}
-
 	coin := sdk.Coin{Denom: burn.Denom, Amount: burn.Amount}
-	sdkMsg := tokenfactorytypes.NewMsgBurn(contractAddr.String(), coin)
+	sdkMsg := tokenfactorytypes.NewMsgBurnFrom(contractAddr.String(), coin, burn.BurnFromAddress)
 
 	// Burn through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
@@ -865,11 +863,25 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 }
 
 func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
+	// parse incoming ordering. If nothing passed, use ORDERED by default
+	var orderValue channeltypes.Order
+	if reg.Ordering == "" {
+		orderValue = channeltypes.ORDERED
+	} else {
+		orderValueInt, ok := channeltypes.Order_value[reg.Ordering]
+
+		if !ok {
+			return nil, fmt.Errorf("failed to register interchain account: incorrect order value passed: %s", reg.Ordering)
+		}
+		orderValue = channeltypes.Order(orderValueInt)
+	}
+
 	msg := ictxtypes.MsgRegisterInterchainAccount{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
 		RegisterFee:         getRegisterFee(reg.RegisterFee),
+		Ordering:            orderValue,
 	}
 
 	response, err := m.Ictxmsgserver.RegisterInterchainAccount(ctx, &msg)
