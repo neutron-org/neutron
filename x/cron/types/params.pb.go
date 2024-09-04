@@ -23,7 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Defines the parameters for the module.
+// Params defines the parameters for the module.
 type Params struct {
 	// Security address that can remove schedules
 	SecurityAddress string `protobuf:"bytes,1,opt,name=security_address,json=securityAddress,proto3" json:"security_address,omitempty"`

@@ -75,8 +75,6 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*feeburnertypes.MsgUpdateParams,
 		*feerefundertypes.MsgUpdateParams,
 		*crontypes.MsgUpdateParams,
-		*crontypes.MsgAddSchedule,
-		*crontypes.MsgRemoveSchedule,
 		*contractmanagertypes.MsgUpdateParams,
 		*dextypes.MsgUpdateParams,
 		*banktypes.MsgUpdateParams,

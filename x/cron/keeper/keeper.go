@@ -66,9 +66,10 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // ExecuteReadySchedules gets all schedules that are due for execution (with limit that is equal to Params.Limit)
 // and executes messages in each one
-func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.ExecutionStage) {
+// NOTE that errors in contract calls rollback all already executed messages
+func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context) {
 	telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), LabelExecuteReadySchedules)
-	schedules := k.getSchedulesReadyForExecution(ctx, executionStage)
+	schedules := k.getSchedulesReadyForExecution(ctx)
 
 	for _, schedule := range schedules {
 		err := k.executeSchedule(ctx, schedule)
@@ -76,15 +77,9 @@ func (k *Keeper) ExecuteReadySchedules(ctx sdk.Context, executionStage types.Exe
 	}
 }
 
-// AddSchedule adds a new schedule to be executed every certain number of blocks, specified in the `period`.
+// AddSchedule adds new schedule to execution for every block `period`.
 // First schedule execution is supposed to be on `now + period` block.
-func (k *Keeper) AddSchedule(
-	ctx sdk.Context,
-	name string,
-	period uint64,
-	msgs []types.MsgExecuteContract,
-	executionStage types.ExecutionStage,
-) error {
+func (k *Keeper) AddSchedule(ctx sdk.Context, name string, period uint64, msgs []types.MsgExecuteContract) error {
 	if k.scheduleExists(ctx, name) {
 		return fmt.Errorf("schedule already exists with name=%v", name)
 	}
@@ -94,9 +89,7 @@ func (k *Keeper) AddSchedule(
 		Period:            period,
 		Msgs:              msgs,
 		LastExecuteHeight: uint64(ctx.BlockHeight()), // let's execute newly added schedule on `now + period` block
-		ExecutionStage:    executionStage,
 	}
-
 	k.storeSchedule(ctx, schedule)
 	k.changeTotalCount(ctx, 1)
 
@@ -148,7 +141,7 @@ func (k *Keeper) GetScheduleCount(ctx sdk.Context) int32 {
 	return k.getScheduleCount(ctx)
 }
 
-func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context, executionStage types.ExecutionStage) []types.Schedule {
+func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context) []types.Schedule {
 	params := k.GetParams(ctx)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ScheduleKey)
 	count := uint64(0)
@@ -162,7 +155,7 @@ func (k *Keeper) getSchedulesReadyForExecution(ctx sdk.Context, executionStage t
 		var schedule types.Schedule
 		k.cdc.MustUnmarshal(iterator.Value(), &schedule)
 
-		if k.intervalPassed(ctx, schedule) && schedule.ExecutionStage == executionStage {
+		if k.intervalPassed(ctx, schedule) {
 			res = append(res, schedule)
 			count++
 

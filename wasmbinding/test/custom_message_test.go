@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	types2 "github.com/neutron-org/neutron/v4/x/cron/types"
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -23,8 +22,6 @@ import (
 	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
-
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
 
 	"github.com/neutron-org/neutron/v4/app/params"
 
@@ -70,8 +67,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.messenger.Bank = &suite.neutron.BankKeeper
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
-	suite.messenger.CronMsgServer = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
-	suite.messenger.CronQueryServer = suite.neutron.CronKeeper
+	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
@@ -721,10 +717,6 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 			Name: "schedule1",
 		},
 	}
-
-	schedule, ok := suite.neutron.CronKeeper.GetSchedule(suite.ctx, "schedule1")
-	suite.True(ok)
-	suite.Equal(types2.ExecutionStage_EXECUTION_STAGE_END_BLOCKER, schedule.ExecutionStage)
 
 	// Dispatch AddSchedule message
 	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
