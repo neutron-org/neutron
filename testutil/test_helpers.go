@@ -10,11 +10,13 @@ import (
 	"testing"
 	"time"
 
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abcit "github.com/cometbft/cometbft/abci/types"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	"github.com/stretchr/testify/require"
@@ -31,7 +33,6 @@ import (
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -55,7 +56,6 @@ import (
 	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	cmttypes "github.com/cometbft/cometbft/types"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 )
 
 var (
@@ -93,17 +93,14 @@ type IBCConnectionTestSuite struct {
 	ChainProvider *ibctesting.TestChain
 	ChainA        *ibctesting.TestChain
 	ChainB        *ibctesting.TestChain
-	ChainC        *ibctesting.TestChain
 
 	ProviderApp e2e.ProviderApp
 	ChainAApp   e2e.ConsumerApp
 	ChainBApp   e2e.ConsumerApp
-	//ChainCApp   e2e.ConsumerApp
 
 	CCVPathA     *ibctesting.Path
 	CCVPathB     *ibctesting.Path
 	Path         *ibctesting.Path
-	PathAC       *ibctesting.Path
 	TransferPath *ibctesting.Path
 }
 
@@ -141,11 +138,9 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
-	//suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
 	suite.ProviderApp = suite.ChainProvider.App.(*appProvider.App)
 	suite.ChainAApp = suite.ChainA.App.(*app.App)
 	suite.ChainBApp = suite.ChainB.App.(*app.App)
-	//suite.ChainCApp = suite.ChainB.App.(*app.App)
 
 	providerKeeper := suite.ProviderApp.GetProviderKeeper()
 	consumerKeeperA := suite.ChainAApp.GetConsumerKeeper()
@@ -229,11 +224,6 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.Path = NewICAPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
 
 	suite.Coordinator.SetupConnections(suite.Path)
-
-	//suite.PathAC = NewICAPath(suite.ChainA, suite.ChainC, suite.ChainProvider)
-
-	suite.Coordinator.SetupConnections(suite.Path)
-
 }
 
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
@@ -546,13 +536,13 @@ func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain
 
 	// increment acc sequence regardless of success or failure tx execution
 	defer func() {
-		err := suite.ChainA.SenderAccount.SetSequence(chain.SenderAccount.GetSequence() + 1)
+		err := chain.SenderAccount.SetSequence(chain.SenderAccount.GetSequence() + 1)
 		if err != nil {
 			panic(err)
 		}
 	}()
 
-	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{suite.ChainA.SenderAccount.GetSequence()}, suite.ChainA.CurrentHeader.GetTime(), suite.ChainA.NextVals.Hash(), suite.ChainA.SenderPrivKey)
+	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.CurrentHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
 	if err != nil {
 		return nil, err
 	}
@@ -621,4 +611,5 @@ func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAdd
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	return contractKeeper.Execute(suite.ChainA.GetContext(), contract, sender, msg, funds)
+
 }
