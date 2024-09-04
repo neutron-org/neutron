@@ -16,7 +16,6 @@ import (
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 
@@ -202,50 +201,6 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 		data, err = dexQuery(ctx, query.TickLiquidityAll, qp.dexKeeper.TickLiquidityAll)
 	case query.UserDepositsAll != nil:
 		data, err = dexQuery(ctx, query.UserDepositsAll, qp.dexKeeper.UserDepositsAll)
-	case query.SimulateDeposit != nil:
-		data, err = dexQuery(ctx, query.SimulateDeposit, qp.dexKeeper.SimulateDeposit)
-	case query.SimulateWithdrawal != nil:
-		data, err = dexQuery(ctx, query.SimulateWithdrawal, qp.dexKeeper.SimulateWithdrawal)
-	case query.SimulatePlaceLimitOrder != nil:
-		q := dextypes.QuerySimulatePlaceLimitOrderRequest{
-			Msg: &dextypes.MsgPlaceLimitOrder{
-				TokenIn:  query.SimulatePlaceLimitOrder.Msg.TokenIn,
-				TokenOut: query.SimulatePlaceLimitOrder.Msg.TokenOut,
-				//nolint: staticcheck // TODO: remove in next release
-				TickIndexInToOut: query.SimulatePlaceLimitOrder.Msg.TickIndexInToOut,
-				AmountIn:         query.SimulatePlaceLimitOrder.Msg.AmountIn,
-				MaxAmountOut:     query.SimulatePlaceLimitOrder.Msg.MaxAmountOut,
-			},
-		}
-		orderTypeInt, ok := dextypes.LimitOrderType_value[query.SimulatePlaceLimitOrder.Msg.OrderType]
-		if !ok {
-			return nil, errors.Wrap(dextypes.ErrInvalidOrderType,
-				fmt.Sprintf(
-					"got \"%s\", expected one of %s",
-					query.SimulatePlaceLimitOrder.Msg.OrderType,
-					strings.Join(maps.Keys(dextypes.LimitOrderType_value), ", ")),
-			)
-		}
-		q.Msg.OrderType = dextypes.LimitOrderType(orderTypeInt)
-		if query.SimulatePlaceLimitOrder.Msg.ExpirationTime != nil {
-			t := time.Unix(int64(*query.SimulatePlaceLimitOrder.Msg.ExpirationTime), 0)
-			q.Msg.ExpirationTime = &t
-		}
-		if limitPriceStr := query.SimulatePlaceLimitOrder.Msg.LimitSellPrice; limitPriceStr != "" {
-			limitPriceDec, err := dexutils.ParsePrecDecScientificNotation(limitPriceStr)
-			if err != nil {
-				return nil, errors.Wrapf(err, "cannot parse string %s for limit price", limitPriceStr)
-			}
-			q.Msg.LimitSellPrice = &limitPriceDec
-		}
-		data, err = dexQuery(ctx, &q, qp.dexKeeper.SimulatePlaceLimitOrder)
-	case query.SimulateWithdrawFilledLimitOrder != nil:
-		data, err = dexQuery(ctx, query.SimulateWithdrawFilledLimitOrder, qp.dexKeeper.SimulateWithdrawFilledLimitOrder)
-	case query.SimulateCancelLimitOrder != nil:
-		data, err = dexQuery(ctx, query.SimulateCancelLimitOrder, qp.dexKeeper.SimulateCancelLimitOrder)
-	case query.SimulateMultiHopSwap != nil:
-		data, err = dexQuery(ctx, query.SimulateMultiHopSwap, qp.dexKeeper.SimulateMultiHopSwap)
-
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.dex query type"}
 	}

@@ -273,18 +273,6 @@ type DexQuery struct {
 	PoolMetadata *dextypes.QueryGetPoolMetadataRequest `json:"pool_metadata"`
 	// Queries a list of PoolMetadata items.
 	PoolMetadataAll *dextypes.QueryAllPoolMetadataRequest `json:"pool_metadata_all"`
-	/// Simulates MsgDeposit
-	SimulateDeposit *dextypes.QuerySimulateDepositRequest `json:"simulate_deposit"`
-	/// Simulates MsgWithdrawal
-	SimulateWithdrawal *dextypes.QuerySimulateWithdrawalRequest `json:"simulate_withdrawal"`
-	/// Simulates MsgPlaceLimitOrder
-	SimulatePlaceLimitOrder *QuerySimulatePlaceLimitOrderRequest `json:"simulate_place_limit_order"`
-	/// Simulates MsgWithdrawFilledLimitOrder
-	SimulateWithdrawFilledLimitOrder *dextypes.QuerySimulateWithdrawFilledLimitOrderRequest `json:"simulate_withdraw_filled_limit_order"`
-	/// Simulates MsgCancelLimitOrder
-	SimulateCancelLimitOrder *dextypes.QuerySimulateCancelLimitOrderRequest `json:"simulate_cancel_limit_order"`
-	/// Simulates MsgMultiHopSwap
-	SimulateMultiHopSwap *dextypes.QuerySimulateMultiHopSwapRequest `json:"simulate_multi_hop_swap"`
 }
 
 // QueryEstimatePlaceLimitOrderRequest is a copy dextypes.QueryEstimatePlaceLimitOrderRequest with altered ExpirationTime field,
@@ -300,8 +288,4 @@ type QueryEstimatePlaceLimitOrderRequest struct {
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
 	ExpirationTime *uint64   `json:"expiration_time,omitempty"`
 	MaxAmountOut   *math.Int `json:"max_amount_out"`
-}
-
-type QuerySimulatePlaceLimitOrderRequest struct {
-	Msg *MsgPlaceLimitOrder `json:"msg"`
 }
