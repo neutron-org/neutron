@@ -377,7 +377,7 @@ type App struct {
 
 	PFMModule packetforward.AppModule
 
-	HooksTransferIBCModule  *ibchooks.IBCMiddleware
+	TransferStack           *ibchooks.IBCMiddleware
 	Ics20WasmHooks          *ibchooks.WasmHooks
 	RateLimitingICS4Wrapper *ibcratelimit.ICS4Wrapper
 	HooksICS4Wrapper        ibchooks.ICS4Middleware
@@ -600,36 +600,6 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	// PFMKeeper must be created before TransferKeeper
-	app.PFMKeeper = pfmkeeper.NewKeeper(
-		appCodec,
-		app.keys[pfmtypes.StoreKey],
-		app.TransferKeeper.Keeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.FeeBurnerKeeper,
-		&app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
-	app.Ics20WasmHooks = &wasmHooks
-	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
-		app.IBCKeeper.ChannelKeeper,
-		app.PFMKeeper,
-		&wasmHooks,
-	)
-
-	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
-	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
-		app.HooksICS4Wrapper,
-		&app.AccountKeeper,
-		// wasm keeper we set later.
-		nil,
-		&app.BankKeeper,
-		app.GetSubspace(ibcratelimittypes.ModuleName),
-	)
-	app.RateLimitingICS4Wrapper = &rateLimitingICS4Wrapper
-
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.RateLimitingICS4Wrapper, // may be replaced with middleware such as ics29 feerefunder
@@ -676,24 +646,6 @@ func New(
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-
-	// Create Transfer Keepers
-	app.TransferKeeper = wrapkeeper.NewKeeper(
-		appCodec,
-		keys[ibctransfertypes.StoreKey],
-		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.RateLimitingICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		app.AccountKeeper,
-		&app.BankKeeper,
-		scopedTransferKeeper,
-		app.FeeKeeper,
-		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
 
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
@@ -896,13 +848,6 @@ func New(
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
 
-	transferIBCModule := transferSudo.NewIBCModule(
-		app.TransferKeeper,
-		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
-	)
-	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
-	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
-	app.HooksTransferIBCModule = &ibcHooksMiddleware
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
 
@@ -928,23 +873,7 @@ func New(
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
-
-	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
-		app.HooksTransferIBCModule,
-		app.PFMKeeper,
-		0,
-		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
-	)
-
-	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
-	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
-	// RateLimiting IBC Middleware
-	rateLimitingTransferModule := ibcratelimit.NewIBCModule(ibcStack, app.RateLimitingICS4Wrapper)
-
-	// Hooks Middleware
-	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
-	app.HooksTransferIBCModule = &hooksTransferModule
+	app.WireICS20PreWasmKeeper(appCodec)
 
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 
@@ -953,7 +882,7 @@ func New(
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, ibcStack).
+		AddRoute(ibctransfertypes.ModuleName, app.TransferStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
 		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
@@ -1725,4 +1654,78 @@ func overrideWasmVariables() {
 	// Override Wasm size limitation from WASMD.
 	wasmtypes.MaxWasmSize = 1_677_722 // ~1.6 mb (1024 * 1024 * 1.6)
 	wasmtypes.MaxProposalWasmSize = wasmtypes.MaxWasmSize
+}
+
+func (app *App) WireICS20PreWasmKeeper(
+	appCodec codec.Codec,
+) {
+	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	app.Ics20WasmHooks = &wasmHooks
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+		app.IBCKeeper.ChannelKeeper,
+		app.PFMKeeper,
+		&wasmHooks,
+	)
+
+	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
+	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
+		app.HooksICS4Wrapper,
+		&app.AccountKeeper,
+		// wasm keeper we set later.
+		nil,
+		&app.BankKeeper,
+		app.GetSubspace(ibcratelimittypes.ModuleName),
+	)
+	app.RateLimitingICS4Wrapper = &rateLimitingICS4Wrapper
+
+	// Create Transfer Keepers
+	app.TransferKeeper = wrapkeeper.NewKeeper(
+		appCodec,
+		app.keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		app.RateLimitingICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		&app.BankKeeper,
+		app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName),
+		app.FeeKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
+
+	// PFMKeeper must be created before TransferKeeper
+	app.PFMKeeper = pfmkeeper.NewKeeper(
+		appCodec,
+		app.keys[pfmtypes.StoreKey],
+		app.TransferKeeper.Keeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.FeeBurnerKeeper,
+		&app.BankKeeper,
+		app.HooksICS4Wrapper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	// app.RawIcs20TransferAppModule = transfer.NewAppModule(*appKeepers.TransferKeeper) ??
+
+	// Packet Forward Middleware
+	// Initialize packet forward middleware router
+	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
+		app.TransferStack,
+		app.PFMKeeper,
+		0,
+		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+	)
+
+	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
+	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
+	// RateLimiting IBC Middleware
+	rateLimitingTransferModule := ibcratelimit.NewIBCModule(ibcStack, app.RateLimitingICS4Wrapper)
+
+	// Hooks Middleware
+	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
+	app.TransferStack = &hooksTransferModule
+
 }
