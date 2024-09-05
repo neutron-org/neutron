@@ -59,11 +59,11 @@ func (k Keeper) ExecuteCancelLimitOrder(
 ) (makerCoinOut, takerCoinOut sdk.Coin, tradePairID *types.TradePairID, error error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(ctx, callerAddr.String(), trancheKey)
 	if !found {
-		return sdk.Coin{}, sdk.Coin{}, nil, types.ErrActiveLimitOrderNotFound
+		return sdk.Coin{}, sdk.Coin{}, nil, types.ErrValidLimitOrderTrancheNotFound
 	}
 
 	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
-	tranche := k.GetLimitOrderTranche(
+	tranche, wasFilled, found := k.FindLimitOrderTranche(
 		ctx,
 		&types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
@@ -71,8 +71,8 @@ func (k Keeper) ExecuteCancelLimitOrder(
 			TrancheKey:            trancheKey,
 		},
 	)
-	if tranche == nil {
-		return sdk.Coin{}, sdk.Coin{}, nil, types.ErrActiveLimitOrderNotFound
+	if !found {
+		return sdk.Coin{}, sdk.Coin{}, nil, types.ErrValidLimitOrderTrancheNotFound
 	}
 
 	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
@@ -89,7 +89,11 @@ func (k Keeper) ExecuteCancelLimitOrder(
 	}
 
 	k.SaveTrancheUser(ctx, trancheUser)
-	k.SaveTranche(ctx, tranche)
+	if wasFilled {
+		k.SaveInactiveTranche(ctx, tranche)
+	} else {
+		k.SaveTranche(ctx, tranche)
+	}
 
 	if trancheUser.OrderType.HasExpiration() {
 		k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())
