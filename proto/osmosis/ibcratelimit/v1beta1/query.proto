@@ -1,9 +1,9 @@
 syntax = "proto3";
 package osmosis.ibcratelimit.v1beta1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "osmosis/ibcratelimit/v1beta1/params.proto";
 
 option go_package = "github.com/osmosis-labs/osmosis/v26/x/ibc-rate-limit/client/queryproto";
@@ -23,5 +23,5 @@ message ParamsRequest {}
 // aramsResponse is the response type for the Query/Params RPC method.
 message ParamsResponse {
   // params defines the parameters of the module.
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
 }
