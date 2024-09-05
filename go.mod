@@ -219,7 +219,7 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.1-0.20240829092952-0bbbba2428f7
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.53.0-neutron
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.2
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.8-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
@@ -229,3 +229,4 @@ replace (
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
+
