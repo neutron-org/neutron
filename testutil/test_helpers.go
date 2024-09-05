@@ -95,15 +95,19 @@ type IBCConnectionTestSuite struct {
 	ChainProvider *ibctesting.TestChain
 	ChainA        *ibctesting.TestChain
 	ChainB        *ibctesting.TestChain
+	ChainC        *ibctesting.TestChain
 
 	ProviderApp e2e.ProviderApp
 	ChainAApp   e2e.ConsumerApp
 	ChainBApp   e2e.ConsumerApp
+	ChainCApp   e2e.ConsumerApp
 
-	CCVPathA     *ibctesting.Path
-	CCVPathB     *ibctesting.Path
-	Path         *ibctesting.Path
-	TransferPath *ibctesting.Path
+	CCVPathA       *ibctesting.Path
+	CCVPathB       *ibctesting.Path
+	CCVPathC       *ibctesting.Path
+	Path           *ibctesting.Path
+	TransferPath   *ibctesting.Path
+	TransferPathAC *ibctesting.Path
 }
 
 func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.ConsumerAdditionProposal { //nolint:staticcheck
@@ -140,18 +144,22 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
+	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
 	suite.ProviderApp = suite.ChainProvider.App.(*appProvider.App)
 	suite.ChainAApp = suite.ChainA.App.(*app.App)
 	suite.ChainBApp = suite.ChainB.App.(*app.App)
+	suite.ChainCApp = suite.ChainC.App.(*app.App)
 
 	providerKeeper := suite.ProviderApp.GetProviderKeeper()
 	consumerKeeperA := suite.ChainAApp.GetConsumerKeeper()
 	consumerKeeperB := suite.ChainBApp.GetConsumerKeeper()
+	consumerKeeperC := suite.ChainCApp.GetConsumerKeeper()
 
 	// valsets must match
 	providerValUpdates := cmttypes.TM2PB.ValidatorUpdates(suite.ChainProvider.Vals)
 	consumerAValUpdates := cmttypes.TM2PB.ValidatorUpdates(suite.ChainA.Vals)
 	consumerBValUpdates := cmttypes.TM2PB.ValidatorUpdates(suite.ChainB.Vals)
+	consumerCValUpdates := cmttypes.TM2PB.ValidatorUpdates(suite.ChainB.Vals)
 	suite.Require().True(len(providerValUpdates) == len(consumerAValUpdates), "initial valset not matching")
 	suite.Require().True(len(providerValUpdates) == len(consumerBValUpdates), "initial valset not matching")
 
@@ -159,8 +167,10 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 		addr1, _ := ccv.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
 		addr2, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
 		addr3, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
+		addr4, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerCValUpdates[i].PubKey)
 		suite.Require().True(bytes.Equal(addr1, addr2), "validator mismatch")
 		suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
+		suite.Require().True(bytes.Equal(addr1, addr4), "validator mismatch")
 	}
 
 	ct := suite.ChainProvider.GetContext()
@@ -168,6 +178,7 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainProvider.NextBlock()
 	suite.ChainA.NextBlock()
 	suite.ChainB.NextBlock()
+	suite.ChainC.NextBlock()
 
 	// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper.
 	prop1 := GetTestConsumerAdditionProp(suite.ChainA)
@@ -181,6 +192,13 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	err = providerKeeper.CreateConsumerClient(
 		ct,
 		prop2,
+	)
+	suite.Require().NoError(err)
+
+	prop3 := GetTestConsumerAdditionProp(suite.ChainC)
+	err = providerKeeper.CreateConsumerClient(
+		ct,
+		prop3,
 	)
 	suite.Require().NoError(err)
 
@@ -215,11 +233,27 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	}
 	consumerKeeperB.InitGenesis(suite.ChainB.GetContext(), &genesisStateB)
 
+	// initialize the consumer chain with the genesis state stored on the provider
+	consumerGenesisC, found := providerKeeper.GetConsumerGenesis(
+		suite.ChainProvider.GetContext(),
+		suite.ChainC.ChainID,
+	)
+	suite.Require().True(found, "consumer genesis not found")
+
+	genesisStateC := consumertypes.GenesisState{
+		Params:   consumerGenesisC.Params,
+		Provider: consumerGenesisC.Provider,
+		NewChain: consumerGenesisC.NewChain,
+	}
+	consumerKeeperC.InitGenesis(suite.ChainC.GetContext(), &genesisStateC)
+
 	// create paths for the CCV channel
 	suite.CCVPathA = ibctesting.NewPath(suite.ChainA, suite.ChainProvider)
 	suite.CCVPathB = ibctesting.NewPath(suite.ChainB, suite.ChainProvider)
+	suite.CCVPathC = ibctesting.NewPath(suite.ChainC, suite.ChainProvider)
 	SetupCCVPath(suite.CCVPathA, suite)
 	SetupCCVPath(suite.CCVPathB, suite)
+	SetupCCVPath(suite.CCVPathC, suite)
 
 	suite.SetupCCVChannels()
 
@@ -232,6 +266,13 @@ func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
 	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
 	suite.Coordinator.SetupConnections(suite.TransferPath)
 	err := SetupTransferPath(suite.TransferPath)
+	suite.Require().NoError(err)
+}
+
+func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
+	suite.TransferPathAC = NewTransferPath(suite.ChainA, suite.ChainC, suite.ChainProvider)
+	suite.Coordinator.SetupConnections(suite.TransferPathAC)
+	err := SetupTransferPath(suite.TransferPathAC)
 	suite.Require().NoError(err)
 }
 
@@ -324,6 +365,10 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 		chainID, providerChain.Vals, providerChain.Signers)
 
 	chainID = ibctesting.GetChainID(3)
+	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
+		chainID, providerChain.Vals, providerChain.Signers)
+
+	chainID = ibctesting.GetChainID(4)
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 

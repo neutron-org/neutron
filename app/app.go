@@ -1710,8 +1710,6 @@ func (app *App) WireICS20PreWasmKeeper(
 
 	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
 
-	// app.RawIcs20TransferAppModule = transfer.NewAppModule(*appKeepers.TransferKeeper) ??
-
 	// Packet Forward Middleware
 	// Initialize packet forward middleware router
 	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(

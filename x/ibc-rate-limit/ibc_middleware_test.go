@@ -38,22 +38,11 @@ func TestMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, new(MiddlewareTestSuite))
 }
 
-func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
-	path := ibctesting.NewPath(chainA, chainB)
-	path.EndpointA.ChannelConfig.PortID = ibctesting.TransferPort
-	path.EndpointB.ChannelConfig.PortID = ibctesting.TransferPort
-	path.EndpointA.ChannelConfig.Version = transfertypes.Version
-	path.EndpointB.ChannelConfig.Version = transfertypes.Version
-	return path
-}
-
 // Helpers
 func (suite *MiddlewareTestSuite) MessageFromAToB(denom string, amount sdkmath.Int) sdk.Msg {
 	coin := sdk.NewCoin(denom, amount)
-	fmt.Println(denom)
 	port := suite.TransferPath.EndpointA.ChannelConfig.PortID
 	channel := suite.TransferPath.EndpointA.ChannelID
-	fmt.Println(channel)
 	accountFrom := suite.ChainA.SenderAccount.GetAddress().String()
 	accountTo := suite.ChainB.SenderAccount.GetAddress().String()
 	timeoutHeight := clienttypes.NewHeight(10, 100)
@@ -88,24 +77,24 @@ func (suite *MiddlewareTestSuite) MessageFromBToA(denom string, amount sdkmath.I
 	)
 }
 
-//func (suite *MiddlewareTestSuite) MessageFromAToC(denom string, amount sdkmath.Int) sdk.Msg {
-//	coin := sdk.NewCoin(denom, amount)
-//	port := suite.PathAC.EndpointA.ChannelConfig.PortID
-//	channel := suite.PathAC.EndpointA.ChannelID
-//	accountFrom := suite.ChainA.SenderAccount.GetAddress().String()
-//	accountTo := suite.ChainC.SenderAccount.GetAddress().String()
-//	timeoutHeight := clienttypes.NewHeight(10, 100)
-//	return transfertypes.NewMsgTransfer(
-//		port,
-//		channel,
-//		coin,
-//		accountFrom,
-//		accountTo,
-//		timeoutHeight,
-//		uint64(time.Now().UnixNano()),
-//		"",
-//	)
-//}
+func (suite *MiddlewareTestSuite) MessageFromAToC(denom string, amount sdkmath.Int) sdk.Msg {
+	coin := sdk.NewCoin(denom, amount)
+	port := suite.TransferPathAC.EndpointA.ChannelConfig.PortID
+	channel := suite.TransferPathAC.EndpointA.ChannelID
+	accountFrom := suite.ChainA.SenderAccount.GetAddress().String()
+	accountTo := suite.ChainC.SenderAccount.GetAddress().String()
+	timeoutHeight := clienttypes.NewHeight(10, 100)
+	return transfertypes.NewMsgTransfer(
+		port,
+		channel,
+		coin,
+		accountFrom,
+		accountTo,
+		timeoutHeight,
+		uint64(time.Now().UnixNano()),
+		"",
+	)
+}
 
 func CalculateChannelValue(ctx sdk.Context, denom string, bankKeeper bankkeeper.Keeper) sdkmath.Int {
 	return bankKeeper.GetSupply(ctx, denom).Amount
@@ -164,26 +153,21 @@ func (suite *MiddlewareTestSuite) FullSendAToB(msg sdk.Msg) (*abci.ExecTxResult,
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println(2)
 
 	err = suite.TransferPath.EndpointB.UpdateClient()
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println(3)
 
 	res, err := suite.TransferPath.EndpointB.RecvPacketWithResult(packet)
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println(4)
 	ack, err := ibctesting.ParseAckFromEvents(res.GetEvents())
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println(5)
 	err = suite.TransferPath.EndpointA.UpdateClient()
-	fmt.Println(6)
 	if err != nil {
 		return nil, "", err
 	}
@@ -195,43 +179,43 @@ func (suite *MiddlewareTestSuite) FullSendAToB(msg sdk.Msg) (*abci.ExecTxResult,
 	return sendResult, string(ack), nil
 }
 
-//func (suite *MiddlewareTestSuite) FullSendAToC(msg sdk.Msg) (*abci.ExecTxResult, string, error) {
-//	sendResult, err := suite.SendMsgsNoCheck(suite.ChainA, msg)
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	err = suite.PathAC.EndpointB.UpdateClient()
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	res, err := suite.PathAC.EndpointB.RecvPacketWithResult(packet)
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	ack, err := ibctesting.ParseAckFromEvents(res.GetEvents())
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	err = suite.PathAC.EndpointA.UpdateClient()
-//	if err != nil {
-//		return nil, "", err
-//	}
-//	err = suite.PathAC.EndpointB.UpdateClient()
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	return sendResult, string(ack), nil
-//}
+func (suite *MiddlewareTestSuite) FullSendAToC(msg sdk.Msg) (*abci.ExecTxResult, string, error) {
+	sendResult, err := suite.SendMsgsNoCheck(suite.ChainA, msg)
+	if err != nil {
+		return nil, "", err
+	}
+
+	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
+	if err != nil {
+		return nil, "", err
+	}
+
+	err = suite.TransferPathAC.EndpointB.UpdateClient()
+	if err != nil {
+		return nil, "", err
+	}
+
+	res, err := suite.TransferPathAC.EndpointB.RecvPacketWithResult(packet)
+	if err != nil {
+		return nil, "", err
+	}
+
+	ack, err := ibctesting.ParseAckFromEvents(res.GetEvents())
+	if err != nil {
+		return nil, "", err
+	}
+
+	err = suite.TransferPathAC.EndpointA.UpdateClient()
+	if err != nil {
+		return nil, "", err
+	}
+	err = suite.TransferPathAC.EndpointB.UpdateClient()
+	if err != nil {
+		return nil, "", err
+	}
+
+	return sendResult, string(ack), nil
+}
 
 func (suite *MiddlewareTestSuite) AssertReceive(success bool, msg sdk.Msg) (string, error) {
 	_, ack, err := suite.FullSendBToA(msg)
@@ -253,8 +237,8 @@ func (suite *MiddlewareTestSuite) AssertSend(success bool, msg sdk.Msg) (*abci.E
 	if success {
 		suite.Require().NoError(err, "IBC send failed. Expected success. %s", err)
 	} else {
-		//suite.Require().Error(err, "IBC send succeeded. Expected failure")
-		//suite.ErrorContains(err, types.ErrRateLimitExceeded.Error(), "Bad error type")
+		suite.Require().Error(err, "IBC send succeeded. Expected failure")
+		suite.ErrorContains(err, types.ErrRateLimitExceeded.Error(), "Bad error type")
 	}
 	return r, err
 }
@@ -311,9 +295,9 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	suite.initializeEscrow()
 	// Get the denom and amount to send
 	denom := sdk.DefaultBondDenom
-	channel := "channel-0"
+	channel := "channel-2"
 	if !native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-0", denom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-2", denom))
 		fmt.Println(denomTrace)
 		denom = denomTrace.IBCDenom()
 	}
@@ -333,7 +317,6 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", channel, denom, 604800, 5, 5)
-	fmt.Println(quotas)
 	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
 
@@ -348,7 +331,7 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 
 	// Calculate remaining allowance in the quota
 	attrs := suite.ExtractAttributes(suite.FindEvent(r.GetEvents(), "wasm"))
-	fmt.Println(attrs)
+	fmt.Println(r.GetEvents())
 
 	used, ok := sdkmath.NewIntFromString(attrs["weekly_used_out"])
 	suite.Require().True(ok)
@@ -408,12 +391,12 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	// Get the denom and amount to send
 	sendDenom := sdk.DefaultBondDenom
 	localDenom := sdk.DefaultBondDenom
-	channel := "channel-0"
+	channel := "channel-2"
 	if native {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-0", localDenom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-2", localDenom))
 		localDenom = denomTrace.IBCDenom()
 	} else {
-		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-0", sendDenom))
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", "channel-2", sendDenom))
 		sendDenom = denomTrace.IBCDenom()
 	}
 
@@ -487,18 +470,16 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	// Setup contract
 	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
-	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
+	quotas := suite.BuildChannelQuota("weekly", "channel-2", sdk.DefaultBondDenom, 604800, 1, 1)
 	addr := suite.InstantiateRLContract(quotas)
-	fmt.Println("contract")
-	fmt.Println(addr)
 	suite.RegisterRateLimitingContract(addr)
 
 	// Get the escrowed amount
-	osmosisApp := suite.GetNeutronZoneApp(suite.ChainA)
+	app := suite.GetNeutronZoneApp(suite.ChainA)
 	// ToDo: This is what we eventually want here, but using the full supply temporarily for performance reasons. See CalculateChannelValue
 	// escrowAddress := transfertypes.GetEscrowAddress("transfer", "channel-0")
-	// escrowed := osmosisApp.BankKeeper.GetBalance(suite.chainA.GetContext(), escrowAddress, sdk.DefaultBondDenom)
-	escrowed := osmosisApp.BankKeeper.GetSupply(suite.ChainA.GetContext(), sdk.DefaultBondDenom)
+	// escrowed := app.BankKeeper.GetBalance(suite.chainA.GetContext(), escrowAddress, sdk.DefaultBondDenom)
+	escrowed := app.BankKeeper.GetSupply(suite.ChainA.GetContext(), sdk.DefaultBondDenom)
 	quota := escrowed.Amount.QuoRaw(100) // 1% of the escrowed amount
 
 	// Use the whole quota
@@ -525,9 +506,9 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	suite.ChainA.Coordinator.IncrementTime()
 
 	// Update both clients
-	err = suite.Path.EndpointA.UpdateClient()
+	err = suite.TransferPath.EndpointA.UpdateClient()
 	suite.Require().NoError(err)
-	err = suite.Path.EndpointB.UpdateClient()
+	err = suite.TransferPath.EndpointB.UpdateClient()
 	suite.Require().NoError(err)
 
 	// Execute the acknowledgement from chain B in chain A
@@ -537,7 +518,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	suite.Require().NoError(err)
 
 	// recv in chain b
-	newRes, err := suite.Path.EndpointB.RecvPacketWithResult(packet)
+	newRes, err := suite.TransferPath.EndpointB.RecvPacketWithResult(packet)
 	suite.Require().NoError(err)
 
 	// get the ack from the chain b's response
@@ -545,7 +526,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	suite.Require().NoError(err)
 
 	// manually relay it to chain a
-	err = suite.Path.EndpointA.AcknowledgePacket(packet, ack)
+	err = suite.TransferPath.EndpointA.AcknowledgePacket(packet, ack)
 	suite.Require().NoError(err)
 
 	// We should be able to send again because the packet that exceeded the quota failed and has been reverted
@@ -593,58 +574,55 @@ func (suite *MiddlewareTestSuite) TestNonICS20() {
 	suite.Require().Contains(err.Error(), "channel not found")
 }
 
-//func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
-//	// Setup contract
-//	app := suite.GetNeutronZoneApp(suite.ChainA)
-//	creator := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
-//	suite.StoreTestCode(suite.ChainA.GetContext(), creator, "./bytecode/rate_limiter.wasm")
-//	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
-//	contractAddr := suite.InstantiateRLContract(quotas)
-//	suite.RegisterRateLimitingContract(contractAddr)
-//	osmosisApp := suite.GetNeutronZoneApp(suite.ChainA)
-//	govModule := osmosisApp.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
-//
-//	denom := sdk.DefaultBondDenom
-//	sendAmount := sdkmath.NewInt(1000)
-//	acceptedChannel := suite.Path.EndpointA.ChannelID
-//
-//	// Successfully send a denom before any restrictions are added.
-//	_, err := suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
-//	suite.Require().NoError(err, "Send should succeed without restrictions")
-//
-//	// Sending on a diff channel should work
-//	_, _, err = suite.FullSendAToC(suite.MessageFromAToC(denom, sendAmount))
-//	suite.Require().NoError(err, "Send on alternative channel should work")
-//
-//	// Add a restriction that only allows sending on the accepted channel
-//	restrictionMsg := fmt.Sprintf(`{"set_denom_restrictions": {"denom":"%s","allowed_channels":["%s"]}}`, denom, acceptedChannel)
-//	_, err = suite.ExecuteContract(contractAddr, govModule, []byte(restrictionMsg), sdk.Coins{})
-//	suite.Require().NoError(err)
-//
-//	// Sending on the accepted channel should succeed
-//	_, err = suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
-//	suite.Require().NoError(err, "Send on accepted channel should succeed")
-//
-//	// Sending on any other channel should fail
-//	_, err = suite.AssertSend(false, suite.MessageFromAToC(denom, sendAmount))
-//	suite.Require().Error(err, "Send on blocked channel should fail")
-//
-//	// Unset the restriction and verify that sending on other channels works again
-//	unsetMsg := fmt.Sprintf(`{"unset_denom_restrictions": {"denom":"%s"}}`, denom)
-//	_, err = suite.ExecuteContract(contractAddr, govModule, []byte(unsetMsg), sdk.Coins{})
-//	suite.Require().NoError(err, "Unsetting denom restriction should succeed")
-//
-//	// Sending again on the previously blocked channel should now succeed
-//	_, _, err = suite.FullSendAToC(suite.MessageFromAToC(denom, sendAmount))
-//	suite.Require().NoError(err, "Send on previously blocked channel should succeed after unsetting restriction")
-//
-//}
+func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
+	suite.ConfigureTransferChannel()
+	suite.ConfigureTransferChannelAC()
+	// Setup contract
+	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
+	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
+	contractAddr := suite.InstantiateRLContract(quotas)
+	suite.RegisterRateLimitingContract(contractAddr)
+
+	denom := sdk.DefaultBondDenom
+	sendAmount := sdkmath.NewInt(1)
+	acceptedChannel := suite.TransferPath.EndpointA.ChannelID
+
+	// Sending on a diff channel should work
+	_, _, err := suite.FullSendAToC(suite.MessageFromAToC(denom, sendAmount))
+	suite.Require().NoError(err, "Send on alternative channel should work")
+
+	// Successfully send a denom before any restrictions are added.
+	_, err = suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
+	suite.Require().NoError(err, "Send should succeed without restrictions")
+
+	// Add a restriction that only allows sending on the accepted channel
+	restrictionMsg := fmt.Sprintf(`{"set_denom_restrictions": {"denom":"%s","allowed_channels":["%s"]}}`, denom, acceptedChannel)
+	_, err = suite.ExecuteContract(contractAddr, testOwner, []byte(restrictionMsg), sdk.Coins{})
+	suite.Require().NoError(err)
+
+	// Sending on the accepted channel should succeed
+	_, err = suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
+	suite.Require().NoError(err, "Send on accepted channel should succeed")
+
+	// Sending on any other channel should fail
+	_, err = suite.AssertSend(false, suite.MessageFromAToC(denom, sendAmount))
+	suite.Require().Error(err, "Send on blocked channel should fail")
+
+	// Unset the restriction and verify that sending on other channels works again
+	unsetMsg := fmt.Sprintf(`{"unset_denom_restrictions": {"denom":"%s"}}`, denom)
+	_, err = suite.ExecuteContract(contractAddr, testOwner, []byte(unsetMsg), sdk.Coins{})
+	suite.Require().NoError(err, "Unsetting denom restriction should succeed")
+
+	// Sending again on the previously blocked channel should now succeed
+	_, _, err = suite.FullSendAToC(suite.MessageFromAToC(denom, sendAmount))
+	suite.Require().NoError(err, "Send on previously blocked channel should succeed after unsetting restriction")
+
+}
 
 func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAddress {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	transferModule := app.AccountKeeper.GetModuleAddress(transfertypes.ModuleName)
-	fmt.Println(quotas)
-	//govModule := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
 	initMsgBz := []byte(fmt.Sprintf(`{
            "gov_module":  "%s",
            "ibc_module":"%s",
@@ -669,9 +647,6 @@ func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
 	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
 	require.True(suite.ChainA.TB, ok)
 	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
-	p := app.RateLimitingICS4Wrapper.GetContractAddress(suite.ChainA.GetContext())
-	fmt.Println("print contract addr from params module")
-	fmt.Println(p)
 }
 
 // AssertEventEmitted asserts that ctx's event manager has emitted the given number of events

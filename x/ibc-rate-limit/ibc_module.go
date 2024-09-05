@@ -2,7 +2,6 @@ package ibc_rate_limit
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/neutron-org/neutron/v4/x/ibc-hooks/utils"
@@ -139,7 +138,6 @@ func (im *IBCModule) OnRecvPacket(
 	contract := im.ics4Middleware.GetContractAddress(ctx)
 	if contract == "" {
 		// The contract has not been configured. Continue as usual
-		fmt.Println("The contract has not been configured. Continue as usual")
 		return im.app.OnRecvPacket(ctx, packet, relayer)
 	}
 
