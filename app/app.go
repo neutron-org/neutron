@@ -521,6 +521,7 @@ func New(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	app.ScopedTransferKeeper = scopedTransferKeeper
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedInterTxKeeper := app.CapabilityKeeper.ScopeToModule(interchaintxstypes.ModuleName)
 	scopedCCVConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ccvconsumertypes.ModuleName)
@@ -1689,7 +1690,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
 		&app.BankKeeper,
-		app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName),
+		app.ScopedTransferKeeper,
 		app.FeeKeeper,
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
