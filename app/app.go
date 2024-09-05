@@ -603,6 +603,7 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	// Feekeeper needs to be initialized before middlewares injection
 	app.FeeKeeper = feekeeper.NewKeeper(
 		appCodec,
 		keys[feetypes.StoreKey],
@@ -610,6 +611,14 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		app.BankKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	// SwapKeeper as well
+	app.SwapKeeper = ibcswapkeeper.NewKeeper(
+		appCodec,
+		app.MsgServiceRouter(),
+		app.IBCKeeper.ChannelKeeper,
+		app.BankKeeper,
 	)
 
 	app.WireICS20PreWasmKeeper(appCodec)
@@ -720,13 +729,6 @@ func New(
 	)
 
 	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
-
-	app.SwapKeeper = ibcswapkeeper.NewKeeper(
-		appCodec,
-		app.MsgServiceRouter(),
-		app.IBCKeeper.ChannelKeeper,
-		app.BankKeeper,
-	)
 
 	swapModule := ibcswap.NewAppModule(app.SwapKeeper)
 
