@@ -159,11 +159,6 @@ func (suite *MiddlewareTestSuite) FullSendAToB(msg sdk.Msg) (*abci.ExecTxResult,
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println(sendResult.Log)
-	fmt.Println(sendResult.Info)
-	fmt.Println(sendResult.Code)
-	fmt.Println(sendResult.Events)
-	fmt.Println(sendResult.GasUsed)
 
 	packet, err := ibctesting.ParsePacketFromEvents(sendResult.GetEvents())
 	if err != nil {
@@ -650,13 +645,12 @@ func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAd
 	transferModule := app.AccountKeeper.GetModuleAddress(transfertypes.ModuleName)
 	fmt.Println(quotas)
 	//govModule := app.AccountKeeper.GetModuleAddress(govtypes.ModuleName)
-
 	initMsgBz := []byte(fmt.Sprintf(`{
            "gov_module":  "%s",
            "ibc_module":"%s",
            "paths": [%s]
         }`,
-		suite.ChainA.SenderAccount.GetAddress(), transferModule, quotas))
+		testutil.TestOwnerAddress, transferModule, quotas))
 
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	codeID := uint64(1)
@@ -675,9 +669,9 @@ func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
 	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
 	require.True(suite.ChainA.TB, ok)
 	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
-	//p := app.GetContractAddress(suite.ChainA.GetContext())
-	//fmt.Println("print contract addr from params module")
-	//fmt.Println(p)
+	p := app.RateLimitingICS4Wrapper.GetContractAddress(suite.ChainA.GetContext())
+	fmt.Println("print contract addr from params module")
+	fmt.Println(p)
 }
 
 // AssertEventEmitted asserts that ctx's event manager has emitted the given number of events
