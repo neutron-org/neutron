@@ -602,7 +602,7 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.WireICS20PreWasmKeeper(appCodec)
+	app.WireICS20PreWasmKeeper(appCodec, scopedTransferKeeper)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
@@ -1659,12 +1659,13 @@ func overrideWasmVariables() {
 
 func (app *App) WireICS20PreWasmKeeper(
 	appCodec codec.Codec,
+	scopedTransferKeeper capabilitykeeper.ScopedKeeper,
 ) {
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.Ics20WasmHooks = &wasmHooks
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		app.PFMKeeper,
+		app.IBCKeeper.ChannelKeeper,
 		&wasmHooks,
 	)
 
@@ -1689,7 +1690,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
 		&app.BankKeeper,
-		app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName),
+		scopedTransferKeeper,
 		app.FeeKeeper,
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
