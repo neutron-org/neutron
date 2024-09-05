@@ -10,12 +10,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/neutron-org/neutron/v4/x/dynamicfees"
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/ibcratelimitmodule"
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
+	"github.com/neutron-org/neutron/v4/x/dynamicfees"
+	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/ibcratelimitmodule"
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
@@ -130,6 +131,7 @@ import (
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+
 	ibcratelimit "github.com/neutron-org/neutron/v4/x/ibc-rate-limit"
 	ibcratelimittypes "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 
@@ -600,8 +602,8 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 	app.WireICS20PreWasmKeeper(appCodec)
+	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
@@ -1712,7 +1714,10 @@ func (app *App) WireICS20PreWasmKeeper(
 	// Packet Forward Middleware
 	// Initialize packet forward middleware router
 	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
-		app.TransferStack,
+		transferSudo.NewIBCModule(
+			app.TransferKeeper,
+			contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+		),
 		app.PFMKeeper,
 		0,
 		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
