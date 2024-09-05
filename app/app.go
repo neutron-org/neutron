@@ -1663,11 +1663,23 @@ func overrideWasmVariables() {
 func (app *App) WireICS20PreWasmKeeper(
 	appCodec codec.Codec,
 ) {
+	// PFMKeeper must be created before TransferKeeper
+	app.PFMKeeper = pfmkeeper.NewKeeper(
+		appCodec,
+		app.keys[pfmtypes.StoreKey],
+		app.TransferKeeper.Keeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.FeeBurnerKeeper,
+		&app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
 	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
 	app.Ics20WasmHooks = &wasmHooks
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
+		app.PFMKeeper,
 		&wasmHooks,
 	)
 
@@ -1695,18 +1707,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.ScopedTransferKeeper,
 		app.FeeKeeper,
 		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	// PFMKeeper must be created before TransferKeeper
-	app.PFMKeeper = pfmkeeper.NewKeeper(
-		appCodec,
-		app.keys[pfmtypes.StoreKey],
-		app.TransferKeeper.Keeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.FeeBurnerKeeper,
-		&app.BankKeeper,
-		app.HooksICS4Wrapper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
