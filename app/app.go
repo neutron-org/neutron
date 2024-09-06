@@ -622,12 +622,20 @@ func New(
 		app.BankKeeper,
 	)
 
+	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
+		appCodec,
+		keys[contractmanagermoduletypes.StoreKey],
+		keys[contractmanagermoduletypes.MemStoreKey],
+		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
 	app.WireICS20PreWasmKeeper(appCodec)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.RateLimitingICS4Wrapper, // may be replaced with middleware such as ics29 feerefunder
+		app.RateLimitingICS4Wrapper, // определяется в wireisc20
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -642,13 +650,6 @@ func New(
 	)
 	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
 
-	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
-		appCodec,
-		keys[contractmanagermoduletypes.StoreKey],
-		keys[contractmanagermoduletypes.MemStoreKey],
-		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
 		appCodec,
 		keys[feeburnertypes.StoreKey],
