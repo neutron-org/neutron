@@ -99,7 +99,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 			"too many keys",
 			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeKV),
-				Keys:               make([]*types.KVKey, types.MaxKVQueryKeysCount+1),
+				Keys:               make([]*types.KVKey, types.DefaultMaxKvQueryKeysCount+1),
 				TransactionsFilter: "[]",
 				ConnectionId:       "connection-0",
 				UpdatePeriod:       1,
@@ -394,7 +394,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 			"too many keys",
 			types.MsgUpdateInterchainQueryRequest{
 				QueryId:         1,
-				NewKeys:         make([]*types.KVKey, types.MaxKVQueryKeysCount+1),
+				NewKeys:         make([]*types.KVKey, types.DefaultMaxKvQueryKeysCount+1),
 				NewUpdatePeriod: 0,
 				Sender:          testutil.TestOwnerAddress,
 			},
