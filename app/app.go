@@ -612,6 +612,7 @@ func New(
 		app.BankKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
+	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// SwapKeeper as well
 	app.SwapKeeper = ibcswapkeeper.NewKeeper(
@@ -648,8 +649,6 @@ func New(
 		&app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
-
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
 		appCodec,
 		keys[feeburnertypes.StoreKey],
@@ -1667,7 +1666,7 @@ func (app *App) WireICS20PreWasmKeeper(
 	app.PFMKeeper = pfmkeeper.NewKeeper(
 		appCodec,
 		app.keys[pfmtypes.StoreKey],
-		app.TransferKeeper.Keeper,
+		app.TransferKeeper.Keeper, // set later
 		app.IBCKeeper.ChannelKeeper,
 		app.FeeBurnerKeeper,
 		&app.BankKeeper,
