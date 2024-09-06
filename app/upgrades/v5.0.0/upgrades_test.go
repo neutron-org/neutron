@@ -1,36 +1,40 @@
-package v5_test
+package v400_test
 
 import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/stretchr/testify/suite"
-
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/neutron-org/neutron/v4/testutil"
-
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
+	v500 "github.com/neutron-org/neutron/v4/app/upgrades/v5.0.0"
+
+	"github.com/stretchr/testify/suite"
+
+	"github.com/neutron-org/neutron/v4/testutil"
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	v5 "github.com/neutron-org/neutron/v4/x/dex/migrations/v5"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
-type V4DexMigrationTestSuite struct {
+type UpgradeTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(V4DexMigrationTestSuite))
+	suite.Run(t, new(UpgradeTestSuite))
 }
 
-func (suite *V4DexMigrationTestSuite) TestPoolMigrationSingleShareHolder() {
+func (suite *UpgradeTestSuite) SetupTest() {
+	suite.IBCConnectionTestSuite.SetupTest()
+}
+
+func (suite *UpgradeTestSuite) TestPoolMigrationSingleShareHolder() {
 	var (
 		app           = suite.GetNeutronZoneApp(suite.ChainA)
 		ctx           = suite.ChainA.GetContext()
 		alice         = []byte("alice")
-		pairID        = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
+		pairID        = &dextypes.PairID{Token0: "TokenA", Token1: "TokenB"}
 		depositAmount = math.NewInt(10_000)
 	)
 
@@ -39,11 +43,16 @@ func (suite *V4DexMigrationTestSuite) TestPoolMigrationSingleShareHolder() {
 	shares, err := suite.makeDeposit(ctx, app.DexKeeper, alice, pairID, depositAmount, math.ZeroInt(), 0, 1)
 	suite.NoError(err)
 
-	// run migrations
-	suite.NoError(v5.MigrateStore(ctx, app.DexKeeper))
+	// run upgrade
+	upgrade := upgradetypes.Plan{
+		Name:   v500.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	suite.NoError(app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
 
 	// assert pool and shareholder balance are unchanged
-	poolID, err := types.ParsePoolIDFromDenom(shares[0].Denom)
+	poolID, err := dextypes.ParsePoolIDFromDenom(shares[0].Denom)
 	suite.NoError(err)
 
 	pool, _ := app.DexKeeper.GetPoolByID(ctx, poolID)
@@ -53,13 +62,13 @@ func (suite *V4DexMigrationTestSuite) TestPoolMigrationSingleShareHolder() {
 	suite.True(aliceBalance.Equal(shares))
 }
 
-func (suite *V4DexMigrationTestSuite) TestPoolMigrationMultiShareHolder() {
+func (suite *UpgradeTestSuite) TestPoolMigrationMultiShareHolder() {
 	var (
 		app            = suite.GetNeutronZoneApp(suite.ChainA)
 		ctx            = suite.ChainA.GetContext()
 		alice          = []byte("alice")
 		bob            = []byte("bob")
-		pairID         = &types.PairID{Token0: "TokenA", Token1: "TokenB"}
+		pairID         = &dextypes.PairID{Token0: "TokenA", Token1: "TokenB"}
 		depositAmount  = math.NewInt(10_000)
 		initialBalance = sdk.NewCoins(sdk.NewCoin("TokenA", depositAmount))
 	)
@@ -77,11 +86,16 @@ func (suite *V4DexMigrationTestSuite) TestPoolMigrationMultiShareHolder() {
 	bobBalance := app.BankKeeper.GetAllBalances(ctx, bob)
 	suite.True(bobBalance.Equal(shares))
 
-	// run migrations
-	suite.NoError(v5.MigrateStore(ctx, app.DexKeeper))
+	// run upgrade
+	upgrade := upgradetypes.Plan{
+		Name:   v500.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	suite.NoError(app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
 
 	// assert that all users have withdrawn from the pool
-	poolID, err := types.ParsePoolIDFromDenom(shares[0].Denom)
+	poolID, err := dextypes.ParsePoolIDFromDenom(shares[0].Denom)
 	suite.NoError(err)
 
 	pool, _ := app.DexKeeper.GetPoolByID(ctx, poolID)
@@ -96,25 +110,25 @@ func (suite *V4DexMigrationTestSuite) TestPoolMigrationMultiShareHolder() {
 }
 
 func FundAccount(bankKeeper bankkeeper.Keeper, ctx sdk.Context, addr sdk.AccAddress, amounts sdk.Coins) {
-	if err := bankKeeper.MintCoins(ctx, types.ModuleName, amounts); err != nil {
+	if err := bankKeeper.MintCoins(ctx, dextypes.ModuleName, amounts); err != nil {
 		panic(err)
 	}
 
-	if err := bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, amounts); err != nil {
+	if err := bankKeeper.SendCoinsFromModuleToAccount(ctx, dextypes.ModuleName, addr, amounts); err != nil {
 		panic(err)
 	}
 }
 
-func (suite *V4DexMigrationTestSuite) makeDeposit(
+func (suite *UpgradeTestSuite) makeDeposit(
 	ctx sdk.Context,
 	k dexkeeper.Keeper,
 	addr sdk.AccAddress,
-	pairID *types.PairID,
+	pairID *dextypes.PairID,
 	amount0, amount1 math.Int,
 	tick int64,
 	fee uint64,
 ) (sharesIssued sdk.Coins, err error) {
-	deposit0, deposit1, sharesIssued, _, err := k.DepositCore(ctx, pairID, addr, addr, []math.Int{amount0}, []math.Int{amount1}, []int64{tick}, []uint64{fee}, []*types.DepositOptions{{}})
+	deposit0, deposit1, sharesIssued, _, err := k.DepositCore(ctx, pairID, addr, addr, []math.Int{amount0}, []math.Int{amount1}, []int64{tick}, []uint64{fee}, []*dextypes.DepositOptions{{}})
 	suite.True(deposit0[0].Equal(amount0))
 	suite.True(deposit1[0].Equal(amount1))
 

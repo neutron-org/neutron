@@ -1,31 +1,48 @@
-package v5
+package v400
 
 import (
 	"context"
 	"fmt"
 
 	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+
+	"github.com/neutron-org/neutron/v4/app/upgrades"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 )
 
-type DexKeeperI interface {
-	GetAllPoolShareholders(sdk.Context) map[uint64][]types.PoolShareholder
-	GetPoolByID(sdk.Context, uint64) (*types.Pool, bool)
-	WithdrawCore(context.Context, *types.PairID, sdk.AccAddress, sdk.AccAddress, []math.Int, []int64, []uint64) error
-}
+func CreateUpgradeHandler(
+	mm *module.Manager,
+	configurator module.Configurator,
+	keepers *upgrades.UpgradeKeepers,
+	_ upgrades.StoreKeys,
+	_ codec.Codec,
+) upgradetypes.UpgradeHandler {
+	return func(c context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		ctx := sdk.UnwrapSDKContext(c)
 
-// MigrateStore performs in-place store migrations.
-func MigrateStore(ctx sdk.Context, k DexKeeperI) error {
-	if err := migratePools(ctx, k); err != nil {
-		return err
+		ctx.Logger().Info("Starting module migrations...")
+		vm, err := mm.RunMigrations(ctx, configurator, vm)
+		if err != nil {
+			return vm, err
+		}
+
+		ctx.Logger().Info("Running dex upgrades...")
+		err = upgradePools(ctx, *keepers.DexKeeper)
+		if err != nil {
+			return nil, err
+		}
+
+		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
+		return vm, nil
 	}
-
-	return nil
 }
 
-func migratePools(ctx sdk.Context, k DexKeeperI) error {
+func upgradePools(ctx sdk.Context, k dexkeeper.Keeper) error {
 	// Due to an issue with autoswap logic any pools with multiple shareholders must be withdrawn to ensure correct accounting
 	ctx.Logger().Info("Migrating Pools...")
 

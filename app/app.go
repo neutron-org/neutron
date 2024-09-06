@@ -37,6 +37,7 @@ import (
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
 	v401 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
+	v500 "github.com/neutron-org/neutron/v4/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v4/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
 
@@ -225,7 +226,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v401.Upgrade}
+	Upgrades = []upgrades.Upgrade{v401.Upgrade, v500.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -1417,6 +1418,7 @@ func (app *App) setupUpgradeHandlers() {
 					MarketmapKeeper:     app.MarketMapKeeper,
 					FeeMarketKeeper:     app.FeeMarkerKeeper,
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
+					DexKeeper:           &app.DexKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
