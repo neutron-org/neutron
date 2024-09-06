@@ -7,3 +7,7 @@ data
 .mutagen.yml
 vendor/
 .testchains
+
+x/ibc-rate-limit/contracts/rate-limiter/target/
+
+x/ibc-rate-limit/target/

@@ -30,8 +30,8 @@ fn proper_instantiation() {
     assert_eq!(0, res.messages.len());
 
     // The ibc and gov modules are properly stored
-    assert_eq!(IBCMODULE.load(deps.as_ref().storage).unwrap(), IBC_ADDR);
-    assert_eq!(GOVMODULE.load(deps.as_ref().storage).unwrap(), GOV_ADDR);
+    assert_eq!(IBCMODULE.load(deps.as_ref().storage).unwrap().to_string(), IBC_ADDR);
+    assert_eq!(GOVMODULE.load(deps.as_ref().storage).unwrap().to_string(), GOV_ADDR);
 
     let permissions = RBAC_PERMISSIONS
         .load(&mut deps.storage, GOV_ADDR.to_string())
@@ -433,7 +433,7 @@ fn proper_migrate() {
     for permission in Roles::all_roles() {
         assert!(permissions.contains(&permission));
     }
-    assert_eq!(GOVMODULE.load(deps.as_ref().storage).unwrap(), GOV_ADDR);
+    assert_eq!(GOVMODULE.load(deps.as_ref().storage).unwrap().to_string(), GOV_ADDR);
 
     // revoke all roles from the gov contract, instantiation should re-asssign
     crate::rbac::revoke_role(&mut deps.as_mut(), GOV_ADDR.to_string(), Roles::all_roles()).unwrap();
