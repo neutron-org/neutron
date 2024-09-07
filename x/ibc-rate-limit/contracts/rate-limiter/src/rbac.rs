@@ -90,7 +90,7 @@ mod test {
     use std::collections::BTreeSet;
 
     use crate::{msg::QuotaMsg, state::rbac::Roles};
-    use cosmwasm_std::{testing::mock_dependencies, Addr};
+    use cosmwasm_std::{testing::{mock_dependencies, MockApi}, Addr};
     use itertools::Itertools;
 
     use super::*;
@@ -98,12 +98,12 @@ mod test {
     fn test_set_timelock_delay() {
         let mut deps = mock_dependencies();
         assert!(TIMELOCK_DELAY
-            .load(&deps.storage, "foobar".to_string())
+            .load(&deps.storage, MockApi::default().addr_make("foobar").to_string())
             .is_err());
-        set_timelock_delay(&mut deps.as_mut(), "foobar".to_string(), 6).unwrap();
+        set_timelock_delay(&mut deps.as_mut(), MockApi::default().addr_make("foobar").to_string(), 6).unwrap();
         assert_eq!(
             TIMELOCK_DELAY
-                .load(&deps.storage, "foobar".to_string())
+                .load(&deps.storage, MockApi::default().addr_make("foobar").to_string())
                 .unwrap(),
             6
         );
@@ -383,7 +383,7 @@ mod test {
 
         // no roles, should fail
         assert!(RBAC_PERMISSIONS
-            .load(deps.storage, "signer".to_string())
+            .load(deps.storage, MockApi::default().addr_make("signer").to_string())
             .is_err());
 
         let mut granted_roles = BTreeSet::new();
@@ -391,13 +391,13 @@ mod test {
         for roles in &all_roles {
             let roles = roles.collect::<Vec<_>>();
 
-            grant_role(&mut deps, "signer".to_string(), roles.clone()).unwrap();
+            grant_role(&mut deps, MockApi::default().addr_make("signer").to_string(), roles.clone()).unwrap();
             roles.iter().for_each(|role| {
                 granted_roles.insert(*role);
             });
 
             let assigned_roles = RBAC_PERMISSIONS
-                .load(deps.storage, "signer".to_string())
+                .load(deps.storage, MockApi::default().addr_make("signer").to_string())
                 .unwrap();
 
             assert_eq!(granted_roles, assigned_roles);
@@ -412,14 +412,14 @@ mod test {
         let all_roles = Roles::all_roles();
         // no roles, should fail
         assert!(RBAC_PERMISSIONS
-            .load(deps.storage, "signer".to_string())
+            .load(deps.storage, MockApi::default().addr_make("signer").to_string())
             .is_err());
 
         // grant all roles
         RBAC_PERMISSIONS
             .save(
                 deps.storage,
-                "signer".to_string(),
+                MockApi::default().addr_make("signer").to_string(),
                 &all_roles.iter().copied().collect::<BTreeSet<_>>(),
             )
             .unwrap();
@@ -429,7 +429,7 @@ mod test {
         for roles in &all_roles.iter().chunks(2) {
             let roles = roles.copied().collect::<Vec<_>>();
 
-            revoke_role(&mut deps, "signer".to_string(), roles.clone()).unwrap();
+            revoke_role(&mut deps, MockApi::default().addr_make("signer").to_string(), roles.clone()).unwrap();
 
             roles.iter().for_each(|role| {
                 granted_roles.remove(role);
@@ -438,11 +438,11 @@ mod test {
             if granted_roles.is_empty() {
                 // no roles, should fail
                 assert!(RBAC_PERMISSIONS
-                    .load(deps.storage, "signer".to_string())
+                    .load(deps.storage, MockApi::default().addr_make("signer").to_string())
                     .is_err());
             } else {
                 let assigned_roles = RBAC_PERMISSIONS
-                    .load(deps.storage, "signer".to_string())
+                    .load(deps.storage, MockApi::default().addr_make("signer").to_string())
                     .unwrap();
 
                 assert_eq!(assigned_roles, granted_roles);

@@ -143,7 +143,7 @@ pub fn unset_denom_restrictions(
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info, MockApi};
     use cosmwasm_std::{from_binary, Addr, StdError};
 
     use crate::contract::{execute, query};
@@ -163,16 +163,16 @@ mod tests {
     fn management_add_and_remove_path() {
         let mut deps = mock_dependencies();
         IBCMODULE
-            .save(deps.as_mut().storage, &Addr::unchecked(IBC_ADDR))
+            .save(deps.as_mut().storage, &MockApi::default().addr_make(IBC_ADDR))
             .unwrap();
         GOVMODULE
-            .save(deps.as_mut().storage, &Addr::unchecked(GOV_ADDR))
+            .save(deps.as_mut().storage, &MockApi::default().addr_make(GOV_ADDR))
             .unwrap();
 
         // grant role to IBC_ADDR
         crate::rbac::grant_role(
             &mut deps.as_mut(),
-            IBC_ADDR.to_string(),
+            MockApi::default().addr_make(IBC_ADDR).to_string(),
             vec![Roles::AddRateLimit, Roles::RemoveRateLimit],
         )
         .unwrap();
@@ -186,7 +186,7 @@ mod tests {
                 send_recv: (3, 5),
             }],
         };
-        let info = mock_info(IBC_ADDR, &[]);
+        let info = mock_info(&MockApi::default().addr_make(IBC_ADDR).to_string(), &[]);
 
         let env = mock_env();
         let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -222,7 +222,7 @@ mod tests {
                 send_recv: (3, 5),
             }],
         };
-        let info = mock_info(IBC_ADDR, &[]);
+        let info = mock_info(&MockApi::default().addr_make(IBC_ADDR).to_string(), &[]);
 
         let env = mock_env();
         execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -233,7 +233,7 @@ mod tests {
             denom: "denom".to_string(),
         };
 
-        let info = mock_info(IBC_ADDR, &[]);
+        let info = mock_info(&MockApi::default().addr_make(IBC_ADDR).to_string(), &[]);
         let env = mock_env();
         execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
@@ -269,7 +269,7 @@ mod tests {
                 send_recv: (50, 30),
             }],
         };
-        let info = mock_info(IBC_ADDR, &[]);
+        let info = mock_info(&MockApi::default().addr_make(IBC_ADDR).to_string(), &[]);
 
         let env = mock_env();
         execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -304,12 +304,12 @@ mod tests {
             denom: denom.clone(),
             allowed_channels: allowed_channels.clone(),
         };
-        let info = mock_info("executor", &[]);
+        let info = mock_info(&MockApi::default().addr_make("executor").to_string(), &[]);
 
         // Grant the necessary role
         crate::rbac::grant_role(
             &mut deps.as_mut(),
-            "executor".to_string(),
+            MockApi::default().addr_make("executor").to_string(),
             vec![Roles::ManageDenomRestrictions],
         )
         .unwrap();
@@ -336,12 +336,12 @@ mod tests {
             denom: denom.clone(),
             allowed_channels: allowed_channels.clone(),
         };
-        let info = mock_info("executor", &[]);
+        let info = mock_info(&MockApi::default().addr_make("executor").to_string(), &[]);
 
         // Grant the necessary role
         crate::rbac::grant_role(
             &mut deps.as_mut(),
-            "executor".to_string(),
+            MockApi::default().addr_make("executor").to_string(),
             vec![Roles::ManageDenomRestrictions],
         )
         .unwrap();
@@ -380,12 +380,12 @@ mod tests {
             denom: denom.clone(),
             allowed_channels: allowed_channels.clone(),
         };
-        let info = mock_info("executor", &[]);
+        let info = mock_info(&MockApi::default().addr_make("executor").to_string(), &[]);
 
         // Grant the necessary role
         crate::rbac::grant_role(
             &mut deps.as_mut(),
-            "executor".to_string(),
+            MockApi::default().addr_make("executor").to_string(),
             vec![Roles::ManageDenomRestrictions],
         )
         .unwrap();
