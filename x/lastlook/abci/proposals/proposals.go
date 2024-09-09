@@ -2,8 +2,8 @@ package proposals
 
 import (
 	"bytes"
-	"fmt"
 
+	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	cometabci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -118,13 +118,13 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 		// this should never happen, but just in case
 		if req == nil {
 			h.logger.Error("ProcessProposalHandler received a nil request")
-			return nil, sdkerrors.ErrInvalidRequest
+			return nil, types.ErrInvalidProposal
 		}
 
 		var txsBatch types.Batch
 		if err := h.lastlookKeeper.GetCodec().Unmarshal(req.Txs[lastlookabcitypes.TxBatchIndex], &txsBatch); err != nil {
 			h.logger.Error("failed to unmarshal txs blob", "err", err)
-			return nil, err
+			return nil, errors.Wrapf(types.ErrInvalidProposal, err.Error())
 		}
 
 		req.Txs = req.Txs[lastlookabcitypes.NumInjectedTxs:]
@@ -136,17 +136,17 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 		}
 
 		if len(req.Txs) != len(currentBlob.Txs) {
-			return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, fmt.Errorf("len(req.Txs) != len(currentBlob.Txs): %v != %v", len(req.Txs), len(currentBlob.Txs))
+			return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, errors.Wrapf(types.ErrInvalidProposal, "len(req.Txs) != len(currentBlob.Txs): %v != %v", len(req.Txs), len(currentBlob.Txs))
 		}
 
 		for i := 0; i < len(currentBlob.Txs); i++ {
 			if !bytes.Equal(req.Txs[i], currentBlob.Txs[i]) {
-				return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, fmt.Errorf("req.Txs[i] != currentBlob.Txs[i]: %v != %v", req.Txs[i], currentBlob.Txs[i])
+				return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, errors.Wrapf(types.ErrInvalidProposal, "req.Txs[i] != currentBlob.Txs[i]: %v != %v", req.Txs[i], currentBlob.Txs[i])
 			}
 		}
 
 		if !bytes.Equal(req.ProposerAddress, txsBatch.Proposer) {
-			return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, fmt.Errorf("req.ProposerAddress != proposer in current batch: %v != %v", req.ProposerAddress, txsBatch.Proposer)
+			return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_REJECT}, errors.Wrapf(types.ErrInvalidProposal, "req.ProposerAddress != proposer in current batch: %v != %v", req.ProposerAddress, txsBatch.Proposer)
 		}
 
 		return &cometabci.ResponseProcessProposal{Status: cometabci.ResponseProcessProposal_ACCEPT}, nil

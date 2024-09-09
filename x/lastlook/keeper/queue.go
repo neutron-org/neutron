@@ -37,7 +37,7 @@ func (k *Keeper) GetBatch(ctx sdk.Context, blockHeight int64) (*types.Batch, err
 
 	bz := store.Get(types.GetTxsQueueKey(blockHeight))
 	if bz == nil {
-		return nil, errors.Wrapf(types.ErrNoBlob, "no txs batch found for a block %d", blockHeight)
+		return nil, errors.Wrapf(types.ErrNoBatch, "no txs batch found for a block %d", blockHeight)
 	}
 
 	if err := k.cdc.Unmarshal(bz, &blob); err != nil {
