@@ -1,10 +1,13 @@
 package dex_state_test
 
 import (
-	"fmt"
-
 	"cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
+	"strconv"
+	"time"
 
 	"github.com/neutron-org/neutron/v4/testutil/apptesting"
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
@@ -23,9 +26,10 @@ const (
 
 // Percents
 const (
-	ZeroPCT    = "0"
-	FiftyPCT   = "50"
-	HundredPct = "100"
+	ZeroPCT       = "0"
+	FiftyPCT      = "50"
+	HundredPct    = "100"
+	TwoHundredPct = "200"
 )
 
 // ExistingShareHolders
@@ -54,8 +58,8 @@ const (
 // Default Values
 const (
 	BaseTokenAmount        = 1_000_000
-	DefaultTick            = 0
-	DefaultFee             = 1
+	DefaultTick            = 6932 // 1.0001^6932 ~ 2.00003
+	DefaultFee             = 200
 	DefaultStartingBalance = 10_000_000
 )
 
@@ -63,6 +67,29 @@ var (
 	BaseTokenAmountInt        = math.NewInt(BaseTokenAmount)
 	DefaultStartingBalanceInt = math.NewInt(DefaultStartingBalance)
 )
+
+type Balances struct {
+	Dex     sdk.Coins
+	Creator sdk.Coins
+	Alice   sdk.Coins
+	Total   sdk.Coins
+}
+
+type BalanceDelta struct {
+	Dex     math.Int
+	Creator math.Int
+	Alice   math.Int
+	Total   math.Int
+}
+
+func BalancesDelta(b1, b2 Balances, denom string) BalanceDelta {
+	return BalanceDelta{
+		Dex:     b1.Dex.AmountOf(denom).Sub(b2.Dex.AmountOf(denom)),
+		Creator: b1.Creator.AmountOf(denom).Sub(b2.Creator.AmountOf(denom)),
+		Alice:   b1.Alice.AmountOf(denom).Sub(b2.Alice.AmountOf(denom)),
+		Total:   b1.Total.AmountOf(denom).Sub(b2.Total.AmountOf(denom)),
+	}
+}
 
 type SharedParams struct {
 	Tick     int64
@@ -121,6 +148,14 @@ func splitLiquidityDistribution(liquidityDistribution LiquidityDistribution, n i
 
 // State Parsers //////////////////////////////////////////////////////////////
 
+func parseInt(v string) int {
+	i, err := strconv.Atoi(v)
+	if err != nil {
+		panic(err)
+	}
+	return i
+}
+
 func parseBool(b string) bool {
 	switch b {
 	case True:
@@ -161,7 +196,48 @@ func parseLiquidityDistribution(liquidityDistribution string, pairID *dextypes.P
 }
 
 // Misc. Helpers //////////////////////////////////////////////////////////////
-func (s *DexStateTestSuite) makeDeposit(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) (*dextypes.MsgDepositResponse, error) {
+func (s *DexStateTestSuite) GetBalances() Balances {
+	var snap Balances
+	snap.Creator = s.App.BankKeeper.GetAllBalances(s.Ctx, s.creator)
+	snap.Alice = s.App.BankKeeper.GetAllBalances(s.Ctx, s.alice)
+	snap.Dex = s.App.BankKeeper.GetAllBalances(s.Ctx, s.App.AccountKeeper.GetModuleAddress("dex"))
+	resp, err := s.App.BankKeeper.TotalSupply(s.Ctx, &types.QueryTotalSupplyRequest{})
+	if err != nil {
+		panic(err)
+	}
+	snap.Total = resp.Supply
+	var key []byte
+	if resp.Pagination != nil {
+		key = resp.Pagination.NextKey
+	}
+	for key != nil {
+		resp, err = s.App.BankKeeper.TotalSupply(s.Ctx, &types.QueryTotalSupplyRequest{
+			Pagination: &query.PageRequest{
+				Key:        key,
+				Offset:     0,
+				Limit:      0,
+				CountTotal: false,
+				Reverse:    false,
+			},
+		})
+		if err != nil {
+			panic(err)
+		}
+		snap.Total = snap.Total.Add(resp.Supply...)
+		if resp.Pagination != nil {
+			key = resp.Pagination.NextKey
+		}
+	}
+
+	return snap
+}
+
+func (s *DexStateTestSuite) makeDepositDefault(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) (*dextypes.MsgDepositResponse, error) {
+	return s.makeDeposit(addr, depositAmts, DefaultFee, DefaultTick, disableAutoSwap)
+
+}
+
+func (s *DexStateTestSuite) makeDeposit(addr sdk.AccAddress, depositAmts LiquidityDistribution, fee uint64, tick int64, disableAutoSwap bool) (*dextypes.MsgDepositResponse, error) {
 	return s.msgServer.Deposit(s.Ctx, &dextypes.MsgDeposit{
 		Creator:         addr.String(),
 		Receiver:        addr.String(),
@@ -169,21 +245,104 @@ func (s *DexStateTestSuite) makeDeposit(addr sdk.AccAddress, depositAmts Liquidi
 		TokenB:          depositAmts.TokenB.Denom,
 		AmountsA:        []math.Int{depositAmts.TokenA.Amount},
 		AmountsB:        []math.Int{depositAmts.TokenB.Amount},
-		TickIndexesAToB: []int64{DefaultTick},
-		Fees:            []uint64{DefaultFee},
+		TickIndexesAToB: []int64{tick},
+		Fees:            []uint64{fee},
 		Options:         []*dextypes.DepositOptions{{DisableAutoswap: disableAutoSwap}},
 	})
 }
 
 func (s *DexStateTestSuite) makeDepositSuccess(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) *dextypes.MsgDepositResponse {
-	resp, err := s.makeDeposit(addr, depositAmts, disableAutoSwap)
+	resp, err := s.makeDepositDefault(addr, depositAmts, disableAutoSwap)
 	s.NoError(err)
 
 	return resp
 }
 
+func (s *DexStateTestSuite) makeWithdraw(addr sdk.AccAddress, tokenA string, tokenB string, sharesToRemove math.Int) (*dextypes.MsgWithdrawalResponse, error) {
+	return s.msgServer.Withdrawal(s.Ctx, &dextypes.MsgWithdrawal{
+		Creator:         addr.String(),
+		Receiver:        addr.String(),
+		TokenA:          tokenA,
+		TokenB:          tokenB,
+		SharesToRemove:  []math.Int{sharesToRemove},
+		TickIndexesAToB: []int64{DefaultTick},
+		Fees:            []uint64{DefaultFee},
+	})
+}
+
+func (s *DexStateTestSuite) makePlaceTakerLO(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut string, sellPrice string, orderType dextypes.LimitOrderType, maxAmountOut *math.Int) (*dextypes.MsgPlaceLimitOrderResponse, error) {
+	p, err := math_utils.NewPrecDecFromStr(sellPrice)
+	if err != nil {
+		panic(err)
+	}
+	return s.msgServer.PlaceLimitOrder(s.Ctx, &dextypes.MsgPlaceLimitOrder{
+		Creator:          addr.String(),
+		Receiver:         addr.String(),
+		TokenIn:          amountIn.Denom,
+		TokenOut:         tokenOut,
+		TickIndexInToOut: 0,
+		AmountIn:         amountIn.Amount,
+		OrderType:        orderType,
+		ExpirationTime:   nil,
+		MaxAmountOut:     maxAmountOut,
+		LimitSellPrice:   &p,
+	})
+}
+
+func (s *DexStateTestSuite) makePlaceLO(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut string, sellPrice string, orderType dextypes.LimitOrderType, expTime *time.Time) (*dextypes.MsgPlaceLimitOrderResponse, error) {
+	p, err := math_utils.NewPrecDecFromStr(sellPrice)
+	if err != nil {
+		panic(err)
+	}
+	return s.msgServer.PlaceLimitOrder(s.Ctx, &dextypes.MsgPlaceLimitOrder{
+		Creator:          addr.String(),
+		Receiver:         addr.String(),
+		TokenIn:          amountIn.Denom,
+		TokenOut:         tokenOut,
+		TickIndexInToOut: 0,
+		AmountIn:         amountIn.Amount,
+		OrderType:        orderType,
+		ExpirationTime:   expTime,
+		MaxAmountOut:     nil,
+		LimitSellPrice:   &p,
+	})
+}
+
+func (s *DexStateTestSuite) makePlaceLOSuccess(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut string, sellPrice string, orderType dextypes.LimitOrderType, expTime *time.Time) *dextypes.MsgPlaceLimitOrderResponse {
+	resp, err := s.makePlaceLO(addr, amountIn, tokenOut, sellPrice, orderType, expTime)
+	s.NoError(err)
+	fmt.Println("setup: ", resp)
+	return resp
+}
+
+func (s *DexStateTestSuite) makeCancel(addr sdk.AccAddress, trancheKey string) (*dextypes.MsgCancelLimitOrderResponse, error) {
+	return s.msgServer.CancelLimitOrder(s.Ctx, &dextypes.MsgCancelLimitOrder{
+		Creator:    addr.String(),
+		TrancheKey: trancheKey,
+	})
+}
+
+func (s *DexStateTestSuite) makeCancelSuccess(addr sdk.AccAddress, trancheKey string) *dextypes.MsgCancelLimitOrderResponse {
+	resp, err := s.makeCancel(addr, trancheKey)
+	s.NoError(err)
+	return resp
+}
+
+func (s *DexStateTestSuite) makeWithdrawFilled(addr sdk.AccAddress, trancheKey string) (*dextypes.MsgWithdrawFilledLimitOrderResponse, error) {
+	return s.msgServer.WithdrawFilledLimitOrder(s.Ctx, &dextypes.MsgWithdrawFilledLimitOrder{
+		Creator:    addr.String(),
+		TrancheKey: trancheKey,
+	})
+}
+
+func (s *DexStateTestSuite) makeWithdrawFilledSuccess(addr sdk.AccAddress, trancheKey string) *dextypes.MsgWithdrawFilledLimitOrderResponse {
+	resp, err := s.makeWithdrawFilled(addr, trancheKey)
+	s.NoError(err)
+	return resp
+}
+
 func calcDepositValueAsToken0(tick int64, amount0, amount1 math.Int) math_utils.PrecDec {
-	price1To0CenterTick := dextypes.MustCalcPrice(tick)
+	price1To0CenterTick := dextypes.MustCalcPrice(-1 * tick)
 	amount1ValueAsToken0 := price1To0CenterTick.MulInt(amount1)
 	depositValue := amount1ValueAsToken0.Add(math_utils.NewPrecDecFromInt(amount0))
 
@@ -206,13 +365,18 @@ func (s *DexStateTestSuite) fundCreatorBalanceDefault(pairID *dextypes.PairID) {
 
 // Assertions /////////////////////////////////////////////////////////////////
 
-func (s *DexStateTestSuite) intsEqual(field string, expected, actual math.Int) {
-	s.True(actual.Equal(expected), "For %v: Expected %v Got %v", field, expected, actual)
+func (s *DexStateTestSuite) intsApproxEqual(field string, expected, actual math.Int, absPrecision int64) {
+	s.True(actual.Sub(expected).Abs().LTE(math.NewInt(absPrecision)), "For %v: Expected %v (+-%d) Got %v)", field, expected, absPrecision, actual)
 }
 
 func (s *DexStateTestSuite) assertBalance(addr sdk.AccAddress, denom string, expected math.Int) {
 	trueBalance := s.App.BankKeeper.GetBalance(s.Ctx, addr, denom)
-	s.intsEqual(fmt.Sprintf("Balance %s", denom), expected, trueBalance.Amount)
+	s.intsApproxEqual(fmt.Sprintf("Balance %s", denom), expected, trueBalance.Amount, 1)
+}
+
+func (s *DexStateTestSuite) assertBalanceWithPrecision(addr sdk.AccAddress, denom string, expected math.Int, prec int64) {
+	trueBalance := s.App.BankKeeper.GetBalance(s.Ctx, addr, denom)
+	s.intsApproxEqual(fmt.Sprintf("Balance %s", denom), expected, trueBalance.Amount, prec)
 }
 
 func (s *DexStateTestSuite) assertCreatorBalance(denom string, expected math.Int) {
@@ -230,8 +394,8 @@ func (s *DexStateTestSuite) assertPoolBalance(pairID *dextypes.PairID, tick int6
 	reservesA := pool.LowerTick0.ReservesMakerDenom
 	reservesB := pool.UpperTick1.ReservesMakerDenom
 
-	s.intsEqual("Pool ReservesA", expectedA, reservesA)
-	s.intsEqual("Pool ReservesB", expectedB, reservesB)
+	s.intsApproxEqual("Pool ReservesA", expectedA, reservesA, 1)
+	s.intsApproxEqual("Pool ReservesB", expectedB, reservesB, 1)
 }
 
 // Core Test Setup ////////////////////////////////////////////////////////////
@@ -241,12 +405,14 @@ type DexStateTestSuite struct {
 	msgServer dextypes.MsgServer
 	creator   sdk.AccAddress
 	alice     sdk.AccAddress
+	bob       sdk.AccAddress
 }
 
 func (s *DexStateTestSuite) SetupTest() {
 	s.Setup()
 	s.creator = sdk.MustAccAddressFromBech32(sample.AccAddress())
 	s.alice = sdk.MustAccAddressFromBech32(sample.AccAddress())
+	s.bob = sdk.MustAccAddressFromBech32(sample.AccAddress())
 
 	s.msgServer = dexkeeper.NewMsgServerImpl(s.App.DexKeeper)
 }
