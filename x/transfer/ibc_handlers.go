@@ -29,6 +29,7 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "failed to decode address from bech32: %v", err)
 	}
 	if !im.sudoKeeper.HasContractInfo(ctx, senderAddress) {
+		ctx.Logger().Info("NOCONTRACT!!!! ")
 		return nil
 	}
 
