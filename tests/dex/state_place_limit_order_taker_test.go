@@ -1,15 +1,17 @@
 package dex_state_test
 
 import (
-	"cosmossdk.io/math"
 	"errors"
-	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	"strconv"
 	"strings"
 	"testing"
+
+	"cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // LiquidityType
@@ -156,8 +158,7 @@ func (s *DexStateTestSuite) setupLoTakerState(params placeLimitOrderTakerTestPar
 				TokenB: sdk.NewCoin(params.PairID.Token1, math.ZeroInt()),
 			}
 			// tick+DefaultFee to put liquidity the same tick as LO
-			resp, err := s.makeDeposit(s.alice, liduidity, DefaultFee, tick+DefaultFee, true)
-			fmt.Println(resp)
+			_, err := s.makeDeposit(s.alice, liduidity, DefaultFee, tick+DefaultFee, true)
 			s.NoError(err)
 		}
 	}
@@ -197,7 +198,7 @@ func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 		}
 		toOut := tickLiquidity
 		if params.MaxAmountOut != nil {
-			toOut = math.MinInt(toOut, (*params.MaxAmountOut).Sub(TotalOut))
+			toOut = math.MinInt(toOut, params.MaxAmountOut.Sub(TotalOut))
 		}
 
 		toIn := dextypes.MustCalcPrice(tick).MulInt(toOut).Ceil().TruncateInt()
@@ -219,7 +220,6 @@ func (s *DexStateTestSuite) handleTakerErrors(params placeLimitOrderTakerTestPar
 		if maxIn.LT(params.AmountIn.Amount) {
 			if errors.Is(err, dextypes.ErrFoKLimitOrderNotFilled) {
 				s.T().Skip()
-
 			}
 		}
 	}
@@ -249,7 +249,6 @@ func TestPlaceLimitOrderTaker(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			fmt.Println(testCasesRaw[i])
 			s.SetT(t)
 			tc.printTestInfo(t)
 
@@ -258,8 +257,7 @@ func TestPlaceLimitOrderTaker(t *testing.T) {
 			//
 
 			resp, err := s.makePlaceTakerLO(s.creator, tc.AmountIn, tc.PairID.Token0, tc.LimitPrice.String(), dextypes.LimitOrderType(tc.OrderType), tc.MaxAmountOut)
-			fmt.Println(resp)
-			fmt.Println(MaxAmountAOut(tc))
+
 			s.handleTakerErrors(tc, err)
 
 			expIn, expOut := ExpectedInOut(tc)

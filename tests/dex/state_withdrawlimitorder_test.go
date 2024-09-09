@@ -1,15 +1,18 @@
 package dex_state_test
 
 import (
-	"cosmossdk.io/math"
 	"errors"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	"strconv"
 	"testing"
 	"time"
+
+	"cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 type withdrawLimitOrderTestParams struct {
@@ -103,24 +106,16 @@ func (s *DexStateTestSuite) setupWithdrawLimitOrderTest(params withdrawLimitOrde
 	}
 	tick, err := dextypes.CalcTickIndexFromPrice(DefaultStartPrice)
 	s.NoError(err)
-	tranches, _ := s.App.DexKeeper.LimitOrderTrancheAll(s.Ctx, &dextypes.QueryAllLimitOrderTrancheRequest{
-		PairId:     params.PairID.CanonicalString(),
-		TokenIn:    params.PairID.Token0,
-		Pagination: nil,
-	})
-	fmt.Println(tranches)
+
 	req := dextypes.QueryGetLimitOrderTrancheRequest{
 		PairId:     params.PairID.CanonicalString(),
 		TickIndex:  -1 * tick,
 		TokenIn:    params.PairID.Token0,
 		TrancheKey: res.TrancheKey,
 	}
-	fmt.Println(req)
 	tranchResp, err := s.App.DexKeeper.LimitOrderTranche(s.Ctx, &req)
 	s.NoError(err)
 
-	ut, _ := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.creator.String(), tranchResp.LimitOrderTranche.Key.TrancheKey)
-	fmt.Println("user tranche1: ", ut)
 	return tranchResp.LimitOrderTranche
 }
 
@@ -133,7 +128,7 @@ func hydrateAllWithdrawLoTestCases(paramsList []map[string]string) []withdrawLim
 		allTCs = append(allTCs, tc)
 	}
 
-	//return allTCs
+	// return allTCs
 	return removeRedundantWithdrawLOTests(allTCs)
 }
 
@@ -216,10 +211,10 @@ func TestWithdrawLimitOrder(t *testing.T) {
 	s := new(DexStateTestSuite)
 	s.SetT(t)
 	s.SetupTest()
-	//totalExpectedToSwap := math.ZeroInt()
+	// totalExpectedToSwap := math.ZeroInt()
 
 	for i, tc := range testCases {
-		//if i != 30 {
+		// if i != 30 {
 		//	continue
 		//}
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -243,7 +238,7 @@ func TestWithdrawLimitOrder(t *testing.T) {
 			*/
 		})
 	}
-	//s.SetT(t)
+	// s.SetT(t)
 	//// check at least one `expectedSwapTakerDenom` > 0
-	//s.True(totalExpectedToSwap.GT(math.ZeroInt()))
+	// s.True(totalExpectedToSwap.GT(math.ZeroInt()))
 }

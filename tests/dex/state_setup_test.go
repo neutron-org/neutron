@@ -1,13 +1,15 @@
 package dex_state_test
 
 import (
-	"cosmossdk.io/math"
 	"fmt"
+	"strconv"
+	"time"
+
+	"cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
-	"strconv"
-	"time"
 
 	"github.com/neutron-org/neutron/v4/testutil/apptesting"
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
@@ -110,6 +112,7 @@ type LiquidityDistribution struct {
 	TokenB sdk.Coin
 }
 
+//nolint:unused
 func (l LiquidityDistribution) doubleSided() bool {
 	return l.TokenA.Amount.IsPositive() && l.TokenB.Amount.IsPositive()
 }
@@ -118,6 +121,7 @@ func (l LiquidityDistribution) empty() bool {
 	return l.TokenA.Amount.IsZero() && l.TokenB.Amount.IsZero()
 }
 
+//nolint:unused
 func (l LiquidityDistribution) singleSided() bool {
 	return !l.doubleSided() && !l.empty()
 }
@@ -234,7 +238,6 @@ func (s *DexStateTestSuite) GetBalances() Balances {
 
 func (s *DexStateTestSuite) makeDepositDefault(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) (*dextypes.MsgDepositResponse, error) {
 	return s.makeDeposit(addr, depositAmts, DefaultFee, DefaultTick, disableAutoSwap)
-
 }
 
 func (s *DexStateTestSuite) makeDeposit(addr sdk.AccAddress, depositAmts LiquidityDistribution, fee uint64, tick int64, disableAutoSwap bool) (*dextypes.MsgDepositResponse, error) {
@@ -251,6 +254,7 @@ func (s *DexStateTestSuite) makeDeposit(addr sdk.AccAddress, depositAmts Liquidi
 	})
 }
 
+//nolint:unparam
 func (s *DexStateTestSuite) makeDepositSuccess(addr sdk.AccAddress, depositAmts LiquidityDistribution, disableAutoSwap bool) *dextypes.MsgDepositResponse {
 	resp, err := s.makeDepositDefault(addr, depositAmts, disableAutoSwap)
 	s.NoError(err)
@@ -258,7 +262,7 @@ func (s *DexStateTestSuite) makeDepositSuccess(addr sdk.AccAddress, depositAmts 
 	return resp
 }
 
-func (s *DexStateTestSuite) makeWithdraw(addr sdk.AccAddress, tokenA string, tokenB string, sharesToRemove math.Int) (*dextypes.MsgWithdrawalResponse, error) {
+func (s *DexStateTestSuite) makeWithdraw(addr sdk.AccAddress, tokenA, tokenB string, sharesToRemove math.Int) (*dextypes.MsgWithdrawalResponse, error) {
 	return s.msgServer.Withdrawal(s.Ctx, &dextypes.MsgWithdrawal{
 		Creator:         addr.String(),
 		Receiver:        addr.String(),
@@ -270,7 +274,7 @@ func (s *DexStateTestSuite) makeWithdraw(addr sdk.AccAddress, tokenA string, tok
 	})
 }
 
-func (s *DexStateTestSuite) makePlaceTakerLO(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut string, sellPrice string, orderType dextypes.LimitOrderType, maxAmountOut *math.Int) (*dextypes.MsgPlaceLimitOrderResponse, error) {
+func (s *DexStateTestSuite) makePlaceTakerLO(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut, sellPrice string, orderType dextypes.LimitOrderType, maxAmountOut *math.Int) (*dextypes.MsgPlaceLimitOrderResponse, error) {
 	p, err := math_utils.NewPrecDecFromStr(sellPrice)
 	if err != nil {
 		panic(err)
@@ -289,7 +293,7 @@ func (s *DexStateTestSuite) makePlaceTakerLO(addr sdk.AccAddress, amountIn sdk.C
 	})
 }
 
-func (s *DexStateTestSuite) makePlaceLO(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut string, sellPrice string, orderType dextypes.LimitOrderType, expTime *time.Time) (*dextypes.MsgPlaceLimitOrderResponse, error) {
+func (s *DexStateTestSuite) makePlaceLO(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut, sellPrice string, orderType dextypes.LimitOrderType, expTime *time.Time) (*dextypes.MsgPlaceLimitOrderResponse, error) {
 	p, err := math_utils.NewPrecDecFromStr(sellPrice)
 	if err != nil {
 		panic(err)
@@ -308,10 +312,9 @@ func (s *DexStateTestSuite) makePlaceLO(addr sdk.AccAddress, amountIn sdk.Coin, 
 	})
 }
 
-func (s *DexStateTestSuite) makePlaceLOSuccess(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut string, sellPrice string, orderType dextypes.LimitOrderType, expTime *time.Time) *dextypes.MsgPlaceLimitOrderResponse {
+func (s *DexStateTestSuite) makePlaceLOSuccess(addr sdk.AccAddress, amountIn sdk.Coin, tokenOut, sellPrice string, orderType dextypes.LimitOrderType, expTime *time.Time) *dextypes.MsgPlaceLimitOrderResponse {
 	resp, err := s.makePlaceLO(addr, amountIn, tokenOut, sellPrice, orderType, expTime)
 	s.NoError(err)
-	fmt.Println("setup: ", resp)
 	return resp
 }
 
@@ -320,12 +323,6 @@ func (s *DexStateTestSuite) makeCancel(addr sdk.AccAddress, trancheKey string) (
 		Creator:    addr.String(),
 		TrancheKey: trancheKey,
 	})
-}
-
-func (s *DexStateTestSuite) makeCancelSuccess(addr sdk.AccAddress, trancheKey string) *dextypes.MsgCancelLimitOrderResponse {
-	resp, err := s.makeCancel(addr, trancheKey)
-	s.NoError(err)
-	return resp
 }
 
 func (s *DexStateTestSuite) makeWithdrawFilled(addr sdk.AccAddress, trancheKey string) (*dextypes.MsgWithdrawFilledLimitOrderResponse, error) {

@@ -1,15 +1,17 @@
 package dex_state_test
 
 import (
-	"cosmossdk.io/math"
 	"errors"
-	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	"strconv"
 	"testing"
 	"time"
+
+	"cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 type cancelLimitOrderTestParams struct {
@@ -95,19 +97,13 @@ func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) *
 	}
 	tick, err := dextypes.CalcTickIndexFromPrice(DefaultStartPrice)
 	s.NoError(err)
-	tranches, _ := s.App.DexKeeper.LimitOrderTrancheAll(s.Ctx, &dextypes.QueryAllLimitOrderTrancheRequest{
-		PairId:     params.PairID.CanonicalString(),
-		TokenIn:    params.PairID.Token0,
-		Pagination: nil,
-	})
-	fmt.Println(tranches)
+
 	req := dextypes.QueryGetLimitOrderTrancheRequest{
 		PairId:     params.PairID.CanonicalString(),
 		TickIndex:  -1 * tick,
 		TokenIn:    params.PairID.Token0,
 		TrancheKey: res.TrancheKey,
 	}
-	fmt.Println(req)
 	tranchResp, err := s.App.DexKeeper.LimitOrderTranche(s.Ctx, &req)
 	s.NoError(err)
 
@@ -159,7 +155,7 @@ func (s *DexStateTestSuite) handleCancelErrors(params cancelLimitOrderTestParams
 	s.NoError(err)
 }
 
-func (s *DexStateTestSuite) assertCalcelAmount(params cancelLimitOrderTestParams, ut *dextypes.LimitOrderTrancheUser) {
+func (s *DexStateTestSuite) assertCalcelAmount(params cancelLimitOrderTestParams) {
 	depositSize := BaseTokenAmountInt
 
 	// expected balance: InitialBalance - depositSize + pre-withdrawn (filled/2 or 0) + withdrawn (filled/2 or filled)
@@ -171,7 +167,6 @@ func (s *DexStateTestSuite) assertCalcelAmount(params cancelLimitOrderTestParams
 	// 1 - withdrawn amount
 	s.assertBalanceWithPrecision(s.creator, params.PairID.Token1, expectedBalanceB, 3)
 
-	//s.assertBalance(s.creator, params.PairID.Token0, ut.SharesOwned.Sub(ut.SharesWithdrawn))
 	s.assertBalance(s.creator, params.PairID.Token0, expectedBalanceA)
 }
 
@@ -201,16 +196,12 @@ func TestCancel(t *testing.T) {
 			tc.printTestInfo(t)
 
 			initialTrancheKey := s.setupCancelTest(tc)
-			fmt.Println(initialTrancheKey)
-			ut, _ := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.creator.String(), initialTrancheKey.Key.TrancheKey)
 
-			resp, err := s.makeCancel(s.creator, initialTrancheKey.Key.TrancheKey)
+			_, err := s.makeCancel(s.creator, initialTrancheKey.Key.TrancheKey)
 			s.handleCancelErrors(tc, err)
 			_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.creator.String(), initialTrancheKey.Key.TrancheKey)
 			s.False(found)
-			fmt.Println("resp", resp)
-			fmt.Println("err", err)
-			s.assertCalcelAmount(tc, ut)
+			s.assertCalcelAmount(tc)
 		})
 	}
 }

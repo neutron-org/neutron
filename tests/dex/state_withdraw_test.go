@@ -2,10 +2,12 @@ package dex_state_test
 
 import (
 	"fmt"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 type withdrawTestParams struct {
@@ -75,7 +77,7 @@ func hydrateAllWithdrawTestCases(paramsList []map[string]string) []withdrawTestP
 		tc.PairID = pairID
 		allTCs = append(allTCs, tc)
 	}
-	
+
 	return allTCs
 }
 

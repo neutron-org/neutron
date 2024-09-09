@@ -1,13 +1,15 @@
 package dex_state_test
 
 import (
-	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	"strconv"
 	"testing"
 	"time"
+
+	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 // ExistingTokenAHolders
@@ -207,7 +209,6 @@ func (s *DexStateTestSuite) assertLiquidity(id dextypes.PairID) {
 
 	s.assertDexBalance(id.Token0, TokenAInReserves)
 	s.assertDexBalance(id.Token1, TokenBInReserves)
-
 }
 
 // We assume, if there is a TokenB tranche in dex module, it's always BEL.
@@ -233,7 +234,6 @@ func (s *DexStateTestSuite) expectedInOutTokensAmount(tokenA sdk.Coin, denomOut 
 		if maxSwap.GTE(reserveA) {
 			// expected to get tokenB = tokenA*
 			amountOut = amountOut.Add(math_utils.NewPrecDecFromInt(reserveA).Mul(t.Price()).TruncateInt())
-			reserveA = math.ZeroInt()
 			break
 		}
 		reserveA = reserveA.Sub(maxSwap)
@@ -249,7 +249,7 @@ func (s *DexStateTestSuite) assertExpectedTrancheKey(initialKey, msgKey string, 
 		return
 	}
 
-	//otherwise they are equal
+	// otherwise they are equal
 	s.Equal(initialKey, msgKey)
 }
 
@@ -299,7 +299,6 @@ func TestPlaceLimitOrderMaker(t *testing.T) {
 			s.intsApproxEqual("", expectedSwapTakerDenom, resp.TakerCoinOut.Amount, 1)
 			// 3. TrancheKey assertion
 			s.assertExpectedTrancheKey(initialTrancheKey, resp.TrancheKey, tc)
-
 		})
 	}
 	s.SetT(t)
