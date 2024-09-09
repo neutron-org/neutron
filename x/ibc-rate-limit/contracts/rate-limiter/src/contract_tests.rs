@@ -11,8 +11,8 @@ use crate::msg::{InstantiateMsg, MigrateMsg, PathMsg, QueryMsg, QuotaMsg, SudoMs
 use crate::state::flow::tests::RESET_TIME_WEEKLY;
 use crate::state::rate_limit::RateLimit;
 use crate::state::storage::{GOVMODULE, IBCMODULE, RATE_LIMIT_TRACKERS, RBAC_PERMISSIONS};
-const IBC_ADDR: &str = "osmo1vz5e6tzdjlzy2f7pjvx0ecv96h8r4m2y92thdm";
-const GOV_ADDR: &str = "osmo1tzz5zf2u68t00un2j4lrrnkt2ztd46kfzfp58r";
+const IBC_ADDR: &str = "neutron1cdlz8scnf3mmxdnf4njmtp7vz4gps7fswphrqn";
+const GOV_ADDR: &str = "neutron1w02khza7ux68ccwmz2hln97mkjspjxes8y2k9v";
 
 #[test] // Tests we ccan instantiate the contract and that the owners are set correctly
 fn proper_instantiation() {
