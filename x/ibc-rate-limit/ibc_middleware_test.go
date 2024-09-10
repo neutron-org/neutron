@@ -95,25 +95,6 @@ func (suite *MiddlewareTestSuite) MessageFromAToC(denom string, amount sdkmath.I
 
 func CalculateChannelValue(ctx sdk.Context, denom string, bankKeeper bankkeeper.Keeper) sdkmath.Int {
 	return bankKeeper.GetSupply(ctx, denom).Amount
-
-	// ToDo: The commented-out code below is what we want to happen, but we're temporarily
-	//  using the whole supply for efficiency until there's a solution for
-	//  https://github.com/cosmos/ibc-go/issues/2664
-
-	// For non-native (ibc) tokens, return the supply if the token in osmosis
-	//if strings.HasPrefix(denom, "ibc/") {
-	//	return bankKeeper.GetSupplyWithOffset(ctx, denom).Amount
-	//}
-	//
-	// For native tokens, obtain the balance held in escrow for all potential channels
-	//channels := channelKeeper.GetAllChannels(ctx)
-	//balance := osmomath.NewInt(0)
-	//for _, channel := range channels {
-	//	escrowAddress := transfertypes.GetEscrowAddress("transfer", channel.ChannelId)
-	//	balance = balance.Add(bankKeeper.GetBalance(ctx, escrowAddress, denom).Amount)
-	//
-	//}
-	//return balance
 }
 
 func (suite *MiddlewareTestSuite) FullSendBToA(msg sdk.Msg) (*abci.ExecTxResult, string, error) {

@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -622,6 +621,7 @@ func SignAndDeliver(
 ) (res *cometbfttypes.ResponseFinalizeBlock, err error) {
 	tb.Helper()
 	tx, err := sims.GenSignedMockTx(
+		// #nosec G404 - math/rand is acceptable for non-cryptographic purposes
 		rand.New(rand.NewSource(time.Now().UnixNano())),
 		txCfg,
 		msgs,
@@ -658,7 +658,7 @@ func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAdd
 
 }
 
-func (suite *IBCConnectionTestSuite) commitBlock(res *abci.ResponseFinalizeBlock, chain *ibctesting.TestChain) {
+func (suite *IBCConnectionTestSuite) commitBlock(res *cometbfttypes.ResponseFinalizeBlock, chain *ibctesting.TestChain) {
 	_, err := chain.App.Commit()
 	require.NoError(chain.TB, err)
 
