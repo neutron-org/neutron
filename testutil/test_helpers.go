@@ -632,7 +632,6 @@ func SignAndDeliver(
 		accSeqs,
 		priv...,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -648,14 +647,12 @@ func SignAndDeliver(
 		NextValidatorsHash: nextValHash,
 		Txs:                [][]byte{txBytes},
 	})
-
 }
 
 func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAddress, msg []byte, funds sdk.Coins) ([]byte, error) {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	return contractKeeper.Execute(suite.ChainA.GetContext(), contract, sender, msg, funds)
-
 }
 
 func (suite *IBCConnectionTestSuite) commitBlock(res *cometbfttypes.ResponseFinalizeBlock, chain *ibctesting.TestChain) {

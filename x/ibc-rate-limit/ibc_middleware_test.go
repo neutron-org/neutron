@@ -264,7 +264,6 @@ func (suite *MiddlewareTestSuite) initializeEscrow() {
 	// Send from B to A
 	_, _, err = suite.FullSendBToA(suite.MessageFromBToA(sdk.DefaultBondDenom, transferAmount.Sub(sendAmount)))
 	suite.Require().NoError(err)
-
 }
 
 func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
@@ -594,7 +593,6 @@ func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 	// Sending again on the previously blocked channel should now succeed
 	_, _, err = suite.FullSendAToC(suite.MessageFromAToC(denom, sendAmount))
 	suite.Require().NoError(err, "Send on previously blocked channel should succeed after unsetting restriction")
-
 }
 
 func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAddress {

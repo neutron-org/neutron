@@ -1733,5 +1733,4 @@ func (app *App) WireICS20PreWasmKeeper(
 	// Hooks Middleware
 	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
 	app.TransferStack = &hooksTransferModule
-
 }
