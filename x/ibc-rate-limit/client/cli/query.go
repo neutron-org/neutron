@@ -7,15 +7,15 @@ import (
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd() *cobra.Command {
 	// Group ibc-rate-limit queries under a subcommand
-	//cmd := &cobra.Command{
+	// cmd := &cobra.Command{
 	//	Use:                        types.ModuleName,
 	//	Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
 	//	DisableFlagParsing:         true,
 	//	SuggestionsMinimumDistance: 2,
 	//	RunE:                       client.ValidateCmd,
-	//}
+	// }
 
-	//cmd.AddCommand(
+	// cmd.AddCommand(
 	//	GetParams(),
 	//)
 
@@ -24,7 +24,7 @@ func GetQueryCmd() *cobra.Command {
 
 // GetParams returns the params for the module
 func GetParams() *cobra.Command {
-	//cmd := &cobra.Command{
+	// cmd := &cobra.Command{
 	//	Use:   "params [flags]",
 	//	Short: "Get the params for the x/ibc-rate-limit module",
 	//	Args:  cobra.ExactArgs(0),
@@ -42,9 +42,9 @@ func GetParams() *cobra.Command {
 	//
 	//		return clientCtx.PrintProto(res)
 	//	},
-	//}
+	// }
 	//
-	//flags.AddQueryFlagsToCmd(cmd)
+	// flags.AddQueryFlagsToCmd(cmd)
 
 	return nil
 }

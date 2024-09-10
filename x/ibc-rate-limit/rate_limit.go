@@ -1,4 +1,4 @@
-package ibc_rate_limit
+package ibcratelimit
 
 import (
 	"encoding/json"
@@ -66,12 +66,12 @@ func UndoSendRateLimit(ctx sdk.Context, contractKeeper *wasmkeeper.PermissionedK
 	}
 
 	msg := UndoSendMsg{UndoSend: UndoPacketMsg{Packet: unwrapped}}
-	asJson, err := json.Marshal(msg)
+	asJSON, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	_, err = contractKeeper.Sudo(ctx, contractAddr, asJson)
+	_, err = contractKeeper.Sudo(ctx, contractAddr, asJSON)
 	if err != nil {
 		return errorsmod.Wrap(types.ErrContractError, err.Error())
 	}
