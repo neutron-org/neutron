@@ -1,4 +1,4 @@
-package ibc_rate_limit_test
+package ibcratelimit_test
 
 import (
 	"fmt"
@@ -23,15 +23,12 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {
 	testutil.IBCConnectionTestSuite
 }
-
-//var oldConsensusMinFee = txfeetypes.ConsensusMinFee
 
 // Setup
 func TestMiddlewareTestSuite(t *testing.T) {
@@ -98,25 +95,6 @@ func (suite *MiddlewareTestSuite) MessageFromAToC(denom string, amount sdkmath.I
 
 func CalculateChannelValue(ctx sdk.Context, denom string, bankKeeper bankkeeper.Keeper) sdkmath.Int {
 	return bankKeeper.GetSupply(ctx, denom).Amount
-
-	// ToDo: The commented-out code below is what we want to happen, but we're temporarily
-	//  using the whole supply for efficiency until there's a solution for
-	//  https://github.com/cosmos/ibc-go/issues/2664
-
-	// For non-native (ibc) tokens, return the supply if the token in osmosis
-	//if strings.HasPrefix(denom, "ibc/") {
-	//	return bankKeeper.GetSupplyWithOffset(ctx, denom).Amount
-	//}
-	//
-	// For native tokens, obtain the balance held in escrow for all potential channels
-	//channels := channelKeeper.GetAllChannels(ctx)
-	//balance := osmomath.NewInt(0)
-	//for _, channel := range channels {
-	//	escrowAddress := transfertypes.GetEscrowAddress("transfer", channel.ChannelId)
-	//	balance = balance.Add(bankKeeper.GetBalance(ctx, escrowAddress, denom).Amount)
-	//
-	//}
-	//return balance
 }
 
 func (suite *MiddlewareTestSuite) FullSendBToA(msg sdk.Msg) (*abci.ExecTxResult, string, error) {
@@ -243,10 +221,10 @@ func (suite *MiddlewareTestSuite) AssertSend(success bool, msg sdk.Msg) (*abci.E
 	return r, err
 }
 
-func (suite *MiddlewareTestSuite) BuildChannelQuota(name, channel, denom string, duration, send_percentage, recv_percentage uint32) string {
+func (suite *MiddlewareTestSuite) BuildChannelQuota(name, channel, denom string, duration, sendPercentage, recvPercentage uint32) string {
 	return fmt.Sprintf(`
           {"channel_id": "%s", "denom": "%s", "quotas": [{"name":"%s", "duration": %d, "send_recv":[%d, %d]}] }
-    `, channel, denom, name, duration, send_percentage, recv_percentage)
+    `, channel, denom, name, duration, sendPercentage, recvPercentage)
 }
 
 // Tests
@@ -267,7 +245,7 @@ func (suite *MiddlewareTestSuite) TestReceiveTransferNoContract() {
 	suite.Require().NoError(err)
 }
 
-func (suite *MiddlewareTestSuite) initializeEscrow() (totalEscrow, expectedSed sdkmath.Int) {
+func (suite *MiddlewareTestSuite) initializeEscrow() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	supply := app.BankKeeper.GetSupply(suite.ChainA.GetContext(), sdk.DefaultBondDenom)
 
@@ -286,8 +264,6 @@ func (suite *MiddlewareTestSuite) initializeEscrow() (totalEscrow, expectedSed s
 	// Send from B to A
 	_, _, err = suite.FullSendBToA(suite.MessageFromBToA(sdk.DefaultBondDenom, transferAmount.Sub(sendAmount)))
 	suite.Require().NoError(err)
-
-	return transferAmount, sendAmount
 }
 
 func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
@@ -314,7 +290,7 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	fmt.Printf("Testing send rate limiting for denom=%s, channelValue=%s, quota=%s, sendAmount=%s\n", denom, channelValue, quota, sendAmount)
 
 	// Setup contract
-	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", channel, denom, 604800, 5, 5)
 	addr := suite.InstantiateRLContract(quotas)
@@ -412,7 +388,7 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 
 	// Setup contract
 	suite.GetNeutronZoneApp(suite.ChainA)
-	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", channel, localDenom, 604800, 4, 4)
 	addr := suite.InstantiateRLContract(quotas)
@@ -452,7 +428,7 @@ func (suite *MiddlewareTestSuite) TestRecvTransferWithRateLimitingNonNative() {
 func (suite *MiddlewareTestSuite) TestSendTransferNoQuota() {
 	suite.ConfigureTransferChannel()
 	// Setup contract
-	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	addr := suite.InstantiateRLContract(``)
 	suite.RegisterRateLimitingContract(addr)
@@ -468,7 +444,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	suite.ConfigureTransferChannel()
 	suite.initializeEscrow()
 	// Setup contract
-	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", "channel-2", sdk.DefaultBondDenom, 604800, 1, 1)
 	addr := suite.InstantiateRLContract(quotas)
@@ -537,7 +513,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 func (suite *MiddlewareTestSuite) TestUnsetRateLimitingContract() {
 	// Setup contract
 	suite.ConfigureTransferChannel()
-	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	addr := suite.InstantiateRLContract("")
 	suite.RegisterRateLimitingContract(addr)
@@ -559,7 +535,7 @@ func (suite *MiddlewareTestSuite) TestNonICS20() {
 	suite.initializeEscrow()
 	// Setup contract
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
 	addr := suite.InstantiateRLContract(quotas)
@@ -578,7 +554,7 @@ func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 	suite.ConfigureTransferChannel()
 	suite.ConfigureTransferChannelAC()
 	// Setup contract
-	testOwner := sdktypes.MustAccAddressFromBech32(testutil.TestOwnerAddress)
+	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
 	quotas := suite.BuildChannelQuota("weekly", "channel-0", sdk.DefaultBondDenom, 604800, 1, 1)
 	contractAddr := suite.InstantiateRLContract(quotas)
@@ -617,7 +593,6 @@ func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 	// Sending again on the previously blocked channel should now succeed
 	_, _, err = suite.FullSendAToC(suite.MessageFromAToC(denom, sendAmount))
 	suite.Require().NoError(err, "Send on previously blocked channel should succeed after unsetting restriction")
-
 }
 
 func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAddress {
@@ -651,7 +626,7 @@ func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
 
 // AssertEventEmitted asserts that ctx's event manager has emitted the given number of events
 // of the given type.
-func (s *MiddlewareTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
+func (suite *MiddlewareTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
 	allEvents := ctx.EventManager().Events()
 	// filter out other events
 	actualEvents := make([]sdk.Event, 0)
@@ -660,10 +635,10 @@ func (s *MiddlewareTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpec
 			actualEvents = append(actualEvents, event)
 		}
 	}
-	s.Require().Equal(numEventsExpected, len(actualEvents))
+	suite.Require().Equal(numEventsExpected, len(actualEvents))
 }
 
-func (s *MiddlewareTestSuite) FindEvent(events []abci.Event, name string) abci.Event {
+func (suite *MiddlewareTestSuite) FindEvent(events []abci.Event, name string) abci.Event {
 	index := slices.IndexFunc(events, func(e abci.Event) bool { return e.Type == name })
 	if index == -1 {
 		return abci.Event{}
@@ -671,7 +646,7 @@ func (s *MiddlewareTestSuite) FindEvent(events []abci.Event, name string) abci.E
 	return events[index]
 }
 
-func (s *MiddlewareTestSuite) ExtractAttributes(event abci.Event) map[string]string {
+func (suite *MiddlewareTestSuite) ExtractAttributes(event abci.Event) map[string]string {
 	attrs := make(map[string]string)
 	if event.Attributes == nil {
 		return attrs

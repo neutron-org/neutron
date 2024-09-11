@@ -1,4 +1,4 @@
-package ibc_rate_limit
+package ibcratelimit
 
 import (
 	"encoding/json"
@@ -35,7 +35,6 @@ func CheckAndUpdateRateLimits(ctx sdk.Context, contractKeeper *wasmkeeper.Permis
 	}
 
 	_, err = contractKeeper.Sudo(ctx, contractAddr, sendPacketMsg)
-
 	if err != nil {
 		return errorsmod.Wrap(types.ErrRateLimitExceeded, err.Error())
 	}
@@ -66,12 +65,12 @@ func UndoSendRateLimit(ctx sdk.Context, contractKeeper *wasmkeeper.PermissionedK
 	}
 
 	msg := UndoSendMsg{UndoSend: UndoPacketMsg{Packet: unwrapped}}
-	asJson, err := json.Marshal(msg)
+	asJSON, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	_, err = contractKeeper.Sudo(ctx, contractAddr, asJson)
+	_, err = contractKeeper.Sudo(ctx, contractAddr, asJSON)
 	if err != nil {
 		return errorsmod.Wrap(types.ErrContractError, err.Error())
 	}
@@ -130,18 +129,18 @@ func BuildWasmExecMsg(msgType string, packet exported.PacketI) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	var asJson []byte
+	var asJSON []byte
 	switch {
 	case msgType == msgSend:
 		msg := SendPacketMsg{SendPacket: PacketMsg{
 			Packet: unwrapped,
 		}}
-		asJson, err = json.Marshal(msg)
+		asJSON, err = json.Marshal(msg)
 	case msgType == msgRecv:
 		msg := RecvPacketMsg{RecvPacket: PacketMsg{
 			Packet: unwrapped,
 		}}
-		asJson, err = json.Marshal(msg)
+		asJSON, err = json.Marshal(msg)
 	default:
 		return []byte{}, types.ErrBadMessage
 	}
@@ -150,5 +149,5 @@ func BuildWasmExecMsg(msgType string, packet exported.PacketI) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	return asJson, nil
+	return asJSON, nil
 }

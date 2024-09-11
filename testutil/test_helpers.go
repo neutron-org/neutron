@@ -10,15 +10,11 @@ import (
 	"testing"
 	"time"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	abci "github.com/cometbft/cometbft/abci/types"
-	abcit "github.com/cometbft/cometbft/abci/types"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	"github.com/stretchr/testify/require"
@@ -577,7 +573,7 @@ func SetupTransferPath(path *ibctesting.Path) error {
 }
 
 // SendMsgsNoCheck is an alternative to ibctesting.TestChain.SendMsgs so that it doesn't check for errors. That should be handled by the caller
-func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain, msgs ...sdk.Msg) (*abcit.ExecTxResult, error) {
+func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain, msgs ...sdk.Msg) (*cometbfttypes.ExecTxResult, error) {
 	// ensure the suite has the latest time
 	suite.Coordinator.UpdateTimeForChain(chain)
 
@@ -622,20 +618,20 @@ func SignAndDeliver(
 	blockTime time.Time,
 	nextValHash []byte,
 	priv ...cryptotypes.PrivKey,
-) (res *abcit.ResponseFinalizeBlock, err error) {
+) (res *cometbfttypes.ResponseFinalizeBlock, err error) {
 	tb.Helper()
-	tx, err := simtestutil.GenSignedMockTx(
+	tx, err := sims.GenSignedMockTx(
+		// #nosec G404 - math/rand is acceptable for non-cryptographic purposes
 		rand.New(rand.NewSource(time.Now().UnixNano())),
 		txCfg,
 		msgs,
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)},
-		simtestutil.DefaultGenTxGas,
+		sims.DefaultGenTxGas,
 		chainID,
 		accNums,
 		accSeqs,
 		priv...,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -645,23 +641,21 @@ func SignAndDeliver(
 		return nil, err
 	}
 
-	return app.FinalizeBlock(&abcit.RequestFinalizeBlock{
+	return app.FinalizeBlock(&cometbfttypes.RequestFinalizeBlock{
 		Height:             app.LastBlockHeight() + 1,
 		Time:               blockTime,
 		NextValidatorsHash: nextValHash,
 		Txs:                [][]byte{txBytes},
 	})
-
 }
 
 func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAddress, msg []byte, funds sdk.Coins) ([]byte, error) {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	return contractKeeper.Execute(suite.ChainA.GetContext(), contract, sender, msg, funds)
-
 }
 
-func (suite *IBCConnectionTestSuite) commitBlock(res *abci.ResponseFinalizeBlock, chain *ibctesting.TestChain) {
+func (suite *IBCConnectionTestSuite) commitBlock(res *cometbfttypes.ResponseFinalizeBlock, chain *ibctesting.TestChain) {
 	_, err := chain.App.Commit()
 	require.NoError(chain.TB, err)
 
