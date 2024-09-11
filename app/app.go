@@ -133,8 +133,8 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
 	ibcratelimit "github.com/neutron-org/neutron/v4/x/ibc-rate-limit"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/keeper"
 	ibcratelimittypes "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
-
 	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -1600,7 +1600,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(tokenfactorytypes.StoreKey).WithKeyTable(tokenfactorytypes.ParamKeyTable())
 	paramsKeeper.Subspace(interchainqueriesmoduletypes.StoreKey).WithKeyTable(interchainqueriesmoduletypes.ParamKeyTable())
 	paramsKeeper.Subspace(interchaintxstypes.StoreKey).WithKeyTable(interchaintxstypes.ParamKeyTable())
-	paramsKeeper.Subspace(ibcratelimittypes.ModuleName)
+	// paramsKeeper.Subspace(ibcratelimittypes.ModuleName)
 
 	return paramsKeeper
 }
@@ -1683,6 +1683,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		&wasmHooks,
 	)
 
+	ibcratelimitKeeper := ibcratelimitkeeper.NewKeeper(appCodec, app.keys[ibctransfertypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
 	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
 		app.HooksICS4Wrapper,
@@ -1691,6 +1692,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		nil,
 		&app.BankKeeper,
 		app.GetSubspace(ibcratelimittypes.ModuleName),
+		&ibcratelimitKeeper,
 	)
 	app.RateLimitingICS4Wrapper = &rateLimitingICS4Wrapper
 
