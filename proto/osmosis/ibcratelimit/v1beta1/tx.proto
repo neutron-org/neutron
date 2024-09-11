@@ -1,12 +1,15 @@
 syntax = "proto3";
 package osmosis.ibcratelimit.v1beta1;
 
-import "cosmos/base/query/v1beta1/pagination.proto";
+import "amino/amino.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
 import "osmosis/ibcratelimit/v1beta1/params.proto";
 
-option go_package = "github.com/osmosis-labs/osmosis/v26/x/ibc-rate-limit/types";
+option go_package = "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types";
 
 // Msg defines the tokefactory module's gRPC message service.
 service Msg {
