@@ -615,11 +615,10 @@ func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAd
 
 func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
 	addrStr, err := sdk.Bech32ifyAddressBytes("neutron", addr)
-	require.NoError(suite.ChainA.TB, err)
-	params, err := types.NewParams(addrStr)
+	msg := types.MsgUpdateParams{Params: types.Params{ContractAddress: addrStr}}
 	require.NoError(suite.ChainA.TB, err)
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
+	paramSpace, ok := app.HooksICS4Wrapper.GetSubspace(types.ModuleName)
 	require.True(suite.ChainA.TB, ok)
 	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
 }
