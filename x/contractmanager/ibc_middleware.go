@@ -3,7 +3,6 @@ package contractmanager
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store/types"
@@ -75,10 +74,10 @@ func outOfGasRecovery(
 ) {
 	if r := recover(); r != nil {
 		// Convert the recovered value to a string to check for the "out of gas" substring
-		rStr := fmt.Sprintf("%v", r)
-		if !strings.Contains(rStr, "out of gas") || !gasMeter.IsOutOfGas() {
-			panic(r)
-		}
+		//rStr := fmt.Sprintf("%v", r)
+		//if !strings.Contains(rStr, "out of gas") || !gasMeter.IsOutOfGas() {
+		//	panic(r)
+		//}
 		*err = contractmanagertypes.ErrSudoOutOfGas
 	}
 }
