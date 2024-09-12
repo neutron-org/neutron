@@ -103,15 +103,7 @@ impl Packet {
     }
 
     pub fn channel_value(&self, deps: Deps, direction: &FlowType) -> Result<Uint256, StdError> {
-        let response: QuerySupplyOfResponse = deps.querier.query(&cosmwasm_std::QueryRequest::Grpc({
-            GrpcQuery {
-                path: "/cosmos.bank.v1beta1.Query/SupplyOf".to_string(),
-                data: Binary::from_base64(
-                    &to_base64(self.local_denom(direction))
-                )?
-            }
-        }))?;
-        Uint256::from_str(&response.amount.unwrap_or_default().amount)
+        Ok(Uint256::from_uint128(deps.querier.query_supply(self.local_denom(direction))?.amount))
     }
 
     pub fn get_funds(&self) -> Uint256 {
