@@ -178,7 +178,7 @@ test: test-unit
 test-all: check test-race test-cover
 
 test-unit:
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./...
+	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' `go list ./... | grep -v dex`
 
 test-race:
 	@VERSION=$(VERSION) go test -mod=readonly -race -tags='ledger test_ledger_mock' ./...
