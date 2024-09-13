@@ -147,7 +147,7 @@ fn try_process_message(
 mod tests {
     use cosmwasm_std::{
         from_binary,
-        testing::{mock_dependencies, mock_env},
+        testing::{mock_dependencies, mock_env, MockApi},
         Addr, Timestamp, TransactionInfo,
     };
 
@@ -160,16 +160,16 @@ mod tests {
         let mut deps = mock_dependencies();
         let mut deps = deps.as_mut();
         let foobar_info = MessageInfo {
-            sender: Addr::unchecked("foobar"),
+            sender: MockApi::default().addr_make("foobar"),
             funds: vec![],
         };
         let foobarbaz_info = MessageInfo {
-            sender: Addr::unchecked("foobarbaz"),
+            sender: MockApi::default().addr_make("foobarbaz"),
             funds: vec![],
         };
 
         TIMELOCK_DELAY
-            .save(deps.storage, "foobar".to_string(), &1)
+            .save(deps.storage, MockApi::default().addr_make("foobar").to_string(), &1)
             .unwrap();
 
         assert!(must_queue_message(&mut deps, &foobar_info));
@@ -183,11 +183,11 @@ mod tests {
         let mut deps = deps.as_mut();
 
         let foobar_info = MessageInfo {
-            sender: Addr::unchecked("foobar"),
+            sender: MockApi::default().addr_make("foobar"),
             funds: vec![],
         };
         let foobarbaz_info = MessageInfo {
-            sender: Addr::unchecked("foobarbaz"),
+            sender: MockApi::default().addr_make("foobarbaz"),
             funds: vec![],
         };
         let foobar_test_msg = ExecuteMsg::AddPath {
@@ -203,8 +203,8 @@ mod tests {
             signer: "gov".to_string(),
             hours: 5,
         };
-        set_timelock_delay(&mut deps, "foobar".to_string(), 10).unwrap();
-        set_timelock_delay(&mut deps, "foobarbaz".to_string(), 1).unwrap();
+        set_timelock_delay(&mut deps, MockApi::default().addr_make("foobar").to_string(), 10).unwrap();
+        set_timelock_delay(&mut deps, MockApi::default().addr_make("foobarbaz").to_string(), 1).unwrap();
         let foobar_message_id = {
             let mut env = env.clone();
             env.transaction = Some(TransactionInfo { index: 1 });
@@ -320,7 +320,7 @@ mod tests {
         // signer should have a timelock delay of 1 hour
         assert_eq!(
             TIMELOCK_DELAY
-                .load(deps.storage, "signer".to_string())
+                .load(deps.storage, MockApi::default().addr_make("signer").to_string())
                 .unwrap(),
             1
         );
@@ -336,7 +336,7 @@ mod tests {
         //signer should have a timelock delay of 3 hours
         assert_eq!(
             TIMELOCK_DELAY
-                .load(deps.storage, "signer".to_string())
+                .load(deps.storage, MockApi::default().addr_make("signer").to_string())
                 .unwrap(),
             3
         );
@@ -352,7 +352,7 @@ mod tests {
         // signer should have a delay of 10 hours
         assert_eq!(
             TIMELOCK_DELAY
-                .load(deps.storage, "signer".to_string())
+                .load(deps.storage, MockApi::default().addr_make("signer").to_string())
                 .unwrap(),
             10
         );
@@ -372,7 +372,7 @@ mod tests {
         // signer should have a delay of 1 hours
         assert_eq!(
             TIMELOCK_DELAY
-                .load(deps.storage, "signer".to_string())
+                .load(deps.storage, MockApi::default().addr_make("signer").to_string())
                 .unwrap(),
             1
         );
@@ -399,7 +399,7 @@ mod tests {
                     deps.storage,
                     &QueuedMessage {
                         message: ExecuteMsg::SetTimelockDelay {
-                            signer: "signer".to_string(),
+                            signer: MockApi::default().addr_make("signer").to_string(),
                             hours: i as u64 + 1,
                         },
                         submitted_at: ts(i as u64),

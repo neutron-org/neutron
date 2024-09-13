@@ -26,7 +26,7 @@ pub const IBCMODULE: Item<Addr> = Item::new("ibc_module");
 /// allowing to flow through that channel in a specific duration (quota)
 ///
 /// For simplicity, the channel in the map keys refers to the "host" channel on
-/// the osmosis side. This means that on PacketSend it will refer to the source
+/// the neutron side. This means that on PacketSend it will refer to the source
 /// channel while on PacketRecv it refers to the destination channel.
 ///
 /// It is the responsibility of the go module to pass the appropriate channel

@@ -6,7 +6,7 @@ use crate::{
     state::{rate_limit::RateLimit, rbac::Roles},
     test_msg_send, ContractError,
 };
-use cosmwasm_std::{Addr, Coin, Empty, Timestamp, Uint128, Uint256};
+use cosmwasm_std::{testing::MockApi, Addr, Coin, Empty, Timestamp, Uint128, Uint256};
 use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
 
 use crate::{
@@ -25,8 +25,8 @@ pub fn contract_template() -> Box<dyn Contract<Empty>> {
 }
 
 const USER: &str = "USER";
-const IBC_ADDR: &str = "osmo1vz5e6tzdjlzy2f7pjvx0ecv96h8r4m2y92thdm";
-const GOV_ADDR: &str = "osmo1tzz5zf2u68t00un2j4lrrnkt2ztd46kfzfp58r";
+const IBC_ADDR: &str = "neutron1cdlz8scnf3mmxdnf4njmtp7vz4gps7fswphrqn";
+const GOV_ADDR: &str = "neutron1w02khza7ux68ccwmz2hln97mkjspjxes8y2k9v";
 const NATIVE_DENOM: &str = "nosmo";
 
 fn mock_app() -> App {
@@ -51,7 +51,7 @@ fn proper_instantiate(paths: Vec<PathMsg>) -> (App, RateLimitingContract) {
     let cw_code_id = app.store_code(contract_template());
 
     let msg = InstantiateMsg {
-        gov_module: Addr::unchecked(GOV_ADDR),
+        gov_module: MockApi::default().addr_make(GOV_ADDR),
         ibc_module: Addr::unchecked(IBC_ADDR),
         paths,
     };
@@ -59,7 +59,7 @@ fn proper_instantiate(paths: Vec<PathMsg>) -> (App, RateLimitingContract) {
     let cw_rate_limit_contract_addr = app
         .instantiate_contract(
             cw_code_id,
-            Addr::unchecked(GOV_ADDR),
+            MockApi::default().addr_make(GOV_ADDR),
             &msg,
             &[],
             "test",
@@ -415,7 +415,7 @@ fn add_paths_later() {
     };
 
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg).unwrap();
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg).unwrap();
 
     // Executing the same message again should fail, as it is now rate limited
     let cosmos_msg = cw_rate_limit_contract.sudo(msg);
@@ -445,10 +445,10 @@ fn test_execute_add_path() {
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // Sending 1% to use the daily allowance
@@ -499,10 +499,10 @@ fn test_execute_remove_path() {
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // rate limits should be removed
@@ -550,10 +550,10 @@ fn test_execute_reset_path_quota() {
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     let response = app
@@ -606,16 +606,16 @@ fn test_execute_grant_and_revoke_role() {
     }]);
 
     let management_msg = ExecuteMsg::GrantRole {
-        signer: "foobar".to_string(),
+        signer: MockApi::default().addr_make("foobar").to_string(),
         roles: vec![Roles::GrantRole],
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     let response = app
@@ -623,7 +623,7 @@ fn test_execute_grant_and_revoke_role() {
         .query_wasm_smart::<Vec<Roles>>(
             cw_rate_limit_contract.addr(),
             &QueryMsg::GetRoles {
-                owner: "foobar".to_string(),
+                owner: MockApi::default().addr_make("foobar").to_string(),
             },
         )
         .unwrap();
@@ -632,11 +632,11 @@ fn test_execute_grant_and_revoke_role() {
 
     // test foobar can grant a role
     let management_msg = ExecuteMsg::GrantRole {
-        signer: "foobarbaz".to_string(),
+        signer: MockApi::default().addr_make("foobarbaz").to_string(),
         roles: vec![Roles::GrantRole],
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .unwrap();
 
     let response = app
@@ -644,7 +644,7 @@ fn test_execute_grant_and_revoke_role() {
         .query_wasm_smart::<Vec<Roles>>(
             cw_rate_limit_contract.addr(),
             &QueryMsg::GetRoles {
-                owner: "foobarbaz".to_string(),
+                owner: MockApi::default().addr_make("foobarbaz").to_string(),
             },
         )
         .unwrap();
@@ -654,11 +654,11 @@ fn test_execute_grant_and_revoke_role() {
     // test role revocation
 
     let management_msg = ExecuteMsg::RevokeRole {
-        signer: "foobar".to_string(),
+        signer: MockApi::default().addr_make("foobar").to_string(),
         roles: vec![Roles::GrantRole],
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // foobar should no longer have roles
@@ -667,7 +667,7 @@ fn test_execute_grant_and_revoke_role() {
         .query_wasm_smart::<Vec<Roles>>(
             cw_rate_limit_contract.addr(),
             &QueryMsg::GetRoles {
-                owner: "foobar".to_string()
+                owner: MockApi::default().addr_make("foobar").to_string()
             }
         )
         .is_err());
@@ -709,10 +709,10 @@ fn test_execute_edit_path_quota() {
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     let response = app
@@ -750,40 +750,40 @@ fn test_execute_remove_message() {
     }]);
 
     let management_msg = ExecuteMsg::GrantRole {
-        signer: "foobar".to_string(),
+        signer: MockApi::default().addr_make("foobar").to_string(),
         roles: vec![Roles::GrantRole],
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // set a timelock delay for foobar
     let management_msg = ExecuteMsg::SetTimelockDelay {
-        signer: "foobar".to_string(),
+        signer: MockApi::default().addr_make("foobar").to_string(),
         hours: 1,
     };
 
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke as insufficient permissions
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // message submitter by foobar should not be queued
     let management_msg = ExecuteMsg::GrantRole {
-        signer: "foobarbaz".to_string(),
+        signer: MockApi::default().addr_make("foobarbaz").to_string(),
         roles: vec![Roles::GrantRole],
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .unwrap();
     let response = app
         .wrap()
@@ -796,7 +796,7 @@ fn test_execute_remove_message() {
         message_id: response[0].clone(),
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // no messges should be present
@@ -828,42 +828,42 @@ fn test_execute_process_messages() {
 
     // allocate GrantRole and RevokeRole to `foobar`
     let management_msg = ExecuteMsg::GrantRole {
-        signer: "foobar".to_string(),
+        signer: MockApi::default().addr_make("foobar").to_string(),
         roles: vec![Roles::GrantRole, Roles::RevokeRole],
     };
 
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // set a timelock delay for foobar
     let management_msg = ExecuteMsg::SetTimelockDelay {
-        signer: "foobar".to_string(),
+        signer: MockApi::default().addr_make("foobar").to_string(),
         hours: 1,
     };
 
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     // non gov cant invoke as insufficient permissions
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
     // gov addr can invoke
-    app.execute(Addr::unchecked(GOV_ADDR), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make(GOV_ADDR), cosmos_msg.clone())
         .unwrap();
 
     // message submitted by foobar should be queued
     // allocate GrantRole to foobarbaz
     let management_msg = ExecuteMsg::GrantRole {
-        signer: "foobarbaz".to_string(),
+        signer: MockApi::default().addr_make("foobarbaz").to_string(),
         roles: vec![Roles::GrantRole],
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .unwrap();
     let response = app
         .wrap()
@@ -925,7 +925,7 @@ fn test_execute_process_messages() {
         .query_wasm_smart::<Vec<Roles>>(
             cw_rate_limit_contract.addr(),
             &QueryMsg::GetRoles {
-                owner: "foobarbaz".to_string(),
+                owner: MockApi::default().addr_make("foobarbaz").to_string(),
             },
         )
         .unwrap();
@@ -938,11 +938,11 @@ fn test_execute_process_messages() {
     });
 
     let management_msg = ExecuteMsg::RevokeRole {
-        signer: "foobarbaz".to_string(),
+        signer: MockApi::default().addr_make("foobarbaz").to_string(),
         roles: vec![Roles::GrantRole],
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .unwrap();
 
     let message_ids = app
@@ -960,7 +960,7 @@ fn test_execute_process_messages() {
         message_ids: None,
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .unwrap();
 
     // insufficient time has passed so queue length is still 1
@@ -969,7 +969,7 @@ fn test_execute_process_messages() {
         .query_wasm_smart::<Vec<Roles>>(
             cw_rate_limit_contract.addr(),
             &QueryMsg::GetRoles {
-                owner: "foobarbaz".to_string(),
+                owner: MockApi::default().addr_make("foobarbaz").to_string(),
             },
         )
         .unwrap();
@@ -986,7 +986,7 @@ fn test_execute_process_messages() {
         message_ids: Some(message_ids.clone()),
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
-    app.execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+    app.execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .unwrap();
 
     // sufficient time has passed, empty queue
@@ -1002,7 +1002,7 @@ fn test_execute_process_messages() {
         .query_wasm_smart::<Vec<Roles>>(
             cw_rate_limit_contract.addr(),
             &QueryMsg::GetRoles {
-                owner: "foobarbaz".to_string()
+                owner: MockApi::default().addr_make("foobarbaz").to_string()
             }
         )
         .is_err());
@@ -1014,6 +1014,6 @@ fn test_execute_process_messages() {
     };
     let cosmos_msg = cw_rate_limit_contract.call(management_msg).unwrap();
     assert!(app
-        .execute(Addr::unchecked("foobar"), cosmos_msg.clone())
+        .execute(MockApi::default().addr_make("foobar"), cosmos_msg.clone())
         .is_err());
 }
