@@ -380,8 +380,6 @@ type App struct {
 
 	PFMModule packetforward.AppModule
 
-	//IBCRLModule ibcratelimitmodule.AppModule
-
 	TransferStack           *ibchooks.IBCMiddleware
 	Ics20WasmHooks          *ibchooks.WasmHooks
 	RateLimitingICS4Wrapper *ibcratelimit.ICS4Wrapper
@@ -634,7 +632,6 @@ func New(
 	)
 
 	app.WireICS20PreWasmKeeper(appCodec)
-	//app:= feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
@@ -1688,7 +1685,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		&wasmHooks,
 	)
 
-	ibcratelimitKeeper := ibcratelimitkeeper.NewKeeper(appCodec, app.keys[ibctransfertypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+	ibcratelimitKeeper := ibcratelimitkeeper.NewKeeper(appCodec, app.keys[ibcratelimittypes.ModuleName], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
 	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
 	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
 		app.HooksICS4Wrapper,

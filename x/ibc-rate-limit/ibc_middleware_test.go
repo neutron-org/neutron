@@ -521,12 +521,9 @@ func (suite *MiddlewareTestSuite) TestUnsetRateLimitingContract() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 
 	// Unset the contract param
-	params, err := types.NewParams("")
+	err := app.RateLimitingICS4Wrapper.IbcratelimitKeeper.SetParams(suite.ChainA.GetContext(), types.Params{ContractAddress: ""})
 	suite.Require().NoError(err)
-	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
-	suite.Require().True(ok)
 	// N.B.: this panics if validation fails.
-	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
 }
 
 // Test rate limits are reverted if a "send" fails
@@ -617,8 +614,6 @@ func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
 	addrStr, _ := sdk.Bech32ifyAddressBytes("neutron", addr)
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	_ = app.RateLimitingICS4Wrapper.IbcratelimitKeeper.SetParams(suite.ChainA.GetContext(), types.Params{ContractAddress: addrStr})
-	a := app.RateLimitingICS4Wrapper.GetContractAddress(suite.ChainA.GetContext())
-	fmt.Println(a)
 	require.True(suite.ChainA.TB, true)
 }
 
