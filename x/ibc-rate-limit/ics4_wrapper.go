@@ -9,7 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
@@ -17,6 +16,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 
+	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/keeper"
 	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 )
 
@@ -26,11 +26,11 @@ var (
 )
 
 type ICS4Wrapper struct {
-	channel        porttypes.ICS4Wrapper
-	accountKeeper  *authkeeper.AccountKeeper
-	bankKeeper     *bankkeeper.BaseKeeper
-	ContractKeeper *wasmkeeper.PermissionedKeeper
-	paramSpace     paramtypes.Subspace
+	channel            porttypes.ICS4Wrapper
+	accountKeeper      *authkeeper.AccountKeeper
+	bankKeeper         *bankkeeper.BaseKeeper
+	ContractKeeper     *wasmkeeper.PermissionedKeeper
+	IbcratelimitKeeper *keeper.Keeper
 }
 
 func (i *ICS4Wrapper) GetAppVersion(ctx sdk.Context, portID, channelID string) (string, bool) {
@@ -40,17 +40,14 @@ func (i *ICS4Wrapper) GetAppVersion(ctx sdk.Context, portID, channelID string) (
 func NewICS4Middleware(
 	channel porttypes.ICS4Wrapper,
 	accountKeeper *authkeeper.AccountKeeper, contractKeeper *wasmkeeper.PermissionedKeeper,
-	bankKeeper *bankkeeper.BaseKeeper, paramSpace paramtypes.Subspace,
+	bankKeeper *bankkeeper.BaseKeeper, ibcratelimitkeeper *keeper.Keeper,
 ) ICS4Wrapper {
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
 	return ICS4Wrapper{
-		channel:        channel,
-		accountKeeper:  accountKeeper,
-		ContractKeeper: contractKeeper,
-		bankKeeper:     bankKeeper,
-		paramSpace:     paramSpace,
+		channel:            channel,
+		accountKeeper:      accountKeeper,
+		ContractKeeper:     contractKeeper,
+		bankKeeper:         bankKeeper,
+		IbcratelimitKeeper: ibcratelimitkeeper,
 	}
 }
 
@@ -102,19 +99,10 @@ func (i *ICS4Wrapper) GetContractAddress(ctx sdk.Context) (contract string) {
 }
 
 func (i *ICS4Wrapper) GetParams(ctx sdk.Context) (params types.Params) {
-	// This was previously done via i.paramSpace.GetParamSet(ctx, &params). That will
-	// panic if the params don't exist. This is a workaround to avoid that panic.
-	// Params should be refactored to just use a raw kvstore.
-	empty := types.Params{}
-	for _, pair := range params.ParamSetPairs() {
-		i.paramSpace.GetIfExists(ctx, pair.Key, pair.Value)
-	}
-	if params == empty {
-		return types.DefaultParams()
-	}
+	params = i.IbcratelimitKeeper.GetParams(ctx)
 	return params
 }
 
-func (i *ICS4Wrapper) SetParams(ctx sdk.Context, params types.Params) {
-	i.paramSpace.SetParamSet(ctx, &params)
+func (i *ICS4Wrapper) SetParams(ctx sdk.Context, params types.Params) error {
+	return i.IbcratelimitKeeper.SetParams(ctx, params)
 }

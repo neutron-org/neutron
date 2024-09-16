@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/keeper"
 	"github.com/spf13/cobra"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -35,11 +36,18 @@ var (
 	_ module.HasServices         = AppModule{}
 )
 
-type AppModuleBasic struct{}
+type AppModuleBasic struct {
+	cdc codec.BinaryCodec
+}
+
+func NewAppModuleBasic(cdc codec.BinaryCodec) AppModuleBasic {
+	return AppModuleBasic{cdc: cdc}
+}
 
 func (AppModuleBasic) Name() string { return types.ModuleName }
 
-func (AppModuleBasic) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	types.RegisterCodec(cdc)
 }
 
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
@@ -70,7 +78,8 @@ func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
 }
 
 // RegisterInterfaces registers interfaces and implementations of the ibc-rate-limit module.
-func (AppModuleBasic) RegisterInterfaces(_ codectypes.InterfaceRegistry) {
+func (AppModuleBasic) RegisterInterfaces(reg codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(reg)
 }
 
 // ----------------------------------------------------------------------------
@@ -82,11 +91,17 @@ type AppModule struct {
 	AppModuleBasic
 
 	ics4wrapper ibcratelimit.ICS4Wrapper
+	keeper      keeper.Keeper
 }
 
-func NewAppModule(ics4wrapper ibcratelimit.ICS4Wrapper) AppModule {
+func NewAppModule(
+	cdc codec.Codec,
+	keeper keeper.Keeper,
+	ics4wrapper ibcratelimit.ICS4Wrapper,
+) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{},
+		AppModuleBasic: NewAppModuleBasic(cdc),
+		keeper:         keeper,
 		ics4wrapper:    ics4wrapper,
 	}
 }
@@ -109,6 +124,7 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	queryproto.RegisterQueryServer(cfg.QueryServer(), grpc.Querier{Q: ibcratelimitclient.Querier{K: am.ics4wrapper}})
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 }
 
 // RegisterInvariants registers the txfees module's invariants.

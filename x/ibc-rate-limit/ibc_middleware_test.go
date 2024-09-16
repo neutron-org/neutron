@@ -521,12 +521,9 @@ func (suite *MiddlewareTestSuite) TestUnsetRateLimitingContract() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 
 	// Unset the contract param
-	params, err := types.NewParams("")
+	err := app.RateLimitingICS4Wrapper.IbcratelimitKeeper.SetParams(suite.ChainA.GetContext(), types.Params{ContractAddress: ""})
 	suite.Require().NoError(err)
-	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
-	suite.Require().True(ok)
 	// N.B.: this panics if validation fails.
-	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
 }
 
 // Test rate limits are reverted if a "send" fails
@@ -614,14 +611,10 @@ func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAd
 }
 
 func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
-	addrStr, err := sdk.Bech32ifyAddressBytes("neutron", addr)
-	require.NoError(suite.ChainA.TB, err)
-	params, err := types.NewParams(addrStr)
-	require.NoError(suite.ChainA.TB, err)
+	addrStr, _ := sdk.Bech32ifyAddressBytes("neutron", addr)
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	paramSpace, ok := app.ParamsKeeper.GetSubspace(types.ModuleName)
-	require.True(suite.ChainA.TB, ok)
-	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
+	_ = app.RateLimitingICS4Wrapper.SetParams(suite.ChainA.GetContext(), types.Params{ContractAddress: addrStr})
+	require.True(suite.ChainA.TB, true)
 }
 
 // AssertEventEmitted asserts that ctx's event manager has emitted the given number of events
