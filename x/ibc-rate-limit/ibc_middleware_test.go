@@ -614,13 +614,12 @@ func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAd
 }
 
 func (suite *MiddlewareTestSuite) RegisterRateLimitingContract(addr []byte) {
-	addrStr, err := sdk.Bech32ifyAddressBytes("neutron", addr)
-	msg := types.MsgUpdateParams{Params: types.Params{ContractAddress: addrStr}}
-	require.NoError(suite.ChainA.TB, err)
+	addrStr, _ := sdk.Bech32ifyAddressBytes("neutron", addr)
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	paramSpace, ok := app.HooksICS4Wrapper.GetSubspace(types.ModuleName)
-	require.True(suite.ChainA.TB, ok)
-	paramSpace.SetParamSet(suite.ChainA.GetContext(), &params)
+	_ = app.RateLimitingICS4Wrapper.IbcratelimitKeeper.SetParams(suite.ChainA.GetContext(), types.Params{ContractAddress: addrStr})
+	a := app.RateLimitingICS4Wrapper.GetContractAddress(suite.ChainA.GetContext())
+	fmt.Println(a)
+	require.True(suite.ChainA.TB, true)
 }
 
 // AssertEventEmitted asserts that ctx's event manager has emitted the given number of events

@@ -276,6 +276,7 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
+		ibcratelimitmodule.AppModuleBasic{},
 		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 		feemarket.AppModuleBasic{},
@@ -378,6 +379,8 @@ type App struct {
 	GlobalFeeKeeper     globalfeekeeper.Keeper
 
 	PFMModule packetforward.AppModule
+
+	//IBCRLModule ibcratelimitmodule.AppModule
 
 	TransferStack           *ibchooks.IBCMiddleware
 	Ics20WasmHooks          *ibchooks.WasmHooks
@@ -631,6 +634,7 @@ func New(
 	)
 
 	app.WireICS20PreWasmKeeper(appCodec)
+	//app:= feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
@@ -875,7 +879,7 @@ func New(
 	)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
-	ibcRateLimitmodule := ibcratelimitmodule.NewAppModule(*app.RateLimitingICS4Wrapper)
+	ibcRateLimitmodule := ibcratelimitmodule.NewAppModule(appCodec, *app.RateLimitingICS4Wrapper.IbcratelimitKeeper, *app.RateLimitingICS4Wrapper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
@@ -1093,6 +1097,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
+		ibcRateLimitmodule,
 		consumerModule,
 		icaModule,
 		app.PFMModule,
@@ -1691,7 +1696,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		// wasm keeper we set later.
 		nil,
 		&app.BankKeeper,
-		app.GetSubspace(ibcratelimittypes.ModuleName),
 		&ibcratelimitKeeper,
 	)
 	app.RateLimitingICS4Wrapper = &rateLimitingICS4Wrapper
