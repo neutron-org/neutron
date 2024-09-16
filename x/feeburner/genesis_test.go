@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+
 	"github.com/neutron-org/neutron/v4/app/config"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
