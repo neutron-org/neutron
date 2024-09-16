@@ -13,8 +13,8 @@ pub enum FlowType {
 /// A Flow represents the transfer of value for a denom through an IBC channel
 /// during a time window.
 ///
-/// It tracks inflows (transfers into osmosis) and outflows (transfers out of
-/// osmosis).
+/// It tracks inflows (transfers into neturon) and outflows (transfers out of
+/// neturon).
 ///
 /// The period_end represents the last point in time for which this Flow is
 /// tracking the value transfer.

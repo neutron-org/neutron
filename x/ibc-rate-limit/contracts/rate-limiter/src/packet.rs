@@ -1,6 +1,5 @@
 use crate::state::flow::FlowType;
-use cosmwasm_std::{Addr, Deps, StdError, Uint256};
-use osmosis_std_derive::CosmwasmExt;
+use cosmwasm_std::{to_base64, Addr, Binary, Deps, GrpcQuery, StdError, Uint256};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -37,7 +36,6 @@ pub struct Packet {
 }
 
 // SupplyOf query message definition.
-// osmosis-std doesn't currently support the SupplyOf query, so I'm defining it localy so it can be used to obtain the channel value
 #[derive(
     Clone,
     PartialEq,
@@ -46,12 +44,6 @@ pub struct Packet {
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
-    CosmwasmExt,
-)]
-#[proto_message(type_url = "/cosmos.bank.v1beta1.QuerySupplyOfRequest")]
-#[proto_query(
-    path = "/cosmos.bank.v1beta1.Query/SupplyOf",
-    response_type = QuerySupplyOfResponse
 )]
 pub struct QuerySupplyOfRequest {
     #[prost(string, tag = "1")]
@@ -66,12 +58,10 @@ pub struct QuerySupplyOfRequest {
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
-    CosmwasmExt,
 )]
-#[proto_message(type_url = "/cosmos.bank.v1beta1.QuerySupplyOf")]
 pub struct QuerySupplyOfResponse {
     #[prost(message, optional, tag = "1")]
-    pub amount: ::core::option::Option<osmosis_std::types::cosmos::base::v1beta1::Coin>,
+    pub amount: ::core::option::Option<neutron_std::types::cosmos::base::v1beta1::Coin>,
 }
 // End of SupplyOf query message definition
 
@@ -113,11 +103,7 @@ impl Packet {
     }
 
     pub fn channel_value(&self, deps: Deps, direction: &FlowType) -> Result<Uint256, StdError> {
-        let res = QuerySupplyOfRequest {
-            denom: self.local_denom(direction),
-        }
-        .query(&deps.querier)?;
-        Uint256::from_str(&res.amount.unwrap_or_default().amount)
+        Ok(Uint256::from_uint128(deps.querier.query_supply(self.local_denom(direction))?.amount))
     }
 
     pub fn get_funds(&self) -> Uint256 {

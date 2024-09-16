@@ -31,7 +31,7 @@ impl RateLimitingContract {
         let msg = to_binary(&msg.into()).unwrap();
         cw_multi_test::SudoMsg::Wasm(cw_multi_test::WasmSudo {
             contract_addr: self.addr(),
-            msg,
+            message: msg,
         })
     }
 }
