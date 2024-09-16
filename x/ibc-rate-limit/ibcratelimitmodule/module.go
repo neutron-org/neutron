@@ -97,7 +97,8 @@ type AppModule struct {
 func NewAppModule(
 	cdc codec.Codec,
 	keeper keeper.Keeper,
-	ics4wrapper ibcratelimit.ICS4Wrapper) AppModule {
+	ics4wrapper ibcratelimit.ICS4Wrapper,
+) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
