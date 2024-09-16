@@ -608,14 +608,6 @@ func New(
 	)
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
 
-	// SwapKeeper as well
-	app.SwapKeeper = ibcswapkeeper.NewKeeper(
-		appCodec,
-		app.MsgServiceRouter(),
-		app.IBCKeeper.ChannelKeeper,
-		app.BankKeeper,
-	)
-
 	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
 		appCodec,
 		keys[contractmanagermoduletypes.StoreKey],
@@ -1715,7 +1707,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
-	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
 	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
 	// RateLimiting IBC Middleware
 	rateLimitingTransferModule := ibcratelimit.NewIBCModule(ibcStack, app.RateLimitingICS4Wrapper)
