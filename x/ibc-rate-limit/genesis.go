@@ -9,7 +9,10 @@ import (
 // InitGenesis initializes the x/ibc-rate-limit module's state from a provided genesis
 // state, which includes the parameter for the contract address.
 func (i *ICS4Wrapper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
-	i.SetParams(ctx, genState.Params)
+	err := i.IbcratelimitKeeper.SetParams(ctx, genState.Params)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis returns the x/ibc-rate-limit module's exported genesis.

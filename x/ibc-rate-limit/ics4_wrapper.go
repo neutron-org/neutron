@@ -103,6 +103,6 @@ func (i *ICS4Wrapper) GetParams(ctx sdk.Context) (params types.Params) {
 	return params
 }
 
-func (i *ICS4Wrapper) SetParams(ctx sdk.Context, params types.Params) {
-	i.IbcratelimitKeeper.SetParams(ctx, params)
+func (i *ICS4Wrapper) SetParams(ctx sdk.Context, params types.Params) error {
+	return i.IbcratelimitKeeper.SetParams(ctx, params)
 }
