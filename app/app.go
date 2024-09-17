@@ -859,7 +859,7 @@ func New(
 	)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
-	ibcRateLimitmodule := ibcratelimitmodule.NewAppModule(appCodec, *app.RateLimitingICS4Wrapper.IbcratelimitKeeper, *app.RateLimitingICS4Wrapper)
+	ibcRateLimitmodule := ibcratelimitmodule.NewAppModule(appCodec, app.RateLimitingICS4Wrapper.IbcratelimitKeeper, app.RateLimitingICS4Wrapper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)

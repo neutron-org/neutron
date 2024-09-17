@@ -90,14 +90,14 @@ func (AppModuleBasic) RegisterInterfaces(reg codectypes.InterfaceRegistry) {
 type AppModule struct {
 	AppModuleBasic
 
-	ics4wrapper ibcratelimit.ICS4Wrapper
-	keeper      keeper.Keeper
+	ics4wrapper *ibcratelimit.ICS4Wrapper
+	keeper      *keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
-	keeper keeper.Keeper,
-	ics4wrapper ibcratelimit.ICS4Wrapper,
+	keeper *keeper.Keeper,
+	ics4wrapper *ibcratelimit.ICS4Wrapper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
@@ -123,8 +123,8 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 // RegisterServices registers a GRPC query service to respond to the
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	queryproto.RegisterQueryServer(cfg.QueryServer(), grpc.Querier{Q: ibcratelimitclient.Querier{K: am.ics4wrapper}})
-	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	queryproto.RegisterQueryServer(cfg.QueryServer(), grpc.Querier{Q: ibcratelimitclient.Querier{K: *am.ics4wrapper}})
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(*am.keeper))
 }
 
 // RegisterInvariants registers the txfees module's invariants.
