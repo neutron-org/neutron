@@ -8,7 +8,7 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgUpdateParams{}, "osmosis/ibc-rate-limit/update-params", nil)
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "neutron/ibc-rate-limit/update-params", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
