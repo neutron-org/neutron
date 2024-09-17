@@ -14,7 +14,7 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 
 	// the address capable of executing a MsgUpdateParams message. Typically, this
-	// should be the x/gov module account.
+	// should be the x/adminmodule module account.
 	authority string
 }
 
