@@ -1,5 +1,5 @@
 syntax = "proto3";
-package osmosis.ibcratelimit.v1beta1;
+package neutron.ibcratelimit.v1beta1;
 
 import "gogoproto/gogo.proto";
 

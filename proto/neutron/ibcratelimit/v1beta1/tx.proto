@@ -1,5 +1,5 @@
 syntax = "proto3";
-package osmosis.ibcratelimit.v1beta1;
+package neutron.ibcratelimit.v1beta1;
 
 import "amino/amino.proto";
 import "cosmos/bank/v1beta1/bank.proto";
@@ -7,7 +7,7 @@ import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "osmosis/ibcratelimit/v1beta1/params.proto";
+import "neutron/ibcratelimit/v1beta1/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types";
 
@@ -21,7 +21,7 @@ service Msg {
 //
 // Since: 0.47
 message MsgUpdateParams {
-  option (amino.name) = "osmosis/ibc-rate-limit/MsgUpdateParams";
+  option (amino.name) = "neutron/ibc-rate-limit/MsgUpdateParams";
   option (cosmos.msg.v1.signer) = "authority";
 
   // Authority is the address of the governance account.
