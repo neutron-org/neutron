@@ -119,8 +119,8 @@ func ValidateReceiverAddress(packet exported.PacketI) error {
 	if err := json.Unmarshal(packet.GetData(), &receiverObj); err != nil {
 		return err
 	}
-	if len(receiverObj.Receiver) >= 4096 {
-		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "IBC Receiver address too long. Max supported length is %d", 4096)
+	if len(receiverObj.Receiver) >= types.MaxSupportedIBCReceiverAddressLength {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "IBC Receiver address too long. Max supported length is %d", types.MaxSupportedIBCReceiverAddressLength)
 	}
 	return nil
 }
