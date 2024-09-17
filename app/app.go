@@ -821,7 +821,7 @@ func New(
 		&app.BankKeeper,
 		nil,
 		nil,
-		app.RateLimitingICS4Wrapper, // may be replaced with middleware such as ics29 feerefunder
+		app.RateLimitingICS4Wrapper, // defiened in wireisc20
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		scopedWasmKeeper,
@@ -1668,7 +1668,7 @@ func (app *App) WireICS20PreWasmKeeper(
 	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
 		app.HooksICS4Wrapper,
 		&app.AccountKeeper,
-		// wasm keeper we set later.
+		// wasm keeper we set later, right after wasmkeeper init. line 868
 		nil,
 		&app.BankKeeper,
 		&ibcratelimitKeeper,
