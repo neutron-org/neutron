@@ -161,10 +161,8 @@ func (im *IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	if ctx.IsCheckTx() || ctx.IsReCheckTx() {
-		return nil
-		// return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	}
+	// Osmosis have some osmo-specific code here, but it disrupts proper work of neutron chain.
+	// See: https://github.com/osmosis-labs/osmosis/pull/8308 & https://github.com/osmosis-labs/osmosis/pull/8420
 	var ack channeltypes.Acknowledgement
 	if err := json.Unmarshal(acknowledgement, &ack); err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
