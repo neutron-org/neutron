@@ -16,6 +16,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ibcratelimittypes "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
@@ -93,7 +94,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*feemarkettypes.MsgParams,
 		*dynamicfeestypes.MsgUpdateParams,
 		*ibctransfertypes.MsgUpdateParams,
-		*globalfeetypes.MsgUpdateParams:
+		*globalfeetypes.MsgUpdateParams,
+		*ibcratelimittypes.MsgUpdateParams:
 		return true
 	}
 	return false
