@@ -284,7 +284,7 @@ var (
 		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasmtypes.ModuleName:                          {},
+		wasmtypes.ModuleName:                          {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
