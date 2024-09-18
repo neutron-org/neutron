@@ -739,15 +739,13 @@ func (suite *CustomMessengerTestSuite) TestBurnTokens() {
 	suite.ConfigureTransferChannel()
 
 	// add IBC denom to the contract
-	timeoutHeight := clienttypes.NewHeight(1, 110)
-
 	// Create Transfer Msg
 	transferMsg := transfertypes.NewMsgTransfer(suite.TransferPath.EndpointB.ChannelConfig.PortID,
 		suite.TransferPath.EndpointB.ChannelID,
 		sdk.NewCoin(params.DefaultDenom, math.NewInt(100)),
 		suite.ChainB.SenderAccounts[0].SenderAccount.GetAddress().String(),
 		strings.TrimSpace(suite.contractAddress.String()),
-		timeoutHeight,
+		clienttypes.NewHeight(1, 110),
 		0,
 		"",
 	)
@@ -760,7 +758,6 @@ func (suite *CustomMessengerTestSuite) TestBurnTokens() {
 	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
 	suite.Require().NoError(err)
 
-	//nolint:errcheck // this will return an error for multi-hop routes; that's expected
 	suite.Require().NoError(suite.TransferPath.RelayPacket(packet))
 	// -----------------------------------
 
@@ -812,12 +809,12 @@ func (suite *CustomMessengerTestSuite) TestBurnTokens() {
 			balanceBeforeBurn := bankKeeper.GetBalance(suite.ctx, suite.contractAddress, tc.CoinToBurn.Denom)
 
 			// Craft Burn message
-			msg := &types.CosmosMsg{
+			msg := types.CosmosMsg{
 				Bank: &types.BankMsg{Burn: &types.BurnMsg{Amount: types.Array[types.Coin]{types.Coin{Amount: tc.CoinToBurn.Amount.String(), Denom: tc.CoinToBurn.Denom}}}},
 			}
 
 			// Dispatch Burn message
-			_, err = suite.executeMsg(suite.contractAddress, *msg)
+			_, err = suite.executeMsg(suite.contractAddress, msg)
 			suite.NoError(err)
 
 			suite.Require().Equal(balanceBeforeBurn.Sub(tc.CoinToBurn), bankKeeper.GetBalance(suite.ctx, suite.contractAddress, tc.CoinToBurn.Denom))
