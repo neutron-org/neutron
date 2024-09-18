@@ -7,5 +7,8 @@ option go_package = "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types";
 
 // Params defines the parameters for the ibc-rate-limit module.
 message Params {
-  string contract_address = 1 [(gogoproto.moretags) = "yaml:\"contract_address\""];
+  string contract_address = 1 [
+    (gogoproto.moretags) = "yaml:\"contract_address\"",
+    (gogoproto.nullable) = true
+  ];
 }
