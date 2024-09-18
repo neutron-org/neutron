@@ -1050,6 +1050,7 @@ github.com/skip-mev/chaintestutil v0.0.0-20240514161515-056d7ba45610 h1:4JlsiRVt
 github.com/skip-mev/chaintestutil v0.0.0-20240514161515-056d7ba45610/go.mod h1:kB8gFZX07CyJnw8q9iEZijI3qJTIe1K/Y++P5VGkrcg=
 github.com/skip-mev/feemarket v1.1.0 h1:3z/3Mplmk4t1C/IjghC+OE361L9n8dR3Xr7bXIcS7ec=
 github.com/skip-mev/feemarket v1.1.0/go.mod h1:CVsCaHxJDK4y271c1Dan6Z8G2QaOyWJLoSBnDEPon40=
+github.com/skip-mev/feemarket v1.1.1/go.mod h1:DUa6djUsTeMOrbrcIZqWSVxU9IZNCXp96ruaojyBNpc=
 github.com/skip-mev/feemarket/tests/e2e v1.10.0 h1:oKAZSo+rynd2b7+T8/U+4C+h//rrTdjLICG2Awjk8YA=
 github.com/skip-mev/feemarket/tests/e2e v1.10.0/go.mod h1:57BURopGhr+L0zDkhj1E9jzP9W8rMzRb3b+MT+trlB4=
 github.com/skip-mev/interchaintest/v8 v8.0.1-0.20240611183342-72ec508eb966 h1:X5BD7m4QieHlORqGho1Af8r0O1GSWBRYO330xyu2kzQ=
