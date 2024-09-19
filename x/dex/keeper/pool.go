@@ -135,23 +135,13 @@ func (k Keeper) GetPoolIDByParams(
 	return poolID, true
 }
 
-func (k Keeper) SaveOrRemovePool(ctx sdk.Context, pool *types.Pool) {
-	k.saveOrRemovePoolReserves(ctx, pool.LowerTick0)
-	k.saveOrRemovePoolReserves(ctx, pool.UpperTick1)
+// UpdatePool handles the logic for all updates to Pools in the KV Store.
+// It provides a convenient way to save both sides of the pool reserves.
+func (k Keeper) UpdatePool(ctx sdk.Context, pool *types.Pool) {
+	k.UpdatePoolReserves(ctx, pool.LowerTick0)
+	k.UpdatePoolReserves(ctx, pool.UpperTick1)
 
-	// TODO: this will create a bit of extra noise since not every Save is updating both ticks
-	// This should be solved upstream by better tracking of dirty ticks
-	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*pool.LowerTick0))
 	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*pool.UpperTick1))
-}
-
-func (k Keeper) saveOrRemovePoolReserves(ctx sdk.Context, reserves *types.PoolReserves) {
-	if reserves.HasToken() {
-		k.SetPoolReserves(ctx, reserves)
-	} else {
-		ctx.EventManager().EmitEvents(types.GetEventsDecTotalPoolReserves(*reserves.Key.TradePairId.MustPairID()))
-		k.RemovePoolReserves(ctx, reserves.Key)
-	}
 }
 
 // GetPoolCount get the total number of pools

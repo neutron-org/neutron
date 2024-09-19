@@ -556,7 +556,7 @@ func (s *DexTestSuite) addDeposit(deposit *Deposit) {
 	s.Assert().NoError(err)
 	pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(deposit.AmountA)
 	pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(deposit.AmountB)
-	s.App.DexKeeper.SaveOrRemovePool(s.Ctx, pool)
+	s.App.DexKeeper.UpdatePool(s.Ctx, pool)
 }
 
 func (s *DexTestSuite) addDeposits(deposits ...*Deposit) {
@@ -581,7 +581,7 @@ func (s *DexTestSuite) placeGTCLimitOrder(
 	)
 	s.Assert().NoError(err)
 	tranche.PlaceMakerLimitOrder(sdkmath.NewInt(amountIn).Mul(denomMultiple))
-	s.App.DexKeeper.SaveOrMakeInactiveTranche(s.Ctx, tranche)
+	s.App.DexKeeper.UpdateTranche(s.Ctx, tranche)
 }
 
 func (s *DexTestSuite) swapInt(

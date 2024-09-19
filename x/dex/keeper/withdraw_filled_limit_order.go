@@ -86,19 +86,20 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 		if wasFilled {
 			// This is only relevant for inactive JIT and GoodTil limit orders
 			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
-			k.SaveOrRemoveInactiveTranche(ctx, tranche)
+			k.UpdateInactiveTranche(ctx, tranche)
 
 			// Since the order has already been filled we treat this as a complete withdrawal
 			trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
 		} else {
-			k.SetLimitOrderTranche(ctx, tranche)
+			// This was an active tranche (still has MakerReserves) and we have only removed TakerReserves; we will save it as an active tranche
+			k.UpdateTranche(ctx, tranche)
 			trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 		}
 
 	}
-
-	k.SaveOrRemoveTrancheUser(ctx, trancheUser)
+	// Save the tranche user
+	k.UpdateTrancheUser(ctx, trancheUser)
 
 	if !amountOutTokenOut.IsPositive() && !remainingTokenIn.IsPositive() {
 		return math.ZeroInt(), math.ZeroInt(), tradePairID, types.ErrWithdrawEmptyLimitOrder

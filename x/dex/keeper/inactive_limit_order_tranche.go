@@ -58,13 +58,14 @@ func (k Keeper) GetAllInactiveLimitOrderTranche(ctx sdk.Context) (list []*types.
 	return
 }
 
-func (k Keeper) SaveOrRemoveInactiveTranche(sdkCtx sdk.Context, tranche *types.LimitOrderTranche) {
+// UpdateInactiveTranche handles the logic for all updates to InactiveLimitOrderTranches
+// It will delete an InactiveTranche if there is no remaining MakerReserves or TakerReserves
+func (k Keeper) UpdateInactiveTranche(sdkCtx sdk.Context, tranche *types.LimitOrderTranche) {
 	if tranche.HasTokenIn() || tranche.HasTokenOut() {
+		// There are still reserves to be removed. Save the tranche as is.
 		k.SetInactiveLimitOrderTranche(sdkCtx, tranche)
 	} else {
-		k.RemoveInactiveLimitOrderTranche(
-			sdkCtx,
-			tranche.Key,
-		)
+		// There is nothing left to remove, we can safely remove the tranche entirely.
+		k.RemoveInactiveLimitOrderTranche(sdkCtx, tranche.Key)
 	}
 }

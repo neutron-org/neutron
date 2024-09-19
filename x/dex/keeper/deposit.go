@@ -128,7 +128,8 @@ func (k Keeper) ExecuteDeposit(
 
 		inAmount0, inAmount1, outShares := pool.Deposit(amount0, amount1, existingShares, autoswap)
 
-		k.SaveOrRemovePool(ctx, pool)
+		// Save updates to both sides of the pool
+		k.UpdatePool(ctx, pool)
 
 		if inAmount0.IsZero() && inAmount1.IsZero() {
 			return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, types.ErrZeroTrueDeposit

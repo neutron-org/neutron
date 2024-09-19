@@ -174,13 +174,17 @@ func (k Keeper) ExecutePlaceLimitOrder(
 			ctx.GasMeter().ConsumeGas(types.ExpiringLimitOrderGas, "Expiring LimitOrder Fee")
 		}
 
-		k.SaveOrMakeInactiveTranche(ctx, placeTranche)
+		// This update will ALWAYS save the tranche as active.
+		// But we use the general updateTranche function so the correct events are emitted
+		k.UpdateTranche(ctx, placeTranche)
 
 		totalIn = totalIn.Add(amountLeft)
 		sharesIssued = amountLeft
 	}
 
-	k.SaveOrRemoveTrancheUser(ctx, trancheUser)
+	// This update will ALWAYS save the trancheUser as active.
+	// But we use the general updateTranche function so the correct events are emitted
+	k.UpdateTrancheUser(ctx, trancheUser)
 
 	if orderType.IsJIT() {
 		err = k.AssertCanPlaceJIT(ctx)

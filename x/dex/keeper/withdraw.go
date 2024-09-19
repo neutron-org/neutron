@@ -116,7 +116,9 @@ func (k Keeper) ExecuteWithdraw(
 		}
 
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
-		k.SaveOrRemovePool(ctx, pool)
+
+		// Save both sides of the pool. If one or both sides are empty they will be deleted.
+		k.UpdatePool(ctx, pool)
 
 		totalReserve0ToRemove = totalReserve0ToRemove.Add(outAmount0)
 		totalReserve1ToRemove = totalReserve1ToRemove.Add(outAmount1)
