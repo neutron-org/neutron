@@ -140,8 +140,6 @@ func (k Keeper) GetPoolIDByParams(
 func (k Keeper) UpdatePool(ctx sdk.Context, pool *types.Pool) {
 	k.UpdatePoolReserves(ctx, pool.LowerTick0)
 	k.UpdatePoolReserves(ctx, pool.UpperTick1)
-
-	ctx.EventManager().EmitEvent(types.CreateTickUpdatePoolReserves(*pool.UpperTick1))
 }
 
 // GetPoolCount get the total number of pools
