@@ -435,5 +435,4 @@ func TrancheUserUpdateEvent(trancheUser LimitOrderTrancheUser) sdk.Event {
 		sdk.NewAttribute(AttributeSharesWithdrawn, trancheUser.SharesWithdrawn.String()),
 	}
 	return sdk.NewEvent(EventTypeTickUpdate, attrs...)
-
 }
