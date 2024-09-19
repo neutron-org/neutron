@@ -6,8 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/math"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
@@ -18,11 +16,11 @@ type cancelLimitOrderTestParams struct {
 	// State Conditions
 	SharedParams
 	ExistingTokenAHolders string
-	Filled                int
+	Filled                int64
 	WithdrawnCreator      bool
 	WithdrawnOneOther     bool
 	Expired               bool
-	OrderType             int32 // JIT, GTT, GTC
+	OrderType             dextypes.LimitOrderType // JIT, GTT, GTC
 }
 
 func (p cancelLimitOrderTestParams) printTestInfo(t *testing.T) {
@@ -49,22 +47,22 @@ func hydrateCancelLoTestCase(params map[string]string) cancelLimitOrderTestParam
 	}
 	c := cancelLimitOrderTestParams{
 		ExistingTokenAHolders: params["ExistingTokenAHolders"],
-		Filled:                parseInt(params["Filled"]),
+		Filled:                int64(parseInt(params["Filled"])),
 		WithdrawnCreator:      parseBool(params["WithdrawnCreator"]),
 		WithdrawnOneOther:     parseBool(params["WithdrawnOneOther"]),
 		Expired:               parseBool(params["Expired"]),
-		OrderType:             dextypes.LimitOrderType_value[params["OrderType"]],
+		OrderType:             dextypes.LimitOrderType(dextypes.LimitOrderType_value[params["OrderType"]]),
 	}
 	c.SharedParams.Tick = selltick
 	return c
 }
 
-func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) *dextypes.LimitOrderTranche {
+func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) (tranche *dextypes.LimitOrderTranche) {
 	coinA := sdk.NewCoin(params.PairID.Token0, BaseTokenAmountInt)
 	coinB := sdk.NewCoin(params.PairID.Token1, BaseTokenAmountInt.MulRaw(10))
 	s.FundAcc(s.creator, sdk.NewCoins(coinA))
 	var expTime *time.Time
-	if params.OrderType == int32(dextypes.LimitOrderType_GOOD_TIL_TIME) {
+	if params.OrderType.IsGoodTil() {
 		t := time.Now()
 		expTime = &t
 	}
@@ -78,8 +76,8 @@ func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) *
 	}
 
 	if params.Filled > 0 {
-		s.FundAcc(s.bob, sdk.NewCoins(coinB).MulInt(math.NewInt(10)))
-		fillAmount := totalDeposited.MulRaw(int64(params.Filled)).QuoRaw(100)
+		s.FundAcc(s.bob, sdk.NewCoins(coinB))
+		fillAmount := totalDeposited.MulRaw(params.Filled).QuoRaw(100)
 		_, err := s.makePlaceTakerLO(s.bob, coinB, coinA.Denom, DefaultBuyPriceTaker, dextypes.LimitOrderType_IMMEDIATE_OR_CANCEL, &fillAmount)
 		s.NoError(err)
 	}
@@ -95,12 +93,10 @@ func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) *
 	if params.Expired {
 		s.App.DexKeeper.PurgeExpiredLimitOrders(s.Ctx, time.Now())
 	}
-	tick, err := dextypes.CalcTickIndexFromPrice(DefaultStartPrice)
-	s.NoError(err)
 
 	req := dextypes.QueryGetLimitOrderTrancheRequest{
 		PairId:     params.PairID.CanonicalString(),
-		TickIndex:  -1 * tick,
+		TickIndex:  -1 * params.Tick,
 		TokenIn:    params.PairID.Token0,
 		TrancheKey: res.TrancheKey,
 	}
@@ -113,9 +109,11 @@ func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) *
 func hydrateAllCancelLoTestCases(paramsList []map[string]string) []cancelLimitOrderTestParams {
 	allTCs := make([]cancelLimitOrderTestParams, 0)
 	for i, paramsRaw := range paramsList {
-		pairID := generatePairID(i)
 		tc := hydrateCancelLoTestCase(paramsRaw)
+
+		pairID := generatePairID(i)
 		tc.PairID = pairID
+
 		allTCs = append(allTCs, tc)
 	}
 
@@ -130,13 +128,13 @@ func removeRedundantCancelLOTests(params []cancelLimitOrderTestParams) []cancelL
 		if p.Filled == 0 && (p.WithdrawnOneOther || p.WithdrawnCreator) {
 			continue
 		}
-		if p.Expired && p.OrderType == int32(dextypes.LimitOrderType_GOOD_TIL_CANCELLED) {
+		if p.Expired && p.OrderType.IsGTC() {
 			continue
 		}
 		if p.WithdrawnOneOther && p.ExistingTokenAHolders == CreatorLO {
 			continue
 		}
-		if p.ExistingTokenAHolders == OneOtherAndCreatorLO && p.OrderType != int32(dextypes.LimitOrderType_GOOD_TIL_CANCELLED) {
+		if p.ExistingTokenAHolders == OneOtherAndCreatorLO && !p.OrderType.IsGTC() {
 			// user tranches combined into tranches only for LimitOrderType_GOOD_TIL_CANCELLED
 			// it does not make any sense to create two tranches
 			continue
@@ -162,8 +160,8 @@ func (s *DexStateTestSuite) assertCalcelAmount(params cancelLimitOrderTestParams
 	// pre-withdrawn (filled/2 or 0) + withdrawn (filled/2 or filled) === filled
 	// converted to TokenB
 	price := dextypes.MustCalcPrice(params.Tick)
-	expectedBalanceB := price.MulInt(depositSize.MulRaw(int64(params.Filled)).QuoRaw(100)).Ceil().TruncateInt()
-	expectedBalanceA := depositSize.Sub(depositSize.MulRaw(int64(params.Filled)).QuoRaw(100))
+	expectedBalanceB := price.MulInt(depositSize.MulRaw(params.Filled).QuoRaw(100)).Ceil().TruncateInt()
+	expectedBalanceA := depositSize.Sub(depositSize.MulRaw(params.Filled).QuoRaw(100))
 	// 1 - withdrawn amount
 	s.assertBalanceWithPrecision(s.creator, params.PairID.Token1, expectedBalanceB, 3)
 
@@ -195,11 +193,11 @@ func TestCancel(t *testing.T) {
 			s.SetT(t)
 			tc.printTestInfo(t)
 
-			initialTrancheKey := s.setupCancelTest(tc)
+			tranche := s.setupCancelTest(tc)
 
-			_, err := s.makeCancel(s.creator, initialTrancheKey.Key.TrancheKey)
+			_, err := s.makeCancel(s.creator, tranche.Key.TrancheKey)
 			s.handleCancelErrors(tc, err)
-			_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.creator.String(), initialTrancheKey.Key.TrancheKey)
+			_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.creator.String(), tranche.Key.TrancheKey)
 			s.False(found)
 			s.assertCalcelAmount(tc)
 		})
