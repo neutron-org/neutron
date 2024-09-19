@@ -59,7 +59,7 @@ func (k Keeper) ExecuteCancelLimitOrder(
 ) (makerCoinOut, takerCoinOut sdk.Coin, tradePairID *types.TradePairID, error error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(ctx, callerAddr.String(), trancheKey)
 	if !found {
-		return sdk.Coin{}, sdk.Coin{}, nil, types.ErrValidLimitOrderTrancheNotFound
+		return sdk.Coin{}, sdk.Coin{}, nil, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
 	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
@@ -72,7 +72,7 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		},
 	)
 	if !found {
-		return sdk.Coin{}, sdk.Coin{}, nil, types.ErrValidLimitOrderTrancheNotFound
+		return sdk.Coin{}, sdk.Coin{}, nil, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
 	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
