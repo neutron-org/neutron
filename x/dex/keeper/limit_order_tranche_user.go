@@ -93,6 +93,8 @@ func (k Keeper) SaveTrancheUser(ctx sdk.Context, trancheUser *types.LimitOrderTr
 	} else {
 		k.SetLimitOrderTrancheUser(ctx, trancheUser)
 	}
+	ctx.EventManager().EmitEvent(types.TrancheUserUpdateEvent(*trancheUser))
+
 }
 
 // GetAllLimitOrderTrancheUser returns all LimitOrderTrancheUser

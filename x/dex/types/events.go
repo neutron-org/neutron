@@ -3,7 +3,6 @@ package types
 import (
 	"strconv"
 	"strings"
-	"time"
 
 	"cosmossdk.io/math"
 	"cosmossdk.io/store/types"
@@ -50,7 +49,10 @@ const (
 	AttributeInc                  = "inc"
 	AttributeDec                  = "dec"
 	AttributePairID               = "pair_id"
-	AttributeTimestamp            = "Timestamp"
+	AttributeMakerDenom           = "MakerDenom"
+	AttributeTakerDenom           = "TakerDenom"
+	AttributeSharesOwned          = "SharesOwned"
+	AttributeSharesWithdrawn      = "SharesWithdrawn"
 )
 
 // Event Keys
@@ -64,15 +66,11 @@ const (
 	EventTypeTickUpdate              = "TickUpdate"
 	TickUpdateEventKey               = "TickUpdate"
 	EventTypeGoodTilPurgeHitGasLimit = "GoodTilPurgeHitGasLimit"
+	TrancheUserUpdateEventKey        = "TrancheUserUpdate"
+	EventTypeTrancheUserUpdate       = "TrancheUserUpdate"
 	// EventTypeNeutronMessage defines the event type used by the Interchain Queries module events.
 	EventTypeNeutronMessage = "neutron"
 )
-
-func EmitEventWithTimestamp(ctx sdk.Context, event sdk.Event) {
-	timestamp := sdk.NewAttribute(AttributeTimestamp, ctx.BlockTime().Format(time.RFC3339))
-	event = event.AppendAttributes(timestamp)
-	ctx.EventManager().EmitEvent(event)
-}
 
 func CreateDepositEvent(
 	creator sdk.AccAddress,
@@ -244,8 +242,8 @@ func CancelLimitOrderEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
-		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
 		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
+		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
 	}
 
@@ -422,4 +420,20 @@ func GetEventsDecTotalPoolReserves(pairID PairID) sdk.Events {
 			sdk.NewAttribute(AttributePairID, pairID.String()),
 		),
 	}
+}
+
+func TrancheUserUpdateEvent(trancheUser LimitOrderTrancheUser) sdk.Event {
+	attrs := []sdk.Attribute{
+		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
+		sdk.NewAttribute(sdk.AttributeKeyAction, TrancheUserUpdateEventKey),
+		sdk.NewAttribute(AttributeTrancheKey, trancheUser.TrancheKey),
+		sdk.NewAttribute(AttributeCreator, trancheUser.Address),
+		sdk.NewAttribute(AttributeTickIndex, strconv.Itoa(int(trancheUser.TickIndexTakerToMaker))),
+		sdk.NewAttribute(AttributeMakerDenom, trancheUser.TradePairId.MakerDenom),
+		sdk.NewAttribute(AttributeTakerDenom, trancheUser.TradePairId.TakerDenom),
+		sdk.NewAttribute(AttributeSharesOwned, trancheUser.SharesOwned.String()),
+		sdk.NewAttribute(AttributeSharesWithdrawn, trancheUser.SharesWithdrawn.String()),
+	}
+	return sdk.NewEvent(EventTypeTickUpdate, attrs...)
+
 }
