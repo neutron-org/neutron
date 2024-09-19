@@ -134,20 +134,15 @@ func (l LiquidityDistribution) hasTokenB() bool {
 	return l.TokenB.Amount.IsPositive()
 }
 
-func splitLiquidityDistribution(liquidityDistribution LiquidityDistribution, n int64) []LiquidityDistribution {
+func splitLiquidityDistribution(liquidityDistribution LiquidityDistribution, n int64) LiquidityDistribution {
 	nInt := math.NewInt(n)
 	amount0 := liquidityDistribution.TokenA.Amount.Quo(nInt)
 	amount1 := liquidityDistribution.TokenB.Amount.Quo(nInt)
 
-	result := make([]LiquidityDistribution, n)
-	for i := range n {
-		result[i] = LiquidityDistribution{
-			TokenA: sdk.NewCoin(liquidityDistribution.TokenA.Denom, amount0),
-			TokenB: sdk.NewCoin(liquidityDistribution.TokenB.Denom, amount1),
-		}
+	return LiquidityDistribution{
+		TokenA: sdk.NewCoin(liquidityDistribution.TokenA.Denom, amount0),
+		TokenB: sdk.NewCoin(liquidityDistribution.TokenB.Denom, amount1),
 	}
-
-	return result
 }
 
 // State Parsers //////////////////////////////////////////////////////////////

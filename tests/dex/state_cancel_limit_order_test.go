@@ -36,7 +36,7 @@ func (p cancelLimitOrderTestParams) printTestInfo(t *testing.T) {
 		p.WithdrawnCreator,
 		p.WithdrawnOneOther,
 		p.Expired,
-		p.OrderType,
+		p.OrderType.String(),
 	)
 }
 

@@ -64,16 +64,16 @@ func (s *DexStateTestSuite) setupDepositState(params DepositState) {
 
 		s.makeDepositSuccess(s.alice, liquidityDistr, false)
 	case OneOtherAndCreator:
-		liqDistrArr := splitLiquidityDistribution(liquidityDistr, 2)
+		splitLiqDistrArr := splitLiquidityDistribution(liquidityDistr, 2)
 
-		coins := sdk.NewCoins(liqDistrArr[0].TokenA, liqDistrArr[0].TokenB)
+		coins := sdk.NewCoins(splitLiqDistrArr.TokenA, splitLiqDistrArr.TokenB)
 		s.FundAcc(s.creator, coins)
 
-		coins = sdk.NewCoins(liqDistrArr[1].TokenA, liqDistrArr[1].TokenB)
+		coins = sdk.NewCoins(splitLiqDistrArr.TokenA, splitLiqDistrArr.TokenB)
 		s.FundAcc(s.alice, coins)
 
-		s.makeDepositSuccess(s.creator, liqDistrArr[0], false)
-		s.makeDepositSuccess(s.alice, liqDistrArr[1], false)
+		s.makeDepositSuccess(s.creator, splitLiqDistrArr, false)
+		s.makeDepositSuccess(s.alice, splitLiqDistrArr, false)
 	}
 
 	// handle pool value increase
@@ -150,12 +150,6 @@ func calcCurrentShareValue(params depositTestParams) math_utils.PrecDec {
 	return currentShareValue
 }
 
-func calcDepositValue(params depositTestParams, depositAmount0, depositAmount1 math.Int) math_utils.PrecDec {
-	rawValueDeposit := calcDepositValueAsToken0(params.Tick, depositAmount0, depositAmount1)
-
-	return rawValueDeposit
-}
-
 func calcAutoSwapResidualValue(params depositTestParams, residual0, residual1 math.Int) math_utils.PrecDec {
 	swapFeeDeduction := dextypes.MustCalcPrice(int64(params.Fee))
 
@@ -178,7 +172,7 @@ func calcAutoSwapResidualValue(params depositTestParams, residual0, residual1 ma
 func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBAmount, sharesIssued math.Int) {
 	amountAWithoutAutoswap, amountBWithoutAutoswap := CalcDepositOutput(params)
 
-	sharesIssuedWithoutAutoswap := calcDepositValue(params, amountAWithoutAutoswap, amountBWithoutAutoswap)
+	sharesIssuedWithoutAutoswap := calcDepositValueAsToken0(params.Tick, amountAWithoutAutoswap, amountBWithoutAutoswap)
 
 	residualA := params.DepositAmounts.TokenA.Amount.Sub(amountAWithoutAutoswap)
 	residualB := params.DepositAmounts.TokenB.Amount.Sub(amountBWithoutAutoswap)
@@ -225,6 +219,7 @@ func hydrateDepositTestCase(params map[string]string, pairID *dextypes.PairID) d
 
 	var valueIncrease LiquidityDistribution
 	if liquidityDistribution.empty() {
+		// Cannot increase value on empty pool
 		valueIncrease = parseLiquidityDistribution(TokenA0TokenB0, pairID)
 	} else {
 		valueIncrease = parseLiquidityDistribution(params["PoolValueIncrease"], pairID)
@@ -270,7 +265,6 @@ func TestDeposit(t *testing.T) {
 		}},
 		{field: "DisableAutoswap", states: []string{True, False}},
 		{field: "PoolValueIncrease", states: []string{TokenA0TokenB0, TokenA1TokenB0, TokenA0TokenB1}},
-		// {field: "FailTxOnBEL", states: []string{True, False}}, // I don't think this needs to be tested
 		{field: "DepositAmounts", states: []string{
 			TokenA0TokenB1,
 			TokenA0TokenB2,
@@ -297,7 +291,7 @@ func TestDeposit(t *testing.T) {
 
 			poolID, found := s.App.DexKeeper.GetPoolIDByParams(s.Ctx, tc.PairID, tc.Tick, tc.Fee)
 			if tc.ExistingShareHolders == None {
-				// This is the ID that will be used when the pool is created
+				// There is no pool yet. This is the ID that will be used when the pool is created
 				poolID = s.App.DexKeeper.GetPoolCount(s.Ctx)
 			} else {
 				require.True(t, found, "Pool not found after deposit")
@@ -308,7 +302,7 @@ func TestDeposit(t *testing.T) {
 			// Do the actual deposit
 			resp, err := s.makeDepositDefault(s.creator, tc.DepositAmounts, tc.DisableAutoswap)
 
-			// Assert new state is correct
+			// Assert that if there is an error it is expected
 			s.handleBaseFailureCases(tc, err)
 
 			expectedDepositA, expectedDepositB, expectedShares := calcExpectedDepositAmounts(tc)

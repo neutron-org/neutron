@@ -43,7 +43,7 @@ type placeLimitOrderMakerTestParams struct {
 	BehindEnemyLine                 string
 	PreexistingTraded               bool
 	// Message Variants
-	OrderType int32 // JIT, GTT, GTC
+	OrderType dextypes.LimitOrderType // JIT, GTT, GTC
 }
 
 func (p placeLimitOrderMakerTestParams) printTestInfo(t *testing.T) {
@@ -55,7 +55,7 @@ func (p placeLimitOrderMakerTestParams) printTestInfo(t *testing.T) {
 		p.ExistingTokenAHolders,
 		p.BehindEnemyLine,
 		p.PreexistingTraded,
-		dextypes.LimitOrderType_name[p.OrderType],
+		p.OrderType.String(),
 	)
 }
 
@@ -100,7 +100,7 @@ func hydratePlaceLOMakerTestCase(params map[string]string, pairID *dextypes.Pair
 		ExistingTokenAHolders:           params["ExistingTokenAHolders"],
 		BehindEnemyLine:                 params["BehindEnemyLines"],
 		PreexistingTraded:               parseBool(params["PreexistingTraded"]),
-		OrderType:                       dextypes.LimitOrderType_value[params["OrderType"]],
+		OrderType:                       dextypes.LimitOrderType(dextypes.LimitOrderType_value[params["OrderType"]]),
 	}
 }
 
@@ -244,7 +244,7 @@ func (s *DexStateTestSuite) expectedInOutTokensAmount(tokenA sdk.Coin, denomOut 
 
 func (s *DexStateTestSuite) assertExpectedTrancheKey(initialKey, msgKey string, params placeLimitOrderMakerTestParams) {
 	// we expect initialKey != msgKey
-	if params.ExistingTokenAHolders == NoneLO || params.PreexistingTraded || params.OrderType == int32(dextypes.LimitOrderType_GOOD_TIL_TIME) || params.OrderType == int32(dextypes.LimitOrderType_JUST_IN_TIME) {
+	if params.ExistingTokenAHolders == NoneLO || params.PreexistingTraded || params.OrderType.IsGoodTil() || params.OrderType.IsJIT() {
 		s.NotEqual(initialKey, msgKey)
 		return
 	}
@@ -283,7 +283,7 @@ func TestPlaceLimitOrderMaker(t *testing.T) {
 
 			amountIn := sdk.NewCoin(tc.PairID.Token0, math.NewInt(MakerAmountIn))
 			var expTime *time.Time
-			if tc.OrderType == int32(dextypes.LimitOrderType_GOOD_TIL_TIME) {
+			if tc.OrderType.IsGoodTil() {
 				// any time is valid for tests
 				t := time.Now()
 				expTime = &t

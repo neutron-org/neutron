@@ -12,6 +12,7 @@ import (
 
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
 
 // LiquidityType
@@ -41,7 +42,7 @@ type placeLimitOrderTakerTestParams struct {
 	TicksDistribution []int64
 
 	// Message Variants
-	OrderType    int32 // FillOrKill or ImmediateOrCancel
+	OrderType    dextypes.LimitOrderType // FillOrKill or ImmediateOrCancel
 	AmountIn     sdk.Coin
 	LimitPrice   math_utils.PrecDec
 	MaxAmountOut *math.Int
@@ -49,7 +50,7 @@ type placeLimitOrderTakerTestParams struct {
 
 func (p placeLimitOrderTakerTestParams) printTestInfo(t *testing.T) {
 	t.Logf(`
-        LiquidityType: %s
+		LiquidityType: %s
 		TicksDistribution: %v
 		OrderType: %v
 		AmountIn: %v
@@ -57,7 +58,7 @@ func (p placeLimitOrderTakerTestParams) printTestInfo(t *testing.T) {
 		MaxAmountOut: %v`,
 		p.LiquidityType,
 		p.TicksDistribution,
-		dextypes.LimitOrderType_name[p.OrderType],
+		p.OrderType.String(),
 		p.AmountIn,
 		p.LimitPrice,
 		p.MaxAmountOut,
@@ -103,7 +104,7 @@ func hydratePlaceLOTakerTestCase(params map[string]string, pairID *dextypes.Pair
 	return placeLimitOrderTakerTestParams{
 		LiquidityType:     params["LiquidityType"],
 		TicksDistribution: generateTicks(ticks),
-		OrderType:         dextypes.LimitOrderType_value[params["OrderType"]],
+		OrderType:         dextypes.LimitOrderType(dextypes.LimitOrderType_value[params["OrderType"]]),
 		AmountIn:          sdk.NewCoin(pairID.Token1, amountIn),
 		MaxAmountOut:      maxAmountOut,
 		LimitPrice:        math_utils.OnePrecDec().Quo(LimitPrice.Add(DefaultPriceDelta)),
@@ -164,23 +165,6 @@ func (s *DexStateTestSuite) setupLoTakerState(params placeLimitOrderTakerTestPar
 	}
 }
 
-func MaxAmountAOut(params placeLimitOrderTakerTestParams) math.Int {
-	// liquidity equally distributed over the ticks with a delta `DefaultPriceDelta` starting from `DefaultStartPrice`
-	// we find amount of ticks (tickOffset) are being covered by limitPrice
-	// and that is the max liquidity we can swap in
-
-	if params.LiquidityType == None {
-		return math.ZeroInt()
-	}
-	// see `setupLoTakerState`
-	tickLiquidity := BaseTokenAmountInt.QuoRaw(int64(len(params.TicksDistribution)))
-
-	tickOffset := math_utils.OnePrecDec().Quo(params.LimitPrice).Sub(DefaultStartPrice).Quo(DefaultPriceDelta).Ceil().TruncateInt()
-	liquidity := tickLiquidity.Mul(tickOffset)
-
-	return math.MinInt(liquidity, BaseTokenAmountInt)
-}
-
 func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 	if params.LiquidityType == None {
 		return math.ZeroInt(), math.ZeroInt()
@@ -196,26 +180,45 @@ func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 		if LimitTick > tick {
 			break
 		}
-		toOut := tickLiquidity
-		if params.MaxAmountOut != nil {
-			toOut = math.MinInt(toOut, params.MaxAmountOut.Sub(TotalOut))
+		price := dextypes.MustCalcPrice(-1 * tick)
+		remainingIn := params.AmountIn.Amount.Sub(TotalIn)
+
+		if !remainingIn.IsPositive() {
+			break
 		}
 
-		toIn := dextypes.MustCalcPrice(tick).MulInt(toOut).Ceil().TruncateInt()
-		if toIn.GT(params.AmountIn.Amount.Sub(TotalIn)) {
-			toIn = params.AmountIn.Amount.Sub(TotalIn)
-			toOut = dextypes.MustCalcPrice(-1 * tick).MulInt(toIn).Ceil().TruncateInt()
+		availableLiquidity := tickLiquidity
+		outGivenIn := price.MulInt(remainingIn).TruncateInt()
+		amountOut := math.ZeroInt()
+		if params.MaxAmountOut != nil {
+			maxAmountOut := params.MaxAmountOut.Sub(TotalOut)
+			if !maxAmountOut.IsPositive() {
+				break
+			}
+			amountOut = utils.MinIntArr([]math.Int{availableLiquidity, outGivenIn, maxAmountOut})
+		} else {
+			amountOut = utils.MinIntArr([]math.Int{availableLiquidity, outGivenIn})
+
 		}
-		TotalIn = TotalIn.Add(
-			toIn,
-		)
-		TotalOut = TotalOut.Add(toOut)
+
+		amountInRaw := math_utils.NewPrecDecFromInt(amountOut).Quo(price)
+
+		amountIn := math.ZeroInt()
+		if params.LiquidityType == LOLP {
+			// Simulate rounding on two different tickLiquidities
+			amountIn = amountInRaw.QuoInt(math.NewInt(2)).Ceil().TruncateInt().MulRaw(2)
+		} else {
+			amountIn = amountInRaw.Ceil().TruncateInt()
+		}
+
+		TotalIn = TotalIn.Add(amountIn)
+		TotalOut = TotalOut.Add(amountOut)
 	}
 	return TotalIn, TotalOut
 }
 
 func (s *DexStateTestSuite) handleTakerErrors(params placeLimitOrderTakerTestParams, err error) {
-	if params.OrderType == int32(dextypes.LimitOrderType_FILL_OR_KILL) {
+	if params.OrderType.IsFoK() {
 		maxIn, _ := ExpectedInOut(params)
 		if maxIn.LT(params.AmountIn.Amount) {
 			if errors.Is(err, dextypes.ErrFoKLimitOrderNotFilled) {
@@ -262,8 +265,8 @@ func TestPlaceLimitOrderTaker(t *testing.T) {
 
 			expIn, expOut := ExpectedInOut(tc)
 			// TODO: fix rounding issues
-			s.intsApproxEqual("", expIn, resp.CoinIn.Amount, 10)
-			s.intsApproxEqual("", expOut, resp.TakerCoinOut.Amount, 10)
+			s.intsApproxEqual("swapAmountIn", expIn, resp.CoinIn.Amount, 1)
+			s.intsApproxEqual("swapAmountOut", expOut, resp.TakerCoinOut.Amount, 0)
 
 			s.True(
 				tc.LimitPrice.MulInt(resp.CoinIn.Amount).TruncateInt().LTE(resp.TakerCoinOut.Amount),
@@ -273,7 +276,7 @@ func TestPlaceLimitOrderTaker(t *testing.T) {
 				s.True(resp.TakerCoinOut.Amount.LTE(*tc.MaxAmountOut))
 			}
 
-			if tc.OrderType == int32(dextypes.LimitOrderType_FILL_OR_KILL) {
+			if tc.OrderType.IsFoK() {
 				// we should fill either AmountIn or MaxAmountOut
 				s.Condition(func() bool {
 					if tc.MaxAmountOut != nil {
