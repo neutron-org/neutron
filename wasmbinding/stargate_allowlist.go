@@ -41,7 +41,8 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &icacontrollertypes.QueryInterchainAccountResponse{},
 
 		// transfer
-		"/ibc.applications.transfer.v1.Query/DenomTrace": &ibctransfertypes.QueryDenomTraceResponse{},
+		"/ibc.applications.transfer.v1.Query/DenomTrace":    &ibctransfertypes.QueryDenomTraceResponse{},
+		"/ibc.applications.transfer.v1.Query/EscrowAddress": &ibctransfertypes.QueryEscrowAddressResponse{},
 
 		// auth
 		"/cosmos.auth.v1beta1.Query/Account": &authtypes.QueryAccountResponse{},
