@@ -73,7 +73,8 @@ func CustomMessageDecorator(
 			Adminserver:           adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
 			Bank:                  bankKeeper,
 			TokenFactory:          tokenFactoryKeeper,
-			CronKeeper:            cronKeeper,
+			CronMsgServer:         cronkeeper.NewMsgServerImpl(*cronKeeper),
+			CronQueryServer:       cronKeeper,
 			AdminKeeper:           adminKeeper,
 			ContractmanagerKeeper: contractmanagerKeeper,
 			DexMsgServer:          dexkeeper.NewMsgServerImpl(*dexKeeper),
@@ -90,7 +91,8 @@ type CustomMessenger struct {
 	Adminserver           admintypes.MsgServer
 	Bank                  *bankkeeper.BaseKeeper
 	TokenFactory          *tokenfactorykeeper.Keeper
-	CronKeeper            *cronkeeper.Keeper
+	CronMsgServer         crontypes.MsgServer
+	CronQueryServer       crontypes.QueryServer
 	AdminKeeper           *adminmodulekeeper.Keeper
 	ContractmanagerKeeper *contractmanagerkeeper.Keeper
 	DexMsgServer          dextypes.MsgServer
@@ -989,6 +991,8 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
 	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
 		msgs = append(msgs, crontypes.MsgExecuteContract{
@@ -997,13 +1001,20 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		})
 	}
 
-	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	_, err := m.CronMsgServer.AddSchedule(ctx, &crontypes.MsgAddSchedule{
+		Authority:      authority.String(),
+		Name:           addSchedule.Name,
+		Period:         addSchedule.Period,
+		Msgs:           msgs,
+		ExecutionStage: crontypes.ExecutionStage(crontypes.ExecutionStage_value[addSchedule.ExecutionStage]),
+	})
 	if err != nil {
 		ctx.Logger().Error("failed to addSchedule",
 			"from_address", contractAddr.String(),
+			"name", addSchedule.Name,
 			"error", err,
 		)
-		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrapf(err, "failed to add %s schedule", addSchedule.Name)
 	}
 
 	ctx.Logger().Debug("schedule added",
@@ -1016,12 +1027,30 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	params := m.CronKeeper.GetParams(ctx)
-	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
+	params, err := m.CronQueryServer.Params(ctx, &crontypes.QueryParamsRequest{})
+	if err != nil {
+		ctx.Logger().Error("failed to removeSchedule", "error", err)
+		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
+	}
+
+	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.Params.SecurityAddress {
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
-	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
+	_, err = m.CronMsgServer.RemoveSchedule(ctx, &crontypes.MsgRemoveSchedule{
+		Authority: authority.String(),
+		Name:      removeSchedule.Name,
+	})
+	if err != nil {
+		ctx.Logger().Error("failed to removeSchedule",
+			"from_address", contractAddr.String(),
+			"name", removeSchedule.Name,
+			"error", err,
+		)
+		return nil, nil, nil, errors.Wrapf(err, "failed to remove %s schedule", removeSchedule.Name)
+	}
 
 	ctx.Logger().Debug("schedule removed",
 		"from_address", contractAddr.String(),
