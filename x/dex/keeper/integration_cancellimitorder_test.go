@@ -200,6 +200,24 @@ func (s *DexTestSuite) TestCancelPartiallyFilled() {
 	s.Assert().False(found)
 }
 
+func (s *DexTestSuite) TestCancelWithdrawThenCancel() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 20)
+
+	// GIVEN alice limit sells 10 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", -6931, 10)
+	// Bob swaps some TokenB for 5 TokenA
+	s.bobLimitSellsWithMaxOut("TokenB", 7000, 20, 5)
+
+	// WHEN alice withdraws
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.assertAliceBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(9999181))
+
+	// THEN Alice cancel still works
+	s.aliceCancelsLimitSell(trancheKey)
+	s.assertAliceBalancesInt(sdkmath.NewInt(4999999), sdkmath.NewInt(9999181))
+}
+
 func (s *DexTestSuite) TestCancelPartiallyFilledWithdrawFails() {
 	s.fundAliceBalances(50, 0)
 	s.fundBobBalances(0, 10)
