@@ -28,6 +28,15 @@ message PoolReserves {
     (gogoproto.jsontag) = "price_taker_to_maker",
     deprecated = true
   ];
+  // DEPRECATED: price_opposite_taker_maker was an internal implementation detail and will be removed in a future release.
+  // It is being kept strictly for backwards compatibility. The actual field value is unused.
+  string price_opposite_taker_to_maker = 4 [
+    (gogoproto.moretags) = "yaml:\"price_opposite_taker_to_maker\"",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "price_opposite_taker_to_maker",
+    deprecated = true
+  ];
   // This is the price of the PoolReserves denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
   string maker_price = 5 [
     (gogoproto.moretags) = "yaml:\"maker_price\"",
