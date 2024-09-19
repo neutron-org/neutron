@@ -27,7 +27,7 @@ var (
 	ErrValidLimitOrderTrancheNotFound = sdkerrors.Register(
 		ModuleName,
 		1111,
-		"Limit order trache not found:",
+		"Limit order tranche not found:",
 	) // "%d", trancheKey
 	ErrCancelEmptyLimitOrder = sdkerrors.Register(
 		ModuleName,
