@@ -81,6 +81,7 @@ type RegisterInterchainAccount struct {
 	ConnectionId        string    `json:"connection_id"`
 	InterchainAccountId string    `json:"interchain_account_id"`
 	RegisterFee         sdk.Coins `json:"register_fee,omitempty"`
+	Ordering            string    `json:"ordering,omitempty"`
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
@@ -195,9 +196,10 @@ type ForceTransfer struct {
 
 // AddSchedule adds new schedule to the cron module
 type AddSchedule struct {
-	Name   string               `json:"name"`
-	Period uint64               `json:"period"`
-	Msgs   []MsgExecuteContract `json:"msgs"`
+	Name           string               `json:"name"`
+	Period         uint64               `json:"period"`
+	Msgs           []MsgExecuteContract `json:"msgs"`
+	ExecutionStage string               `json:"execution_stage"`
 }
 
 // AddScheduleResponse holds response AddSchedule
