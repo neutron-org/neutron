@@ -595,12 +595,6 @@ func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAddress {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	transferModule := app.AccountKeeper.GetModuleAddress(transfertypes.ModuleName)
-	fmt.Println(fmt.Sprintf(`{
-           "gov_module":  "%s",
-           "ibc_module":"%s",
-           "paths": [%s]
-        }`,
-		testutil.TestOwnerAddress, transferModule, quotas))
 	initMsgBz := []byte(fmt.Sprintf(`{
            "gov_module":  "%s",
            "ibc_module":"%s",
