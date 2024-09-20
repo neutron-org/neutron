@@ -6,5 +6,5 @@ release/
 data
 .mutagen.yml
 vendor/
-.testchains
+.testchainsa
 
