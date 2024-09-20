@@ -127,6 +127,7 @@ func (k Keeper) TakerLimitOrderSwap(
 	amountIn math.Int,
 	maxAmountOut *math.Int,
 	limitPrice math_utils.PrecDec,
+	minAvgSellPrice math_utils.PrecDec,
 	orderType types.LimitOrderType,
 ) (totalInCoin, totalOutCoin sdk.Coin, err error) {
 	totalInCoin, totalOutCoin, orderFilled, err := k.SwapWithCache(
@@ -136,6 +137,7 @@ func (k Keeper) TakerLimitOrderSwap(
 		maxAmountOut,
 		&limitPrice,
 	)
+
 	if err != nil {
 		return sdk.Coin{}, sdk.Coin{}, err
 	}
@@ -150,7 +152,7 @@ func (k Keeper) TakerLimitOrderSwap(
 
 	truePrice := math_utils.NewPrecDecFromInt(totalOutCoin.Amount).QuoInt(totalInCoin.Amount)
 
-	if truePrice.LT(limitPrice) {
+	if truePrice.LT(minAvgSellPrice) {
 		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
 	}
 
@@ -164,7 +166,9 @@ func (k Keeper) MakerLimitOrderSwap(
 	tradePairID types.TradePairID,
 	amountIn math.Int,
 	limitPrice math_utils.PrecDec,
+	minAvgSellPrice math_utils.PrecDec,
 ) (totalInCoin, totalOutCoin sdk.Coin, filled bool, err error) {
+
 	totalInCoin, totalOutCoin, filled, err = k.SwapWithCache(
 		ctx,
 		&tradePairID,
@@ -178,11 +182,11 @@ func (k Keeper) MakerLimitOrderSwap(
 
 	if totalInCoin.Amount.IsPositive() {
 		remainingIn := amountIn.Sub(totalInCoin.Amount)
-		expectedOutMakerPortion := limitPrice.MulInt(remainingIn).Ceil()
+		expectedOutMakerPortion := limitPrice.MulInt(remainingIn)
 		totalExpectedOut := expectedOutMakerPortion.Add(math_utils.NewPrecDecFromInt(totalOutCoin.Amount))
 		truePrice := totalExpectedOut.QuoInt(amountIn)
 
-		if truePrice.LT(limitPrice) {
+		if truePrice.LT(minAvgSellPrice) {
 			return sdk.Coin{}, sdk.Coin{}, false, types.ErrLimitPriceNotSatisfied
 		}
 	}

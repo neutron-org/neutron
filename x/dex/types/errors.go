@@ -224,4 +224,9 @@ var (
 		1163,
 		"Cannot convert price to int64 tick value",
 	)
+	ErrZeroMinAverageSellPrice = sdkerrors.Register(
+		ModuleName,
+		1164,
+		"MinAverageSellPrice must be nil or > 0.",
+	)
 )

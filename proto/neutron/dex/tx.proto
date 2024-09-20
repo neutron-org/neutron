@@ -140,6 +140,12 @@ message MsgPlaceLimitOrder {
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "limit_sell_price"
   ];
+  string min_average_sell_price = 12 [
+                                (gogoproto.moretags) = "yaml:\"min_average_sell_price\"",
+                                (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+                                (gogoproto.nullable) = true,
+                                (gogoproto.jsontag) = "min_average_sell_price"
+                                ];
 }
 
 message MsgPlaceLimitOrderResponse {

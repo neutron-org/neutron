@@ -145,6 +145,7 @@ func (k MsgServer) PlaceLimitOrder(
 		msg.OrderType,
 		msg.ExpirationTime,
 		msg.MaxAmountOut,
+		msg.MinAverageSellPrice,
 		callerAddr,
 		receiverAddr,
 	)
@@ -259,6 +260,12 @@ func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 	return &types.MsgUpdateParamsResponse{}, nil
 }
 
-func (k MsgServer) AssertNotPaused(_ context.Context) error {
-	return types.ErrDexPaused
+func (k MsgServer) AssertNotPaused(goCtx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	paused := k.GetParams(ctx).Paused
+
+	if paused {
+		return types.ErrDexPaused
+	}
+	return nil
 }
