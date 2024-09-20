@@ -8,7 +8,7 @@ You can check the documentation here: https://docs.neutron.org/
 ## Build
 
 You can check out the build instructions here: https://docs.neutron.org/neutron/build-and-run/overview
-
+sdfa
 ## Sync and join the network
 
 ```bash
