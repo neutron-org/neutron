@@ -23,8 +23,7 @@ on:
 
 jobs:
   docker:
-    runs-on:
-      group: Neutron-Core
+    runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: 1
 
