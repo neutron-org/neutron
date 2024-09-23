@@ -429,7 +429,6 @@ func (s *DexTestSuite) limitSellsWithMinAvgPrice(
 		OrderType:           orderType,
 		MinAverageSellPrice: &minAvgPrice,
 	})
-
 }
 
 func (s *DexTestSuite) limitSellsWithPrice(

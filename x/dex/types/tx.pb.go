@@ -448,9 +448,12 @@ type MsgPlaceLimitOrder struct {
 	AmountIn         cosmossdk_io_math.Int `protobuf:"bytes,7,opt,name=amount_in,json=amountIn,proto3,customtype=cosmossdk.io/math.Int" json:"amount_in" yaml:"amount_in"`
 	OrderType        LimitOrderType        `protobuf:"varint,8,opt,name=order_type,json=orderType,proto3,enum=neutron.dex.LimitOrderType" json:"order_type,omitempty"`
 	// expirationTime is only valid iff orderType == GOOD_TIL_TIME.
-	ExpirationTime      *time.Time                                            `protobuf:"bytes,9,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
-	MaxAmountOut        *cosmossdk_io_math.Int                                `protobuf:"bytes,10,opt,name=max_amount_out,json=maxAmountOut,proto3,customtype=cosmossdk.io/math.Int" json:"max_amount_out" yaml:"max_amount_out"`
-	LimitSellPrice      *github_com_neutron_org_neutron_v4_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v4/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
+	ExpirationTime *time.Time                                            `protobuf:"bytes,9,opt,name=expiration_time,json=expirationTime,proto3,stdtime" json:"expiration_time,omitempty"`
+	MaxAmountOut   *cosmossdk_io_math.Int                                `protobuf:"bytes,10,opt,name=max_amount_out,json=maxAmountOut,proto3,customtype=cosmossdk.io/math.Int" json:"max_amount_out" yaml:"max_amount_out"`
+	LimitSellPrice *github_com_neutron_org_neutron_v4_utils_math.PrecDec `protobuf:"bytes,11,opt,name=limit_sell_price,json=limitSellPrice,proto3,customtype=github.com/neutron-org/neutron/v4/utils/math.PrecDec" json:"limit_sell_price" yaml:"limit_sell_price"`
+	// min_average_sell_price is an optional parameter that sets a required minimum average price for the entire trade.
+	// if the min_average_sell_price is not met the trade will fail.
+	// If min_average_sell_price is omitted limit_sell_price will be used instead
 	MinAverageSellPrice *github_com_neutron_org_neutron_v4_utils_math.PrecDec `protobuf:"bytes,12,opt,name=min_average_sell_price,json=minAverageSellPrice,proto3,customtype=github.com/neutron-org/neutron/v4/utils/math.PrecDec" json:"min_average_sell_price" yaml:"min_average_sell_price"`
 }
 

@@ -137,7 +137,6 @@ func (k Keeper) TakerLimitOrderSwap(
 		maxAmountOut,
 		&limitPrice,
 	)
-
 	if err != nil {
 		return sdk.Coin{}, sdk.Coin{}, err
 	}
@@ -168,7 +167,6 @@ func (k Keeper) MakerLimitOrderSwap(
 	limitPrice math_utils.PrecDec,
 	minAvgSellPrice math_utils.PrecDec,
 ) (totalInCoin, totalOutCoin sdk.Coin, filled bool, err error) {
-
 	totalInCoin, totalOutCoin, filled, err = k.SwapWithCache(
 		ctx,
 		&tradePairID,
