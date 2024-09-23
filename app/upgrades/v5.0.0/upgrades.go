@@ -30,7 +30,11 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Running dex upgrades...")
-		err = upgradeDexPause(ctx, *keepers.DexKeeper)
+		// Only pause dex for mainnet
+		if ctx.ChainID() == "neutron-1" {
+			err = upgradeDexPause(ctx, *keepers.DexKeeper)
+		}
+
 		if err != nil {
 			return nil, err
 		}
