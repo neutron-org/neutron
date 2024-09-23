@@ -5,10 +5,11 @@ import (
 
 	"cosmossdk.io/math"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	"github.com/stretchr/testify/suite"
+
 	v500 "github.com/neutron-org/neutron/v4/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
 	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/stretchr/testify/suite"
 
 	"github.com/neutron-org/neutron/v4/testutil"
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
@@ -60,5 +61,4 @@ func (suite *UpgradeTestSuite) TestUpgradeDexPause() {
 	})
 
 	suite.ErrorIs(err, dextypes.ErrDexPaused)
-
 }

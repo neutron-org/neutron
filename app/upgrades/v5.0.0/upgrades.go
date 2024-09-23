@@ -46,9 +46,12 @@ func upgradeDexPause(ctx sdk.Context, k dexkeeper.Keeper) error {
 
 	params := k.GetParams(ctx)
 	params.Paused = true
-	k.SetParams(ctx, params)
 
-	ctx.Logger().Info("Dex is paused ")
+	if err := k.SetParams(ctx, params); err != nil {
+		return err
+	}
+
+	ctx.Logger().Info("Dex is paused")
 
 	return nil
 }
