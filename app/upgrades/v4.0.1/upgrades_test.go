@@ -16,8 +16,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	v400 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
-	"github.com/neutron-org/neutron/v4/testutil"
+	v400 "github.com/neutron-org/neutron/v5/app/upgrades/v4.0.1"
+	"github.com/neutron-org/neutron/v5/testutil"
 )
 
 type UpgradeTestSuite struct {

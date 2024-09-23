@@ -3,16 +3,16 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v4/app/config"
+	"github.com/neutron-org/neutron/v5/app/config"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app/params"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v5/x/feerefunder/types"
 )
 
 const (

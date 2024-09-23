@@ -3,8 +3,8 @@ package feeburner
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/feeburner/keeper"
-	"github.com/neutron-org/neutron/v4/x/feeburner/types"
+	"github.com/neutron-org/neutron/v5/x/feeburner/keeper"
+	"github.com/neutron-org/neutron/v5/x/feeburner/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
