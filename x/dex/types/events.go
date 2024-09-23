@@ -423,16 +423,18 @@ func GetEventsDecTotalPoolReserves(pairID PairID) sdk.Events {
 }
 
 func TrancheUserUpdateEvent(trancheUser LimitOrderTrancheUser) sdk.Event {
+	pairID := trancheUser.TradePairId.MustPairID()
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, TrancheUserUpdateEventKey),
 		sdk.NewAttribute(AttributeTrancheKey, trancheUser.TrancheKey),
 		sdk.NewAttribute(AttributeCreator, trancheUser.Address),
 		sdk.NewAttribute(AttributeTickIndex, strconv.Itoa(int(trancheUser.TickIndexTakerToMaker))),
-		sdk.NewAttribute(AttributeMakerDenom, trancheUser.TradePairId.MakerDenom),
-		sdk.NewAttribute(AttributeTakerDenom, trancheUser.TradePairId.TakerDenom),
+		sdk.NewAttribute(AttributeToken0, pairID.Token0),
+		sdk.NewAttribute(AttributeToken1, pairID.Token1),
+		sdk.NewAttribute(AttributeTokenIn, trancheUser.TradePairId.MakerDenom),
 		sdk.NewAttribute(AttributeSharesOwned, trancheUser.SharesOwned.String()),
 		sdk.NewAttribute(AttributeSharesWithdrawn, trancheUser.SharesWithdrawn.String()),
 	}
-	return sdk.NewEvent(EventTypeTickUpdate, attrs...)
+	return sdk.NewEvent(EventTypeTrancheUserUpdate, attrs...)
 }
