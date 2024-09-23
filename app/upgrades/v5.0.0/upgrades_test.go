@@ -9,7 +9,6 @@ import (
 
 	v500 "github.com/neutron-org/neutron/v4/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v4/testutil/common/sample"
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 
 	"github.com/neutron-org/neutron/v4/testutil"
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
@@ -31,7 +30,7 @@ func (suite *UpgradeTestSuite) SetupTest() {
 func (suite *UpgradeTestSuite) TestUpgradeDexPause() {
 	var (
 		app       = suite.GetNeutronZoneApp(suite.ChainA)
-		ctx       = suite.ChainA.GetContext()
+		ctx       = suite.ChainA.GetContext().WithChainID("neutron-1")
 		msgServer = dexkeeper.NewMsgServerImpl(app.DexKeeper)
 	)
 
@@ -50,14 +49,16 @@ func (suite *UpgradeTestSuite) TestUpgradeDexPause() {
 
 	suite.True(params.Paused)
 
-	price := math_utils.OnePrecDec()
-	_, err := msgServer.PlaceLimitOrder(ctx, &dextypes.MsgPlaceLimitOrder{
-		Creator:        sample.AccAddress(),
-		Receiver:       sample.AccAddress(),
-		TokenIn:        "TokenA",
-		TokenOut:       "TokenB",
-		LimitSellPrice: &price,
-		AmountIn:       math.OneInt(),
+	_, err := msgServer.Deposit(ctx, &dextypes.MsgDeposit{
+		Creator:         sample.AccAddress(),
+		Receiver:        sample.AccAddress(),
+		TokenA:          "TokenA",
+		TokenB:          "TokenB",
+		TickIndexesAToB: []int64{1},
+		Fees:            []uint64{1},
+		AmountsA:        []math.Int{math.OneInt()},
+		AmountsB:        []math.Int{math.ZeroInt()},
+		Options:         []*dextypes.DepositOptions{{}},
 	})
 
 	suite.ErrorIs(err, dextypes.ErrDexPaused)
