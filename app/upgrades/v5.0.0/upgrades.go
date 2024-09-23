@@ -33,10 +33,9 @@ func CreateUpgradeHandler(
 		// Only pause dex for mainnet
 		if ctx.ChainID() == "neutron-1" {
 			err = upgradeDexPause(ctx, *keepers.DexKeeper)
-		}
-
-		if err != nil {
-			return nil, err
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
