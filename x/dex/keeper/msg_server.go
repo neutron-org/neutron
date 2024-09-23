@@ -260,5 +260,5 @@ func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 }
 
 func (k MsgServer) AssertNotPaused(_ context.Context) error {
-	return types.ErrDexPaused
+	return nil
 }
