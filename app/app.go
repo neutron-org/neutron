@@ -36,7 +36,7 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	v401 "github.com/neutron-org/neutron/v5/app/upgrades/v4.0.1"
+	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v5/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
@@ -221,7 +221,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v401.Upgrade}
+	Upgrades = []upgrades.Upgrade{v500.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
