@@ -37,7 +37,6 @@ import (
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
 	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
-	v500 "github.com/neutron-org/neutron/v4/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v5/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
