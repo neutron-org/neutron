@@ -75,6 +75,12 @@ message MsgDepositResponse {
     (gogoproto.jsontag) = "reserve1_deposited"
   ];
   repeated FailedDeposit failed_deposits = 3;
+  repeated cosmos.base.v1beta1.Coin shares_issued = 4 [
+    (gogoproto.moretags) = "yaml:\"shares_issued\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "shares_issued"
+  ];
 }
 
 message MsgWithdrawal {
@@ -95,7 +101,26 @@ message MsgWithdrawal {
   repeated uint64 fees = 7;
 }
 
-message MsgWithdrawalResponse {}
+message MsgWithdrawalResponse {
+  string reserve0_withdrawn = 1 [
+    (gogoproto.moretags) = "yaml:\"reserve0_withdrawn\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "reserve0_withdrawn"
+  ];
+  string reserve1_withdrawn = 2 [
+    (gogoproto.moretags) = "yaml:\"reserve1_withdrawn\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "reserve1_withdrawn"
+  ];
+  repeated cosmos.base.v1beta1.Coin shares_burned = 3 [
+    (gogoproto.moretags) = "yaml:\"shares_burned\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = "shares_burned"
+  ];
+}
 
 enum LimitOrderType {
   GOOD_TIL_CANCELLED = 0;
@@ -170,6 +195,14 @@ message MsgPlaceLimitOrderResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "taker_coin_out"
   ];
+
+  // Total amount of the token in that was immediately swapped for takerOutCoin
+  cosmos.base.v1beta1.Coin taker_coin_in = 4 [
+    (gogoproto.moretags) = "yaml:\"taker_coin_in\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "taker_coin_in"
+  ];
 }
 
 message MsgWithdrawFilledLimitOrder {
@@ -180,7 +213,22 @@ message MsgWithdrawFilledLimitOrder {
   string tranche_key = 2;
 }
 
-message MsgWithdrawFilledLimitOrderResponse {}
+message MsgWithdrawFilledLimitOrderResponse {
+  // Total amount of taker reserves that were withdrawn
+  cosmos.base.v1beta1.Coin taker_coin_out = 1 [
+    (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "taker_coin_out"
+  ];
+  // Total amount of maker reserves that were withdrawn --only applies to inactive LimitOrders
+  cosmos.base.v1beta1.Coin maker_coin_out = 2 [
+    (gogoproto.moretags) = "yaml:\"maker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "maker_coin_out"
+  ];
+}
 
 message MsgCancelLimitOrder {
   option (amino.name) = "dex/MsgCancelLimitOrder";
@@ -190,7 +238,22 @@ message MsgCancelLimitOrder {
   string tranche_key = 2;
 }
 
-message MsgCancelLimitOrderResponse {}
+message MsgCancelLimitOrderResponse {
+  // Total amount of taker reserves that were withdrawn
+  cosmos.base.v1beta1.Coin taker_coin_out = 1 [
+    (gogoproto.moretags) = "yaml:\"taker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "taker_coin_out"
+  ];
+  // Total amount of maker reserves that were canceled
+  cosmos.base.v1beta1.Coin maker_coin_out = 2 [
+    (gogoproto.moretags) = "yaml:\"maker_coin_out\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "maker_coin_out"
+  ];
+}
 
 message MultiHopRoute {
   repeated string hops = 1;
@@ -222,9 +285,17 @@ message MsgMultiHopSwap {
 
 message MsgMultiHopSwapResponse {
   cosmos.base.v1beta1.Coin coin_out = 1 [
+    (gogoproto.moretags) = "yaml:\"coin_out\"",
     (gogoproto.nullable) = false,
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.jsontag) = "coin_out"
+  ];
+  MultiHopRoute route = 2;
+  repeated cosmos.base.v1beta1.Coin dust = 3 [
+    (gogoproto.moretags) = "yaml:\"dust\"",
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.jsontag) = "dust"
   ];
 }
 

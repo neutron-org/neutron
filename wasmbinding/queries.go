@@ -201,7 +201,6 @@ func (qp *QueryPlugin) DexQuery(ctx sdk.Context, query bindings.DexQuery) (data 
 		data, err = dexQuery(ctx, query.TickLiquidityAll, qp.dexKeeper.TickLiquidityAll)
 	case query.UserDepositsAll != nil:
 		data, err = dexQuery(ctx, query.UserDepositsAll, qp.dexKeeper.UserDepositsAll)
-
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.dex query type"}
 	}

@@ -31,7 +31,7 @@ func (k Keeper) EstimateMultiHopSwap(
 	callerAddr := sdk.MustAccAddressFromBech32(req.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(req.Receiver)
 
-	coinOut, err := k.MultiHopSwapCore(
+	coinOut, _, _, err := k.MultiHopSwapCore(
 		cacheCtx,
 		req.AmountIn,
 		req.Routes,
