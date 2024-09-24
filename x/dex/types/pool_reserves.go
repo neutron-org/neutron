@@ -29,6 +29,9 @@ func NewPoolReserves(
 	poolReservesID *PoolReservesKey,
 ) (*PoolReserves, error) {
 	makerPrice, err := poolReservesID.Price()
+	if err != nil {
+		return nil, err
+	}
 	counterpartID := poolReservesID.Counterpart()
 	priceOppositeTakerToMaker, err := counterpartID.PriceTakerToMaker()
 	if err != nil {
