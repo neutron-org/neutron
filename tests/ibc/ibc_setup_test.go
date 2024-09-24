@@ -5,7 +5,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -20,12 +19,10 @@ import (
 
 	appparams "github.com/neutron-org/neutron/v4/app/params"
 	"github.com/neutron-org/neutron/v4/testutil"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 )
 
 var (
 	nativeDenom            = appparams.DefaultDenom
-	ibcTransferAmount      = math.NewInt(100_000)
 	genesisWalletAmount, _ = math.NewIntFromString("10000000000000000000")
 )
 
@@ -337,39 +334,4 @@ func (s *IBCTestSuite) assertChainBBalance(addr sdk.AccAddress, denom string, ex
 //nolint:unused
 func (s *IBCTestSuite) assertChainCBalance(addr sdk.AccAddress, denom string, expectedAmt math.Int) {
 	s.assertBalance(s.bundleC.App.GetTestBankKeeper(), s.bundleC.Chain, addr, denom, expectedAmt)
-}
-
-func (s *IBCTestSuite) ReceiverOverrideAddr(channel, sender string) sdk.AccAddress {
-	addr, err := packetforward.GetReceiver(channel, sender)
-	if err != nil {
-		panic("Cannot calc receiver override: " + err.Error())
-	}
-	return sdk.MustAccAddressFromBech32(addr)
-}
-
-func (s *IBCTestSuite) neutronDeposit(
-	token0 string,
-	token1 string,
-	depositAmount0 math.Int,
-	depositAmount1 math.Int,
-	tickIndex int64,
-	fee uint64,
-	creator sdk.AccAddress,
-) {
-	// create deposit msg
-	msgDeposit := dextypes.NewMsgDeposit(
-		creator.String(),
-		creator.String(),
-		token0,
-		token1,
-		[]math.Int{depositAmount0},
-		[]math.Int{depositAmount1},
-		[]int64{tickIndex},
-		[]uint64{fee},
-		[]*dextypes.DepositOptions{{DisableAutoswap: false}},
-	)
-
-	// execute deposit msg
-	_, err := s.neutronChain.SendMsgs(msgDeposit)
-	s.Assert().NoError(err, "Deposit Failed")
 }

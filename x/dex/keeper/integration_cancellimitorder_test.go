@@ -396,3 +396,67 @@ func (s *DexTestSuite) TestCancelJITNextBlock() {
 	s.aliceCancelsLimitSellFails(trancheKey, types.ErrActiveLimitOrderNotFound)
 	s.assertAliceBalances(0, 0)
 }
+
+func (s *DexTestSuite) TestWithdrawThenCancel() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 0, 50)
+	s.bobLimitSells("TokenA", 0, 50)
+
+	s.carolLimitSells("TokenB", -1, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice withdraws and  cancels her limit order
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.aliceCancelsLimitSell(trancheKey)
+	s.assertAliceBalances(45, 5)
+
+	s.bobWithdrawsLimitSell(trancheKey)
+	s.assertBobBalances(0, 5)
+	s.bobCancelsLimitSell(trancheKey)
+	s.assertBobBalances(45, 5)
+}
+
+func (s *DexTestSuite) TestWithdrawThenCancel2() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 0, 50)
+	s.bobLimitSells("TokenA", 0, 50)
+
+	s.carolLimitSells("TokenB", -1, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice withdraws and  cancels her limit order
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.aliceCancelsLimitSell(trancheKey)
+	s.assertAliceBalances(45, 5)
+
+	s.bobCancelsLimitSell(trancheKey)
+	s.assertBobBalances(45, 5)
+}
+
+func (s *DexTestSuite) TestWithdrawThenCancelLowTick() {
+	s.fundAliceBalances(50, 0)
+	s.fundBobBalances(50, 0)
+	s.fundCarolBalances(0, 40)
+
+	// // GIVEN alice and bob each limit sells 50 TokenA
+	trancheKey := s.aliceLimitSells("TokenA", 20000, 50)
+	s.bobLimitSells("TokenA", 20000, 50)
+
+	s.carolLimitSells("TokenB", -20001, 10, types.LimitOrderType_FILL_OR_KILL)
+
+	// WHEN alice withdraws and  cancels her limit order
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.aliceCancelsLimitSell(trancheKey)
+	s.assertAliceBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
+
+	s.bobWithdrawsLimitSell(trancheKey)
+	s.assertBobBalancesInt(sdkmath.ZeroInt(), sdkmath.NewInt(4999999))
+	s.bobCancelsLimitSell(trancheKey)
+	s.assertBobBalancesInt(sdkmath.NewInt(13058413), sdkmath.NewInt(4999999))
+}

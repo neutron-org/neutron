@@ -30,6 +30,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// The request type for the Query/Params RPC method.
 type QueryParamsRequest struct {
 }
 
@@ -66,6 +67,7 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
+// The response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
 	// params holds all the parameters of this module.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
@@ -111,6 +113,7 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
+// The request type for the Query/Schedule RPC method.
 type QueryGetScheduleRequest struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 }
@@ -155,6 +158,7 @@ func (m *QueryGetScheduleRequest) GetName() string {
 	return ""
 }
 
+// The response type for the Query/Params RPC method.
 type QueryGetScheduleResponse struct {
 	Schedule Schedule `protobuf:"bytes,1,opt,name=schedule,proto3" json:"schedule"`
 }
@@ -199,6 +203,7 @@ func (m *QueryGetScheduleResponse) GetSchedule() Schedule {
 	return Schedule{}
 }
 
+// The request type for the Query/Schedules RPC method.
 type QuerySchedulesRequest struct {
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
@@ -243,6 +248,7 @@ func (m *QuerySchedulesRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
+// The response type for the Query/Params RPC method.
 type QuerySchedulesResponse struct {
 	Schedules  []Schedule          `protobuf:"bytes,1,rep,name=schedules,proto3" json:"schedules"`
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
