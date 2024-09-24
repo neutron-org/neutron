@@ -34,7 +34,7 @@ func (k Keeper) SimulatePlaceLimitOrder(
 	if err != nil {
 		return nil, err
 	}
-	tickIndex := msg.TickIndexInToOut
+	tickIndex := -msg.TickIndexInToOut
 	if msg.LimitSellPrice != nil {
 		tickIndex, err = types.CalcTickIndexFromPrice(*msg.LimitSellPrice)
 		if err != nil {

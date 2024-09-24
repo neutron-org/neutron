@@ -149,7 +149,7 @@ func (k Keeper) HopsToRouteData(
 		if !found {
 			return routeArr, types.ErrLimitPriceNotSatisfied
 		}
-		priceAcc = priceAcc.Mul(price)
+		priceAcc = priceAcc.Quo(price)
 		routeArr[index] = MultihopStep{
 			tradePairID:        tradePairID,
 			RemainingBestPrice: priceAcc,

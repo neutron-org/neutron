@@ -45,12 +45,11 @@ func migrateTickLiquidityPrices(ctx sdk.Context, cdc codec.BinaryCodec, storeKey
 		// Recalculate all prices
 		switch liquidity := tickLiq.Liquidity.(type) {
 		case *types.TickLiquidity_LimitOrderTranche:
-			liquidity.LimitOrderTranche.PriceTakerToMaker = types.MustCalcPrice(liquidity.LimitOrderTranche.Key.TickIndexTakerToMaker)
+			liquidity.LimitOrderTranche.PriceTakerToMaker = types.MustCalcPrice(-liquidity.LimitOrderTranche.Key.TickIndexTakerToMaker)
 			updatedTickLiq = types.TickLiquidity{Liquidity: liquidity}
 		case *types.TickLiquidity_PoolReserves:
 			poolReservesKey := liquidity.PoolReserves.Key
-			liquidity.PoolReserves.PriceTakerToMaker = types.MustCalcPrice(poolReservesKey.TickIndexTakerToMaker)
-			liquidity.PoolReserves.PriceOppositeTakerToMaker = poolReservesKey.Counterpart().MustPriceTakerToMaker()
+			liquidity.PoolReserves.PriceTakerToMaker = types.MustCalcPrice(-poolReservesKey.TickIndexTakerToMaker)
 			updatedTickLiq = types.TickLiquidity{Liquidity: liquidity}
 
 		default:
@@ -90,7 +89,7 @@ func migrateInactiveTranchePrices(ctx sdk.Context, cdc codec.BinaryCodec, storeK
 		var tranche types.LimitOrderTranche
 		cdc.MustUnmarshal(iterator.Value(), &tranche)
 		// Recalculate price
-		tranche.PriceTakerToMaker = types.MustCalcPrice(tranche.Key.TickIndexTakerToMaker)
+		tranche.PriceTakerToMaker = types.MustCalcPrice(-tranche.Key.TickIndexTakerToMaker)
 
 		bz := cdc.MustMarshal(&tranche)
 		ticksToUpdate = append(ticksToUpdate, migrationUpdate{key: iterator.Key(), val: bz})

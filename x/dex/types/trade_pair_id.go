@@ -91,12 +91,12 @@ func (p TradePairID) TickIndexNormalized(tickIndexTakerToMaker int64) int64 {
 	return p.TickIndexTakerToMaker(tickIndexTakerToMaker)
 }
 
-func (p TradePairID) PriceTakerToMaker(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec, err error) {
+func (p TradePairID) MakerPrice(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec, err error) {
 	return CalcPrice(p.TickIndexTakerToMaker(tickIndexNormalized))
 }
 
-func (p TradePairID) MustPriceTakerToMaker(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec) {
-	price, err := p.PriceTakerToMaker(tickIndexNormalized)
+func (p TradePairID) MustMakerPrice(tickIndexNormalized int64) (priceTakerToMaker math_utils.PrecDec) {
+	price, err := p.MakerPrice(tickIndexNormalized)
 	if err != nil {
 		panic(err)
 	}

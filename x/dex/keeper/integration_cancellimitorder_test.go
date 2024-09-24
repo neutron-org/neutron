@@ -216,8 +216,8 @@ func (s *DexTestSuite) TestCancelPartiallyFilledWithdrawFails() {
 	s.aliceCancelsLimitSell(trancheKey)
 
 	// Then alice gets back remaining ~37 BIGTokenA LO reserves & 10 BIGTokenB taker tokens
-	s.assertAliceBalancesInt(sdkmath.NewInt(37786094), sdkmath.NewInt(10000000))
-	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.ZeroInt())
+	s.assertAliceBalancesInt(sdkmath.NewInt(37786094), sdkmath.NewInt(9999999))
+	s.assertDexBalancesInt(sdkmath.OneInt(), sdkmath.OneInt())
 
 	// Assert that the LimitOrderTrancheUser has been deleted
 	_, found := s.App.DexKeeper.GetLimitOrderTrancheUser(s.Ctx, s.alice.String(), trancheKey)
@@ -274,8 +274,8 @@ func (s *DexTestSuite) TestCancelPartiallyFilledMultiUser2() {
 	s.aliceCancelsLimitSell(trancheKey)
 
 	// THEN alice gets back remaining ~38 BIGTokenA LO reserves & 10 BIGTokenB taker tokens
-	s.assertAliceBalancesInt(sdkmath.NewInt(37786094), sdkmath.NewInt(10000000))
-	s.assertDexBalancesInt(sdkmath.NewInt(37786096), sdkmath.NewInt(10000000))
+	s.assertAliceBalancesInt(sdkmath.NewInt(37786094), sdkmath.NewInt(9999999))
+	s.assertDexBalancesInt(sdkmath.NewInt(37786096), sdkmath.NewInt(10000001))
 
 	// THEN carol swap through more of the limitorder
 	s.carolLimitSells("TokenB", -2001, 20, types.LimitOrderType_FILL_OR_KILL)

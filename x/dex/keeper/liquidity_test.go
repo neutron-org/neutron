@@ -483,8 +483,8 @@ func (s *DexTestSuite) TestSwap1To0LOMaxAmountNotUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenB", "TokenA", 8, 15)
 
 	// THEN swap should return 8 BIGTokenB in and ~8 BIGTokenA out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(8_000_000), tokenOut, sdkmath.NewInt(8_000_800))
-	s.assertTickBalancesInt(sdkmath.NewInt(1_999_200), sdkmath.NewInt(8_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(8_000_000), tokenOut, sdkmath.NewInt(8_000_799))
+	s.assertTickBalancesInt(sdkmath.NewInt(1_999_201), sdkmath.NewInt(8_000_000))
 }
 
 func (s *DexTestSuite) TestSwap0To1LOMaxAmountUsedMultiTick() {
