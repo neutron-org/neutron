@@ -38,7 +38,7 @@ func (k MsgServer) Deposit(
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
-	pairID, err := types.NewPairIDFromUnsorted(msg.TokenA, msg.TokenB)
+	pairID, err := types.NewPairID(msg.TokenA, msg.TokenB)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (k MsgServer) Deposit(
 
 	tickIndexes := NormalizeAllTickIndexes(msg.TokenA, pairID.Token0, msg.TickIndexesAToB)
 
-	Amounts0Deposit, Amounts1Deposit, _, failedDeposits, err := k.DepositCore(
+	Amounts0Deposit, Amounts1Deposit, sharesIssued, failedDeposits, err := k.DepositCore(
 		goCtx,
 		pairID,
 		callerAddr,
@@ -67,6 +67,7 @@ func (k MsgServer) Deposit(
 		Reserve0Deposited: Amounts0Deposit,
 		Reserve1Deposited: Amounts1Deposit,
 		FailedDeposits:    failedDeposits,
+		SharesIssued:      sharesIssued,
 	}, nil
 }
 
@@ -85,14 +86,14 @@ func (k MsgServer) Withdrawal(
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
-	pairID, err := types.NewPairIDFromUnsorted(msg.TokenA, msg.TokenB)
+	pairID, err := types.NewPairID(msg.TokenA, msg.TokenB)
 	if err != nil {
 		return nil, err
 	}
 
 	tickIndexes := NormalizeAllTickIndexes(msg.TokenA, pairID.Token0, msg.TickIndexesAToB)
 
-	err = k.WithdrawCore(
+	reserve0ToRemoved, reserve1ToRemoved, sharesBurned, err := k.WithdrawCore(
 		goCtx,
 		pairID,
 		callerAddr,
@@ -105,7 +106,11 @@ func (k MsgServer) Withdrawal(
 		return nil, err
 	}
 
-	return &types.MsgWithdrawalResponse{}, nil
+	return &types.MsgWithdrawalResponse{
+		Reserve0Withdrawn: reserve0ToRemoved,
+		Reserve1Withdrawn: reserve1ToRemoved,
+		SharesBurned:      sharesBurned,
+	}, nil
 }
 
 func (k MsgServer) PlaceLimitOrder(
@@ -136,7 +141,7 @@ func (k MsgServer) PlaceLimitOrder(
 			return &types.MsgPlaceLimitOrderResponse{}, errors.Wrapf(err, "invalid LimitSellPrice %s", msg.LimitSellPrice.String())
 		}
 	}
-	trancheKey, coinIn, _, coinOutSwap, err := k.PlaceLimitOrderCore(
+	trancheKey, coinIn, swapInCoin, coinOutSwap, err := k.PlaceLimitOrderCore(
 		goCtx,
 		msg.TokenIn,
 		msg.TokenOut,
@@ -156,6 +161,7 @@ func (k MsgServer) PlaceLimitOrder(
 		TrancheKey:   trancheKey,
 		CoinIn:       coinIn,
 		TakerCoinOut: coinOutSwap,
+		TakerCoinIn:  swapInCoin,
 	}, nil
 }
 
@@ -173,7 +179,7 @@ func (k MsgServer) WithdrawFilledLimitOrder(
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
-	err := k.WithdrawFilledLimitOrderCore(
+	takerCoinOut, makerCoinOut, err := k.WithdrawFilledLimitOrderCore(
 		goCtx,
 		msg.TrancheKey,
 		callerAddr,
@@ -182,7 +188,10 @@ func (k MsgServer) WithdrawFilledLimitOrder(
 		return &types.MsgWithdrawFilledLimitOrderResponse{}, err
 	}
 
-	return &types.MsgWithdrawFilledLimitOrderResponse{}, nil
+	return &types.MsgWithdrawFilledLimitOrderResponse{
+		TakerCoinOut: takerCoinOut,
+		MakerCoinOut: makerCoinOut,
+	}, nil
 }
 
 func (k MsgServer) CancelLimitOrder(
@@ -199,7 +208,7 @@ func (k MsgServer) CancelLimitOrder(
 
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 
-	err := k.CancelLimitOrderCore(
+	makerCoinOut, takerCoinOut, err := k.CancelLimitOrderCore(
 		goCtx,
 		msg.TrancheKey,
 		callerAddr,
@@ -208,7 +217,10 @@ func (k MsgServer) CancelLimitOrder(
 		return &types.MsgCancelLimitOrderResponse{}, err
 	}
 
-	return &types.MsgCancelLimitOrderResponse{}, nil
+	return &types.MsgCancelLimitOrderResponse{
+		TakerCoinOut: takerCoinOut,
+		MakerCoinOut: makerCoinOut,
+	}, nil
 }
 
 func (k MsgServer) MultiHopSwap(
@@ -226,7 +238,7 @@ func (k MsgServer) MultiHopSwap(
 	callerAddr := sdk.MustAccAddressFromBech32(msg.Creator)
 	receiverAddr := sdk.MustAccAddressFromBech32(msg.Receiver)
 
-	coinOut, err := k.MultiHopSwapCore(
+	coinOut, route, dust, err := k.MultiHopSwapCore(
 		goCtx,
 		msg.AmountIn,
 		msg.Routes,
@@ -238,7 +250,11 @@ func (k MsgServer) MultiHopSwap(
 	if err != nil {
 		return &types.MsgMultiHopSwapResponse{}, err
 	}
-	return &types.MsgMultiHopSwapResponse{CoinOut: coinOut}, nil
+	return &types.MsgMultiHopSwapResponse{
+		CoinOut: coinOut,
+		Route:   &types.MultiHopRoute{Hops: route},
+		Dust:    dust,
+	}, nil
 }
 
 func (k MsgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
