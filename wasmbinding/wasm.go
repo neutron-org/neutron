@@ -12,8 +12,8 @@ import (
 
 	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/connect/v2/x/oracle/keeper"
 
 	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
 	interchaintransactionsmodulekeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"

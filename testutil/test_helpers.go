@@ -12,6 +12,7 @@ import (
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	keeper2 "github.com/cosmos/interchain-security/v6/testutil/keeper"
 
 	"github.com/neutron-org/neutron/v4/utils"
 
@@ -22,7 +23,7 @@ import (
 	db2 "github.com/cosmos/cosmos-db"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	consumertypes "github.com/cosmos/interchain-security/v6/x/ccv/consumer/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -31,21 +32,21 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
-	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
+	icssimapp "github.com/cosmos/interchain-security/v6/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
 	appparams "github.com/neutron-org/neutron/v4/app/params"
 	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	appProvider "github.com/cosmos/interchain-security/v5/app/provider"
-	e2e "github.com/cosmos/interchain-security/v5/testutil/integration"
+	appProvider "github.com/cosmos/interchain-security/v6/app/provider"
+	e2e "github.com/cosmos/interchain-security/v6/testutil/integration"
 
 	"github.com/neutron-org/neutron/v4/app"
 	ictxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
-	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	providertypes "github.com/cosmos/interchain-security/v6/x/ccv/provider/types"
+	ccv "github.com/cosmos/interchain-security/v6/x/ccv/types"
 
 	cmttypes "github.com/cometbft/cometbft/types"
 )
@@ -117,6 +118,8 @@ func GetTestConsumerAdditionProp(chain *ibctesting.TestChain) *providertypes.Con
 		0,
 		nil,
 		nil,
+		0,
+		true,
 	).(*providertypes.ConsumerAdditionProposal) //nolint:staticcheck
 
 	return prop
@@ -159,20 +162,58 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainA.NextBlock()
 	suite.ChainB.NextBlock()
 
+	initializationParameters := keeper2.GetTestInitializationParameters()
+	// NOTE: we cannot use the time.Now() because the coordinator chooses a hardcoded start time
+	// using time.Now() could set the spawn time to be too far in the past or too far in the future
+	initializationParameters.SpawnTime = suite.Coordinator.CurrentTime
+	// NOTE: the initial height passed to CreateConsumerClient
+	// must be the height on the consumer when InitGenesis is called
+	initializationParameters.InitialHeight = clienttypes.Height{RevisionNumber: 0, RevisionHeight: 2}
+
 	// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper.
 	prop1 := GetTestConsumerAdditionProp(suite.ChainA)
-	err := providerKeeper.CreateConsumerClient(
-		ct,
-		prop1,
-	)
+
+	providerKeeper.SetConsumerChainId(ct, prop1.ChainId, prop1.ChainId)
+	err := providerKeeper.SetConsumerPowerShapingParameters(suite.ChainProvider.GetContext(), prop1.ChainId, keeper2.GetTestPowerShapingParameters())
+	suite.Require().NoError(err)
+	providerKeeper.SetConsumerPhase(ct, prop1.ChainId, providertypes.CONSUMER_PHASE_INITIALIZED)
+	err = providerKeeper.SetConsumerInitializationParameters(ct, prop1.ChainId, initializationParameters)
+	suite.Require().NoError(err)
+	err = providerKeeper.SetConsumerMetadata(suite.ChainProvider.GetContext(), prop1.ChainId, keeper2.GetTestConsumerMetadata())
+	suite.Require().NoError(err)
+	err = providerKeeper.AppendConsumerToBeLaunched(suite.ChainProvider.GetContext(), prop1.ChainId, suite.Coordinator.CurrentTime)
 	suite.Require().NoError(err)
 
-	prop2 := GetTestConsumerAdditionProp(suite.ChainB)
-	err = providerKeeper.CreateConsumerClient(
-		ct,
-		prop2,
-	)
+	// opt-in all validators
+	lastVals, err := providerKeeper.GetLastBondedValidators(suite.ChainProvider.GetContext())
 	suite.Require().NoError(err)
+
+	for _, v := range lastVals {
+		consAddr, _ := v.GetConsAddr()
+		providerKeeper.SetOptedIn(suite.ChainProvider.GetContext(), prop1.ChainId, providertypes.NewProviderConsAddress(consAddr))
+	}
+
+	prop2 := GetTestConsumerAdditionProp(suite.ChainB)
+
+	providerKeeper.SetConsumerChainId(ct, prop2.ChainId, prop2.ChainId)
+	err = providerKeeper.SetConsumerPowerShapingParameters(suite.ChainProvider.GetContext(), prop2.ChainId, keeper2.GetTestPowerShapingParameters())
+	suite.Require().NoError(err)
+	providerKeeper.SetConsumerPhase(ct, prop2.ChainId, providertypes.CONSUMER_PHASE_INITIALIZED)
+	err = providerKeeper.SetConsumerInitializationParameters(ct, prop2.ChainId, initializationParameters)
+	suite.Require().NoError(err)
+	err = providerKeeper.SetConsumerMetadata(suite.ChainProvider.GetContext(), prop2.ChainId, keeper2.GetTestConsumerMetadata())
+	suite.Require().NoError(err)
+	err = providerKeeper.AppendConsumerToBeLaunched(suite.ChainProvider.GetContext(), prop2.ChainId, suite.Coordinator.CurrentTime)
+	suite.Require().NoError(err)
+
+	// opt-in all validators
+	lastVals, err = providerKeeper.GetLastBondedValidators(suite.ChainProvider.GetContext())
+	suite.Require().NoError(err)
+
+	for _, v := range lastVals {
+		consAddr, _ := v.GetConsAddr()
+		providerKeeper.SetOptedIn(suite.ChainProvider.GetContext(), prop2.ChainId, providertypes.NewProviderConsAddress(consAddr))
+	}
 
 	// move provider to next block to commit the state
 	suite.ChainProvider.NextBlock()
@@ -204,6 +245,9 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 		NewChain: consumerGenesisB.NewChain,
 	}
 	consumerKeeperB.InitGenesis(suite.ChainB.GetContext(), &genesisStateB)
+
+	suite.ChainA.NextBlock()
+	suite.ChainB.NextBlock()
 
 	// create paths for the CCV channel
 	suite.CCVPathA = ibctesting.NewPath(suite.ChainA, suite.ChainProvider)

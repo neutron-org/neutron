@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/skip-mev/slinky/cmd/constants/marketmaps"
+	"github.com/skip-mev/connect/v2/cmd/constants/marketmaps"
 
 	appparams "github.com/neutron-org/neutron/v4/app/params"
 
@@ -27,8 +27,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	"github.com/cosmos/cosmos-sdk/x/consensus/types"
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 
 	"github.com/neutron-org/neutron/v4/app/upgrades"
 )

@@ -13,7 +13,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	consumertypes "github.com/cosmos/interchain-security/v6/x/ccv/consumer/types"
 
 	"github.com/neutron-org/neutron/v4/x/feeburner/types"
 )

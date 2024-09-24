@@ -14,7 +14,7 @@ import (
 	scconfig "github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

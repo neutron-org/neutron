@@ -4,10 +4,10 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/skip-mev/slinky/cmd/constants/marketmaps"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	"github.com/skip-mev/connect/v2/cmd/constants/marketmaps"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	slinkytypes "github.com/skip-mev/connect/v2/pkg/types"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	comettypes "github.com/cometbft/cometbft/proto/tendermint/types"

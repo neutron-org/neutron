@@ -12,8 +12,8 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	consumerante "github.com/cosmos/interchain-security/v6/app/consumer/ante"
+	ibcconsumerkeeper "github.com/cosmos/interchain-security/v6/x/ccv/consumer/keeper"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
 	globalfeeante "github.com/neutron-org/neutron/v4/x/globalfee/ante"

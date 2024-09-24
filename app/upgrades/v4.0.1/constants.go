@@ -2,9 +2,9 @@ package v400
 
 import (
 	storetypes "cosmossdk.io/store/types"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 

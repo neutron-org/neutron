@@ -10,8 +10,8 @@ import (
 
 	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
 
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/connect/v2/x/oracle/keeper"
 )
 
 type QueryPlugin struct {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"cosmossdk.io/math"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
@@ -16,7 +16,7 @@ import (
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 
 	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
 )

@@ -19,8 +19,8 @@ import (
 
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
 
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
+	oraclekeeper "github.com/skip-mev/connect/v2/x/oracle/keeper"
 
 	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
 	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"

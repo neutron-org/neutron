@@ -15,9 +15,9 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v6/x/ccv/consumer/types"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
 	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
