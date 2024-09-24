@@ -260,7 +260,6 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithDustMinAvgPriceFails() {
 		Receiver:            s.alice.String(),
 		TokenIn:             "TokenA",
 		TokenOut:            "TokenB",
-		TickIndexInToOut:    0,
 		LimitSellPrice:      &limitPrice,
 		AmountIn:            sdkmath.NewInt(2000),
 		OrderType:           types.LimitOrderType_GOOD_TIL_CANCELLED,
@@ -281,13 +280,12 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithDustMinAvgPrice() {
 	)
 	// THEN alice IoC limitOrder with lower min avg prices success
 	limitPrice := math_utils.MustNewPrecDecFromStr("0.006737")
-	minAvgPrice := math_utils.MustNewPrecDecFromStr("0.006736")
+	minAvgPrice := math_utils.MustNewPrecDecFromStr("0.006728")
 	_, err := s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
 		Creator:             s.alice.String(),
 		Receiver:            s.alice.String(),
 		TokenIn:             "TokenA",
 		TokenOut:            "TokenB",
-		TickIndexInToOut:    0,
 		LimitSellPrice:      &limitPrice,
 		AmountIn:            sdkmath.NewInt(2000),
 		OrderType:           types.LimitOrderType_GOOD_TIL_CANCELLED,

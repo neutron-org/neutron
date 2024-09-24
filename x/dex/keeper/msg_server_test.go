@@ -2219,11 +2219,10 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 				TokenIn:             "TokenA",
 				TokenOut:            "TokenB",
 				LimitSellPrice:      &FIVEDEC,
-				TickIndexInToOut:    0,
 				AmountIn:            sdkmath.OneInt(),
 				MinAverageSellPrice: &ZERODEC,
 			},
-			types.ErrInvalidPriceAndTick,
+			types.ErrZeroMinAverageSellPrice,
 		},
 	}
 
