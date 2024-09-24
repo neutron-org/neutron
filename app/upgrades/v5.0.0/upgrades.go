@@ -29,9 +29,13 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		err = setDexParams(ctx, keepers.DexKeeper)
-		if err != nil {
-			return nil, err
+		ctx.Logger().Info("Running dex upgrades...")
+		// Only pause dex for mainnet
+		if ctx.ChainID() == "neutron-1" {
+			err = upgradeDexPause(ctx, *keepers.DexKeeper)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
@@ -39,13 +43,18 @@ func CreateUpgradeHandler(
 	}
 }
 
-func setDexParams(ctx sdk.Context, dexKeeper *dexkeeper.Keeper) error {
-	params := dexKeeper.GetParams(ctx)
+func upgradeDexPause(ctx sdk.Context, k dexkeeper.Keeper) error {
+	// Set the dex to paused
+	ctx.Logger().Info("Pausing dex...")
+
+	params := k.GetParams(ctx)
 	params.Paused = true
-	err := dexKeeper.SetParams(ctx, params)
-	if err != nil {
-		return errors.Wrap(err, "failed to set dex params")
+
+	if err := k.SetParams(ctx, params); err != nil {
+		return err
 	}
+
+	ctx.Logger().Info("Dex is paused")
 
 	return nil
 }
