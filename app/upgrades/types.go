@@ -21,6 +21,7 @@ import (
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
 	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
 	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
@@ -64,6 +65,7 @@ type UpgradeKeepers struct {
 	MarketmapKeeper    *marketmapkeeper.Keeper
 	FeeMarketKeeper    *feemarketkeeper.Keeper
 	DynamicfeesKeeper  *dynamicfeeskeeper.Keeper
+	DexKeeper          *dexkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace
