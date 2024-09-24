@@ -68,7 +68,7 @@ func (p TradePairID) MustPairID() *PairID {
 }
 
 func (p TradePairID) PairID() (*PairID, error) {
-	return NewPairIDFromUnsorted(p.MakerDenom, p.TakerDenom)
+	return NewPairID(p.MakerDenom, p.TakerDenom)
 }
 
 func (p TradePairID) Reversed() *TradePairID {
