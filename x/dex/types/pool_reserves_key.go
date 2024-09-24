@@ -55,3 +55,7 @@ func (p PoolReservesKey) MustPrice() (priceTakerToMaker math_utils.PrecDec) {
 	}
 	return price
 }
+
+func (p PoolReservesKey) PriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec, err error) {
+	return CalcPrice(-p.TickIndexTakerToMaker)
+}

@@ -10,6 +10,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	math_utils "github.com/neutron-org/neutron/v4/utils/math"
 	"github.com/neutron-org/neutron/v4/x/dex/types"
 	"github.com/neutron-org/neutron/v4/x/dex/utils"
 )
@@ -30,6 +31,7 @@ func NewLimitOrderTranche(
 		TotalTakerDenom:    math.ZeroInt(),
 		ExpirationTime:     goodTil,
 		MakerPrice:         price,
+		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(price),
 	}, nil
 }
 

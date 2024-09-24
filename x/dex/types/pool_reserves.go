@@ -17,10 +17,11 @@ func NewPoolReservesFromCounterpart(
 	// Pool tickIndex has already been validated so this will never throw
 	makerPrice := MustCalcPrice(thisID.TickIndexTakerToMaker)
 	return &PoolReserves{
-		Key:                thisID,
-		ReservesMakerDenom: math.ZeroInt(),
-		MakerPrice:         makerPrice,
-		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(makerPrice),
+		Key:                       thisID,
+		ReservesMakerDenom:        math.ZeroInt(),
+		MakerPrice:                makerPrice,
+		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
+		PriceOppositeTakerToMaker: counterpart.PriceTakerToMaker,
 	}
 }
 
@@ -28,15 +29,18 @@ func NewPoolReserves(
 	poolReservesID *PoolReservesKey,
 ) (*PoolReserves, error) {
 	makerPrice, err := poolReservesID.Price()
+	counterpartID := poolReservesID.Counterpart()
+	priceOppositeTakerToMaker, err := counterpartID.PriceTakerToMaker()
 	if err != nil {
 		return nil, err
 	}
 
 	return &PoolReserves{
-		Key:                poolReservesID,
-		ReservesMakerDenom: math.ZeroInt(),
-		MakerPrice:         makerPrice,
-		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(makerPrice),
+		Key:                       poolReservesID,
+		ReservesMakerDenom:        math.ZeroInt(),
+		MakerPrice:                makerPrice,
+		PriceTakerToMaker:         math_utils.OnePrecDec().Quo(makerPrice),
+		PriceOppositeTakerToMaker: priceOppositeTakerToMaker,
 	}, nil
 }
 
