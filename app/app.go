@@ -194,10 +194,6 @@ import (
 	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
 
-	"github.com/neutron-org/neutron/v4/x/ibcswap"
-	ibcswapkeeper "github.com/neutron-org/neutron/v4/x/ibcswap/keeper"
-	ibcswaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
-
 	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
 	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
 
@@ -277,7 +273,6 @@ var (
 		globalfee.AppModule{},
 		feemarket.AppModuleBasic{},
 		dex.AppModuleBasic{},
-		ibcswap.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
@@ -290,7 +285,7 @@ var (
 		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasmtypes.ModuleName:                          {},
+		wasmtypes.ModuleName:                          {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
@@ -299,7 +294,6 @@ var (
 		tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
 		crontypes.ModuleName:                          nil,
 		dextypes.ModuleName:                           {authtypes.Minter, authtypes.Burner},
-		ibcswaptypes.ModuleName:                       {authtypes.Burner},
 		oracletypes.ModuleName:                        nil,
 		marketmaptypes.ModuleName:                     nil,
 		feemarkettypes.FeeCollectorName:               nil,
@@ -371,7 +365,6 @@ type App struct {
 	CronKeeper          cronkeeper.Keeper
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
-	SwapKeeper          ibcswapkeeper.Keeper
 	GlobalFeeKeeper     globalfeekeeper.Keeper
 
 	PFMModule packetforward.AppModule
@@ -749,15 +742,6 @@ func New(
 
 	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
 
-	app.SwapKeeper = ibcswapkeeper.NewKeeper(
-		appCodec,
-		app.MsgServiceRouter(),
-		app.IBCKeeper.ChannelKeeper,
-		app.BankKeeper,
-	)
-
-	swapModule := ibcswap.NewAppModule(app.SwapKeeper)
-
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
@@ -922,7 +906,6 @@ func New(
 		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
-	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
 	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
@@ -973,7 +956,6 @@ func New(
 		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
 		feemarket.NewAppModule(appCodec, *app.FeeMarkerKeeper),
 		dynamicfees.NewAppModule(appCodec, *app.DynamicFeesKeeper),
-		swapModule,
 		dexModule,
 		marketmapModule,
 		oracleModule,
@@ -1023,7 +1005,6 @@ func New(
 		oracletypes.ModuleName,
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
-		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
@@ -1060,7 +1041,6 @@ func New(
 		oracletypes.ModuleName,
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
-		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
@@ -1102,7 +1082,6 @@ func New(
 		feemarkettypes.ModuleName,
 		oracletypes.ModuleName,
 		marketmaptypes.ModuleName,
-		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
 		consensusparamtypes.ModuleName,

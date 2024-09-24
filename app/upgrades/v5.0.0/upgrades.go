@@ -32,14 +32,37 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Running dex upgrades...")
+		// Only pause dex for mainnet
+		if ctx.ChainID() == "neutron-1" {
+			err = upgradeDexPause(ctx, *keepers.DexKeeper)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		err = upgradePools(ctx, *keepers.DexKeeper)
 		if err != nil {
 			return nil, err
 		}
-
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
+}
+
+func upgradeDexPause(ctx sdk.Context, k dexkeeper.Keeper) error {
+	// Set the dex to paused
+	ctx.Logger().Info("Pausing dex...")
+
+	params := k.GetParams(ctx)
+	params.Paused = true
+
+	if err := k.SetParams(ctx, params); err != nil {
+		return err
+	}
+
+	ctx.Logger().Info("Dex is paused")
+
+	return nil
 }
 
 func upgradePools(ctx sdk.Context, k dexkeeper.Keeper) error {
@@ -61,7 +84,7 @@ func upgradePools(ctx sdk.Context, k dexkeeper.Keeper) error {
 				fee := pool.Fee()
 				nShares := shareholder.Shares
 
-				err := k.WithdrawCore(ctx, pairID, addr, addr, []math.Int{nShares}, []int64{tick}, []uint64{fee})
+				reserve0Removed, reserve1Removed, sharesBurned, err := k.WithdrawCore(ctx, pairID, addr, addr, []math.Int{nShares}, []int64{tick}, []uint64{fee})
 				if err != nil {
 					return fmt.Errorf("user %s failed to withdraw from pool %d", addr, poolID)
 				}
@@ -70,7 +93,9 @@ func upgradePools(ctx sdk.Context, k dexkeeper.Keeper) error {
 					"Withdrew user from pool",
 					"User", addr.String(),
 					"Pool", poolID,
-					"Shares", nShares.String(),
+					"SharesBurned", sharesBurned.String(),
+					"Reserve0Withdrawn", reserve0Removed.String(),
+					"Reserve1Withdrawn", reserve1Removed.String(),
 				)
 
 			}

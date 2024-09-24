@@ -3,9 +3,15 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+
 	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	types2 "github.com/neutron-org/neutron/v4/x/cron/types"
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -22,6 +28,8 @@ import (
 	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
+
+	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
 
 	"github.com/neutron-org/neutron/v4/app/params"
 
@@ -67,7 +75,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.messenger.Bank = &suite.neutron.BankKeeper
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
-	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
+	suite.messenger.CronMsgServer = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
+	suite.messenger.CronQueryServer = suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
@@ -75,7 +84,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.contractKeeper = keeper.NewDefaultPermissionKeeper(&suite.neutron.WasmKeeper)
 
 	err := suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
-		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 100)),
 		0,
 		FeeCollectorAddress,
 		tokenfactorytypes.DefaultWhitelistedHooks,
@@ -718,9 +727,107 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 		},
 	}
 
+	schedule, ok := suite.neutron.CronKeeper.GetSchedule(suite.ctx, "schedule1")
+	suite.True(ok)
+	suite.Equal(types2.ExecutionStage_EXECUTION_STAGE_END_BLOCKER, schedule.ExecutionStage)
+
 	// Dispatch AddSchedule message
 	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
+}
+
+func (suite *CustomMessengerTestSuite) TestBurnTokens() {
+	// add NTRN to the contract
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	coinsAmnt := sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(10_000_000))))
+	bankKeeper := suite.neutron.BankKeeper
+	err := bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, coinsAmnt)
+	suite.NoError(err)
+
+	suite.ConfigureTransferChannel()
+
+	// add IBC denom to the contract
+	// Create Transfer Msg
+	transferMsg := transfertypes.NewMsgTransfer(suite.TransferPath.EndpointB.ChannelConfig.PortID,
+		suite.TransferPath.EndpointB.ChannelID,
+		sdk.NewCoin(params.DefaultDenom, math.NewInt(100)),
+		suite.ChainB.SenderAccounts[0].SenderAccount.GetAddress().String(),
+		strings.TrimSpace(suite.contractAddress.String()),
+		clienttypes.NewHeight(1, 110),
+		0,
+		"",
+	)
+
+	// Send message from chainB to chainA
+	res, err := suite.TransferPath.EndpointB.Chain.SendMsgs(transferMsg)
+	suite.Require().NoError(err)
+
+	// Relay transfer msg to Neutron chain
+	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
+	suite.Require().NoError(err)
+
+	suite.Require().NoError(suite.TransferPath.RelayPacket(packet))
+	// -----------------------------------
+
+	// Add tf token to the contract
+	// Create denom for minting
+	fullMsg := bindings.NeutronMsg{
+		CreateDenom: &bindings.CreateDenom{
+			Subdenom: "tfdenom",
+		},
+	}
+
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	suite.NoError(err)
+
+	tfDenom := fmt.Sprintf("factory/%s/%s", suite.contractAddress.String(), fullMsg.CreateDenom.Subdenom)
+
+	amount, ok := math.NewIntFromString("808010808")
+	require.True(suite.T(), ok)
+
+	fullMsg = bindings.NeutronMsg{
+		MintTokens: &bindings.MintTokens{
+			Denom:         tfDenom,
+			Amount:        amount,
+			MintToAddress: suite.contractAddress.String(),
+		},
+	}
+
+	_, err = suite.executeNeutronMsg(suite.contractAddress, fullMsg)
+	suite.NoError(err)
+
+	type testCase struct {
+		Name       string
+		CoinToBurn sdk.Coin
+	}
+
+	ibcTokenDenomHash, err := suite.neutron.TransferKeeper.DenomHash(
+		suite.ctx,
+		&transfertypes.QueryDenomHashRequest{Trace: ibctesting.TransferPort + "/" + suite.TransferPath.EndpointA.ChannelID + "/" + params.DefaultDenom})
+	suite.Require().NoError(err)
+
+	testcases := []testCase{
+		{Name: "burn NTRN", CoinToBurn: sdk.NewCoin(params.DefaultDenom, math.NewInt(1000))},
+		{Name: "burn tf denom", CoinToBurn: sdk.NewCoin(tfDenom, math.NewInt(1000))},
+		{Name: "burn ibc denom", CoinToBurn: sdk.NewCoin("ibc/"+ibcTokenDenomHash.Hash, math.NewInt(50))},
+	}
+
+	for _, tc := range testcases {
+		suite.Run(tc.Name, func() {
+			balanceBeforeBurn := bankKeeper.GetBalance(suite.ctx, suite.contractAddress, tc.CoinToBurn.Denom)
+
+			// Craft Burn message
+			msg := types.CosmosMsg{
+				Bank: &types.BankMsg{Burn: &types.BurnMsg{Amount: types.Array[types.Coin]{types.Coin{Amount: tc.CoinToBurn.Amount.String(), Denom: tc.CoinToBurn.Denom}}}},
+			}
+
+			// Dispatch Burn message
+			_, err = suite.executeMsg(suite.contractAddress, msg)
+			suite.NoError(err)
+
+			suite.Require().Equal(balanceBeforeBurn.Sub(tc.CoinToBurn), bankKeeper.GetBalance(suite.ctx, suite.contractAddress, tc.CoinToBurn.Denom))
+		})
+	}
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
@@ -804,6 +911,10 @@ func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccA
 		Custom: fullMsg,
 	}
 
+	return suite.executeMsg(contractAddress, customMsg)
+}
+
+func (suite *CustomMessengerTestSuite) executeMsg(contractAddress sdk.AccAddress, fullMsg types.CosmosMsg) (data []byte, err error) {
 	type ExecuteMsg struct {
 		ReflectMsg struct {
 			Msgs []types.CosmosMsg `json:"msgs"`
@@ -812,7 +923,7 @@ func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccA
 
 	execMsg := ExecuteMsg{ReflectMsg: struct {
 		Msgs []types.CosmosMsg `json:"msgs"`
-	}(struct{ Msgs []types.CosmosMsg }{Msgs: []types.CosmosMsg{customMsg}})}
+	}(struct{ Msgs []types.CosmosMsg }{Msgs: []types.CosmosMsg{fullMsg}})}
 
 	msg, err := json.Marshal(execMsg)
 	suite.NoError(err)

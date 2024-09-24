@@ -17,4 +17,5 @@ type BankKeeper interface {
 	IterateAccountBalances(ctx context.Context, addr sdk.AccAddress, cb func(sdk.Coin) bool)
 	GetSupply(ctx context.Context, denom string) sdk.Coin
 	GetAccountsBalances(ctx context.Context) []banktypes.Balance
+	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
 }

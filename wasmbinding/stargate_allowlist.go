@@ -41,7 +41,8 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &icacontrollertypes.QueryInterchainAccountResponse{},
 
 		// transfer
-		"/ibc.applications.transfer.v1.Query/DenomTrace": &ibctransfertypes.QueryDenomTraceResponse{},
+		"/ibc.applications.transfer.v1.Query/DenomTrace":    &ibctransfertypes.QueryDenomTraceResponse{},
+		"/ibc.applications.transfer.v1.Query/EscrowAddress": &ibctransfertypes.QueryEscrowAddressResponse{},
 
 		// auth
 		"/cosmos.auth.v1beta1.Query/Account": &authtypes.QueryAccountResponse{},
@@ -90,6 +91,12 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.dex.Query/PoolByID":                          &dextypes.QueryPoolResponse{},
 		"/neutron.dex.Query/PoolMetadata":                      &dextypes.QueryGetPoolMetadataResponse{},
 		"/neutron.dex.Query/PoolMetadataAll":                   &dextypes.QueryAllPoolMetadataResponse{},
+		"/neutron.dex.Query/SimulateDeposit":                   &dextypes.QuerySimulateDepositResponse{},
+		"/neutron.dex.Query/SimulateWithdrawal":                &dextypes.QuerySimulateWithdrawalResponse{},
+		"/neutron.dex.Query/SimulatePlaceLimitOrder":           &dextypes.QuerySimulatePlaceLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateWithdrawFilledLimitOrder":  &dextypes.QuerySimulateWithdrawFilledLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateCancelLimitOrder":          &dextypes.QuerySimulateCancelLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateMultiHopSwap":              &dextypes.QuerySimulateMultiHopSwapResponse{},
 
 		// oracle
 		"/slinky.oracle.v1.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
