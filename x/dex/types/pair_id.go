@@ -7,7 +7,8 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 )
 
-func NewPairID(token0, token1 string) (*PairID, error) {
+func NewPairID(tokenA, tokenB string) (*PairID, error) {
+	token0, token1 := SortTokens(tokenA, tokenB)
 	if token0 == token1 {
 		return nil, sdkerrors.Wrapf(ErrInvalidTradingPair, "%s<>%s", token0, token1)
 	}
@@ -17,17 +18,12 @@ func NewPairID(token0, token1 string) (*PairID, error) {
 	}, nil
 }
 
-func MustNewPairID(token0, token1 string) *PairID {
-	pairID, err := NewPairID(token0, token1)
+func MustNewPairID(tokenA, tokenB string) *PairID {
+	pairID, err := NewPairID(tokenA, tokenB)
 	if err != nil {
 		panic(err)
 	}
 	return pairID
-}
-
-func NewPairIDFromUnsorted(tokenA, tokenB string) (*PairID, error) {
-	token0, token1 := SortTokens(tokenA, tokenB)
-	return NewPairID(token0, token1)
 }
 
 func (p *PairID) CanonicalString() string {
