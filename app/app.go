@@ -221,7 +221,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v500.Upgrade, v500.Upgrade}
+	Upgrades = []upgrades.Upgrade{v500.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
