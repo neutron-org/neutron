@@ -42,6 +42,7 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 		makerDenom,
 		takerDenom,
 		takerCoinOut.Amount,
+		makerCoinOut.Amount,
 		trancheKey,
 	))
 
