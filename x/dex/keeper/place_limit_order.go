@@ -21,6 +21,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	orderType types.LimitOrderType,
 	goodTil *time.Time,
 	maxAmountOut *math.Int,
+	minAvgSellPrice *math_utils.PrecDec,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
 ) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin sdk.Coin, err error) {
@@ -38,6 +39,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		orderType,
 		goodTil,
 		maxAmountOut,
+		minAvgSellPrice,
 		receiverAddr,
 	)
 	if err != nil {
@@ -102,14 +104,22 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	orderType types.LimitOrderType,
 	goodTil *time.Time,
 	maxAmountOut *math.Int,
+	minAvgSellPriceP *math_utils.PrecDec,
 	receiverAddr sdk.AccAddress,
 ) (trancheKey string, totalIn math.Int, swapInCoin, swapOutCoin sdk.Coin, sharesIssued math.Int, err error) {
 	amountLeft := amountIn
 
 	var limitPrice math_utils.PrecDec
 	limitPrice, err = types.CalcPrice(tickIndexInToOut)
+
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+	}
+
+	// Use limitPrice for minAvgSellPrice if it has not be specified
+	minAvgSellPrice := limitPrice
+	if minAvgSellPriceP != nil {
+		minAvgSellPrice = *minAvgSellPriceP
 	}
 
 	// Ensure that after rounding user will get at least 1 token out.
@@ -120,9 +130,9 @@ func (k Keeper) ExecutePlaceLimitOrder(
 
 	var orderFilled bool
 	if orderType.IsTakerOnly() {
-		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, orderType)
+		swapInCoin, swapOutCoin, err = k.TakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, maxAmountOut, limitPrice, minAvgSellPrice, orderType)
 	} else {
-		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice)
+		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitPrice, minAvgSellPrice)
 	}
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err

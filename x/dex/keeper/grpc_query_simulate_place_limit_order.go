@@ -49,6 +49,7 @@ func (k Keeper) SimulatePlaceLimitOrder(
 		msg.OrderType,
 		msg.ExpirationTime,
 		msg.MaxAmountOut,
+		msg.MinAverageSellPrice,
 		receiverAddr,
 	)
 	if err != nil {
