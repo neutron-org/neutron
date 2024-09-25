@@ -243,7 +243,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderInsufficientFunds() {
 	s.assertAliceLimitSellFails(err, "TokenA", 0, 10)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderWithDustMinAvgPriceFails() {
+func (s *DexTestSuite) TestPlaceLimitOrderGTCWithDustMinAvgPriceFails() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)
 	// GIVEN LP liq at 148.37-148.42 (with dust)
@@ -268,7 +268,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderWithDustMinAvgPriceFails() {
 	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
 }
 
-func (s *DexTestSuite) TestPlaceLimitOrderWithDustMinAvgPrice() {
+func (s *DexTestSuite) TestPlaceLimitOrderGTCWithDustMinAvgPrice() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)
 	// GIVEN LP liq at 148.37-148.42 (with dust)
