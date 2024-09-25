@@ -84,6 +84,8 @@ func (k Keeper) PlaceLimitOrderCore(
 		orderType.String(),
 		sharesIssued,
 		trancheKey,
+		swapInCoin.Amount,
+		swapOutCoin.Amount,
 	))
 
 	return trancheKey, totalInCoin, swapInCoin, swapOutCoin, nil
