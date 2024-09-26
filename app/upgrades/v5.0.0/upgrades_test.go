@@ -11,10 +11,11 @@ import (
 	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v5/testutil/common/sample"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/neutron-org/neutron/v5/testutil"
 	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
-	"github.com/stretchr/testify/suite"
 )
 
 type UpgradeTestSuite struct {

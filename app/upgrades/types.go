@@ -13,10 +13,11 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
 

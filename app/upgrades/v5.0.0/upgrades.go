@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
 	"github.com/neutron-org/neutron/v5/app/upgrades"
 	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 )

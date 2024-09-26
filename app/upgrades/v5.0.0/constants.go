@@ -2,6 +2,7 @@ package v500
 
 import (
 	storetypes "cosmossdk.io/store/types"
+
 	"github.com/neutron-org/neutron/v5/app/upgrades"
 )
 
