@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	v3 "github.com/neutron-org/neutron/v4/x/interchainqueries/migrations/v3"
+	v3 "github.com/neutron-org/neutron/v5/x/interchainqueries/migrations/v3"
 )
 
 // Migrator is a struct for handling in-place store migrations.

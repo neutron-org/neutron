@@ -3,9 +3,9 @@ package antetest
 import (
 	"github.com/cometbft/cometbft/proto/tendermint/types"
 
-	"github.com/neutron-org/neutron/v4/app/config"
+	"github.com/neutron-org/neutron/v5/app/config"
 
-	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v5/testutil"
 
 	"github.com/stretchr/testify/suite"
 
@@ -17,10 +17,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 
-	neutronapp "github.com/neutron-org/neutron/v4/app"
-	gaiaparams "github.com/neutron-org/neutron/v4/app/params"
-	gaiafeeante "github.com/neutron-org/neutron/v4/x/globalfee/ante"
-	globfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
+	neutronapp "github.com/neutron-org/neutron/v5/app"
+	gaiaparams "github.com/neutron-org/neutron/v5/app/params"
+	gaiafeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
+	globfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 )
 
 type IntegrationTestSuite struct {

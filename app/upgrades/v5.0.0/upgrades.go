@@ -1,4 +1,4 @@
-package v400
+package v500
 
 import (
 	"context"
@@ -10,9 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-
-	"github.com/neutron-org/neutron/v4/app/upgrades"
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
+	"github.com/neutron-org/neutron/v5/app/upgrades"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 )
 
 func CreateUpgradeHandler(
