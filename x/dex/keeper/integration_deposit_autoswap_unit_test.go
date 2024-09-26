@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (s *DexTestSuite) TestAutoswapSingleSided0To1() {
