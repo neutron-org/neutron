@@ -1,9 +1,8 @@
-package v400
+package v500
 
 import (
 	storetypes "cosmossdk.io/store/types"
-
-	"github.com/neutron-org/neutron/v4/app/upgrades"
+	"github.com/neutron-org/neutron/v5/app/upgrades"
 )
 
 const (

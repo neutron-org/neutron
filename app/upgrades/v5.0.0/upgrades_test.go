@@ -1,4 +1,4 @@
-package v400_test
+package v500_test
 
 import (
 	"testing"
@@ -7,12 +7,12 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/stretchr/testify/suite"
 
-	v500 "github.com/neutron-org/neutron/v4/app/upgrades/v5.0.0"
-	"github.com/neutron-org/neutron/v4/testutil/common/sample"
+	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
+	"github.com/neutron-org/neutron/v5/testutil/common/sample"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/testutil"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 type UpgradeTestSuite struct {

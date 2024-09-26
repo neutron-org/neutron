@@ -16,8 +16,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	gaiafeeante "github.com/neutron-org/neutron/v4/x/globalfee/ante"
-	globfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
+	gaiafeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
+	globfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 )
 
 var testGasLimit uint64 = 200_000

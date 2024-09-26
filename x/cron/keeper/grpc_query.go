@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/neutron-org/neutron/v4/x/cron/types"
+	"github.com/neutron-org/neutron/v5/x/cron/types"
 )
 
 var _ types.QueryServer = Keeper{}

@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func (suite *KeeperTestSuite) TestMsgCreateDenom() {

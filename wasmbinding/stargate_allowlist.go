@@ -13,14 +13,14 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {

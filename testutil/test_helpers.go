@@ -13,9 +13,9 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 
-	"github.com/neutron-org/neutron/v4/utils"
+	"github.com/neutron-org/neutron/v5/utils"
 
-	"github.com/neutron-org/neutron/v4/app/config"
+	"github.com/neutron-org/neutron/v5/app/config"
 
 	"cosmossdk.io/log"
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
@@ -34,15 +34,15 @@ import (
 	icssimapp "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v4/app/params"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	appProvider "github.com/cosmos/interchain-security/v5/app/provider"
 	e2e "github.com/cosmos/interchain-security/v5/testutil/integration"
 
-	"github.com/neutron-org/neutron/v4/app"
-	ictxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v5/app"
+	ictxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 
 	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
 	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
