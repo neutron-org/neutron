@@ -3,7 +3,7 @@ package types
 import (
 	sdkerrors "cosmossdk.io/errors"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 func NewTradePairID(takerDenom, makerDenom string) (*TradePairID, error) {
@@ -68,7 +68,7 @@ func (p TradePairID) MustPairID() *PairID {
 }
 
 func (p TradePairID) PairID() (*PairID, error) {
-	return NewPairIDFromUnsorted(p.MakerDenom, p.TakerDenom)
+	return NewPairID(p.MakerDenom, p.TakerDenom)
 }
 
 func (p TradePairID) Reversed() *TradePairID {

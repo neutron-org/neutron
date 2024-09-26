@@ -13,14 +13,14 @@ import (
 	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
@@ -91,6 +91,12 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.dex.Query/PoolByID":                          &dextypes.QueryPoolResponse{},
 		"/neutron.dex.Query/PoolMetadata":                      &dextypes.QueryGetPoolMetadataResponse{},
 		"/neutron.dex.Query/PoolMetadataAll":                   &dextypes.QueryAllPoolMetadataResponse{},
+		"/neutron.dex.Query/SimulateDeposit":                   &dextypes.QuerySimulateDepositResponse{},
+		"/neutron.dex.Query/SimulateWithdrawal":                &dextypes.QuerySimulateWithdrawalResponse{},
+		"/neutron.dex.Query/SimulatePlaceLimitOrder":           &dextypes.QuerySimulatePlaceLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateWithdrawFilledLimitOrder":  &dextypes.QuerySimulateWithdrawFilledLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateCancelLimitOrder":          &dextypes.QuerySimulateCancelLimitOrderResponse{},
+		"/neutron.dex.Query/SimulateMultiHopSwap":              &dextypes.QuerySimulateMultiHopSwapResponse{},
 
 		// oracle
 		"/slinky.oracle.v1.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},

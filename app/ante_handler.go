@@ -16,8 +16,8 @@ import (
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v6/x/ccv/consumer/keeper"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
-	globalfeeante "github.com/neutron-org/neutron/v4/x/globalfee/ante"
-	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
+	globalfeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
+	globalfeekeeper "github.com/neutron-org/neutron/v5/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC

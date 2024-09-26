@@ -19,9 +19,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v4/x/dex/client/cli"
-	"github.com/neutron-org/neutron/v4/x/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/client/cli"
+	"github.com/neutron-org/neutron/v5/x/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 var (

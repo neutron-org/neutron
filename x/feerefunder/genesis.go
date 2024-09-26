@@ -3,8 +3,8 @@ package feerefunder
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
-	"github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v5/x/feerefunder/keeper"
+	"github.com/neutron-org/neutron/v5/x/feerefunder/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

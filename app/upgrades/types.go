@@ -17,14 +17,15 @@ import (
 	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v5/x/feeburner/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"

@@ -17,8 +17,8 @@ import (
 	ccv "github.com/cosmos/interchain-security/v6/x/ccv/types"
 	"github.com/stretchr/testify/suite"
 
-	appparams "github.com/neutron-org/neutron/v4/app/params"
-	"github.com/neutron-org/neutron/v4/testutil"
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v5/testutil"
 )
 
 var (

@@ -9,9 +9,9 @@ import (
 	icssimapp "github.com/cosmos/interchain-security/v6/testutil/ibc_testing"
 	"github.com/stretchr/testify/suite"
 
-	appConsumer "github.com/neutron-org/neutron/v4/app"
-	appparams "github.com/neutron-org/neutron/v4/app/params"
-	"github.com/neutron-org/neutron/v4/testutil"
+	appConsumer "github.com/neutron-org/neutron/v5/app"
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v5/testutil"
 )
 
 // Executes the standard group of ccv tests against a consumer and provider app.go implementation.

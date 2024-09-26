@@ -10,28 +10,28 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	types2 "github.com/neutron-org/neutron/v4/x/cron/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	types2 "github.com/neutron-org/neutron/v5/x/cron/types"
 
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	keeper2 "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
+	keeper2 "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
-	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
 
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/v2/types"
@@ -40,16 +40,16 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/app"
-	"github.com/neutron-org/neutron/v4/testutil"
-	"github.com/neutron-org/neutron/v4/wasmbinding"
-	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v5/app"
+	"github.com/neutron-org/neutron/v5/testutil"
+	"github.com/neutron-org/neutron/v5/wasmbinding"
+	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
 
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 const FeeCollectorAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"

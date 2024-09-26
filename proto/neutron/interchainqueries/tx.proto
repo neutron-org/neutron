@@ -11,7 +11,7 @@ import "neutron/interchainqueries/params.proto";
 import "tendermint/abci/types.proto";
 import "tendermint/crypto/proof.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/interchainqueries/types";
 
 // Msg defines the Msg service.
 service Msg {

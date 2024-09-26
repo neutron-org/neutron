@@ -3,15 +3,15 @@ package app_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v4/app/config"
+	"github.com/neutron-org/neutron/v5/app/config"
 
 	cmttypes "github.com/cometbft/cometbft/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	icssimapp "github.com/cosmos/interchain-security/v6/testutil/ibc_testing"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/app"
-	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v5/app"
+	"github.com/neutron-org/neutron/v5/testutil"
 )
 
 func TestConsumerWhitelistingKeys(t *testing.T) {
