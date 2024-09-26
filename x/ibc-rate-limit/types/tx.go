@@ -32,6 +32,10 @@ func (msg *MsgUpdateParams) Validate() error {
 		return errorsmod.Wrap(err, "authority is invalid")
 	}
 
+	// we allow unsetting the contract
+	if msg.Params.ContractAddress == "" {
+		return nil
+	}
 	if _, err := sdk.AccAddressFromBech32(msg.Params.ContractAddress); err != nil {
 		return errorsmod.Wrap(err, "contract_address is invalid")
 	}

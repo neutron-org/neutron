@@ -33,7 +33,7 @@ func GetParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params [flags]",
 		Short: "Get the params for the x/ibc-rate-limit module",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -52,5 +52,5 @@ func GetParams() *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(cmd)
 
-	return nil
+	return cmd
 }
