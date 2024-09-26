@@ -368,7 +368,7 @@ func (s *DexTestSuite) TestDepositSingleSidedZeroTrueAmountsFail() {
 	// second deposit's ratio is different than pool after the first, so amounts will be rounded to 0,0 and tx will fail
 
 	err := types.ErrZeroTrueDeposit
-	s.assertAliceDepositFails(err, NewDeposit(0, 5, 0, 1))
+	s.assertAliceDepositFails(err, NewDepositWithOptions(0, 5, 0, 1, types.DepositOptions{DisableAutoswap: true}))
 }
 
 func (s *DexTestSuite) TestDepositNilOptions() {

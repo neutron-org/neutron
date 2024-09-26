@@ -57,7 +57,7 @@ var (
 	ErrZeroTrueDeposit = sdkerrors.Register(
 		ModuleName,
 		1121,
-		"Cannot deposit double-sided liquidity in tick with prexisting single-sided liquidity.",
+		"Cannot deposit single-sided liquidity in tick with opposite liquidity while autoswap is disabled",
 	)
 	ErrWithdrawEmptyLimitOrder = sdkerrors.Register(
 		ModuleName,

@@ -23,7 +23,7 @@ func (s *DexTestSuite) TestDepositMultiCompleteFailure() {
 	s.assertAliceDepositFails(
 		err,
 		NewDeposit(5, 0, 2, 1),
-		NewDeposit(0, 5, 0, 1), // fails
+		NewDepositWithOptions(0, 5, 0, 1, types.DepositOptions{DisableAutoswap: true}), // fails
 	)
 }
 
