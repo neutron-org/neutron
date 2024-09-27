@@ -10,6 +10,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/neutron-org/neutron/v5/x/dynamicfees"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
+
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
@@ -22,7 +25,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
-	appconfig "github.com/neutron-org/neutron/v4/app/config"
+	appconfig "github.com/neutron-org/neutron/v5/app/config"
 
 	"github.com/skip-mev/slinky/abci/strategies/aggregator"
 	"github.com/skip-mev/slinky/x/oracle"
@@ -37,9 +40,9 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	v401 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
-	"github.com/neutron-org/neutron/v4/x/globalfee"
-	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
+	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
+	"github.com/neutron-org/neutron/v5/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -57,11 +60,11 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v4/docs"
+	"github.com/neutron-org/neutron/v5/docs"
 
-	"github.com/neutron-org/neutron/v4/app/upgrades"
+	"github.com/neutron-org/neutron/v5/app/upgrades"
 
-	"github.com/neutron-org/neutron/v4/x/cron"
+	"github.com/neutron-org/neutron/v5/x/cron"
 
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -143,12 +146,12 @@ import (
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
 
-	"github.com/neutron-org/neutron/v4/x/tokenfactory"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v5/x/tokenfactory"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 
 	"github.com/cosmos/admin-module/v2/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/v2/x/adminmodule/client/cli"
@@ -157,29 +160,29 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	appparams "github.com/neutron-org/neutron/v4/app/params"
-	"github.com/neutron-org/neutron/v4/wasmbinding"
-	"github.com/neutron-org/neutron/v4/x/contractmanager"
-	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
-	"github.com/neutron-org/neutron/v4/x/feeburner"
-	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
-	"github.com/neutron-org/neutron/v4/x/feerefunder"
-	feekeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
-	ibchooks "github.com/neutron-org/neutron/v4/x/ibc-hooks"
-	ibchookstypes "github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
-	"github.com/neutron-org/neutron/v4/x/interchainqueries"
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs"
-	interchaintxskeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
-	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	transferSudo "github.com/neutron-org/neutron/v4/x/transfer"
-	wrapkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v5/wasmbinding"
+	"github.com/neutron-org/neutron/v5/x/contractmanager"
+	contractmanagermodulekeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	contractmanagermoduletypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
+	"github.com/neutron-org/neutron/v5/x/feeburner"
+	feeburnerkeeper "github.com/neutron-org/neutron/v5/x/feeburner/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	"github.com/neutron-org/neutron/v5/x/feerefunder"
+	feekeeper "github.com/neutron-org/neutron/v5/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/v5/x/ibc-hooks"
+	ibchookstypes "github.com/neutron-org/neutron/v5/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs"
+	interchaintxskeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	transferSudo "github.com/neutron-org/neutron/v5/x/transfer"
+	wrapkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
 
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
 
 	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
@@ -192,12 +195,12 @@ import (
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex"
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 
-	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
-	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
+	globalfeekeeper "github.com/neutron-org/neutron/v5/x/globalfee/keeper"
+	gmpmiddleware "github.com/neutron-org/neutron/v5/x/gmp"
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
@@ -224,7 +227,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v401.Upgrade}
+	Upgrades = []upgrades.Upgrade{v500.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -288,7 +291,7 @@ var (
 		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasmtypes.ModuleName:                          {},
+		wasmtypes.ModuleName:                          {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
@@ -1361,6 +1364,7 @@ func (app *App) setupUpgradeHandlers() {
 					MarketmapKeeper:     app.MarketMapKeeper,
 					FeeMarketKeeper:     app.FeeMarkerKeeper,
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
+					DexKeeper:           &app.DexKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},

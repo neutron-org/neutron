@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // WithdrawFilledLimitOrderCore handles MsgWithdrawFilledLimitOrder including bank operations and event emissions.
@@ -15,37 +15,38 @@ func (k Keeper) WithdrawFilledLimitOrderCore(
 	goCtx context.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) error {
+) (takerCoinOut, makerCoinOut sdk.Coin, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	amountOutTokenOut, remainingTokenIn, tradePairID, err := k.ExecuteWithdrawFilledLimitOrder(ctx, trancheKey, callerAddr)
+	takerCoinOut, makerCoinOut, err = k.ExecuteWithdrawFilledLimitOrder(ctx, trancheKey, callerAddr)
 	if err != nil {
-		return err
+		return sdk.Coin{}, sdk.Coin{}, err
 	}
 
-	coinTakerDenomOut := sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
-	coinMakerDenomRefund := sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
 	// NOTE: it is possible for coinTakerDenomOut xor coinMakerDenomOut to be zero. These are removed by the sanitize call in sdk.NewCoins
 	// ExecuteWithdrawFilledLimitOrder ensures that at least one of these has am amount > 0.
-	coins := sdk.NewCoins(coinTakerDenomOut, coinMakerDenomRefund)
-	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(coinTakerDenomOut)))
+	coins := sdk.NewCoins(takerCoinOut, makerCoinOut)
+	ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.NewCoins(takerCoinOut)))
 	if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, callerAddr, coins); err != nil {
-		return err
+		return sdk.Coin{}, sdk.Coin{}, err
 	}
 
+	makerDenom := makerCoinOut.Denom
+	takerDenom := takerCoinOut.Denom
 	// This will never panic since TradePairID has already been successfully constructed by ExecuteWithdrawFilledLimitOrder
-	pairID := tradePairID.MustPairID()
+	pairID := types.MustNewPairID(makerDenom, takerDenom)
 	ctx.EventManager().EmitEvent(types.WithdrawFilledLimitOrderEvent(
 		callerAddr,
 		pairID.Token0,
 		pairID.Token1,
-		tradePairID.MakerDenom,
-		tradePairID.TakerDenom,
-		amountOutTokenOut,
+		makerDenom,
+		takerDenom,
+		takerCoinOut.Amount,
+		makerCoinOut.Amount,
 		trancheKey,
 	))
 
-	return nil
+	return takerCoinOut, makerCoinOut, nil
 }
 
 // ExecuteWithdrawFilledLimitOrder handles the for logic for WithdrawFilledLimitOrder -- calculates and sends filled liquidity from module to user,
@@ -55,14 +56,14 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 	ctx sdk.Context,
 	trancheKey string,
 	callerAddr sdk.AccAddress,
-) (amountOutTokenOut, remainingTokenIn math.Int, tradePairID *types.TradePairID, err error) {
+) (takerCoinOut, makerCoinOut sdk.Coin, err error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(
 		ctx,
 		callerAddr.String(),
 		trancheKey,
 	)
 	if !found {
-		return math.ZeroInt(), math.ZeroInt(), nil, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
+		return makerCoinOut, takerCoinOut, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
 	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
@@ -76,8 +77,8 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 		},
 	)
 
-	amountOutTokenOut = math.ZeroInt()
-	remainingTokenIn = math.ZeroInt()
+	amountOutTokenOut := math.ZeroInt()
+	remainingTokenIn := math.ZeroInt()
 	// It's possible that a TrancheUser exists but tranche does not if LO was filled entirely through a swap
 	if found {
 		var amountOutTokenIn math.Int
@@ -101,8 +102,11 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 	k.SaveTrancheUser(ctx, trancheUser)
 
 	if !amountOutTokenOut.IsPositive() && !remainingTokenIn.IsPositive() {
-		return math.ZeroInt(), math.ZeroInt(), tradePairID, types.ErrWithdrawEmptyLimitOrder
+		return takerCoinOut, makerCoinOut, types.ErrWithdrawEmptyLimitOrder
 	}
 
-	return amountOutTokenOut, remainingTokenIn, tradePairID, nil
+	takerCoinOut = sdk.NewCoin(tradePairID.TakerDenom, amountOutTokenOut)
+	makerCoinOut = sdk.NewCoin(tradePairID.MakerDenom, remainingTokenIn)
+
+	return takerCoinOut, makerCoinOut, nil
 }

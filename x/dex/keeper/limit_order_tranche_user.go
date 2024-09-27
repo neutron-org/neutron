@@ -6,7 +6,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (k Keeper) GetOrInitLimitOrderTrancheUser(
@@ -93,6 +93,7 @@ func (k Keeper) SaveTrancheUser(ctx sdk.Context, trancheUser *types.LimitOrderTr
 	} else {
 		k.SetLimitOrderTrancheUser(ctx, trancheUser)
 	}
+	ctx.EventManager().EmitEvent(types.TrancheUserUpdateEvent(*trancheUser))
 }
 
 // GetAllLimitOrderTrancheUser returns all LimitOrderTrancheUser
