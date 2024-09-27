@@ -31,7 +31,7 @@ func CheckAndUpdateRateLimits(ctx sdk.Context, contractKeeper *wasmkeeper.Permis
 		packet,
 	)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "failed to CheckAndUpdateRateLimits")
 	}
 
 	_, err = contractKeeper.Sudo(ctx, contractAddr, sendPacketMsg)
@@ -56,18 +56,18 @@ func UndoSendRateLimit(ctx sdk.Context, contractKeeper *wasmkeeper.PermissionedK
 ) error {
 	contractAddr, err := sdk.AccAddressFromBech32(contract)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "failed to UndoSendRateLimit")
 	}
 
 	unwrapped, err := unwrapPacket(packet)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "failed to UndoSendRateLimit")
 	}
 
 	msg := UndoSendMsg{UndoSend: UndoPacketMsg{Packet: unwrapped}}
 	asJSON, err := json.Marshal(msg)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "failed to UndoSendRateLimit")
 	}
 
 	_, err = contractKeeper.Sudo(ctx, contractAddr, asJSON)
@@ -146,7 +146,7 @@ func BuildWasmExecMsg(msgType string, packet exported.PacketI) ([]byte, error) {
 	}
 
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, errorsmod.Wrap(err, "failed to BuildWasmExecMsg")
 	}
 
 	return asJSON, nil

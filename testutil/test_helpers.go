@@ -75,6 +75,13 @@ var (
 	}))
 )
 
+const (
+	One   = 1
+	Two   = 2
+	Three = 3
+	Four  = 4
+)
+
 func init() {
 	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
 	config.GetDefaultConfig()
@@ -347,7 +354,7 @@ func testHomeDir(chainID string) string {
 // NewCoordinator initializes Coordinator with interchain security dummy provider and 2 neutron consumer chains
 func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 0)
-	chainID := ibctesting.GetChainID(1)
+	chainID := ibctesting.GetChainID(One)
 
 	ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
@@ -355,16 +362,16 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 
 	_ = config.GetDefaultConfig()
 	sdk.SetAddrCacheEnabled(false)
-	chainID = ibctesting.GetChainID(2)
+	chainID = ibctesting.GetChainID(Two)
 	ibctesting.DefaultTestingAppInit = SetupTestingApp(cmttypes.TM2PB.ValidatorUpdates(providerChain.Vals))
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 
-	chainID = ibctesting.GetChainID(3)
+	chainID = ibctesting.GetChainID(Three)
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 
-	chainID = ibctesting.GetChainID(4)
+	chainID = ibctesting.GetChainID(Four)
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 
