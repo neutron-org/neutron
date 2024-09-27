@@ -141,7 +141,7 @@ func (im *IBCModule) OnRecvPacket(
 		return im.app.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	err := CheckAndUpdateRateLimits(ctx, im.ics4Middleware.ContractKeeper, "recv_packet", contract, packet)
+	err := CheckAndUpdateRateLimits(ctx, im.ics4Middleware.ContractKeeper, msgRecv, contract, packet)
 	if err != nil {
 		if strings.Contains(err.Error(), types.RateLimitExceededSubStr) {
 			return utils.NewEmitErrorAcknowledgement(ctx, types.ErrRateLimitExceeded)
