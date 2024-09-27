@@ -1639,6 +1639,18 @@ func overrideWasmVariables() {
 	wasmtypes.MaxProposalWasmSize = wasmtypes.MaxWasmSize
 }
 
+// WireICS20PreWasmKeeper Create the IBC Transfer Stack from bottom to top:
+// * SendPacket. Originates from the transferKeeper and goes up the stack:
+// transferKeeper.SendPacket -> ibc_rate_limit.SendPacket -> ibc_hooks.SendPacket -> channel.SendPacket
+// * RecvPacket, message that originates from core IBC and goes down to app, the flow is the other way
+// channel.RecvPacket -> ibc_hooks.OnRecvPacket -> ibc_rate_limit.OnRecvPacket -> gmp.OnRecvPacket -> pfm.OnRecvPacket -> transfer.OnRecvPacket
+//
+// Note that the forward middleware is only integrated on the "receive" direction. It can be safely skipped when sending.
+// Note also that the forward middleware is called "router", but we are using the name "pfm" (packet forward middleware) for clarity
+// This may later be renamed upstream: https://github.com/ibc-apps/middleware/packet-forward-middleware/issues/10
+//
+// After this, the wasm keeper is required to be set on both
+// app.Ics20WasmHooks AND app.RateLimitingICS4Wrapper
 func (app *App) WireICS20PreWasmKeeper(
 	appCodec codec.Codec,
 ) {
@@ -1658,7 +1670,7 @@ func (app *App) WireICS20PreWasmKeeper(
 	app.Ics20WasmHooks = &wasmHooks
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		app.PFMKeeper,
+		app.IBCKeeper.ChannelKeeper,
 		&wasmHooks,
 	)
 
