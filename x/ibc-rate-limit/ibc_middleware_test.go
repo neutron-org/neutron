@@ -227,6 +227,12 @@ func (suite *MiddlewareTestSuite) BuildChannelQuota(name, channel, denom string,
     `, channel, denom, name, duration, sendPercentage, recvPercentage)
 }
 
+func (suite *MiddlewareTestSuite) BuildChannelQuotaWith2Quotas(name, channel, denom string, duration1 uint32, name2 string, sendPercentage1, recvPercentage1, duration2, sendPercentage2, recvPercentage2 uint32) string {
+	return fmt.Sprintf(`
+          {"channel_id": "%s", "denom": "%s", "quotas": [{"name":"%s", "duration": %d, "send_recv":[%d, %d]},{"name":"%s", "duration": %d, "send_recv":[%d, %d]}] }
+    `, channel, denom, name, duration1, sendPercentage1, recvPercentage1, name2, duration2, sendPercentage2, recvPercentage2)
+}
+
 // Tests
 
 // Test that Sending IBC messages works when the middleware isn't configured
@@ -385,12 +391,11 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
-	quotas1 := suite.BuildChannelQuota("weekly", channel, denom, 604800, 4, 4)
-	quotas2 := suite.BuildChannelQuota("daily", channel, denom, 86400, 2, 2)
-	addr := suite.InstantiateRLContract2Quotas(quotas1, quotas2)
+	quotas := suite.BuildChannelQuotaWith2Quotas("weekly", channel, denom, 604800, "daily", 4, 4, 86400, 2, 2)
+	addr := suite.InstantiateRLContract(quotas)
 	suite.RegisterRateLimitingContract(addr)
 
-	// send 1% (daily quota is 1%)
+	// send 2% (daily quota is 2%)
 	fmt.Printf("Sending %s from A to B. Represented in chain A as wrapped? No", denom)
 	r, err := suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
 	suite.Require().NoError(err)
@@ -407,6 +412,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	// Sending above the daily quota should fail.
 	_, err = suite.AssertSend(false, suite.MessageFromAToB(denom, sendAmount))
 	suite.Require().Error(err)
+	// Now we 'wait' until 'day' ends
 	parts := strings.Split(attrs["daily_period_end"], ".") // Splitting timestamp into secs and nanos
 	secs, err := strconv.ParseInt(parts[0], 10, 64)
 	suite.Require().NoError(err)
@@ -443,8 +449,8 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	suite.Coordinator.IncrementTimeBy(oneSecAfterResetDayTwo.Sub(suite.Coordinator.CurrentTime))
 
 	// Sending should fail. Daily quota is refreshed but weekly is over
-	// _, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
-	// suite.Require().Error(err)
+	_, err = suite.AssertSend(false, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
+	suite.Require().Error(err)
 }
 
 // Test rate limiting on receives
@@ -697,15 +703,17 @@ func (suite *MiddlewareTestSuite) InstantiateRLContract(quotas string) sdk.AccAd
 	return addr
 }
 
-func (suite *MiddlewareTestSuite) InstantiateRLContract2Quotas(quotas1 string, quotas2 string) sdk.AccAddress {
+func (suite *MiddlewareTestSuite) InstantiateRLContract2Quotas(quotas1 string) sdk.AccAddress {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	transferModule := app.AccountKeeper.GetModuleAddress(transfertypes.ModuleName)
 	initMsgBz := []byte(fmt.Sprintf(`{
            "gov_module":  "%s",
            "ibc_module":"%s",
-           "paths": [%s, %s]
+           "paths": [%s]
         }`,
-		testutil.TestOwnerAddress, transferModule, quotas1, quotas2))
+		testutil.TestOwnerAddress, transferModule, quotas1))
+
+	fmt.Println(string(initMsgBz))
 
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	codeID := uint64(1)
