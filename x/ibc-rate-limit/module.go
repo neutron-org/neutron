@@ -1,4 +1,4 @@
-package ibcratelimitmodule
+package ibcratelimit
 
 import (
 	"context"
@@ -18,11 +18,7 @@ import (
 
 	"cosmossdk.io/core/appmodule"
 
-	ibcratelimit "github.com/neutron-org/neutron/v4/x/ibc-rate-limit"
-	ibcratelimitclient "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/client"
 	ibcratelimitcli "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/client/cli"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/client/grpc"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/client/queryproto"
 	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 )
 
@@ -66,7 +62,7 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncoding
 // ---------------------------------------
 // Interfaces.
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	queryproto.RegisterQueryHandlerClient(context.Background(), mux, queryproto.NewQueryClient(clientCtx)) //nolint:errcheck
+	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)) //nolint:errcheck
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
@@ -90,14 +86,14 @@ func (AppModuleBasic) RegisterInterfaces(reg codectypes.InterfaceRegistry) {
 type AppModule struct {
 	AppModuleBasic
 
-	ics4wrapper *ibcratelimit.ICS4Wrapper
+	ics4wrapper *ICS4Wrapper
 	keeper      *keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
 	keeper *keeper.Keeper,
-	ics4wrapper *ibcratelimit.ICS4Wrapper,
+	ics4wrapper *ICS4Wrapper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
@@ -123,7 +119,7 @@ func (AppModule) QuerierRoute() string { return types.RouterKey }
 // RegisterServices registers a GRPC query service to respond to the
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	queryproto.RegisterQueryServer(cfg.QueryServer(), grpc.Querier{Q: ibcratelimitclient.Querier{K: *am.ics4wrapper}})
+	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(*am.keeper))
 }
 

@@ -16,7 +16,7 @@ import (
 
 	"github.com/neutron-org/neutron/v4/x/dynamicfees"
 	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/ibcratelimitmodule"
+	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit"
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
@@ -132,7 +132,6 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
-	ibcratelimit "github.com/neutron-org/neutron/v4/x/ibc-rate-limit"
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/keeper"
 	ibcratelimittypes "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
 	//nolint:staticcheck
@@ -272,7 +271,7 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
-		ibcratelimitmodule.AppModuleBasic{},
+		ibcratelimit.AppModuleBasic{},
 		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 		feemarket.AppModuleBasic{},
@@ -621,7 +620,7 @@ func New(
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.RateLimitingICS4Wrapper, // defiened in wireisc20
+		app.RateLimitingICS4Wrapper, // defined in wireisc20
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -629,7 +628,7 @@ func New(
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
-		app.RateLimitingICS4Wrapper, // defiened in wireisc20
+		app.RateLimitingICS4Wrapper, // defined in wireisc20
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -821,7 +820,7 @@ func New(
 		&app.BankKeeper,
 		nil,
 		nil,
-		app.RateLimitingICS4Wrapper, // defiened in wireisc20
+		app.RateLimitingICS4Wrapper, // defined in wireisc20
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		scopedWasmKeeper,
@@ -859,7 +858,7 @@ func New(
 	)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
-	ibcRateLimitmodule := ibcratelimitmodule.NewAppModule(appCodec, app.RateLimitingICS4Wrapper.IbcratelimitKeeper, app.RateLimitingICS4Wrapper)
+	ibcRateLimitmodule := ibcratelimit.NewAppModule(appCodec, app.RateLimitingICS4Wrapper.IbcratelimitKeeper, app.RateLimitingICS4Wrapper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
 	transferModule := transferSudo.NewAppModule(app.TransferKeeper)

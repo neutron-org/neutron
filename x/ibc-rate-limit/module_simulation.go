@@ -1,4 +1,4 @@
-package ibcratelimitmodule
+package ibcratelimit
 
 import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
