@@ -16,8 +16,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/keeper"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
+	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/keeper"
+	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
 	"github.com/spf13/cobra"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -18,8 +18,8 @@ import (
 
 	"cosmossdk.io/core/appmodule"
 
-	ibcratelimitcli "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/client/cli"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
+	ibcratelimitcli "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/client/cli"
+	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
 )
 
 var (

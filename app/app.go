@@ -10,16 +10,14 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/neutron-org/neutron/v5/x/dynamicfees"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
-	"github.com/neutron-org/neutron/v4/x/dynamicfees"
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit"
+	"github.com/neutron-org/neutron/v5/x/dynamicfees"
+	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit"
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
@@ -135,8 +133,8 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
-	ibcratelimitkeeper "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/keeper"
-	ibcratelimittypes "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
+	ibcratelimittypes "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
 	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -415,7 +413,7 @@ type App struct {
 	checkTxHandler checktx.CheckTx
 }
 
-// AutoCLIOpts returns options based upon the modules in the neutron v4 app.
+// AutoCLIOpts returns options based upon the modules in the neutron v5 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule)
 	for _, m := range app.mm.Modules {

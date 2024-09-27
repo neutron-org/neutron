@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
 import "neutron/ibcratelimit/v1beta1/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types";
 
 // GenesisState defines the ibc-rate-limit module's genesis state.
 message GenesisState {

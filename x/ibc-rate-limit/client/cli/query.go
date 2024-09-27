@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
 	"github.com/spf13/cobra"
 )
 

@@ -10,7 +10,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v5/testutil"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
 
@@ -23,7 +23,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v4/x/ibc-rate-limit/types"
+	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
 )
 
 type MiddlewareTestSuite struct {
