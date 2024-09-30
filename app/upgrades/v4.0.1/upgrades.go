@@ -26,6 +26,59 @@ import (
 	"time"
 )
 
+var opers []string = []string{
+	"neutron1t3pl52s2zjlc7h0c3xu4fryvxpatduzww8a3kh",
+	"neutron1rg5dw9kevtqgxksaqqlkx88888x8glwmm54tw0",
+	"neutron1qhjn9zhpkucrqrxfhg2th5gf48z3ugsevsh3r9",
+	"neutron1adenmkafmt5r8aj70eyvwtuad79392cg9rx0et",
+	"neutron1ly7h5t20qxa76lcek4m4pawwln035gykgr679x",
+	"neutron13pd5vpc84qhnc5cwt9460l8yjs5ypcly68h87a",
+	"neutron1twwxu8kcacx9jm7xp4g35tefnmtw6ld3km8rlj",
+	"neutron1cwaxldgdvpef6wandlt8glzfy6nqr5njhf3aqy",
+	"neutron1ysqyh82vy588wgea5gwl5h4ju5cdqlth2dt82c",
+	"neutron1gfjk83kkw7mjjvx6ex24gw77fvy4prla2cdh02",
+	"neutron1g6q0rlxxskh06jyd6rsg62af5p7nyme37m775s",
+	"neutron1v4yk06yt98raw52gwr7yctjcqsu5dvt3f0aldw",
+	"neutron1xcr2a94dmt4euu9v5r3zn339lvq0zg4rh56a40",
+	"neutron1sc52vj6vfkhyze2hrsvl74kzga3vnrkdxrwlnu",
+	"neutron186st0af5lp9peccxtze9eazp58e6wrr7g8clzy",
+	"neutron178ykswaevl2jkan8l8r9l76kgsrc5ty4geknme",
+	"neutron1v9uaknfkjevmwp9rxmmsheejfvykahxnjtvnz8",
+	"neutron18rsly0fq22z7xsyawxwg7g64v6l8yy5kn22m0l",
+	"neutron1wz8h873cwy4cf9qm0dmv9m2pycemf9j0r8w4r7",
+	"neutron1m2aenqfdkrthyezhnqx7l95jdmrz0a2fudhu7k",
+	"neutron1qmya2haacteay7qse8mc4jkud69hcq4a0q9qyg",
+	"neutron1ts8l5ys6axhysaaq0yamw72yyv0mml56ssumdw",
+	"neutron1n00xf9qdv487azwns3np8lcrzxguaqxv5d9kgl",
+	"neutron1x0csyqw7ew2urwn36t5r7yha8803l5788vdrr5",
+	"neutron1287wda02u7z0mvw9pwsudvy94frpa4lg69jnx2",
+	"neutron10gw5endnljr44ddlfp0k74cf0fdzc3e5ca4yly",
+	"neutron10cr4w8vqqw2vsflcwawkl9qjjtzf42v4cw9the",
+	"neutron10y320dsrh9wtyc5hl90c5rdh3c9533l4qh2dkw",
+	"neutron1y2c4pq4k9s44luqkq4vrk3cr0t0drpuuw7e3hl",
+	"neutron1rqzuk35rk0sf4t8p3wlydx8nlx773v4wpw5v55",
+	"neutron1pq0ayd754lzxeeyl4ph3edw2a8vpf2f4n0y3h6",
+	"neutron16lwfx8rdqmyzy8yu0c3sqzl5pakx8gmnr39440",
+	"neutron1gaadccd6hwdpy89esrjllvwgts4473fzcuv86j",
+	"neutron1vmaac64wjjxllmfq4tuazx2jg569fhpfp330tx",
+	"neutron1fmw5hsyd40q7qdue5c3kydep5xa5xjw2sjvtmq",
+	"neutron157ufeev8rz7x25dwmq0e0m8v9hglnus0wcmt24",
+	"neutron1p44y0cxccuhulm7u5vyme9ccd5jsfqtnmyuzpn",
+	"neutron12qdjswl6velzj49a8gty6w2vhpesmgxujqv6ee",
+	"neutron1dzyk2k3m7xvcxgy0xx9z5v4vtepdv5pjmtfeq7",
+	"neutron1scnd7cvq53cnjucgyrwaknswh5ke8yav462fnq",
+	"neutron1el4nxklf7xyavhl4wwruqcmq0qtqma9wy9drn3",
+	"neutron19zl56qpd02hf4uz9n8vwn6fsw4daa73j3ckqfg",
+	"neutron1ezuekn27qdm6hwtem7dgheljeu0n8jyqeg58cp",
+	"neutron1da5jey2um0jtv355hnep6dluan5mgkh8k3n2mr",
+	"neutron1xyry74l0hzv7rauxna2mm9f7vyu0lf754lgc5z",
+	"neutron1f7zmvp7nv4ppqu02x34fc9aezdmtvpjhwxxhzz",
+	"neutron1t0aupxravcxy7nsdp67u24zgx4r4663aejdeql",
+	"neutron1fwrfw4007gelz0u6pn8k0dr8awlzuzara9mjgy",
+	"neutron1pj0fpp2ws00u33smc8rkk9mf42ytjawhsm5njv",
+	"neutron1pepfcyjvshjxwqrkw92tjjl84yw0e34s0p6gun",
+}
+
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
@@ -84,9 +137,15 @@ func NewSovereignVal(ctx context.Context, id int, bk bankkeeper.Keeper, ak authk
 		panic(err)
 	}
 
-	// и конечно генерация сломала мне консенсус
-	privBank := ed25519.GenPrivKey()
-	privBank.PubKey().Address()
+	oper := opers[id]
+	_, addr, err := bech32.DecodeAndConvert(oper)
+	if err != nil {
+		panic(err)
+	}
+	add, err := bech32.ConvertAndEncode("neutronvaloper", addr)
+	if err != nil {
+		panic(err)
+	}
 
 	err = bk.MintCoins(ctx, "dex", sdk.NewCoins(sdk.Coin{
 		Denom:  "untrn",
@@ -96,15 +155,10 @@ func NewSovereignVal(ctx context.Context, id int, bk bankkeeper.Keeper, ak authk
 		panic(err)
 	}
 
-	err = bk.SendCoinsFromModuleToAccount(ctx, "dex", privBank.PubKey().Address().Bytes(), sdk.NewCoins(sdk.Coin{
+	err = bk.SendCoinsFromModuleToAccount(ctx, "dex", addr, sdk.NewCoins(sdk.Coin{
 		Denom:  "untrn",
 		Amount: math.NewInt(1_000_000),
 	}))
-	if err != nil {
-		panic(err)
-	}
-
-	add, err := bech32.ConvertAndEncode("neutronvaloper", privBank.PubKey().Address().Bytes())
 	if err != nil {
 		panic(err)
 	}
