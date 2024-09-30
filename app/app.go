@@ -621,7 +621,7 @@ func New(
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.RateLimitingICS4Wrapper, // defined in wireisc20
+		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -629,7 +629,7 @@ func New(
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
-		app.RateLimitingICS4Wrapper, // defined in wireisc20
+		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -821,7 +821,7 @@ func New(
 		&app.BankKeeper,
 		nil,
 		nil,
-		app.RateLimitingICS4Wrapper, // defined in wireisc20
+		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		scopedWasmKeeper,
