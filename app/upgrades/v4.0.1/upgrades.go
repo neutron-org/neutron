@@ -5,6 +5,7 @@ import (
 	"cosmossdk.io/math"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -14,11 +15,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	"github.com/neutron-org/neutron/v5/app/upgrades"
+	"os"
 	"time"
 )
 
@@ -37,7 +41,7 @@ func CreateUpgradeHandler(
 		if err != nil {
 			return vm, err
 		}
-		err = createValidators(ctx, *keepers.StakingKeeper, *keepers.ConsumerKeeper)
+		err = createValidators(ctx, *keepers.StakingKeeper, *keepers.ConsumerKeeper, keepers.BankKeeper, keepers.AccountKeeper)
 		if err != nil {
 			return vm, err
 		}
@@ -47,7 +51,91 @@ func CreateUpgradeHandler(
 	}
 }
 
-func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerkeeper.Keeper) error {
+type PK struct {
+	Address string `json:"address"`
+	PubKey  struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"pub_key"`
+	PrivKey struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"priv_key"`
+}
+
+func NewSovereignVal(ctx context.Context, id int, bk bankkeeper.Keeper, ak authkeeper.AccountKeeperI) types.MsgCreateValidator {
+	pkpath := fmt.Sprintf("/home/swelf/src/lido/neutron/data/test-1/node-%d/config/priv_validator_key.json", id)
+	pkdata, err := os.ReadFile(pkpath)
+	if err != nil {
+		panic(err)
+	}
+	pkraw := PK{}
+	err = json.Unmarshal(pkdata, &pkraw)
+	if err != nil {
+		panic(err)
+	}
+	pkbytes, err := base64.StdEncoding.DecodeString(pkraw.PubKey.Value)
+	if err != nil {
+		panic(err)
+	}
+	pk := ed25519.PubKey{Key: pkbytes}
+	pubkey, err := codectypes.NewAnyWithValue(&pk)
+	if err != nil {
+		panic(err)
+	}
+
+	// и конечно генерация сломала мне консенсус
+	privBank := ed25519.GenPrivKey()
+	privBank.PubKey().Address()
+
+	err = bk.MintCoins(ctx, "dex", sdk.NewCoins(sdk.Coin{
+		Denom:  "untrn",
+		Amount: math.NewInt(1_000_000),
+	}))
+	if err != nil {
+		panic(err)
+	}
+
+	err = bk.SendCoinsFromModuleToAccount(ctx, "dex", privBank.PubKey().Address().Bytes(), sdk.NewCoins(sdk.Coin{
+		Denom:  "untrn",
+		Amount: math.NewInt(1_000_000),
+	}))
+	if err != nil {
+		panic(err)
+	}
+
+	add, err := bech32.ConvertAndEncode("neutronvaloper", privBank.PubKey().Address().Bytes())
+	if err != nil {
+		panic(err)
+	}
+
+	return types.MsgCreateValidator{
+		Description: types.Description{
+			Moniker:         "sovereign",
+			Identity:        "",
+			Website:         "",
+			SecurityContact: "",
+			Details:         "",
+		},
+		Commission: types.CommissionRates{
+			Rate:          math.LegacyMustNewDecFromStr("0.1"),
+			MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
+			MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
+		},
+		MinSelfDelegation: math.NewInt(1_000_000),
+		DelegatorAddress:  "",
+		// WARN: у оператора должно быть достаточно денег для selfbond
+		ValidatorAddress: add,
+		Pubkey:           pubkey,
+		// кто оплатит?
+		Value: sdk.Coin{
+			Denom:  "untrn",
+			Amount: math.NewInt(1_000_000),
+		},
+	}
+}
+
+func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper ccvconsumerkeeper.Keeper, bk bankkeeper.Keeper, ak authkeeper.AccountKeeperI) error {
 	srv := stakingkeeper.NewMsgServerImpl(&sk)
 	micComm, err := math.LegacyNewDecFromStr("0.0")
 	if err != nil {
@@ -55,7 +143,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 	}
 	params := types.Params{
 		UnbondingTime:     21 * 24 * time.Hour,
-		MaxValidators:     1,
+		MaxValidators:     100,
 		MaxEntries:        100,
 		HistoricalEntries: 100,
 		BondDenom:         "untrn",
@@ -72,7 +160,27 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 
 	// тут мы добавляем всех ccv валидаторов в стейкинг модуль
 	for _, v := range consumerKeeper.GetAllCCValidator(ctx) {
-		fmt.Println(v.Address)
+		//fmt.Println(v.Address)
+
+		//bankAddress, err := bech32.ConvertAndEncode("neutron", v.GetAddress())
+		//if err != nil {
+		//	return err
+		//}
+		err = bk.MintCoins(ctx, "dex", sdk.NewCoins(sdk.Coin{
+			Denom:  "untrn",
+			Amount: math.NewInt(1_000_000),
+		}))
+		if err != nil {
+			return err
+		}
+
+		err = bk.SendCoinsFromModuleToAccount(ctx, "dex", v.GetAddress(), sdk.NewCoins(sdk.Coin{
+			Denom:  "untrn",
+			Amount: math.NewInt(1_000_000),
+		}))
+		if err != nil {
+			return err
+		}
 
 		add, err := bech32.ConvertAndEncode("neutronvaloper", v.GetAddress())
 		if err != nil {
@@ -95,7 +203,8 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 			DelegatorAddress:  "",
 			// WARN: у оператора должно быть достаточно денег для selfbond
 			ValidatorAddress: add,
-			Pubkey:           v.GetPubkey(),
+			//ValidatorAddress: "neutronvaloper1m9l358xunhhwds0568za49mzhvuxx9uxamysqw",
+			Pubkey: v.GetPubkey(),
 			Value: sdk.Coin{
 				Denom:  "untrn",
 				Amount: math.NewInt(1_000_000),
@@ -120,50 +229,25 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		}
 
 	}
-	_, b, _ := bech32.DecodeAndConvert("neutronvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk5tccmr")
-	fmt.Println(b)
+	//_, b, _ := bech32.DecodeAndConvert("neutronvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk5tccmr")
+	//fmt.Println(b)
 
-	//pk1 := ed25519.GenPrivKey().PubKey()
-	//require.NotNil(pk1)
-	//
-	//pubkey, err := codectypes.NewAnyWithValue(pk1)
-	//require.NoError(err)
-	pkraw, err := base64.StdEncoding.DecodeString("U5OsDjF61okt7TsPoM4NUokEACQ4KZCdGNnHYT8d36w=")
-	if err != nil {
-		return err
-	}
-	pk := ed25519.PubKey{Key: pkraw}
-	pubkey, err := codectypes.NewAnyWithValue(&pk)
-	if err != nil {
-		return err
-	}
+	//pkraw, err := base64.StdEncoding.DecodeString("U5OsDjF61okt7TsPoM4NUokEACQ4KZCdGNnHYT8d36w=")
+	//if err != nil {
+	//	return err
+	//}
+	//pk := ed25519.PubKey{Key: pkraw}
+	//pubkey, err := codectypes.NewAnyWithValue(&pk)
+	//if err != nil {
+	//	return err
+	//}
 
-	_, err = srv.CreateValidator(ctx, &types.MsgCreateValidator{
-		Description: types.Description{
-			Moniker:         "sovereign",
-			Identity:        "",
-			Website:         "",
-			SecurityContact: "",
-			Details:         "",
-		},
-		Commission: types.CommissionRates{
-			Rate:          math.LegacyMustNewDecFromStr("0.1"),
-			MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
-			MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
-		},
-		MinSelfDelegation: math.NewInt(1_000_000),
-		DelegatorAddress:  "",
-		// WARN: у оператора должно быть достаточно денег для selfbond
-		ValidatorAddress: "neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx",
-		Pubkey:           pubkey,
-		// кто оплатит?
-		Value: sdk.Coin{
-			Denom:  "untrn",
-			Amount: math.NewInt(1_000_000),
-		},
-	})
-	if err != nil {
-		return err
+	for i := 13; i <= 14; i++ {
+		msgCreate := NewSovereignVal(ctx, i, bk, ak)
+		_, err = srv.CreateValidator(ctx, &msgCreate)
+		if err != nil {
+			return err
+		}
 	}
 
 	sk.SetLastTotalPower(ctx, math.NewInt(1))

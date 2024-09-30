@@ -1392,6 +1392,7 @@ func (app *App) setupUpgradeHandlers() {
 				app.mm,
 				app.configurator,
 				&upgrades.UpgradeKeepers{
+					BankKeeper:          app.BankKeeper,
 					AccountKeeper:       app.AccountKeeper,
 					FeeBurnerKeeper:     app.FeeBurnerKeeper,
 					CronKeeper:          app.CronKeeper,
