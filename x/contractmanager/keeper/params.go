@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
 )
 
 // GetParams get all parameters as types.Params

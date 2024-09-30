@@ -6,7 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/utils"
+	"github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 const (
@@ -194,105 +194,6 @@ func PoolIDKey(
 	return key
 }
 
-// Deposit Event Attributes
-const (
-	DepositEventKey                = "DepositLP"
-	DepositEventCreator            = "Creator"
-	DepositEventToken0             = "TokenZero"
-	DepositEventToken1             = "TokenOne"
-	DepositEventPrice              = "TickIndex"
-	DepositEventFee                = "Fee"
-	DepositEventReceiver           = "Receiver"
-	DepositEventReserves0Deposited = "ReservesZeroDeposited"
-	DepositEventReserves1Deposited = "ReservesOneDeposited"
-	DepositEventSharesMinted       = "SharesMinted"
-)
-
-// Withdraw Event Attributes
-const (
-	WithdrawEventKey                = "WithdrawLP"
-	WithdrawEventCreator            = "Creator"
-	WithdrawEventToken0             = "TokenZero"
-	WithdrawEventToken1             = "TokenOne"
-	WithdrawEventPrice              = "TickIndex"
-	WithdrawEventFee                = "Fee"
-	WithdrawEventReceiver           = "Receiver"
-	WithdrawEventReserves0Withdrawn = "ReservesZeroWithdrawn"
-	WithdrawEventReserves1Withdrawn = "ReservesOneWithdrawn"
-	WithdrawEventSharesRemoved      = "SharesRemoved"
-)
-
-// Multihop-Swap Event Attributes
-const (
-	MultihopSwapEventKey       = "MultihopSwap"
-	MultihopSwapEventCreator   = "Creator"
-	MultihopSwapEventReceiver  = "Receiver"
-	MultihopSwapEventTokenIn   = "TokenIn"
-	MultihopSwapEventTokenOut  = "TokenOut"
-	MultihopSwapEventAmountIn  = "AmountIn"
-	MultihopSwapEventAmountOut = "AmountOut"
-	MultihopSwapEventRoute     = "Route"
-	MultihopSwapEventDust      = "Dust"
-)
-
-// Place LimitOrder Event Attributes
-const (
-	PlaceLimitOrderEventKey        = "PlaceLimitOrder"
-	PlaceLimitOrderEventCreator    = "Creator"
-	PlaceLimitOrderEventReceiver   = "Receiver"
-	PlaceLimitOrderEventToken0     = "TokenZero"
-	PlaceLimitOrderEventToken1     = "TokenOne"
-	PlaceLimitOrderEventTokenIn    = "TokenIn"
-	PlaceLimitOrderEventTokenOut   = "TokenOut"
-	PlaceLimitOrderEventAmountIn   = "AmountIn"
-	PlaceLimitOrderEventLimitTick  = "LimitTick"
-	PlaceLimitOrderEventOrderType  = "OrderType"
-	PlaceLimitOrderEventShares     = "Shares"
-	PlaceLimitOrderEventTrancheKey = "TrancheKey"
-)
-
-// Withdraw LimitOrder Event Attributes
-const (
-	WithdrawFilledLimitOrderEventKey        = "WithdrawLimitOrder"
-	WithdrawFilledLimitOrderEventCreator    = "Creator"
-	WithdrawFilledLimitOrderEventToken0     = "TokenZero"
-	WithdrawFilledLimitOrderEventToken1     = "TokenOne"
-	WithdrawFilledLimitOrderEventTokenIn    = "TokenIn"
-	WithdrawFilledLimitOrderEventTokenOut   = "TokenOut"
-	WithdrawFilledLimitOrderEventTrancheKey = "TrancheKey"
-	WithdrawFilledLimitOrderEventAmountOut  = "AmountOut"
-)
-
-// Cancel LimitOrder Event Attributes
-const (
-	CancelLimitOrderEventKey        = "CancelLimitOrder"
-	CancelLimitOrderEventCreator    = "Creator"
-	CancelLimitOrderEventToken0     = "TokenZero"
-	CancelLimitOrderEventToken1     = "TokenOne"
-	CancelLimitOrderEventTokenIn    = "TokenIn"
-	CancelLimitOrderEventTokenOut   = "TokenOut"
-	CancelLimitOrderEventTrancheKey = "TrancheKey"
-	CancelLimitOrderEventAmountOut  = "AmountOut"
-)
-
-// Tick Update Event Attributes
-const (
-	EventTypeTickUpdate       = "TickUpdate"
-	TickUpdateEventKey        = "TickUpdate"
-	TickUpdateEventToken0     = "TokenZero"
-	TickUpdateEventToken1     = "TokenOne"
-	TickUpdateEventTokenIn    = "TokenIn"
-	TickUpdateEventTickIndex  = "TickIndex"
-	TickUpdateEventFee        = "Fee"
-	TickUpdateEventTrancheKey = "TrancheKey"
-	TickUpdateEventReserves   = "Reserves"
-)
-
-const (
-	EventTypeGoodTilPurgeHitGasLimit = "GoodTilPurgeHitGasLimit"
-	GoodTilPurgeHitGasLimitEventGas  = "Gas"
-)
-
 const (
 	// NOTE: have to add letter so that LP deposits are indexed ahead of LimitOrders
 	LiquidityTypePoolReserves = "A_PoolDeposit"
@@ -306,3 +207,6 @@ func JITGoodTilTime() time.Time {
 const (
 	ExpiringLimitOrderGas = 10_000
 )
+
+// Dummy Address used for simulate queries
+const DummyAddress = "neutron1pq7j6za5zjcl3um9t5gfyleues336tv04tyq0k"

@@ -8,7 +8,7 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	iqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	iqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 )
 
 const TestAddress = "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
@@ -49,9 +49,8 @@ func TestMsgSubmitQueryResultGetSigners(t *testing.T) {
 			"valid_signer",
 			func() sdktypes.LegacyMsg {
 				return &iqtypes.MsgSubmitQueryResult{
-					QueryId:  1,
-					Sender:   TestAddress,
-					ClientId: "client-id",
+					QueryId: 1,
+					Sender:  TestAddress,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key: []byte{10},

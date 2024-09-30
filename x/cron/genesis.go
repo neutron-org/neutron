@@ -3,15 +3,15 @@ package cron
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/cron/keeper"
-	"github.com/neutron-org/neutron/v4/x/cron/types"
+	"github.com/neutron-org/neutron/v5/x/cron/keeper"
+	"github.com/neutron-org/neutron/v5/x/cron/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// Set all the schedules
 	for _, elem := range genState.ScheduleList {
-		err := k.AddSchedule(ctx, elem.Name, elem.Period, elem.Msgs)
+		err := k.AddSchedule(ctx, elem.Name, elem.Period, elem.Msgs, elem.ExecutionStage)
 		if err != nil {
 			panic(err)
 		}

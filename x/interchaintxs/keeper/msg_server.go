@@ -16,8 +16,8 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 )
 
 type msgServer struct {
@@ -66,7 +66,8 @@ func (k Keeper) RegisterInterchainAccount(goCtx context.Context, msg *ictxtypes.
 		Owner:        icaOwner,
 		ConnectionId: msg.ConnectionId,
 		Version:      "", // FIXME: empty version string doesn't look good
-		Ordering:     channeltypes.ORDERED,
+		// underlying controller uses ORDER_ORDERED as default in case msg's ordering is NONE // TODO: check now
+		Ordering: msg.Ordering,
 	})
 	if err != nil {
 		k.Logger(ctx).Debug("RegisterInterchainAccount: failed to RegisterInterchainAccount:", "error", err, "owner", icaOwner, "msg", &msg)

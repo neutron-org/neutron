@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v4/testutil"
+	"github.com/neutron-org/neutron/v5/testutil"
 )
 
 type UpgradeTestSuite struct {

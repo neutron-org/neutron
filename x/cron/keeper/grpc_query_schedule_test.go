@@ -10,10 +10,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
-	testutil_keeper "github.com/neutron-org/neutron/v4/testutil/cron/keeper"
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
-	"github.com/neutron-org/neutron/v4/x/cron/types"
+	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
+	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+	"github.com/neutron-org/neutron/v5/x/cron/types"
 )
 
 // Prevent strconv unused error
@@ -133,8 +133,9 @@ func createNSchedule(t *testing.T, ctx sdk.Context, k *cronkeeper.Keeper, n int3
 		item.Period = 1000
 		item.Msgs = nil
 		item.LastExecuteHeight = uint64(ctx.BlockHeight())
+		item.ExecutionStage = types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER
 
-		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs)
+		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.ExecutionStage)
 		require.NoError(t, err)
 
 		res[idx] = item

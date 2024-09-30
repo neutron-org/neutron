@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 func NewLimitOrderTranche(
@@ -135,10 +135,9 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
 ) (amountToRemove math.Int) {
 	amountUnfilled := t.AmountUnfilled()
-	maxAmountToRemove := amountUnfilled.MulInt(trancheUser.SharesOwned).
+	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).
 		QuoInt(t.TotalMakerDenom).
 		TruncateInt()
-	amountToRemove = maxAmountToRemove.Sub(trancheUser.SharesCancelled)
 	t.ReservesMakerDenom = t.ReservesMakerDenom.Sub(amountToRemove)
 
 	return amountToRemove

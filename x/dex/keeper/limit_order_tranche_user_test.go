@@ -8,10 +8,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int) []*types.LimitOrderTrancheUser {
@@ -24,7 +24,6 @@ func createNLimitOrderTrancheUser(keeper *keeper.Keeper, ctx sdk.Context, n int)
 			TickIndexTakerToMaker: int64(i),
 			SharesOwned:           math.NewInt(100),
 			SharesWithdrawn:       math.ZeroInt(),
-			SharesCancelled:       math.ZeroInt(),
 		}
 		items[i] = val
 		keeper.SetLimitOrderTrancheUser(ctx, items[i])
@@ -43,7 +42,6 @@ func createNLimitOrderTrancheUserWithAddress(keeper *keeper.Keeper, ctx sdk.Cont
 			TickIndexTakerToMaker: 0,
 			SharesOwned:           math.ZeroInt(),
 			SharesWithdrawn:       math.ZeroInt(),
-			SharesCancelled:       math.ZeroInt(),
 		}
 		items[i] = val
 		keeper.SetLimitOrderTrancheUser(ctx, items[i])
@@ -93,7 +91,7 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 		Address:               s.alice.String(),
 		SharesOwned:           math.NewInt(10_000_000),
 		SharesWithdrawn:       math.NewInt(0),
-		SharesCancelled:       math.NewInt(0),
+		SharesCancelled:       math.ZeroInt(),
 	},
 		LOList[0],
 	)
@@ -104,7 +102,7 @@ func (s *DexTestSuite) TestGetAllLimitOrders() {
 		Address:               s.alice.String(),
 		SharesOwned:           math.NewInt(10_000_000),
 		SharesWithdrawn:       math.NewInt(0),
-		SharesCancelled:       math.NewInt(0),
+		SharesCancelled:       math.ZeroInt(),
 	},
 		LOList[1],
 	)

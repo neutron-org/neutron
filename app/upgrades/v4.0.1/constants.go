@@ -3,7 +3,7 @@ package v400
 import (
 	storetypes "cosmossdk.io/store/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/neutron-org/neutron/v4/app/upgrades"
+	"github.com/neutron-org/neutron/v5/app/upgrades"
 )
 
 const (

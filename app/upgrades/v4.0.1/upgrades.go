@@ -18,7 +18,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	"github.com/neutron-org/neutron/v4/app/upgrades"
+	"github.com/neutron-org/neutron/v5/app/upgrades"
 	"time"
 )
 
@@ -159,7 +159,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		// кто оплатит?
 		Value: sdk.Coin{
 			Denom:  "untrn",
-			Amount: math.NewInt(100_000_000),
+			Amount: math.NewInt(1_000_000),
 		},
 	})
 	if err != nil {

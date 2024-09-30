@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	v400 "github.com/neutron-org/neutron/v5/app/upgrades/v4.0.1"
 	"io"
 	"io/fs"
 	"net/http"
@@ -12,8 +13,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/neutron-org/neutron/v4/x/dynamicfees"
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	"github.com/neutron-org/neutron/v5/x/dynamicfees"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -23,7 +24,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
-	appconfig "github.com/neutron-org/neutron/v4/app/config"
+	appconfig "github.com/neutron-org/neutron/v5/app/config"
 
 	"github.com/skip-mev/slinky/abci/strategies/aggregator"
 	"github.com/skip-mev/slinky/x/oracle"
@@ -38,9 +39,9 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	v401 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
-	"github.com/neutron-org/neutron/v4/x/globalfee"
-	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
+	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
+	"github.com/neutron-org/neutron/v5/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -58,11 +59,11 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v4/docs"
+	"github.com/neutron-org/neutron/v5/docs"
 
-	"github.com/neutron-org/neutron/v4/app/upgrades"
+	"github.com/neutron-org/neutron/v5/app/upgrades"
 
-	"github.com/neutron-org/neutron/v4/x/cron"
+	"github.com/neutron-org/neutron/v5/x/cron"
 
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -144,12 +145,12 @@ import (
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
 
-	"github.com/neutron-org/neutron/v4/x/tokenfactory"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v5/x/tokenfactory"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 
 	"github.com/cosmos/admin-module/v2/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/v2/x/adminmodule/client/cli"
@@ -158,49 +159,46 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	appparams "github.com/neutron-org/neutron/v4/app/params"
-	"github.com/neutron-org/neutron/v4/wasmbinding"
-	"github.com/neutron-org/neutron/v4/x/contractmanager"
-	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
-	"github.com/neutron-org/neutron/v4/x/feeburner"
-	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
-	"github.com/neutron-org/neutron/v4/x/feerefunder"
-	feekeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
-	ibchooks "github.com/neutron-org/neutron/v4/x/ibc-hooks"
-	ibchookstypes "github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
-	"github.com/neutron-org/neutron/v4/x/interchainqueries"
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs"
-	interchaintxskeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
-	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	transferSudo "github.com/neutron-org/neutron/v4/x/transfer"
-	wrapkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v5/wasmbinding"
+	"github.com/neutron-org/neutron/v5/x/contractmanager"
+	contractmanagermodulekeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	contractmanagermoduletypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
+	"github.com/neutron-org/neutron/v5/x/feeburner"
+	feeburnerkeeper "github.com/neutron-org/neutron/v5/x/feeburner/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	"github.com/neutron-org/neutron/v5/x/feerefunder"
+	feekeeper "github.com/neutron-org/neutron/v5/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/v5/x/ibc-hooks"
+	ibchookstypes "github.com/neutron-org/neutron/v5/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs"
+	interchaintxskeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	transferSudo "github.com/neutron-org/neutron/v5/x/transfer"
+	wrapkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
 
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
 
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex"
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 
-	"github.com/neutron-org/neutron/v4/x/ibcswap"
-	ibcswapkeeper "github.com/neutron-org/neutron/v4/x/ibcswap/keeper"
-	ibcswaptypes "github.com/neutron-org/neutron/v4/x/ibcswap/types"
-
-	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
-	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
+	globalfeekeeper "github.com/neutron-org/neutron/v5/x/globalfee/keeper"
+	gmpmiddleware "github.com/neutron-org/neutron/v5/x/gmp"
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
@@ -219,7 +217,6 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
@@ -228,7 +225,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v401.Upgrade}
+	Upgrades = []upgrades.Upgrade{v400.Upgrade, v500.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -279,10 +276,10 @@ var (
 		globalfee.AppModule{},
 		feemarket.AppModuleBasic{},
 		dex.AppModuleBasic{},
-		ibcswap.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
+		consensus.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -291,7 +288,7 @@ var (
 		auctiontypes.ModuleName:                 nil,
 		ibctransfertypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                     nil,
-		wasmtypes.ModuleName:                    {},
+		wasmtypes.ModuleName:                    {authtypes.Burner},
 		interchainqueriesmoduletypes.ModuleName: nil,
 		feetypes.ModuleName:                     nil,
 		feeburnertypes.ModuleName:               nil,
@@ -302,7 +299,6 @@ var (
 		tokenfactorytypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		crontypes.ModuleName:            nil,
 		dextypes.ModuleName:             {authtypes.Minter, authtypes.Burner},
-		ibcswaptypes.ModuleName:         {authtypes.Burner},
 		oracletypes.ModuleName:          nil,
 		marketmaptypes.ModuleName:       nil,
 		feemarkettypes.FeeCollectorName: nil,
@@ -375,7 +371,6 @@ type App struct {
 	CronKeeper          cronkeeper.Keeper
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
-	SwapKeeper          ibcswapkeeper.Keeper
 	GlobalFeeKeeper     globalfeekeeper.Keeper
 
 	PFMModule packetforward.AppModule
@@ -419,7 +414,7 @@ type App struct {
 
 // AutoCLIOpts returns options based upon the modules in the neutron v4 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
-	modules := make(map[string]appmodule.AppModule, 0)
+	modules := make(map[string]appmodule.AppModule)
 	for _, m := range app.mm.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
@@ -429,18 +424,12 @@ func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 		}
 	}
 
-	cliKR, err := keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
-	if err != nil {
-		panic(err)
-	}
-
 	return autocli.AppOptions{
 		Modules:               modules,
 		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.mm.Modules),
 		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
-		Keyring:               cliKR,
 		ClientCtx:             initClientCtx,
 	}
 }
@@ -623,6 +612,7 @@ func New(
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
+	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
 
 	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
 		appCodec,
@@ -760,15 +750,6 @@ func New(
 	)
 
 	dexModule := dex.NewAppModule(appCodec, app.DexKeeper, app.BankKeeper)
-
-	app.SwapKeeper = ibcswapkeeper.NewKeeper(
-		appCodec,
-		app.MsgServiceRouter(),
-		app.IBCKeeper.ChannelKeeper,
-		app.BankKeeper,
-	)
-
-	swapModule := ibcswap.NewAppModule(app.SwapKeeper)
 
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
@@ -913,7 +894,13 @@ func New(
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
-	interchainQueriesModule := interchainqueries.NewAppModule(appCodec, app.InterchainQueriesKeeper, app.AccountKeeper, app.BankKeeper)
+	interchainQueriesModule := interchainqueries.NewAppModule(
+		appCodec,
+		keys[interchainqueriesmoduletypes.StoreKey],
+		app.InterchainQueriesKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
@@ -928,7 +915,6 @@ func New(
 		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
-	ibcStack = ibcswap.NewIBCMiddleware(ibcStack, app.SwapKeeper)
 	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
@@ -980,11 +966,11 @@ func New(
 		globalfee.NewAppModule(app.GlobalFeeKeeper, app.GetSubspace(globalfee.ModuleName), app.AppCodec(), app.keys[globalfee.ModuleName]),
 		feemarket.NewAppModule(appCodec, *app.FeeMarkerKeeper),
 		dynamicfees.NewAppModule(appCodec, *app.DynamicFeesKeeper),
-		swapModule,
 		dexModule,
 		marketmapModule,
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
+		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -1029,8 +1015,8 @@ func New(
 		oracletypes.ModuleName,
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
-		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -1065,8 +1051,8 @@ func New(
 		oracletypes.ModuleName,
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
-		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1106,10 +1092,10 @@ func New(
 		feemarkettypes.ModuleName,
 		oracletypes.ModuleName,
 		marketmaptypes.ModuleName,
-		ibcswaptypes.ModuleName,
 		dextypes.ModuleName,
 		dynamicfeestypes.ModuleName,
 		crisistypes.ModuleName,
+		consensusparamtypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1152,7 +1138,6 @@ func New(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
-	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
@@ -1170,11 +1155,11 @@ func New(
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
-				BankKeeper:      app.BankKeeper,
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
+			BankKeeper:            app.BankKeeper,
 			AccountKeeper:         app.AccountKeeper,
 			IBCKeeper:             app.IBCKeeper,
 			GlobalFeeKeeper:       app.GlobalFeeKeeper,
@@ -1193,7 +1178,6 @@ func New(
 	postHandlerOptions := PostHandlerOptions{
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
-		FeeGrantKeeper:  app.FeeGrantKeeper,
 		FeeMarketKeeper: app.FeeMarkerKeeper,
 	}
 	postHandler, err := NewPostHandler(postHandlerOptions)
@@ -1306,6 +1290,8 @@ func New(
 			compression.NewZStdCompressor(),
 		),
 	)
+
+	app.SetPreBlocker(app.oraclePreBlockHandler.WrappedPreBlocker(app.mm))
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
@@ -1423,6 +1409,7 @@ func (app *App) setupUpgradeHandlers() {
 					FeeMarketKeeper:     app.FeeMarkerKeeper,
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
 					StakingKeeper:       app.StakingKeeper,
+					DexKeeper:           &app.DexKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1471,17 +1458,6 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 
 // GetBaseApp returns the base app of the application
 func (app *App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
-
-// PreBlocker application updates every pre block
-func (app *App) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	rsp, err := app.mm.PreBlock(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
-	return rsp, err
-}
 
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {

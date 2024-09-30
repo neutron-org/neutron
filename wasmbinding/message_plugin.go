@@ -7,22 +7,24 @@ import (
 	"strings"
 	"time"
 
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
 	"github.com/cosmos/gogoproto/proto"
 
 	"golang.org/x/exp/maps"
 
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v5/x/dex/utils"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
@@ -38,16 +40,16 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v4/x/transfer/types"
+	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v5/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(
@@ -71,7 +73,8 @@ func CustomMessageDecorator(
 			Adminserver:           adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
 			Bank:                  bankKeeper,
 			TokenFactory:          tokenFactoryKeeper,
-			CronKeeper:            cronKeeper,
+			CronMsgServer:         cronkeeper.NewMsgServerImpl(*cronKeeper),
+			CronQueryServer:       cronKeeper,
 			AdminKeeper:           adminKeeper,
 			ContractmanagerKeeper: contractmanagerKeeper,
 			DexMsgServer:          dexkeeper.NewMsgServerImpl(*dexKeeper),
@@ -88,7 +91,8 @@ type CustomMessenger struct {
 	Adminserver           admintypes.MsgServer
 	Bank                  *bankkeeper.BaseKeeper
 	TokenFactory          *tokenfactorykeeper.Keeper
-	CronKeeper            *cronkeeper.Keeper
+	CronMsgServer         crontypes.MsgServer
+	CronQueryServer       crontypes.QueryServer
 	AdminKeeper           *adminmodulekeeper.Keeper
 	ContractmanagerKeeper *contractmanagerkeeper.Keeper
 	DexMsgServer          dextypes.MsgServer
@@ -756,12 +760,8 @@ func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 
 // PerformBurn performs token burning after validating tokenBurn message.
 func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) error {
-	if burn.BurnFromAddress != "" && burn.BurnFromAddress != contractAddr.String() {
-		return wasmvmtypes.InvalidRequest{Err: "BurnFromAddress must be \"\""}
-	}
-
 	coin := sdk.Coin{Denom: burn.Denom, Amount: burn.Amount}
-	sdkMsg := tokenfactorytypes.NewMsgBurn(contractAddr.String(), coin)
+	sdkMsg := tokenfactorytypes.NewMsgBurnFrom(contractAddr.String(), coin, burn.BurnFromAddress)
 
 	// Burn through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
@@ -865,11 +865,25 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 }
 
 func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
+	// parse incoming ordering. If nothing passed, use ORDERED by default
+	var orderValue channeltypes.Order
+	if reg.Ordering == "" {
+		orderValue = channeltypes.ORDERED
+	} else {
+		orderValueInt, ok := channeltypes.Order_value[reg.Ordering]
+
+		if !ok {
+			return nil, fmt.Errorf("failed to register interchain account: incorrect order value passed: %s", reg.Ordering)
+		}
+		orderValue = channeltypes.Order(orderValueInt)
+	}
+
 	msg := ictxtypes.MsgRegisterInterchainAccount{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
 		RegisterFee:         getRegisterFee(reg.RegisterFee),
+		Ordering:            orderValue,
 	}
 
 	response, err := m.Ictxmsgserver.RegisterInterchainAccount(ctx, &msg)
@@ -977,6 +991,8 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
 	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
 		msgs = append(msgs, crontypes.MsgExecuteContract{
@@ -985,13 +1001,20 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		})
 	}
 
-	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	_, err := m.CronMsgServer.AddSchedule(ctx, &crontypes.MsgAddSchedule{
+		Authority:      authority.String(),
+		Name:           addSchedule.Name,
+		Period:         addSchedule.Period,
+		Msgs:           msgs,
+		ExecutionStage: crontypes.ExecutionStage(crontypes.ExecutionStage_value[addSchedule.ExecutionStage]),
+	})
 	if err != nil {
 		ctx.Logger().Error("failed to addSchedule",
 			"from_address", contractAddr.String(),
+			"name", addSchedule.Name,
 			"error", err,
 		)
-		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrapf(err, "failed to add %s schedule", addSchedule.Name)
 	}
 
 	ctx.Logger().Debug("schedule added",
@@ -1004,12 +1027,30 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	params := m.CronKeeper.GetParams(ctx)
-	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
+	params, err := m.CronQueryServer.Params(ctx, &crontypes.QueryParamsRequest{})
+	if err != nil {
+		ctx.Logger().Error("failed to removeSchedule", "error", err)
+		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
+	}
+
+	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.Params.SecurityAddress {
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
-	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
+	_, err = m.CronMsgServer.RemoveSchedule(ctx, &crontypes.MsgRemoveSchedule{
+		Authority: authority.String(),
+		Name:      removeSchedule.Name,
+	})
+	if err != nil {
+		ctx.Logger().Error("failed to removeSchedule",
+			"from_address", contractAddr.String(),
+			"name", removeSchedule.Name,
+			"error", err,
+		)
+		return nil, nil, nil, errors.Wrapf(err, "failed to remove %s schedule", removeSchedule.Name)
+	}
 
 	ctx.Logger().Debug("schedule removed",
 		"from_address", contractAddr.String(),

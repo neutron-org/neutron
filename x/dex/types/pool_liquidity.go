@@ -3,7 +3,7 @@ package types
 import (
 	"cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 type PoolLiquidity struct {
