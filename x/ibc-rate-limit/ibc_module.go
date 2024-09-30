@@ -217,15 +217,12 @@ func (im *IBCModule) RevertSentPacket(
 		return nil
 	}
 
-	if err := UndoSendRateLimit(
+	return UndoSendRateLimit(
 		ctx,
 		im.ics4Middleware.ContractKeeper,
 		contract,
 		packet,
-	); err != nil {
-		return err
-	}
-	return nil
+	)
 }
 
 // SendPacket implements the ICS4 Wrapper interface
