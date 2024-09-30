@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"cosmossdk.io/errors"
 
@@ -28,28 +29,37 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 		Use:                        "add-consumer-section",
 		Short:                      "ONLY FOR TESTING PURPOSES! Modifies genesis so that chain can be started locally with one node.",
 		SuggestionsMinimumDistance: 2,
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			return genesisMutator.AlterConsumerModuleState(cmd, func(state *GenesisData, _ map[string]json.RawMessage) error {
 				genesisState := consumer.CreateMinimalConsumerTestGenesis()
 				clientCtx := client.GetClientContextFromCmd(cmd)
 				serverCtx := server.GetServerContextFromCmd(cmd)
 				config := serverCtx.Config
 				config.SetRoot(clientCtx.HomeDir)
-				privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-				pk, err := privValidator.GetPubKey()
+				var initialValset []types1.ValidatorUpdate
+				nodes, err := strconv.Atoi(args[0])
 				if err != nil {
 					return err
 				}
-				sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
-				if err != nil {
-					return err
-				}
-				tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
-				if err != nil {
-					return err
+				for node := 1; node <= nodes; node++ {
+					nodeHome := fmt.Sprintf("%s/../node-%d", clientCtx.HomeDir, node)
+					privValidator := pvm.LoadFilePV(fmt.Sprintf("%s/config/priv_validator_key.json", nodeHome), fmt.Sprintf("%s/data/priv_validator_state.json", nodeHome))
+					pk, err := privValidator.GetPubKey()
+					if err != nil {
+						return err
+					}
+					sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
+					if err != nil {
+						return err
+					}
+					tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
+					if err != nil {
+						return err
+					}
+					initialValset = append(initialValset, types1.ValidatorUpdate{PubKey: tmProtoPublicKey, Power: 100})
+
 				}
 
-				initialValset := []types1.ValidatorUpdate{{PubKey: tmProtoPublicKey, Power: 100}}
 				vals, err := tmtypes.PB2TM.ValidatorUpdates(initialValset)
 				if err != nil {
 					return errors.Wrap(err, "could not convert val updates to validator set")

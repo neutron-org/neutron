@@ -8,6 +8,8 @@ STAKEDENOM=${STAKEDENOM:-untrn}
 CONTRACTS_BINARIES_DIR=${CONTRACTS_BINARIES_DIR:-./contracts}
 THIRD_PARTY_CONTRACTS_DIR=${THIRD_PARTY_CONTRACTS_DIR:-./contracts_thirdparty}
 FEEMARKET_ENABLED=${FEEMARKET_ENABLED:-true}
+NODES=${NODES:-10}
+VALS=5
 
 # IMPORTANT! minimum_gas_prices should always contain at least one record, otherwise the chain will not start or halt
 # ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2 denom is required by intgration tests (test:tokenomics)
@@ -22,7 +24,7 @@ BYPASS_MIN_FEE_MSG_TYPES=${BYPASS_MIN_FEE_MSG_TYPES:-"$BYPASS_MIN_FEE_MSG_TYPES_
 MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE_DEFAULT=1000000
 MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE=${MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE:-"$MAX_TOTAL_BYPASS_MIN_FEE_MSG_GAS_USAGE_DEFAULT"}
 
-CHAIN_DIR="$BASE_DIR/$CHAINID"
+CHAIN_DIR="${BASE_DIR}/${CHAINID}/node-1/"
 GENESIS_PATH="$CHAIN_DIR/config/genesis.json"
 
 ADMIN_ADDRESS=$($BINARY keys show demowallet1 -a --home "$CHAIN_DIR" --keyring-backend test)
@@ -60,7 +62,7 @@ USE_UNISWAPV3_BASE_MARKETS=${USE_UNISWAPV3_BASE_MARKETS:-false}
 USE_COINGECKO_MARKETS=${USE_COINGECKO_MARKETS:-false}
 
 echo "Add consumer section..."
-$BINARY add-consumer-section --home "$CHAIN_DIR"
+$BINARY add-consumer-section ${VALS} --home "$CHAIN_DIR"
 ### PARAMETERS SECTION
 
 ## slashing params
