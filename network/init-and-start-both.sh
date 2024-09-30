@@ -12,7 +12,7 @@ export ROSETTA=8080
 export GRPCPORT=8090
 export GRPCWEB=8091
 export STAKEDENOM=untrn
-export NODES=10
+export NODES=15
 
 
 "$script_full_path"/init-ntrn.sh
