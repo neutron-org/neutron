@@ -197,7 +197,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 	}
 	params := types.Params{
 		UnbondingTime:     21 * 24 * time.Hour,
-		MaxValidators:     100,
+		MaxValidators:     2,
 		MaxEntries:        100,
 		HistoricalEntries: 100,
 		BondDenom:         "untrn",
@@ -253,7 +253,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 				MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
 				MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
 			},
-			MinSelfDelegation: math.NewInt(1_000_000),
+			MinSelfDelegation: math.NewInt(1),
 			DelegatorAddress:  "",
 			// WARN: у оператора должно быть достаточно денег для selfbond
 			ValidatorAddress: add,
@@ -261,7 +261,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 			Pubkey: v.GetPubkey(),
 			Value: sdk.Coin{
 				Denom:  "untrn",
-				Amount: math.NewInt(1_000_000),
+				Amount: math.NewInt(1),
 			},
 		})
 		if err != nil {
