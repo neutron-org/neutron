@@ -10,6 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/neutron-org/neutron/v5/app/upgrades"
 	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
+	ibcratelimittypes "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
 )
 
 func CreateUpgradeHandler(
@@ -37,6 +39,15 @@ func CreateUpgradeHandler(
 			}
 		}
 
+		ctx.Logger().Info("Running ibc-rate-limit upgrades...")
+		// Only set rate limit contract for mainnet
+		if ctx.ChainID() == "neutron-1" {
+			err = upgradeIbcRateLimitSetContract(ctx, *keepers.IbcRateLimitKeeper)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
@@ -54,6 +65,19 @@ func upgradeDexPause(ctx sdk.Context, k dexkeeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("Dex is paused")
+
+	return nil
+}
+
+func upgradeIbcRateLimitSetContract(ctx sdk.Context, k ibcratelimitkeeper.Keeper) error {
+	// Set the dex to paused
+	ctx.Logger().Info("Setting ibc rate limiting contract...")
+
+	if err := k.SetParams(ctx, ibcratelimittypes.Params{ContractAddress: RateLimitContract}); err != nil {
+		return err
+	}
+
+	ctx.Logger().Info("Rate limit contract is set")
 
 	return nil
 }
