@@ -5,9 +5,14 @@ import (
 	"fmt"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+
 	"github.com/neutron-org/neutron/v5/app/upgrades"
 	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 )
@@ -37,6 +42,11 @@ func CreateUpgradeHandler(
 			}
 		}
 
+		err = setMarketMapParams(ctx, keepers.MarketmapKeeper)
+		if err != nil {
+			return nil, err
+		}
+
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
 	}
@@ -56,4 +66,12 @@ func upgradeDexPause(ctx sdk.Context, k dexkeeper.Keeper) error {
 	ctx.Logger().Info("Dex is paused")
 
 	return nil
+}
+
+func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper) error {
+	marketmapParams := marketmaptypes.Params{
+		MarketAuthorities: []string{authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), MarketMapAuthorityMultisig},
+		Admin:             authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	}
+	return marketmapKeeper.SetParams(ctx, marketmapParams)
 }
