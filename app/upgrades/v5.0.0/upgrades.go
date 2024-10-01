@@ -5,9 +5,14 @@ import (
 	"fmt"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+
 	"github.com/neutron-org/neutron/v5/app/upgrades"
 	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
@@ -37,6 +42,11 @@ func CreateUpgradeHandler(
 			if err != nil {
 				return nil, err
 			}
+		}
+
+		err = setMarketMapParams(ctx, keepers.MarketmapKeeper)
+		if err != nil {
+			return nil, err
 		}
 
 		ctx.Logger().Info("Running ibc-rate-limit upgrades...")
@@ -80,4 +90,12 @@ func upgradeIbcRateLimitSetContract(ctx sdk.Context, k ibcratelimitkeeper.Keeper
 	ctx.Logger().Info("Rate limit contract is set")
 
 	return nil
+}
+
+func setMarketMapParams(ctx sdk.Context, marketmapKeeper *marketmapkeeper.Keeper) error {
+	marketmapParams := marketmaptypes.Params{
+		MarketAuthorities: []string{authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(), MarketMapAuthorityMultisig},
+		Admin:             authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	}
+	return marketmapKeeper.SetParams(ctx, marketmapParams)
 }

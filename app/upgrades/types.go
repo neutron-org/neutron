@@ -19,6 +19,8 @@ import (
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
