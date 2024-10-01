@@ -196,8 +196,10 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		return err
 	}
 	params := types.Params{
-		UnbondingTime:     21 * 24 * time.Hour,
-		MaxValidators:     2,
+		UnbondingTime: 21 * 24 * time.Hour,
+		// Значение должно вместить всех старых и новых валидаторов, иначе не пройдет sanity check в бегин блокере staking
+		// после миграции можно корректировать как надо
+		MaxValidators:     100,
 		MaxEntries:        100,
 		HistoricalEntries: 100,
 		BondDenom:         "untrn",
