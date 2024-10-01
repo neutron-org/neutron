@@ -281,7 +281,6 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	denom := sdk.DefaultBondDenom
 	if !native {
 		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", channelTest, denom))
-		fmt.Println(denomTrace)
 		denom = denomTrace.IBCDenom()
 	}
 
@@ -294,8 +293,6 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	quota := channelValue.QuoRaw(int64(100 / quotaPercentage))
 	sendAmount := quota.QuoRaw(2)
 
-	fmt.Printf("Testing send rate limiting for denom=%s, channelValue=%s, quota=%s, sendAmount=%s\n", denom, channelValue, quota, sendAmount)
-
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
@@ -304,17 +301,14 @@ func (suite *MiddlewareTestSuite) fullSendTest(native bool) map[string]string {
 	suite.RegisterRateLimitingContract(addr)
 
 	// send 2.5% (quota is 5%)
-	fmt.Printf("Sending %s from A to B. Represented in chain A as wrapped? %v\n", denom, !native)
 	_, err := suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
 	suite.Require().NoError(err)
 
 	// send 2.5% (quota is 5%)
-	fmt.Println("trying to send ", sendAmount)
 	r, _ := suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
 
 	// Calculate remaining allowance in the quota
 	attrs := suite.ExtractAttributes(suite.FindEvent(r.GetEvents(), "wasm"))
-	fmt.Println(r.GetEvents())
 
 	used, ok := sdkmath.NewIntFromString(attrs["weekly_used_out"])
 	suite.Require().True(ok)
@@ -386,8 +380,6 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	quota := channelValue.QuoRaw(int64(100 / quotaPercentage))
 	sendAmount := quota.QuoRaw(2)
 
-	fmt.Printf("Testing send rate limiting for denom=%s, channelValue=%s, weekly_quota=%s, daily_quota=%s, sendAmount=%s\n", denom, channelValue, quota, sendAmount, sendAmount)
-
 	// Setup contract
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
 	suite.StoreTestCode(suite.ChainA.GetContext(), testOwner, "./bytecode/rate_limiter.wasm")
@@ -396,13 +388,11 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	suite.RegisterRateLimitingContract(addr)
 
 	// send 2% (daily quota is 2%)
-	fmt.Printf("Sending %s from A to B. Represented in chain A as wrapped? No", denom)
 	r, err := suite.AssertSend(true, suite.MessageFromAToB(denom, sendAmount))
 	suite.Require().NoError(err)
 
 	// Calculate remaining allowance in the quota
 	attrs := suite.ExtractAttributes(suite.FindEvent(r.GetEvents(), "wasm"))
-	fmt.Println(r.GetEvents())
 
 	used, ok := sdkmath.NewIntFromString(attrs["daily_used_out"])
 	suite.Require().True(ok)
@@ -476,8 +466,6 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	quota := channelValue.QuoRaw(int64(100 / quotaPercentage))
 	sendAmount := quota.QuoRaw(2)
 
-	fmt.Printf("Testing recv rate limiting for denom=%s, channelValue=%s, quota=%s, sendAmount=%s\n", localDenom, channelValue, quota, sendAmount)
-
 	// Setup contract
 	suite.GetNeutronZoneApp(suite.ChainA)
 	testOwner := sdk.MustAccAddressFromBech32(testutil.TestOwnerAddress)
@@ -487,7 +475,6 @@ func (suite *MiddlewareTestSuite) fullRecvTest(native bool) {
 	suite.RegisterRateLimitingContract(addr)
 
 	// receive 2.5% (quota is 5%)
-	fmt.Printf("Sending %s from B to A. Represented in chain A as wrapped? %v\n", sendDenom, native)
 	_, err := suite.AssertReceive(true, suite.MessageFromBToA(sendDenom, sendAmount))
 	suite.Require().NoError(err)
 
@@ -711,9 +698,6 @@ func (suite *MiddlewareTestSuite) InstantiateRLContract2Quotas(quotas1 string) s
            "paths": [%s]
         }`,
 		testutil.TestOwnerAddress, transferModule, quotas1))
-
-	fmt.Println(string(initMsgBz))
-
 	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	codeID := uint64(1)
 	creator := suite.ChainA.SenderAccount.GetAddress()
