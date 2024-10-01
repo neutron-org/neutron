@@ -1363,6 +1363,7 @@ func (app *App) setupUpgradeHandlers() {
 					FeeMarketKeeper:     app.FeeMarkerKeeper,
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
 					DexKeeper:           &app.DexKeeper,
+					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
