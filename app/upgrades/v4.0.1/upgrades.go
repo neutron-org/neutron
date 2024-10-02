@@ -333,6 +333,7 @@ func bondValidator(ctx context.Context, k stakingkeeper.Keeper, validator types.
 	}
 
 	// trigger hook
+	// Возможно не обязательно?
 	consAddr, err := validator.GetConsAddr()
 	if err != nil {
 		return validator, err
