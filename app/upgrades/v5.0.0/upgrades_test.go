@@ -83,3 +83,25 @@ func (suite *UpgradeTestSuite) TestUpgradeDexPause() {
 
 	suite.ErrorIs(err, dextypes.ErrDexPaused)
 }
+
+func (suite *UpgradeTestSuite) TestUpgradeSetRateLimitContract() {
+	var (
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext().WithChainID("neutron-1")
+	)
+
+	params := app.RateLimitingICS4Wrapper.IbcratelimitKeeper.GetParams(ctx)
+
+	suite.Equal(params.ContractAddress, "")
+
+	upgrade := upgradetypes.Plan{
+		Name:   v500.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	suite.NoError(app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
+
+	params = app.RateLimitingICS4Wrapper.IbcratelimitKeeper.GetParams(ctx)
+
+	suite.Equal(params.ContractAddress, v500.RateLimitContract)
+}
