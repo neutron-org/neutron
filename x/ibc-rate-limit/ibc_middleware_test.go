@@ -240,7 +240,7 @@ func (suite *MiddlewareTestSuite) BuildChannelQuotaWith2Quotas(name, channel, de
 // Test that Sending IBC messages works when the middleware isn't configured
 func (suite *MiddlewareTestSuite) TestSendTransferNoContract() {
 	suite.ConfigureTransferChannel()
-	one := sdkmath.NewInt(1)
+	one := sdkmath.NewInt(2)
 	_, err := suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, one))
 	suite.Require().NoError(err)
 }
@@ -248,7 +248,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferNoContract() {
 // Test that Receiving IBC messages works when the middleware isn't configured
 func (suite *MiddlewareTestSuite) TestReceiveTransferNoContract() {
 	suite.ConfigureTransferChannel()
-	one := sdkmath.NewInt(1)
+	one := sdkmath.NewInt(2)
 	_, err := suite.AssertReceive(true, suite.MessageFromBToA(sdk.DefaultBondDenom, one))
 	suite.Require().NoError(err)
 }
@@ -357,7 +357,7 @@ func (suite *MiddlewareTestSuite) TestSendTransferReset() {
 	suite.Coordinator.IncrementTimeBy(oneSecAfterReset.Sub(suite.Coordinator.CurrentTime))
 
 	// Sending should succeed again
-	_, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(1)))
+	_, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
 	suite.Require().NoError(err)
 }
 
@@ -399,6 +399,10 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 
 	suite.Require().Equal(used, sendAmount)
 
+	weeklyUsed, ok := sdkmath.NewIntFromString(attrs["weekly_used_out"])
+	suite.Require().True(ok)
+	suite.Require().Equal(weeklyUsed, sendAmount)
+
 	// Sending above the daily quota should fail.
 	_, err = suite.AssertSend(false, suite.MessageFromAToB(denom, sendAmount))
 	suite.Require().Error(err)
@@ -422,6 +426,15 @@ func (suite *MiddlewareTestSuite) TestSendTransferDailyReset() {
 	suite.Require().NoError(err)
 
 	attrs = suite.ExtractAttributes(suite.FindEvent(r.GetEvents(), "wasm"))
+
+	used, ok = sdkmath.NewIntFromString(attrs["daily_used_out"])
+	suite.Require().True(ok)
+
+	suite.Require().Equal(used, sendAmount)
+
+	weeklyUsed, ok = sdkmath.NewIntFromString(attrs["weekly_used_out"])
+	suite.Require().True(ok)
+	suite.Require().Equal(weeklyUsed, sendAmount.MulRaw(2))
 
 	parts = strings.Split(attrs["daily_period_end"], ".") // Splitting timestamp into secs and nanos
 	secs, err = strconv.ParseInt(parts[0], 10, 64)
@@ -585,7 +598,7 @@ func (suite *MiddlewareTestSuite) TestFailedSendTransfer() {
 	suite.Require().NoError(err)
 
 	// We should be able to send again because the packet that exceeded the quota failed and has been reverted
-	_, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(1)))
+	_, err = suite.AssertSend(true, suite.MessageFromAToB(sdk.DefaultBondDenom, sdkmath.NewInt(2)))
 	suite.Require().NoError(err)
 }
 
@@ -637,7 +650,7 @@ func (suite *MiddlewareTestSuite) TestDenomRestrictionFlow() {
 	suite.RegisterRateLimitingContract(contractAddr)
 
 	denom := sdk.DefaultBondDenom
-	sendAmount := sdkmath.NewInt(1)
+	sendAmount := sdkmath.NewInt(2)
 	acceptedChannel := suite.TransferPath.EndpointA.ChannelID
 
 	// Sending on a diff channel should work
