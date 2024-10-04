@@ -26,7 +26,8 @@ import (
 	"time"
 )
 
-var opers []string = []string{
+// "random" addresses
+var opers = []string{
 	"neutron1t3pl52s2zjlc7h0c3xu4fryvxpatduzww8a3kh",
 	"neutron1rg5dw9kevtqgxksaqqlkx88888x8glwmm54tw0",
 	"neutron1qhjn9zhpkucrqrxfhg2th5gf48z3ugsevsh3r9",
@@ -178,10 +179,9 @@ func NewSovereignVal(ctx context.Context, id int, bk bankkeeper.Keeper, ak authk
 		},
 		MinSelfDelegation: math.NewInt(1_000_000),
 		DelegatorAddress:  "",
-		// WARN: у оператора должно быть достаточно денег для selfbond
+		// WARN: Operator must have enough funds
 		ValidatorAddress: add,
 		Pubkey:           pubkey,
-		// кто оплатит?
 		Value: sdk.Coin{
 			Denom:  "untrn",
 			Amount: math.NewInt(1_000_000),
@@ -197,8 +197,10 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 	}
 	params := types.Params{
 		UnbondingTime: 21 * 24 * time.Hour,
-		// Значение должно вместить всех старых и новых валидаторов, иначе не пройдет sanity check в бегин блокере staking
-		// после миграции можно корректировать как надо
+		// During migration MaxValidators MUST be >= all the validators number, old and new ones.
+		// i.e. chain managed by 150 ICS validators, and we are switching to 70 STAKING, MaxValidators MUST be at least 220,
+		// otherwise panic during staking begin blocker happens
+		// It's allowed to checge the value at the very next block
 		MaxValidators:     100,
 		MaxEntries:        100,
 		HistoricalEntries: 100,
@@ -214,14 +216,8 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		return err
 	}
 
-	// тут мы добавляем всех ccv валидаторов в стейкинг модуль
+	// Add all ICS validators to staking module
 	for _, v := range consumerKeeper.GetAllCCValidator(ctx) {
-		//fmt.Println(v.Address)
-
-		//bankAddress, err := bech32.ConvertAndEncode("neutron", v.GetAddress())
-		//if err != nil {
-		//	return err
-		//}
 		err = bk.MintCoins(ctx, "dex", sdk.NewCoins(sdk.Coin{
 			Denom:  "untrn",
 			Amount: math.NewInt(1_000_000),
@@ -256,11 +252,9 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 				MaxChangeRate: math.LegacyMustNewDecFromStr("0.1"),
 			},
 			MinSelfDelegation: math.NewInt(1),
-			DelegatorAddress:  "",
-			// WARN: у оператора должно быть достаточно денег для selfbond
+			// WARN: valoper must have enough funds to selfbond
 			ValidatorAddress: add,
-			//ValidatorAddress: "neutronvaloper1m9l358xunhhwds0568za49mzhvuxx9uxamysqw",
-			Pubkey: v.GetPubkey(),
+			Pubkey:           v.GetPubkey(),
 			Value: sdk.Coin{
 				Denom:  "untrn",
 				Amount: math.NewInt(1),
@@ -279,25 +273,15 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 		if err != nil {
 			return err
 		}
+		// add validator to active set to remove it from in end blocker the same block
 		_, err = bondValidator(ctx, sk, savedVal)
 		if err != nil {
 			return err
 		}
 
 	}
-	//_, b, _ := bech32.DecodeAndConvert("neutronvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk5tccmr")
-	//fmt.Println(b)
 
-	//pkraw, err := base64.StdEncoding.DecodeString("U5OsDjF61okt7TsPoM4NUokEACQ4KZCdGNnHYT8d36w=")
-	//if err != nil {
-	//	return err
-	//}
-	//pk := ed25519.PubKey{Key: pkraw}
-	//pubkey, err := codectypes.NewAnyWithValue(&pk)
-	//if err != nil {
-	//	return err
-	//}
-
+	// add new staking validators
 	for i := 13; i <= 14; i++ {
 		msgCreate := NewSovereignVal(ctx, i, bk, ak)
 		_, err = srv.CreateValidator(ctx, &msgCreate)
@@ -310,6 +294,7 @@ func createValidators(ctx sdk.Context, sk stakingkeeper.Keeper, consumerKeeper c
 	return nil
 }
 
+// copied from staking module https://github.com/cosmos/cosmos-sdk/blob/v0.50.6/x/staking/keeper/val_state_change.go#L336
 func bondValidator(ctx context.Context, k stakingkeeper.Keeper, validator types.Validator) (types.Validator, error) {
 	// delete the validator by power index, as the key will change
 	if err := k.DeleteValidatorByPowerIndex(ctx, validator); err != nil {
@@ -333,7 +318,6 @@ func bondValidator(ctx context.Context, k stakingkeeper.Keeper, validator types.
 	}
 
 	// trigger hook
-	// Возможно не обязательно?
 	consAddr, err := validator.GetConsAddr()
 	if err != nil {
 		return validator, err
