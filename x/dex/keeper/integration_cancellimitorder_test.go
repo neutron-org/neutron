@@ -51,6 +51,18 @@ func (s *DexTestSuite) TestCancelEntireLimitOrderBOneExists() {
 	s.assertDexBalances(0, 0)
 	s.assertCurr1To0(math.MinInt64)
 	s.assertCurr0To1(math.MaxInt64)
+
+	// Tranche is deleted
+	tranche, _, found := s.App.DexKeeper.FindLimitOrderTranche(
+		s.Ctx,
+		&types.LimitOrderTrancheKey{
+			TradePairId:           types.MustNewTradePairID("TokenA", "TokenB"),
+			TickIndexTakerToMaker: 0,
+			TrancheKey:            trancheKey,
+		},
+	)
+	s.Nil(tranche)
+	s.False(found)
 }
 
 func (s *DexTestSuite) TestCancelHigherEntireLimitOrderATwoExistDiffTicksSameDirection() {

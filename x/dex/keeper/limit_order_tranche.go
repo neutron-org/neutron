@@ -55,7 +55,7 @@ func (k Keeper) SaveTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
 	if tranche.HasTokenIn() {
 		k.SetLimitOrderTranche(ctx, tranche)
 	} else {
-		k.SetInactiveLimitOrderTranche(ctx, tranche)
+		k.SaveInactiveTranche(ctx, tranche)
 		k.RemoveLimitOrderTranche(ctx, tranche.Key)
 		ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(tranche.Key.TradePairId))
 	}
