@@ -18,6 +18,7 @@ import (
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 
 	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
 
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
 
@@ -67,6 +68,7 @@ type UpgradeKeepers struct {
 	FeeMarketKeeper    *feemarketkeeper.Keeper
 	DynamicfeesKeeper  *dynamicfeeskeeper.Keeper
 	DexKeeper          *dexkeeper.Keeper
+	IbcRateLimitKeeper *ibcratelimitkeeper.Keeper
 	// subspaces
 	GlobalFeeSubspace   paramtypes.Subspace
 	CcvConsumerSubspace paramtypes.Subspace
