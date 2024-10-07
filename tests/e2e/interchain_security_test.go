@@ -24,7 +24,7 @@ func TestCCVTestSuite(t *testing.T) {
 		// TODO: These test just doesn't work in IS, so skip it for now
 		// "TestKeyAssignment", "TestBasicSlashPacketThrottling", "TestMultiConsumerSlashPacketThrottling" - don't work because ICS doesn't support CometBFT v0.38.12 yet
 		// "TestRewardsDistribution" - doesn't work because we burn some fees
-		[]string{"TestRewardsDistribution", "TestKeyAssignment", "TestBasicSlashPacketThrottling", "TestMultiConsumerSlashPacketThrottling"},
+		[]string{"TestRewardsDistribution", "TestKeyAssignment", "TestBasicSlashPacketThrottling", "TestMultiConsumerSlashPacketThrottling", "TestRelayAndApplyDowntimePacket"},
 	)
 
 	// Run tests

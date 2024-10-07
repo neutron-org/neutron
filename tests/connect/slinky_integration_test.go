@@ -1,4 +1,4 @@
-package slinky_test
+package connect_test
 
 import (
 	"fmt"
@@ -38,8 +38,8 @@ var (
 	gasAdjustment = 1.5
 
 	oracleImage = ibc.DockerImage{
-		Repository: "ghcr.io/skip-mev/slinky-sidecar",
-		Version:    "v1.0.0",
+		Repository: "ghcr.io/skip-mev/connect-sidecar",
+		Version:    "v2.1.0",
 		UidGid:     "1000:1000",
 	}
 	encodingConfig = testutil.MakeTestEncodingConfig(
@@ -70,8 +70,8 @@ var (
 
 	denom = "untrn"
 	spec  = &interchaintest.ChainSpec{
-		ChainName:     "slinky",
-		Name:          "slinky",
+		ChainName:     "connect",
+		Name:          "connect",
 		NumValidators: &numValidators,
 		NumFullNodes:  &numFullNodes,
 		Version:       "latest",
@@ -82,7 +82,7 @@ var (
 				image,
 			},
 			Type:           "cosmos",
-			Name:           "slinky",
+			Name:           "connect",
 			Denom:          denom,
 			ChainID:        "chain-id-0",
 			Bin:            "neutrond",
@@ -98,7 +98,7 @@ var (
 	}
 )
 
-func TestSlinkyOracleIntegration(t *testing.T) {
+func TestConnectOracleIntegration(t *testing.T) {
 	baseSuite := integration.NewConnectIntegrationSuite(
 		spec,
 		oracleImage,
@@ -110,7 +110,7 @@ func TestSlinkyOracleIntegration(t *testing.T) {
 	suite.Run(t, integration.NewConnectOracleIntegrationSuite(baseSuite))
 }
 
-func TestSlinkyCCVIntegration(t *testing.T) {
+func TestConnectCCVIntegration(t *testing.T) {
 	s := integration.NewConnectCCVIntegrationSuite(
 		spec,
 		oracleImage,

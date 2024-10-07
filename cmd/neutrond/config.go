@@ -35,7 +35,7 @@ type NeutronCustomClient struct {
 }
 
 // NeutronAppConfig defines the config structure of the neutrond app.toml file. Specifically,
-// it wraps the default app.toml config with additional slinky application config params.
+// it wraps the default app.toml config with additional connect application config params.
 type NeutronAppConfig struct {
 	serverconfig.Config
 	Oracle oracleconfig.AppConfig `mapstructure:"oracle" json:"oracle"`

@@ -29,7 +29,7 @@ import (
 	"github.com/skip-mev/connect/v2/x/oracle"
 
 	oraclepreblock "github.com/skip-mev/connect/v2/abci/preblock/oracle"
-	slinkyproposals "github.com/skip-mev/connect/v2/abci/proposals"
+	connectproposals "github.com/skip-mev/connect/v2/abci/proposals"
 	compression "github.com/skip-mev/connect/v2/abci/strategies/codec"
 	"github.com/skip-mev/connect/v2/abci/strategies/currencypair"
 	"github.com/skip-mev/connect/v2/abci/ve"
@@ -394,7 +394,7 @@ type App struct {
 	WasmKeeper     wasmkeeper.Keeper
 	ContractKeeper *wasmkeeper.PermissionedKeeper
 
-	// slinky
+	// connect
 	MarketMapKeeper       *marketmapkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper
 	oraclePreBlockHandler *oraclepreblock.PreBlockHandler
@@ -1189,7 +1189,7 @@ func New(
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
-	oracleProposalHandler := slinkyproposals.NewProposalHandler(
+	oracleProposalHandler := connectproposals.NewProposalHandler(
 		app.Logger(),
 		blockSdkProposalHandler.PrepareProposalHandler(),
 		baseapp.NoOpProcessProposal(),

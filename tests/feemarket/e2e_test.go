@@ -40,7 +40,7 @@ var (
 	}
 
 	oracleImage = ibc.DockerImage{
-		Repository: "ghcr.io/skip-mev/slinky-sidecar",
+		Repository: "ghcr.io/skip-mev/connect-sidecar",
 		Version:    "latest",
 		UidGid:     "1000:1000",
 	}
