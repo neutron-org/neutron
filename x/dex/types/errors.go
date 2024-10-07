@@ -224,4 +224,9 @@ var (
 		1163,
 		"Cannot convert price to int64 tick value",
 	)
+	ErrNoLiquidity = sdkerrors.Register(
+		ModuleName,
+		1164,
+		"No tradable liquidity below LimitSellPrice",
+	)
 )
