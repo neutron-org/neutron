@@ -27,7 +27,7 @@ var (
 	ErrValidLimitOrderTrancheNotFound = sdkerrors.Register(
 		ModuleName,
 		1111,
-		"Limit order trache not found:",
+		"Limit order tranche not found:",
 	) // "%d", trancheKey
 	ErrCancelEmptyLimitOrder = sdkerrors.Register(
 		ModuleName,
@@ -68,11 +68,6 @@ var (
 		ModuleName,
 		1125,
 		"MaxAmountIn in must be > 0 for swap.",
-	)
-	ErrActiveLimitOrderNotFound = sdkerrors.Register(
-		ModuleName,
-		1128,
-		"No active limit found. It does not exist or has already been filled",
 	)
 	ErrZeroWithdraw = sdkerrors.Register(
 		ModuleName,
