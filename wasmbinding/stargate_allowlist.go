@@ -99,14 +99,14 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.dex.Query/SimulateMultiHopSwap":              &dextypes.QuerySimulateMultiHopSwapResponse{},
 
 		// oracle
-		"/connect.oracle.v1.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
-		"/connect.oracle.v1.Query/GetPrice":            &oracletypes.GetPriceResponse{},
-		"/connect.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
+		"/connect.oracle.v2.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
+		"/connect.oracle.v2.Query/GetPrice":            &oracletypes.GetPriceResponse{},
+		"/connect.oracle.v2.Query/GetPrices":           &oracletypes.GetPricesResponse{},
 
 		// marketmap
-		"/connect.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
-		"/connect.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
-		"/connect.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
+		"/connect.marketmap.v2.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
+		"/connect.marketmap.v2.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
+		"/connect.marketmap.v2.Query/Params":      &marketmaptypes.ParamsResponse{},
 
 		// feemarket
 		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
