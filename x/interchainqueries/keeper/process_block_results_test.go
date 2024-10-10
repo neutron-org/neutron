@@ -250,12 +250,12 @@ func (suite *KeeperTestSuite) TestUnpackAndVerifyHeaders() {
 				CommitBlock(suite.Coordinator, suite.ChainB)
 				oldNextHeader := *suite.ChainB.LastHeader
 
-				for i := 0; i < 30; i++ {
+				for i := 0; i < 50; i++ {
 					suite.Require().NoError(UpdateClient(suite.Path.EndpointA))
 				}
 				headerWithTrustedHeight, err := suite.Path.EndpointA.Chain.ConstructUpdateTMClientHeaderWithTrustedHeight(suite.Path.EndpointA.Counterparty.Chain, suite.Path.EndpointB.ClientID, ibcclienttypes.Height{
 					RevisionNumber: 0,
-					RevisionHeight: 28,
+					RevisionHeight: 29,
 				})
 				suite.Require().NoError(err)
 
