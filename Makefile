@@ -135,9 +135,9 @@ build-e2e-docker-image: go.sum $(BUILDDIR)/
 		--load \
 		-f Dockerfile.builder .
 
-slinky-e2e-test:
-	@echo "Running e2e slinky tests..."
-	cd ./tests/slinky && go mod tidy && go test -v -race -timeout 30m -count=1 ./...
+connect-e2e-test:
+	@echo "Running e2e connect tests..."
+	cd ./tests/connect && go mod tidy && go test -v -race -timeout 30m -count=1 ./...
 
 feemarket-e2e-test:
 	@echo "Running e2e feemarket tests..."

@@ -1,4 +1,4 @@
-package slinky_test
+package connect_test
 
 import (
 	"fmt"
@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/skip-mev/slinky/tests/integration"
-	marketmapmodule "github.com/skip-mev/slinky/x/marketmap"
-	"github.com/skip-mev/slinky/x/oracle"
+	"github.com/skip-mev/connect/tests/integration/v2"
+	marketmapmodule "github.com/skip-mev/connect/v2/x/marketmap"
+	"github.com/skip-mev/connect/v2/x/oracle"
 )
 
 func init() {
@@ -38,8 +38,8 @@ var (
 	gasAdjustment = 1.5
 
 	oracleImage = ibc.DockerImage{
-		Repository: "ghcr.io/skip-mev/slinky-sidecar",
-		Version:    "v1.0.0",
+		Repository: "ghcr.io/skip-mev/connect-sidecar",
+		Version:    "v2.1.0",
 		UidGid:     "1000:1000",
 	}
 	encodingConfig = testutil.MakeTestEncodingConfig(
@@ -70,8 +70,8 @@ var (
 
 	denom = "untrn"
 	spec  = &interchaintest.ChainSpec{
-		ChainName:     "slinky",
-		Name:          "slinky",
+		ChainName:     "connect",
+		Name:          "connect",
 		NumValidators: &numValidators,
 		NumFullNodes:  &numFullNodes,
 		Version:       "latest",
@@ -82,7 +82,7 @@ var (
 				image,
 			},
 			Type:           "cosmos",
-			Name:           "slinky",
+			Name:           "connect",
 			Denom:          denom,
 			ChainID:        "chain-id-0",
 			Bin:            "neutrond",
@@ -98,8 +98,8 @@ var (
 	}
 )
 
-func TestSlinkyOracleIntegration(t *testing.T) {
-	baseSuite := integration.NewSlinkyIntegrationSuite(
+func TestConnectOracleIntegration(t *testing.T) {
+	baseSuite := integration.NewConnectIntegrationSuite(
 		spec,
 		oracleImage,
 		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
@@ -107,11 +107,11 @@ func TestSlinkyOracleIntegration(t *testing.T) {
 		integration.WithDenom(denom),
 	)
 
-	suite.Run(t, integration.NewSlinkyOracleIntegrationSuite(baseSuite))
+	suite.Run(t, integration.NewConnectOracleIntegrationSuite(baseSuite))
 }
 
-func TestSlinkyCCVIntegration(t *testing.T) {
-	s := integration.NewSlinkyCCVIntegrationSuite(
+func TestConnectCCVIntegration(t *testing.T) {
+	s := integration.NewConnectCCVIntegrationSuite(
 		spec,
 		oracleImage,
 		integration.WithInterchainConstructor(integration.CCVInterchainConstructor),
