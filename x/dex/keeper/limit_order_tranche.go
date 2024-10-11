@@ -51,12 +51,27 @@ func (k Keeper) FindLimitOrderTranche(
 	return nil, false, false
 }
 
-func (k Keeper) SaveTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
-	if tranche.HasTokenIn() {
+// UpdateTranche handles the logic for all updates to active LimitOrderTranches in the KV Store.
+// NOTE: This method should always be called even if not all logic branches are applicable.
+// It avoids unnecessary repetition of logic and provides a single place to attach update event handlers.
+func (k Keeper) UpdateTranche(ctx sdk.Context, tranche *types.LimitOrderTranche) {
+	switch {
+
+	// Tranche still has TokenIn (ReservesMakerDenom) ==> Just save the update
+	case tranche.HasTokenIn():
 		k.SetLimitOrderTranche(ctx, tranche)
-	} else {
-		k.SaveInactiveTranche(ctx, tranche)
+
+	// There is no TokenIn but there is still withdrawable TokenOut (ReservesTakerDenom) ==> Remove the active tranche and create a new inactive tranche
+	case tranche.HasTokenOut():
+		k.SetInactiveLimitOrderTranche(ctx, tranche)
 		k.RemoveLimitOrderTranche(ctx, tranche.Key)
+		// We are removing liquidity from the orderbook so we emit an event
+		ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(tranche.Key.TradePairId))
+
+	// There is no TokenIn or Token Out ==> We can delete the tranche entirely
+	default:
+		k.RemoveLimitOrderTranche(ctx, tranche.Key)
+		// We are removing liquidity from the orderbook so we emit an event
 		ctx.EventManager().EmitEvents(types.GetEventsDecTotalOrders(tranche.Key.TradePairId))
 	}
 

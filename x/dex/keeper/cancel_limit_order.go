@@ -102,11 +102,14 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
 	}
 
-	k.SaveTrancheUser(ctx, trancheUser)
+	// This will ALWAYS result in a deletion of the TrancheUser, but we still use UpdateTranche user so that the relevant events will be emitted
+	k.UpdateTrancheUser(ctx, trancheUser)
+
+	// If there is still liquidity from other shareholders we will either save the tranche as active/inactive or delete it entirely
 	if wasFilled {
-		k.SaveInactiveTranche(ctx, tranche)
+		k.UpdateInactiveTranche(ctx, tranche)
 	} else {
-		k.SaveTranche(ctx, tranche)
+		k.UpdateTranche(ctx, tranche)
 	}
 
 	if trancheUser.OrderType.HasExpiration() {
