@@ -233,6 +233,12 @@ func CancelLimitOrderEvent(
 	amountOutMaker math.Int,
 	trancheKey string,
 ) sdk.Event {
+	pairID := PairID{Token0: token0, Token1: token1}
+	takerDenom := pairID.MustOppositeToken(makerDenom)
+	coinsOut := sdk.NewCoins(
+		sdk.NewCoin(makerDenom, amountOutMaker),
+		sdk.NewCoin(takerDenom, amountOutTaker),
+	)
 	attrs := []sdk.Attribute{
 		sdk.NewAttribute(sdk.AttributeKeyModule, "dex"),
 		sdk.NewAttribute(sdk.AttributeKeyAction, CancelLimitOrderEventKey),
@@ -242,6 +248,8 @@ func CancelLimitOrderEvent(
 		sdk.NewAttribute(AttributeToken1, token1),
 		sdk.NewAttribute(AttributeTokenIn, makerDenom),
 		sdk.NewAttribute(AttributeTokenOut, tokenOut),
+		// DEPRECATED: `AmountOut` will be removed in the next release
+		sdk.NewAttribute(AttributeAmountOut, coinsOut.String()),
 		sdk.NewAttribute(AttributeTokenInAmountOut, amountOutMaker.String()),
 		sdk.NewAttribute(AttributeTokenOutAmountOut, amountOutTaker.String()),
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),

@@ -147,6 +147,11 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 	ratioFilled := t.RatioFilled()
 	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned)
 	sharesToWithdrawDec := maxAllowedToWithdraw.Sub(math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn))
+
+	// Given rounding it is possible for sharesToWithdrawn > maxAllowedToWithdraw. In this case we just exit.
+	if !sharesToWithdrawDec.IsPositive() {
+		return math.ZeroInt(), math.ZeroInt()
+	}
 	amountOutTokenOutDec := sharesToWithdrawDec.Quo(t.PriceTakerToMaker)
 
 	// Round shares withdrawn up and amountOut down to ensure math favors dex

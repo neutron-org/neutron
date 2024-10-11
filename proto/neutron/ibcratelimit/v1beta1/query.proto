@@ -1,0 +1,27 @@
+syntax = "proto3";
+package neutron.ibcratelimit.v1beta1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "neutron/ibcratelimit/v1beta1/params.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Params defines a gRPC query method that returns the ibc-rate-limit module's
+  // parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/neutron/ibc-rate-limit/v1beta1/params";
+  }
+}
+
+// ParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// aramsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
