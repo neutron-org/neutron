@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (s *DexTestSuite) TestSimulateCancelLimitOrder() {
@@ -47,6 +47,6 @@ func (s *DexTestSuite) TestSimulateCancelLimitOrderFails() {
 	}
 
 	resp, err := s.App.DexKeeper.SimulateCancelLimitOrder(s.Ctx, req)
-	s.ErrorIs(err, types.ErrActiveLimitOrderNotFound)
+	s.ErrorIs(err, types.ErrValidLimitOrderTrancheNotFound)
 	s.Nil(resp)
 }

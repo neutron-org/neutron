@@ -13,18 +13,18 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v5/x/dex/utils"
 
-	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
@@ -40,16 +40,16 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v4/x/transfer/types"
+	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v5/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(

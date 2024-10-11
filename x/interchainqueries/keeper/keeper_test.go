@@ -12,7 +12,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app/params"
 
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -21,9 +21,9 @@ import (
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/testutil"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 )
 
 var reflectContractPath = "../../../wasmbinding/testdata/reflect.wasm"
