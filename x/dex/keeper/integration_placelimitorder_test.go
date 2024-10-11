@@ -396,6 +396,48 @@ func (s *DexTestSuite) TestPlaceLimitOrderIOCWithDustMinAvgPrice() {
 	s.NoError(err)
 }
 
+func (s *DexTestSuite) TestPlaceLimitOrderIOCMinAvgPriceGTSellPriceFails() {
+	s.fundAliceBalances(40, 0)
+	s.fundBobBalances(0, 40)
+	// GIVEN LP liq between taker price .995 and .992
+	s.bobDeposits(
+		NewDeposit(0, 10, 50, 1),
+		NewDeposit(0, 10, 60, 1),
+		NewDeposit(0, 10, 70, 1),
+		NewDeposit(0, 10, 80, 1),
+	)
+	// THEN alice places IOC limitOrder with very low MinAveragePrice Fails
+	_, err := s.aliceLimitSellsWithMinAvgPrice(
+		"TokenA",
+		math_utils.MustNewPrecDecFromStr("0.99"),
+		40,
+		math_utils.MustNewPrecDecFromStr("0.995"),
+		types.LimitOrderType_IMMEDIATE_OR_CANCEL,
+	)
+	s.ErrorIs(err, types.ErrLimitPriceNotSatisfied)
+}
+
+func (s *DexTestSuite) TestPlaceLimitOrderIOCMinAvgPriceGTSellPrice() {
+	s.fundAliceBalances(40, 0)
+	s.fundBobBalances(0, 40)
+	// GIVEN LP liq between taker price .995 and .992
+	s.bobDeposits(
+		NewDeposit(0, 10, 50, 1),
+		NewDeposit(0, 10, 60, 1),
+		NewDeposit(0, 10, 70, 1),
+		NewDeposit(0, 10, 80, 1),
+	)
+	// THEN alice places IOC limitOrder with an achievable MinAveragePrice
+	_, err := s.aliceLimitSellsWithMinAvgPrice(
+		"TokenA",
+		math_utils.MustNewPrecDecFromStr("0.99"),
+		40,
+		math_utils.MustNewPrecDecFromStr("0.993"),
+		types.LimitOrderType_IMMEDIATE_OR_CANCEL,
+	)
+	s.NoError(err)
+}
+
 func (s *DexTestSuite) TestPlaceLimitOrderWithDust() {
 	s.fundAliceBalances(1, 0)
 	s.fundBobBalances(0, 1)
