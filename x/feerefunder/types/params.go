@@ -8,7 +8,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app/params"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)

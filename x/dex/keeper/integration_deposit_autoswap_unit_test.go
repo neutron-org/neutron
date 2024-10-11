@@ -1,6 +1,6 @@
 package keeper_test
 
-import "github.com/neutron-org/neutron/v4/x/dex/types"
+import "github.com/neutron-org/neutron/v5/x/dex/types"
 
 func (s *DexTestSuite) TestAutoswapperWithdraws() {
 	s.fundAliceBalances(50, 50)

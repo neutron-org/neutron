@@ -12,10 +12,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	neutronapp "github.com/neutron-org/neutron/v4/app"
-	"github.com/neutron-org/neutron/v4/testutil"
-	keepertest "github.com/neutron-org/neutron/v4/x/dex/keeper/internal/testutils"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	neutronapp "github.com/neutron-org/neutron/v5/app"
+	"github.com/neutron-org/neutron/v5/testutil"
+	keepertest "github.com/neutron-org/neutron/v5/x/dex/keeper/internal/testutils"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func simulateDeposit(ctx sdk.Context, app *neutronapp.App, addr sdk.AccAddress, deposit *types.DepositRecord) *types.Pool {

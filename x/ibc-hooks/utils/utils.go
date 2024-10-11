@@ -6,7 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/address"
 
-	"github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v5/x/ibc-hooks/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -70,4 +70,14 @@ func DeriveIntermediateSender(channel, originalSender, bech32Prefix string) (str
 	senderHash32 := address.Hash(types.SenderPrefix, []byte(senderStr))
 	sender := sdk.AccAddress(senderHash32)
 	return sdk.Bech32ifyAddressBytes(bech32Prefix, sender)
+}
+
+// IsAckError checks an IBC acknowledgement to see if it's an error.
+// This is a replacement for ack.Success() which is currently not working on some circumstances
+func IsAckError(acknowledgement []byte) bool {
+	var ackErr channeltypes.Acknowledgement_Error
+	if err := json.Unmarshal(acknowledgement, &ackErr); err == nil && len(ackErr.Error) > 0 {
+		return true
+	}
+	return false
 }

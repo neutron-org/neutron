@@ -6,7 +6,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (k Keeper) GetOrInitLimitOrderTrancheUser(
@@ -98,6 +98,7 @@ func (k Keeper) UpdateTrancheUser(ctx sdk.Context, trancheUser *types.LimitOrder
 		// The trancheUser has withdrawable shares; it should be saved
 		k.SetLimitOrderTrancheUser(ctx, trancheUser)
 	}
+	ctx.EventManager().EmitEvent(types.TrancheUserUpdateEvent(*trancheUser))
 }
 
 // GetAllLimitOrderTrancheUser returns all LimitOrderTrancheUser

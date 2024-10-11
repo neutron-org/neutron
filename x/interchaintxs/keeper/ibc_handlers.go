@@ -3,7 +3,7 @@ package keeper
 import (
 	"time"
 
-	"github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 
 	"cosmossdk.io/errors"
 
@@ -12,9 +12,9 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 )
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a sudo call.

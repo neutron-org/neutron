@@ -9,10 +9,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	testkeeper "github.com/neutron-org/neutron/v4/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v5/testutil"
+	testkeeper "github.com/neutron-org/neutron/v5/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 )
 
 func TestKeeper_InterchainAccountAddress(t *testing.T) {

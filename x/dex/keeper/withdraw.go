@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // WithdrawCore handles logic for MsgWithdrawal including bank operations and event emissions.
@@ -19,7 +19,7 @@ func (k Keeper) WithdrawCore(
 	sharesToRemoveList []math.Int,
 	tickIndicesNormalized []int64,
 	fees []uint64,
-) error {
+) (reserves0ToRemoved, reserves1ToRemoved math.Int, sharesBurned sdk.Coins, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, events, err := k.ExecuteWithdraw(
@@ -32,13 +32,13 @@ func (k Keeper) WithdrawCore(
 		fees,
 	)
 	if err != nil {
-		return err
+		return math.ZeroInt(), math.ZeroInt(), nil, err
 	}
 
 	ctx.EventManager().EmitEvents(events)
 
 	if err := k.BurnShares(ctx, callerAddr, coinsToBurn); err != nil {
-		return err
+		return math.ZeroInt(), math.ZeroInt(), nil, err
 	}
 
 	if totalReserve0ToRemove.IsPositive() {
@@ -52,7 +52,7 @@ func (k Keeper) WithdrawCore(
 		)
 		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin0}))
 		if err != nil {
-			return err
+			return math.ZeroInt(), math.ZeroInt(), nil, err
 		}
 	}
 
@@ -66,11 +66,11 @@ func (k Keeper) WithdrawCore(
 		)
 		ctx.EventManager().EmitEvents(types.GetEventsWithdrawnAmount(sdk.Coins{coin1}))
 		if err != nil {
-			return err
+			return math.ZeroInt(), math.ZeroInt(), nil, err
 		}
 	}
 
-	return nil
+	return totalReserve0ToRemove, totalReserve1ToRemove, coinsToBurn, nil
 }
 
 // ExecuteWithdraw handles the core Withdraw logic including calculating and withdrawing reserve0,reserve1 from a specified tick
@@ -104,8 +104,8 @@ func (k Keeper) ExecuteWithdraw(
 		// TODO: this is a bit hacky. Since it is possible to have multiple withdrawals from the same pool we have to artificially update the bank balance
 		// In the future we should enforce only one withdraw operation per pool in the message validation
 		alreadyWithdrawnOfDenom := coinsToBurn.AmountOf(poolDenom)
-		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
-		if totalShares.LT(sharesToRemove) {
+		sharesOwned := k.bankKeeper.GetBalance(ctx, callerAddr, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
+		if sharesOwned.LT(sharesToRemove) {
 			return math.ZeroInt(), math.ZeroInt(), nil, nil, sdkerrors.Wrapf(
 				types.ErrInsufficientShares,
 				"%s does not have %s shares of type %s",
@@ -115,6 +115,7 @@ func (k Keeper) ExecuteWithdraw(
 			)
 		}
 
+		totalShares := k.bankKeeper.GetSupply(ctx, poolDenom).Amount.Sub(alreadyWithdrawnOfDenom)
 		outAmount0, outAmount1 := pool.Withdraw(sharesToRemove, totalShares)
 
 		// Save both sides of the pool. If one or both sides are empty they will be deleted.

@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 type PoolSetup struct {
@@ -195,7 +195,7 @@ func (s *DexTestSuite) TestMultiHopSwapInsufficientLiquiditySingleRoute() {
 	// THEN alice multihopswap fails
 	route := [][]string{{"TokenA", "TokenB", "TokenC", "TokenD"}}
 	s.aliceMultiHopSwapFails(
-		types.ErrLimitPriceNotSatisfied,
+		types.ErrNoLiquidity,
 		route,
 		100,
 		math_utils.MustNewPrecDecFromStr("0.9"),

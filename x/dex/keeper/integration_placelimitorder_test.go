@@ -7,8 +7,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // Core tests w/ GTC limitOrders //////////////////////////////////////////////
@@ -528,7 +528,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCNoLiq() {
 	s.fundAliceBalances(10, 0)
 	// GIVEN no liquidity
 	// Thenalice IoC limitOrder fails
-	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", 0, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.assertAliceLimitSellFails(types.ErrNoLiquidity, "TokenA", 0, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPFills() {
@@ -571,7 +571,7 @@ func (s *DexTestSuite) TestPlaceLimitOrderIoCWithLPNoFill() {
 	// GIVEN LP of 5 tokenB at tick -1
 	s.bobDeposits(NewDeposit(0, 5, -1, 1))
 	// THEN alice IoC limitOrder for 10 tokenA below current 0To1 price fails
-	s.assertAliceLimitSellFails(types.ErrLimitPriceNotSatisfied, "TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
+	s.assertAliceLimitSellFails(types.ErrNoLiquidity, "TokenA", -1, 10, types.LimitOrderType_IMMEDIATE_OR_CANCEL)
 }
 
 func (s *DexTestSuite) TestPlaceLimitOrderIoCTooSmallFails() {

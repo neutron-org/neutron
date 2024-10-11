@@ -6,10 +6,10 @@ import (
 	"cosmossdk.io/store/prefix"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	v2 "github.com/neutron-org/neutron/v4/x/cron/migrations/v2"
-	"github.com/neutron-org/neutron/v4/x/cron/types"
-	v1types "github.com/neutron-org/neutron/v4/x/cron/types/v1"
+	"github.com/neutron-org/neutron/v5/testutil"
+	v2 "github.com/neutron-org/neutron/v5/x/cron/migrations/v2"
+	"github.com/neutron-org/neutron/v5/x/cron/types"
+	v1types "github.com/neutron-org/neutron/v5/x/cron/types/v1"
 )
 
 type V2CronMigrationTestSuite struct {
