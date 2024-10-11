@@ -1,4 +1,4 @@
-package v500_test
+package v501_test
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
+	v501 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.1"
 	"github.com/neutron-org/neutron/v5/testutil/common/sample"
 
 	"github.com/stretchr/testify/suite"
@@ -46,7 +46,7 @@ func (suite *UpgradeTestSuite) TestPoolMigrationSingleShareHolder() {
 
 	// run upgrade
 	upgrade := upgradetypes.Plan{
-		Name:   v500.UpgradeName,
+		Name:   v501.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -89,7 +89,7 @@ func (suite *UpgradeTestSuite) TestPoolMigrationMultiShareHolder() {
 
 	// run upgrade
 	upgrade := upgradetypes.Plan{
-		Name:   v500.UpgradeName,
+		Name:   v501.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
@@ -148,7 +148,7 @@ func (suite *UpgradeTestSuite) TestUpgradeDexPause() {
 	suite.False(params.Paused)
 
 	upgrade := upgradetypes.Plan{
-		Name:   v500.UpgradeName,
+		Name:   v501.UpgradeName,
 		Info:   "some text here",
 		Height: 100,
 	}
