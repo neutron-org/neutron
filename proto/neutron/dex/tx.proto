@@ -170,7 +170,7 @@ message MsgPlaceLimitOrder {
   // If min_average_sell_price is omitted limit_sell_price will be used instead
   string min_average_sell_price = 12 [
     (gogoproto.moretags) = "yaml:\"min_average_sell_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v5/utils/math.PrecDec",
     (gogoproto.nullable) = true,
     (gogoproto.jsontag) = "min_average_sell_price"
   ];
