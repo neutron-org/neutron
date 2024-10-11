@@ -107,6 +107,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
 		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
+		"/slinky.marketmap.v1.Query/Market":      &marketmaptypes.MarketResponse{},
 
 		// feemarket
 		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
