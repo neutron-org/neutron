@@ -12,9 +12,13 @@ const (
 	UpgradeName = "v5.0.0"
 
 	MarketMapAuthorityMultisig = "neutron1anjpluecd0tdc0n8xzc3l5hua4h93wyq0x7v56"
-	// RateLimitContract defines the RL contract addr which we set as a contract address in ibc-rate-limit middleware
+	// MainnetRateLimitContract defines the RL contract addr which we set as a contract address in ibc-rate-limit middleware
 	// https://neutron.celat.one/neutron-1/contracts/neutron15aqgplxcavqhurr0g5wwtdw6025dknkqwkfh0n46gp2qjl6236cs2yd3nl
-	RateLimitContract = "neutron15aqgplxcavqhurr0g5wwtdw6025dknkqwkfh0n46gp2qjl6236cs2yd3nl"
+	MainnetRateLimitContract = "neutron15aqgplxcavqhurr0g5wwtdw6025dknkqwkfh0n46gp2qjl6236cs2yd3nl"
+
+	// TestnetRateLimitContract defines the RL contract addr which we set as a contract address in ibc-rate-limit middleware
+	// https://neutron.celat.one/pion-1/contracts/neutron1ajezjq09w2ajc2j9656edmqaxsqpwmwmwrmmk5lnahmyvf2k68usqdytcx
+	TestnetRateLimitContract = "neutron1ajezjq09w2ajc2j9656edmqaxsqpwmwmwrmmk5lnahmyvf2k68usqdytcx"
 )
 
 var Upgrade = upgrades.Upgrade{

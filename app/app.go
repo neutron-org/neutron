@@ -17,7 +17,7 @@ import (
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
 	"github.com/neutron-org/neutron/v5/x/dynamicfees"
-	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit"
+	ibcratelimit "github.com/neutron-org/neutron/v5/x/ibc-rate-limit"
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
@@ -135,6 +135,7 @@ import (
 
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
 	ibcratelimittypes "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
+
 	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"

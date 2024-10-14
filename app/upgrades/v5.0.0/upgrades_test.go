@@ -1,6 +1,7 @@
 package v500_test
 
 import (
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -30,7 +31,7 @@ func (suite *UpgradeTestSuite) SetupTest() {
 
 func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
-	ctx := suite.ChainA.GetContext()
+	ctx := suite.ChainA.GetContext().WithChainID("neutron-1")
 	t := suite.T()
 
 	upgrade := upgradetypes.Plan{
@@ -84,7 +85,7 @@ func (suite *UpgradeTestSuite) TestUpgradeDexPause() {
 	suite.ErrorIs(err, dextypes.ErrDexPaused)
 }
 
-func (suite *UpgradeTestSuite) TestUpgradeSetRateLimitContract() {
+func (suite *UpgradeTestSuite) TestUpgradeSetRateLimitContractMainnet() {
 	var (
 		app = suite.GetNeutronZoneApp(suite.ChainA)
 		ctx = suite.ChainA.GetContext().WithChainID("neutron-1")
@@ -103,5 +104,45 @@ func (suite *UpgradeTestSuite) TestUpgradeSetRateLimitContract() {
 
 	params = app.RateLimitingICS4Wrapper.IbcratelimitKeeper.GetParams(ctx)
 
-	suite.Equal(params.ContractAddress, v500.RateLimitContract)
+	suite.Equal(params.ContractAddress, v500.MainnetRateLimitContract)
+}
+
+func (suite *UpgradeTestSuite) TestUpgradeSetRateLimitContractTestnet() {
+	var (
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext().WithChainID("pion-1")
+	)
+
+	params := app.RateLimitingICS4Wrapper.IbcratelimitKeeper.GetParams(ctx)
+
+	suite.Equal(params.ContractAddress, "")
+
+	upgrade := upgradetypes.Plan{
+		Name:   v500.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	suite.NoError(app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
+
+	params = app.RateLimitingICS4Wrapper.IbcratelimitKeeper.GetParams(ctx)
+
+	suite.Equal(params.ContractAddress, v500.TestnetRateLimitContract)
+}
+
+func (suite *UpgradeTestSuite) TestUpgradeSetRateLimitContractUnknownChain() {
+	var (
+		app = suite.GetNeutronZoneApp(suite.ChainA)
+		ctx = suite.ChainA.GetContext().WithChainID("unknown-chain")
+	)
+
+	params := app.RateLimitingICS4Wrapper.IbcratelimitKeeper.GetParams(ctx)
+
+	suite.Equal(params.ContractAddress, "")
+
+	upgrade := upgradetypes.Plan{
+		Name:   v500.UpgradeName,
+		Info:   "some text here",
+		Height: 100,
+	}
+	suite.EqualError(app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade), fmt.Sprintf("unknown chain id %s", ctx.ChainID()))
 }

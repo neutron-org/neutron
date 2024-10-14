@@ -50,12 +50,10 @@ func CreateUpgradeHandler(
 		}
 
 		ctx.Logger().Info("Running ibc-rate-limit upgrades...")
-		// Only set rate limit contract for mainnet
-		if ctx.ChainID() == "neutron-1" {
-			err = upgradeIbcRateLimitSetContract(ctx, *keepers.IbcRateLimitKeeper)
-			if err != nil {
-				return nil, err
-			}
+
+		err = upgradeIbcRateLimitSetContract(ctx, *keepers.IbcRateLimitKeeper)
+		if err != nil {
+			return nil, err
 		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
@@ -83,8 +81,17 @@ func upgradeIbcRateLimitSetContract(ctx sdk.Context, k ibcratelimitkeeper.Keeper
 	// Set the dex to paused
 	ctx.Logger().Info("Setting ibc rate limiting contract...")
 
-	if err := k.SetParams(ctx, ibcratelimittypes.Params{ContractAddress: RateLimitContract}); err != nil {
-		return err
+	switch ctx.ChainID() {
+	case "neutron-1":
+		if err := k.SetParams(ctx, ibcratelimittypes.Params{ContractAddress: MainnetRateLimitContract}); err != nil {
+			return err
+		}
+	case "pion-1":
+		if err := k.SetParams(ctx, ibcratelimittypes.Params{ContractAddress: TestnetRateLimitContract}); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown chain id %s", ctx.ChainID())
 	}
 
 	ctx.Logger().Info("Rate limit contract is set")
