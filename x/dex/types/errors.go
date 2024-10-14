@@ -224,4 +224,9 @@ var (
 		1164,
 		"No tradable liquidity below LimitSellPrice",
 	)
+	ErrZeroMinAverageSellPrice = sdkerrors.Register(
+		ModuleName,
+		1165,
+		"MinAverageSellPrice must be nil or > 0.",
+	)
 )
