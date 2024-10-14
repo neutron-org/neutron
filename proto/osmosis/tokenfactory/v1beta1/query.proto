@@ -37,6 +37,13 @@ service Query {
       "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/"
       "before_send_hook";
   }
+
+  // FullDenom defines a gRPC query method for getting full denom name
+  // from the creator and subdenom strings.
+  rpc FullDenom(QueryFullDenomRequest) returns (QueryFullDenomResponse) {
+    option (google.api.http).get =
+      "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/full_denom";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -85,4 +92,15 @@ message QueryBeforeSendHookAddressRequest {
 // DenomBeforeSendHook gRPC query.
 message QueryBeforeSendHookAddressResponse {
   string contract_addr = 1 [(gogoproto.moretags) = "yaml:\"contract_addr\""];
+}
+
+message QueryFullDenomRequest {
+  string creator = 1 [(gogoproto.moretags) = "yaml:\"creator\""];
+  string subdenom = 2 [(gogoproto.moretags) = "yaml:\"subdenom\""];
+}
+
+// QueryBeforeSendHookAddressResponse defines the response structure for the
+// DenomBeforeSendHook gRPC query.
+message QueryFullDenomResponse {
+  string full_denom = 1 [(gogoproto.moretags) = "yaml:\"full_denom\""];
 }
