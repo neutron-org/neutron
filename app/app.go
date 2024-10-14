@@ -10,18 +10,20 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/neutron-org/neutron/v4/x/dynamicfees"
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
+	"github.com/neutron-org/neutron/v5/x/dynamicfees"
+	ibcratelimit "github.com/neutron-org/neutron/v5/x/ibc-rate-limit"
+
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
-	appconfig "github.com/neutron-org/neutron/v4/app/config"
+	appconfig "github.com/neutron-org/neutron/v5/app/config"
 
 	"github.com/skip-mev/slinky/abci/strategies/aggregator"
 	"github.com/skip-mev/slinky/x/oracle"
@@ -36,10 +38,9 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
-	v401 "github.com/neutron-org/neutron/v4/app/upgrades/v4.0.1"
-	v500 "github.com/neutron-org/neutron/v4/app/upgrades/v5.0.0"
-	"github.com/neutron-org/neutron/v4/x/globalfee"
-	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
+	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
+	"github.com/neutron-org/neutron/v5/x/globalfee"
+	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
 	"cosmossdk.io/log"
 	db "github.com/cosmos/cosmos-db"
@@ -57,11 +58,11 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v4/docs"
+	"github.com/neutron-org/neutron/v5/docs"
 
-	"github.com/neutron-org/neutron/v4/app/upgrades"
+	"github.com/neutron-org/neutron/v5/app/upgrades"
 
-	"github.com/neutron-org/neutron/v4/x/cron"
+	"github.com/neutron-org/neutron/v5/x/cron"
 
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -132,6 +133,9 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
+	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
+	ibcratelimittypes "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
+
 	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -141,12 +145,12 @@ import (
 
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
 
-	"github.com/neutron-org/neutron/v4/x/tokenfactory"
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	"github.com/neutron-org/neutron/v5/x/tokenfactory"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 
 	"github.com/cosmos/admin-module/v2/x/adminmodule"
 	adminmodulecli "github.com/cosmos/admin-module/v2/x/adminmodule/client/cli"
@@ -155,29 +159,29 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	appparams "github.com/neutron-org/neutron/v4/app/params"
-	"github.com/neutron-org/neutron/v4/wasmbinding"
-	"github.com/neutron-org/neutron/v4/x/contractmanager"
-	contractmanagermodulekeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	contractmanagermoduletypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	dynamicfeeskeeper "github.com/neutron-org/neutron/v4/x/dynamicfees/keeper"
-	"github.com/neutron-org/neutron/v4/x/feeburner"
-	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
-	"github.com/neutron-org/neutron/v4/x/feerefunder"
-	feekeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
-	ibchooks "github.com/neutron-org/neutron/v4/x/ibc-hooks"
-	ibchookstypes "github.com/neutron-org/neutron/v4/x/ibc-hooks/types"
-	"github.com/neutron-org/neutron/v4/x/interchainqueries"
-	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs"
-	interchaintxskeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
-	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	transferSudo "github.com/neutron-org/neutron/v4/x/transfer"
-	wrapkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
+	appparams "github.com/neutron-org/neutron/v5/app/params"
+	"github.com/neutron-org/neutron/v5/wasmbinding"
+	"github.com/neutron-org/neutron/v5/x/contractmanager"
+	contractmanagermodulekeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	contractmanagermoduletypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
+	"github.com/neutron-org/neutron/v5/x/feeburner"
+	feeburnerkeeper "github.com/neutron-org/neutron/v5/x/feeburner/keeper"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	"github.com/neutron-org/neutron/v5/x/feerefunder"
+	feekeeper "github.com/neutron-org/neutron/v5/x/feerefunder/keeper"
+	ibchooks "github.com/neutron-org/neutron/v5/x/ibc-hooks"
+	ibchookstypes "github.com/neutron-org/neutron/v5/x/ibc-hooks/types"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries"
+	interchainqueriesmodulekeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	interchainqueriesmoduletypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs"
+	interchaintxskeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	transferSudo "github.com/neutron-org/neutron/v5/x/transfer"
+	wrapkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
 
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
 
 	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
 	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
@@ -190,12 +194,12 @@ import (
 	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex"
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 
-	globalfeekeeper "github.com/neutron-org/neutron/v4/x/globalfee/keeper"
-	gmpmiddleware "github.com/neutron-org/neutron/v4/x/gmp"
+	globalfeekeeper "github.com/neutron-org/neutron/v5/x/globalfee/keeper"
+	gmpmiddleware "github.com/neutron-org/neutron/v5/x/gmp"
 
 	// Block-sdk imports
 	blocksdkabci "github.com/skip-mev/block-sdk/v2/abci"
@@ -222,7 +226,7 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v401.Upgrade, v500.Upgrade}
+	Upgrades = []upgrades.Upgrade{v500.Upgrade}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -269,6 +273,7 @@ var (
 		),
 		ibchooks.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
+		ibcratelimit.AppModuleBasic{},
 		auction.AppModuleBasic{},
 		globalfee.AppModule{},
 		feemarket.AppModuleBasic{},
@@ -285,7 +290,7 @@ var (
 		auctiontypes.ModuleName:                       nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:                           nil,
-		wasmtypes.ModuleName:                          {authtypes.Burner},
+		wasmtypes.ModuleName:                          {},
 		interchainqueriesmoduletypes.ModuleName:       nil,
 		feetypes.ModuleName:                           nil,
 		feeburnertypes.ModuleName:                     nil,
@@ -369,8 +374,10 @@ type App struct {
 
 	PFMModule packetforward.AppModule
 
-	HooksTransferIBCModule *ibchooks.IBCMiddleware
-	HooksICS4Wrapper       ibchooks.ICS4Middleware
+	TransferStack           *ibchooks.IBCMiddleware
+	Ics20WasmHooks          *ibchooks.WasmHooks
+	RateLimitingICS4Wrapper *ibcratelimit.ICS4Wrapper
+	HooksICS4Wrapper        ibchooks.ICS4Middleware
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -385,7 +392,8 @@ type App struct {
 
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	WasmKeeper wasmkeeper.Keeper
+	WasmKeeper     wasmkeeper.Keeper
+	ContractKeeper *wasmkeeper.PermissionedKeeper
 
 	// slinky
 	MarketMapKeeper       *marketmapkeeper.Keeper
@@ -406,7 +414,7 @@ type App struct {
 	checkTxHandler checktx.CheckTx
 }
 
-// AutoCLIOpts returns options based upon the modules in the neutron v4 app.
+// AutoCLIOpts returns options based upon the modules in the neutron v5 app.
 func (app *App) AutoCLIOpts(initClientCtx client.Context) autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule)
 	for _, m := range app.mm.Modules {
@@ -476,7 +484,7 @@ func New(
 		icahosttypes.StoreKey, capabilitytypes.StoreKey,
 		interchainqueriesmoduletypes.StoreKey, contractmanagermoduletypes.StoreKey, interchaintxstypes.StoreKey, wasmtypes.StoreKey, feetypes.StoreKey,
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
-		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
+		crontypes.StoreKey, ibcratelimittypes.ModuleName, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
@@ -508,6 +516,7 @@ func New(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	app.ScopedTransferKeeper = scopedTransferKeeper
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedInterTxKeeper := app.CapabilityKeeper.ScopeToModule(interchaintxstypes.ModuleName)
 	scopedCCVConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ccvconsumertypes.ModuleName)
@@ -589,31 +598,7 @@ func New(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &app.ConsumerKeeper, app.UpgradeKeeper, scopedIBCKeeper, authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
-	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
-		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
-		scopedICAControllerKeeper, app.MsgServiceRouter(),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	app.ICAHostKeeper = icahostkeeper.NewKeeper(
-		appCodec, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
-
-	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
-		appCodec,
-		keys[contractmanagermoduletypes.StoreKey],
-		keys[contractmanagermoduletypes.MemStoreKey],
-		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
+	// Feekeeper needs to be initialized before middlewares injection
 	app.FeeKeeper = feekeeper.NewKeeper(
 		appCodec,
 		keys[feetypes.StoreKey],
@@ -623,6 +608,34 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 	feeModule := feerefunder.NewAppModule(appCodec, *app.FeeKeeper, app.AccountKeeper, app.BankKeeper)
+
+	app.ContractManagerKeeper = *contractmanagermodulekeeper.NewKeeper(
+		appCodec,
+		keys[contractmanagermoduletypes.StoreKey],
+		keys[contractmanagermoduletypes.MemStoreKey],
+		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	app.WireICS20PreWasmKeeper(appCodec)
+	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
+
+	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
+		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
+		scopedICAControllerKeeper, app.MsgServiceRouter(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	app.ICAHostKeeper = icahostkeeper.NewKeeper(
+		appCodec, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.PortKeeper,
+		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
 
 	app.FeeBurnerKeeper = feeburnerkeeper.NewKeeper(
 		appCodec,
@@ -635,44 +648,6 @@ func New(
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(appCodec, keys[globalfeetypes.StoreKey], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
-
-	// PFMKeeper must be created before TransferKeeper
-	app.PFMKeeper = pfmkeeper.NewKeeper(
-		appCodec,
-		app.keys[pfmtypes.StoreKey],
-		app.TransferKeeper.Keeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.FeeBurnerKeeper,
-		&app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
-	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
-		app.IBCKeeper.ChannelKeeper,
-		app.PFMKeeper,
-		&wasmHooks,
-	)
-
-	// Create Transfer Keepers
-	app.TransferKeeper = wrapkeeper.NewKeeper(
-		appCodec,
-		keys[ibctransfertypes.StoreKey],
-		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.HooksICS4Wrapper, // essentially still app.IBCKeeper.ChannelKeeper under the hood because no hook overrides
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		app.AccountKeeper,
-		&app.BankKeeper,
-		scopedTransferKeeper,
-		app.FeeKeeper,
-		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-
-	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
-
-	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -753,7 +728,7 @@ func New(
 	// NOTE: we need staking feature here even if there is no staking module anymore because cosmwasm-std in the CosmWasm SDK requires this feature
 	// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
 	//       however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
-	supportedFeatures := []string{"iterator", "stargate", "staking", "neutron", "cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "cosmwasm_2_0"}
+	supportedFeatures := []string{"iterator", "stargate", "staking", "neutron", "cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "cosmwasm_2_0", "cosmwasm_2_1"}
 
 	// register the proposal types
 	adminRouterLegacy := govv1beta1.NewRouter()
@@ -847,7 +822,7 @@ func New(
 		&app.BankKeeper,
 		nil,
 		nil,
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 feerefunder
+		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		scopedWasmKeeper,
@@ -860,18 +835,9 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		wasmOpts...,
 	)
-	wasmHooks.ContractKeeper = &app.WasmKeeper
 
 	app.CronKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 	cronModule := cron.NewAppModule(appCodec, app.CronKeeper)
-
-	transferIBCModule := transferSudo.NewIBCModule(
-		app.TransferKeeper,
-		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
-	)
-	// receive call order: wasmHooks#OnRecvPacketOverride(transferIbcModule#OnRecvPacket())
-	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
-	app.HooksTransferIBCModule = &ibcHooksMiddleware
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -894,23 +860,18 @@ func New(
 	)
 	interchainTxsModule := interchaintxs.NewAppModule(appCodec, app.InterchainTxsKeeper, app.AccountKeeper, app.BankKeeper)
 	contractManagerModule := contractmanager.NewAppModule(appCodec, app.ContractManagerKeeper)
+	ibcRateLimitmodule := ibcratelimit.NewAppModule(appCodec, app.RateLimitingICS4Wrapper.IbcratelimitKeeper, app.RateLimitingICS4Wrapper)
 	ibcHooksModule := ibchooks.NewAppModule(app.AccountKeeper)
 
-	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
+	transferModule := transferSudo.NewAppModule(app.TransferKeeper)
+	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 
-	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
-		app.HooksTransferIBCModule,
-		app.PFMKeeper,
-		0,
-		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
-	)
-
-	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
+	app.RateLimitingICS4Wrapper.ContractKeeper = app.ContractKeeper
+	app.Ics20WasmHooks.ContractKeeper = &app.WasmKeeper
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, ibcStack).
+		AddRoute(ibctransfertypes.ModuleName, app.TransferStack).
 		AddRoute(interchaintxstypes.ModuleName, icaControllerStack).
 		AddRoute(wasmtypes.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(ccvconsumertypes.ModuleName, consumerModule)
@@ -950,6 +911,7 @@ func New(
 		feeBurnerModule,
 		contractManagerModule,
 		adminModule,
+		ibcRateLimitmodule,
 		ibcHooksModule,
 		tokenfactory.NewAppModule(appCodec, *app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		cronModule,
@@ -998,6 +960,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
+		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
@@ -1034,6 +997,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
+		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName,
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
@@ -1075,6 +1039,7 @@ func New(
 		feetypes.ModuleName,
 		feeburnertypes.ModuleName,
 		adminmoduletypes.ModuleName,
+		ibcratelimittypes.ModuleName,
 		ibchookstypes.ModuleName, // after auth keeper
 		pfmtypes.ModuleName,
 		crontypes.ModuleName,
@@ -1109,6 +1074,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
+		ibcRateLimitmodule,
 		consumerModule,
 		icaModule,
 		app.PFMModule,
@@ -1398,6 +1364,7 @@ func (app *App) setupUpgradeHandlers() {
 					FeeMarketKeeper:     app.FeeMarkerKeeper,
 					DynamicfeesKeeper:   app.DynamicFeesKeeper,
 					DexKeeper:           &app.DexKeeper,
+					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1674,4 +1641,91 @@ func overrideWasmVariables() {
 	// Override Wasm size limitation from WASMD.
 	wasmtypes.MaxWasmSize = 1_677_722 // ~1.6 mb (1024 * 1024 * 1.6)
 	wasmtypes.MaxProposalWasmSize = wasmtypes.MaxWasmSize
+}
+
+// WireICS20PreWasmKeeper Create the IBC Transfer Stack from bottom to top:
+// * SendPacket. Originates from the transferKeeper and goes up the stack:
+// transferKeeper.SendPacket -> ibc_rate_limit.SendPacket -> ibc_hooks.SendPacket -> channel.SendPacket
+// * RecvPacket, message that originates from core IBC and goes down to app, the flow is the other way
+// channel.RecvPacket -> ibc_hooks.OnRecvPacket -> ibc_rate_limit.OnRecvPacket -> gmp.OnRecvPacket -> pfm.OnRecvPacket -> transfer.OnRecvPacket
+//
+// Note that the forward middleware is only integrated on the "receive" direction. It can be safely skipped when sending.
+// Note also that the forward middleware is called "router", but we are using the name "pfm" (packet forward middleware) for clarity
+// This may later be renamed upstream: https://github.com/ibc-apps/middleware/packet-forward-middleware/issues/10
+//
+// After this, the wasm keeper is required to be set on both
+// app.Ics20WasmHooks AND app.RateLimitingICS4Wrapper
+func (app *App) WireICS20PreWasmKeeper(
+	appCodec codec.Codec,
+) {
+	// PFMKeeper must be created before TransferKeeper
+	app.PFMKeeper = pfmkeeper.NewKeeper(
+		appCodec,
+		app.keys[pfmtypes.StoreKey],
+		app.TransferKeeper.Keeper, // set later
+		app.IBCKeeper.ChannelKeeper,
+		app.FeeBurnerKeeper,
+		&app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	wasmHooks := ibchooks.NewWasmHooks(nil, sdk.GetConfig().GetBech32AccountAddrPrefix()) // The contract keeper needs to be set later
+	app.Ics20WasmHooks = &wasmHooks
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&wasmHooks,
+	)
+
+	ibcratelimitKeeper := ibcratelimitkeeper.NewKeeper(appCodec, app.keys[ibcratelimittypes.ModuleName], authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String())
+	// ChannelKeeper wrapper for rate limiting SendPacket(). The wasmKeeper needs to be added after it's created
+	rateLimitingICS4Wrapper := ibcratelimit.NewICS4Middleware(
+		app.HooksICS4Wrapper,
+		&app.AccountKeeper,
+		// wasm keeper we set later, right after wasmkeeper init. line 868
+		nil,
+		&app.BankKeeper,
+		&ibcratelimitKeeper,
+	)
+	app.RateLimitingICS4Wrapper = &rateLimitingICS4Wrapper
+
+	// Create Transfer Keepers
+	app.TransferKeeper = wrapkeeper.NewKeeper(
+		appCodec,
+		app.keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		app.RateLimitingICS4Wrapper,
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		&app.BankKeeper,
+		app.ScopedTransferKeeper,
+		app.FeeKeeper,
+		contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+
+	app.PFMKeeper.SetTransferKeeper(app.TransferKeeper.Keeper)
+
+	// Packet Forward Middleware
+	// Initialize packet forward middleware router
+	var ibcStack ibcporttypes.IBCModule = packetforward.NewIBCMiddleware(
+		transferSudo.NewIBCModule(
+			app.TransferKeeper,
+			contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+		),
+		app.PFMKeeper,
+		0,
+		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+	)
+
+	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
+	// RateLimiting IBC Middleware
+	rateLimitingTransferModule := ibcratelimit.NewIBCModule(ibcStack, app.RateLimitingICS4Wrapper)
+
+	// Hooks Middleware
+	hooksTransferModule := ibchooks.NewIBCMiddleware(&rateLimitingTransferModule, &app.HooksICS4Wrapper)
+	app.TransferStack = &hooksTransferModule
 }

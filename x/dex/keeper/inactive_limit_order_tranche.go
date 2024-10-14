@@ -5,7 +5,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // SetInactiveLimitOrderTranche set a specific inactiveLimitOrderTranche in the store from its index
@@ -58,13 +58,14 @@ func (k Keeper) GetAllInactiveLimitOrderTranche(ctx sdk.Context) (list []*types.
 	return
 }
 
-func (k Keeper) SaveInactiveTranche(sdkCtx sdk.Context, tranche *types.LimitOrderTranche) {
+// UpdateInactiveTranche handles the logic for all updates to InactiveLimitOrderTranches
+// It will delete an InactiveTranche if there is no remaining MakerReserves or TakerReserves
+func (k Keeper) UpdateInactiveTranche(sdkCtx sdk.Context, tranche *types.LimitOrderTranche) {
 	if tranche.HasTokenIn() || tranche.HasTokenOut() {
+		// There are still reserves to be removed. Save the tranche as is.
 		k.SetInactiveLimitOrderTranche(sdkCtx, tranche)
 	} else {
-		k.RemoveInactiveLimitOrderTranche(
-			sdkCtx,
-			tranche.Key,
-		)
+		// There is nothing left to remove, we can safely remove the tranche entirely.
+		k.RemoveInactiveLimitOrderTranche(sdkCtx, tranche.Key)
 	}
 }

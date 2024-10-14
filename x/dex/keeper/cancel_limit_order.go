@@ -6,8 +6,8 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // CancelLimitOrderCore handles the logic for MsgCancelLimitOrder including bank operations and event emissions.
@@ -62,11 +62,11 @@ func (k Keeper) ExecuteCancelLimitOrder(
 ) (makerCoinOut, takerCoinOut sdk.Coin, error error) {
 	trancheUser, found := k.GetLimitOrderTrancheUser(ctx, callerAddr.String(), trancheKey)
 	if !found {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrActiveLimitOrderNotFound
+		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
 	tradePairID, tickIndex := trancheUser.TradePairId, trancheUser.TickIndexTakerToMaker
-	tranche := k.GetLimitOrderTranche(
+	tranche, wasFilled, found := k.FindLimitOrderTranche(
 		ctx,
 		&types.LimitOrderTrancheKey{
 			TradePairId:           tradePairID,
@@ -74,8 +74,8 @@ func (k Keeper) ExecuteCancelLimitOrder(
 			TrancheKey:            trancheKey,
 		},
 	)
-	if tranche == nil {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrActiveLimitOrderNotFound
+	if !found {
+		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrValidLimitOrderTrancheNotFound, "%s", trancheKey)
 	}
 
 	makerAmountToReturn := tranche.RemoveTokenIn(trancheUser)
@@ -102,8 +102,15 @@ func (k Keeper) ExecuteCancelLimitOrder(
 		return sdk.Coin{}, sdk.Coin{}, sdkerrors.Wrapf(types.ErrCancelEmptyLimitOrder, "%s", tranche.Key.TrancheKey)
 	}
 
-	k.SaveTrancheUser(ctx, trancheUser)
-	k.SaveTranche(ctx, tranche)
+	// This will ALWAYS result in a deletion of the TrancheUser, but we still use UpdateTranche user so that the relevant events will be emitted
+	k.UpdateTrancheUser(ctx, trancheUser)
+
+	// If there is still liquidity from other shareholders we will either save the tranche as active/inactive or delete it entirely
+	if wasFilled {
+		k.UpdateInactiveTranche(ctx, tranche)
+	} else {
+		k.UpdateTranche(ctx, tranche)
+	}
 
 	if trancheUser.OrderType.HasExpiration() {
 		k.RemoveLimitOrderExpiration(ctx, *tranche.ExpirationTime, tranche.Key.KeyMarshal())

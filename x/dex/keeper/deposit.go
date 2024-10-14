@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/utils"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/utils"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // DepositCore handles core logic for MsgDeposit including bank operations and event emissions
@@ -128,7 +128,8 @@ func (k Keeper) ExecuteDeposit(
 
 		inAmount0, inAmount1, outShares := pool.Deposit(amount0, amount1, existingShares, autoswap)
 
-		k.SetPool(ctx, pool)
+		// Save updates to both sides of the pool
+		k.UpdatePool(ctx, pool)
 
 		if inAmount0.IsZero() && inAmount1.IsZero() {
 			return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, types.ErrZeroTrueDeposit

@@ -15476,6 +15476,39 @@ definitions:
         format: uint64
         type: string
     type: object
+  neutron.contractmanager.QueryFailureResponse:
+    description: QueryFailureResponse is response type for the Query/Failure RPC method.
+    properties:
+      failure:
+        properties:
+          address:
+            title: Address of the failed contract
+            type: string
+          error:
+            title: >-
+              Redacted error response of the sudo call. Full error is emitted as
+              an event
+            type: string
+          id:
+            format: uint64
+            title: Id of the failure under specific address
+            type: string
+          sudo_payload:
+            format: byte
+            title: Serialized MessageSudoCallback with Packet and Ack(if exists)
+            type: string
+        title: >-
+          Failure message contains information about ACK failures and can be
+          used to
+
+          replay ACK in case of requirement.
+
+          Note that Failure means that sudo handler to cosmwasm contract failed
+          for
+
+          some reason
+        type: object
+    type: object
   neutron.contractmanager.QueryFailuresResponse:
     description: QueryFailuresResponse is response type for the Query/Failures RPC method.
     properties:
@@ -15548,17 +15581,28 @@ definitions:
             type: string
         type: object
     type: object
+  neutron.cron.ExecutionStage:
+    default: EXECUTION_STAGE_END_BLOCKER
+    description: |-
+      - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+       - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+    enum:
+      - EXECUTION_STAGE_END_BLOCKER
+      - EXECUTION_STAGE_BEGIN_BLOCKER
+    title: Defines when messages will be executed in the block
+    type: string
   neutron.cron.MsgExecuteContract:
     properties:
       contract:
-        title: Contract is the address of the smart contract
+        title: The address of the smart contract
         type: string
       msg:
-        title: Msg is json encoded message to be passed to the contract
+        title: JSON encoded message to be passed to the contract
         type: string
+    title: Defines the contract and the message to pass
     type: object
   neutron.cron.Params:
-    description: Params defines the parameters for the module.
+    description: Defines the parameters for the module.
     properties:
       limit:
         format: uint64
@@ -15569,9 +15613,20 @@ definitions:
         type: string
     type: object
   neutron.cron.QueryGetScheduleResponse:
+    description: The response type for the Query/Params RPC method.
     properties:
       schedule:
         properties:
+          execution_stage:
+            title: Stage when messages will be executed
+            default: EXECUTION_STAGE_END_BLOCKER
+            description: |-
+              - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+               - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+            enum:
+              - EXECUTION_STAGE_END_BLOCKER
+              - EXECUTION_STAGE_BEGIN_BLOCKER
+            type: string
           last_execute_height:
             format: uint64
             title: Last execution's block height
@@ -15580,13 +15635,16 @@ definitions:
             items:
               properties:
                 contract:
-                  title: Contract is the address of the smart contract
+                  title: The address of the smart contract
                   type: string
                 msg:
-                  title: Msg is json encoded message to be passed to the contract
+                  title: JSON encoded message to be passed to the contract
                   type: string
+              title: Defines the contract and the message to pass
               type: object
-            title: Msgs that will be executed every period amount of time
+            title: >-
+              Msgs that will be executed every certain number of blocks,
+              specified in the `period` field
             type: array
           name:
             title: Name of schedule
@@ -15595,9 +15653,11 @@ definitions:
             format: uint64
             title: Period in blocks
             type: string
+        title: Defines the schedule for execution
         type: object
     type: object
   neutron.cron.QueryParamsResponse:
+    description: The response type for the Query/Params RPC method.
     properties:
       params:
         description: params holds all the parameters of this module.
@@ -15612,6 +15672,7 @@ definitions:
         type: object
     type: object
   neutron.cron.QuerySchedulesResponse:
+    description: The response type for the Query/Params RPC method.
     properties:
       pagination:
         description: |-
@@ -15642,6 +15703,16 @@ definitions:
       schedules:
         items:
           properties:
+            execution_stage:
+              title: Stage when messages will be executed
+              default: EXECUTION_STAGE_END_BLOCKER
+              description: |-
+                - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+                 - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+              enum:
+                - EXECUTION_STAGE_END_BLOCKER
+                - EXECUTION_STAGE_BEGIN_BLOCKER
+              type: string
             last_execute_height:
               format: uint64
               title: Last execution's block height
@@ -15650,13 +15721,16 @@ definitions:
               items:
                 properties:
                   contract:
-                    title: Contract is the address of the smart contract
+                    title: The address of the smart contract
                     type: string
                   msg:
-                    title: Msg is json encoded message to be passed to the contract
+                    title: JSON encoded message to be passed to the contract
                     type: string
+                title: Defines the contract and the message to pass
                 type: object
-              title: Msgs that will be executed every period amount of time
+              title: >-
+                Msgs that will be executed every certain number of blocks,
+                specified in the `period` field
               type: array
             name:
               title: Name of schedule
@@ -15665,11 +15739,22 @@ definitions:
               format: uint64
               title: Period in blocks
               type: string
+          title: Defines the schedule for execution
           type: object
         type: array
     type: object
   neutron.cron.Schedule:
     properties:
+      execution_stage:
+        title: Stage when messages will be executed
+        default: EXECUTION_STAGE_END_BLOCKER
+        description: |-
+          - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the block
+           - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+        enum:
+          - EXECUTION_STAGE_END_BLOCKER
+          - EXECUTION_STAGE_BEGIN_BLOCKER
+        type: string
       last_execute_height:
         format: uint64
         title: Last execution's block height
@@ -15678,13 +15763,16 @@ definitions:
         items:
           properties:
             contract:
-              title: Contract is the address of the smart contract
+              title: The address of the smart contract
               type: string
             msg:
-              title: Msg is json encoded message to be passed to the contract
+              title: JSON encoded message to be passed to the contract
               type: string
+          title: Defines the contract and the message to pass
           type: object
-        title: Msgs that will be executed every period amount of time
+        title: >-
+          Msgs that will be executed every certain number of blocks, specified
+          in the `period` field
         type: array
       name:
         title: Name of schedule
@@ -15693,6 +15781,14 @@ definitions:
         format: uint64
         title: Period in blocks
         type: string
+    title: Defines the schedule for execution
+    type: object
+  neutron.dex.DepositOptions:
+    properties:
+      disable_autoswap:
+        type: boolean
+      fail_tx_on_bel:
+        type: boolean
     type: object
   neutron.dex.DepositRecord:
     properties:
@@ -15774,6 +15870,14 @@ definitions:
         type: string
       upper_tick_index:
         format: int64
+        type: string
+    type: object
+  neutron.dex.FailedDeposit:
+    properties:
+      deposit_idx:
+        format: uint64
+        type: string
+      error:
         type: string
     type: object
   neutron.dex.LimitOrderTranche:
@@ -15873,6 +15977,364 @@ definitions:
       - JUST_IN_TIME
       - GOOD_TIL_TIME
     type: string
+  neutron.dex.MsgCancelLimitOrder:
+    properties:
+      creator:
+        type: string
+      tranche_key:
+        type: string
+    type: object
+  neutron.dex.MsgCancelLimitOrderResponse:
+    properties:
+      maker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of maker reserves that were canceled
+      taker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of taker reserves that were withdrawn
+    type: object
+  neutron.dex.MsgDeposit:
+    properties:
+      amounts_a:
+        items:
+          type: string
+        type: array
+      amounts_b:
+        items:
+          type: string
+        type: array
+      creator:
+        type: string
+      fees:
+        items:
+          format: uint64
+          type: string
+        type: array
+      options:
+        items:
+          properties:
+            disable_autoswap:
+              type: boolean
+            fail_tx_on_bel:
+              type: boolean
+          type: object
+        type: array
+      receiver:
+        type: string
+      tick_indexes_a_to_b:
+        items:
+          format: int64
+          type: string
+        type: array
+      token_a:
+        type: string
+      token_b:
+        type: string
+    type: object
+  neutron.dex.MsgDepositResponse:
+    properties:
+      failed_deposits:
+        items:
+          properties:
+            deposit_idx:
+              format: uint64
+              type: string
+            error:
+              type: string
+          type: object
+        type: array
+      reserve0_deposited:
+        items:
+          type: string
+        type: array
+      reserve1_deposited:
+        items:
+          type: string
+        type: array
+      shares_issued:
+        items:
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+    type: object
+  neutron.dex.MsgMultiHopSwap:
+    properties:
+      amount_in:
+        type: string
+      creator:
+        type: string
+      exit_limit_price:
+        type: string
+      pick_best_route:
+        description: >-
+          If pickBestRoute == true then all routes are run and the route with
+          the
+
+          best price is chosen otherwise, the first succesful route is used.
+        type: boolean
+      receiver:
+        type: string
+      routes:
+        items:
+          properties:
+            hops:
+              items:
+                type: string
+              type: array
+          type: object
+        type: array
+    type: object
+  neutron.dex.MsgMultiHopSwapResponse:
+    properties:
+      coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+      dust:
+        items:
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+      route:
+        properties:
+          hops:
+            items:
+              type: string
+            type: array
+        type: object
+    type: object
+  neutron.dex.MsgPlaceLimitOrder:
+    properties:
+      amount_in:
+        type: string
+      creator:
+        type: string
+      expiration_time:
+        description: expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+        format: date-time
+        type: string
+      limit_sell_price:
+        type: string
+      max_amount_out:
+        type: string
+      min_average_sell_price:
+        title: >-
+          min_average_sell_price is an optional parameter that sets a required
+          minimum average price for the entire trade.
+
+          if the min_average_sell_price is not met the trade will fail.
+
+          If min_average_sell_price is omitted limit_sell_price will be used
+          instead
+        type: string
+      order_type:
+        default: GOOD_TIL_CANCELLED
+        enum:
+          - GOOD_TIL_CANCELLED
+          - FILL_OR_KILL
+          - IMMEDIATE_OR_CANCEL
+          - JUST_IN_TIME
+          - GOOD_TIL_TIME
+        type: string
+      receiver:
+        type: string
+      tick_index_in_to_out:
+        description: >-
+          DEPRECATED: tick_index_in_to_out will be removed in future release;
+          limit_sell_price should be used instead.
+        format: int64
+        type: string
+      token_in:
+        type: string
+      token_out:
+        type: string
+    type: object
+  neutron.dex.MsgPlaceLimitOrderResponse:
+    properties:
+      coin_in:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of coin used for the limit order
+      taker_coin_in:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: >-
+          Total amount of the token in that was immediately swapped for
+          takerOutCoin
+      taker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: >-
+          Total amount of coin received from the taker portion of the limit
+          order
+
+          This is the amount of coin immediately available in the users account
+          after
+
+          executing the limit order. It does not include any future proceeds
+          from the
+
+          maker portion which will have withdrawn in the future
+      trancheKey:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawFilledLimitOrder:
+    properties:
+      creator:
+        type: string
+      tranche_key:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawFilledLimitOrderResponse:
+    properties:
+      maker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: >-
+          Total amount of maker reserves that were withdrawn --only applies to
+          inactive LimitOrders
+      taker_coin_out:
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+        properties:
+          amount:
+            type: string
+          denom:
+            type: string
+        type: object
+        title: Total amount of taker reserves that were withdrawn
+    type: object
+  neutron.dex.MsgWithdrawal:
+    properties:
+      creator:
+        type: string
+      fees:
+        items:
+          format: uint64
+          type: string
+        type: array
+      receiver:
+        type: string
+      shares_to_remove:
+        items:
+          type: string
+        type: array
+      tick_indexes_a_to_b:
+        items:
+          format: int64
+          type: string
+        type: array
+      token_a:
+        type: string
+      token_b:
+        type: string
+    type: object
+  neutron.dex.MsgWithdrawalResponse:
+    properties:
+      reserve0_withdrawn:
+        type: string
+      reserve1_withdrawn:
+        type: string
+      shares_burned:
+        items:
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+          properties:
+            amount:
+              type: string
+            denom:
+              type: string
+          type: object
+        type: array
+    type: object
   neutron.dex.MultiHopRoute:
     properties:
       hops:
@@ -16934,6 +17396,265 @@ definitions:
             type: object
         type: object
     type: object
+  neutron.dex.QuerySimulateCancelLimitOrderResponse:
+    properties:
+      resp:
+        properties:
+          maker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of maker reserves that were canceled
+          taker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of taker reserves that were withdrawn
+        type: object
+    type: object
+  neutron.dex.QuerySimulateDepositResponse:
+    properties:
+      resp:
+        properties:
+          failed_deposits:
+            items:
+              properties:
+                deposit_idx:
+                  format: uint64
+                  type: string
+                error:
+                  type: string
+              type: object
+            type: array
+          reserve0_deposited:
+            items:
+              type: string
+            type: array
+          reserve1_deposited:
+            items:
+              type: string
+            type: array
+          shares_issued:
+            items:
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            type: array
+        type: object
+    type: object
+  neutron.dex.QuerySimulateMultiHopSwapResponse:
+    properties:
+      resp:
+        properties:
+          coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+          dust:
+            items:
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            type: array
+          route:
+            properties:
+              hops:
+                items:
+                  type: string
+                type: array
+            type: object
+        type: object
+    type: object
+  neutron.dex.QuerySimulatePlaceLimitOrderResponse:
+    properties:
+      resp:
+        properties:
+          coin_in:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of coin used for the limit order
+          taker_coin_in:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: >-
+              Total amount of the token in that was immediately swapped for
+              takerOutCoin
+          taker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: >-
+              Total amount of coin received from the taker portion of the limit
+              order
+
+              This is the amount of coin immediately available in the users
+              account after
+
+              executing the limit order. It does not include any future proceeds
+              from the
+
+              maker portion which will have withdrawn in the future
+          trancheKey:
+            type: string
+        type: object
+    type: object
+  neutron.dex.QuerySimulateWithdrawFilledLimitOrderResponse:
+    properties:
+      resp:
+        properties:
+          maker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: >-
+              Total amount of maker reserves that were withdrawn --only applies
+              to inactive LimitOrders
+          taker_coin_out:
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+            properties:
+              amount:
+                type: string
+              denom:
+                type: string
+            type: object
+            title: Total amount of taker reserves that were withdrawn
+        type: object
+    type: object
+  neutron.dex.QuerySimulateWithdrawalResponse:
+    properties:
+      resp:
+        properties:
+          reserve0_withdrawn:
+            type: string
+          reserve1_withdrawn:
+            type: string
+          shares_burned:
+            items:
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+              properties:
+                amount:
+                  type: string
+                denom:
+                  type: string
+              type: object
+            type: array
+        type: object
+    type: object
   neutron.dex.TickLiquidity:
     properties:
       limit_order_tranche:
@@ -17484,6 +18205,22 @@ definitions:
             type: object
         type: object
     type: object
+  neutron.ibcratelimit.v1beta1.Params:
+    description: Params defines the parameters for the ibc-rate-limit module.
+    properties:
+      contract_address:
+        type: string
+    type: object
+  neutron.ibcratelimit.v1beta1.QueryParamsResponse:
+    description: aramsResponse is the response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        properties:
+          contract_address:
+            type: string
+        type: object
+    type: object
   neutron.interchainqueries.Block:
     properties:
       header:
@@ -17636,6 +18373,16 @@ definitions:
   neutron.interchainqueries.Params:
     description: Params defines the parameters for the module.
     properties:
+      max_kv_query_keys_count:
+        format: uint64
+        title: Maximum amount of keys in a registered key value query
+        type: string
+      max_transactions_filters:
+        format: uint64
+        title: >-
+          max_transactions_filters defines maximum allowed amount of tx filters
+          in msgRegisterInterchainQuery
+        type: string
       query_deposit:
         description: Amount of coins deposited for the query.
         items:
@@ -17681,6 +18428,16 @@ definitions:
       params:
         description: params holds all the parameters of this module.
         properties:
+          max_kv_query_keys_count:
+            format: uint64
+            title: Maximum amount of keys in a registered key value query
+            type: string
+          max_transactions_filters:
+            format: uint64
+            title: >-
+              max_transactions_filters defines maximum allowed amount of tx
+              filters in msgRegisterInterchainQuery
+            type: string
           query_deposit:
             description: Amount of coins deposited for the query.
             items:
@@ -23461,7 +24218,7 @@ definitions:
     type: object
 info:
   title: Neutron
-  version: v4
+  version: v5
 paths:
   /block-sdk/auction/v1/params:
     get:
@@ -39271,12 +40028,6 @@ paths:
           name: address
           required: false
           type: string
-        - description: ID of the failure for the given contract.
-          format: uint64
-          in: query
-          name: failure_id
-          required: false
-          type: string
         - description: |-
             key is a value returned in PageResponse.next_key to begin
             querying the next page most efficiently. Only one of offset or key
@@ -39436,12 +40187,6 @@ paths:
           in: path
           name: address
           required: true
-          type: string
-        - description: ID of the failure for the given contract.
-          format: uint64
-          in: query
-          name: failure_id
-          required: false
           type: string
         - description: |-
             key is a value returned in PageResponse.next_key to begin
@@ -39609,130 +40354,44 @@ paths:
           name: failure_id
           required: true
           type: string
-        - description: |-
-            key is a value returned in PageResponse.next_key to begin
-            querying the next page most efficiently. Only one of offset or key
-            should be set.
-          format: byte
-          in: query
-          name: pagination.key
-          required: false
-          type: string
-        - description: >-
-            offset is a numeric offset that can be used when key is unavailable.
-
-            It is less efficient than using key. Only one of offset or key
-            should
-
-            be set.
-          format: uint64
-          in: query
-          name: pagination.offset
-          required: false
-          type: string
-        - description: >-
-            limit is the total number of results to be returned in the result
-            page.
-
-            If left empty it will default to a value to be set by each app.
-          format: uint64
-          in: query
-          name: pagination.limit
-          required: false
-          type: string
-        - description: >-
-            count_total is set to true  to indicate that the result set should
-            include
-
-            a count of the total number of items available for pagination in
-            UIs.
-
-            count_total is only respected when offset is used. It is ignored
-            when key
-
-            is set.
-          in: query
-          name: pagination.count_total
-          required: false
-          type: boolean
-        - description: >-
-            reverse is set to true if results are to be returned in the
-            descending order.
-
-
-            Since: cosmos-sdk 0.43
-          in: query
-          name: pagination.reverse
-          required: false
-          type: boolean
       responses:
         '200':
           description: A successful response.
           schema:
             description: >-
-              QueryFailuresResponse is response type for the Query/Failures RPC
+              QueryFailureResponse is response type for the Query/Failure RPC
               method.
             properties:
-              failures:
-                items:
-                  properties:
-                    address:
-                      title: Address of the failed contract
-                      type: string
-                    error:
-                      title: >-
-                        Redacted error response of the sudo call. Full error is
-                        emitted as an event
-                      type: string
-                    id:
-                      format: uint64
-                      title: Id of the failure under specific address
-                      type: string
-                    sudo_payload:
-                      format: byte
-                      title: >-
-                        Serialized MessageSudoCallback with Packet and Ack(if
-                        exists)
-                      type: string
-                  title: >-
-                    Failure message contains information about ACK failures and
-                    can be used to
-
-                    replay ACK in case of requirement.
-
-                    Note that Failure means that sudo handler to cosmwasm
-                    contract failed for
-
-                    some reason
-                  type: object
-                type: array
-              pagination:
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
-                           repeated Bar results = 1;
-                           PageResponse page = 2;
-                   }
+              failure:
                 properties:
-                  next_key:
-                    description: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently. It will be empty if
-                      there are no more results.
-                    format: byte
+                  address:
+                    title: Address of the failed contract
                     type: string
-                  total:
-                    format: uint64
+                  error:
                     title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
-
-                      was set, its value is undefined otherwise
+                      Redacted error response of the sudo call. Full error is
+                      emitted as an event
                     type: string
+                  id:
+                    format: uint64
+                    title: Id of the failure under specific address
+                    type: string
+                  sudo_payload:
+                    format: byte
+                    title: >-
+                      Serialized MessageSudoCallback with Packet and Ack(if
+                      exists)
+                    type: string
+                title: >-
+                  Failure message contains information about ACK failures and
+                  can be used to
+
+                  replay ACK in case of requirement.
+
+                  Note that Failure means that sudo handler to cosmwasm contract
+                  failed for
+
+                  some reason
                 type: object
             type: object
         default:
@@ -39811,6 +40470,7 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: The response type for the Query/Params RPC method.
             properties:
               params:
                 description: params holds all the parameters of this module.
@@ -39913,6 +40573,7 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: The response type for the Query/Params RPC method.
             properties:
               pagination:
                 description: >-
@@ -39945,6 +40606,17 @@ paths:
               schedules:
                 items:
                   properties:
+                    execution_stage:
+                      title: Stage when messages will be executed
+                      default: EXECUTION_STAGE_END_BLOCKER
+                      description: >-
+                        - EXECUTION_STAGE_END_BLOCKER: Execution at the end of
+                        the block
+                         - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+                      enum:
+                        - EXECUTION_STAGE_END_BLOCKER
+                        - EXECUTION_STAGE_BEGIN_BLOCKER
+                      type: string
                     last_execute_height:
                       format: uint64
                       title: Last execution's block height
@@ -39953,15 +40625,16 @@ paths:
                       items:
                         properties:
                           contract:
-                            title: Contract is the address of the smart contract
+                            title: The address of the smart contract
                             type: string
                           msg:
-                            title: >-
-                              Msg is json encoded message to be passed to the
-                              contract
+                            title: JSON encoded message to be passed to the contract
                             type: string
+                        title: Defines the contract and the message to pass
                         type: object
-                      title: Msgs that will be executed every period amount of time
+                      title: >-
+                        Msgs that will be executed every certain number of
+                        blocks, specified in the `period` field
                       type: array
                     name:
                       title: Name of schedule
@@ -39970,6 +40643,7 @@ paths:
                       format: uint64
                       title: Period in blocks
                       type: string
+                  title: Defines the schedule for execution
                   type: object
                 type: array
             type: object
@@ -40010,9 +40684,21 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: The response type for the Query/Params RPC method.
             properties:
               schedule:
                 properties:
+                  execution_stage:
+                    title: Stage when messages will be executed
+                    default: EXECUTION_STAGE_END_BLOCKER
+                    description: >-
+                      - EXECUTION_STAGE_END_BLOCKER: Execution at the end of the
+                      block
+                       - EXECUTION_STAGE_BEGIN_BLOCKER: Execution at the beginning of the block
+                    enum:
+                      - EXECUTION_STAGE_END_BLOCKER
+                      - EXECUTION_STAGE_BEGIN_BLOCKER
+                    type: string
                   last_execute_height:
                     format: uint64
                     title: Last execution's block height
@@ -40021,15 +40707,16 @@ paths:
                     items:
                       properties:
                         contract:
-                          title: Contract is the address of the smart contract
+                          title: The address of the smart contract
                           type: string
                         msg:
-                          title: >-
-                            Msg is json encoded message to be passed to the
-                            contract
+                          title: JSON encoded message to be passed to the contract
                           type: string
+                      title: Defines the contract and the message to pass
                       type: object
-                    title: Msgs that will be executed every period amount of time
+                    title: >-
+                      Msgs that will be executed every certain number of blocks,
+                      specified in the `period` field
                     type: array
                   name:
                     title: Name of schedule
@@ -40038,6 +40725,7 @@ paths:
                     format: uint64
                     title: Period in blocks
                     type: string
+                title: Defines the schedule for execution
                 type: object
             type: object
         default:
@@ -40069,7 +40757,8 @@ paths:
     get:
       operationId: EstimateMultiHopSwap
       parameters:
-        - in: query
+        - description: 'DEPRECATED: Use QuerySimulateMultiHopSwap.'
+          in: query
           name: creator
           required: false
           type: string
@@ -40137,14 +40826,15 @@ paths:
               message:
                 type: string
             type: object
-      summary: Queries the simulated result of a multihop swap
+      summary: DEPRECATED Queries the simulated result of a multihop swap
       tags:
         - Query
   /neutron/dex/estimate_place_limit_order:
     get:
       operationId: EstimatePlaceLimitOrder
       parameters:
-        - in: query
+        - description: 'DEPRECATED: Use QuerySimulatePlaceLimitOrder.'
+          in: query
           name: creator
           required: false
           type: string
@@ -40284,7 +40974,7 @@ paths:
               message:
                 type: string
             type: object
-      summary: Queries the simulated result of a PlaceLimit order
+      summary: DEPRECATED Queries the simulated result of a PlaceLimit order
       tags:
         - Query
   /neutron/dex/filled_limit_order_tranche:
@@ -41549,62 +42239,31 @@ paths:
         - Query
   /neutron/dex/pool_metadata:
     get:
-      operationId: PoolMetadataAll
+      operationId: SimulateMultiHopSwap
       parameters:
-        - description: |-
-            key is a value returned in PageResponse.next_key to begin
-            querying the next page most efficiently. Only one of offset or key
-            should be set.
-          format: byte
-          in: query
-          name: pagination.key
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.amount_in
+          required: false
+          type: string
+        - in: query
+          name: msg.exit_limit_price
           required: false
           type: string
         - description: >-
-            offset is a numeric offset that can be used when key is unavailable.
+            If pickBestRoute == true then all routes are run and the route with
+            the
 
-            It is less efficient than using key. Only one of offset or key
-            should
-
-            be set.
-          format: uint64
+            best price is chosen otherwise, the first succesful route is used.
           in: query
-          name: pagination.offset
-          required: false
-          type: string
-        - description: >-
-            limit is the total number of results to be returned in the result
-            page.
-
-            If left empty it will default to a value to be set by each app.
-          format: uint64
-          in: query
-          name: pagination.limit
-          required: false
-          type: string
-        - description: >-
-            count_total is set to true  to indicate that the result set should
-            include
-
-            a count of the total number of items available for pagination in
-            UIs.
-
-            count_total is only respected when offset is used. It is ignored
-            when key
-
-            is set.
-          in: query
-          name: pagination.count_total
-          required: false
-          type: boolean
-        - description: >-
-            reverse is set to true if results are to be returned in the
-            descending order.
-
-
-            Since: cosmos-sdk 0.43
-          in: query
-          name: pagination.reverse
+          name: msg.pick_best_route
           required: false
           type: boolean
       responses:
@@ -41612,55 +42271,48 @@ paths:
           description: A successful response.
           schema:
             properties:
-              pagination:
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
-                           repeated Bar results = 1;
-                           PageResponse page = 2;
-                   }
+              resp:
                 properties:
-                  next_key:
-                    description: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently. It will be empty if
-                      there are no more results.
-                    format: byte
-                    type: string
-                  total:
-                    format: uint64
-                    title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
+                  coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
 
-                      was set, its value is undefined otherwise
-                    type: string
-                type: object
-              pool_metadata:
-                items:
-                  properties:
-                    fee:
-                      format: uint64
-                      type: string
-                    id:
-                      format: uint64
-                      type: string
-                    pair_id:
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                  dust:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
                       properties:
-                        token0:
+                        amount:
                           type: string
-                        token1:
+                        denom:
                           type: string
                       type: object
-                    tick:
-                      format: int64
-                      type: string
-                  type: object
-                type: array
+                    type: array
+                  route:
+                    properties:
+                      hops:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                type: object
             type: object
         default:
           description: An unexpected error response.
@@ -41684,7 +42336,7 @@ paths:
               message:
                 type: string
             type: object
-      summary: Queries a list of PoolMetadata items.
+      summary: Simulates MsgMultiHopSwap
       tags:
         - Query
   /neutron/dex/pool_metadata/{id}:
@@ -41976,6 +42628,546 @@ paths:
                 type: string
             type: object
       summary: Queries a PoolReserve by index
+      tags:
+        - Query
+  /neutron/dex/simulate_cancel_limit_order:
+    get:
+      operationId: SimulateCancelLimitOrder
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.tranche_key
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  maker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of maker reserves that were canceled
+                  taker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of taker reserves that were withdrawn
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgCancelLimitOrder
+      tags:
+        - Query
+  /neutron/dex/simulate_deposit:
+    get:
+      operationId: SimulateDeposit
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.token_a
+          required: false
+          type: string
+        - in: query
+          name: msg.token_b
+          required: false
+          type: string
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: msg.amounts_a
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: msg.amounts_b
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: int64
+            type: string
+          name: msg.tick_indexes_a_to_b
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: uint64
+            type: string
+          name: msg.fees
+          required: false
+          type: array
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  failed_deposits:
+                    items:
+                      properties:
+                        deposit_idx:
+                          format: uint64
+                          type: string
+                        error:
+                          type: string
+                      type: object
+                    type: array
+                  reserve0_deposited:
+                    items:
+                      type: string
+                    type: array
+                  reserve1_deposited:
+                    items:
+                      type: string
+                    type: array
+                  shares_issued:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgDeposit
+      tags:
+        - Query
+  /neutron/dex/simulate_place_limit_order:
+    get:
+      operationId: SimulatePlaceLimitOrder
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.token_in
+          required: false
+          type: string
+        - in: query
+          name: msg.token_out
+          required: false
+          type: string
+        - description: >-
+            DEPRECATED: tick_index_in_to_out will be removed in future release;
+            limit_sell_price should be used instead.
+          format: int64
+          in: query
+          name: msg.tick_index_in_to_out
+          required: false
+          type: string
+        - in: query
+          name: msg.amount_in
+          required: false
+          type: string
+        - default: GOOD_TIL_CANCELLED
+          enum:
+            - GOOD_TIL_CANCELLED
+            - FILL_OR_KILL
+            - IMMEDIATE_OR_CANCEL
+            - JUST_IN_TIME
+            - GOOD_TIL_TIME
+          in: query
+          name: msg.order_type
+          required: false
+          type: string
+        - description: expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+          format: date-time
+          in: query
+          name: msg.expiration_time
+          required: false
+          type: string
+        - in: query
+          name: msg.max_amount_out
+          required: false
+          type: string
+        - in: query
+          name: msg.limit_sell_price
+          required: false
+          type: string
+        - description: >-
+            min_average_sell_price is an optional parameter that sets a required
+            minimum average price for the entire trade.
+
+            if the min_average_sell_price is not met the trade will fail.
+
+            If min_average_sell_price is omitted limit_sell_price will be used
+            instead.
+          in: query
+          name: msg.min_average_sell_price
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  coin_in:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of coin used for the limit order
+                  taker_coin_in:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: >-
+                      Total amount of the token in that was immediately swapped
+                      for takerOutCoin
+                  taker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: >-
+                      Total amount of coin received from the taker portion of
+                      the limit order
+
+                      This is the amount of coin immediately available in the
+                      users account after
+
+                      executing the limit order. It does not include any future
+                      proceeds from the
+
+                      maker portion which will have withdrawn in the future
+                  trancheKey:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgPlaceLimitOrder
+      tags:
+        - Query
+  /neutron/dex/simulate_withdraw_filled_limit_order:
+    get:
+      operationId: SimulateWithdrawFilledLimitOrder
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.tranche_key
+          required: false
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  maker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: >-
+                      Total amount of maker reserves that were withdrawn --only
+                      applies to inactive LimitOrders
+                  taker_coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                    title: Total amount of taker reserves that were withdrawn
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgWithdrawFilledLimitOrder
+      tags:
+        - Query
+  /neutron/dex/simulate_withdrawal:
+    get:
+      operationId: SimulateWithdrawal
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.token_a
+          required: false
+          type: string
+        - in: query
+          name: msg.token_b
+          required: false
+          type: string
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: msg.shares_to_remove
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: int64
+            type: string
+          name: msg.tick_indexes_a_to_b
+          required: false
+          type: array
+        - collectionFormat: multi
+          in: query
+          items:
+            format: uint64
+            type: string
+          name: msg.fees
+          required: false
+          type: array
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  reserve0_withdrawn:
+                    type: string
+                  reserve1_withdrawn:
+                    type: string
+                  shares_burned:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgWithdrawal
       tags:
         - Query
   /neutron/dex/tick_liquidity/{pair_id}/{token_in}:
@@ -42725,6 +43917,53 @@ paths:
       summary: TotalBurnedNeutronsAmount queries total amount of burned neutron fees.
       tags:
         - Query
+  /neutron/ibc-rate-limit/v1beta1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              aramsResponse is the response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                properties:
+                  contract_address:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Params defines a gRPC query method that returns the ibc-rate-limit
+        module's
+
+        parameters.
+      tags:
+        - Query
   /neutron/interchainqueries/params:
     get:
       operationId: Params
@@ -42739,6 +43978,16 @@ paths:
               params:
                 description: params holds all the parameters of this module.
                 properties:
+                  max_kv_query_keys_count:
+                    format: uint64
+                    title: Maximum amount of keys in a registered key value query
+                    type: string
+                  max_transactions_filters:
+                    format: uint64
+                    title: >-
+                      max_transactions_filters defines maximum allowed amount of
+                      tx filters in msgRegisterInterchainQuery
+                    type: string
                   query_deposit:
                     description: Amount of coins deposited for the query.
                     items:

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 type MsgServer struct {
@@ -150,6 +150,7 @@ func (k MsgServer) PlaceLimitOrder(
 		msg.OrderType,
 		msg.ExpirationTime,
 		msg.MaxAmountOut,
+		msg.MinAverageSellPrice,
 		callerAddr,
 		receiverAddr,
 	)

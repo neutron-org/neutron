@@ -6,7 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // TODO: In an ideal world, there should be enough lower level testing that the swap tests
@@ -556,7 +556,7 @@ func (s *DexTestSuite) addDeposit(deposit *Deposit) {
 	s.Assert().NoError(err)
 	pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(deposit.AmountA)
 	pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(deposit.AmountB)
-	s.App.DexKeeper.SetPool(s.Ctx, pool)
+	s.App.DexKeeper.UpdatePool(s.Ctx, pool)
 }
 
 func (s *DexTestSuite) addDeposits(deposits ...*Deposit) {
@@ -581,7 +581,7 @@ func (s *DexTestSuite) placeGTCLimitOrder(
 	)
 	s.Assert().NoError(err)
 	tranche.PlaceMakerLimitOrder(sdkmath.NewInt(amountIn).Mul(denomMultiple))
-	s.App.DexKeeper.SaveTranche(s.Ctx, tranche)
+	s.App.DexKeeper.UpdateTranche(s.Ctx, tranche)
 }
 
 func (s *DexTestSuite) swapInt(

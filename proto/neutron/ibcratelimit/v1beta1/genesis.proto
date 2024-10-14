@@ -1,0 +1,15 @@
+syntax = "proto3";
+package neutron.ibcratelimit.v1beta1;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
+import "neutron/ibcratelimit/v1beta1/params.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types";
+
+// GenesisState defines the ibc-rate-limit module's genesis state.
+message GenesisState {
+  // params are all the parameters of the module
+  Params params = 1 [(gogoproto.nullable) = false];
+}

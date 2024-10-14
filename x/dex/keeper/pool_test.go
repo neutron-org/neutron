@@ -7,9 +7,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {
@@ -20,7 +20,7 @@ func createNPools(k *keeper.Keeper, ctx sdk.Context, n int) []*types.Pool {
 			panic("failed to create pool")
 		}
 		pool.Deposit(math.NewInt(10), math.NewInt(0), math.ZeroInt(), true)
-		k.SetPool(ctx, pool)
+		k.UpdatePool(ctx, pool)
 		items[i] = pool
 	}
 
@@ -33,7 +33,7 @@ func TestPoolInit(t *testing.T) {
 	pool, err := keeper.InitPool(ctx, defaultPairID, 0, 1)
 	require.NoError(t, err)
 	pool.Deposit(math.NewInt(1000), math.NewInt(1000), math.NewInt(0), true)
-	keeper.SetPool(ctx, pool)
+	keeper.UpdatePool(ctx, pool)
 
 	dbPool, found := keeper.GetPool(ctx, defaultPairID, 0, 1)
 

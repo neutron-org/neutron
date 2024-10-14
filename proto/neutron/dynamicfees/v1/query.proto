@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "neutron/dynamicfees/v1/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/dynamicfees/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/dynamicfees/types";
 
 // Query defines the gRPC querier service.
 service Query {

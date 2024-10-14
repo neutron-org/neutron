@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // WithdrawFilledLimitOrderCore handles MsgWithdrawFilledLimitOrder including bank operations and event emissions.
@@ -87,19 +87,20 @@ func (k Keeper) ExecuteWithdrawFilledLimitOrder(
 		if wasFilled {
 			// This is only relevant for inactive JIT and GoodTil limit orders
 			remainingTokenIn = tranche.RemoveTokenIn(trancheUser)
-			k.SaveInactiveTranche(ctx, tranche)
+			k.UpdateInactiveTranche(ctx, tranche)
 
 			// Since the order has already been filled we treat this as a complete withdrawal
 			trancheUser.SharesWithdrawn = trancheUser.SharesOwned
 
 		} else {
-			k.SetLimitOrderTranche(ctx, tranche)
+			// This was an active tranche (still has MakerReserves) and we have only removed TakerReserves; we will save it as an active tranche
+			k.UpdateTranche(ctx, tranche)
 			trancheUser.SharesWithdrawn = trancheUser.SharesWithdrawn.Add(amountOutTokenIn)
 		}
 
 	}
-
-	k.SaveTrancheUser(ctx, trancheUser)
+	// Save the tranche user
+	k.UpdateTrancheUser(ctx, trancheUser)
 
 	if !amountOutTokenOut.IsPositive() && !remainingTokenIn.IsPositive() {
 		return takerCoinOut, makerCoinOut, types.ErrWithdrawEmptyLimitOrder

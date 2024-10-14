@@ -7,9 +7,9 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	"github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 )
 
 // HandleAcknowledgement passes the acknowledgement data to the appropriate contract via a sudo call.
@@ -32,7 +32,6 @@ func (im IBCModule) HandleAcknowledgement(ctx sdk.Context, packet channeltypes.P
 	}
 
 	im.wrappedKeeper.FeeKeeper.DistributeAcknowledgementFee(ctx, relayer, feetypes.NewPacketID(packet.SourcePort, packet.SourceChannel, packet.Sequence))
-
 	msg, err := keeper.PrepareSudoCallbackMessage(packet, &ack)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrJSONMarshal, "failed to marshal Packet/Acknowledgment: %v", err)
