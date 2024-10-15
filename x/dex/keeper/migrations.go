@@ -6,7 +6,6 @@ import (
 	v3 "github.com/neutron-org/neutron/v5/x/dex/migrations/v3"
 	v4 "github.com/neutron-org/neutron/v5/x/dex/migrations/v4"
 	v5 "github.com/neutron-org/neutron/v5/x/dex/migrations/v5"
-
 )
 
 // Migrator is a struct for handling in-place store migrations.
