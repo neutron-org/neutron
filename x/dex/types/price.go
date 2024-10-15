@@ -97,7 +97,7 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 	}
 
 	if price.LT(math_utils.OnePrecDec()) {
-		// We only have a lookup table for prices <= 1
+		// We only have a lookup table for prices >= 1
 		// So we invert the price for the lookup
 		invPrice := math_utils.OnePrecDec().Quo(price)
 		tick := BinarySearchPriceToTick(invPrice)
