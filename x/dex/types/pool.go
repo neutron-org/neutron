@@ -90,7 +90,7 @@ func (p *Pool) Swap(
 		return math.ZeroInt(), math.ZeroInt()
 	}
 
-	maxOutGivenTakerIn := makerReserves.PriceTakerToMaker.MulInt(maxAmountTakerIn).TruncateInt()
+	maxOutGivenTakerIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(makerReserves.MakerPrice).TruncateInt()
 	possibleAmountsMakerOut := []math.Int{makerReserves.ReservesMakerDenom, maxOutGivenTakerIn}
 	if maxAmountMakerOut != nil {
 		possibleAmountsMakerOut = append(possibleAmountsMakerOut, *maxAmountMakerOut)
@@ -102,10 +102,7 @@ func (p *Pool) Swap(
 	// c) The maximum amount the user wants out (maxAmountOut1)
 	amountMakerOut = utils.MinIntArr(possibleAmountsMakerOut)
 
-	amountTakerIn = math_utils.NewPrecDecFromInt(amountMakerOut).
-		Quo(makerReserves.PriceTakerToMaker).
-		Ceil().
-		TruncateInt()
+	amountTakerIn = makerReserves.MakerPrice.MulInt(amountMakerOut).Ceil().TruncateInt()
 	takerReserves.ReservesMakerDenom = takerReserves.ReservesMakerDenom.Add(amountTakerIn)
 	makerReserves.ReservesMakerDenom = makerReserves.ReservesMakerDenom.Sub(amountMakerOut)
 
@@ -166,10 +163,10 @@ func (p *Pool) GetPoolDenom() string {
 
 func (p *Pool) Price(tradePairID *TradePairID) math_utils.PrecDec {
 	if tradePairID.IsTakerDenomToken0() {
-		return p.UpperTick1.PriceTakerToMaker
+		return p.UpperTick1.MakerPrice
 	}
 
-	return p.LowerTick0.PriceTakerToMaker
+	return p.LowerTick0.MakerPrice
 }
 
 func (p *Pool) MustCalcPrice1To0Center() math_utils.PrecDec {
@@ -276,26 +273,26 @@ func CalcAutoswapAmount(
 	reserves1Dec := math_utils.NewPrecDecFromInt(reserves1)
 	// swapAmount = (reserves0*depositAmount1 - reserves1*depositAmount0) / (price * reserves1  + reserves0)
 	swapAmount := reserves0Dec.MulInt(depositAmount1).Sub(reserves1Dec.MulInt(depositAmount0)).
-		Quo(reserves0Dec.Add(reserves1Dec.Mul(price1To0)))
+		Quo(reserves0Dec.Add(reserves1Dec.Quo(price1To0)))
 
 	switch {
 	case swapAmount.IsZero(): // nothing to be swapped
 		return math.ZeroInt(), math.ZeroInt()
 
-	case swapAmount.IsPositive(): // Token0 needs to be swapped
+	case swapAmount.IsPositive(): // Token1 needs to be swapped
 		return math.ZeroInt(), swapAmount.Ceil().TruncateInt()
 
 	default: // Token0 needs to be swapped
 		amountSwappedAs1 := swapAmount.Neg()
 
-		amountSwapped0 := amountSwappedAs1.Mul(price1To0)
+		amountSwapped0 := amountSwappedAs1.Quo(price1To0)
 		return amountSwapped0.Ceil().TruncateInt(), math.ZeroInt()
 	}
 }
 
 func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_utils.PrecDec {
 	feeInt64 := utils.MustSafeUint64ToInt64(p.Fee())
-	feeAsPrice := MustCalcPrice(feeInt64)
+	feeAsPrice := MustCalcPrice(-feeInt64)
 	autoSwapFee := math_utils.OnePrecDec().Sub(feeAsPrice)
 
 	// fee = depositValueAsToken0 * (1 - p(fee) )
@@ -304,6 +301,7 @@ func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_uti
 
 func CalcAmountAsToken0(amount0, amount1 math.Int, price1To0 math_utils.PrecDec) math_utils.PrecDec {
 	amount0Dec := math_utils.NewPrecDecFromInt(amount0)
+	amount1Dec := math_utils.NewPrecDecFromInt(amount1)
 
-	return amount0Dec.Add(price1To0.MulInt(amount1))
+	return amount0Dec.Add(amount1Dec.Quo(price1To0))
 }

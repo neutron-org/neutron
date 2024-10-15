@@ -37,7 +37,7 @@ func (k Keeper) Swap(
 		}
 
 		// break as soon as we iterated past limitPrice
-		if limitPrice != nil && liq.Price().LT(*limitPrice) {
+		if limitPrice != nil && liq.Price().GT(*limitPrice) {
 			break
 		}
 
@@ -52,11 +52,11 @@ func (k Keeper) Swap(
 		// this avoids unnecessary iteration since outAmount will always be 0 going forward
 		// this also catches the normal exit case where remainingTakerDenom == 0
 
-		// NOTE: In theory this check should be: price * remainingTakerDenom < 1
+		// NOTE: In theory this check should be:  remainingTakerDenom / price  < 1
 		// but due to rounding and inaccuracy of fixed decimal math, it is possible
 		// for liq.swap to use the full the amount of taker liquidity and have a leftover
 		// amount of the taker Denom > than 1 token worth of maker denom
-		if liq.Price().MulInt(remainingTakerDenom).LT(math_utils.NewPrecDec(2)) {
+		if math_utils.NewPrecDecFromInt(remainingTakerDenom).Quo(liq.Price()).LT(math_utils.NewPrecDec(2)) {
 			orderFilled = true
 			break
 		}
@@ -181,7 +181,7 @@ func (k Keeper) MakerLimitOrderSwap(
 
 	if totalInCoin.Amount.IsPositive() {
 		remainingIn := amountIn.Sub(totalInCoin.Amount)
-		expectedOutMakerPortion := limitPrice.MulInt(remainingIn)
+		expectedOutMakerPortion := math_utils.NewPrecDecFromInt(remainingIn).Quo(limitPrice)
 		totalExpectedOut := expectedOutMakerPortion.Add(math_utils.NewPrecDecFromInt(totalOutCoin.Amount))
 		truePrice := totalExpectedOut.QuoInt(amountIn)
 
