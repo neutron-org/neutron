@@ -111,7 +111,6 @@ func (k Keeper) ExecutePlaceLimitOrder(
 
 	var limitPrice math_utils.PrecDec
 	limitPrice, err = types.CalcPrice(tickIndexInToOut)
-
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
 	}

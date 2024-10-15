@@ -267,7 +267,6 @@ func CalcAutoswapAmount(
 	depositAmount1 math.Int,
 	price1To0 math_utils.PrecDec,
 ) (resultAmount0, resultAmount1 math.Int) {
-
 	if reserves0.IsZero() && reserves1.IsZero() {
 		// The pool is empty, any deposit amount is allowed. Nothing to be swapped
 		return math.ZeroInt(), math.ZeroInt()
@@ -292,7 +291,6 @@ func CalcAutoswapAmount(
 		amountSwapped0 := amountSwappedAs1.Mul(price1To0)
 		return amountSwapped0.Ceil().TruncateInt(), math.ZeroInt()
 	}
-
 }
 
 func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_utils.PrecDec {
