@@ -165,3 +165,22 @@ func (k Keeper) SetPoolCount(ctx sdk.Context, count uint64) {
 	binary.BigEndian.PutUint64(bz, count)
 	store.Set(byteKey, bz)
 }
+
+func (k Keeper) GetAllPoolShareholders(ctx sdk.Context) map[uint64][]types.PoolShareholder {
+	result := make(map[uint64][]types.PoolShareholder)
+	balances := k.bankKeeper.GetAccountsBalances(ctx)
+	for _, balance := range balances {
+		for _, coin := range balance.Coins {
+			// Check if the Denom is a PoolShare denom
+			poolID, err := types.ParsePoolIDFromDenom(coin.Denom)
+			if err != nil {
+				// This is not a PoolShare denom
+				continue
+			}
+			shareholderInfo := types.PoolShareholder{Address: balance.Address, Shares: coin.Amount}
+			result[poolID] = append(result[poolID], shareholderInfo)
+
+		}
+	}
+	return result
+}
