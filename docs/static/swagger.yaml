@@ -16163,6 +16163,16 @@ definitions:
         type: string
       max_amount_out:
         type: string
+      min_average_sell_price:
+        title: >-
+          min_average_sell_price is an optional parameter that sets a required
+          minimum average price for the entire trade.
+
+          if the min_average_sell_price is not met the trade will fail.
+
+          If min_average_sell_price is omitted limit_sell_price will be used
+          instead
+        type: string
       order_type:
         default: GOOD_TIL_CANCELLED
         enum:
@@ -18193,6 +18203,22 @@ definitions:
                 type: array
             title: Fee defines the ICS29 receive, acknowledgement and timeout fees
             type: object
+        type: object
+    type: object
+  neutron.ibcratelimit.v1beta1.Params:
+    description: Params defines the parameters for the ibc-rate-limit module.
+    properties:
+      contract_address:
+        type: string
+    type: object
+  neutron.ibcratelimit.v1beta1.QueryParamsResponse:
+    description: aramsResponse is the response type for the Query/Params RPC method.
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        properties:
+          contract_address:
+            type: string
         type: object
     type: object
   neutron.interchainqueries.Block:
@@ -42858,6 +42884,18 @@ paths:
           name: msg.limit_sell_price
           required: false
           type: string
+        - description: >-
+            min_average_sell_price is an optional parameter that sets a required
+            minimum average price for the entire trade.
+
+            if the min_average_sell_price is not met the trade will fail.
+
+            If min_average_sell_price is omitted limit_sell_price will be used
+            instead.
+          in: query
+          name: msg.min_average_sell_price
+          required: false
+          type: string
       responses:
         '200':
           description: A successful response.
@@ -43877,6 +43915,53 @@ paths:
                 type: string
             type: object
       summary: TotalBurnedNeutronsAmount queries total amount of burned neutron fees.
+      tags:
+        - Query
+  /neutron/ibc-rate-limit/v1beta1/params:
+    get:
+      operationId: Params
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: >-
+              aramsResponse is the response type for the Query/Params RPC
+              method.
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                properties:
+                  contract_address:
+                    type: string
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: >-
+        Params defines a gRPC query method that returns the ibc-rate-limit
+        module's
+
+        parameters.
       tags:
         - Query
   /neutron/interchainqueries/params:

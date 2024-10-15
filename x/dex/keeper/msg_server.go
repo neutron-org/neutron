@@ -150,6 +150,7 @@ func (k MsgServer) PlaceLimitOrder(
 		msg.OrderType,
 		msg.ExpirationTime,
 		msg.MaxAmountOut,
+		msg.MinAverageSellPrice,
 		callerAddr,
 		receiverAddr,
 	)

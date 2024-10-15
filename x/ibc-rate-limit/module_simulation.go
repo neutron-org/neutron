@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+
 	"github.com/neutron-org/neutron/v5/testutil/common/sample"
 	ibcratelimitsimulation "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/simulation"
 	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"

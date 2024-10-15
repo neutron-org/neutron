@@ -398,6 +398,39 @@ func (s *DexTestSuite) limitSellsWithMaxOut(
 	return msg.TrancheKey
 }
 
+func (s *DexTestSuite) aliceLimitSellsWithMinAvgPrice(
+	selling string,
+	limitPrice math_utils.PrecDec,
+	amountIn int,
+	minAvgPrice math_utils.PrecDec,
+	orderType types.LimitOrderType,
+) (*types.MsgPlaceLimitOrderResponse, error) {
+	return s.limitSellsWithMinAvgPrice(s.alice, selling, limitPrice, amountIn, minAvgPrice, orderType)
+}
+
+func (s *DexTestSuite) limitSellsWithMinAvgPrice(
+	account sdk.AccAddress,
+	tokenIn string,
+	limitPrice math_utils.PrecDec,
+	amountIn int,
+	minAvgPrice math_utils.PrecDec,
+	orderType types.LimitOrderType,
+) (*types.MsgPlaceLimitOrderResponse, error) {
+	tokenIn, tokenOut := dexkeeper.GetInOutTokens(tokenIn, "TokenA", "TokenB")
+
+	return s.msgServer.PlaceLimitOrder(s.Ctx, &types.MsgPlaceLimitOrder{
+		Creator:             account.String(),
+		Receiver:            account.String(),
+		TokenIn:             tokenIn,
+		TokenOut:            tokenOut,
+		TickIndexInToOut:    0,
+		LimitSellPrice:      &limitPrice,
+		AmountIn:            sdkmath.NewInt(int64(amountIn)).Mul(denomMultiple),
+		OrderType:           orderType,
+		MinAverageSellPrice: &minAvgPrice,
+	})
+}
+
 func (s *DexTestSuite) limitSellsWithPrice(
 	account sdk.AccAddress,
 	tokenIn string,
@@ -1935,6 +1968,7 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 
 	ZEROINT := sdkmath.ZeroInt()
 	ONEINT := sdkmath.OneInt()
+	ZERODEC := math_utils.ZeroPrecDec()
 	TINYDEC := math_utils.MustNewPrecDecFromStr("0.000000000000000000000000494")
 	HUGEDEC := math_utils.MustNewPrecDecFromStr("2020125331305056766452345.127500016657360222036663652")
 	FIVEDEC := math_utils.NewPrecDec(5)
@@ -2105,6 +2139,19 @@ func TestMsgPlaceLimitOrderValidate(t *testing.T) {
 				AmountIn:         sdkmath.OneInt(),
 			},
 			types.ErrInvalidPriceAndTick,
+		},
+		{
+			"invalid zero min average sell price",
+			types.MsgPlaceLimitOrder{
+				Creator:             sample.AccAddress(),
+				Receiver:            sample.AccAddress(),
+				TokenIn:             "TokenA",
+				TokenOut:            "TokenB",
+				LimitSellPrice:      &FIVEDEC,
+				AmountIn:            sdkmath.OneInt(),
+				MinAverageSellPrice: &ZERODEC,
+			},
+			types.ErrZeroMinAverageSellPrice,
 		},
 	}
 
