@@ -123,26 +123,31 @@ func (p *Pool) Deposit(
 	lowerReserve0 := &p.LowerTick0.ReservesMakerDenom
 	upperReserve1 := &p.UpperTick1.ReservesMakerDenom
 
-	inAmount0, inAmount1 = CalcGreatestMatchingRatio(
-		*lowerReserve0,
-		*upperReserve1,
-		maxAmount0,
-		maxAmount1,
-	)
-
 	centerPrice1To0 := p.MustCalcPrice1To0Center()
-	depositValueAsToken0 := CalcAmountAsToken0(inAmount0, inAmount1, centerPrice1To0)
+	var depositValueAsToken0 math_utils.PrecDec
 	autoswapFee := math_utils.ZeroPrecDec()
-	if autoswap {
-		residualAmount0 := maxAmount0.Sub(inAmount0)
-		residualAmount1 := maxAmount1.Sub(inAmount1)
 
-		// NOTE: Currently not doing anything with the error,
-		// but added error handling to all of the new functions for autoswap.
-		// Open to changing it however.
+	if !autoswap {
+		inAmount0, inAmount1 = CalcGreatestMatchingRatio(
+			*lowerReserve0,
+			*upperReserve1,
+			maxAmount0,
+			maxAmount1,
+		)
+		depositValueAsToken0 = CalcAmountAsToken0(inAmount0, inAmount1, centerPrice1To0)
+
+	} else {
+		residualAmount0, residualAmount1 := CalcAutoswapAmount(
+			*lowerReserve0, *upperReserve1,
+			maxAmount0, maxAmount1,
+			centerPrice1To0,
+		)
+
 		residualDepositValueAsToken0 := CalcAmountAsToken0(residualAmount0, residualAmount1, centerPrice1To0)
-		autoswapFee, _ = p.CalcAutoswapFee(residualDepositValueAsToken0)
-		depositValueAsToken0 = depositValueAsToken0.Add(residualDepositValueAsToken0.Sub(autoswapFee))
+		autoswapFee = p.CalcAutoswapFee(residualDepositValueAsToken0)
+
+		fullDepositValueAsToken0 := CalcAmountAsToken0(maxAmount0, maxAmount1, centerPrice1To0)
+		depositValueAsToken0 = fullDepositValueAsToken0.Sub(autoswapFee)
 
 		inAmount0 = maxAmount0
 		inAmount1 = maxAmount1
@@ -253,17 +258,50 @@ func CalcGreatestMatchingRatio(
 	return resultAmount0, resultAmount1
 }
 
-func (p *Pool) CalcAutoswapFee(
-	depositValueAsToken0 math_utils.PrecDec,
-) (math_utils.PrecDec, error) {
-	feeInt64 := utils.MustSafeUint64ToInt64(p.Fee())
-	feeAsPrice, err := CalcPrice(feeInt64)
-	autoSwapFee := math_utils.OnePrecDec().Sub(feeAsPrice)
-	if err != nil {
-		return math_utils.ZeroPrecDec(), err
+// CalcAutoswapAmount calculates the smallest swap to match the current pool ratio.
+// see: https://www.notion.so/Autoswap-Spec-ca5f35a4cd5b4dbf9ae27e0454ddd445?pvs=4#12032ea59b0e802c925efae10c3ca85f
+func CalcAutoswapAmount(
+	reserves0,
+	reserves1,
+	depositAmount0,
+	depositAmount1 math.Int,
+	price1To0 math_utils.PrecDec,
+) (resultAmount0, resultAmount1 math.Int) {
+
+	if reserves0.IsZero() && reserves1.IsZero() {
+		// The pool is empty, any deposit amount is allowed. Nothing to be swapped
+		return math.ZeroInt(), math.ZeroInt()
 	}
+
+	reserves0Dec := math_utils.NewPrecDecFromInt(reserves0)
+	reserves1Dec := math_utils.NewPrecDecFromInt(reserves1)
+	// swapAmount = (reserves0*depositAmount1 - reserves1*depositAmount0) / (price * reserves1  + reserves0)
+	swapAmount := reserves0Dec.MulInt(depositAmount1).Sub(reserves1Dec.MulInt(depositAmount0)).
+		Quo(reserves0Dec.Add(reserves1Dec.Mul(price1To0)))
+
+	switch {
+	case swapAmount.IsZero(): // nothing to be swapped
+		return math.ZeroInt(), math.ZeroInt()
+
+	case swapAmount.IsPositive(): // Token0 needs to be swapped
+		return math.ZeroInt(), swapAmount.Ceil().TruncateInt()
+
+	default: // Token0 needs to be swapped
+		amountSwappedAs1 := swapAmount.Neg()
+
+		amountSwapped0 := amountSwappedAs1.Mul(price1To0)
+		return amountSwapped0.Ceil().TruncateInt(), math.ZeroInt()
+	}
+
+}
+
+func (p *Pool) CalcAutoswapFee(depositValueAsToken0 math_utils.PrecDec) math_utils.PrecDec {
+	feeInt64 := utils.MustSafeUint64ToInt64(p.Fee())
+	feeAsPrice := MustCalcPrice(feeInt64)
+	autoSwapFee := math_utils.OnePrecDec().Sub(feeAsPrice)
+
 	// fee = depositValueAsToken0 * (1 - p(fee) )
-	return autoSwapFee.Mul(depositValueAsToken0), nil
+	return autoSwapFee.Mul(depositValueAsToken0)
 }
 
 func CalcAmountAsToken0(amount0, amount1 math.Int, price1To0 math_utils.PrecDec) math_utils.PrecDec {
