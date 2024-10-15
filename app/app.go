@@ -39,7 +39,6 @@ import (
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 
 	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
-	v501 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.1"
 	"github.com/neutron-org/neutron/v5/x/globalfee"
 	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
@@ -229,7 +228,6 @@ const (
 var (
 	Upgrades = []upgrades.Upgrade{
 		v500.Upgrade,
-		v501.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
