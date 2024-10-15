@@ -109,12 +109,12 @@ func (k Keeper) ExecutePlaceLimitOrder(
 ) (trancheKey string, totalIn math.Int, swapInCoin, swapOutCoin sdk.Coin, sharesIssued math.Int, err error) {
 	amountLeft := amountIn
 
-	limitBuyPrice, err := types.CalcPrice(-tickIndexInToOut)
+	limitBuyPrice, err := types.CalcPrice(tickIndexInToOut)
 	if err != nil {
 		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
 	}
 
-	// Use limitPrice for minAvgSellPrice if it has not be specified
+	// Use limitPrice for minAvgSellPrice if it has not been specified
 	minAvgSellPrice := math_utils.OnePrecDec().Quo(limitBuyPrice)
 
 	if minAvgSellPriceP != nil {
@@ -141,7 +141,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	amountLeft = amountLeft.Sub(swapInCoin.Amount)
 
 	makerTradePairID := takerTradePairID.Reversed()
-	tickIndexTakerToMaker := tickIndexInToOut
+	tickIndexTakerToMaker := tickIndexInToOut * -1
 	var placeTranche *types.LimitOrderTranche
 	placeTranche, err = k.GetOrInitPlaceTranche(
 		ctx,
