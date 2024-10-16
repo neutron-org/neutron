@@ -74,7 +74,7 @@ func TestGetPoolIDByParams(t *testing.T) {
 	id0, found := keeper.GetPoolIDByParams(
 		ctx,
 		items[0].LowerTick0.Key.TradePairId.MustPairID(),
-		items[0].CenterTickIndex(),
+		items[0].CenterTickIndexToken1(),
 		items[0].Fee(),
 	)
 	require.True(t, found)
@@ -83,7 +83,7 @@ func TestGetPoolIDByParams(t *testing.T) {
 	id1, found := keeper.GetPoolIDByParams(
 		ctx,
 		items[1].LowerTick0.Key.TradePairId.MustPairID(),
-		items[1].CenterTickIndex(),
+		items[1].CenterTickIndexToken1(),
 		items[1].Fee(),
 	)
 	require.True(t, found)

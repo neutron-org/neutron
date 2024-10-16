@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
@@ -36,7 +37,8 @@ func (k Keeper) SimulatePlaceLimitOrder(
 	}
 	tickIndex := msg.TickIndexInToOut
 	if msg.LimitSellPrice != nil {
-		tickIndex, err = types.CalcTickIndexFromPrice(*msg.LimitSellPrice)
+		limitBuyPrice := math_utils.OnePrecDec().Quo(*msg.LimitSellPrice)
+		tickIndex, err = types.CalcTickIndexFromPrice(limitBuyPrice)
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid LimitSellPrice %s", msg.LimitSellPrice.String())
 		}

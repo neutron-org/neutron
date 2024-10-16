@@ -10,6 +10,7 @@ import (
 
 	neutronapp "github.com/neutron-org/neutron/v5/app"
 	"github.com/neutron-org/neutron/v5/testutil"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
@@ -65,7 +66,8 @@ func (s *CoreHelpersTestSuite) setLPAtFee1Pool(tickIndex int64, amountA, amountB
 
 	existingShares := s.app.BankKeeper.GetSupply(s.ctx, pool.GetPoolDenom()).Amount
 
-	totalShares := pool.CalcSharesMinted(amountAInt, amountBInt, existingShares)
+	depositAmountAsToken0 := types.CalcAmountAsToken0(amountAInt, amountBInt, pool.MustCalcPrice1To0Center())
+	totalShares := pool.CalcSharesMinted(depositAmountAsToken0, existingShares, math_utils.ZeroPrecDec())
 
 	err = s.app.DexKeeper.MintShares(s.ctx, s.alice, sdk.NewCoins(totalShares))
 	s.Require().NoError(err)
