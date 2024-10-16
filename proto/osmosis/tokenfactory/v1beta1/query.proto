@@ -41,8 +41,7 @@ service Query {
   // FullDenom defines a gRPC query method for getting full denom name
   // from the creator and subdenom strings.
   rpc FullDenom(QueryFullDenomRequest) returns (QueryFullDenomResponse) {
-    option (google.api.http).get =
-      "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/full_denom";
+    option (google.api.http).get = "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/full_denom";
   }
 }
 
