@@ -155,7 +155,7 @@ service Query {
 
   // Simulates MsgMultiHopSwap
   rpc SimulateMultiHopSwap(QuerySimulateMultiHopSwapRequest) returns (QuerySimulateMultiHopSwapResponse) {
-    option (google.api.http).get = "/neutron/dex/pool_metadata";
+    option (google.api.http).get = "/neutron/dex/simulate_multi_hop_swap";
   }
 
   // this line is used by starport scaffolding # 2
