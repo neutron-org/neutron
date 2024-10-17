@@ -1065,7 +1065,7 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
 	}
 
-	err = m.ContractmanagerKeeper.ResubmitFailure(ctx, contractAddr, failure)
+	err = m.ContractmanagerKeeper.DoResubmitFailure(ctx, contractAddr, failure)
 	if err != nil {
 		ctx.Logger().Error("failed to resubmitFailure",
 			"from_address", contractAddr.String(),

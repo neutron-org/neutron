@@ -119,14 +119,7 @@ func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
 	return value, nil
 }
 
-// implements UnpackInterfacesMessage.UnpackInterfaces (https://github.com/cosmos/cosmos-sdk/blob/d07d35f29e0a0824b489c552753e8798710ff5a8/codec/types/interface_registry.go#L60)
 func (msg *MsgSubmitTx) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	var sdkMsg sdk.Msg
-	for _, m := range msg.Msgs {
-		if err := unpacker.UnpackAny(m, &sdkMsg); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 

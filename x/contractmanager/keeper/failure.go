@@ -88,8 +88,8 @@ func (k Keeper) GetFailure(ctx sdk.Context, contractAddr sdk.AccAddress, id uint
 	return &res, nil
 }
 
-// ResubmitFailure tries to call sudo handler for contract with same parameters as initially.
-func (k Keeper) ResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
+// DoResubmitFailure tries to call sudo handler for contract with same parameters as initially.
+func (k Keeper) DoResubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, failure *types.Failure) error {
 	if failure.SudoPayload == nil {
 		return errorsmod.Wrapf(types.ErrIncorrectFailureToResubmit, "cannot resubmit failure without sudo payload; failureId = %d", failure.Id)
 	}
