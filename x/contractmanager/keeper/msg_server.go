@@ -40,3 +40,28 @@ func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) 
 
 	return &types.MsgUpdateParamsResponse{}, nil
 }
+
+// ResubmitFailure resubmits the failure after contract acknowledgement failed
+func (k Keeper) ResubmitFailure(goCtx context.Context, req *types.MsgResubmitFailure) (*types.MsgResubmitFailureResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	sender, _ := sdk.AccAddressFromBech32(req.Sender)
+	if !k.wasmKeeper.HasContractInfo(ctx, sender) {
+		return nil, errors.Wrap(sdkerrors.ErrNotFound, "not a contract address tried to resubmit")
+	}
+
+	failure, err := k.GetFailure(ctx, sender, req.FailureId)
+	if err != nil {
+		return nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
+	}
+
+	if err := k.DoResubmitFailure(ctx, sender, failure); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgResubmitFailureResponse{}, nil
+}

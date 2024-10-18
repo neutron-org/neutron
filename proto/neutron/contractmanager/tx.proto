@@ -16,6 +16,8 @@ service Msg {
   option (cosmos.msg.v1.service) = true;
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+  rpc ResubmitFailure(MsgResubmitFailure) returns (MsgResubmitFailureResponse);
+
   // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -43,3 +45,19 @@ message MsgUpdateParams {
 //
 // Since: 0.47
 message MsgUpdateParamsResponse {}
+
+// MsgResubmitFailure - contract that has failed acknowledgement can resubmit its failure
+message MsgResubmitFailure {
+  option (amino.name) = "contractmanager/MsgResubmitFailure";
+  option (cosmos.msg.v1.signer) = "sender";
+
+  // sender is the contract which failure to acknowledge is resubmitted.
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // failure_id is id of failure to resubmit
+  //
+  // NOTE: All parameters must be supplied.
+  uint64 failure_id = 2;
+}
+
+message MsgResubmitFailureResponse {}
