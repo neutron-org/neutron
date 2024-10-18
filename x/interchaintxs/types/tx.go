@@ -1,15 +1,11 @@
 package types
 
 import (
-	"fmt"
-
 	"cosmossdk.io/errors"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
 )
 
 // const interchainAccountIDLimit = 47
@@ -17,8 +13,6 @@ const interchainAccountIDLimit = 128 -
 	len("icacontroller-") -
 	len("neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02") - // just a random contract address
 	len(".")
-
-var _ codectypes.UnpackInterfacesMessage = &MsgSubmitTx{}
 
 func (msg *MsgRegisterInterchainAccount) Validate() error {
 	if len(msg.ConnectionId) == 0 {
@@ -102,32 +96,6 @@ func (msg *MsgSubmitTx) Type() string {
 
 func (msg *MsgSubmitTx) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(msg)
-}
-
-// PackTxMsgAny marshals the sdk.Msg payload to a protobuf Any type
-func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
-	msg, ok := sdkMsg.(proto.Message)
-	if !ok {
-		return nil, fmt.Errorf("can't proto marshal %T", sdkMsg)
-	}
-
-	value, err := codectypes.NewAnyWithValue(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	return value, nil
-}
-
-// implements UnpackInterfacesMessage.UnpackInterfaces (https://github.com/cosmos/cosmos-sdk/blob/d07d35f29e0a0824b489c552753e8798710ff5a8/codec/types/interface_registry.go#L60)
-func (msg *MsgSubmitTx) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	var sdkMsg sdk.Msg
-	for _, m := range msg.Msgs {
-		if err := unpacker.UnpackAny(m, &sdkMsg); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 //----------------------------------------------------------------
