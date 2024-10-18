@@ -18,8 +18,6 @@ const interchainAccountIDLimit = 128 -
 	len("neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02") - // just a random contract address
 	len(".")
 
-var _ codectypes.UnpackInterfacesMessage = &MsgSubmitTx{}
-
 func (msg *MsgRegisterInterchainAccount) Validate() error {
 	if len(msg.ConnectionId) == 0 {
 		return ErrEmptyConnectionID
@@ -117,10 +115,6 @@ func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
 	}
 
 	return value, nil
-}
-
-func (msg *MsgSubmitTx) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	return nil
 }
 
 //----------------------------------------------------------------
