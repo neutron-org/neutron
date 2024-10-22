@@ -33,3 +33,32 @@ func (msg *MsgUpdateParams) Validate() error {
 	}
 	return nil
 }
+
+var _ sdk.Msg = &MsgResubmitFailure{}
+
+func (msg *MsgResubmitFailure) Route() string {
+	return RouterKey
+}
+
+func (msg *MsgResubmitFailure) Type() string {
+	return "resubmit-failure"
+}
+
+func (msg *MsgResubmitFailure) GetSigners() []sdk.AccAddress {
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil { // should never happen as valid basic rejects invalid addresses
+		panic(err.Error())
+	}
+	return []sdk.AccAddress{sender}
+}
+
+func (msg *MsgResubmitFailure) GetSignBytes() []byte {
+	return ModuleCdc.MustMarshalJSON(msg)
+}
+
+func (msg *MsgResubmitFailure) Validate() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
+		return errorsmod.Wrap(err, "sender is invalid")
+	}
+	return nil
+}
