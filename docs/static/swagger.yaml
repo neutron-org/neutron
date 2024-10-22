@@ -42609,31 +42609,62 @@ paths:
         - Query
   /neutron/dex/pool_metadata:
     get:
-      operationId: SimulateMultiHopSwap
+      operationId: PoolMetadataAll
       parameters:
-        - in: query
-          name: msg.creator
-          required: false
-          type: string
-        - in: query
-          name: msg.receiver
-          required: false
-          type: string
-        - in: query
-          name: msg.amount_in
-          required: false
-          type: string
-        - in: query
-          name: msg.exit_limit_price
+        - description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          format: byte
+          in: query
+          name: pagination.key
           required: false
           type: string
         - description: >-
-            If pickBestRoute == true then all routes are run and the route with
-            the
+            offset is a numeric offset that can be used when key is unavailable.
 
-            best price is chosen otherwise, the first succesful route is used.
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          format: uint64
           in: query
-          name: msg.pick_best_route
+          name: pagination.offset
+          required: false
+          type: string
+        - description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          format: uint64
+          in: query
+          name: pagination.limit
+          required: false
+          type: string
+        - description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          name: pagination.count_total
+          required: false
+          type: boolean
+        - description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          name: pagination.reverse
           required: false
           type: boolean
       responses:
@@ -42641,48 +42672,55 @@ paths:
           description: A successful response.
           schema:
             properties:
-              resp:
+              pagination:
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
                 properties:
-                  coin_out:
-                    description: >-
-                      Coin defines a token with a denomination and an amount.
+                  next_key:
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                    format: byte
+                    type: string
+                  total:
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
 
-
-                      NOTE: The amount field is an Int which implements the
-                      custom method
-
-                      signatures required by gogoproto.
-                    properties:
-                      amount:
-                        type: string
-                      denom:
-                        type: string
-                    type: object
-                  dust:
-                    items:
-                      description: >-
-                        Coin defines a token with a denomination and an amount.
-
-
-                        NOTE: The amount field is an Int which implements the
-                        custom method
-
-                        signatures required by gogoproto.
+                      was set, its value is undefined otherwise
+                    type: string
+                type: object
+              pool_metadata:
+                items:
+                  properties:
+                    fee:
+                      format: uint64
+                      type: string
+                    id:
+                      format: uint64
+                      type: string
+                    pair_id:
                       properties:
-                        amount:
+                        token0:
                           type: string
-                        denom:
+                        token1:
                           type: string
                       type: object
-                    type: array
-                  route:
-                    properties:
-                      hops:
-                        items:
-                          type: string
-                        type: array
-                    type: object
-                type: object
+                    tick:
+                      format: int64
+                      type: string
+                  type: object
+                type: array
             type: object
         default:
           description: An unexpected error response.
@@ -42706,7 +42744,7 @@ paths:
               message:
                 type: string
             type: object
-      summary: Simulates MsgMultiHopSwap
+      summary: Queries a list of PoolMetadata items.
       tags:
         - Query
   /neutron/dex/pool_metadata/{id}:
@@ -43227,6 +43265,108 @@ paths:
                 type: string
             type: object
       summary: Simulates MsgDeposit
+      tags:
+        - Query
+  /neutron/dex/simulate_multi_hop_swap:
+    get:
+      operationId: SimulateMultiHopSwap
+      parameters:
+        - in: query
+          name: msg.creator
+          required: false
+          type: string
+        - in: query
+          name: msg.receiver
+          required: false
+          type: string
+        - in: query
+          name: msg.amount_in
+          required: false
+          type: string
+        - in: query
+          name: msg.exit_limit_price
+          required: false
+          type: string
+        - description: >-
+            If pickBestRoute == true then all routes are run and the route with
+            the
+
+            best price is chosen otherwise, the first succesful route is used.
+          in: query
+          name: msg.pick_best_route
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            properties:
+              resp:
+                properties:
+                  coin_out:
+                    description: >-
+                      Coin defines a token with a denomination and an amount.
+
+
+                      NOTE: The amount field is an Int which implements the
+                      custom method
+
+                      signatures required by gogoproto.
+                    properties:
+                      amount:
+                        type: string
+                      denom:
+                        type: string
+                    type: object
+                  dust:
+                    items:
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                      properties:
+                        amount:
+                          type: string
+                        denom:
+                          type: string
+                      type: object
+                    type: array
+                  route:
+                    properties:
+                      hops:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                type: object
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: Simulates MsgMultiHopSwap
       tags:
         - Query
   /neutron/dex/simulate_place_limit_order:
