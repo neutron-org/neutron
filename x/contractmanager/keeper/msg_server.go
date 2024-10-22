@@ -51,7 +51,7 @@ func (k Keeper) ResubmitFailure(goCtx context.Context, req *types.MsgResubmitFai
 
 	sender, err := sdk.AccAddressFromBech32(req.Sender)
 	if err != nil {
-		return nil, errors.Wrap(sdkerrors.ErrInvalidAddress, "sender in resubmit request is not in correct address format")
+		return nil, errors.Wrap(err, "sender in resubmit request is not in correct address format")
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, sender) {
