@@ -7,6 +7,8 @@ import (
 	"cosmossdk.io/math"
 	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 // Shared Attributes
@@ -53,6 +55,7 @@ const (
 	AttributeTakerDenom           = "TakerDenom"
 	AttributeSharesOwned          = "SharesOwned"
 	AttributeSharesWithdrawn      = "SharesWithdrawn"
+	AttributeMinAvgSellPrice      = "MinAvgSellPrice"
 )
 
 // Event Keys
@@ -168,6 +171,7 @@ func CreatePlaceLimitOrderEvent(
 	amountIn math.Int,
 	limitTick int64,
 	orderType string,
+	minAvgSellPrice math_utils.PrecDec,
 	shares math.Int,
 	trancheKey string,
 	swapAmountIn math.Int,
@@ -189,6 +193,7 @@ func CreatePlaceLimitOrderEvent(
 		sdk.NewAttribute(AttributeTrancheKey, trancheKey),
 		sdk.NewAttribute(AttributeSwapAmountIn, swapAmountIn.String()),
 		sdk.NewAttribute(AttributeSwapAmountOut, swapAmountOut.String()),
+		sdk.NewAttribute(AttributeMinAvgSellPrice, minAvgSellPrice.String()),
 	}
 
 	return sdk.NewEvent(sdk.EventTypeMessage, attrs...)

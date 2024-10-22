@@ -21,7 +21,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	orderType types.LimitOrderType,
 	goodTil *time.Time,
 	maxAmountOut *math.Int,
-	minAvgSellPrice *math_utils.PrecDec,
+	minAvgSellPriceP *math_utils.PrecDec,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
 ) (trancheKey string, totalInCoin, swapInCoin, swapOutCoin sdk.Coin, err error) {
@@ -31,7 +31,7 @@ func (k Keeper) PlaceLimitOrderCore(
 	if err != nil {
 		return trancheKey, totalInCoin, swapInCoin, swapOutCoin, err
 	}
-	trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, err := k.ExecutePlaceLimitOrder(
+	trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, minAvgSellPrice, err := k.ExecutePlaceLimitOrder(
 		ctx,
 		takerTradePairID,
 		amountIn,
@@ -39,7 +39,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		orderType,
 		goodTil,
 		maxAmountOut,
-		minAvgSellPrice,
+		minAvgSellPriceP,
 		receiverAddr,
 	)
 	if err != nil {
@@ -84,6 +84,7 @@ func (k Keeper) PlaceLimitOrderCore(
 		totalIn,
 		tickIndexInToOut,
 		orderType.String(),
+		minAvgSellPrice,
 		sharesIssued,
 		trancheKey,
 		swapInCoin.Amount,
@@ -106,16 +107,23 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	maxAmountOut *math.Int,
 	minAvgSellPriceP *math_utils.PrecDec,
 	receiverAddr sdk.AccAddress,
-) (trancheKey string, totalIn math.Int, swapInCoin, swapOutCoin sdk.Coin, sharesIssued math.Int, err error) {
+) (
+	trancheKey string,
+	totalIn math.Int,
+	swapInCoin, swapOutCoin sdk.Coin,
+	sharesIssued math.Int,
+	minAvgSellPrice math_utils.PrecDec,
+	err error,
+) {
 	amountLeft := amountIn
 
 	limitBuyPrice, err := types.CalcPrice(tickIndexInToOut)
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), math_utils.ZeroPrecDec(), err
 	}
 
 	// Use limitPrice for minAvgSellPrice if it has not been specified
-	minAvgSellPrice := math_utils.OnePrecDec().Quo(limitBuyPrice)
+	minAvgSellPrice = math_utils.OnePrecDec().Quo(limitBuyPrice)
 
 	if minAvgSellPriceP != nil {
 		minAvgSellPrice = *minAvgSellPriceP
@@ -124,7 +132,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	// Ensure that after rounding user will get at least 1 token out.
 	err = types.ValidateFairOutput(amountIn, limitBuyPrice)
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 	}
 
 	var orderFilled bool
@@ -134,7 +142,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		swapInCoin, swapOutCoin, orderFilled, err = k.MakerLimitOrderSwap(ctx, *takerTradePairID, amountIn, limitBuyPrice, minAvgSellPrice)
 	}
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 	}
 
 	totalIn = swapInCoin.Amount
@@ -151,7 +159,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		orderType,
 	)
 	if err != nil {
-		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+		return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 	}
 
 	trancheKey = placeTranche.Key.TrancheKey
@@ -174,7 +182,7 @@ func (k Keeper) ExecutePlaceLimitOrder(
 		// order with the remaining liquidity.
 		err = types.ValidateFairOutput(amountLeft, limitBuyPrice)
 		if err != nil {
-			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 		}
 		placeTranche.PlaceMakerLimitOrder(amountLeft)
 		trancheUser.SharesOwned = trancheUser.SharesOwned.Add(amountLeft)
@@ -200,10 +208,10 @@ func (k Keeper) ExecutePlaceLimitOrder(
 	if orderType.IsJIT() {
 		err = k.AssertCanPlaceJIT(ctx)
 		if err != nil {
-			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), err
+			return trancheKey, totalIn, swapInCoin, swapOutCoin, math.ZeroInt(), minAvgSellPrice, err
 		}
 		k.IncrementJITsInBlock(ctx)
 	}
 
-	return trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, nil
+	return trancheKey, totalIn, swapInCoin, swapOutCoin, sharesIssued, minAvgSellPrice, nil
 }
