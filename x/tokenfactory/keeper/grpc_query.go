@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"cosmossdk.io/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
@@ -48,8 +46,7 @@ func (k Keeper) BeforeSendHookAddress(ctx context.Context, req *types.QueryBefor
 }
 
 func (k Keeper) FullDenom(_ context.Context, req *types.QueryFullDenomRequest) (*types.QueryFullDenomResponse, error) {
-	// Address validation
-	if _, err := parseAddress(req.Creator); err != nil {
+	if _, err := sdk.AccAddressFromBech32(req.Creator); err != nil {
 		return nil, err
 	}
 
@@ -59,19 +56,4 @@ func (k Keeper) FullDenom(_ context.Context, req *types.QueryFullDenomRequest) (
 	}
 
 	return &types.QueryFullDenomResponse{FullDenom: fullDenom}, nil
-}
-
-// parseAddress parses address from bech32 string and verifies its format.
-func parseAddress(addr string) (sdk.AccAddress, error) {
-	parsed, err := sdk.AccAddressFromBech32(addr)
-	if err != nil {
-		return nil, errors.Wrap(err, "address from bech32")
-	}
-
-	err = sdk.VerifyAddressFormat(parsed)
-	if err != nil {
-		return nil, errors.Wrap(err, "verify address format")
-	}
-
-	return parsed, nil
 }

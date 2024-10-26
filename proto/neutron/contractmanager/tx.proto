@@ -55,8 +55,6 @@ message MsgResubmitFailure {
   string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   // failure_id is id of failure to resubmit
-  //
-  // NOTE: All parameters must be supplied.
   uint64 failure_id = 2;
 }
 

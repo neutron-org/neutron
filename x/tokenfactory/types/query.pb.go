@@ -304,6 +304,8 @@ func (m *QueryDenomsFromCreatorResponse) GetDenoms() []string {
 	return nil
 }
 
+// QueryBeforeSendHookAddressRequest defines the request structure for the
+// DenomsFromCreator gRPC query.
 type QueryBeforeSendHookAddressRequest struct {
 	Creator  string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty" yaml:"creator"`
 	Subdenom string `protobuf:"bytes,2,opt,name=subdenom,proto3" json:"subdenom,omitempty" yaml:"subdenom"`
@@ -357,7 +359,7 @@ func (m *QueryBeforeSendHookAddressRequest) GetSubdenom() string {
 }
 
 // QueryBeforeSendHookAddressResponse defines the response structure for the
-// DenomBeforeSendHook gRPC query.
+// BeforeSendHookAddress gRPC query.
 type QueryBeforeSendHookAddressResponse struct {
 	ContractAddr string `protobuf:"bytes,1,opt,name=contract_addr,json=contractAddr,proto3" json:"contract_addr,omitempty" yaml:"contract_addr"`
 }
@@ -402,6 +404,8 @@ func (m *QueryBeforeSendHookAddressResponse) GetContractAddr() string {
 	return ""
 }
 
+// QueryFullDenomRequest defines the request structure for the
+// FullDenom gRPC query.
 type QueryFullDenomRequest struct {
 	Creator  string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty" yaml:"creator"`
 	Subdenom string `protobuf:"bytes,2,opt,name=subdenom,proto3" json:"subdenom,omitempty" yaml:"subdenom"`
@@ -454,8 +458,8 @@ func (m *QueryFullDenomRequest) GetSubdenom() string {
 	return ""
 }
 
-// QueryBeforeSendHookAddressResponse defines the response structure for the
-// DenomBeforeSendHook gRPC query.
+// QueryFullDenomResponse defines the response structure for the
+// FullDenom gRPC query.
 type QueryFullDenomResponse struct {
 	FullDenom string `protobuf:"bytes,1,opt,name=full_denom,json=fullDenom,proto3" json:"full_denom,omitempty" yaml:"full_denom"`
 }

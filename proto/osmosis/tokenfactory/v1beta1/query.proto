@@ -82,24 +82,28 @@ message QueryDenomsFromCreatorResponse {
   repeated string denoms = 1 [(gogoproto.moretags) = "yaml:\"denoms\""];
 }
 
+// QueryBeforeSendHookAddressRequest defines the request structure for the
+// DenomsFromCreator gRPC query.
 message QueryBeforeSendHookAddressRequest {
   string creator = 1 [(gogoproto.moretags) = "yaml:\"creator\""];
   string subdenom = 2 [(gogoproto.moretags) = "yaml:\"subdenom\""];
 }
 
 // QueryBeforeSendHookAddressResponse defines the response structure for the
-// DenomBeforeSendHook gRPC query.
+// BeforeSendHookAddress gRPC query.
 message QueryBeforeSendHookAddressResponse {
   string contract_addr = 1 [(gogoproto.moretags) = "yaml:\"contract_addr\""];
 }
 
+// QueryFullDenomRequest defines the request structure for the
+// FullDenom gRPC query.
 message QueryFullDenomRequest {
   string creator = 1 [(gogoproto.moretags) = "yaml:\"creator\""];
   string subdenom = 2 [(gogoproto.moretags) = "yaml:\"subdenom\""];
 }
 
-// QueryBeforeSendHookAddressResponse defines the response structure for the
-// DenomBeforeSendHook gRPC query.
+// QueryFullDenomResponse defines the response structure for the
+// FullDenom gRPC query.
 message QueryFullDenomResponse {
   string full_denom = 1 [(gogoproto.moretags) = "yaml:\"full_denom\""];
 }

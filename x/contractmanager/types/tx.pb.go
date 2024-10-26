@@ -135,8 +135,6 @@ type MsgResubmitFailure struct {
 	// sender is the contract which failure to acknowledge is resubmitted.
 	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	// failure_id is id of failure to resubmit
-	//
-	// NOTE: All parameters must be supplied.
 	FailureId uint64 `protobuf:"varint,2,opt,name=failure_id,json=failureId,proto3" json:"failure_id,omitempty"`
 }
 
