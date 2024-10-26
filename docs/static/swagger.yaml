@@ -19724,7 +19724,7 @@ definitions:
   osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse:
     description: |-
       QueryBeforeSendHookAddressResponse defines the response structure for the
-      DenomBeforeSendHook gRPC query.
+      BeforeSendHookAddress gRPC query.
     properties:
       contract_addr:
         type: string
@@ -19761,8 +19761,8 @@ definitions:
     type: object
   osmosis.tokenfactory.v1beta1.QueryFullDenomResponse:
     description: |-
-      QueryBeforeSendHookAddressResponse defines the response structure for the
-      DenomBeforeSendHook gRPC query.
+      QueryFullDenomResponse defines the response structure for the
+      FullDenom gRPC query.
     properties:
       full_denom:
         type: string
@@ -45387,7 +45387,7 @@ paths:
               QueryBeforeSendHookAddressResponse defines the response structure
               for the
 
-              DenomBeforeSendHook gRPC query.
+              BeforeSendHookAddress gRPC query.
             properties:
               contract_addr:
                 type: string
@@ -45435,11 +45435,9 @@ paths:
         '200':
           description: A successful response.
           schema:
-            description: >-
-              QueryBeforeSendHookAddressResponse defines the response structure
-              for the
-
-              DenomBeforeSendHook gRPC query.
+            description: |-
+              QueryFullDenomResponse defines the response structure for the
+              FullDenom gRPC query.
             properties:
               full_denom:
                 type: string
