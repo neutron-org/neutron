@@ -1,0 +1,7 @@
+syntax = "proto3";
+package neutron.state_verifier.v1;
+
+option go_package = "github.com/neutron-org/neutron/v5/x/state-verifier/types";
+
+message GenesisState {
+}
