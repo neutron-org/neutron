@@ -305,7 +305,7 @@ func (m *QueryDenomsFromCreatorResponse) GetDenoms() []string {
 }
 
 // QueryBeforeSendHookAddressRequest defines the request structure for the
-// DenomsFromCreator gRPC query.
+// BeforeSendHookAddress gRPC query.
 type QueryBeforeSendHookAddressRequest struct {
 	Creator  string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty" yaml:"creator"`
 	Subdenom string `protobuf:"bytes,2,opt,name=subdenom,proto3" json:"subdenom,omitempty" yaml:"subdenom"`

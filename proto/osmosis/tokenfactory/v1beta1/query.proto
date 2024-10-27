@@ -83,7 +83,7 @@ message QueryDenomsFromCreatorResponse {
 }
 
 // QueryBeforeSendHookAddressRequest defines the request structure for the
-// DenomsFromCreator gRPC query.
+// BeforeSendHookAddress gRPC query.
 message QueryBeforeSendHookAddressRequest {
   string creator = 1 [(gogoproto.moretags) = "yaml:\"creator\""];
   string subdenom = 2 [(gogoproto.moretags) = "yaml:\"subdenom\""];
