@@ -63,7 +63,7 @@ func (k Keeper) ResubmitFailure(goCtx context.Context, req *types.MsgResubmitFai
 		return nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
 	}
 
-	if err := k.DoResubmitFailure(ctx, sender, failure); err != nil {
+	if err := k.resubmitFailure(ctx, sender, failure); err != nil {
 		return nil, err
 	}
 
