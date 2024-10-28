@@ -55,12 +55,12 @@ func (k Keeper) ResubmitFailure(goCtx context.Context, req *types.MsgResubmitFai
 	}
 
 	if !k.wasmKeeper.HasContractInfo(ctx, sender) {
-		return nil, errors.Wrap(sdkerrors.ErrNotFound, "not a contract address tried to resubmit")
+		return nil, errors.Wrap(types.ErrNotContractResubmission, "sender in resubmit request is not a smart contract")
 	}
 
 	failure, err := k.GetFailure(ctx, sender, req.FailureId)
 	if err != nil {
-		return nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
+		return nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure with given FailureId found to resubmit")
 	}
 
 	if err := k.resubmitFailure(ctx, sender, failure); err != nil {

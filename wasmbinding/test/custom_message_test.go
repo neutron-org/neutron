@@ -808,7 +808,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 
 	// Dispatch
 	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.ErrorContains(err, "no failure found to resubmit: not found")
+	suite.ErrorContains(err, "no failure with given FailureId found to resubmit: not found")
 }
 
 func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data []byte, err error) {
