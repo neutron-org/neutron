@@ -8,7 +8,6 @@ import (
 	"time"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
-	types2 "github.com/neutron-org/neutron/v5/x/contractmanager/types"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
@@ -1063,7 +1062,7 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 }
 
 func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	_, err := m.ContractmanagerMsgServer.ResubmitFailure(ctx, &types2.MsgResubmitFailure{
+	_, err := m.ContractmanagerMsgServer.ResubmitFailure(ctx, &contractmanagertypes.MsgResubmitFailure{
 		Sender:    contractAddr.String(),
 		FailureId: resubmitFailure.FailureId,
 	})

@@ -13,7 +13,6 @@ import (
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	keeper2 "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -739,7 +738,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
 	}
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
 
 	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
@@ -765,7 +764,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, nil)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, nil)
 	require.NoError(suite.T(), err)
 
 	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
@@ -795,7 +794,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
 	}
 	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
 	suite.neutron.ContractManagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload, "test error")
 
