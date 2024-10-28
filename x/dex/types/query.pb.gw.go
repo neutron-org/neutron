@@ -2908,7 +2908,7 @@ var (
 
 	pattern_Query_SimulateCancelLimitOrder_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "dex", "simulate_cancel_limit_order"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_SimulateMultiHopSwap_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "dex", "pool_metadata"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_SimulateMultiHopSwap_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"neutron", "dex", "simulate_multi_hop_swap"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

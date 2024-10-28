@@ -44,7 +44,7 @@ func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) 
 // ResubmitFailure resubmits the failure after contract acknowledgement failed
 func (k Keeper) ResubmitFailure(goCtx context.Context, req *types.MsgResubmitFailure) (*types.MsgResubmitFailureResponse, error) {
 	if err := req.Validate(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate MsgUpdateParams")
+		return nil, errors.Wrap(err, "failed to validate MsgResubmitFailure")
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
