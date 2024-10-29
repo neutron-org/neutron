@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"cosmossdk.io/core/comet"
 	"cosmossdk.io/core/header"
@@ -75,10 +76,14 @@ func (k *Keeper) SaveConsensusState(ctx sdk.Context) error {
 		NextValidatorsHash: cometInfo.GetValidatorsHash(),
 	}
 
-	store := ctx.KVStore(k.storeKey)
-	key := types.GetConsensusStateKey(ctx.BlockHeight())
+	return k.WriteConsensusState(ctx, ctx.BlockHeight(), cs)
+}
 
-	csBz, err := json.Marshal(cs)
+func (k *Keeper) WriteConsensusState(ctx sdk.Context, height int64, cs tendermint.ConsensusState) error {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetConsensusStateKey(height)
+
+	csBz, err := k.cdc.Marshal(&cs)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -129,10 +134,10 @@ func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*types2.Sto
 	return nil
 }
 
-func (k Keeper) GetAllConsensusStates(ctx sdk.Context) []tendermint.ConsensusState {
+func (k Keeper) GetAllConsensusStates(ctx sdk.Context) ([]*types.ConsensusState, error) {
 	var (
 		store  = prefix.NewStore(ctx.KVStore(k.storeKey), types.ConsensusStateKey)
-		states []tendermint.ConsensusState
+		states []*types.ConsensusState
 	)
 
 	iterator := storetypes.KVStorePrefixIterator(store, []byte{})
@@ -141,8 +146,16 @@ func (k Keeper) GetAllConsensusStates(ctx sdk.Context) []tendermint.ConsensusSta
 	for ; iterator.Valid(); iterator.Next() {
 		cs := tendermint.ConsensusState{}
 		k.cdc.MustUnmarshal(iterator.Value(), &cs)
-		states = append(states, cs)
+		height, err := strconv.ParseInt(string(iterator.Key()), 10, 64)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to extract height from consensus state key")
+		}
+
+		states = append(states, &types.ConsensusState{
+			Height: height,
+			Cs:     &cs,
+		})
 	}
 
-	return states
+	return states, nil
 }
