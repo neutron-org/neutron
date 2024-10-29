@@ -19724,7 +19724,7 @@ definitions:
   osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse:
     description: |-
       QueryBeforeSendHookAddressResponse defines the response structure for the
-      DenomBeforeSendHook gRPC query.
+      BeforeSendHookAddress gRPC query.
     properties:
       contract_addr:
         type: string
@@ -19758,6 +19758,14 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  osmosis.tokenfactory.v1beta1.QueryFullDenomResponse:
+    description: |-
+      QueryFullDenomResponse defines the response structure for the
+      FullDenom gRPC query.
+    properties:
+      full_denom:
+        type: string
     type: object
   osmosis.tokenfactory.v1beta1.QueryParamsResponse:
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
@@ -45519,7 +45527,7 @@ paths:
               QueryBeforeSendHookAddressResponse defines the response structure
               for the
 
-              DenomBeforeSendHook gRPC query.
+              BeforeSendHookAddress gRPC query.
             properties:
               contract_addr:
                 type: string
@@ -45549,6 +45557,56 @@ paths:
       summary: |-
         BeforeSendHookAddress defines a gRPC query method for
         getting the address registered for the before send hook.
+      tags:
+        - Query
+  /osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/full_denom:
+    get:
+      operationId: FullDenom
+      parameters:
+        - in: path
+          name: creator
+          required: true
+          type: string
+        - in: path
+          name: subdenom
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            description: |-
+              QueryFullDenomResponse defines the response structure for the
+              FullDenom gRPC query.
+            properties:
+              full_denom:
+                type: string
+            type: object
+        default:
+          description: An unexpected error response.
+          schema:
+            properties:
+              code:
+                format: int32
+                type: integer
+              details:
+                items:
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      format: byte
+                      type: string
+                  type: object
+                type: array
+              error:
+                type: string
+              message:
+                type: string
+            type: object
+      summary: |-
+        FullDenom defines a gRPC query method for getting full denom name
+        from the creator and subdenom strings.
       tags:
         - Query
   /osmosis/tokenfactory/v1beta1/denoms_from_creator/{creator}:
