@@ -9,7 +9,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v5.0.0-rc0"
+	UpgradeName = "v5.0.0"
 
 	MarketMapAuthorityMultisig = "neutron1anjpluecd0tdc0n8xzc3l5hua4h93wyq0x7v56"
 	// MainnetRateLimitContract defines the RL contract addr which we set as a contract address in ibc-rate-limit middleware
