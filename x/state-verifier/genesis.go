@@ -26,9 +26,7 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 		panic(err)
 	}
 
-	for _, cs := range allCs {
-		genesis.States = append(genesis.States, cs)
-	}
+	genesis.States = append(genesis.States, allCs...)
 
 	return genesis
 }
