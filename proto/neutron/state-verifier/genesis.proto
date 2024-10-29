@@ -1,9 +1,9 @@
 syntax = "proto3";
 package neutron.state_verifier.v1;
 
-option go_package = "github.com/neutron-org/neutron/v5/x/state-verifier/types";
-
 import "ibc/lightclients/tendermint/v1/tendermint.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/state-verifier/types";
 
 message ConsensusState {
   int64 height = 1;

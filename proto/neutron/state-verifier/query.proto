@@ -1,8 +1,8 @@
 syntax = "proto3";
 package neutron.state_verifier.v1;
 
-import "neutron/interchainqueries/tx.proto";
 import "google/api/annotations.proto";
+import "neutron/interchainqueries/tx.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/state-verifier/types";
 

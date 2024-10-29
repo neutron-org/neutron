@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -102,7 +101,7 @@ func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*types2.Sto
 	}
 
 	var cs tendermint.ConsensusState
-	if err := json.Unmarshal(csBz, &cs); err != nil {
+	if err := k.cdc.Unmarshal(csBz, &cs); err != nil {
 		return errors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
