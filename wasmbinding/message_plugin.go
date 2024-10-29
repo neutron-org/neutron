@@ -67,37 +67,39 @@ func CustomMessageDecorator(
 ) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
-			Keeper:                   *ictx,
-			Wrapped:                  old,
-			Ictxmsgserver:            ictxkeeper.NewMsgServerImpl(*ictx),
-			Icqmsgserver:             icqkeeper.NewMsgServerImpl(*icq),
-			transferKeeper:           transferKeeper,
-			Adminserver:              adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
-			Bank:                     bankKeeper,
-			TokenFactory:             tokenFactoryKeeper,
-			CronMsgServer:            cronkeeper.NewMsgServerImpl(*cronKeeper),
-			CronQueryServer:          cronKeeper,
-			AdminKeeper:              adminKeeper,
-			ContractmanagerMsgServer: contractmanagerkeeper.NewMsgServerImpl(*contractmanagerKeeper),
-			DexMsgServer:             dexkeeper.NewMsgServerImpl(*dexKeeper),
+			Keeper:                     *ictx,
+			Wrapped:                    old,
+			Ictxmsgserver:              ictxkeeper.NewMsgServerImpl(*ictx),
+			Icqmsgserver:               icqkeeper.NewMsgServerImpl(*icq),
+			transferKeeper:             transferKeeper,
+			Adminserver:                adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
+			Bank:                       bankKeeper,
+			TokenFactory:               tokenFactoryKeeper,
+			CronMsgServer:              cronkeeper.NewMsgServerImpl(*cronKeeper),
+			CronQueryServer:            cronKeeper,
+			AdminKeeper:                adminKeeper,
+			ContractmanagerMsgServer:   contractmanagerkeeper.NewMsgServerImpl(*contractmanagerKeeper),
+			ContractmanagerQueryServer: contractmanagerkeeper.NewQueryServerImpl(*contractmanagerKeeper),
+			DexMsgServer:               dexkeeper.NewMsgServerImpl(*dexKeeper),
 		}
 	}
 }
 
 type CustomMessenger struct {
-	Keeper                   ictxkeeper.Keeper
-	Wrapped                  wasmkeeper.Messenger
-	Ictxmsgserver            ictxtypes.MsgServer
-	Icqmsgserver             icqtypes.MsgServer
-	transferKeeper           transferwrapperkeeper.KeeperTransferWrapper
-	Adminserver              admintypes.MsgServer
-	Bank                     *bankkeeper.BaseKeeper
-	TokenFactory             *tokenfactorykeeper.Keeper
-	CronMsgServer            crontypes.MsgServer
-	CronQueryServer          crontypes.QueryServer
-	AdminKeeper              *adminmodulekeeper.Keeper
-	ContractmanagerMsgServer contractmanagertypes.MsgServer
-	DexMsgServer             dextypes.MsgServer
+	Keeper                     ictxkeeper.Keeper
+	Wrapped                    wasmkeeper.Messenger
+	Ictxmsgserver              ictxtypes.MsgServer
+	Icqmsgserver               icqtypes.MsgServer
+	transferKeeper             transferwrapperkeeper.KeeperTransferWrapper
+	Adminserver                admintypes.MsgServer
+	Bank                       *bankkeeper.BaseKeeper
+	TokenFactory               *tokenfactorykeeper.Keeper
+	CronMsgServer              crontypes.MsgServer
+	CronQueryServer            crontypes.QueryServer
+	AdminKeeper                *adminmodulekeeper.Keeper
+	ContractmanagerMsgServer   contractmanagertypes.MsgServer
+	ContractmanagerQueryServer contractmanagertypes.QueryServer
+	DexMsgServer               dextypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -1062,7 +1064,15 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 }
 
 func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	_, err := m.ContractmanagerMsgServer.ResubmitFailure(ctx, &contractmanagertypes.MsgResubmitFailure{
+	failure, err := m.ContractmanagerQueryServer.AddressFailure(ctx, &contractmanagertypes.QueryFailureRequest{
+		Address:   contractAddr.String(),
+		FailureId: resubmitFailure.FailureId,
+	})
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "no failure with given FailureId found to resubmit")
+	}
+
+	_, err = m.ContractmanagerMsgServer.ResubmitFailure(ctx, &contractmanagertypes.MsgResubmitFailure{
 		Sender:    contractAddr.String(),
 		FailureId: resubmitFailure.FailureId,
 	})
@@ -1084,7 +1094,14 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
-	return nil, [][]byte{data}, nil, nil
+	// Return failure for reverse compatibility purposes.
+	// Maybe it'll be removed in the future because it was already deleted after resubmit before returning here.
+	anyResp, err := types.NewAnyWithValue(failure)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", failure)
+	}
+	msgResponses := [][]*types.Any{{anyResp}}
+	return nil, [][]byte{data}, msgResponses, nil
 }
 
 func (m *CustomMessenger) isAdmin(ctx sdk.Context, contractAddr sdk.AccAddress) bool {

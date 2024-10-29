@@ -75,6 +75,7 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.CronQueryServer = suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
 	suite.messenger.ContractmanagerMsgServer = contractmanagerkeeper.NewMsgServerImpl(suite.neutron.ContractManagerKeeper)
+	suite.messenger.ContractmanagerQueryServer = contractmanagerkeeper.NewQueryServerImpl(suite.neutron.ContractManagerKeeper)
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
 	suite.contractKeeper = keeper.NewDefaultPermissionKeeper(&suite.neutron.WasmKeeper)
@@ -807,7 +808,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 
 	// Dispatch
 	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.ErrorContains(err, "no failure with given FailureId found to resubmit: not found")
+	suite.ErrorContains(err, "no failure with given FailureId found to resubmit")
 }
 
 func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data []byte, err error) {
