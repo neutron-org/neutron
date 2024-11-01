@@ -13,13 +13,13 @@ import (
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
-
 	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
 	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
 	interchainqueriestypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	stateverifiertypes "github.com/neutron-org/neutron/v5/x/state-verifier/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
@@ -118,5 +118,8 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 
 		// dynamicfees
 		"neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
+
+		// state verifier
+		"/neutron.state_verifier.v1.Query/VerifyStateValues": &stateverifiertypes.QueryVerifyStateValuesResponse{},
 	}
 }
