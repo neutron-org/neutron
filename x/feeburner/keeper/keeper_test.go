@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	consumertypes "github.com/cosmos/interchain-security/v6/x/ccv/consumer/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 

@@ -25,18 +25,18 @@ import (
 
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 
-	"github.com/skip-mev/slinky/abci/strategies/aggregator"
-	"github.com/skip-mev/slinky/x/oracle"
+	"github.com/skip-mev/connect/v2/abci/strategies/aggregator"
+	"github.com/skip-mev/connect/v2/x/oracle"
 
-	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
-	slinkyproposals "github.com/skip-mev/slinky/abci/proposals"
-	compression "github.com/skip-mev/slinky/abci/strategies/codec"
-	"github.com/skip-mev/slinky/abci/strategies/currencypair"
-	"github.com/skip-mev/slinky/abci/ve"
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
-	"github.com/skip-mev/slinky/pkg/math/voteweighted"
-	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
-	servicemetrics "github.com/skip-mev/slinky/service/metrics"
+	oraclepreblock "github.com/skip-mev/connect/v2/abci/preblock/oracle"
+	connectproposals "github.com/skip-mev/connect/v2/abci/proposals"
+	compression "github.com/skip-mev/connect/v2/abci/strategies/codec"
+	"github.com/skip-mev/connect/v2/abci/strategies/currencypair"
+	"github.com/skip-mev/connect/v2/abci/ve"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
+	"github.com/skip-mev/connect/v2/pkg/math/voteweighted"
+	oracleclient "github.com/skip-mev/connect/v2/service/clients/oracle"
+	servicemetrics "github.com/skip-mev/connect/v2/service/metrics"
 
 	v500 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.0"
 	"github.com/neutron-org/neutron/v5/x/globalfee"
@@ -49,8 +49,8 @@ import (
 	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
-	"github.com/cosmos/interchain-security/v5/testutil/integration"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	"github.com/cosmos/interchain-security/v6/testutil/integration"
+	ccv "github.com/cosmos/interchain-security/v6/x/ccv/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -183,9 +183,9 @@ import (
 
 	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
 
-	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccvconsumer "github.com/cosmos/interchain-security/v6/x/ccv/consumer"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v6/x/ccv/consumer/keeper"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v6/x/ccv/consumer/types"
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
@@ -212,11 +212,11 @@ import (
 	"github.com/skip-mev/block-sdk/v2/abci/checktx"
 	"github.com/skip-mev/block-sdk/v2/block/base"
 
-	"github.com/skip-mev/slinky/x/marketmap"
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	"github.com/skip-mev/connect/v2/x/marketmap"
+	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
+	oraclekeeper "github.com/skip-mev/connect/v2/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
@@ -397,7 +397,7 @@ type App struct {
 	WasmKeeper     wasmkeeper.Keeper
 	ContractKeeper *wasmkeeper.PermissionedKeeper
 
-	// slinky
+	// connect
 	MarketMapKeeper       *marketmapkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper
 	oraclePreBlockHandler *oraclepreblock.PreBlockHandler
@@ -1194,7 +1194,7 @@ func New(
 
 	// Create the proposal handler that will be used to fill proposals with
 	// transactions and oracle data.
-	oracleProposalHandler := slinkyproposals.NewProposalHandler(
+	oracleProposalHandler := connectproposals.NewProposalHandler(
 		app.Logger(),
 		blockSdkProposalHandler.PrepareProposalHandler(),
 		baseapp.NoOpProcessProposal(),

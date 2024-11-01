@@ -14,7 +14,7 @@ import (
 	scconfig "github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,7 +35,7 @@ type NeutronCustomClient struct {
 }
 
 // NeutronAppConfig defines the config structure of the neutrond app.toml file. Specifically,
-// it wraps the default app.toml config with additional slinky application config params.
+// it wraps the default app.toml config with additional connect application config params.
 type NeutronAppConfig struct {
 	serverconfig.Config
 	Oracle oracleconfig.AppConfig `mapstructure:"oracle" json:"oracle"`

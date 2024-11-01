@@ -53,7 +53,7 @@ CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
 NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
 
-# Slinky genesis configs
+# Connect genesis configs
 USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
 USE_RAYDIUM_MARKETS=${USE_RAYDIUM_MARKETS:-false}
 USE_UNISWAPV3_BASE_MARKETS=${USE_UNISWAPV3_BASE_MARKETS:-false}
@@ -726,7 +726,7 @@ DAO_CONTRACT_ADDRESS_B64=$(convert_bech32_base64_esc "$DAO_CONTRACT_ADDRESS")
 echo $DAO_CONTRACT_ADDRESS_B64
 
 echo "Adding marketmap into genesis..."
-go run network/slinky_genesis.go --use-core=$USE_CORE_MARKETS --use-raydium=$USE_RAYDIUM_MARKETS --use-uniswapv3-base=$USE_UNISWAPV3_BASE_MARKETS --use-coingecko=$USE_COINGECKO_MARKETS --temp-file=markets.json
+go run network/connect_genesis.go --use-core=$USE_CORE_MARKETS --use-raydium=$USE_RAYDIUM_MARKETS --use-uniswapv3-base=$USE_UNISWAPV3_BASE_MARKETS --use-coingecko=$USE_COINGECKO_MARKETS --temp-file=markets.json
 MARKETS=$(cat markets.json)
 
 NUM_MARKETS=$(echo "$MARKETS" | jq '.markets | length + 1')

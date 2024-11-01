@@ -12,11 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/gov"
+	marketmapmodule "github.com/skip-mev/connect/v2/x/marketmap"
+	"github.com/skip-mev/connect/v2/x/oracle"
 	"github.com/skip-mev/feemarket/tests/e2e"
 	feemarketmodule "github.com/skip-mev/feemarket/x/feemarket"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
-	marketmapmodule "github.com/skip-mev/slinky/x/marketmap"
-	"github.com/skip-mev/slinky/x/oracle"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -40,7 +40,7 @@ var (
 	}
 
 	oracleImage = ibc.DockerImage{
-		Repository: "ghcr.io/skip-mev/slinky-sidecar",
+		Repository: "ghcr.io/skip-mev/connect-sidecar",
 		Version:    "latest",
 		UidGid:     "1000:1000",
 	}

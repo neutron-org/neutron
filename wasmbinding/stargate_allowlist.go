@@ -9,9 +9,9 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
@@ -100,15 +100,15 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.dex.Query/SimulateMultiHopSwap":              &dextypes.QuerySimulateMultiHopSwapResponse{},
 
 		// oracle
-		"/slinky.oracle.v1.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
-		"/slinky.oracle.v1.Query/GetPrice":            &oracletypes.GetPriceResponse{},
-		"/slinky.oracle.v1.Query/GetPrices":           &oracletypes.GetPricesResponse{},
+		"/connect.oracle.v2.Query/GetAllCurrencyPairs": &oracletypes.GetAllCurrencyPairsResponse{},
+		"/connect.oracle.v2.Query/GetPrice":            &oracletypes.GetPriceResponse{},
+		"/connect.oracle.v2.Query/GetPrices":           &oracletypes.GetPricesResponse{},
 
 		// marketmap
-		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
-		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
-		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
-		"/slinky.marketmap.v1.Query/Market":      &marketmaptypes.MarketResponse{},
+		"/connect.marketmap.v2.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
+		"/connect.marketmap.v2.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
+		"/connect.marketmap.v2.Query/Params":      &marketmaptypes.ParamsResponse{},
+		"/connect.marketmap.v2.Query/Market":      &marketmaptypes.MarketResponse{},
 
 		// feemarket
 		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
