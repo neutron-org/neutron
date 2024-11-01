@@ -11,10 +11,12 @@ The tree allows to compose `Proof` for `key` and `value` pairs that can prove tw
 Cosmos blockchain's storage is stored as a different tree for each block.
 That means we can prove that a particular `KV` pair is really present (or not present) in the storage at a particular block height.
 
+See [Neutron's ICQ relayer implementation](https://github.com/neutron-org/neutron-query-relayer/blob/4542045ab24d2735890e70d4dc525677d5f30c8a/internal/proof/proof_impl/get_storage_values.go#L11) if you want to know how to query KV-proofs
+
 # Implementation
 
 ### BeginBlocker
-In each block the module's `BeginBlocker` is being called and it saves `ConsensusState` of the current block height in the storage to use it for verification of storage values later:
+In each block the module's `BeginBlocker` is being called, and it saves `ConsensusState` of the current block height in the storage to use it for verification of storage values later:
 
 ```go
 consensusState := tendermint.ConsensusState{
