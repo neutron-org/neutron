@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -19,7 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	types2 "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 	"github.com/neutron-org/neutron/v5/x/state-verifier/types"
 )
 
@@ -32,14 +31,6 @@ type (
 		authority  string
 	}
 )
-
-func (k *Keeper) VerifyStateValues(ctx context.Context, request *types.QueryVefiryStateValuesRequest) (*types.QueryVerifyStateValuesResponse, error) {
-	if err := k.Verify(sdk.UnwrapSDKContext(ctx), int64(request.Height), request.StorageValues); err != nil {
-		return nil, err
-	}
-
-	return &types.QueryVerifyStateValuesResponse{Valid: true}, nil
-}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
@@ -65,6 +56,8 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// SaveConsensusState extracts info about the current header from the context, composes ConsensusState structure with that info
+// and saves the structure to the state
 func (k *Keeper) SaveConsensusState(ctx sdk.Context) error {
 	headerInfo := k.headerInfo.GetHeaderInfo(ctx)
 	cometInfo := k.cometInfo.GetCometBlockInfo(ctx)
@@ -78,6 +71,7 @@ func (k *Keeper) SaveConsensusState(ctx sdk.Context) error {
 	return k.WriteConsensusState(ctx, ctx.BlockHeight(), cs)
 }
 
+// WriteConsensusState writes ConsensusState structure and corresponding height into the storage
 func (k *Keeper) WriteConsensusState(ctx sdk.Context, height int64, cs tendermint.ConsensusState) error {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetConsensusStateKey(height)
@@ -92,9 +86,11 @@ func (k *Keeper) WriteConsensusState(ctx sdk.Context, height int64, cs tendermin
 	return nil
 }
 
-func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*types2.StorageValue) error {
+// Verify verifies that provided `values` are actually present on Neutron blockchain at `blockHeight`
+func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*icqtypes.StorageValue) error {
 	store := ctx.KVStore(k.storeKey)
 
+	// we need to use consensus state from the next height (N + 1), cause that consensus state contains .AppHash (Merkle Root) of the state for `blockHeight` (N)
 	csBz := store.Get(types.GetConsensusStateKey(blockHeight + 1))
 	if csBz == nil {
 		return errors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("consensus state for block %d not found", blockHeight))
@@ -118,22 +114,24 @@ func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*types2.Sto
 		// we can get non-existence proof if someone queried some key which is not exists in the storage on remote chain
 		case *ics23.CommitmentProof_Nonexist:
 			if err := proof.VerifyNonMembership(ibccommitmenttypes.GetSDKSpecs(), cs.Root, path); err != nil {
-				return errors.Wrapf(types2.ErrInvalidProof, "failed to verify proof: %v", err)
+				return errors.Wrapf(icqtypes.ErrInvalidProof, "failed to verify proof: %v", err)
 			}
 			result.Value = nil
 		case *ics23.CommitmentProof_Exist:
 			if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), cs.Root, path, result.Value); err != nil {
-				return errors.Wrapf(types2.ErrInvalidProof, "failed to verify proof: %v", err)
+				return errors.Wrapf(icqtypes.ErrInvalidProof, "failed to verify proof: %v", err)
 			}
 		default:
-			return errors.Wrapf(types2.ErrInvalidProof, "unknown proof type %T", proof.GetProofs()[0].GetProof())
+			return errors.Wrapf(icqtypes.ErrInvalidProof, "unknown proof type %T", proof.GetProofs()[0].GetProof())
 		}
 	}
 
 	return nil
 }
 
-func (k Keeper) GetAllConsensusStates(ctx sdk.Context) ([]*types.ConsensusState, error) {
+// GetAllConsensusStates returns ALL consensus states that are present in the storage
+// Pagination is not needed here because the method is used to export state to genesis
+func (k *Keeper) GetAllConsensusStates(ctx sdk.Context) ([]*types.ConsensusState, error) {
 	var (
 		store  = prefix.NewStore(ctx.KVStore(k.storeKey), types.ConsensusStateKey)
 		states []*types.ConsensusState

@@ -23,6 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// ConsensusState describes a "light" consensus state of Neutron at a particular height
 type ConsensusState struct {
 	Height int64                          `protobuf:"varint,1,opt,name=height,proto3" json:"height,omitempty"`
 	Cs     *_07_tendermint.ConsensusState `protobuf:"bytes,2,opt,name=cs,proto3" json:"cs,omitempty"`

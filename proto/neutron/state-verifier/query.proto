@@ -7,12 +7,13 @@ import "neutron/interchainqueries/tx.proto";
 option go_package = "github.com/neutron-org/neutron/v5/x/state-verifier/types";
 
 service Query {
-  rpc VerifyStateValues(QueryVefiryStateValuesRequest) returns (QueryVerifyStateValuesResponse) {
+  rpc VerifyStateValues(QueryVerifyStateValuesRequest) returns (QueryVerifyStateValuesResponse) {
     option (google.api.http).get = "/neutron/state-verifier/verify_state_values";
   }
 }
 
-message QueryVefiryStateValuesRequest {
+// QueryVerifyStateValuesRequest describes a structure to verify storage values from Neutron state from a particular height in the past
+message QueryVerifyStateValuesRequest {
   uint64 height = 1;
   repeated neutron.interchainqueries.StorageValue storage_values = 2;
 }
