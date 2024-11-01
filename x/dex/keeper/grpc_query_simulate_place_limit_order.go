@@ -43,7 +43,7 @@ func (k Keeper) SimulatePlaceLimitOrder(
 			return nil, errors.Wrapf(err, "invalid LimitSellPrice %s", msg.LimitSellPrice.String())
 		}
 	}
-	trancheKey, totalIn, takerCoinIn, takerCoinOut, _, err := k.ExecutePlaceLimitOrder(
+	trancheKey, totalIn, takerCoinIn, takerCoinOut, _, _, err := k.ExecutePlaceLimitOrder(
 		cacheCtx,
 		takerTradePairID,
 		msg.AmountIn,
