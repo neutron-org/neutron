@@ -9,12 +9,14 @@ import (
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgUpdateParams{}, "neutron.contractmanager.v1.MsgUpdateParams", nil)
+	cdc.RegisterConcrete(&MsgResubmitFailure{}, "neutron.contractmanager.v1.MsgResubmitFailure", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgUpdateParams{},
+		&MsgResubmitFailure{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

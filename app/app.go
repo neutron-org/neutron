@@ -17,7 +17,7 @@ import (
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
 	"github.com/neutron-org/neutron/v5/x/dynamicfees"
-	"github.com/neutron-org/neutron/v5/x/ibc-rate-limit"
+	ibcratelimit "github.com/neutron-org/neutron/v5/x/ibc-rate-limit"
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
@@ -135,6 +135,7 @@ import (
 
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
 	ibcratelimittypes "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
+
 	//nolint:staticcheck
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -225,7 +226,9 @@ const (
 )
 
 var (
-	Upgrades = []upgrades.Upgrade{v500.Upgrade}
+	Upgrades = []upgrades.Upgrade{
+		v500.Upgrade,
+	}
 
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
@@ -727,7 +730,7 @@ func New(
 	// NOTE: we need staking feature here even if there is no staking module anymore because cosmwasm-std in the CosmWasm SDK requires this feature
 	// NOTE: cosmwasm_1_2 feature enables GovMsg::VoteWeighted, which doesn't work with Neutron, because it uses its own custom governance,
 	//       however, cosmwasm_1_2 also enables WasmMsg::Instantiate2, which works as one could expect
-	supportedFeatures := []string{"iterator", "stargate", "staking", "neutron", "cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "cosmwasm_2_0"}
+	supportedFeatures := []string{"iterator", "stargate", "staking", "neutron", "cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "cosmwasm_2_0", "cosmwasm_2_1"}
 
 	// register the proposal types
 	adminRouterLegacy := govv1beta1.NewRouter()
@@ -799,8 +802,10 @@ func New(
 		app.TransferKeeper,
 		&app.AdminmoduleKeeper,
 		app.FeeBurnerKeeper,
-		app.FeeKeeper, &app.BankKeeper,
-		app.TokenFactoryKeeper, &app.CronKeeper,
+		app.FeeKeeper,
+		&app.BankKeeper,
+		app.TokenFactoryKeeper,
+		&app.CronKeeper,
 		&app.ContractManagerKeeper,
 		&app.DexKeeper,
 		app.OracleKeeper,

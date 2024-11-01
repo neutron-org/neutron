@@ -36,6 +36,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata": &tokenfactorytypes.QueryDenomAuthorityMetadataResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator":      &tokenfactorytypes.QueryDenomsFromCreatorResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/BeforeSendHookAddress":  &tokenfactorytypes.QueryBeforeSendHookAddressResponse{},
+		"/osmosis.tokenfactory.v1beta1.Query/FullDenom":              &tokenfactorytypes.QueryFullDenomResponse{},
 
 		// interchain accounts
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &icacontrollertypes.QueryInterchainAccountResponse{},
@@ -107,6 +108,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/connect.marketmap.v2.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
 		"/connect.marketmap.v2.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/connect.marketmap.v2.Query/Params":      &marketmaptypes.ParamsResponse{},
+		"/connect.marketmap.v2.Query/Market":      &marketmaptypes.MarketResponse{},
 
 		// feemarket
 		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},

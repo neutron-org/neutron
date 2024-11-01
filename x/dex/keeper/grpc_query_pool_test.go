@@ -25,7 +25,7 @@ func TestPoolQuerySingle(t *testing.T) {
 			desc: "First",
 			request: &types.QueryPoolRequest{
 				PairId:    "TokenA<>TokenB",
-				TickIndex: msgs[0].CenterTickIndex(),
+				TickIndex: msgs[0].CenterTickIndexToken1(),
 				Fee:       msgs[0].Fee(),
 			},
 			response: &types.QueryPoolResponse{Pool: msgs[0]},
@@ -34,7 +34,7 @@ func TestPoolQuerySingle(t *testing.T) {
 			desc: "Second",
 			request: &types.QueryPoolRequest{
 				PairId:    "TokenA<>TokenB",
-				TickIndex: msgs[1].CenterTickIndex(),
+				TickIndex: msgs[1].CenterTickIndexToken1(),
 				Fee:       msgs[1].Fee(),
 			},
 			response: &types.QueryPoolResponse{Pool: msgs[1]},

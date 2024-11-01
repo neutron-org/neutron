@@ -13,7 +13,6 @@ import (
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	keeper2 "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -25,6 +24,8 @@ import (
 	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
 	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 
 	"github.com/neutron-org/neutron/v5/app/params"
 
@@ -73,7 +74,8 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.CronMsgServer = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
 	suite.messenger.CronQueryServer = suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
-	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
+	suite.messenger.ContractmanagerMsgServer = contractmanagerkeeper.NewMsgServerImpl(suite.neutron.ContractManagerKeeper)
+	suite.messenger.ContractmanagerQueryServer = contractmanagerkeeper.NewQueryServerImpl(suite.neutron.ContractManagerKeeper)
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
 	suite.contractKeeper = keeper.NewDefaultPermissionKeeper(&suite.neutron.WasmKeeper)
@@ -737,10 +739,11 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
 	}
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
-	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
+
+	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.neutron.ContractManagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
 
 	// Craft message
 	msg := bindings.NeutronMsg{
@@ -762,10 +765,11 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, nil)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, nil)
 	require.NoError(suite.T(), err)
-	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
+
+	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.neutron.ContractManagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
 
 	// Craft message
 	msg := bindings.NeutronMsg{
@@ -790,10 +794,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
 	}
-	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload, "test error")
+	suite.neutron.ContractManagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload, "test error")
 
 	// Craft message
 	msg := bindings.NeutronMsg{
@@ -804,7 +808,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 
 	// Dispatch
 	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.ErrorContains(err, "no failure found to resubmit: not found")
+	suite.ErrorContains(err, "no failure with given FailureId found to resubmit")
 }
 
 func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data []byte, err error) {
