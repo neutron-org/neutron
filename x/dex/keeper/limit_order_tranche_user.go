@@ -6,7 +6,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (k Keeper) GetOrInitLimitOrderTrancheUser(
@@ -87,12 +87,18 @@ func (k Keeper) RemoveLimitOrderTrancheUser(ctx sdk.Context, trancheUser *types.
 	)
 }
 
-func (k Keeper) SaveTrancheUser(ctx sdk.Context, trancheUser *types.LimitOrderTrancheUser) {
+// UpdateTrancheUser handles the logic for all updates to LimitOrderTrancheUsers in the KV Store.
+// NOTE: This method should always be called even if not all logic branches are applicable.
+// It avoids unnecessary repetition of logic and provides a single place to attach update event handlers.
+func (k Keeper) UpdateTrancheUser(ctx sdk.Context, trancheUser *types.LimitOrderTrancheUser) {
 	if trancheUser.IsEmpty() {
+		// The trancheUser has no remaining withdrawable shares and can be deleted
 		k.RemoveLimitOrderTrancheUser(ctx, trancheUser)
 	} else {
+		// The trancheUser has withdrawable shares; it should be saved
 		k.SetLimitOrderTrancheUser(ctx, trancheUser)
 	}
+	ctx.EventManager().EmitEvent(types.TrancheUserUpdateEvent(*trancheUser))
 }
 
 // GetAllLimitOrderTrancheUser returns all LimitOrderTrancheUser

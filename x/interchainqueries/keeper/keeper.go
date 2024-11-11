@@ -15,7 +15,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	tendermintLightClientTypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 )
 
 const (

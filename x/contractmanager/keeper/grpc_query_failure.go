@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
 )
 
 const FailuresQueryMaxLimit uint64 = query.DefaultLimit
@@ -59,7 +59,7 @@ func (k Keeper) AddressFailures(c context.Context, req *types.QueryFailuresReque
 	return &types.QueryFailuresResponse{Failures: failures, Pagination: pageRes}, nil
 }
 
-func (k Keeper) AddressFailure(c context.Context, req *types.QueryFailuresRequest) (*types.QueryFailuresResponse, error) {
+func (k Keeper) AddressFailure(c context.Context, req *types.QueryFailureRequest) (*types.QueryFailureResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request field must not be empty")
 	}
@@ -74,5 +74,5 @@ func (k Keeper) AddressFailure(c context.Context, req *types.QueryFailuresReques
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return &types.QueryFailuresResponse{Failures: []types.Failure{*resp}}, nil
+	return &types.QueryFailureResponse{Failure: *resp}, nil
 }

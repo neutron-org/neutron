@@ -12,8 +12,8 @@ import (
 
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	iqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	iqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 )
 
 func (suite *KeeperTestSuite) TestRemoteLastHeight() {
@@ -509,9 +509,8 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	suite.Require().NoError(err)
 
 	msg := iqtypes.MsgSubmitQueryResult{
-		QueryId:  regQuery1.Id,
-		Sender:   contractAddress.String(),
-		ClientId: suite.Path.EndpointA.ClientID,
+		QueryId: regQuery1.Id,
+		Sender:  contractAddress.String(),
 		Result: &iqtypes.QueryResult{
 			KvResults: []*iqtypes.StorageValue{{
 				Key:           resp.Key,

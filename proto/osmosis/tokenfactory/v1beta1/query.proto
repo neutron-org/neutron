@@ -6,7 +6,7 @@ import "google/api/annotations.proto";
 import "osmosis/tokenfactory/params.proto";
 import "osmosis/tokenfactory/v1beta1/authorityMetadata.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/tokenfactory/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/tokenfactory/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -36,6 +36,12 @@ service Query {
     option (google.api.http).get =
       "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/"
       "before_send_hook";
+  }
+
+  // FullDenom defines a gRPC query method for getting full denom name
+  // from the creator and subdenom strings.
+  rpc FullDenom(QueryFullDenomRequest) returns (QueryFullDenomResponse) {
+    option (google.api.http).get = "/osmosis/tokenfactory/v1beta1/denoms/factory/{creator}/{subdenom}/full_denom";
   }
 }
 
@@ -76,13 +82,28 @@ message QueryDenomsFromCreatorResponse {
   repeated string denoms = 1 [(gogoproto.moretags) = "yaml:\"denoms\""];
 }
 
+// QueryBeforeSendHookAddressRequest defines the request structure for the
+// BeforeSendHookAddress gRPC query.
 message QueryBeforeSendHookAddressRequest {
   string creator = 1 [(gogoproto.moretags) = "yaml:\"creator\""];
   string subdenom = 2 [(gogoproto.moretags) = "yaml:\"subdenom\""];
 }
 
 // QueryBeforeSendHookAddressResponse defines the response structure for the
-// DenomBeforeSendHook gRPC query.
+// BeforeSendHookAddress gRPC query.
 message QueryBeforeSendHookAddressResponse {
   string contract_addr = 1 [(gogoproto.moretags) = "yaml:\"contract_addr\""];
+}
+
+// QueryFullDenomRequest defines the request structure for the
+// FullDenom gRPC query.
+message QueryFullDenomRequest {
+  string creator = 1 [(gogoproto.moretags) = "yaml:\"creator\""];
+  string subdenom = 2 [(gogoproto.moretags) = "yaml:\"subdenom\""];
+}
+
+// QueryFullDenomResponse defines the response structure for the
+// FullDenom gRPC query.
+message QueryFullDenomResponse {
+  string full_denom = 1 [(gogoproto.moretags) = "yaml:\"full_denom\""];
 }

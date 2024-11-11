@@ -6,7 +6,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (s *DexTestSuite) TestWithdrawFilledSimpleFull() {
@@ -386,8 +386,27 @@ func (s *DexTestSuite) TestWithdrawPartiallyGTTFilledCancelled() {
 	s.False(found, "Alice's LimitOrderTrancheUser not removed")
 }
 
-// testcancel unfilled
+func (s *DexTestSuite) TestWithdrawInactive() {
+	s.fundAliceBalances(10, 0)
+	s.fundBobBalances(0, 20)
 
-// test withdraw expired
+	// GIVEN Alice places an expiring limit order of A
+	trancheKey := s.aliceLimitSellsGoodTil("TokenA", 0, 10, time.Now())
 
-// how does cancel withdraw work does it call into was filled
+	// Bob trades through half of it
+	s.bobLimitSells("TokenB", -1, 5)
+
+	// Alice withdraws the profits
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.assertAliceBalances(0, 5)
+
+	// bob swap through more
+	s.bobLimitSells("TokenB", -1, 4)
+
+	// WHEN it is purged
+	s.App.DexKeeper.PurgeExpiredLimitOrders(s.Ctx, time.Now())
+
+	// THEN alice can withdraw the expected amount
+	s.aliceWithdrawsLimitSell(trancheKey)
+	s.assertAliceBalances(1, 9)
+}

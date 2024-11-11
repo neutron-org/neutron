@@ -1,42 +1,43 @@
 package wasmbinding
 
 import (
-	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	feeburnerkeeper "github.com/neutron-org/neutron/v4/x/feeburner/keeper"
-	feerefunderkeeper "github.com/neutron-org/neutron/v4/x/feerefunder/keeper"
-	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	icacontrollerkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	feeburnerkeeper "github.com/neutron-org/neutron/v5/x/feeburner/keeper"
+	feerefunderkeeper "github.com/neutron-org/neutron/v5/x/feerefunder/keeper"
+	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	icacontrollerkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
 
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 )
 
 type QueryPlugin struct {
-	icaControllerKeeper   *icacontrollerkeeper.Keeper
-	icqKeeper             *icqkeeper.Keeper
-	feeBurnerKeeper       *feeburnerkeeper.Keeper
-	feeRefunderKeeper     *feerefunderkeeper.Keeper
-	tokenFactoryKeeper    *tokenfactorykeeper.Keeper
-	contractmanagerKeeper *contractmanagerkeeper.Keeper
-	dexKeeper             *dexkeeper.Keeper
-	oracleKeeper          *oraclekeeper.Keeper
-	marketmapKeeper       *marketmapkeeper.Keeper
+	icaControllerKeeper        *icacontrollerkeeper.Keeper
+	icqKeeper                  *icqkeeper.Keeper
+	feeBurnerKeeper            *feeburnerkeeper.Keeper
+	feeRefunderKeeper          *feerefunderkeeper.Keeper
+	tokenFactoryKeeper         *tokenfactorykeeper.Keeper
+	contractmanagerQueryServer contractmanagertypes.QueryServer
+	dexKeeper                  *dexkeeper.Keeper
+	oracleKeeper               *oraclekeeper.Keeper
+	marketmapKeeper            *marketmapkeeper.Keeper
 }
 
 // NewQueryPlugin returns a reference to a new QueryPlugin.
 func NewQueryPlugin(icaControllerKeeper *icacontrollerkeeper.Keeper, icqKeeper *icqkeeper.Keeper, feeBurnerKeeper *feeburnerkeeper.Keeper, feeRefunderKeeper *feerefunderkeeper.Keeper, tfk *tokenfactorykeeper.Keeper, contractmanagerKeeper *contractmanagerkeeper.Keeper, dexKeeper *dexkeeper.Keeper, oracleKeeper *oraclekeeper.Keeper, marketmapKeeper *marketmapkeeper.Keeper) *QueryPlugin {
 	return &QueryPlugin{
-		icaControllerKeeper:   icaControllerKeeper,
-		icqKeeper:             icqKeeper,
-		feeBurnerKeeper:       feeBurnerKeeper,
-		feeRefunderKeeper:     feeRefunderKeeper,
-		tokenFactoryKeeper:    tfk,
-		contractmanagerKeeper: contractmanagerKeeper,
-		dexKeeper:             dexKeeper,
-		oracleKeeper:          oracleKeeper,
-		marketmapKeeper:       marketmapKeeper,
+		icaControllerKeeper:        icaControllerKeeper,
+		icqKeeper:                  icqKeeper,
+		feeBurnerKeeper:            feeBurnerKeeper,
+		feeRefunderKeeper:          feeRefunderKeeper,
+		tokenFactoryKeeper:         tfk,
+		contractmanagerQueryServer: contractmanagerkeeper.NewQueryServerImpl(*contractmanagerKeeper),
+		dexKeeper:                  dexKeeper,
+		oracleKeeper:               oracleKeeper,
+		marketmapKeeper:            marketmapKeeper,
 	}
 }

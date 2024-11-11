@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
-	"github.com/neutron-org/neutron/v4/x/feeburner/types"
+	"github.com/neutron-org/neutron/v5/x/feeburner/types"
 )
 
 type (
@@ -79,6 +79,13 @@ func (k Keeper) GetTotalBurnedNeutronsAmount(ctx sdk.Context) types.TotalBurnedN
 	}
 
 	return totalBurnedNeutronsAmount
+}
+
+// SetTotalBurnedNeutronsAmount sets the total burned amount of NTRN tokens
+func (k Keeper) SetTotalBurnedNeutronsAmount(ctx sdk.Context, totalBurnedNeutronsAmount types.TotalBurnedNeutronsAmount) {
+	store := ctx.KVStore(k.storeKey)
+
+	store.Set(KeyBurnedFees, k.cdc.MustMarshal(&totalBurnedNeutronsAmount))
 }
 
 // BurnAndDistribute is an important part of tokenomics. It does few things:

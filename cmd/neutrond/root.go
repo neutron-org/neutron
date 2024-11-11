@@ -24,7 +24,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -40,8 +39,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/neutron-org/neutron/v4/app"
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app"
+	"github.com/neutron-org/neutron/v5/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -52,6 +51,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// create a temporary application for use in constructing query + tx commands
 	initAppOptions := viper.New()
 	tempDir := tempDir()
+	// cleanup temp dir after we are done with the tempApp, so we don't leave behind a
+	// new temporary directory for every invocation. See https://github.com/CosmWasm/wasmd/issues/2017
+	defer os.RemoveAll(tempDir)
 	initAppOptions.Set(flags.FlagHome, tempDir)
 	tempApplication := app.New(
 		log.NewNopLogger(),
@@ -126,7 +128,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	autoCliOpts := tempApplication.AutoCliOpts()
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
-	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
 	autoCliOpts.ClientCtx = initClientCtx
 
 	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
@@ -141,7 +142,6 @@ func tempDir() string {
 	if err != nil {
 		dir = app.DefaultNodeHome
 	}
-	defer os.RemoveAll(dir)
 
 	return dir
 }

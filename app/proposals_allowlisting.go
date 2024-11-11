@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	consensustypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -18,17 +19,19 @@ import (
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
-	dynamicfeestypes "github.com/neutron-org/neutron/v4/x/dynamicfees/types"
-	globalfeetypes "github.com/neutron-org/neutron/v4/x/globalfee/types"
+	ibcratelimittypes "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
 
-	contractmanagertypes "github.com/neutron-org/neutron/v4/x/contractmanager/types"
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
-	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	interchainqueriestypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	interchaintxstypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
+	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
+
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
+	feerefundertypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	interchainqueriestypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	interchaintxstypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
@@ -63,6 +66,7 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*wasmtypes.MsgUpdateParams,
 		*wasmtypes.MsgPinCodes,
 		*wasmtypes.MsgUnpinCodes,
+		*consensustypes.MsgUpdateParams,
 		*upgradetypes.MsgSoftwareUpgrade,
 		*upgradetypes.MsgCancelUpgrade,
 		*ibcclienttypes.MsgRecoverClient,
@@ -73,6 +77,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*feeburnertypes.MsgUpdateParams,
 		*feerefundertypes.MsgUpdateParams,
 		*crontypes.MsgUpdateParams,
+		*crontypes.MsgAddSchedule,
+		*crontypes.MsgRemoveSchedule,
 		*contractmanagertypes.MsgUpdateParams,
 		*dextypes.MsgUpdateParams,
 		*banktypes.MsgUpdateParams,
@@ -89,7 +95,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*feemarkettypes.MsgParams,
 		*dynamicfeestypes.MsgUpdateParams,
 		*ibctransfertypes.MsgUpdateParams,
-		*globalfeetypes.MsgUpdateParams:
+		*globalfeetypes.MsgUpdateParams,
+		*ibcratelimittypes.MsgUpdateParams:
 		return true
 	}
 	return false

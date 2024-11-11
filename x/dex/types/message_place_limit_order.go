@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 const TypeMsgPlaceLimitOrder = "place_limit_order"
@@ -119,6 +119,10 @@ func (msg *MsgPlaceLimitOrder) Validate() error {
 
 	if msg.LimitSellPrice != nil && msg.TickIndexInToOut != 0 {
 		return ErrInvalidPriceAndTick
+	}
+
+	if msg.MinAverageSellPrice != nil && msg.MinAverageSellPrice.IsZero() {
+		return ErrZeroMinAverageSellPrice
 	}
 
 	return nil

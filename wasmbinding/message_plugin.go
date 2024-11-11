@@ -7,22 +7,24 @@ import (
 	"strings"
 	"time"
 
+	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
 	"github.com/cosmos/gogoproto/proto"
 
 	"golang.org/x/exp/maps"
 
-	dexkeeper "github.com/neutron-org/neutron/v4/x/dex/keeper"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	dexutils "github.com/neutron-org/neutron/v4/x/dex/utils"
-
-	contractmanagerkeeper "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
+	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v5/x/dex/utils"
 
 	"cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	crontypes "github.com/neutron-org/neutron/v4/x/cron/types"
+	crontypes "github.com/neutron-org/neutron/v5/x/cron/types"
 
-	cronkeeper "github.com/neutron-org/neutron/v4/x/cron/keeper"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
 
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
@@ -35,19 +37,21 @@ import (
 	adminmodulekeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	//nolint:staticcheck
 
-	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
-	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
-	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
-	transferwrapperkeeper "github.com/neutron-org/neutron/v4/x/transfer/keeper"
-	transferwrappertypes "github.com/neutron-org/neutron/v4/x/transfer/types"
+	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
+	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
+	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
+	transferwrapperkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
+	transferwrappertypes "github.com/neutron-org/neutron/v5/x/transfer/types"
 
-	tokenfactorykeeper "github.com/neutron-org/neutron/v4/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	tokenfactorykeeper "github.com/neutron-org/neutron/v5/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 func CustomMessageDecorator(
@@ -63,35 +67,39 @@ func CustomMessageDecorator(
 ) func(messenger wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &CustomMessenger{
-			Keeper:                *ictx,
-			Wrapped:               old,
-			Ictxmsgserver:         ictxkeeper.NewMsgServerImpl(*ictx),
-			Icqmsgserver:          icqkeeper.NewMsgServerImpl(*icq),
-			transferKeeper:        transferKeeper,
-			Adminserver:           adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
-			Bank:                  bankKeeper,
-			TokenFactory:          tokenFactoryKeeper,
-			CronKeeper:            cronKeeper,
-			AdminKeeper:           adminKeeper,
-			ContractmanagerKeeper: contractmanagerKeeper,
-			DexMsgServer:          dexkeeper.NewMsgServerImpl(*dexKeeper),
+			Keeper:                     *ictx,
+			Wrapped:                    old,
+			Ictxmsgserver:              ictxkeeper.NewMsgServerImpl(*ictx),
+			Icqmsgserver:               icqkeeper.NewMsgServerImpl(*icq),
+			transferKeeper:             transferKeeper,
+			Adminserver:                adminmodulekeeper.NewMsgServerImpl(*adminKeeper),
+			Bank:                       bankKeeper,
+			TokenFactory:               tokenFactoryKeeper,
+			CronMsgServer:              cronkeeper.NewMsgServerImpl(*cronKeeper),
+			CronQueryServer:            cronKeeper,
+			AdminKeeper:                adminKeeper,
+			ContractmanagerMsgServer:   contractmanagerkeeper.NewMsgServerImpl(*contractmanagerKeeper),
+			ContractmanagerQueryServer: contractmanagerkeeper.NewQueryServerImpl(*contractmanagerKeeper),
+			DexMsgServer:               dexkeeper.NewMsgServerImpl(*dexKeeper),
 		}
 	}
 }
 
 type CustomMessenger struct {
-	Keeper                ictxkeeper.Keeper
-	Wrapped               wasmkeeper.Messenger
-	Ictxmsgserver         ictxtypes.MsgServer
-	Icqmsgserver          icqtypes.MsgServer
-	transferKeeper        transferwrapperkeeper.KeeperTransferWrapper
-	Adminserver           admintypes.MsgServer
-	Bank                  *bankkeeper.BaseKeeper
-	TokenFactory          *tokenfactorykeeper.Keeper
-	CronKeeper            *cronkeeper.Keeper
-	AdminKeeper           *adminmodulekeeper.Keeper
-	ContractmanagerKeeper *contractmanagerkeeper.Keeper
-	DexMsgServer          dextypes.MsgServer
+	Keeper                     ictxkeeper.Keeper
+	Wrapped                    wasmkeeper.Messenger
+	Ictxmsgserver              ictxtypes.MsgServer
+	Icqmsgserver               icqtypes.MsgServer
+	transferKeeper             transferwrapperkeeper.KeeperTransferWrapper
+	Adminserver                admintypes.MsgServer
+	Bank                       *bankkeeper.BaseKeeper
+	TokenFactory               *tokenfactorykeeper.Keeper
+	CronMsgServer              crontypes.MsgServer
+	CronQueryServer            crontypes.QueryServer
+	AdminKeeper                *adminmodulekeeper.Keeper
+	ContractmanagerMsgServer   contractmanagertypes.MsgServer
+	ContractmanagerQueryServer contractmanagertypes.QueryServer
+	DexMsgServer               dextypes.MsgServer
 }
 
 var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
@@ -756,12 +764,8 @@ func (m *CustomMessenger) burnTokens(ctx sdk.Context, contractAddr sdk.AccAddres
 
 // PerformBurn performs token burning after validating tokenBurn message.
 func PerformBurn(f *tokenfactorykeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress, burn *bindings.BurnTokens) error {
-	if burn.BurnFromAddress != "" && burn.BurnFromAddress != contractAddr.String() {
-		return wasmvmtypes.InvalidRequest{Err: "BurnFromAddress must be \"\""}
-	}
-
 	coin := sdk.Coin{Denom: burn.Denom, Amount: burn.Amount}
-	sdkMsg := tokenfactorytypes.NewMsgBurn(contractAddr.String(), coin)
+	sdkMsg := tokenfactorytypes.NewMsgBurnFrom(contractAddr.String(), coin, burn.BurnFromAddress)
 
 	// Burn through token factory / message server
 	msgServer := tokenfactorykeeper.NewMsgServerImpl(*f)
@@ -865,11 +869,25 @@ func (m *CustomMessenger) registerInterchainAccount(ctx sdk.Context, contractAdd
 }
 
 func (m *CustomMessenger) performRegisterInterchainAccount(ctx sdk.Context, contractAddr sdk.AccAddress, reg *bindings.RegisterInterchainAccount) (*ictxtypes.MsgRegisterInterchainAccountResponse, error) {
+	// parse incoming ordering. If nothing passed, use ORDERED by default
+	var orderValue channeltypes.Order
+	if reg.Ordering == "" {
+		orderValue = channeltypes.ORDERED
+	} else {
+		orderValueInt, ok := channeltypes.Order_value[reg.Ordering]
+
+		if !ok {
+			return nil, fmt.Errorf("failed to register interchain account: incorrect order value passed: %s", reg.Ordering)
+		}
+		orderValue = channeltypes.Order(orderValueInt)
+	}
+
 	msg := ictxtypes.MsgRegisterInterchainAccount{
 		FromAddress:         contractAddr.String(),
 		ConnectionId:        reg.ConnectionId,
 		InterchainAccountId: reg.InterchainAccountId,
 		RegisterFee:         getRegisterFee(reg.RegisterFee),
+		Ordering:            orderValue,
 	}
 
 	response, err := m.Ictxmsgserver.RegisterInterchainAccount(ctx, &msg)
@@ -977,6 +995,8 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin can add schedule")
 	}
 
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
 	msgs := make([]crontypes.MsgExecuteContract, 0, len(addSchedule.Msgs))
 	for _, msg := range addSchedule.Msgs {
 		msgs = append(msgs, crontypes.MsgExecuteContract{
@@ -985,13 +1005,20 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 		})
 	}
 
-	err := m.CronKeeper.AddSchedule(ctx, addSchedule.Name, addSchedule.Period, msgs)
+	_, err := m.CronMsgServer.AddSchedule(ctx, &crontypes.MsgAddSchedule{
+		Authority:      authority.String(),
+		Name:           addSchedule.Name,
+		Period:         addSchedule.Period,
+		Msgs:           msgs,
+		ExecutionStage: crontypes.ExecutionStage(crontypes.ExecutionStage_value[addSchedule.ExecutionStage]),
+	})
 	if err != nil {
 		ctx.Logger().Error("failed to addSchedule",
 			"from_address", contractAddr.String(),
+			"name", addSchedule.Name,
 			"error", err,
 		)
-		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
+		return nil, nil, nil, errors.Wrapf(err, "failed to add %s schedule", addSchedule.Name)
 	}
 
 	ctx.Logger().Debug("schedule added",
@@ -1004,12 +1031,30 @@ func (m *CustomMessenger) addSchedule(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAddress, removeSchedule *bindings.RemoveSchedule) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	params := m.CronKeeper.GetParams(ctx)
-	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.SecurityAddress {
+	params, err := m.CronQueryServer.Params(ctx, &crontypes.QueryParamsRequest{})
+	if err != nil {
+		ctx.Logger().Error("failed to removeSchedule", "error", err)
+		return nil, nil, nil, errors.Wrap(err, "failed to removeSchedule")
+	}
+
+	if !m.isAdmin(ctx, contractAddr) && contractAddr.String() != params.Params.SecurityAddress {
 		return nil, nil, nil, errors.Wrap(sdkerrors.ErrUnauthorized, "only admin or security dao can remove schedule")
 	}
 
-	m.CronKeeper.RemoveSchedule(ctx, removeSchedule.Name)
+	authority := authtypes.NewModuleAddress(admintypes.ModuleName)
+
+	_, err = m.CronMsgServer.RemoveSchedule(ctx, &crontypes.MsgRemoveSchedule{
+		Authority: authority.String(),
+		Name:      removeSchedule.Name,
+	})
+	if err != nil {
+		ctx.Logger().Error("failed to removeSchedule",
+			"from_address", contractAddr.String(),
+			"name", removeSchedule.Name,
+			"error", err,
+		)
+		return nil, nil, nil, errors.Wrapf(err, "failed to remove %s schedule", removeSchedule.Name)
+	}
 
 	ctx.Logger().Debug("schedule removed",
 		"from_address", contractAddr.String(),
@@ -1019,12 +1064,18 @@ func (m *CustomMessenger) removeSchedule(ctx sdk.Context, contractAddr sdk.AccAd
 }
 
 func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccAddress, resubmitFailure *bindings.ResubmitFailure) ([]sdk.Event, [][]byte, [][]*types.Any, error) {
-	failure, err := m.ContractmanagerKeeper.GetFailure(ctx, contractAddr, resubmitFailure.FailureId)
+	failure, err := m.ContractmanagerQueryServer.AddressFailure(ctx, &contractmanagertypes.QueryFailureRequest{
+		Address:   contractAddr.String(),
+		FailureId: resubmitFailure.FailureId,
+	})
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure found to resubmit")
+		return nil, nil, nil, errors.Wrapf(err, "no failure with given FailureId found to resubmit")
 	}
 
-	err = m.ContractmanagerKeeper.ResubmitFailure(ctx, contractAddr, failure)
+	_, err = m.ContractmanagerMsgServer.ResubmitFailure(ctx, &contractmanagertypes.MsgResubmitFailure{
+		Sender:    contractAddr.String(),
+		FailureId: resubmitFailure.FailureId,
+	})
 	if err != nil {
 		ctx.Logger().Error("failed to resubmitFailure",
 			"from_address", contractAddr.String(),
@@ -1033,7 +1084,7 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, nil, nil, errors.Wrap(err, "failed to resubmitFailure")
 	}
 
-	resp := bindings.ResubmitFailureResponse{FailureId: failure.Id}
+	resp := bindings.ResubmitFailureResponse{FailureId: resubmitFailure.FailureId}
 	data, err := json.Marshal(&resp)
 	if err != nil {
 		ctx.Logger().Error("json.Marshal: failed to marshal remove resubmitFailure response to JSON",
@@ -1043,6 +1094,8 @@ func (m *CustomMessenger) resubmitFailure(ctx sdk.Context, contractAddr sdk.AccA
 		return nil, nil, nil, errors.Wrap(err, "marshal json failed")
 	}
 
+	// Return failure for reverse compatibility purposes.
+	// Maybe it'll be removed in the future because it was already deleted after resubmit before returning here.
 	anyResp, err := types.NewAnyWithValue(failure)
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "failed to convert {%T} to Any", failure)

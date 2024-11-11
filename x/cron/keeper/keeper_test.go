@@ -12,10 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	testutil_keeper "github.com/neutron-org/neutron/v4/testutil/cron/keeper"
-	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/cron/types"
-	"github.com/neutron-org/neutron/v4/x/cron/types"
+	"github.com/neutron-org/neutron/v5/testutil"
+	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/cron/keeper"
+	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/cron/types"
+	"github.com/neutron-org/neutron/v5/x/cron/types"
 )
 
 // ExecuteReadySchedules:
@@ -44,7 +44,7 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 	schedules := []types.Schedule{
 		{
 			Name:   "1_unready1",
-			Period: 3,
+			Period: 10,
 			Msgs: []types.MsgExecuteContract{
 				{
 					Contract: "1_neutron",
@@ -52,10 +52,11 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 				},
 			},
 			LastExecuteHeight: 4,
+			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
 		},
 		{
 			Name:   "2_ready1",
-			Period: 3,
+			Period: 4,
 			Msgs: []types.MsgExecuteContract{
 				{
 					Contract: "2_neutron",
@@ -63,10 +64,11 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 				},
 			},
 			LastExecuteHeight: 0,
+			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
 		},
 		{
 			Name:   "3_ready2",
-			Period: 3,
+			Period: 4,
 			Msgs: []types.MsgExecuteContract{
 				{
 					Contract: "3_neutron",
@@ -74,12 +76,14 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 				},
 			},
 			LastExecuteHeight: 0,
+			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
 		},
 		{
 			Name:              "4_unready2",
-			Period:            3,
+			Period:            10,
 			Msgs:              []types.MsgExecuteContract{},
 			LastExecuteHeight: 4,
+			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
 		},
 		{
 			Name:   "5_ready3",
@@ -91,22 +95,34 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 				},
 			},
 			LastExecuteHeight: 0,
+			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER,
+		},
+		{
+			Name:   "6_ready4",
+			Period: 3,
+			Msgs: []types.MsgExecuteContract{
+				{
+					Contract: "6_neutron",
+					Msg:      "6_msg",
+				},
+			},
+			LastExecuteHeight: 0,
+			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER,
 		},
 	}
 
 	for _, item := range schedules {
 		ctx = ctx.WithBlockHeight(int64(item.LastExecuteHeight))
-		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs)
+		err := k.AddSchedule(ctx, item.Name, item.Period, item.Msgs, item.ExecutionStage)
 		require.NoError(t, err)
 	}
 
 	count := k.GetScheduleCount(ctx)
-	require.Equal(t, count, int32(5))
+	require.Equal(t, count, int32(6))
 
 	ctx = ctx.WithBlockHeight(5)
 
-	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(addr)
-	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(addr)
+	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(addr).AnyTimes()
 	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
 		Sender:   testutil.TestOwnerAddress,
 		Contract: "2_neutron",
@@ -120,25 +136,26 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 		Funds:    sdk.NewCoins(),
 	}).Return(&wasmtypes.MsgExecuteContractResponse{}, nil)
 
-	k.ExecuteReadySchedules(ctx)
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
 
 	unready1, _ := k.GetSchedule(ctx, "1_unready1")
 	ready1, _ := k.GetSchedule(ctx, "2_ready1")
 	ready2, _ := k.GetSchedule(ctx, "3_ready2")
 	unready2, _ := k.GetSchedule(ctx, "4_unready2")
 	ready3, _ := k.GetSchedule(ctx, "5_ready3")
+	ready4, _ := k.GetSchedule(ctx, "6_ready4")
 
 	require.Equal(t, uint64(4), unready1.LastExecuteHeight)
 	require.Equal(t, uint64(5), ready1.LastExecuteHeight)
 	require.Equal(t, uint64(5), ready2.LastExecuteHeight)
 	require.Equal(t, uint64(4), unready2.LastExecuteHeight)
 	require.Equal(t, uint64(0), ready3.LastExecuteHeight)
+	require.Equal(t, uint64(0), ready4.LastExecuteHeight)
 
 	// let's make another call at the next height
 	// Notice that now only one ready schedule left because we got limit of 2 at once
 	ctx = ctx.WithBlockHeight(6)
 
-	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(addr)
 	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
 		Sender:   testutil.TestOwnerAddress,
 		Contract: "5_neutron",
@@ -146,19 +163,46 @@ func TestKeeperExecuteReadySchedules(t *testing.T) {
 		Funds:    sdk.NewCoins(),
 	}).Return(&wasmtypes.MsgExecuteContractResponse{}, nil)
 
-	k.ExecuteReadySchedules(ctx)
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
 
 	unready1, _ = k.GetSchedule(ctx, "1_unready1")
 	ready1, _ = k.GetSchedule(ctx, "2_ready1")
 	ready2, _ = k.GetSchedule(ctx, "3_ready2")
 	unready2, _ = k.GetSchedule(ctx, "4_unready2")
 	ready3, _ = k.GetSchedule(ctx, "5_ready3")
+	ready4, _ = k.GetSchedule(ctx, "6_ready4")
 
 	require.Equal(t, uint64(4), unready1.LastExecuteHeight)
 	require.Equal(t, uint64(5), ready1.LastExecuteHeight)
 	require.Equal(t, uint64(5), ready2.LastExecuteHeight)
 	require.Equal(t, uint64(4), unready2.LastExecuteHeight)
 	require.Equal(t, uint64(6), ready3.LastExecuteHeight)
+	require.Equal(t, uint64(0), ready4.LastExecuteHeight)
+
+	ctx = ctx.WithBlockHeight(7)
+
+	wasmMsgServer.EXPECT().ExecuteContract(gomock.Any(), &wasmtypes.MsgExecuteContract{
+		Sender:   testutil.TestOwnerAddress,
+		Contract: "6_neutron",
+		Msg:      []byte("6_msg"),
+		Funds:    sdk.NewCoins(),
+	}).Return(&wasmtypes.MsgExecuteContractResponse{}, nil)
+
+	k.ExecuteReadySchedules(ctx, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
+
+	unready1, _ = k.GetSchedule(ctx, "1_unready1")
+	ready1, _ = k.GetSchedule(ctx, "2_ready1")
+	ready2, _ = k.GetSchedule(ctx, "3_ready2")
+	unready2, _ = k.GetSchedule(ctx, "4_unready2")
+	ready3, _ = k.GetSchedule(ctx, "5_ready3")
+	ready4, _ = k.GetSchedule(ctx, "6_ready4")
+
+	require.Equal(t, uint64(4), unready1.LastExecuteHeight)
+	require.Equal(t, uint64(5), ready1.LastExecuteHeight)
+	require.Equal(t, uint64(5), ready2.LastExecuteHeight)
+	require.Equal(t, uint64(4), unready2.LastExecuteHeight)
+	require.Equal(t, uint64(6), ready3.LastExecuteHeight)
+	require.Equal(t, uint64(7), ready4.LastExecuteHeight)
 }
 
 func TestAddSchedule(t *testing.T) {
@@ -183,11 +227,19 @@ func TestAddSchedule(t *testing.T) {
 			Contract: "c",
 			Msg:      "m",
 		},
-	})
+	}, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	require.NoError(t, err)
+
+	err = k.AddSchedule(ctx, "b", 7, []types.MsgExecuteContract{
+		{
+			Contract: "c",
+			Msg:      "m",
+		},
+	}, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
 	require.NoError(t, err)
 
 	// second time with same name returns error
-	err = k.AddSchedule(ctx, "a", 5, []types.MsgExecuteContract{})
+	err = k.AddSchedule(ctx, "a", 5, []types.MsgExecuteContract{}, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
 	require.Error(t, err)
 
 	scheduleA, found := k.GetSchedule(ctx, "a")
@@ -197,6 +249,12 @@ func TestAddSchedule(t *testing.T) {
 	require.Equal(t, scheduleA.Msgs, []types.MsgExecuteContract{
 		{Contract: "c", Msg: "m"},
 	})
+	require.Equal(t, scheduleA.ExecutionStage, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+
+	schedules := k.GetAllSchedules(ctx)
+	require.Len(t, schedules, 2)
+	require.Equal(t, schedules[0].ExecutionStage, types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	require.Equal(t, schedules[1].ExecutionStage, types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
 
 	// remove schedule works
 	k.RemoveSchedule(ctx, "a")
@@ -223,9 +281,10 @@ func TestGetAllSchedules(t *testing.T) {
 			Period:            5,
 			Msgs:              nil,
 			LastExecuteHeight: uint64(ctx.BlockHeight()),
+			ExecutionStage:    types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER,
 		}
 		expectedSchedules = append(expectedSchedules, s)
-		err := k.AddSchedule(ctx, s.Name, s.Period, s.Msgs)
+		err := k.AddSchedule(ctx, s.Name, s.Period, s.Msgs, s.ExecutionStage)
 		require.NoError(t, err)
 	}
 

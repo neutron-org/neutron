@@ -6,7 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // TODO: In an ideal world, there should be enough lower level testing that the swap tests
@@ -483,8 +483,8 @@ func (s *DexTestSuite) TestSwap1To0LOMaxAmountNotUsed() {
 	tokenIn, tokenOut := s.swapWithMaxOut("TokenB", "TokenA", 8, 15)
 
 	// THEN swap should return 8 BIGTokenB in and ~8 BIGTokenA out
-	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(8_000_000), tokenOut, sdkmath.NewInt(8_000_800))
-	s.assertTickBalancesInt(sdkmath.NewInt(1_999_200), sdkmath.NewInt(8_000_000))
+	s.assertSwapOutputInt(tokenIn, sdkmath.NewInt(8_000_000), tokenOut, sdkmath.NewInt(8_000_799))
+	s.assertTickBalancesInt(sdkmath.NewInt(1_999_201), sdkmath.NewInt(8_000_000))
 }
 
 func (s *DexTestSuite) TestSwap0To1LOMaxAmountUsedMultiTick() {
@@ -556,7 +556,7 @@ func (s *DexTestSuite) addDeposit(deposit *Deposit) {
 	s.Assert().NoError(err)
 	pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(deposit.AmountA)
 	pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(deposit.AmountB)
-	s.App.DexKeeper.SetPool(s.Ctx, pool)
+	s.App.DexKeeper.UpdatePool(s.Ctx, pool)
 }
 
 func (s *DexTestSuite) addDeposits(deposits ...*Deposit) {
@@ -581,7 +581,7 @@ func (s *DexTestSuite) placeGTCLimitOrder(
 	)
 	s.Assert().NoError(err)
 	tranche.PlaceMakerLimitOrder(sdkmath.NewInt(amountIn).Mul(denomMultiple))
-	s.App.DexKeeper.SaveTranche(s.Ctx, tranche)
+	s.App.DexKeeper.UpdateTranche(s.Ctx, tranche)
 }
 
 func (s *DexTestSuite) swapInt(

@@ -7,10 +7,10 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func TestGenesis(t *testing.T) {

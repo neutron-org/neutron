@@ -13,7 +13,6 @@ type PostHandlerOptions struct {
 	AccountKeeper   feemarketpost.AccountKeeper
 	BankKeeper      feemarketpost.BankKeeper
 	FeeMarketKeeper feemarketpost.FeeMarketKeeper
-	FeeGrantKeeper  feemarketpost.FeeGrantKeeper
 }
 
 // NewPostHandler returns a PostHandler chain with the fee deduct decorator.
@@ -34,7 +33,6 @@ func NewPostHandler(options PostHandlerOptions) (sdk.PostHandler, error) {
 		feemarketpost.NewFeeMarketDeductDecorator(
 			options.AccountKeeper,
 			options.BankKeeper,
-			options.FeeGrantKeeper,
 			options.FeeMarketKeeper,
 		),
 	}

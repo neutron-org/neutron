@@ -10,8 +10,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 type MultihopStep struct {
@@ -35,12 +35,12 @@ func (k Keeper) MultiHopSwapCore(
 	pickBestRoute bool,
 	callerAddr sdk.AccAddress,
 	receiverAddr sdk.AccAddress,
-) (coinOut sdk.Coin, err error) {
+) (coinOut sdk.Coin, route []string, dust sdk.Coins, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	bestRoute, initialInCoin, err := k.CalulateMultiHopSwap(ctx, amountIn, routes, exitLimitPrice, pickBestRoute)
 	if err != nil {
-		return sdk.Coin{}, err
+		return sdk.Coin{}, []string{}, sdk.Coins{}, err
 	}
 
 	bestRoute.write()
@@ -51,7 +51,7 @@ func (k Keeper) MultiHopSwapCore(
 		sdk.Coins{initialInCoin},
 	)
 	if err != nil {
-		return sdk.Coin{}, err
+		return sdk.Coin{}, []string{}, sdk.Coins{}, err
 	}
 
 	// send both dust and coinOut to receiver
@@ -63,7 +63,7 @@ func (k Keeper) MultiHopSwapCore(
 		bestRoute.dust.Add(bestRoute.coinOut),
 	)
 	if err != nil {
-		return sdk.Coin{}, fmt.Errorf("failed to send out coin and dust to the receiver: %w", err)
+		return sdk.Coin{}, []string{}, sdk.Coins{}, fmt.Errorf("failed to send out coin and dust to the receiver: %w", err)
 	}
 
 	ctx.EventManager().EmitEvent(types.CreateMultihopSwapEvent(
@@ -77,7 +77,7 @@ func (k Keeper) MultiHopSwapCore(
 		bestRoute.dust,
 	))
 
-	return bestRoute.coinOut, nil
+	return bestRoute.coinOut, bestRoute.route, bestRoute.dust, nil
 }
 
 // CalulateMultiHopSwap handles the core logic for MultiHopSwap -- simulating swap operations across all routes (when applicable)
@@ -149,7 +149,7 @@ func (k Keeper) HopsToRouteData(
 		if !found {
 			return routeArr, types.ErrLimitPriceNotSatisfied
 		}
-		priceAcc = priceAcc.Mul(price)
+		priceAcc = priceAcc.Quo(price)
 		routeArr[index] = MultihopStep{
 			tradePairID:        tradePairID,
 			RemainingBestPrice: priceAcc,
@@ -284,7 +284,7 @@ func (k Keeper) SwapFullAmountIn(
 		return sdk.Coin{}, sdk.Coin{}, err
 	}
 	if !orderFilled {
-		return sdk.Coin{}, sdk.Coin{}, types.ErrLimitPriceNotSatisfied
+		return sdk.Coin{}, sdk.Coin{}, types.ErrNoLiquidity
 	}
 
 	dust = sdk.Coin.Sub(sdk.NewCoin(swapAmountTakerDenom.Denom, amountIn), swapAmountTakerDenom)

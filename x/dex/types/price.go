@@ -9,8 +9,8 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 const (
@@ -54,21 +54,21 @@ func loadPrecomputedPricesFromFile() error {
 }
 
 // Calculates the price for a swap from token 0 to token 1 given a relative tick
-// tickIndex refers to the index of a specified tick such that x * 1.0001 ^(-1 * t) = y
+// tickIndex refers to the index of a specified tick such that x * 1.0001 ^(1 * t) = y
 // Lower ticks offer better prices.
 func CalcPrice(relativeTickIndex int64) (math_utils.PrecDec, error) {
 	if IsTickOutOfRange(relativeTickIndex) {
 		return math_utils.ZeroPrecDec(), ErrTickOutsideRange
 	}
 	if relativeTickIndex < 0 {
-		return utils.BasePrice().Power(uint64(-1 * relativeTickIndex)), nil
+		return math_utils.OnePrecDec().Quo(PrecomputedPrices[-relativeTickIndex]), nil
 	}
 	// else
-	return math_utils.OnePrecDec().Quo(utils.BasePrice().Power(uint64(relativeTickIndex))), nil
+	return PrecomputedPrices[relativeTickIndex], nil
 }
 
 func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
-	if price.GT(math_utils.OnePrecDec()) {
+	if price.LT(math_utils.OnePrecDec()) {
 		panic("Can only lookup prices <= 1")
 	}
 	var left uint64 // = 0
@@ -80,9 +80,9 @@ func BinarySearchPriceToTick(price math_utils.PrecDec) uint64 {
 		case PrecomputedPrices[mid].Equal(price):
 			return mid
 		case PrecomputedPrices[mid].LT(price):
-			right = mid - 1
-		default:
 			left = mid + 1
+		default:
+			right = mid - 1
 
 		}
 	}
@@ -96,8 +96,8 @@ func CalcTickIndexFromPrice(price math_utils.PrecDec) (int64, error) {
 		return 0, ErrPriceOutsideRange
 	}
 
-	if price.GT(math_utils.OnePrecDec()) {
-		// We only have a lookup table for prices <= 1
+	if price.LT(math_utils.OnePrecDec()) {
+		// We only have a lookup table for prices >= 1
 		// So we invert the price for the lookup
 		invPrice := math_utils.OnePrecDec().Quo(price)
 		tick := BinarySearchPriceToTick(invPrice)
@@ -141,20 +141,21 @@ func ValidateTickFee(tick int64, fee uint64) error {
 }
 
 func ValidateFairOutput(amountIn math.Int, price math_utils.PrecDec) error {
-	amountOut := price.MulInt(amountIn)
+	amountOut := math_utils.NewPrecDecFromInt(amountIn).Quo(price)
 	if amountOut.LT(math_utils.OnePrecDec()) {
 		return errors.Wrapf(ErrTradeTooSmall, "True output for %v tokens at price %v is %v", amountIn, price, amountOut)
 	}
 	return nil
 }
 
-// Used for generating the precomputedPrice.gob file
+// // Used for generating the precomputedPrice.gob file
+// const PrecomputedPricesFile = "../types/precomputed_prices.gob"
 
 // func generatePrecomputedPrices() []math_utils.PrecDec {
 //	precomputedPowers := make([]math_utils.PrecDec, MaxTickExp+1)
 //	precomputedPowers[0] = math_utils.OnePrecDec() // 1.0001^0 = 1
 //	for i := 1; i <= int(MaxTickExp); i++ {
-//		precomputedPowers[i] = precomputedPowers[i-1].Quo(utils.BasePrice())
+//		precomputedPowers[i] = precomputedPowers[i-1].Mul(utils.BasePrice())
 //	}
 //	return precomputedPowers
 // }

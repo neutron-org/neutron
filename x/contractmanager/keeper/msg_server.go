@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/neutron-org/neutron/v4/x/contractmanager/types"
+	"github.com/neutron-org/neutron/v5/x/contractmanager/types"
 )
 
 type msgServer struct {
@@ -39,4 +39,33 @@ func (k Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) 
 	}
 
 	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+// ResubmitFailure resubmits the failure after contract acknowledgement failed
+func (k Keeper) ResubmitFailure(goCtx context.Context, req *types.MsgResubmitFailure) (*types.MsgResubmitFailureResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate MsgResubmitFailure")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	sender, err := sdk.AccAddressFromBech32(req.Sender)
+	if err != nil {
+		return nil, errors.Wrap(err, "sender in resubmit request is not in correct address format")
+	}
+
+	if !k.wasmKeeper.HasContractInfo(ctx, sender) {
+		return nil, errors.Wrap(types.ErrNotContractResubmission, "sender in resubmit request is not a smart contract")
+	}
+
+	failure, err := k.GetFailure(ctx, sender, req.FailureId)
+	if err != nil {
+		return nil, errors.Wrap(sdkerrors.ErrNotFound, "no failure with given FailureId found to resubmit")
+	}
+
+	if err := k.resubmitFailure(ctx, sender, failure); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgResubmitFailureResponse{}, nil
 }
