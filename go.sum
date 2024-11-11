@@ -346,8 +346,6 @@ github.com/cockroachdb/redact v1.1.5/go.mod h1:BVNblN9mBWFyMyqK1k3AAiSxhvhfK2oOZ
 github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 h1:zuQyyAKVxetITBuuhv3BI9cMrmStnpT18zmgmTxunpo=
 github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06/go.mod h1:7nc4anLGjupUW/PeY5qiNYsdNXj7zopG+eqsS7To5IQ=
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
-github.com/cometbft/cometbft v0.38.11 h1:6bNDUB8/xq4uYonYwIfGc9OqK1ZH4NkdaMmR1LZIJqk=
-github.com/cometbft/cometbft v0.38.11/go.mod h1:jHPx9vQpWzPHEAiYI/7EDKaB1NXhK6o3SArrrY8ExKc=
 github.com/cometbft/cometbft-db v0.12.0 h1:v77/z0VyfSU7k682IzZeZPFZrQAKiQwkqGN0QzAjMi0=
 github.com/cometbft/cometbft-db v0.12.0/go.mod h1:aX2NbCrjNVd2ZajYxt1BsiFf/Z+TQ2MN0VxdicheYuw=
 github.com/containerd/continuity v0.3.0 h1:nisirsYROK15TAMVukJOUyGJjz4BNQJBVsNvAXZJ/eg=
@@ -847,6 +845,8 @@ github.com/nats-io/nkeys v0.1.3/go.mod h1:xpnFELMwJABBLVhffcfd1MZx6VsNRFpEugbxzi
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/neutron-org/admin-module/v2 v2.0.2 h1:XDDFWjvkVBKRf3lBFCazT1zAXZ3dHX8GaZ4ol8Hdk8I=
 github.com/neutron-org/admin-module/v2 v2.0.2/go.mod h1:RfOyabXsdJ5btcOKyKPZDYiZhtuKFubbJMOb8EJZtvA=
+github.com/neutron-org/cometbft v0.0.0-20241107091756-6a4bf72dc8c2 h1:+UlgTyVhhNXi1fl+5HwSuvM+1BoFyiVtk1klysB3qlg=
+github.com/neutron-org/cometbft v0.0.0-20241107091756-6a4bf72dc8c2/go.mod h1:jHPx9vQpWzPHEAiYI/7EDKaB1NXhK6o3SArrrY8ExKc=
 github.com/neutron-org/cosmos-sdk v0.50.9-neutron.0.20240924163649-207f347e9c53 h1:7FJOHOt9F0oea0b5jrn090u/zn7+LdBmT6ZDmrJtTqs=
 github.com/neutron-org/cosmos-sdk v0.50.9-neutron.0.20240924163649-207f347e9c53/go.mod h1:TMH6wpoYBcg7Cp5BEg8fneLr+8XloNQkf2MRNF9V6JE=
 github.com/neutron-org/wasmd v0.53.0-neutron h1:Dv1VP1+QjYeb6RMo03sxw0Pe42JU0MPxefwNaG22KVs=
