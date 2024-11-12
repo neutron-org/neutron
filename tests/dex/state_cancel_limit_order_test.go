@@ -8,8 +8,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 type cancelLimitOrderTestParams struct {
@@ -96,7 +96,7 @@ func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) (
 
 	req := dextypes.QueryGetLimitOrderTrancheRequest{
 		PairId:     params.PairID.CanonicalString(),
-		TickIndex:  -1 * params.Tick,
+		TickIndex:  params.Tick,
 		TokenIn:    params.PairID.Token0,
 		TrancheKey: res.TrancheKey,
 	}
@@ -145,8 +145,8 @@ func removeRedundantCancelLOTests(params []cancelLimitOrderTestParams) []cancelL
 }
 
 func (s *DexStateTestSuite) handleCancelErrors(params cancelLimitOrderTestParams, err error) {
-	if params.Expired || params.Filled == 100 {
-		if errors.Is(dextypes.ErrActiveLimitOrderNotFound, err) {
+	if params.Filled == 100 && params.WithdrawnCreator {
+		if errors.Is(dextypes.ErrValidLimitOrderTrancheNotFound, err) {
 			s.T().Skip()
 		}
 	}

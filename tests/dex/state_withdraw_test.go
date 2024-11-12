@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 type withdrawTestParams struct {

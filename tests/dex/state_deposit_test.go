@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 type DepositState struct {
@@ -85,7 +85,7 @@ func (s *DexStateTestSuite) setupDepositState(params DepositState) {
 
 		pool.LowerTick0.ReservesMakerDenom = pool.LowerTick0.ReservesMakerDenom.Add(params.PoolValueIncrease.TokenA.Amount)
 		pool.UpperTick1.ReservesMakerDenom = pool.UpperTick1.ReservesMakerDenom.Add(params.PoolValueIncrease.TokenB.Amount)
-		s.App.DexKeeper.SetPool(s.Ctx, pool)
+		s.App.DexKeeper.UpdatePool(s.Ctx, pool)
 
 		// Add fund dex with the additional balance
 		err := s.App.BankKeeper.MintCoins(s.Ctx, dextypes.ModuleName, sdk.NewCoins(params.PoolValueIncrease.TokenA, params.PoolValueIncrease.TokenB))
