@@ -20,14 +20,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/neutron-org/neutron/v4/x/cron/client/cli"
-	"github.com/neutron-org/neutron/v4/x/cron/keeper"
-	"github.com/neutron-org/neutron/v4/x/cron/types"
+	"github.com/neutron-org/neutron/v5/x/cron/client/cli"
+	"github.com/neutron-org/neutron/v5/x/cron/keeper"
+	"github.com/neutron-org/neutron/v5/x/cron/types"
 )
 
 var (
-	_ appmodule.AppModule   = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ appmodule.AppModule       = AppModule{}
+	_ module.AppModuleBasic     = AppModuleBasic{}
+	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.HasEndBlocker   = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -155,10 +157,13 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
-func (am AppModule) BeginBlock(_ sdk.Context) {}
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	am.keeper.ExecuteReadySchedules(sdk.UnwrapSDKContext(ctx), types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
+	return nil
+}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
-	am.keeper.ExecuteReadySchedules(sdk.UnwrapSDKContext(ctx))
-	return []abci.ValidatorUpdate{}, nil
+func (am AppModule) EndBlock(ctx context.Context) error {
+	am.keeper.ExecuteReadySchedules(sdk.UnwrapSDKContext(ctx), types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
+	return nil
 }

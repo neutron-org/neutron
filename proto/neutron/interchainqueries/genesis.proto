@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 import "ibc/core/client/v1/client.proto";
 import "neutron/interchainqueries/params.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/interchainqueries/types";
 
 // Information about an Interchain Query registered in the interchainqueries module.
 message RegisteredQuery {

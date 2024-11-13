@@ -5,23 +5,29 @@ import (
 	"fmt"
 	"testing"
 
+	contractmanagertypes "github.com/neutron-org/neutron/v5/x/contractmanager/types"
+	types2 "github.com/neutron-org/neutron/v5/x/cron/types"
+
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	keeper2 "github.com/neutron-org/neutron/v4/x/contractmanager/keeper"
-	feeburnertypes "github.com/neutron-org/neutron/v4/x/feeburner/types"
+	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/stretchr/testify/suite"
 
-	ictxtypes "github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	ictxtypes "github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 
 	adminkeeper "github.com/cosmos/admin-module/v2/x/adminmodule/keeper"
 
-	"github.com/neutron-org/neutron/v4/app/params"
+	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
+
+	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
+
+	"github.com/neutron-org/neutron/v5/app/params"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmvm/v2/types"
@@ -30,16 +36,16 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/app"
-	"github.com/neutron-org/neutron/v4/testutil"
-	"github.com/neutron-org/neutron/v4/wasmbinding"
-	"github.com/neutron-org/neutron/v4/wasmbinding/bindings"
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	icqkeeper "github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	ictxkeeper "github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	"github.com/neutron-org/neutron/v5/app"
+	"github.com/neutron-org/neutron/v5/testutil"
+	"github.com/neutron-org/neutron/v5/wasmbinding"
+	"github.com/neutron-org/neutron/v5/wasmbinding/bindings"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	icqkeeper "github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	ictxkeeper "github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
 
-	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+	tokenfactorytypes "github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
 const FeeCollectorAddress = "neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7"
@@ -65,15 +71,17 @@ func (suite *CustomMessengerTestSuite) SetupTest() {
 	suite.messenger.Adminserver = adminkeeper.NewMsgServerImpl(suite.neutron.AdminmoduleKeeper)
 	suite.messenger.Bank = &suite.neutron.BankKeeper
 	suite.messenger.TokenFactory = suite.neutron.TokenFactoryKeeper
-	suite.messenger.CronKeeper = &suite.neutron.CronKeeper
+	suite.messenger.CronMsgServer = cronkeeper.NewMsgServerImpl(suite.neutron.CronKeeper)
+	suite.messenger.CronQueryServer = suite.neutron.CronKeeper
 	suite.messenger.AdminKeeper = &suite.neutron.AdminmoduleKeeper
-	suite.messenger.ContractmanagerKeeper = &suite.neutron.ContractManagerKeeper
+	suite.messenger.ContractmanagerMsgServer = contractmanagerkeeper.NewMsgServerImpl(suite.neutron.ContractManagerKeeper)
+	suite.messenger.ContractmanagerQueryServer = contractmanagerkeeper.NewQueryServerImpl(suite.neutron.ContractManagerKeeper)
 	suite.contractOwner = keeper.RandomAccountAddress(suite.T())
 
 	suite.contractKeeper = keeper.NewDefaultPermissionKeeper(&suite.neutron.WasmKeeper)
 
 	err := suite.messenger.TokenFactory.SetParams(suite.ctx, tokenfactorytypes.NewParams(
-		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 10_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin(params.DefaultDenom, 100)),
 		0,
 		FeeCollectorAddress,
 		tokenfactorytypes.DefaultWhitelistedHooks,
@@ -102,13 +110,23 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccount() {
 	}
 
 	bankKeeper := suite.neutron.BankKeeper
+	channelKeeper := suite.neutron.IBCKeeper.ChannelKeeper
 	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
 	suite.NoError(err)
 
 	// Dispatch RegisterInterchainAccount message
-	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
+	suite.NotEmpty(data)
+
+	// default method should be ordered
+	var response ictxtypes.MsgRegisterInterchainAccountResponse
+	err = response.Unmarshal(data)
+	suite.NoError(err)
+	channel, found := channelKeeper.GetChannel(suite.ctx, response.PortId, response.ChannelId)
+	suite.True(found)
+	suite.Equal(channel.Ordering, ibcchanneltypes.ORDERED)
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
@@ -128,6 +146,43 @@ func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountLongID() {
 	})
 	suite.Error(err)
 	suite.ErrorIs(err, ictxtypes.ErrLongInterchainAccountID)
+}
+
+func (suite *CustomMessengerTestSuite) TestRegisterInterchainAccountUnordered() {
+	err := suite.neutron.FeeBurnerKeeper.SetParams(suite.ctx, feeburnertypes.Params{
+		NeutronDenom:    "untrn",
+		TreasuryAddress: "neutron13jrwrtsyjjuynlug65r76r2zvfw5xjcq6532h2",
+	})
+	suite.Require().NoError(err)
+
+	// Craft RegisterInterchainAccount message
+	msg := bindings.NeutronMsg{
+		RegisterInterchainAccount: &bindings.RegisterInterchainAccount{
+			ConnectionId:        suite.Path.EndpointA.ConnectionID,
+			InterchainAccountId: testutil.TestInterchainID,
+			RegisterFee:         sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))),
+			Ordering:            ibcchanneltypes.Order_name[int32(ibcchanneltypes.UNORDERED)],
+		},
+	}
+
+	bankKeeper := suite.neutron.BankKeeper
+	channelKeeper := suite.neutron.IBCKeeper.ChannelKeeper
+	senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
+	err = bankKeeper.SendCoins(suite.ctx, senderAddress, suite.contractAddress, sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000))))
+	suite.NoError(err)
+
+	// Dispatch RegisterInterchainAccount message
+	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
+	suite.NoError(err)
+	suite.NotEmpty(data)
+
+	// default method should be ordered
+	var response ictxtypes.MsgRegisterInterchainAccountResponse
+	err = response.Unmarshal(data)
+	suite.NoError(err)
+	channel, found := channelKeeper.GetChannel(suite.ctx, response.PortId, response.ChannelId)
+	suite.True(found)
+	suite.Equal(channel.Ordering, ibcchanneltypes.UNORDERED)
 }
 
 func (suite *CustomMessengerTestSuite) TestRegisterInterchainQuery() {
@@ -496,7 +551,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	suite.NoError(err)
 
 	var response ictxtypes.MsgSubmitTxResponse
-	err = json.Unmarshal(data, &response)
+	err = response.Unmarshal(data)
 	suite.NoError(err)
 	suite.Equal(uint64(1), response.SequenceId)
 	suite.Equal("channel-2", response.Channel)
@@ -547,11 +602,10 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err := json.Marshal(&admintypes.MsgSubmitProposalResponse{
-		ProposalId: 1,
-	})
+	var expected admintypes.MsgSubmitProposalResponse
+	err = expected.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected.ProposalId, uint64(1))
 
 	// Test with other proposer that is not admin should return failure
 	_, err = suite.executeNeutronMsg(anotherContract, msg)
@@ -576,11 +630,10 @@ func (suite *CustomMessengerTestSuite) TestSoftwareUpgradeProposal() {
 	data, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err = json.Marshal(&admintypes.MsgSubmitProposalResponse{
-		ProposalId: 2,
-	})
+	var expected2 admintypes.MsgSubmitProposalResponse
+	err = expected2.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected2.ProposalId, uint64(2))
 }
 
 func (suite *CustomMessengerTestSuite) TestTooMuchProposals() {
@@ -671,6 +724,10 @@ func (suite *CustomMessengerTestSuite) TestAddRemoveSchedule() {
 		},
 	}
 
+	schedule, ok := suite.neutron.CronKeeper.GetSchedule(suite.ctx, "schedule1")
+	suite.True(ok)
+	suite.Equal(types2.ExecutionStage_EXECUTION_STAGE_END_BLOCKER, schedule.ExecutionStage)
+
 	// Dispatch AddSchedule message
 	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
@@ -682,10 +739,11 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Result{Result: []byte("Result")},
 	}
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
-	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
+
+	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.neutron.ContractManagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
 
 	// Craft message
 	msg := bindings.NeutronMsg{
@@ -698,18 +756,20 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureAck() {
 	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{})
+	var expected contractmanagertypes.Failure
+	err = expected.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected.Id, failureID)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	// Add failure
 	packet := ibcchanneltypes.Packet{}
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, nil)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, nil)
 	require.NoError(suite.T(), err)
-	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
+
+	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, suite.contractAddress.String())
+	suite.neutron.ContractManagerKeeper.AddContractFailure(suite.ctx, suite.contractAddress.String(), payload, "test error")
 
 	// Craft message
 	msg := bindings.NeutronMsg{
@@ -722,9 +782,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureTimeout() {
 	data, err := suite.executeNeutronMsg(suite.contractAddress, msg)
 	suite.NoError(err)
 
-	expected, err := json.Marshal(&bindings.ResubmitFailureResponse{FailureId: failureID})
+	var expected contractmanagertypes.Failure
+	err = expected.Unmarshal(data)
 	suite.NoError(err)
-	suite.Equal(expected, data)
+	suite.Equal(expected.Id, failureID)
 }
 
 func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract() {
@@ -733,10 +794,10 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 	ack := ibcchanneltypes.Acknowledgement{
 		Response: &ibcchanneltypes.Acknowledgement_Error{Error: "ErrorSudoPayload"},
 	}
-	failureID := suite.messenger.ContractmanagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
-	payload, err := keeper2.PrepareSudoCallbackMessage(packet, &ack)
+	failureID := suite.neutron.ContractManagerKeeper.GetNextFailureIDKey(suite.ctx, testutil.TestOwnerAddress)
+	payload, err := contractmanagerkeeper.PrepareSudoCallbackMessage(packet, &ack)
 	require.NoError(suite.T(), err)
-	suite.messenger.ContractmanagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload, "test error")
+	suite.neutron.ContractManagerKeeper.AddContractFailure(suite.ctx, testutil.TestOwnerAddress, payload, "test error")
 
 	// Craft message
 	msg := bindings.NeutronMsg{
@@ -747,7 +808,7 @@ func (suite *CustomMessengerTestSuite) TestResubmitFailureFromDifferentContract(
 
 	// Dispatch
 	_, err = suite.executeNeutronMsg(suite.contractAddress, msg)
-	suite.ErrorContains(err, "no failure found to resubmit: not found")
+	suite.ErrorContains(err, "no failure with given FailureId found to resubmit")
 }
 
 func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccAddress, fullMsg json.RawMessage) (data []byte, err error) {
@@ -755,6 +816,10 @@ func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccA
 		Custom: fullMsg,
 	}
 
+	return suite.executeMsg(contractAddress, customMsg)
+}
+
+func (suite *CustomMessengerTestSuite) executeMsg(contractAddress sdk.AccAddress, fullMsg types.CosmosMsg) (data []byte, err error) {
 	type ExecuteMsg struct {
 		ReflectMsg struct {
 			Msgs []types.CosmosMsg `json:"msgs"`
@@ -763,7 +828,7 @@ func (suite *CustomMessengerTestSuite) executeCustomMsg(contractAddress sdk.AccA
 
 	execMsg := ExecuteMsg{ReflectMsg: struct {
 		Msgs []types.CosmosMsg `json:"msgs"`
-	}(struct{ Msgs []types.CosmosMsg }{Msgs: []types.CosmosMsg{customMsg}})}
+	}(struct{ Msgs []types.CosmosMsg }{Msgs: []types.CosmosMsg{fullMsg}})}
 
 	msg, err := json.Marshal(execMsg)
 	suite.NoError(err)

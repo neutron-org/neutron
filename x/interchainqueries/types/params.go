@@ -8,18 +8,20 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app/params"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	KeyQuerySubmitTimeout      = []byte("QuerySubmitTimeout")
-	DefaultQuerySubmitTimeout  = uint64(1036800) // One month, with block_time = 2.5s
-	KeyQueryDeposit            = []byte("QueryDeposit")
-	DefaultQueryDeposit        = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000))))
-	KeyTxQueryRemovalLimit     = []byte("TxQueryRemovalLimit")
-	DefaultTxQueryRemovalLimit = uint64(10_000)
+	KeyQuerySubmitTimeout         = []byte("QuerySubmitTimeout")
+	DefaultQuerySubmitTimeout     = uint64(1036800) // One month, with block_time = 2.5s
+	KeyQueryDeposit               = []byte("QueryDeposit")
+	DefaultQueryDeposit           = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(int64(1_000_000))))
+	KeyTxQueryRemovalLimit        = []byte("TxQueryRemovalLimit")
+	DefaultTxQueryRemovalLimit    = uint64(10_000)
+	DefaultMaxKvQueryKeysCount    = uint64(32)
+	DefaultMaxTransactionsFilters = uint64(32)
 )
 
 // ParamKeyTable the param key table for launch module
@@ -32,17 +34,19 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(querySubmitTimeout uint64, queryDeposit sdk.Coins, txQueryRemovalLimit uint64) Params {
+func NewParams(querySubmitTimeout uint64, queryDeposit sdk.Coins, txQueryRemovalLimit, maxKvQueryKeysCount, maxTransactionsFilters uint64) Params {
 	return Params{
-		QuerySubmitTimeout:  querySubmitTimeout,
-		QueryDeposit:        queryDeposit,
-		TxQueryRemovalLimit: txQueryRemovalLimit,
+		QuerySubmitTimeout:     querySubmitTimeout,
+		QueryDeposit:           queryDeposit,
+		TxQueryRemovalLimit:    txQueryRemovalLimit,
+		MaxKvQueryKeysCount:    maxKvQueryKeysCount,
+		MaxTransactionsFilters: maxTransactionsFilters,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	return NewParams(DefaultQuerySubmitTimeout, DefaultQueryDeposit, DefaultTxQueryRemovalLimit)
+	return NewParams(DefaultQuerySubmitTimeout, DefaultQueryDeposit, DefaultTxQueryRemovalLimit, DefaultMaxKvQueryKeysCount, DefaultMaxTransactionsFilters)
 }
 
 // ParamSetPairs get the params.ParamSet

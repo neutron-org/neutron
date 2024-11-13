@@ -1,7 +1,7 @@
 package types
 
 import (
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 )
 
 var _ TickLiquidityKey = (*LimitOrderTrancheKey)(nil)
@@ -31,12 +31,12 @@ func (p LimitOrderTrancheKey) KeyMarshal() []byte {
 	return key
 }
 
-func (p LimitOrderTrancheKey) PriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec, err error) {
+func (p LimitOrderTrancheKey) Price() (priceTakerToMaker math_utils.PrecDec, err error) {
 	return CalcPrice(p.TickIndexTakerToMaker)
 }
 
-func (p LimitOrderTrancheKey) MustPriceTakerToMaker() (priceTakerToMaker math_utils.PrecDec) {
-	price, err := p.PriceTakerToMaker()
+func (p LimitOrderTrancheKey) MustPrice() (priceTakerToMaker math_utils.PrecDec) {
+	price, err := p.Price()
 	if err != nil {
 		panic(err)
 	}

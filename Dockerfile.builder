@@ -7,12 +7,14 @@ ARG RUNNER_IMAGE="gcr.io/distroless/static"
 # Builder
 # --------------------------------------------------------
 
-FROM golang:${GO_VERSION}-alpine3.18 as builder
+FROM golang:${GO_VERSION}-alpine3.20 as builder
 
 ARG GIT_VERSION
 ARG GIT_COMMIT
 ARG BUILD_TAGS
 ARG ENABLED_PROPOSALS
+
+ENV GOTOOLCHAIN go1.22.6
 
 RUN apk add --no-cache \
     ca-certificates \

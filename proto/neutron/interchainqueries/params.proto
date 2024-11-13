@@ -4,7 +4,7 @@ package neutron.interchainqueries;
 import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/interchainqueries/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/interchainqueries/types";
 
 // The parameters for the module.
 message Params {
@@ -20,4 +20,10 @@ message Params {
   // Amount of tx hashes to be removed during a single EndBlock. Can vary to balance between
   // network cleaning speed and EndBlock duration. A zero value means no limit.
   uint64 tx_query_removal_limit = 3;
+
+  // Maximum amount of keys in a registered key value query
+  uint64 max_kv_query_keys_count = 4;
+
+  // max_transactions_filters defines maximum allowed amount of tx filters in msgRegisterInterchainQuery
+  uint64 max_transactions_filters = 5;
 }

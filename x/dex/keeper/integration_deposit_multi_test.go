@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func (s *DexTestSuite) TestDepositMultiCompleteFailure() {
@@ -23,7 +23,7 @@ func (s *DexTestSuite) TestDepositMultiCompleteFailure() {
 	s.assertAliceDepositFails(
 		err,
 		NewDeposit(5, 0, 2, 1),
-		NewDeposit(0, 5, 0, 1), // fails
+		NewDepositWithOptions(0, 5, 0, 1, types.DepositOptions{DisableAutoswap: true}), // fails
 	)
 }
 

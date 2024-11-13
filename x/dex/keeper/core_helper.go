@@ -6,9 +6,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/exp/slices"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
-	"github.com/neutron-org/neutron/v4/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
+	"github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,16 +142,14 @@ func (k Keeper) MintShares(ctx sdk.Context, addr sdk.AccAddress, sharesCoins sdk
 func (k Keeper) BurnShares(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
-	amount math.Int,
-	sharesID string,
+	coins sdk.Coins,
 ) error {
-	sharesCoins := sdk.Coins{sdk.NewCoin(sharesID, amount)}
 	// transfer tokens to module
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sharesCoins); err != nil {
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, coins); err != nil {
 		return err
 	}
 	// burn tokens
-	err := k.bankKeeper.BurnCoins(ctx, types.ModuleName, sharesCoins)
+	err := k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 
 	return err
 }

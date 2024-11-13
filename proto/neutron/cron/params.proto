@@ -3,9 +3,9 @@ package neutron.cron;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/neutron-org/neutron/v4/x/cron/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/cron/types";
 
-// Params defines the parameters for the module.
+// Defines the parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
   // Security address that can remove schedules

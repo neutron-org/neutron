@@ -30,7 +30,6 @@ func (app *App) CreateLanes() *blocksdkbase.BaseLane {
 	baseLane := base_lane.NewDefaultLane(basecfg, blocksdkbase.DefaultMatchHandler())
 	baseLane.LaneMempool = blocksdkbase.NewMempool(
 		blocksdkbase.NewDefaultTxPriority(),
-		basecfg.TxEncoder,
 		basecfg.SignerExtractor,
 		basecfg.MaxTxs,
 	)

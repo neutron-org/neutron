@@ -24,7 +24,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -40,8 +39,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/neutron-org/neutron/v4/app"
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app"
+	"github.com/neutron-org/neutron/v5/app/params"
 )
 
 // NewRootCmd creates a new root command for neutrond. It is called once in the
@@ -52,6 +51,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// create a temporary application for use in constructing query + tx commands
 	initAppOptions := viper.New()
 	tempDir := tempDir()
+	// cleanup temp dir after we are done with the tempApp, so we don't leave behind a
+	// new temporary directory for every invocation. See https://github.com/CosmWasm/wasmd/issues/2017
+	defer os.RemoveAll(tempDir)
 	initAppOptions.Set(flags.FlagHome, tempDir)
 	tempApplication := app.New(
 		log.NewNopLogger(),
@@ -113,6 +115,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		},
 	}
 
+	genAutoCompleteCmd(rootCmd)
+
 	initRootCmd(rootCmd, encodingConfig)
 	initClientCtx, err := config.ReadDefaultValuesFromDefaultClientConfig(initClientCtx)
 	if err != nil {
@@ -124,7 +128,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	autoCliOpts := tempApplication.AutoCliOpts()
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
-	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
 	autoCliOpts.ClientCtx = initClientCtx
 
 	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
@@ -139,7 +142,6 @@ func tempDir() string {
 	if err != nil {
 		dir = app.DefaultNodeHome
 	}
-	defer os.RemoveAll(dir)
 
 	return dir
 }
@@ -384,4 +386,36 @@ func setCustomEnvVariablesFromClientToml(ctx client.Context) {
 	setEnvFromConfig("fee-account", "NEUTROND_FEE_ACCOUNT")
 	// memo
 	setEnvFromConfig("note", "NEUTROND_NOTE")
+}
+
+func genAutoCompleteCmd(rootCmd *cobra.Command) {
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "enable-cli-autocomplete [bash|zsh|fish|powershell]",
+		Short: "Generates cli completion scripts",
+		Long: `To configure your shell to load completions for each session, add to your profile:
+
+# bash example
+echo '. <(neutrond enable-cli-autocomplete bash)' >> ~/.bash_profile
+source ~/.bash_profile
+
+# zsh example
+echo '. <(neutrond enable-cli-autocomplete zsh)' >> ~/.zshrc
+source ~/.zshrc
+`,
+		DisableFlagsInUseLine: true,
+		ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
+		Args:                  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			switch args[0] {
+			case "bash":
+				_ = cmd.Root().GenBashCompletion(os.Stdout)
+			case "zsh":
+				_ = cmd.Root().GenZshCompletion(os.Stdout)
+			case "fish":
+				_ = cmd.Root().GenFishCompletion(os.Stdout, true)
+			case "powershell":
+				_ = cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout)
+			}
+		},
+	})
 }

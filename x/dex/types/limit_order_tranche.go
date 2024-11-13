@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	math_utils "github.com/neutron-org/neutron/v4/utils/math"
-	"github.com/neutron-org/neutron/v4/x/dex/utils"
+	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 func NewLimitOrderTranche(
@@ -24,7 +24,7 @@ func NewLimitOrderTranche(
 	if err != nil {
 		return nil, err
 	}
-	priceTakerToMaker, err := tradePairID.PriceTakerToMaker(tickIndex)
+	makerPrice, err := tradePairID.MakerPrice(tickIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,8 @@ func NewLimitOrderTranche(
 		ReservesTakerDenom: reservesTakerDenom,
 		TotalMakerDenom:    totalMakerDenom,
 		TotalTakerDenom:    totalTakerDenom,
-		PriceTakerToMaker:  priceTakerToMaker,
+		MakerPrice:         makerPrice,
+		PriceTakerToMaker:  math_utils.OnePrecDec().Quo(makerPrice),
 	}, nil
 }
 
@@ -107,11 +108,11 @@ func (t LimitOrderTranche) HasTokenOut() bool {
 }
 
 func (t LimitOrderTranche) Price() math_utils.PrecDec {
-	return t.PriceTakerToMaker
+	return t.MakerPrice
 }
 
 func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
-	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
+	amountFilled := math_utils.NewPrecDecFromInt(t.TotalTakerDenom).Quo(t.MakerPrice)
 	ratioFilled := amountFilled.QuoInt(t.TotalMakerDenom)
 
 	// Cap ratio filled at 100% so that makers cannot over withdraw
@@ -119,7 +120,7 @@ func (t LimitOrderTranche) RatioFilled() math_utils.PrecDec {
 }
 
 func (t LimitOrderTranche) AmountUnfilled() math_utils.PrecDec {
-	amountFilled := t.PriceTakerToMaker.MulInt(t.TotalTakerDenom)
+	amountFilled := math_utils.NewPrecDecFromInt(t.TotalTakerDenom).Quo(t.MakerPrice)
 	trueAmountUnfilled := math_utils.NewPrecDecFromInt(t.TotalMakerDenom).Sub(amountFilled)
 
 	// It is possible for a tranche to be overfilled due to rounding. Thus we cap the unfilled amount at 0
@@ -135,10 +136,9 @@ func (t *LimitOrderTranche) RemoveTokenIn(
 	trancheUser *LimitOrderTrancheUser,
 ) (amountToRemove math.Int) {
 	amountUnfilled := t.AmountUnfilled()
-	maxAmountToRemove := amountUnfilled.MulInt(trancheUser.SharesOwned).
+	amountToRemove = amountUnfilled.MulInt(trancheUser.SharesOwned).
 		QuoInt(t.TotalMakerDenom).
 		TruncateInt()
-	amountToRemove = maxAmountToRemove.Sub(trancheUser.SharesCancelled)
 	t.ReservesMakerDenom = t.ReservesMakerDenom.Sub(amountToRemove)
 
 	return amountToRemove
@@ -148,7 +148,12 @@ func (t *LimitOrderTranche) CalcWithdrawAmount(trancheUser *LimitOrderTrancheUse
 	ratioFilled := t.RatioFilled()
 	maxAllowedToWithdraw := ratioFilled.MulInt(trancheUser.SharesOwned)
 	sharesToWithdrawDec := maxAllowedToWithdraw.Sub(math_utils.NewPrecDecFromInt(trancheUser.SharesWithdrawn))
-	amountOutTokenOutDec := sharesToWithdrawDec.Quo(t.PriceTakerToMaker)
+
+	// Given rounding it is possible for sharesToWithdrawn > maxAllowedToWithdraw. In this case we just exit.
+	if !sharesToWithdrawDec.IsPositive() {
+		return math.ZeroInt(), math.ZeroInt()
+	}
+	amountOutTokenOutDec := sharesToWithdrawDec.Mul(t.MakerPrice)
 
 	// Round shares withdrawn up and amountOut down to ensure math favors dex
 	return sharesToWithdrawDec.Ceil().TruncateInt(), amountOutTokenOutDec.TruncateInt()
@@ -168,14 +173,14 @@ func (t *LimitOrderTranche) Swap(maxAmountTakerIn math.Int, maxAmountMakerOut *m
 	reservesTokenOut := &t.ReservesMakerDenom
 	fillTokenIn := &t.ReservesTakerDenom
 	totalTokenIn := &t.TotalTakerDenom
-	maxOutGivenIn := t.PriceTakerToMaker.MulInt(maxAmountTakerIn).TruncateInt()
+	maxOutGivenIn := math_utils.NewPrecDecFromInt(maxAmountTakerIn).Quo(t.MakerPrice).TruncateInt()
 	possibleOutAmounts := []math.Int{*reservesTokenOut, maxOutGivenIn}
 	if maxAmountMakerOut != nil {
 		possibleOutAmounts = append(possibleOutAmounts, *maxAmountMakerOut)
 	}
 	outAmount = utils.MinIntArr(possibleOutAmounts)
 
-	inAmount = math_utils.NewPrecDecFromInt(outAmount).Quo(t.PriceTakerToMaker).Ceil().TruncateInt()
+	inAmount = t.MakerPrice.MulInt(outAmount).Ceil().TruncateInt()
 
 	*fillTokenIn = fillTokenIn.Add(inAmount)
 	*totalTokenIn = totalTokenIn.Add(inAmount)

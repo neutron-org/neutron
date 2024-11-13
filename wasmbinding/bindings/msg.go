@@ -7,10 +7,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramChange "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	dextypes "github.com/neutron-org/neutron/v4/x/dex/types"
-	feetypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	icqtypes "github.com/neutron-org/neutron/v4/x/interchainqueries/types"
-	transferwrappertypes "github.com/neutron-org/neutron/v4/x/transfer/types"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
+	feetypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
+	transferwrappertypes "github.com/neutron-org/neutron/v5/x/transfer/types"
 )
 
 // ProtobufAny is a hack-struct to serialize protobuf Any message into JSON object
@@ -81,6 +81,7 @@ type RegisterInterchainAccount struct {
 	ConnectionId        string    `json:"connection_id"`
 	InterchainAccountId string    `json:"interchain_account_id"`
 	RegisterFee         sdk.Coins `json:"register_fee,omitempty"`
+	Ordering            string    `json:"ordering,omitempty"`
 }
 
 // RegisterInterchainAccountResponse holds response for RegisterInterchainAccount.
@@ -195,9 +196,10 @@ type ForceTransfer struct {
 
 // AddSchedule adds new schedule to the cron module
 type AddSchedule struct {
-	Name   string               `json:"name"`
-	Period uint64               `json:"period"`
-	Msgs   []MsgExecuteContract `json:"msgs"`
+	Name           string               `json:"name"`
+	Period         uint64               `json:"period"`
+	Msgs           []MsgExecuteContract `json:"msgs"`
+	ExecutionStage string               `json:"execution_stage"`
 }
 
 // AddScheduleResponse holds response AddSchedule

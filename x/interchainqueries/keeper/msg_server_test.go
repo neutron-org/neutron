@@ -8,10 +8,10 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	testkeeper "github.com/neutron-org/neutron/v4/testutil/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/keeper"
-	"github.com/neutron-org/neutron/v4/x/interchainqueries/types"
+	"github.com/neutron-org/neutron/v5/testutil"
+	testkeeper "github.com/neutron-org/neutron/v5/testutil/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/keeper"
+	"github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 )
 
 func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
@@ -99,7 +99,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 			"too many keys",
 			types.MsgRegisterInterchainQueryRequest{
 				QueryType:          string(types.InterchainQueryTypeKV),
-				Keys:               make([]*types.KVKey, types.MaxKVQueryKeysCount+1),
+				Keys:               make([]*types.KVKey, types.DefaultMaxKvQueryKeysCount+1),
 				TransactionsFilter: "[]",
 				ConnectionId:       "connection-0",
 				UpdatePeriod:       1,
@@ -191,19 +191,17 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"empty result",
 			types.MsgSubmitQueryResultRequest{
-				QueryId:  1,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "client-id",
-				Result:   nil,
+				QueryId: 1,
+				Sender:  testutil.TestOwnerAddress,
+				Result:  nil,
 			},
 			types.ErrEmptyResult,
 		},
 		{
 			"empty kv results and block result",
 			types.MsgSubmitQueryResultRequest{
-				QueryId:  1,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "client-id",
+				QueryId: 1,
+				Sender:  testutil.TestOwnerAddress,
 				Result: &types.QueryResult{
 					KvResults: nil,
 					Block:     nil,
@@ -216,9 +214,8 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"zero query id",
 			types.MsgSubmitQueryResultRequest{
-				QueryId:  0,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "client-id",
+				QueryId: 0,
+				Sender:  testutil.TestOwnerAddress,
 				Result: &types.QueryResult{
 					KvResults: []*types.StorageValue{{
 						Key: []byte{10},
@@ -242,9 +239,8 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"empty sender",
 			types.MsgSubmitQueryResultRequest{
-				QueryId:  1,
-				Sender:   "",
-				ClientId: "client-id",
+				QueryId: 1,
+				Sender:  "",
 				Result: &types.QueryResult{
 					KvResults: []*types.StorageValue{{
 						Key: []byte{10},
@@ -268,9 +264,8 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		{
 			"invalid sender",
 			types.MsgSubmitQueryResultRequest{
-				QueryId:  1,
-				Sender:   "invalid_sender",
-				ClientId: "client-id",
+				QueryId: 1,
+				Sender:  "invalid_sender",
 				Result: &types.QueryResult{
 					KvResults: []*types.StorageValue{{
 						Key: []byte{10},
@@ -290,25 +285,6 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 				},
 			},
 			sdkerrors.ErrInvalidAddress,
-		},
-		{
-			"empty client id",
-			types.MsgSubmitQueryResultRequest{
-				QueryId:  1,
-				Sender:   testutil.TestOwnerAddress,
-				ClientId: "",
-				Result: &types.QueryResult{
-					KvResults: nil,
-					Block: &types.Block{
-						NextBlockHeader: nil,
-						Header:          nil,
-						Tx:              nil,
-					},
-					Height:   100,
-					Revision: 1,
-				},
-			},
-			types.ErrInvalidClientID,
 		},
 	}
 
@@ -418,7 +394,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 			"too many keys",
 			types.MsgUpdateInterchainQueryRequest{
 				QueryId:         1,
-				NewKeys:         make([]*types.KVKey, types.MaxKVQueryKeysCount+1),
+				NewKeys:         make([]*types.KVKey, types.DefaultMaxKvQueryKeysCount+1),
 				NewUpdatePeriod: 0,
 				Sender:          testutil.TestOwnerAddress,
 			},

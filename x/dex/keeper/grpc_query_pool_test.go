@@ -7,9 +7,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v4/testutil/dex/keeper"
-	"github.com/neutron-org/neutron/v4/x/dex/types"
+	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/dex/keeper"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 func TestPoolQuerySingle(t *testing.T) {
@@ -25,7 +25,7 @@ func TestPoolQuerySingle(t *testing.T) {
 			desc: "First",
 			request: &types.QueryPoolRequest{
 				PairId:    "TokenA<>TokenB",
-				TickIndex: msgs[0].CenterTickIndex(),
+				TickIndex: msgs[0].CenterTickIndexToken1(),
 				Fee:       msgs[0].Fee(),
 			},
 			response: &types.QueryPoolResponse{Pool: msgs[0]},
@@ -34,7 +34,7 @@ func TestPoolQuerySingle(t *testing.T) {
 			desc: "Second",
 			request: &types.QueryPoolRequest{
 				PairId:    "TokenA<>TokenB",
-				TickIndex: msgs[1].CenterTickIndex(),
+				TickIndex: msgs[1].CenterTickIndexToken1(),
 				Fee:       msgs[1].Fee(),
 			},
 			response: &types.QueryPoolResponse{Pool: msgs[1]},

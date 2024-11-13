@@ -3,14 +3,14 @@ package types_test
 import (
 	"testing"
 
-	"github.com/neutron-org/neutron/v4/app/config"
+	"github.com/neutron-org/neutron/v5/app/config"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/neutron-org/neutron/v4/testutil/common/nullify"
-	keepertest "github.com/neutron-org/neutron/v4/testutil/feeburner/keeper"
-	"github.com/neutron-org/neutron/v4/x/feeburner"
-	"github.com/neutron-org/neutron/v4/x/feeburner/types"
+	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/feeburner/keeper"
+	"github.com/neutron-org/neutron/v5/x/feeburner"
+	"github.com/neutron-org/neutron/v5/x/feeburner/types"
 )
 
 func TestGenesis(t *testing.T) {

@@ -19,7 +19,7 @@ import "neutron/dex/tx.proto";
 
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/neutron-org/neutron/v4/x/dex/types";
+option go_package = "github.com/neutron-org/neutron/v5/x/dex/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -96,14 +96,16 @@ service Query {
     option (google.api.http).get = "/neutron/dex/pool_reserves/{pair_id}/{token_in}/{tick_index}/{fee}";
   }
 
-  // Queries the simulated result of a multihop swap
+  // DEPRECATED Queries the simulated result of a multihop swap
   rpc EstimateMultiHopSwap(QueryEstimateMultiHopSwapRequest) returns (QueryEstimateMultiHopSwapResponse) {
     option (google.api.http).get = "/neutron/dex/estimate_multi_hop_swap";
+    option deprecated = true;
   }
 
-  // Queries the simulated result of a PlaceLimit order
+  // DEPRECATED Queries the simulated result of a PlaceLimit order
   rpc EstimatePlaceLimitOrder(QueryEstimatePlaceLimitOrderRequest) returns (QueryEstimatePlaceLimitOrderResponse) {
     option (google.api.http).get = "/neutron/dex/estimate_place_limit_order";
+    option deprecated = true;
   }
 
   // Queries a pool by pair, tick and fee
@@ -124,6 +126,36 @@ service Query {
   // Queries a list of PoolMetadata items.
   rpc PoolMetadataAll(QueryAllPoolMetadataRequest) returns (QueryAllPoolMetadataResponse) {
     option (google.api.http).get = "/neutron/dex/pool_metadata";
+  }
+
+  // Simulates MsgDeposit
+  rpc SimulateDeposit(QuerySimulateDepositRequest) returns (QuerySimulateDepositResponse) {
+    option (google.api.http).get = "/neutron/dex/simulate_deposit";
+  }
+
+  // Simulates MsgWithdrawal
+  rpc SimulateWithdrawal(QuerySimulateWithdrawalRequest) returns (QuerySimulateWithdrawalResponse) {
+    option (google.api.http).get = "/neutron/dex/simulate_withdrawal";
+  }
+
+  // Simulates MsgPlaceLimitOrder
+  rpc SimulatePlaceLimitOrder(QuerySimulatePlaceLimitOrderRequest) returns (QuerySimulatePlaceLimitOrderResponse) {
+    option (google.api.http).get = "/neutron/dex/simulate_place_limit_order";
+  }
+
+  // Simulates MsgWithdrawFilledLimitOrder
+  rpc SimulateWithdrawFilledLimitOrder(QuerySimulateWithdrawFilledLimitOrderRequest) returns (QuerySimulateWithdrawFilledLimitOrderResponse) {
+    option (google.api.http).get = "/neutron/dex/simulate_withdraw_filled_limit_order";
+  }
+
+  // Simulates MsgCancelLimitOrder
+  rpc SimulateCancelLimitOrder(QuerySimulateCancelLimitOrderRequest) returns (QuerySimulateCancelLimitOrderResponse) {
+    option (google.api.http).get = "/neutron/dex/simulate_cancel_limit_order";
+  }
+
+  // Simulates MsgMultiHopSwap
+  rpc SimulateMultiHopSwap(QuerySimulateMultiHopSwapRequest) returns (QuerySimulateMultiHopSwapResponse) {
+    option (google.api.http).get = "/neutron/dex/simulate_multi_hop_swap";
   }
 
   // this line is used by starport scaffolding # 2
@@ -260,6 +292,7 @@ message QueryGetPoolReservesResponse {
 }
 
 message QueryEstimateMultiHopSwapRequest {
+  // DEPRECATED: Use QuerySimulateMultiHopSwap
   string creator = 1;
   string receiver = 2;
   repeated MultiHopRoute routes = 3;
@@ -271,7 +304,7 @@ message QueryEstimateMultiHopSwapRequest {
   ];
   string exit_limit_price = 5 [
     (gogoproto.moretags) = "yaml:\"exit_limit_price\"",
-    (gogoproto.customtype) = "github.com/neutron-org/neutron/v4/utils/math.PrecDec",
+    (gogoproto.customtype) = "github.com/neutron-org/neutron/v5/utils/math.PrecDec",
     (gogoproto.nullable) = false,
     (gogoproto.jsontag) = "exit_limit_price"
   ];
@@ -290,6 +323,7 @@ message QueryEstimateMultiHopSwapResponse {
 }
 
 message QueryEstimatePlaceLimitOrderRequest {
+  // DEPRECATED: Use QuerySimulatePlaceLimitOrder
   string creator = 1;
   string receiver = 2;
   string token_in = 3;
@@ -376,6 +410,54 @@ message QueryAllPoolMetadataRequest {
 message QueryAllPoolMetadataResponse {
   repeated PoolMetadata pool_metadata = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QuerySimulateDepositRequest {
+  MsgDeposit msg = 1;
+}
+
+message QuerySimulateDepositResponse {
+  MsgDepositResponse resp = 1;
+}
+
+message QuerySimulateWithdrawalRequest {
+  MsgWithdrawal msg = 1;
+}
+
+message QuerySimulateWithdrawalResponse {
+  MsgWithdrawalResponse resp = 1;
+}
+
+message QuerySimulatePlaceLimitOrderRequest {
+  MsgPlaceLimitOrder msg = 1;
+}
+
+message QuerySimulatePlaceLimitOrderResponse {
+  MsgPlaceLimitOrderResponse resp = 1;
+}
+
+message QuerySimulateWithdrawFilledLimitOrderRequest {
+  MsgWithdrawFilledLimitOrder msg = 1;
+}
+
+message QuerySimulateWithdrawFilledLimitOrderResponse {
+  MsgWithdrawFilledLimitOrderResponse resp = 1;
+}
+
+message QuerySimulateCancelLimitOrderRequest {
+  MsgCancelLimitOrder msg = 1;
+}
+
+message QuerySimulateCancelLimitOrderResponse {
+  MsgCancelLimitOrderResponse resp = 1;
+}
+
+message QuerySimulateMultiHopSwapRequest {
+  MsgMultiHopSwap msg = 1;
+}
+
+message QuerySimulateMultiHopSwapResponse {
+  MsgMultiHopSwapResponse resp = 1;
 }
 
 // this line is used by starport scaffolding # 3

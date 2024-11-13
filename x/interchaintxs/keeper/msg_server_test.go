@@ -5,17 +5,18 @@ import (
 	"testing"
 	"time"
 
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
 	"cosmossdk.io/math"
 
-	"github.com/neutron-org/neutron/v4/app/params"
+	"github.com/neutron-org/neutron/v5/app/params"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	feerefundertypes "github.com/neutron-org/neutron/v4/x/feerefunder/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs/keeper"
+	feerefundertypes "github.com/neutron-org/neutron/v5/x/feerefunder/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -24,13 +25,17 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
-	"github.com/neutron-org/neutron/v4/testutil"
-	testkeeper "github.com/neutron-org/neutron/v4/testutil/interchaintxs/keeper"
-	mock_types "github.com/neutron-org/neutron/v4/testutil/mocks/interchaintxs/types"
-	"github.com/neutron-org/neutron/v4/x/interchaintxs/types"
+	"github.com/neutron-org/neutron/v5/testutil"
+	testkeeper "github.com/neutron-org/neutron/v5/testutil/interchaintxs/keeper"
+	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/interchaintxs/types"
+	"github.com/neutron-org/neutron/v5/x/interchaintxs/types"
 )
 
 const TestFeeCollectorAddr = "neutron1dua3d89szsmd3vwg0y5a2689ah0g4x68ps8vew"
+
+const channelID = "channel-0"
+
+var portID = "icacontroller-" + testutil.TestOwnerAddress + ICAId
 
 func TestMsgRegisterInterchainAccountValidate(t *testing.T) {
 	icak, ctx := testkeeper.InterchainTxsKeeper(t, nil, nil, nil, nil, nil, nil, func(_ sdk.Context) string {
@@ -114,6 +119,7 @@ func TestRegisterInterchainAccount(t *testing.T) {
 		FromAddress:         testutil.TestOwnerAddress,
 		ConnectionId:        "connection-0",
 		InterchainAccountId: "ica0",
+		Ordering:            channeltypes.ORDERED,
 	}
 	contractAddress := sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress)
 	icaOwner := types.NewICAOwnerFromAddress(contractAddress, msgRegAcc.InterchainAccountId)
@@ -155,8 +161,61 @@ func TestRegisterInterchainAccount(t *testing.T) {
 	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
 	require.Nil(t, resp)
 
-	channelID := "channel-0"
-	portID := "icacontroller-" + testutil.TestOwnerAddress + ICAId
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
+	bankKeeper.EXPECT().SendCoins(ctx, sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress), sdk.MustAccAddressFromBech32(TestFeeCollectorAddr), msgRegAcc.RegisterFee)
+	icaMsgServer.EXPECT().RegisterInterchainAccount(ctx, msgRegICA).Return(&icacontrollertypes.MsgRegisterInterchainAccountResponse{
+		ChannelId: channelID,
+		PortId:    portID,
+	}, nil)
+	icaKeeper.EXPECT().SetMiddlewareEnabled(ctx, portID, msgRegAcc.ConnectionId)
+	resp, err = icak.RegisterInterchainAccount(ctx, &msgRegAcc)
+	require.NoError(t, err)
+	require.Equal(t, types.MsgRegisterInterchainAccountResponse{
+		ChannelId: channelID,
+		PortId:    portID,
+	}, *resp)
+}
+
+func TestRegisterInterchainAccountUnordered(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	icaKeeper := mock_types.NewMockICAControllerKeeper(ctrl)
+	icaMsgServer := mock_types.NewMockICAControllerMsgServer(ctrl)
+	wmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+	bankKeeper := mock_types.NewMockBankKeeper(ctrl)
+	icak, ctx := testkeeper.InterchainTxsKeeper(t, wmKeeper, nil, icaKeeper, icaMsgServer, nil, bankKeeper, func(_ sdk.Context) string {
+		return TestFeeCollectorAddr
+	})
+
+	msgRegAcc := types.MsgRegisterInterchainAccount{
+		FromAddress:         testutil.TestOwnerAddress,
+		ConnectionId:        "connection-0",
+		InterchainAccountId: "ica0",
+		Ordering:            channeltypes.UNORDERED, // return unordered
+	}
+	contractAddress := sdk.MustAccAddressFromBech32(msgRegAcc.FromAddress)
+	icaOwner := types.NewICAOwnerFromAddress(contractAddress, msgRegAcc.InterchainAccountId)
+
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(false)
+	resp, err := icak.RegisterInterchainAccount(ctx, &msgRegAcc)
+	require.ErrorContains(t, err, "is not a contract address")
+	require.Nil(t, resp)
+
+	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
+	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
+	resp, err = icak.RegisterInterchainAccount(ctx, &msgRegAcc)
+	require.ErrorContains(t, err, "failed to charge fees to pay for RegisterInterchainAccount msg")
+	require.Nil(t, resp)
+
+	msgRegAcc.RegisterFee = sdk.NewCoins(sdk.NewCoin(params.DefaultDenom, math.NewInt(1_000_000)))
+
+	msgRegICA := &icacontrollertypes.MsgRegisterInterchainAccount{
+		Owner:        icaOwner.String(),
+		ConnectionId: msgRegAcc.ConnectionId,
+		Version:      "",
+		Ordering:     channeltypes.UNORDERED,
+	}
 
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	wmKeeper.EXPECT().GetContractInfo(ctx, contractAddress).Return(&wasmtypes.ContractInfo{CodeID: 1})
@@ -439,7 +498,6 @@ func TestSubmitTx(t *testing.T) {
 	require.ErrorContains(t, err, "MsgSubmitTx contains more messages than allowed")
 	submitMsg.Msgs = []*codectypes.Any{&cosmosMsg}
 
-	portID := "icacontroller-" + testutil.TestOwnerAddress + ICAId
 	wmKeeper.EXPECT().HasContractInfo(ctx, contractAddress).Return(true)
 	icaKeeper.EXPECT().GetActiveChannelID(ctx, "connection-0", portID).Return("", false)
 	resp, err = icak.SubmitTx(ctx, &submitMsg)
