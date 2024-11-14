@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	math_utils "github.com/neutron-org/neutron/v5/utils/math"
-	"github.com/neutron-org/neutron/v5/x/dex/types"
 	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
@@ -133,7 +132,6 @@ func CalcDepositAmountNoAutoswap(params depositTestParams) (resultAmountA, resul
 }
 
 func calcCurrentShareValue(params depositTestParams, existingValue math_utils.PrecDec) math_utils.PrecDec {
-
 	initialValueA := params.ExistingLiquidityDistribution.TokenA.Amount
 	initialValueB := params.ExistingLiquidityDistribution.TokenB.Amount
 
@@ -147,13 +145,13 @@ func calcCurrentShareValue(params depositTestParams, existingValue math_utils.Pr
 	return currentShareValue
 }
 
-func calcAutoswapAmount(params depositTestParams) (swapAmountA math.Int, swapAmountB math.Int) {
+func calcAutoswapAmount(params depositTestParams) (swapAmountA, swapAmountB math.Int) {
 	existingLiquidity := CalcTotalPreDepositLiquidity(params)
 	existingA := existingLiquidity.TokenA.Amount
 	existingB := existingLiquidity.TokenB.Amount
 	depositAmountA := params.DepositAmounts.TokenA.Amount
 	depositAmountB := params.DepositAmounts.TokenB.Amount
-	price1To0 := types.MustCalcPrice(-params.Tick)
+	price1To0 := dextypes.MustCalcPrice(-params.Tick)
 	if existingA.IsZero() && existingB.IsZero() {
 		return math.ZeroInt(), math.ZeroInt()
 	}
@@ -177,7 +175,6 @@ func calcAutoswapAmount(params depositTestParams) (swapAmountA math.Int, swapAmo
 		amountSwapped0 := amountSwappedAs1.Quo(price1To0)
 		return amountSwapped0.Ceil().TruncateInt(), math.ZeroInt()
 	}
-
 }
 
 func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBAmount, sharesIssued math.Int) {
@@ -198,28 +195,25 @@ func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBA
 		sharesIssued = depositValueAsToken0.Mul(shareValue).TruncateInt()
 
 		return inAmountA, inAmountB, sharesIssued
-	} else {
-		autoSwapAmountA, autoswapAmountB := calcAutoswapAmount(params)
-		autoswapValueAsToken0 := calcDepositValueAsToken0(params.Tick, autoSwapAmountA, autoswapAmountB)
+	} // else
+	autoSwapAmountA, autoswapAmountB := calcAutoswapAmount(params)
+	autoswapValueAsToken0 := calcDepositValueAsToken0(params.Tick, autoSwapAmountA, autoswapAmountB)
 
-		autoswapFeeAsPrice := types.MustCalcPrice(-int64(params.Fee))
-		autoswapFeePct := math_utils.OnePrecDec().Sub(autoswapFeeAsPrice)
-		autoswapFee := autoswapValueAsToken0.Mul(autoswapFeePct)
+	autoswapFeeAsPrice := dextypes.MustCalcPrice(-int64(params.Fee))
+	autoswapFeePct := math_utils.OnePrecDec().Sub(autoswapFeeAsPrice)
+	autoswapFee := autoswapValueAsToken0.Mul(autoswapFeePct)
 
-		inAmountA := params.DepositAmounts.TokenA.Amount
-		inAmountB := params.DepositAmounts.TokenB.Amount
+	inAmountA = params.DepositAmounts.TokenA.Amount
+	inAmountB = params.DepositAmounts.TokenB.Amount
 
-		fullDepositValueAsToken0 := calcDepositValueAsToken0(params.Tick, inAmountA, inAmountB)
-		depositAmountMinusFee := fullDepositValueAsToken0.Sub(autoswapFee)
-		currentValueWithAutoswapFee := existingValueAsToken0.Add(autoswapFee)
-		shareValue := calcCurrentShareValue(params, currentValueWithAutoswapFee)
+	fullDepositValueAsToken0 := calcDepositValueAsToken0(params.Tick, inAmountA, inAmountB)
+	depositAmountMinusFee := fullDepositValueAsToken0.Sub(autoswapFee)
+	currentValueWithAutoswapFee := existingValueAsToken0.Add(autoswapFee)
+	shareValue := calcCurrentShareValue(params, currentValueWithAutoswapFee)
 
-		sharesIssued = depositAmountMinusFee.Mul(shareValue).TruncateInt()
+	sharesIssued = depositAmountMinusFee.Mul(shareValue).TruncateInt()
 
-		return inAmountA, inAmountB, sharesIssued
-
-	}
-
+	return inAmountA, inAmountB, sharesIssued
 }
 
 func (s *DexStateTestSuite) handleBaseFailureCases(params depositTestParams, err error) {

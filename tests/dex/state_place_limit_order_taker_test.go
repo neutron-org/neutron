@@ -193,7 +193,8 @@ func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 
 		availableLiquidity := tickLiquidity
 		outGivenIn := math_utils.NewPrecDecFromInt(remainingIn).Quo(price).TruncateInt()
-		amountOut := math.ZeroInt()
+		var amountOut math.Int
+		var amountIn math.Int
 		if params.MaxAmountOut != nil {
 			maxAmountOut := params.MaxAmountOut.Sub(TotalOut)
 			if !maxAmountOut.IsPositive() {
@@ -202,12 +203,10 @@ func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 			amountOut = utils.MinIntArr([]math.Int{availableLiquidity, outGivenIn, maxAmountOut})
 		} else {
 			amountOut = utils.MinIntArr([]math.Int{availableLiquidity, outGivenIn})
-
 		}
 
 		amountInRaw := price.MulInt(amountOut)
 
-		amountIn := math.ZeroInt()
 		if params.LiquidityType == LOLP {
 			// Simulate rounding on two different tickLiquidities
 			amountIn = amountInRaw.QuoInt(math.NewInt(2)).Ceil().TruncateInt().MulRaw(2)
@@ -263,7 +262,7 @@ func TestPlaceLimitOrderTaker(t *testing.T) {
 			s.fundCreatorBalanceDefault(tc.PairID)
 			//
 
-			resp, err := s.makePlaceTakerLO(s.creator, tc.AmountIn, tc.PairID.Token0, tc.LimitPrice.String(), dextypes.LimitOrderType(tc.OrderType), tc.MaxAmountOut)
+			resp, err := s.makePlaceTakerLO(s.creator, tc.AmountIn, tc.PairID.Token0, tc.LimitPrice.String(), tc.OrderType, tc.MaxAmountOut)
 
 			s.handleTakerErrors(tc, err)
 

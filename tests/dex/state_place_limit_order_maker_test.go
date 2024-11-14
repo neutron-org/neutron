@@ -290,7 +290,7 @@ func TestPlaceLimitOrderMaker(t *testing.T) {
 			}
 			expectedSwapTakerDenom := s.expectedInOutTokensAmount(amountIn, tc.PairID.Token1)
 			totalExpectedToSwap = totalExpectedToSwap.Add(expectedSwapTakerDenom)
-			resp, err := s.makePlaceLO(s.creator, amountIn, tc.PairID.Token1, DefaultSellPrice, dextypes.LimitOrderType(tc.OrderType), expTime)
+			resp, err := s.makePlaceLO(s.creator, amountIn, tc.PairID.Token1, DefaultSellPrice, tc.OrderType, expTime)
 			s.Require().NoError(err)
 
 			// 1. generic liquidity check assertion

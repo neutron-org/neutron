@@ -66,13 +66,13 @@ func (s *DexStateTestSuite) setupCancelTest(params cancelLimitOrderTestParams) (
 		t := time.Now()
 		expTime = &t
 	}
-	res := s.makePlaceLOSuccess(s.creator, coinA, coinB.Denom, DefaultSellPrice, dextypes.LimitOrderType(params.OrderType), expTime)
+	res := s.makePlaceLOSuccess(s.creator, coinA, coinB.Denom, DefaultSellPrice, params.OrderType, expTime)
 
 	totalDeposited := BaseTokenAmountInt
 	if params.ExistingTokenAHolders == OneOtherAndCreatorLO {
 		totalDeposited = totalDeposited.MulRaw(2)
 		s.FundAcc(s.alice, sdk.NewCoins(coinA))
-		s.makePlaceLOSuccess(s.alice, coinA, coinB.Denom, DefaultSellPrice, dextypes.LimitOrderType(params.OrderType), expTime)
+		s.makePlaceLOSuccess(s.alice, coinA, coinB.Denom, DefaultSellPrice, params.OrderType, expTime)
 	}
 
 	if params.Filled > 0 {
