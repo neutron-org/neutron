@@ -7,7 +7,9 @@ import (
 	"cosmossdk.io/math"
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ibctypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/stretchr/testify/suite"
@@ -26,11 +28,11 @@ type KeeperTestSuite struct {
 func (suite *KeeperTestSuite) TestVerifyValue() {
 	tests := []struct {
 		name     string
-		malleate func(sender string, ctx sdk.Context)
+		malleate func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error)
 	}{
 		{
 			name: "valid KV storage proof",
-			malleate: func(sender string, ctx sdk.Context) {
+			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
 				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
 
 				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
@@ -41,12 +43,75 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 				})
 				suite.Require().NoError(err)
 
-				suite.Require().NoError(suite.GetNeutronZoneApp(suite.ChainA).StateVerifierKeeper.Verify(ctx, resp.Height, []*iqtypes.StorageValue{{
+				return []*iqtypes.StorageValue{{
 					Key:           resp.Key,
 					Proof:         resp.ProofOps,
 					Value:         resp.Value,
 					StoragePrefix: ibchost.StoreKey,
-				}}))
+				}}, resp.Height, nil
+			},
+		},
+		{
+			name: "empty KV storage proof",
+			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
+
+				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
+					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+				suite.Require().NoError(err)
+
+				return []*iqtypes.StorageValue{{
+					Key:           resp.Key,
+					Proof:         nil,
+					Value:         resp.Value,
+					StoragePrefix: ibchost.StoreKey,
+				}}, resp.Height, ibctypes.ErrInvalidMerkleProof
+			},
+		},
+		{
+			name: "invalid KV storage proof",
+			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
+
+				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
+					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+				suite.Require().NoError(err)
+
+				return []*iqtypes.StorageValue{{
+					Key:           resp.Key,
+					Proof:         &crypto.ProofOps{Ops: []crypto.ProofOp{{Type: "dasfsdf", Key: []byte("sffgsdf"), Data: []byte("sfdsdfs")}}},
+					Value:         resp.Value,
+					StoragePrefix: ibchost.StoreKey,
+				}}, resp.Height, ibctypes.ErrInvalidMerkleProof
+			},
+		},
+		{
+			name: "invalid height for proof",
+			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
+
+				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
+					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+				suite.Require().NoError(err)
+
+				return []*iqtypes.StorageValue{{
+					Key:           resp.Key,
+					Proof:         resp.ProofOps,
+					Value:         resp.Value,
+					StoragePrefix: ibchost.StoreKey,
+				}}, resp.Height - 2, fmt.Errorf("Please ensure proof was submitted with correct proofHeight and to the correct chain.")
 			},
 		},
 	}
@@ -73,7 +138,13 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 			senderAddress := suite.ChainA.SenderAccounts[0].SenderAccount.GetAddress()
 			suite.TopUpWallet(ctx, senderAddress, contractAddress)
 
-			tt.malleate(contractAddress.String(), ctx)
+			stValues, height, expectedError := tt.malleate(contractAddress.String(), ctx)
+
+			if expectedError != nil {
+				suite.Require().ErrorContains(suite.GetNeutronZoneApp(suite.ChainA).StateVerifierKeeper.Verify(ctx, height, stValues), expectedError.Error())
+			} else {
+				suite.Require().NoError(suite.GetNeutronZoneApp(suite.ChainA).StateVerifierKeeper.Verify(ctx, height, stValues))
+			}
 		})
 	}
 }
