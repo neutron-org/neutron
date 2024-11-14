@@ -11,11 +11,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 	"github.com/neutron-org/neutron/v5/testutil/apptesting"
 	"github.com/neutron-org/neutron/v5/testutil/common/sample"
 	math_utils "github.com/neutron-org/neutron/v5/utils/math"
 	dexkeeper "github.com/neutron-org/neutron/v5/x/dex/keeper"
+	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
 // Constants //////////////////////////////////////////////////////////////////
@@ -334,7 +334,7 @@ func (s *DexStateTestSuite) makeWithdrawFilledSuccess(addr sdk.AccAddress, tranc
 }
 
 func calcDepositValueAsToken0(tick int64, amount0, amount1 math.Int) math_utils.PrecDec {
-	price1To0CenterTick := dextypes.MustCalcPrice(-1 * tick)
+	price1To0CenterTick := dextypes.MustCalcPrice(tick)
 	amount1ValueAsToken0 := price1To0CenterTick.MulInt(amount1)
 	depositValue := amount1ValueAsToken0.Add(math_utils.NewPrecDecFromInt(amount0))
 

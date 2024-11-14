@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	math_utils "github.com/neutron-org/neutron/v5/utils/math"
+	"github.com/neutron-org/neutron/v5/x/dex/types"
 	dextypes "github.com/neutron-org/neutron/v5/x/dex/types"
 )
 
@@ -100,7 +101,7 @@ func CalcTotalPreDepositLiquidity(params depositTestParams) LiquidityDistributio
 	}
 }
 
-func CalcDepositOutput(params depositTestParams) (resultAmountA, resultAmountB math.Int) {
+func CalcDepositAmountNoAutoswap(params depositTestParams) (resultAmountA, resultAmountB math.Int) {
 	depositA := params.DepositAmounts.TokenA.Amount
 	depositB := params.DepositAmounts.TokenB.Amount
 
@@ -131,7 +132,8 @@ func CalcDepositOutput(params depositTestParams) (resultAmountA, resultAmountB m
 	}
 }
 
-func calcCurrentShareValue(params depositTestParams) math_utils.PrecDec {
+func calcCurrentShareValue(params depositTestParams, existingValue math_utils.PrecDec) math_utils.PrecDec {
+
 	initialValueA := params.ExistingLiquidityDistribution.TokenA.Amount
 	initialValueB := params.ExistingLiquidityDistribution.TokenB.Amount
 
@@ -140,64 +142,90 @@ func calcCurrentShareValue(params depositTestParams) math_utils.PrecDec {
 		return math_utils.OnePrecDec()
 	}
 
-	totalValueA := initialValueA.Add(params.PoolValueIncrease.TokenA.Amount)
-	totalValueB := initialValueB.Add(params.PoolValueIncrease.TokenB.Amount)
-
-	totalPreDepositValue := calcDepositValueAsToken0(params.Tick, totalValueA, totalValueB)
-
-	currentShareValue := math_utils.NewPrecDecFromInt(existingShares).Quo(totalPreDepositValue)
+	currentShareValue := math_utils.NewPrecDecFromInt(existingShares).Quo(existingValue)
 
 	return currentShareValue
 }
 
-func calcAutoSwapResidualValue(params depositTestParams, residual0, residual1 math.Int) math_utils.PrecDec {
-	swapFeeDeduction := dextypes.MustCalcPrice(int64(params.Fee))
+func calcAutoswapAmount(params depositTestParams) (swapAmountA math.Int, swapAmountB math.Int) {
+	existingLiquidity := CalcTotalPreDepositLiquidity(params)
+	existingA := existingLiquidity.TokenA.Amount
+	existingB := existingLiquidity.TokenB.Amount
+	depositAmountA := params.DepositAmounts.TokenA.Amount
+	depositAmountB := params.DepositAmounts.TokenB.Amount
+	price1To0 := types.MustCalcPrice(-params.Tick)
+	if existingA.IsZero() && existingB.IsZero() {
+		return math.ZeroInt(), math.ZeroInt()
+	}
+
+	existingADec := math_utils.NewPrecDecFromInt(existingA)
+	existingBDec := math_utils.NewPrecDecFromInt(existingB)
+	// swapAmount = (reserves0*depositAmount1 - reserves1*depositAmount0) / (price * reserves1  + reserves0)
+	swapAmount := existingADec.MulInt(depositAmountB).Sub(existingBDec.MulInt(depositAmountA)).
+		Quo(existingADec.Add(existingBDec.Quo(price1To0)))
 
 	switch {
-	// We must autoswap TokenA
-	case residual0.IsPositive() && residual1.IsPositive():
-		panic("residual0 and residual1 cannot both be positive")
-	case residual0.IsPositive():
-		return swapFeeDeduction.MulInt(residual0)
-	case residual1.IsPositive():
-		price1To0CenterTick := dextypes.MustCalcPrice(-1 * params.Tick)
-		token1AsToken0 := price1To0CenterTick.MulInt(residual1)
-		return swapFeeDeduction.Mul(token1AsToken0)
-	default:
-		panic("residual0 and residual1 cannot both be zero")
+	case swapAmount.IsZero(): // nothing to be swapped
+		return math.ZeroInt(), math.ZeroInt()
 
+	case swapAmount.IsPositive(): // Token1 needs to be swapped
+		return math.ZeroInt(), swapAmount.Ceil().TruncateInt()
+
+	default: // Token0 needs to be swapped
+		amountSwappedAs1 := swapAmount.Neg()
+
+		amountSwapped0 := amountSwappedAs1.Quo(price1To0)
+		return amountSwapped0.Ceil().TruncateInt(), math.ZeroInt()
 	}
+
 }
 
 func calcExpectedDepositAmounts(params depositTestParams) (tokenAAmount, tokenBAmount, sharesIssued math.Int) {
-	amountAWithoutAutoswap, amountBWithoutAutoswap := CalcDepositOutput(params)
+	var depositValueAsToken0 math_utils.PrecDec
+	var inAmountA math.Int
+	var inAmountB math.Int
 
-	sharesIssuedWithoutAutoswap := calcDepositValueAsToken0(params.Tick, amountAWithoutAutoswap, amountBWithoutAutoswap)
+	existingLiquidity := CalcTotalPreDepositLiquidity(params)
+	existingA := existingLiquidity.TokenA.Amount
+	existingB := existingLiquidity.TokenB.Amount
+	existingValueAsToken0 := calcDepositValueAsToken0(params.Tick, existingA, existingB)
 
-	residualA := params.DepositAmounts.TokenA.Amount.Sub(amountAWithoutAutoswap)
-	residualB := params.DepositAmounts.TokenB.Amount.Sub(amountBWithoutAutoswap)
+	if params.DisableAutoswap {
+		inAmountA, inAmountB = CalcDepositAmountNoAutoswap(params)
+		depositValueAsToken0 = calcDepositValueAsToken0(params.Tick, inAmountA, inAmountB)
 
-	autoswapSharesIssued := math_utils.ZeroPrecDec()
-	if !params.DisableAutoswap && (residualA.IsPositive() || residualB.IsPositive()) {
-		autoswapSharesIssued = calcAutoSwapResidualValue(params, residualA, residualB)
-		tokenAAmount = params.DepositAmounts.TokenA.Amount
-		tokenBAmount = params.DepositAmounts.TokenB.Amount
+		shareValue := calcCurrentShareValue(params, existingValueAsToken0)
+		sharesIssued = depositValueAsToken0.Mul(shareValue).TruncateInt()
+
+		return inAmountA, inAmountB, sharesIssued
 	} else {
-		tokenAAmount = amountAWithoutAutoswap
-		tokenBAmount = amountBWithoutAutoswap
+		autoSwapAmountA, autoswapAmountB := calcAutoswapAmount(params)
+		autoswapValueAsToken0 := calcDepositValueAsToken0(params.Tick, autoSwapAmountA, autoswapAmountB)
+
+		autoswapFeeAsPrice := types.MustCalcPrice(-int64(params.Fee))
+		autoswapFeePct := math_utils.OnePrecDec().Sub(autoswapFeeAsPrice)
+		autoswapFee := autoswapValueAsToken0.Mul(autoswapFeePct)
+
+		inAmountA := params.DepositAmounts.TokenA.Amount
+		inAmountB := params.DepositAmounts.TokenB.Amount
+
+		fullDepositValueAsToken0 := calcDepositValueAsToken0(params.Tick, inAmountA, inAmountB)
+		depositAmountMinusFee := fullDepositValueAsToken0.Sub(autoswapFee)
+		currentValueWithAutoswapFee := existingValueAsToken0.Add(autoswapFee)
+		shareValue := calcCurrentShareValue(params, currentValueWithAutoswapFee)
+
+		sharesIssued = depositAmountMinusFee.Mul(shareValue).TruncateInt()
+
+		return inAmountA, inAmountB, sharesIssued
+
 	}
 
-	totalDepositValue := autoswapSharesIssued.Add(sharesIssuedWithoutAutoswap)
-	currentShareValue := calcCurrentShareValue(params)
-	sharesIssued = totalDepositValue.Mul(currentShareValue).TruncateInt()
-
-	return tokenAAmount, tokenBAmount, sharesIssued
 }
 
 func (s *DexStateTestSuite) handleBaseFailureCases(params depositTestParams, err error) {
 	currentLiquidity := CalcTotalPreDepositLiquidity(params)
 	// cannot deposit single sided liquidity into a non-empty pool if you are missing one of the tokens in the pool
-	if !currentLiquidity.empty() {
+	if !currentLiquidity.empty() && params.DisableAutoswap {
 		if (!params.DepositAmounts.hasTokenA() && currentLiquidity.hasTokenA()) || (!params.DepositAmounts.hasTokenB() && currentLiquidity.hasTokenB()) {
 			s.ErrorIs(err, dextypes.ErrZeroTrueDeposit)
 			s.T().Skip("Ending test due to expected error")
