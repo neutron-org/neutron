@@ -114,6 +114,27 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 				}}, resp.Height - 2, fmt.Errorf("Please ensure proof was submitted with correct proofHeight and to the correct chain.")
 			},
 		},
+		{
+			name: "invalid storage prefix",
+			malleate: func(sender string, ctx sdk.Context) ([]*iqtypes.StorageValue, int64, error) {
+				clientKey := host.FullClientStateKey(suite.Path.EndpointA.ClientID)
+
+				resp, err := suite.ChainA.App.Query(ctx, &types.RequestQuery{
+					Path:   fmt.Sprintf("store/%s/key", ibchost.StoreKey),
+					Height: suite.ChainA.LastHeader.Header.Height - 1,
+					Data:   clientKey,
+					Prove:  true,
+				})
+				suite.Require().NoError(err)
+
+				return []*iqtypes.StorageValue{{
+					Key:           resp.Key,
+					Proof:         resp.ProofOps,
+					Value:         resp.Value,
+					StoragePrefix: "kekekek",
+				}}, resp.Height, fmt.Errorf("Please ensure the path and value are both correct.")
+			},
+		},
 	}
 
 	for i, tc := range tests {
