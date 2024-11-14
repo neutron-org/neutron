@@ -12,19 +12,19 @@ import (
 )
 
 var (
-	_ sdk.Msg                            = &MsgSubmitQueryResultRequest{}
-	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResultRequest{}
+	_ sdk.Msg                            = &MsgSubmitQueryResult{}
+	_ codectypes.UnpackInterfacesMessage = MsgSubmitQueryResult{}
 )
 
-func (msg MsgSubmitQueryResultRequest) Route() string {
+func (msg MsgSubmitQueryResult) Route() string {
 	return RouterKey
 }
 
-func (msg MsgSubmitQueryResultRequest) Type() string {
+func (msg MsgSubmitQueryResult) Type() string {
 	return "submit-query-result"
 }
 
-func (msg MsgSubmitQueryResultRequest) Validate() error {
+func (msg MsgSubmitQueryResult) Validate() error {
 	if msg.Result == nil {
 		return errors.Wrap(ErrEmptyResult, "query result can't be empty")
 	}
@@ -48,11 +48,11 @@ func (msg MsgSubmitQueryResultRequest) Validate() error {
 	return nil
 }
 
-func (msg MsgSubmitQueryResultRequest) GetSignBytes() []byte {
+func (msg MsgSubmitQueryResult) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
-func (msg MsgSubmitQueryResultRequest) GetSigners() []sdk.AccAddress {
+func (msg MsgSubmitQueryResult) GetSigners() []sdk.AccAddress {
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
@@ -61,7 +61,7 @@ func (msg MsgSubmitQueryResultRequest) GetSigners() []sdk.AccAddress {
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func (msg MsgSubmitQueryResultRequest) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+func (msg MsgSubmitQueryResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	var header exported.ClientMessage
 	if err := unpacker.UnpackAny(msg.Result.GetBlock().GetHeader(), &header); err != nil {
 		return err
@@ -72,17 +72,17 @@ func (msg MsgSubmitQueryResultRequest) UnpackInterfaces(unpacker codectypes.AnyU
 
 //----------------------------------------------------------------
 
-var _ sdk.Msg = &MsgRegisterInterchainQueryRequest{}
+var _ sdk.Msg = &MsgRegisterInterchainQuery{}
 
-func (msg MsgRegisterInterchainQueryRequest) Route() string {
+func (msg MsgRegisterInterchainQuery) Route() string {
 	return RouterKey
 }
 
-func (msg MsgRegisterInterchainQueryRequest) Type() string {
+func (msg MsgRegisterInterchainQuery) Type() string {
 	return "register-interchain-query"
 }
 
-func (msg MsgRegisterInterchainQueryRequest) Validate(params Params) error {
+func (msg MsgRegisterInterchainQuery) Validate(params Params) error {
 	if msg.UpdatePeriod == 0 {
 		return errors.Wrap(ErrInvalidUpdatePeriod, "update period can not be equal to zero")
 	}
@@ -120,11 +120,11 @@ func (msg MsgRegisterInterchainQueryRequest) Validate(params Params) error {
 	return nil
 }
 
-func (msg MsgRegisterInterchainQueryRequest) GetSignBytes() []byte {
+func (msg MsgRegisterInterchainQuery) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
-func (msg MsgRegisterInterchainQueryRequest) GetSigners() []sdk.AccAddress {
+func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
@@ -134,9 +134,9 @@ func (msg MsgRegisterInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 
 //----------------------------------------------------------------
 
-var _ sdk.Msg = &MsgUpdateInterchainQueryRequest{}
+var _ sdk.Msg = &MsgUpdateInterchainQuery{}
 
-func (msg MsgUpdateInterchainQueryRequest) Validate(params Params) error {
+func (msg MsgUpdateInterchainQuery) Validate(params Params) error {
 	if msg.GetQueryId() == 0 {
 		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
@@ -179,11 +179,11 @@ func (msg MsgUpdateInterchainQueryRequest) Validate(params Params) error {
 	return nil
 }
 
-func (msg MsgUpdateInterchainQueryRequest) GetSignBytes() []byte {
+func (msg MsgUpdateInterchainQuery) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
-func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
+func (msg MsgUpdateInterchainQuery) GetSigners() []sdk.AccAddress {
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
@@ -193,17 +193,17 @@ func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 
 //----------------------------------------------------------------
 
-var _ sdk.Msg = &MsgUpdateParamsRequest{}
+var _ sdk.Msg = &MsgUpdateParams{}
 
-func (msg *MsgUpdateParamsRequest) Route() string {
+func (msg *MsgUpdateParams) Route() string {
 	return RouterKey
 }
 
-func (msg *MsgUpdateParamsRequest) Type() string {
+func (msg *MsgUpdateParams) Type() string {
 	return "update-params"
 }
 
-func (msg *MsgUpdateParamsRequest) GetSigners() []sdk.AccAddress {
+func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 	authority, err := sdk.AccAddressFromBech32(msg.Authority)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
@@ -211,11 +211,11 @@ func (msg *MsgUpdateParamsRequest) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{authority}
 }
 
-func (msg *MsgUpdateParamsRequest) GetSignBytes() []byte {
+func (msg *MsgUpdateParams) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(msg)
 }
 
-func (msg *MsgUpdateParamsRequest) Validate() error {
+func (msg *MsgUpdateParams) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return errors.Wrap(err, "authority is invalid")
 	}

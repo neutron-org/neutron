@@ -35,10 +35,13 @@ type RegisteredQuery struct {
 	// The query type identifier: `kv` or `tx`.
 	QueryType string `protobuf:"bytes,3,opt,name=query_type,json=queryType,proto3" json:"query_type,omitempty"`
 	// The KV-storage keys for which to get values from the remote chain. Only applicable for the
-	// KV-typed Interchain Queries.
+	// KV Interchain Queries. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+	// parameters.
 	Keys []*KVKey `protobuf:"bytes,4,rep,name=keys,proto3" json:"keys,omitempty"`
-	// A stringified list of filters for remote transactions search. Only applicable for the TX-typed
+	// A stringified list of filters for remote transactions search. Only applicable for the TX
 	// Interchain Queries. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+	// Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is limited
+	// by the module's `max_transactions_filters` parameters.
 	TransactionsFilter string `protobuf:"bytes,5,opt,name=transactions_filter,json=transactionsFilter,proto3" json:"transactions_filter,omitempty"`
 	// The IBC connection ID to the remote chain (the source of querying data). Is used for getting
 	// ConsensusState from the respective IBC client to verify query result proofs.
@@ -182,7 +185,7 @@ type KVKey struct {
 	// The first half of the storage path. It is supposed to be a substore name for the query
 	// (e.g. bank, staking, etc.).
 	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	// The second half of the storage path. The remaining part of a full path to an IAVL storage node.
+	// The second half of the storage path. The remaining part of the full path to an IAVL storage node.
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 

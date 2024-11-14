@@ -24,23 +24,23 @@ service Msg {
   //
   // Returns an ID assigned to the registered query. Handle this message response via a reply
   // handler in order to make use of the ID.
-  rpc RegisterInterchainQuery(MsgRegisterInterchainQueryRequest) returns (MsgRegisterInterchainQueryResponse);
+  rpc RegisterInterchainQuery(MsgRegisterInterchainQuery) returns (MsgRegisterInterchainQueryResponse);
   // Submits a result of an Interchain Query execution to the chain. This message handling may
   // include passing of the result to the query's owner smart contract for processing which might
   // be a pretty gas-consumable operation.
-  rpc SubmitQueryResult(MsgSubmitQueryResultRequest) returns (MsgSubmitQueryResultResponse);
+  rpc SubmitQueryResult(MsgSubmitQueryResult) returns (MsgSubmitQueryResultResponse);
   // Removes a given Interchain Query and its results from the module. Can be removed only by the
   // owner of the query during the query's submit timeout, and by anyone after the query has been
   // timed out. The query deposit is returned to the caller on a success call.
-  rpc RemoveInterchainQuery(MsgRemoveInterchainQueryRequest) returns (MsgRemoveInterchainQueryResponse);
+  rpc RemoveInterchainQuery(MsgRemoveInterchainQuery) returns (MsgRemoveInterchainQueryResponse);
   // Updates parameters of a registered Interchain Query. Only callable by the owner of the query.
-  rpc UpdateInterchainQuery(MsgUpdateInterchainQueryRequest) returns (MsgUpdateInterchainQueryResponse);
+  rpc UpdateInterchainQuery(MsgUpdateInterchainQuery) returns (MsgUpdateInterchainQueryResponse);
   // Updates params of the interchainqueries module. Only callable by the module's authority.
-  rpc UpdateParams(MsgUpdateParamsRequest) returns (MsgUpdateParamsResponse);
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
 // Request type for the Msg/RegisterInterchainQuery RPC method.
-message MsgRegisterInterchainQueryRequest {
+message MsgRegisterInterchainQuery {
   option (cosmos.msg.v1.signer) = "sender";
   // The query type identifier: `kv` or `tx`.
   string query_type = 1;
@@ -70,7 +70,7 @@ message MsgRegisterInterchainQueryResponse {
 }
 
 // Request type for the Msg/SubmitQueryResult RPC method.
-message MsgSubmitQueryResultRequest {
+message MsgSubmitQueryResult {
   option (cosmos.msg.v1.signer) = "sender";
   // The ID of the Interchain Query.
   uint64 query_id = 1;
@@ -152,7 +152,7 @@ message TxValue {
 message MsgSubmitQueryResultResponse {}
 
 // Request type for the Msg/RemoveInterchainQuery RPC method.
-message MsgRemoveInterchainQueryRequest {
+message MsgRemoveInterchainQuery {
   option (cosmos.msg.v1.signer) = "sender";
   // The ID of the query to remove.
   uint64 query_id = 1;
@@ -164,13 +164,13 @@ message MsgRemoveInterchainQueryRequest {
 message MsgRemoveInterchainQueryResponse {}
 
 // Request type for the Msg/UpdateInterchainQuery RPC method.
-message MsgUpdateInterchainQueryRequest {
+message MsgUpdateInterchainQuery {
   option (cosmos.msg.v1.signer) = "sender";
   // The ID of the query to update.
   uint64 query_id = 1;
   // A new list of KV-storage keys for which to get values from the remote chain. Only applicable
   // for a KV Interchain Query. Max amount of keys is limited by the module's `max_kv_query_keys_count`
-  // parameters. 
+  // parameters.
   repeated KVKey new_keys = 2;
   // A new minimal delay between consecutive query executions.
   uint64 new_update_period = 3;
@@ -187,7 +187,7 @@ message MsgUpdateInterchainQueryRequest {
 message MsgUpdateInterchainQueryResponse {}
 
 // Request type for the Msg/UpdateParams RPC method.
-message MsgUpdateParamsRequest {
+message MsgUpdateParams {
   option (amino.name) = "interchainqueries/MsgUpdateParams";
   option (cosmos.msg.v1.signer) = "authority";
   // The address of the authority of the module.

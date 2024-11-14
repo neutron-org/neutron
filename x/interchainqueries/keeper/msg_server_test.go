@@ -20,12 +20,12 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		msg         types.MsgRegisterInterchainQueryRequest
+		msg         types.MsgRegisterInterchainQuery
 		expectedErr error
 	}{
 		{
 			"invalid update period",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -37,7 +37,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -49,7 +49,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -61,7 +61,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty connection id",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -73,7 +73,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid query type",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          "invalid_type",
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -85,7 +85,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty keys",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               nil,
 				TransactionsFilter: "[]",
@@ -97,7 +97,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"too many keys",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               make([]*types.KVKey, types.DefaultMaxKvQueryKeysCount+1),
 				TransactionsFilter: "[]",
@@ -109,7 +109,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"nil key",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte("key1"), Path: "path1"}, nil},
 				TransactionsFilter: "[]",
@@ -121,7 +121,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"duplicated keys",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte("key1"), Path: "path1"}, {Key: []byte("key1"), Path: "path1"}},
 				TransactionsFilter: "[]",
@@ -133,7 +133,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty key path",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte("key1"), Path: ""}},
 				TransactionsFilter: "[]",
@@ -145,7 +145,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"empty key id",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeKV),
 				Keys:               []*types.KVKey{{Key: []byte(""), Path: "path"}},
 				TransactionsFilter: "[]",
@@ -157,7 +157,7 @@ func TestMsgRegisterInterchainQueryValidate(t *testing.T) {
 		},
 		{
 			"invalid transactions filter format",
-			types.MsgRegisterInterchainQueryRequest{
+			types.MsgRegisterInterchainQuery{
 				QueryType:          string(types.InterchainQueryTypeTX),
 				Keys:               nil,
 				TransactionsFilter: "&)(^Y(*&(*&(&(*",
@@ -185,12 +185,12 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		msg         types.MsgSubmitQueryResultRequest
+		msg         types.MsgSubmitQueryResult
 		expectedErr error
 	}{
 		{
 			"empty result",
-			types.MsgSubmitQueryResultRequest{
+			types.MsgSubmitQueryResult{
 				QueryId: 1,
 				Sender:  testutil.TestOwnerAddress,
 				Result:  nil,
@@ -199,7 +199,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty kv results and block result",
-			types.MsgSubmitQueryResultRequest{
+			types.MsgSubmitQueryResult{
 				QueryId: 1,
 				Sender:  testutil.TestOwnerAddress,
 				Result: &types.QueryResult{
@@ -213,7 +213,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"zero query id",
-			types.MsgSubmitQueryResultRequest{
+			types.MsgSubmitQueryResult{
 				QueryId: 0,
 				Sender:  testutil.TestOwnerAddress,
 				Result: &types.QueryResult{
@@ -238,7 +238,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			types.MsgSubmitQueryResultRequest{
+			types.MsgSubmitQueryResult{
 				QueryId: 1,
 				Sender:  "",
 				Result: &types.QueryResult{
@@ -263,7 +263,7 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			types.MsgSubmitQueryResultRequest{
+			types.MsgSubmitQueryResult{
 				QueryId: 1,
 				Sender:  "invalid_sender",
 				Result: &types.QueryResult{
@@ -298,18 +298,18 @@ func TestMsgSubmitQueryResultValidate(t *testing.T) {
 	}
 }
 
-func TestMsgRemoveInterchainQueryRequestValidate(t *testing.T) {
+func TestMsgRemoveInterchainQueryValidate(t *testing.T) {
 	k, ctx := testkeeper.InterchainQueriesKeeper(t, nil, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(*k)
 
 	tests := []struct {
 		name        string
-		msg         types.MsgRemoveInterchainQueryRequest
+		msg         types.MsgRemoveInterchainQuery
 		expectedErr error
 	}{
 		{
 			"invalid query id",
-			types.MsgRemoveInterchainQueryRequest{
+			types.MsgRemoveInterchainQuery{
 				QueryId: 0,
 				Sender:  testutil.TestOwnerAddress,
 			},
@@ -317,7 +317,7 @@ func TestMsgRemoveInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			types.MsgRemoveInterchainQueryRequest{
+			types.MsgRemoveInterchainQuery{
 				QueryId: 1,
 				Sender:  "",
 			},
@@ -325,7 +325,7 @@ func TestMsgRemoveInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			types.MsgRemoveInterchainQueryRequest{
+			types.MsgRemoveInterchainQuery{
 				QueryId: 1,
 				Sender:  "invalid-sender",
 			},
@@ -343,18 +343,18 @@ func TestMsgRemoveInterchainQueryRequestValidate(t *testing.T) {
 	}
 }
 
-func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
+func TestMsgUpdateInterchainQueryValidate(t *testing.T) {
 	k, ctx := testkeeper.InterchainQueriesKeeper(t, nil, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(*k)
 
 	tests := []struct {
 		name        string
-		msg         types.MsgUpdateInterchainQueryRequest
+		msg         types.MsgUpdateInterchainQuery
 		expectedErr error
 	}{
 		{
 			"invalid query id",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId: 0,
 				NewKeys: []*types.KVKey{{
 					Path: "staking",
@@ -367,7 +367,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty keys, update_period and tx filter",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId:               1,
 				NewKeys:               nil,
 				NewUpdatePeriod:       0,
@@ -378,7 +378,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"both keys and filter sent",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId: 1,
 				NewKeys: []*types.KVKey{{
 					Path: "staking",
@@ -392,7 +392,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"too many keys",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId:         1,
 				NewKeys:         make([]*types.KVKey, types.DefaultMaxKvQueryKeysCount+1),
 				NewUpdatePeriod: 0,
@@ -402,7 +402,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"nil key",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId:         1,
 				NewKeys:         []*types.KVKey{{Key: []byte("key1"), Path: "path1"}, nil},
 				NewUpdatePeriod: 0,
@@ -412,7 +412,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"duplicated keys",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId:         1,
 				NewKeys:         []*types.KVKey{{Key: []byte("key1"), Path: "path1"}, {Key: []byte("key1"), Path: "path1"}},
 				NewUpdatePeriod: 0,
@@ -422,7 +422,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty key path",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId:         1,
 				NewKeys:         []*types.KVKey{{Key: []byte("key1"), Path: ""}},
 				NewUpdatePeriod: 0,
@@ -432,7 +432,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty key id",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId:         1,
 				NewKeys:         []*types.KVKey{{Key: []byte(""), Path: "path"}},
 				NewUpdatePeriod: 0,
@@ -442,7 +442,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"empty sender",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId: 1,
 				NewKeys: []*types.KVKey{{
 					Path: "staking",
@@ -455,7 +455,7 @@ func TestMsgUpdateInterchainQueryRequestValidate(t *testing.T) {
 		},
 		{
 			"invalid sender",
-			types.MsgUpdateInterchainQueryRequest{
+			types.MsgUpdateInterchainQuery{
 				QueryId: 1,
 				NewKeys: []*types.KVKey{{
 					Path: "staking",
@@ -483,19 +483,19 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		msg         types.MsgUpdateParamsRequest
+		msg         types.MsgUpdateParams
 		expectedErr string
 	}{
 		{
 			"empty authority",
-			types.MsgUpdateParamsRequest{
+			types.MsgUpdateParams{
 				Authority: "",
 			},
 			"authority is invalid",
 		},
 		{
 			"invalid authority",
-			types.MsgUpdateParamsRequest{
+			types.MsgUpdateParams{
 				Authority: "invalid authority",
 			},
 			"authority is invalid",

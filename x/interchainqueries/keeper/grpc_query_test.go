@@ -478,7 +478,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	contractOwner := wasmKeeper.RandomAccountAddress(suite.T())
 	codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
 	contractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
-	registerMsg := iqtypes.MsgRegisterInterchainQueryRequest{
+	registerMsg := iqtypes.MsgRegisterInterchainQuery{
 		ConnectionId: suite.Path.EndpointA.ConnectionID,
 		Keys: []*iqtypes.KVKey{
 			{Path: ibchost.StoreKey, Key: clientKey},
@@ -508,7 +508,7 @@ func (suite *KeeperTestSuite) TestQueryResult() {
 	})
 	suite.Require().NoError(err)
 
-	msg := iqtypes.MsgSubmitQueryResultRequest{
+	msg := iqtypes.MsgSubmitQueryResult{
 		QueryId: regQuery1.Id,
 		Sender:  contractAddress.String(),
 		Result: &iqtypes.QueryResult{

@@ -35,14 +35,17 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Request type for the Msg/RegisterInterchainQuery RPC method.
-type MsgRegisterInterchainQueryRequest struct {
+type MsgRegisterInterchainQuery struct {
 	// The query type identifier: `kv` or `tx`.
 	QueryType string `protobuf:"bytes,1,opt,name=query_type,json=queryType,proto3" json:"query_type,omitempty"`
 	// The KV-storage keys for which we want to get values from remote chain. Only applicable for the
-	// KV-typed Interchain Queries.
+	// KV Interchain Queries. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+	// parameters.
 	Keys []*KVKey `protobuf:"bytes,2,rep,name=keys,proto3" json:"keys,omitempty"`
-	// A stringified list of filters for remote transactions search. Only applicable for the TX-typed
+	// A stringified list of filters for remote transactions search. Only applicable for the TX
 	// Interchain Queries. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+	// Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is
+	// limited by the module's `max_transactions_filters` parameters.
 	TransactionsFilter string `protobuf:"bytes,3,opt,name=transactions_filter,json=transactionsFilter,proto3" json:"transactions_filter,omitempty"`
 	// The IBC connection ID to the remote chain (the source of querying data). Is used for getting
 	// ConsensusState from the respective IBC client to verify query result proofs.
@@ -54,18 +57,18 @@ type MsgRegisterInterchainQueryRequest struct {
 	Sender string `protobuf:"bytes,6,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
-func (m *MsgRegisterInterchainQueryRequest) Reset()         { *m = MsgRegisterInterchainQueryRequest{} }
-func (m *MsgRegisterInterchainQueryRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgRegisterInterchainQueryRequest) ProtoMessage()    {}
-func (*MsgRegisterInterchainQueryRequest) Descriptor() ([]byte, []int) {
+func (m *MsgRegisterInterchainQuery) Reset()         { *m = MsgRegisterInterchainQuery{} }
+func (m *MsgRegisterInterchainQuery) String() string { return proto.CompactTextString(m) }
+func (*MsgRegisterInterchainQuery) ProtoMessage()    {}
+func (*MsgRegisterInterchainQuery) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d4793837a316491e, []int{0}
 }
-func (m *MsgRegisterInterchainQueryRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgRegisterInterchainQuery) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgRegisterInterchainQueryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRegisterInterchainQuery) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgRegisterInterchainQueryRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRegisterInterchainQuery.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -75,54 +78,54 @@ func (m *MsgRegisterInterchainQueryRequest) XXX_Marshal(b []byte, deterministic 
 		return b[:n], nil
 	}
 }
-func (m *MsgRegisterInterchainQueryRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRegisterInterchainQueryRequest.Merge(m, src)
+func (m *MsgRegisterInterchainQuery) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRegisterInterchainQuery.Merge(m, src)
 }
-func (m *MsgRegisterInterchainQueryRequest) XXX_Size() int {
+func (m *MsgRegisterInterchainQuery) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgRegisterInterchainQueryRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRegisterInterchainQueryRequest.DiscardUnknown(m)
+func (m *MsgRegisterInterchainQuery) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRegisterInterchainQuery.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgRegisterInterchainQueryRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgRegisterInterchainQuery proto.InternalMessageInfo
 
-func (m *MsgRegisterInterchainQueryRequest) GetQueryType() string {
+func (m *MsgRegisterInterchainQuery) GetQueryType() string {
 	if m != nil {
 		return m.QueryType
 	}
 	return ""
 }
 
-func (m *MsgRegisterInterchainQueryRequest) GetKeys() []*KVKey {
+func (m *MsgRegisterInterchainQuery) GetKeys() []*KVKey {
 	if m != nil {
 		return m.Keys
 	}
 	return nil
 }
 
-func (m *MsgRegisterInterchainQueryRequest) GetTransactionsFilter() string {
+func (m *MsgRegisterInterchainQuery) GetTransactionsFilter() string {
 	if m != nil {
 		return m.TransactionsFilter
 	}
 	return ""
 }
 
-func (m *MsgRegisterInterchainQueryRequest) GetConnectionId() string {
+func (m *MsgRegisterInterchainQuery) GetConnectionId() string {
 	if m != nil {
 		return m.ConnectionId
 	}
 	return ""
 }
 
-func (m *MsgRegisterInterchainQueryRequest) GetUpdatePeriod() uint64 {
+func (m *MsgRegisterInterchainQuery) GetUpdatePeriod() uint64 {
 	if m != nil {
 		return m.UpdatePeriod
 	}
 	return 0
 }
 
-func (m *MsgRegisterInterchainQueryRequest) GetSender() string {
+func (m *MsgRegisterInterchainQuery) GetSender() string {
 	if m != nil {
 		return m.Sender
 	}
@@ -176,7 +179,7 @@ func (m *MsgRegisterInterchainQueryResponse) GetId() uint64 {
 }
 
 // Request type for the Msg/SubmitQueryResult RPC method.
-type MsgSubmitQueryResultRequest struct {
+type MsgSubmitQueryResult struct {
 	// The ID of the Interchain Query.
 	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
 	// The signer of the message.
@@ -189,18 +192,18 @@ type MsgSubmitQueryResultRequest struct {
 	Result *QueryResult `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
 }
 
-func (m *MsgSubmitQueryResultRequest) Reset()         { *m = MsgSubmitQueryResultRequest{} }
-func (m *MsgSubmitQueryResultRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgSubmitQueryResultRequest) ProtoMessage()    {}
-func (*MsgSubmitQueryResultRequest) Descriptor() ([]byte, []int) {
+func (m *MsgSubmitQueryResult) Reset()         { *m = MsgSubmitQueryResult{} }
+func (m *MsgSubmitQueryResult) String() string { return proto.CompactTextString(m) }
+func (*MsgSubmitQueryResult) ProtoMessage()    {}
+func (*MsgSubmitQueryResult) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d4793837a316491e, []int{2}
 }
-func (m *MsgSubmitQueryResultRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgSubmitQueryResult) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgSubmitQueryResultRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSubmitQueryResult) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgSubmitQueryResultRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSubmitQueryResult.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -210,26 +213,26 @@ func (m *MsgSubmitQueryResultRequest) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *MsgSubmitQueryResultRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSubmitQueryResultRequest.Merge(m, src)
+func (m *MsgSubmitQueryResult) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSubmitQueryResult.Merge(m, src)
 }
-func (m *MsgSubmitQueryResultRequest) XXX_Size() int {
+func (m *MsgSubmitQueryResult) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgSubmitQueryResultRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSubmitQueryResultRequest.DiscardUnknown(m)
+func (m *MsgSubmitQueryResult) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSubmitQueryResult.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgSubmitQueryResultRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgSubmitQueryResult proto.InternalMessageInfo
 
-func (m *MsgSubmitQueryResultRequest) GetQueryId() uint64 {
+func (m *MsgSubmitQueryResult) GetQueryId() uint64 {
 	if m != nil {
 		return m.QueryId
 	}
 	return 0
 }
 
-func (m *MsgSubmitQueryResultRequest) GetSender() string {
+func (m *MsgSubmitQueryResult) GetSender() string {
 	if m != nil {
 		return m.Sender
 	}
@@ -237,14 +240,14 @@ func (m *MsgSubmitQueryResultRequest) GetSender() string {
 }
 
 // Deprecated: Do not use.
-func (m *MsgSubmitQueryResultRequest) GetClientId() string {
+func (m *MsgSubmitQueryResult) GetClientId() string {
 	if m != nil {
 		return m.ClientId
 	}
 	return ""
 }
 
-func (m *MsgSubmitQueryResultRequest) GetResult() *QueryResult {
+func (m *MsgSubmitQueryResult) GetResult() *QueryResult {
 	if m != nil {
 		return m.Result
 	}
@@ -348,7 +351,7 @@ type StorageValue struct {
 	// The first half of the storage path. It is supposed to be a substore name for the query
 	// (e.g. bank, staking, etc.).
 	StoragePrefix string `protobuf:"bytes,1,opt,name=storage_prefix,json=storagePrefix,proto3" json:"storage_prefix,omitempty"`
-	// The second half of the storage path. The remaining part of a full path to an IAVL storage node.
+	// The second half of the storage path. The remaining part of the full path to an IAVL storage node.
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 	// A base64-encoded value read from the given storage path.
 	Value []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
@@ -597,25 +600,25 @@ func (m *MsgSubmitQueryResultResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgSubmitQueryResultResponse proto.InternalMessageInfo
 
 // Request type for the Msg/RemoveInterchainQuery RPC method.
-type MsgRemoveInterchainQueryRequest struct {
+type MsgRemoveInterchainQuery struct {
 	// The ID of the query to remove.
 	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
 	// The signer of the message.
 	Sender string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
-func (m *MsgRemoveInterchainQueryRequest) Reset()         { *m = MsgRemoveInterchainQueryRequest{} }
-func (m *MsgRemoveInterchainQueryRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgRemoveInterchainQueryRequest) ProtoMessage()    {}
-func (*MsgRemoveInterchainQueryRequest) Descriptor() ([]byte, []int) {
+func (m *MsgRemoveInterchainQuery) Reset()         { *m = MsgRemoveInterchainQuery{} }
+func (m *MsgRemoveInterchainQuery) String() string { return proto.CompactTextString(m) }
+func (*MsgRemoveInterchainQuery) ProtoMessage()    {}
+func (*MsgRemoveInterchainQuery) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d4793837a316491e, []int{8}
 }
-func (m *MsgRemoveInterchainQueryRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgRemoveInterchainQuery) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgRemoveInterchainQueryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRemoveInterchainQuery) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgRemoveInterchainQueryRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRemoveInterchainQuery.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -625,26 +628,26 @@ func (m *MsgRemoveInterchainQueryRequest) XXX_Marshal(b []byte, deterministic bo
 		return b[:n], nil
 	}
 }
-func (m *MsgRemoveInterchainQueryRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRemoveInterchainQueryRequest.Merge(m, src)
+func (m *MsgRemoveInterchainQuery) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRemoveInterchainQuery.Merge(m, src)
 }
-func (m *MsgRemoveInterchainQueryRequest) XXX_Size() int {
+func (m *MsgRemoveInterchainQuery) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgRemoveInterchainQueryRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRemoveInterchainQueryRequest.DiscardUnknown(m)
+func (m *MsgRemoveInterchainQuery) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRemoveInterchainQuery.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgRemoveInterchainQueryRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgRemoveInterchainQuery proto.InternalMessageInfo
 
-func (m *MsgRemoveInterchainQueryRequest) GetQueryId() uint64 {
+func (m *MsgRemoveInterchainQuery) GetQueryId() uint64 {
 	if m != nil {
 		return m.QueryId
 	}
 	return 0
 }
 
-func (m *MsgRemoveInterchainQueryRequest) GetSender() string {
+func (m *MsgRemoveInterchainQuery) GetSender() string {
 	if m != nil {
 		return m.Sender
 	}
@@ -689,33 +692,36 @@ func (m *MsgRemoveInterchainQueryResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgRemoveInterchainQueryResponse proto.InternalMessageInfo
 
 // Request type for the Msg/UpdateInterchainQuery RPC method.
-type MsgUpdateInterchainQueryRequest struct {
+type MsgUpdateInterchainQuery struct {
 	// The ID of the query to update.
 	QueryId uint64 `protobuf:"varint,1,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
 	// A new list of KV-storage keys for which to get values from the remote chain. Only applicable
-	// for a KV-typed Interchain Query.
+	// for a KV Interchain Query. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+	// parameters.
 	NewKeys []*KVKey `protobuf:"bytes,2,rep,name=new_keys,json=newKeys,proto3" json:"new_keys,omitempty"`
 	// A new minimal delay between consecutive query executions.
 	NewUpdatePeriod uint64 `protobuf:"varint,3,opt,name=new_update_period,json=newUpdatePeriod,proto3" json:"new_update_period,omitempty"`
-	// A new list of filters for remote transactions search. Only applicable for a TX-typed
-	// Interchain Query.
+	// A new list of filters for remote transactions search. Only applicable for a TX Interchain
+	// Query. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+	// Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is
+	// limited by the module's `max_transactions_filters` parameters.
 	NewTransactionsFilter string `protobuf:"bytes,4,opt,name=new_transactions_filter,json=newTransactionsFilter,proto3" json:"new_transactions_filter,omitempty"`
 	// The signer of the message.
 	Sender string `protobuf:"bytes,5,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
-func (m *MsgUpdateInterchainQueryRequest) Reset()         { *m = MsgUpdateInterchainQueryRequest{} }
-func (m *MsgUpdateInterchainQueryRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateInterchainQueryRequest) ProtoMessage()    {}
-func (*MsgUpdateInterchainQueryRequest) Descriptor() ([]byte, []int) {
+func (m *MsgUpdateInterchainQuery) Reset()         { *m = MsgUpdateInterchainQuery{} }
+func (m *MsgUpdateInterchainQuery) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateInterchainQuery) ProtoMessage()    {}
+func (*MsgUpdateInterchainQuery) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d4793837a316491e, []int{10}
 }
-func (m *MsgUpdateInterchainQueryRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgUpdateInterchainQuery) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUpdateInterchainQueryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUpdateInterchainQuery) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUpdateInterchainQueryRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUpdateInterchainQuery.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -725,47 +731,47 @@ func (m *MsgUpdateInterchainQueryRequest) XXX_Marshal(b []byte, deterministic bo
 		return b[:n], nil
 	}
 }
-func (m *MsgUpdateInterchainQueryRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateInterchainQueryRequest.Merge(m, src)
+func (m *MsgUpdateInterchainQuery) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateInterchainQuery.Merge(m, src)
 }
-func (m *MsgUpdateInterchainQueryRequest) XXX_Size() int {
+func (m *MsgUpdateInterchainQuery) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUpdateInterchainQueryRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateInterchainQueryRequest.DiscardUnknown(m)
+func (m *MsgUpdateInterchainQuery) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateInterchainQuery.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUpdateInterchainQueryRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgUpdateInterchainQuery proto.InternalMessageInfo
 
-func (m *MsgUpdateInterchainQueryRequest) GetQueryId() uint64 {
+func (m *MsgUpdateInterchainQuery) GetQueryId() uint64 {
 	if m != nil {
 		return m.QueryId
 	}
 	return 0
 }
 
-func (m *MsgUpdateInterchainQueryRequest) GetNewKeys() []*KVKey {
+func (m *MsgUpdateInterchainQuery) GetNewKeys() []*KVKey {
 	if m != nil {
 		return m.NewKeys
 	}
 	return nil
 }
 
-func (m *MsgUpdateInterchainQueryRequest) GetNewUpdatePeriod() uint64 {
+func (m *MsgUpdateInterchainQuery) GetNewUpdatePeriod() uint64 {
 	if m != nil {
 		return m.NewUpdatePeriod
 	}
 	return 0
 }
 
-func (m *MsgUpdateInterchainQueryRequest) GetNewTransactionsFilter() string {
+func (m *MsgUpdateInterchainQuery) GetNewTransactionsFilter() string {
 	if m != nil {
 		return m.NewTransactionsFilter
 	}
 	return ""
 }
 
-func (m *MsgUpdateInterchainQueryRequest) GetSender() string {
+func (m *MsgUpdateInterchainQuery) GetSender() string {
 	if m != nil {
 		return m.Sender
 	}
@@ -810,25 +816,25 @@ func (m *MsgUpdateInterchainQueryResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgUpdateInterchainQueryResponse proto.InternalMessageInfo
 
 // Request type for the Msg/UpdateParams RPC method.
-type MsgUpdateParamsRequest struct {
+type MsgUpdateParams struct {
 	// The address of the authority of the module.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
 	// The new parameters of the module. All parameters must be supplied.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
 
-func (m *MsgUpdateParamsRequest) Reset()         { *m = MsgUpdateParamsRequest{} }
-func (m *MsgUpdateParamsRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateParamsRequest) ProtoMessage()    {}
-func (*MsgUpdateParamsRequest) Descriptor() ([]byte, []int) {
+func (m *MsgUpdateParams) Reset()         { *m = MsgUpdateParams{} }
+func (m *MsgUpdateParams) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateParams) ProtoMessage()    {}
+func (*MsgUpdateParams) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d4793837a316491e, []int{12}
 }
-func (m *MsgUpdateParamsRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgUpdateParams) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUpdateParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUpdateParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUpdateParamsRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUpdateParams.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -838,26 +844,26 @@ func (m *MsgUpdateParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-func (m *MsgUpdateParamsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateParamsRequest.Merge(m, src)
+func (m *MsgUpdateParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateParams.Merge(m, src)
 }
-func (m *MsgUpdateParamsRequest) XXX_Size() int {
+func (m *MsgUpdateParams) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUpdateParamsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateParamsRequest.DiscardUnknown(m)
+func (m *MsgUpdateParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateParams.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUpdateParamsRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgUpdateParams proto.InternalMessageInfo
 
-func (m *MsgUpdateParamsRequest) GetAuthority() string {
+func (m *MsgUpdateParams) GetAuthority() string {
 	if m != nil {
 		return m.Authority
 	}
 	return ""
 }
 
-func (m *MsgUpdateParamsRequest) GetParams() Params {
+func (m *MsgUpdateParams) GetParams() Params {
 	if m != nil {
 		return m.Params
 	}
@@ -902,19 +908,19 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgRegisterInterchainQueryRequest)(nil), "neutron.interchainqueries.MsgRegisterInterchainQueryRequest")
+	proto.RegisterType((*MsgRegisterInterchainQuery)(nil), "neutron.interchainqueries.MsgRegisterInterchainQuery")
 	proto.RegisterType((*MsgRegisterInterchainQueryResponse)(nil), "neutron.interchainqueries.MsgRegisterInterchainQueryResponse")
-	proto.RegisterType((*MsgSubmitQueryResultRequest)(nil), "neutron.interchainqueries.MsgSubmitQueryResultRequest")
+	proto.RegisterType((*MsgSubmitQueryResult)(nil), "neutron.interchainqueries.MsgSubmitQueryResult")
 	proto.RegisterType((*QueryResult)(nil), "neutron.interchainqueries.QueryResult")
 	proto.RegisterType((*StorageValue)(nil), "neutron.interchainqueries.StorageValue")
 	proto.RegisterType((*Block)(nil), "neutron.interchainqueries.Block")
 	proto.RegisterType((*TxValue)(nil), "neutron.interchainqueries.TxValue")
 	proto.RegisterType((*MsgSubmitQueryResultResponse)(nil), "neutron.interchainqueries.MsgSubmitQueryResultResponse")
-	proto.RegisterType((*MsgRemoveInterchainQueryRequest)(nil), "neutron.interchainqueries.MsgRemoveInterchainQueryRequest")
+	proto.RegisterType((*MsgRemoveInterchainQuery)(nil), "neutron.interchainqueries.MsgRemoveInterchainQuery")
 	proto.RegisterType((*MsgRemoveInterchainQueryResponse)(nil), "neutron.interchainqueries.MsgRemoveInterchainQueryResponse")
-	proto.RegisterType((*MsgUpdateInterchainQueryRequest)(nil), "neutron.interchainqueries.MsgUpdateInterchainQueryRequest")
+	proto.RegisterType((*MsgUpdateInterchainQuery)(nil), "neutron.interchainqueries.MsgUpdateInterchainQuery")
 	proto.RegisterType((*MsgUpdateInterchainQueryResponse)(nil), "neutron.interchainqueries.MsgUpdateInterchainQueryResponse")
-	proto.RegisterType((*MsgUpdateParamsRequest)(nil), "neutron.interchainqueries.MsgUpdateParamsRequest")
+	proto.RegisterType((*MsgUpdateParams)(nil), "neutron.interchainqueries.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "neutron.interchainqueries.MsgUpdateParamsResponse")
 }
 
@@ -923,81 +929,81 @@ func init() {
 }
 
 var fileDescriptor_d4793837a316491e = []byte{
-	// 1178 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x57, 0xcd, 0x4f, 0x1b, 0x47,
-	0x14, 0x67, 0x8d, 0x4d, 0xf0, 0xe0, 0x90, 0x64, 0x4a, 0x82, 0x71, 0x1a, 0x87, 0x6c, 0xd5, 0x04,
-	0xa1, 0x64, 0x57, 0xb8, 0x94, 0xaa, 0xd0, 0x2f, 0x68, 0x1b, 0x15, 0x21, 0x54, 0xba, 0x40, 0x0e,
-	0xbd, 0xac, 0xd6, 0xbb, 0xc3, 0x7a, 0xe4, 0xf5, 0x8c, 0xb3, 0x33, 0xeb, 0x8f, 0x5b, 0x15, 0xf5,
-	0xd4, 0x13, 0xa7, 0xaa, 0x7f, 0x42, 0xa5, 0x5e, 0x38, 0xf4, 0xdc, 0x73, 0x2a, 0xf5, 0x10, 0xf5,
-	0xd4, 0x43, 0x55, 0x55, 0x70, 0xe0, 0xd8, 0x7f, 0xa1, 0x9a, 0x8f, 0x35, 0xa6, 0x60, 0xbb, 0xe4,
-	0x92, 0xec, 0x7b, 0xef, 0xf7, 0xde, 0xfc, 0xde, 0x9b, 0xf7, 0xde, 0x18, 0x60, 0x12, 0x94, 0xf0,
-	0x98, 0x12, 0x1b, 0x13, 0x8e, 0x62, 0xbf, 0xe6, 0x61, 0xf2, 0x3c, 0x41, 0x31, 0x46, 0xcc, 0xe6,
-	0x1d, 0xab, 0x19, 0x53, 0x4e, 0xe1, 0x9c, 0xc6, 0x58, 0x17, 0x30, 0xa5, 0x5b, 0x5e, 0x03, 0x13,
-	0x6a, 0xcb, 0x7f, 0x15, 0xba, 0x34, 0xeb, 0x53, 0xd6, 0xa0, 0xcc, 0x6e, 0xb0, 0xd0, 0x6e, 0x2d,
-	0x89, 0xff, 0xb4, 0x61, 0x4e, 0x19, 0x5c, 0x29, 0xd9, 0x4a, 0xd0, 0xa6, 0x99, 0x90, 0x86, 0x54,
-	0xe9, 0xc5, 0x57, 0xea, 0x10, 0x52, 0x1a, 0x46, 0xc8, 0x96, 0x52, 0x35, 0x39, 0xb0, 0x3d, 0xd2,
-	0xd5, 0xa6, 0x47, 0x83, 0x69, 0x87, 0x88, 0x20, 0x86, 0xd3, 0xc8, 0x0f, 0x07, 0x03, 0x9b, 0x5e,
-	0xec, 0x35, 0x52, 0xdc, 0x5d, 0x8e, 0x48, 0x80, 0xe2, 0x06, 0x26, 0xdc, 0xf6, 0xaa, 0x3e, 0xb6,
-	0x79, 0xb7, 0x89, 0x52, 0xe3, 0xbd, 0x3e, 0xa3, 0x1f, 0x77, 0x9b, 0x9c, 0x0a, 0x4e, 0xf4, 0x40,
-	0x99, 0xcd, 0x1f, 0x32, 0xe0, 0xc1, 0x36, 0x0b, 0x1d, 0x14, 0x62, 0xc6, 0x51, 0xbc, 0xd9, 0x3b,
-	0xe9, 0xab, 0x04, 0xc5, 0x5d, 0x07, 0x3d, 0x4f, 0x10, 0xe3, 0xf0, 0x1e, 0x00, 0xe2, 0xe4, 0xae,
-	0x2b, 0x22, 0x17, 0x8d, 0x79, 0x63, 0x21, 0xef, 0xe4, 0xa5, 0x66, 0xaf, 0xdb, 0x44, 0x70, 0x19,
-	0x64, 0xeb, 0xa8, 0xcb, 0x8a, 0x99, 0xf9, 0xf1, 0x85, 0xa9, 0xca, 0xbc, 0x35, 0xb0, 0xe6, 0xd6,
-	0xd6, 0xb3, 0x2d, 0xd4, 0x75, 0x24, 0x1a, 0xda, 0xe0, 0x0d, 0x1e, 0x7b, 0x84, 0x79, 0x3e, 0xc7,
-	0x94, 0x30, 0xf7, 0x00, 0x47, 0x1c, 0xc5, 0xc5, 0x71, 0x19, 0x1d, 0xf6, 0x9b, 0x9e, 0x4a, 0x0b,
-	0x7c, 0x0b, 0x5c, 0xf7, 0x29, 0x21, 0x48, 0x2a, 0x5d, 0x1c, 0x14, 0xb3, 0x12, 0x5a, 0x38, 0x53,
-	0x6e, 0x06, 0x02, 0x94, 0x34, 0x03, 0x8f, 0x23, 0xb7, 0x89, 0x62, 0x4c, 0x83, 0x62, 0x6e, 0xde,
-	0x58, 0xc8, 0x3a, 0x05, 0xa5, 0xdc, 0x91, 0x3a, 0x78, 0x07, 0x4c, 0x30, 0x59, 0x96, 0xe2, 0x84,
-	0x0c, 0xa1, 0xa5, 0xd5, 0xa9, 0x17, 0xa7, 0x47, 0x8b, 0x5a, 0x30, 0x97, 0x81, 0x39, 0xac, 0x32,
-	0xac, 0x49, 0x09, 0x43, 0x70, 0x1a, 0x64, 0x70, 0x20, 0x4b, 0x92, 0x75, 0x32, 0x38, 0x30, 0x7f,
-	0x31, 0xc0, 0xdd, 0x6d, 0x16, 0xee, 0x26, 0xd5, 0x06, 0xe6, 0x29, 0x34, 0x89, 0x78, 0x5a, 0xca,
-	0x39, 0x30, 0xa9, 0x4a, 0xd9, 0xf3, 0xba, 0x26, 0xe5, 0xcd, 0x7e, 0x56, 0x99, 0x7e, 0x56, 0xf0,
-	0x3e, 0xc8, 0xfb, 0x11, 0x46, 0x84, 0x0b, 0x1f, 0x59, 0x9e, 0x8d, 0x4c, 0xd1, 0x70, 0x26, 0x95,
-	0x72, 0x33, 0x80, 0x1f, 0x81, 0x89, 0x58, 0x1e, 0x22, 0x2b, 0x32, 0x55, 0x79, 0x38, 0xe4, 0x06,
-	0xfa, 0x29, 0x69, 0xaf, 0xf3, 0x69, 0xff, 0x63, 0x80, 0xa9, 0x3e, 0x10, 0x7c, 0x0a, 0x40, 0xbd,
-	0xe5, 0x2a, 0x24, 0x2b, 0x1a, 0xf2, 0x8a, 0x1f, 0x0d, 0x39, 0x60, 0x97, 0xd3, 0xd8, 0x0b, 0xd1,
-	0x33, 0x2f, 0x4a, 0x90, 0x93, 0xaf, 0xb7, 0x54, 0x18, 0x06, 0x57, 0x40, 0xae, 0x1a, 0x51, 0xbf,
-	0x2e, 0x93, 0x1b, 0xde, 0x25, 0x1b, 0x02, 0xe7, 0x28, 0xb8, 0xa8, 0x4a, 0x0d, 0xe1, 0xb0, 0xc6,
-	0x65, 0xea, 0x59, 0x47, 0x4b, 0xb0, 0x04, 0x26, 0x63, 0xd4, 0xc2, 0x0c, 0x53, 0x22, 0xd3, 0xce,
-	0x3a, 0x3d, 0x19, 0x3e, 0x06, 0xd0, 0x8b, 0x22, 0xda, 0x76, 0xeb, 0x2d, 0xd7, 0xf7, 0xa2, 0xa8,
-	0xea, 0xf9, 0x75, 0x26, 0x3b, 0x61, 0xd2, 0xb9, 0x29, 0x2d, 0x5b, 0xad, 0x4f, 0x53, 0xbd, 0x79,
-	0x68, 0x80, 0x42, 0x3f, 0x6b, 0xf8, 0x36, 0x98, 0x66, 0x4a, 0x76, 0x9b, 0x31, 0x3a, 0xc0, 0x1d,
-	0xdd, 0xf2, 0xd7, 0xb5, 0x76, 0x47, 0x2a, 0xe1, 0x4d, 0x30, 0x5e, 0x47, 0x5d, 0x99, 0x4f, 0xc1,
-	0x11, 0x9f, 0x70, 0x06, 0xe4, 0x5a, 0x22, 0x82, 0xa4, 0x5a, 0x70, 0x94, 0x00, 0x97, 0x40, 0x6e,
-	0x47, 0x8c, 0x9c, 0xbe, 0x9d, 0xbb, 0xd6, 0xd9, 0x48, 0x5a, 0x6a, 0x24, 0x2d, 0x69, 0xff, 0xb2,
-	0xc9, 0x1c, 0x85, 0x34, 0x7f, 0x32, 0x40, 0x4e, 0x56, 0x01, 0x7e, 0x02, 0x6e, 0x11, 0xd4, 0xe1,
-	0xae, 0x2c, 0x86, 0x5b, 0x43, 0x9e, 0xe8, 0x0f, 0x43, 0x06, 0x9a, 0xb1, 0xd4, 0x92, 0xb1, 0xd2,
-	0x25, 0x63, 0xad, 0x93, 0xae, 0x73, 0x43, 0xc0, 0xa5, 0xef, 0x17, 0x12, 0x0c, 0x1f, 0x8b, 0x02,
-	0x7a, 0x69, 0x5b, 0x0d, 0x72, 0xd3, 0x18, 0x58, 0x01, 0x19, 0xde, 0x91, 0xfc, 0xa7, 0x2a, 0xe6,
-	0x90, 0x3b, 0xda, 0xeb, 0xa8, 0x1b, 0xce, 0xf0, 0x8e, 0xf9, 0xa7, 0x01, 0xae, 0x69, 0x19, 0xbe,
-	0x2f, 0xae, 0x45, 0xcd, 0x86, 0xa6, 0x79, 0xaf, 0x3f, 0x5f, 0xb1, 0x9f, 0xac, 0xcf, 0x3b, 0xc8,
-	0xdf, 0xeb, 0xe8, 0x26, 0xec, 0xc1, 0xe1, 0xc7, 0x60, 0x3a, 0x40, 0x11, 0x6e, 0x89, 0xe9, 0x90,
-	0x3b, 0x4a, 0x13, 0x2e, 0x0e, 0x2a, 0x98, 0x73, 0x3d, 0xc5, 0x4b, 0x11, 0xae, 0x83, 0x1b, 0x98,
-	0xf8, 0x51, 0x22, 0x7a, 0x40, 0x47, 0x18, 0x1f, 0x11, 0x61, 0xba, 0xe7, 0xa0, 0x42, 0x40, 0x90,
-	0x0d, 0x3c, 0xee, 0xc9, 0xab, 0x2a, 0x38, 0xf2, 0xdb, 0x2c, 0x83, 0x37, 0x2f, 0x9f, 0x68, 0xc5,
-	0xdb, 0xf4, 0xc0, 0x7d, 0xb9, 0x28, 0x1a, 0xb4, 0x85, 0x06, 0x2c, 0xd0, 0xab, 0x4f, 0xfd, 0xf9,
-	0xa1, 0x34, 0xc1, 0xfc, 0xe0, 0x23, 0x34, 0x8d, 0x17, 0x19, 0xc9, 0x63, 0x5f, 0x2e, 0xba, 0xab,
-	0xf3, 0x58, 0x03, 0x93, 0x04, 0xb5, 0xdd, 0x2b, 0x2d, 0xf2, 0x6b, 0x04, 0xb5, 0xb7, 0xc4, 0x2e,
-	0x5f, 0x14, 0x5d, 0xda, 0x76, 0xcf, 0x6f, 0x5e, 0x35, 0xaf, 0x37, 0x08, 0x6a, 0xef, 0xf7, 0x2f,
-	0xdf, 0x15, 0x30, 0x2b, 0xb0, 0x97, 0xed, 0x7e, 0xb5, 0xd0, 0x6f, 0x13, 0xd4, 0xde, 0xbb, 0xb8,
-	0xfe, 0xcf, 0x0a, 0x95, 0x1b, 0x55, 0xa8, 0x01, 0x35, 0xd0, 0x85, 0xfa, 0xcd, 0x00, 0x77, 0x7a,
-	0xa0, 0x1d, 0xf9, 0x92, 0xa6, 0xf5, 0x59, 0x01, 0x79, 0x2f, 0xe1, 0x35, 0x1a, 0x63, 0xde, 0x55,
-	0x43, 0xbf, 0x51, 0xfc, 0xfd, 0xe7, 0x27, 0x33, 0xfa, 0xc5, 0x5f, 0x0f, 0x82, 0x18, 0x31, 0xb6,
-	0xcb, 0x63, 0x4c, 0x42, 0xe7, 0x0c, 0x0a, 0x3f, 0x03, 0x13, 0xea, 0x49, 0xd6, 0x2d, 0xfb, 0x60,
-	0x48, 0xe9, 0xd4, 0x89, 0x1b, 0xf9, 0x97, 0x7f, 0xdd, 0x1f, 0xfb, 0xf1, 0xf4, 0x68, 0xd1, 0x70,
-	0xb4, 0xef, 0xea, 0xb2, 0xc8, 0xe4, 0x2c, 0xea, 0x77, 0xa7, 0x47, 0x8b, 0x0f, 0x2e, 0xbe, 0xfd,
-	0xff, 0xa1, 0x6e, 0xce, 0x81, 0xd9, 0x0b, 0xd9, 0xa8, 0x4c, 0x2b, 0xbf, 0xe6, 0xc0, 0xf8, 0x36,
-	0x0b, 0xe1, 0xf7, 0x06, 0x98, 0x1d, 0xf0, 0x90, 0xc1, 0x0f, 0x86, 0x50, 0x1d, 0xf9, 0xcb, 0xa0,
-	0xf4, 0xe1, 0x6b, 0x7a, 0xeb, 0x91, 0xff, 0xd6, 0x00, 0xb7, 0x2e, 0x0c, 0x16, 0x5c, 0x19, 0x1e,
-	0x74, 0xd0, 0xdb, 0x5a, 0x7a, 0xef, 0xca, 0x7e, 0x9a, 0xc6, 0xa1, 0x01, 0x6e, 0x5f, 0x3a, 0x5c,
-	0x70, 0x75, 0x54, 0x7e, 0x83, 0x87, 0xbe, 0xb4, 0xf6, 0x5a, 0xbe, 0x7d, 0x94, 0x2e, 0x6d, 0xe3,
-	0x51, 0x94, 0x86, 0xcd, 0xff, 0x28, 0x4a, 0x43, 0xe7, 0x06, 0x26, 0xa0, 0xd0, 0xdf, 0x65, 0x70,
-	0xe9, 0xff, 0x04, 0x3b, 0x37, 0x5f, 0xa5, 0xca, 0x55, 0x5c, 0xd4, 0xb1, 0xa5, 0xdc, 0x37, 0x62,
-	0x48, 0x36, 0xf6, 0x5f, 0x1e, 0x97, 0x8d, 0x57, 0xc7, 0x65, 0xe3, 0xef, 0xe3, 0xb2, 0x71, 0x78,
-	0x52, 0x1e, 0x7b, 0x75, 0x52, 0x1e, 0xfb, 0xe3, 0xa4, 0x3c, 0xf6, 0xf5, 0x5a, 0x88, 0x79, 0x2d,
-	0xa9, 0x5a, 0x3e, 0x6d, 0xd8, 0x3a, 0xfc, 0x13, 0x1a, 0x87, 0xe9, 0xb7, 0xdd, 0x7a, 0xd7, 0xee,
-	0x5c, 0xf6, 0x37, 0x82, 0xf8, 0x95, 0x5c, 0x9d, 0x90, 0xaf, 0xe0, 0x3b, 0xff, 0x06, 0x00, 0x00,
-	0xff, 0xff, 0xe3, 0x2e, 0x2e, 0xb3, 0x4d, 0x0c, 0x00, 0x00,
+	// 1169 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x56, 0xcf, 0x4f, 0x1b, 0xc7,
+	0x17, 0x67, 0x8d, 0x0d, 0xf8, 0x61, 0x20, 0xcc, 0x97, 0x7c, 0x31, 0x4e, 0x71, 0xc8, 0x56, 0x4d,
+	0x10, 0x4a, 0x76, 0x15, 0x87, 0x50, 0x35, 0xa8, 0x3f, 0xa0, 0x6d, 0x54, 0x84, 0x50, 0xe9, 0x02,
+	0x39, 0xe4, 0xb2, 0x5a, 0xef, 0x0e, 0xeb, 0x91, 0xd7, 0x33, 0xee, 0xee, 0xf8, 0xd7, 0xa1, 0x52,
+	0xd5, 0x5b, 0x7b, 0x69, 0xfa, 0x47, 0x54, 0xaa, 0xd4, 0x0b, 0x87, 0x4a, 0xfd, 0x0b, 0x2a, 0xe5,
+	0x18, 0xf5, 0xd4, 0x43, 0x55, 0x55, 0x70, 0xe0, 0xd8, 0x3f, 0xa0, 0x97, 0x6a, 0x66, 0x76, 0x8d,
+	0x01, 0xdb, 0x84, 0x5c, 0x60, 0xdf, 0x7b, 0x9f, 0xf7, 0xe6, 0xf3, 0xde, 0xcc, 0x7b, 0xcf, 0xa0,
+	0x53, 0xdc, 0xe0, 0x21, 0xa3, 0x26, 0xa1, 0x1c, 0x87, 0x6e, 0xc5, 0x21, 0xf4, 0xcb, 0x06, 0x0e,
+	0x09, 0x8e, 0x4c, 0xde, 0x36, 0xea, 0x21, 0xe3, 0x0c, 0x2d, 0xc4, 0x18, 0xe3, 0x12, 0xa6, 0x30,
+	0xeb, 0xd4, 0x08, 0x65, 0xa6, 0xfc, 0xab, 0xd0, 0x85, 0x79, 0x97, 0x45, 0x35, 0x16, 0x99, 0xb5,
+	0xc8, 0x37, 0x9b, 0x0f, 0xc5, 0xbf, 0xd8, 0xb0, 0xa0, 0x0c, 0xb6, 0x94, 0x4c, 0x25, 0xc4, 0xa6,
+	0x39, 0x9f, 0xf9, 0x4c, 0xe9, 0xc5, 0x57, 0xe2, 0xe0, 0x33, 0xe6, 0x07, 0xd8, 0x94, 0x52, 0xb9,
+	0x71, 0x68, 0x3a, 0xb4, 0x13, 0x9b, 0xee, 0x0d, 0xa6, 0xed, 0x63, 0x8a, 0x23, 0x92, 0x44, 0xbe,
+	0x3b, 0x18, 0x58, 0x77, 0x42, 0xa7, 0x96, 0xe0, 0x6e, 0x71, 0x4c, 0x3d, 0x1c, 0xd6, 0x08, 0xe5,
+	0xa6, 0x53, 0x76, 0x89, 0xc9, 0x3b, 0x75, 0x9c, 0x18, 0x17, 0x7b, 0x8c, 0x6e, 0xd8, 0xa9, 0x73,
+	0x26, 0x38, 0xb1, 0x43, 0x65, 0xd6, 0x7f, 0x48, 0x41, 0x61, 0x27, 0xf2, 0x2d, 0xec, 0x93, 0x88,
+	0xe3, 0x70, 0xab, 0x7b, 0xd2, 0x17, 0x0d, 0x1c, 0x76, 0xd0, 0x22, 0x80, 0x38, 0xb2, 0x63, 0x8b,
+	0x90, 0x79, 0x6d, 0x49, 0x5b, 0xce, 0x5a, 0x59, 0xa9, 0xd9, 0xef, 0xd4, 0x31, 0x5a, 0x85, 0x74,
+	0x15, 0x77, 0xa2, 0x7c, 0x6a, 0x69, 0x74, 0x79, 0xb2, 0xb4, 0x64, 0x0c, 0x2c, 0xb6, 0xb1, 0xfd,
+	0x6c, 0x1b, 0x77, 0x2c, 0x89, 0x46, 0x26, 0xfc, 0x8f, 0x87, 0x0e, 0x8d, 0x1c, 0x97, 0x13, 0x46,
+	0x23, 0xfb, 0x90, 0x04, 0x1c, 0x87, 0xf9, 0x51, 0x19, 0x1d, 0xf5, 0x9a, 0x9e, 0x4a, 0x0b, 0x7a,
+	0x1b, 0xa6, 0x5c, 0x46, 0x29, 0x96, 0x4a, 0x9b, 0x78, 0xf9, 0xb4, 0x84, 0xe6, 0xce, 0x94, 0x5b,
+	0x9e, 0x00, 0x35, 0xea, 0x9e, 0xc3, 0xb1, 0x5d, 0xc7, 0x21, 0x61, 0x5e, 0x3e, 0xb3, 0xa4, 0x2d,
+	0xa7, 0xad, 0x9c, 0x52, 0xee, 0x4a, 0x1d, 0xfa, 0x3f, 0x8c, 0x45, 0xb2, 0x1e, 0xf9, 0x31, 0x19,
+	0x22, 0x96, 0x9e, 0x4c, 0x7e, 0x73, 0x7a, 0xb4, 0x12, 0x0b, 0xfa, 0x2a, 0xe8, 0x83, 0x4b, 0x62,
+	0xe1, 0xa8, 0xce, 0x68, 0x84, 0xd1, 0x34, 0xa4, 0x88, 0x27, 0x4b, 0x92, 0xb6, 0x52, 0xc4, 0xd3,
+	0x7f, 0xd5, 0x60, 0x6e, 0x27, 0xf2, 0xf7, 0x1a, 0xe5, 0x1a, 0xe1, 0x09, 0xb4, 0x11, 0x70, 0xb4,
+	0x00, 0x13, 0xaa, 0x86, 0x5d, 0xf8, 0xb8, 0x94, 0xb7, 0x7a, 0xe9, 0xa4, 0x7a, 0xe9, 0xa0, 0xdb,
+	0x90, 0x75, 0x03, 0x82, 0x29, 0x17, 0x3e, 0xb2, 0x2e, 0x9b, 0xa9, 0xbc, 0x66, 0x4d, 0x28, 0xe5,
+	0x96, 0x87, 0x3e, 0x80, 0xb1, 0x50, 0x46, 0x97, 0xa5, 0x98, 0x2c, 0xdd, 0x1d, 0x52, 0xfa, 0x1e,
+	0x2e, 0x56, 0xec, 0x75, 0x3e, 0xdf, 0x7f, 0x34, 0x98, 0xec, 0x25, 0xfc, 0x14, 0xa0, 0xda, 0xb4,
+	0x15, 0x32, 0xca, 0x6b, 0xf2, 0x6e, 0xef, 0x0d, 0x39, 0x60, 0x8f, 0xb3, 0xd0, 0xf1, 0xf1, 0x33,
+	0x27, 0x68, 0x60, 0x2b, 0x5b, 0x6d, 0xaa, 0x30, 0x11, 0x5a, 0x83, 0x4c, 0x39, 0x60, 0x6e, 0x55,
+	0x26, 0x37, 0xfc, 0x79, 0x6c, 0x0a, 0x9c, 0xa5, 0xe0, 0xa2, 0x2a, 0x15, 0x4c, 0xfc, 0x0a, 0x97,
+	0xa9, 0xa7, 0xad, 0x58, 0x42, 0x05, 0x98, 0x08, 0x71, 0x93, 0x44, 0x84, 0x51, 0x99, 0x76, 0xda,
+	0xea, 0xca, 0xe8, 0x3e, 0x20, 0x27, 0x08, 0x58, 0xcb, 0xae, 0x36, 0x6d, 0xd7, 0x09, 0x82, 0xb2,
+	0xe3, 0x56, 0x23, 0xf9, 0x04, 0x26, 0xac, 0x1b, 0xd2, 0xb2, 0xdd, 0xfc, 0x38, 0xd1, 0xeb, 0x2f,
+	0x34, 0xc8, 0xf5, 0xb2, 0x46, 0xef, 0xc0, 0x74, 0xa4, 0x64, 0xbb, 0x1e, 0xe2, 0x43, 0xd2, 0x8e,
+	0xdf, 0xfa, 0x54, 0xac, 0xdd, 0x95, 0x4a, 0x74, 0x03, 0x46, 0xab, 0xb8, 0x23, 0xf3, 0xc9, 0x59,
+	0xe2, 0x13, 0xcd, 0x41, 0xa6, 0x29, 0x22, 0x48, 0xaa, 0x39, 0x4b, 0x09, 0xe8, 0x21, 0x64, 0x76,
+	0x45, 0x93, 0xc5, 0xb7, 0x73, 0xcb, 0x38, 0x6b, 0x42, 0x43, 0x35, 0xa1, 0x21, 0xed, 0x9f, 0xd7,
+	0x23, 0x4b, 0x21, 0xf5, 0x9f, 0x35, 0xc8, 0xc8, 0x2a, 0xa0, 0x8f, 0x60, 0x96, 0xe2, 0x36, 0xb7,
+	0x65, 0x31, 0xec, 0x0a, 0x76, 0xc4, 0xfb, 0xd0, 0x64, 0xa0, 0x39, 0x43, 0x8d, 0x15, 0x23, 0x19,
+	0x2b, 0xc6, 0x06, 0xed, 0x58, 0x33, 0x02, 0x2e, 0x7d, 0x3f, 0x93, 0x60, 0x74, 0x5f, 0x14, 0xd0,
+	0x49, 0x9e, 0xd5, 0x20, 0xb7, 0x18, 0x83, 0x4a, 0x90, 0xe2, 0x6d, 0xc9, 0x7f, 0xb2, 0xa4, 0x0f,
+	0xb9, 0xa3, 0xfd, 0xb6, 0xba, 0xe1, 0x14, 0x6f, 0xeb, 0x7f, 0x6a, 0x30, 0x1e, 0xcb, 0xe8, 0x3d,
+	0x71, 0x2d, 0xaa, 0x29, 0x62, 0x9a, 0x8b, 0xbd, 0xf9, 0x8a, 0x89, 0x64, 0x7c, 0xda, 0xc6, 0xee,
+	0x7e, 0x3b, 0x7e, 0x84, 0x5d, 0x38, 0xfa, 0x10, 0xa6, 0x3d, 0x1c, 0x90, 0xa6, 0xe8, 0x0e, 0x39,
+	0x95, 0x62, 0xc2, 0xf9, 0x41, 0x05, 0xb3, 0xa6, 0x12, 0xbc, 0x14, 0xd1, 0x06, 0xcc, 0x10, 0xea,
+	0x06, 0x0d, 0xf1, 0x06, 0xe2, 0x08, 0xa3, 0x57, 0x44, 0x98, 0xee, 0x3a, 0xa8, 0x10, 0x08, 0xd2,
+	0x9e, 0xc3, 0x1d, 0x79, 0x55, 0x39, 0x4b, 0x7e, 0xeb, 0x45, 0x78, 0xab, 0x5f, 0x2b, 0x27, 0xbd,
+	0xaf, 0x3f, 0x87, 0xbc, 0x9c, 0x10, 0x35, 0xd6, 0xc4, 0x17, 0x47, 0xe6, 0xf5, 0xdb, 0xfd, 0x7c,
+	0x37, 0xea, 0xb0, 0x34, 0x28, 0x76, 0xf7, 0xfc, 0x7f, 0x35, 0x49, 0xe0, 0x40, 0x8e, 0xb6, 0x6b,
+	0x10, 0x58, 0x87, 0x09, 0x8a, 0x5b, 0xf6, 0xb5, 0x66, 0xf6, 0x38, 0xc5, 0xad, 0x6d, 0x31, 0xb6,
+	0x57, 0xc4, 0xbb, 0x6c, 0xd9, 0xe7, 0x87, 0xac, 0xea, 0xd0, 0x19, 0x8a, 0x5b, 0x07, 0xbd, 0x73,
+	0x76, 0x0d, 0xe6, 0x05, 0xb6, 0xdf, 0x98, 0x57, 0xb3, 0xfb, 0x26, 0xc5, 0xad, 0xfd, 0xcb, 0x93,
+	0xfe, 0xac, 0x42, 0x99, 0xab, 0x2a, 0xd4, 0x37, 0xf9, 0x6e, 0x85, 0x7e, 0xd3, 0x60, 0xa6, 0x0b,
+	0xda, 0x95, 0xdb, 0x12, 0xad, 0x41, 0xd6, 0x69, 0xf0, 0x0a, 0x0b, 0x09, 0xef, 0xa8, 0xfe, 0xde,
+	0xcc, 0xff, 0xfe, 0xcb, 0x83, 0xb9, 0x78, 0x9d, 0x6f, 0x78, 0x5e, 0x88, 0xa3, 0x68, 0x8f, 0x87,
+	0x84, 0xfa, 0xd6, 0x19, 0x14, 0x7d, 0x02, 0x63, 0x6a, 0xdf, 0xc6, 0xaf, 0xf3, 0xce, 0x90, 0x9a,
+	0xa9, 0xa3, 0x36, 0xb3, 0x2f, 0xff, 0xba, 0x3d, 0xf2, 0xd3, 0xe9, 0xd1, 0x8a, 0x66, 0xc5, 0xbe,
+	0x4f, 0x56, 0x45, 0x0a, 0x67, 0x51, 0xbf, 0x3b, 0x3d, 0x5a, 0xb9, 0x73, 0x79, 0xb1, 0x5f, 0xe0,
+	0xac, 0x2f, 0xc0, 0xfc, 0x05, 0x55, 0x92, 0x62, 0xe9, 0xc7, 0x0c, 0x8c, 0xee, 0x44, 0x3e, 0xfa,
+	0x5e, 0x83, 0xf9, 0x41, 0xfb, 0xfb, 0xf1, 0x10, 0xaa, 0x83, 0x77, 0x5c, 0xe1, 0xfd, 0x37, 0x72,
+	0xeb, 0xae, 0xc6, 0xaf, 0x60, 0xf6, 0xf2, 0x1a, 0x34, 0x87, 0xc7, 0xbc, 0xe4, 0x50, 0x78, 0xf7,
+	0x9a, 0x0e, 0xdd, 0xe3, 0xbf, 0xd5, 0xe0, 0x66, 0xff, 0xde, 0x7c, 0x74, 0x55, 0x5e, 0x7d, 0x9c,
+	0x0a, 0xeb, 0x6f, 0xe0, 0x74, 0x8e, 0x4b, 0xff, 0x36, 0xbd, 0x82, 0x4b, 0x5f, 0xa7, 0xab, 0xb8,
+	0x0c, 0xed, 0x09, 0x44, 0x21, 0x77, 0xae, 0x1f, 0x56, 0x5e, 0x27, 0x98, 0xc2, 0x16, 0x4a, 0xaf,
+	0x8f, 0x4d, 0xce, 0x2b, 0x64, 0xbe, 0x16, 0x0d, 0xb0, 0x79, 0xf0, 0xf2, 0xb8, 0xa8, 0xbd, 0x3a,
+	0x2e, 0x6a, 0x7f, 0x1f, 0x17, 0xb5, 0x17, 0x27, 0xc5, 0x91, 0x57, 0x27, 0xc5, 0x91, 0x3f, 0x4e,
+	0x8a, 0x23, 0xcf, 0xd7, 0x7d, 0xc2, 0x2b, 0x8d, 0xb2, 0xe1, 0xb2, 0x9a, 0x19, 0x87, 0x7f, 0xc0,
+	0x42, 0x3f, 0xf9, 0x36, 0x9b, 0x8f, 0xcd, 0x76, 0xbf, 0x1f, 0xf7, 0xe2, 0xe7, 0x6d, 0x79, 0x4c,
+	0x2e, 0xb3, 0x47, 0xff, 0x05, 0x00, 0x00, 0xff, 0xff, 0x36, 0x3d, 0xe1, 0x10, 0x06, 0x0c, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1020,19 +1026,19 @@ type MsgClient interface {
 	//
 	// Returns an ID assigned to the registered query. Handle this message response via a reply
 	// handler in order to make use of the ID.
-	RegisterInterchainQuery(ctx context.Context, in *MsgRegisterInterchainQueryRequest, opts ...grpc.CallOption) (*MsgRegisterInterchainQueryResponse, error)
+	RegisterInterchainQuery(ctx context.Context, in *MsgRegisterInterchainQuery, opts ...grpc.CallOption) (*MsgRegisterInterchainQueryResponse, error)
 	// Submits a result of an Interchain Query execution to the chain. This message handling may
 	// include passing of the result to the query's owner smart contract for processing which might
 	// be a pretty gas-consumable operation.
-	SubmitQueryResult(ctx context.Context, in *MsgSubmitQueryResultRequest, opts ...grpc.CallOption) (*MsgSubmitQueryResultResponse, error)
+	SubmitQueryResult(ctx context.Context, in *MsgSubmitQueryResult, opts ...grpc.CallOption) (*MsgSubmitQueryResultResponse, error)
 	// Removes a given Interchain Query and its results from the module. Can be removed only by the
 	// owner of the query during the query's submit timeout, and by anyone after the query has been
 	// timed out. The query deposit is returned to the caller on a success call.
-	RemoveInterchainQuery(ctx context.Context, in *MsgRemoveInterchainQueryRequest, opts ...grpc.CallOption) (*MsgRemoveInterchainQueryResponse, error)
+	RemoveInterchainQuery(ctx context.Context, in *MsgRemoveInterchainQuery, opts ...grpc.CallOption) (*MsgRemoveInterchainQueryResponse, error)
 	// Updates parameters of a registered Interchain Query. Only callable by the owner of the query.
-	UpdateInterchainQuery(ctx context.Context, in *MsgUpdateInterchainQueryRequest, opts ...grpc.CallOption) (*MsgUpdateInterchainQueryResponse, error)
+	UpdateInterchainQuery(ctx context.Context, in *MsgUpdateInterchainQuery, opts ...grpc.CallOption) (*MsgUpdateInterchainQueryResponse, error)
 	// Updates params of the interchainqueries module. Only callable by the module's authority.
-	UpdateParams(ctx context.Context, in *MsgUpdateParamsRequest, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
 type msgClient struct {
@@ -1043,7 +1049,7 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) RegisterInterchainQuery(ctx context.Context, in *MsgRegisterInterchainQueryRequest, opts ...grpc.CallOption) (*MsgRegisterInterchainQueryResponse, error) {
+func (c *msgClient) RegisterInterchainQuery(ctx context.Context, in *MsgRegisterInterchainQuery, opts ...grpc.CallOption) (*MsgRegisterInterchainQueryResponse, error) {
 	out := new(MsgRegisterInterchainQueryResponse)
 	err := c.cc.Invoke(ctx, "/neutron.interchainqueries.Msg/RegisterInterchainQuery", in, out, opts...)
 	if err != nil {
@@ -1052,7 +1058,7 @@ func (c *msgClient) RegisterInterchainQuery(ctx context.Context, in *MsgRegister
 	return out, nil
 }
 
-func (c *msgClient) SubmitQueryResult(ctx context.Context, in *MsgSubmitQueryResultRequest, opts ...grpc.CallOption) (*MsgSubmitQueryResultResponse, error) {
+func (c *msgClient) SubmitQueryResult(ctx context.Context, in *MsgSubmitQueryResult, opts ...grpc.CallOption) (*MsgSubmitQueryResultResponse, error) {
 	out := new(MsgSubmitQueryResultResponse)
 	err := c.cc.Invoke(ctx, "/neutron.interchainqueries.Msg/SubmitQueryResult", in, out, opts...)
 	if err != nil {
@@ -1061,7 +1067,7 @@ func (c *msgClient) SubmitQueryResult(ctx context.Context, in *MsgSubmitQueryRes
 	return out, nil
 }
 
-func (c *msgClient) RemoveInterchainQuery(ctx context.Context, in *MsgRemoveInterchainQueryRequest, opts ...grpc.CallOption) (*MsgRemoveInterchainQueryResponse, error) {
+func (c *msgClient) RemoveInterchainQuery(ctx context.Context, in *MsgRemoveInterchainQuery, opts ...grpc.CallOption) (*MsgRemoveInterchainQueryResponse, error) {
 	out := new(MsgRemoveInterchainQueryResponse)
 	err := c.cc.Invoke(ctx, "/neutron.interchainqueries.Msg/RemoveInterchainQuery", in, out, opts...)
 	if err != nil {
@@ -1070,7 +1076,7 @@ func (c *msgClient) RemoveInterchainQuery(ctx context.Context, in *MsgRemoveInte
 	return out, nil
 }
 
-func (c *msgClient) UpdateInterchainQuery(ctx context.Context, in *MsgUpdateInterchainQueryRequest, opts ...grpc.CallOption) (*MsgUpdateInterchainQueryResponse, error) {
+func (c *msgClient) UpdateInterchainQuery(ctx context.Context, in *MsgUpdateInterchainQuery, opts ...grpc.CallOption) (*MsgUpdateInterchainQueryResponse, error) {
 	out := new(MsgUpdateInterchainQueryResponse)
 	err := c.cc.Invoke(ctx, "/neutron.interchainqueries.Msg/UpdateInterchainQuery", in, out, opts...)
 	if err != nil {
@@ -1079,7 +1085,7 @@ func (c *msgClient) UpdateInterchainQuery(ctx context.Context, in *MsgUpdateInte
 	return out, nil
 }
 
-func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParamsRequest, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error) {
+func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error) {
 	out := new(MsgUpdateParamsResponse)
 	err := c.cc.Invoke(ctx, "/neutron.interchainqueries.Msg/UpdateParams", in, out, opts...)
 	if err != nil {
@@ -1098,38 +1104,38 @@ type MsgServer interface {
 	//
 	// Returns an ID assigned to the registered query. Handle this message response via a reply
 	// handler in order to make use of the ID.
-	RegisterInterchainQuery(context.Context, *MsgRegisterInterchainQueryRequest) (*MsgRegisterInterchainQueryResponse, error)
+	RegisterInterchainQuery(context.Context, *MsgRegisterInterchainQuery) (*MsgRegisterInterchainQueryResponse, error)
 	// Submits a result of an Interchain Query execution to the chain. This message handling may
 	// include passing of the result to the query's owner smart contract for processing which might
 	// be a pretty gas-consumable operation.
-	SubmitQueryResult(context.Context, *MsgSubmitQueryResultRequest) (*MsgSubmitQueryResultResponse, error)
+	SubmitQueryResult(context.Context, *MsgSubmitQueryResult) (*MsgSubmitQueryResultResponse, error)
 	// Removes a given Interchain Query and its results from the module. Can be removed only by the
 	// owner of the query during the query's submit timeout, and by anyone after the query has been
 	// timed out. The query deposit is returned to the caller on a success call.
-	RemoveInterchainQuery(context.Context, *MsgRemoveInterchainQueryRequest) (*MsgRemoveInterchainQueryResponse, error)
+	RemoveInterchainQuery(context.Context, *MsgRemoveInterchainQuery) (*MsgRemoveInterchainQueryResponse, error)
 	// Updates parameters of a registered Interchain Query. Only callable by the owner of the query.
-	UpdateInterchainQuery(context.Context, *MsgUpdateInterchainQueryRequest) (*MsgUpdateInterchainQueryResponse, error)
+	UpdateInterchainQuery(context.Context, *MsgUpdateInterchainQuery) (*MsgUpdateInterchainQueryResponse, error)
 	// Updates params of the interchainqueries module. Only callable by the module's authority.
-	UpdateParams(context.Context, *MsgUpdateParamsRequest) (*MsgUpdateParamsResponse, error)
+	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) RegisterInterchainQuery(ctx context.Context, req *MsgRegisterInterchainQueryRequest) (*MsgRegisterInterchainQueryResponse, error) {
+func (*UnimplementedMsgServer) RegisterInterchainQuery(ctx context.Context, req *MsgRegisterInterchainQuery) (*MsgRegisterInterchainQueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterInterchainQuery not implemented")
 }
-func (*UnimplementedMsgServer) SubmitQueryResult(ctx context.Context, req *MsgSubmitQueryResultRequest) (*MsgSubmitQueryResultResponse, error) {
+func (*UnimplementedMsgServer) SubmitQueryResult(ctx context.Context, req *MsgSubmitQueryResult) (*MsgSubmitQueryResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitQueryResult not implemented")
 }
-func (*UnimplementedMsgServer) RemoveInterchainQuery(ctx context.Context, req *MsgRemoveInterchainQueryRequest) (*MsgRemoveInterchainQueryResponse, error) {
+func (*UnimplementedMsgServer) RemoveInterchainQuery(ctx context.Context, req *MsgRemoveInterchainQuery) (*MsgRemoveInterchainQueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveInterchainQuery not implemented")
 }
-func (*UnimplementedMsgServer) UpdateInterchainQuery(ctx context.Context, req *MsgUpdateInterchainQueryRequest) (*MsgUpdateInterchainQueryResponse, error) {
+func (*UnimplementedMsgServer) UpdateInterchainQuery(ctx context.Context, req *MsgUpdateInterchainQuery) (*MsgUpdateInterchainQueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateInterchainQuery not implemented")
 }
-func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParamsRequest) (*MsgUpdateParamsResponse, error) {
+func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
 
@@ -1138,7 +1144,7 @@ func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 }
 
 func _Msg_RegisterInterchainQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRegisterInterchainQueryRequest)
+	in := new(MsgRegisterInterchainQuery)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1150,13 +1156,13 @@ func _Msg_RegisterInterchainQuery_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/neutron.interchainqueries.Msg/RegisterInterchainQuery",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RegisterInterchainQuery(ctx, req.(*MsgRegisterInterchainQueryRequest))
+		return srv.(MsgServer).RegisterInterchainQuery(ctx, req.(*MsgRegisterInterchainQuery))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_SubmitQueryResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSubmitQueryResultRequest)
+	in := new(MsgSubmitQueryResult)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1168,13 +1174,13 @@ func _Msg_SubmitQueryResult_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/neutron.interchainqueries.Msg/SubmitQueryResult",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SubmitQueryResult(ctx, req.(*MsgSubmitQueryResultRequest))
+		return srv.(MsgServer).SubmitQueryResult(ctx, req.(*MsgSubmitQueryResult))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_RemoveInterchainQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveInterchainQueryRequest)
+	in := new(MsgRemoveInterchainQuery)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1186,13 +1192,13 @@ func _Msg_RemoveInterchainQuery_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/neutron.interchainqueries.Msg/RemoveInterchainQuery",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveInterchainQuery(ctx, req.(*MsgRemoveInterchainQueryRequest))
+		return srv.(MsgServer).RemoveInterchainQuery(ctx, req.(*MsgRemoveInterchainQuery))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_UpdateInterchainQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUpdateInterchainQueryRequest)
+	in := new(MsgUpdateInterchainQuery)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1204,13 +1210,13 @@ func _Msg_UpdateInterchainQuery_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/neutron.interchainqueries.Msg/UpdateInterchainQuery",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UpdateInterchainQuery(ctx, req.(*MsgUpdateInterchainQueryRequest))
+		return srv.(MsgServer).UpdateInterchainQuery(ctx, req.(*MsgUpdateInterchainQuery))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUpdateParamsRequest)
+	in := new(MsgUpdateParams)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1222,7 +1228,7 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/neutron.interchainqueries.Msg/UpdateParams",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UpdateParams(ctx, req.(*MsgUpdateParamsRequest))
+		return srv.(MsgServer).UpdateParams(ctx, req.(*MsgUpdateParams))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1256,7 +1262,7 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	Metadata: "neutron/interchainqueries/tx.proto",
 }
 
-func (m *MsgRegisterInterchainQueryRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgRegisterInterchainQuery) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1266,12 +1272,12 @@ func (m *MsgRegisterInterchainQueryRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgRegisterInterchainQueryRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgRegisterInterchainQuery) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgRegisterInterchainQueryRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgRegisterInterchainQuery) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1354,7 +1360,7 @@ func (m *MsgRegisterInterchainQueryResponse) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgSubmitQueryResultRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgSubmitQueryResult) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1364,12 +1370,12 @@ func (m *MsgSubmitQueryResultRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSubmitQueryResultRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSubmitQueryResult) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSubmitQueryResultRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSubmitQueryResult) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1681,7 +1687,7 @@ func (m *MsgSubmitQueryResultResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgRemoveInterchainQueryRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgRemoveInterchainQuery) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1691,12 +1697,12 @@ func (m *MsgRemoveInterchainQueryRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgRemoveInterchainQueryRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgRemoveInterchainQuery) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgRemoveInterchainQueryRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgRemoveInterchainQuery) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1739,7 +1745,7 @@ func (m *MsgRemoveInterchainQueryResponse) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUpdateInterchainQueryRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgUpdateInterchainQuery) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1749,12 +1755,12 @@ func (m *MsgUpdateInterchainQueryRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgUpdateInterchainQueryRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUpdateInterchainQuery) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUpdateInterchainQueryRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUpdateInterchainQuery) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1823,7 +1829,7 @@ func (m *MsgUpdateInterchainQueryResponse) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUpdateParamsRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgUpdateParams) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1833,12 +1839,12 @@ func (m *MsgUpdateParamsRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgUpdateParamsRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUpdateParams) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUpdateParamsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUpdateParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1897,7 +1903,7 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgRegisterInterchainQueryRequest) Size() (n int) {
+func (m *MsgRegisterInterchainQuery) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1943,7 +1949,7 @@ func (m *MsgRegisterInterchainQueryResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgSubmitQueryResultRequest) Size() (n int) {
+func (m *MsgSubmitQueryResult) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2075,7 +2081,7 @@ func (m *MsgSubmitQueryResultResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgRemoveInterchainQueryRequest) Size() (n int) {
+func (m *MsgRemoveInterchainQuery) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2100,7 +2106,7 @@ func (m *MsgRemoveInterchainQueryResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgUpdateInterchainQueryRequest) Size() (n int) {
+func (m *MsgUpdateInterchainQuery) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2138,7 +2144,7 @@ func (m *MsgUpdateInterchainQueryResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgUpdateParamsRequest) Size() (n int) {
+func (m *MsgUpdateParams) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2168,7 +2174,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgRegisterInterchainQueryRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgRegisterInterchainQuery) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2191,10 +2197,10 @@ func (m *MsgRegisterInterchainQueryRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRegisterInterchainQueryRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRegisterInterchainQuery: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRegisterInterchainQueryRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRegisterInterchainQuery: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2468,7 +2474,7 @@ func (m *MsgRegisterInterchainQueryResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgSubmitQueryResultRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgSubmitQueryResult) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2491,10 +2497,10 @@ func (m *MsgSubmitQueryResultRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSubmitQueryResultRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSubmitQueryResult: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSubmitQueryResultRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSubmitQueryResult: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3401,7 +3407,7 @@ func (m *MsgSubmitQueryResultResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgRemoveInterchainQueryRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgRemoveInterchainQuery) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3424,10 +3430,10 @@ func (m *MsgRemoveInterchainQueryRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRemoveInterchainQueryRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRemoveInterchainQuery: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRemoveInterchainQueryRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRemoveInterchainQuery: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3552,7 +3558,7 @@ func (m *MsgRemoveInterchainQueryResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUpdateInterchainQueryRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgUpdateInterchainQuery) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3575,10 +3581,10 @@ func (m *MsgUpdateInterchainQueryRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateInterchainQueryRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUpdateInterchainQuery: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateInterchainQueryRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUpdateInterchainQuery: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3788,7 +3794,7 @@ func (m *MsgUpdateInterchainQueryResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUpdateParamsRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgUpdateParams) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3811,10 +3817,10 @@ func (m *MsgUpdateParamsRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateParamsRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUpdateParams: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateParamsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUpdateParams: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

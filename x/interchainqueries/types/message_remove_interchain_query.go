@@ -9,24 +9,24 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-var _ sdk.Msg = &MsgRemoveInterchainQueryRequest{}
+var _ sdk.Msg = &MsgRemoveInterchainQuery{}
 
-func NewMsgRemoveInterchainQuery(sender string, queryID uint64) MsgRemoveInterchainQueryRequest {
-	return MsgRemoveInterchainQueryRequest{
+func NewMsgRemoveInterchainQuery(sender string, queryID uint64) MsgRemoveInterchainQuery {
+	return MsgRemoveInterchainQuery{
 		QueryId: queryID,
 		Sender:  sender,
 	}
 }
 
-func (msg MsgRemoveInterchainQueryRequest) Route() string {
+func (msg MsgRemoveInterchainQuery) Route() string {
 	return RouterKey
 }
 
-func (msg MsgRemoveInterchainQueryRequest) Type() string {
+func (msg MsgRemoveInterchainQuery) Type() string {
 	return "remove-interchain-query"
 }
 
-func (msg MsgRemoveInterchainQueryRequest) Validate() error {
+func (msg MsgRemoveInterchainQuery) Validate() error {
 	if msg.GetQueryId() == 0 {
 		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
@@ -42,11 +42,11 @@ func (msg MsgRemoveInterchainQueryRequest) Validate() error {
 	return nil
 }
 
-func (msg MsgRemoveInterchainQueryRequest) GetSignBytes() []byte {
+func (msg MsgRemoveInterchainQuery) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
-func (msg MsgRemoveInterchainQueryRequest) GetSigners() []sdk.AccAddress {
+func (msg MsgRemoveInterchainQuery) GetSigners() []sdk.AccAddress {
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())
