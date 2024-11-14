@@ -142,11 +142,11 @@ func TestWithdraw(t *testing.T) {
 			TokenBBalanceAfter := balancesAfter.Creator.AmountOf(tc.ExistingLiquidityDistribution.TokenB.Denom)
 			// Assertion 1
 			// toWithdraw = withdrawnTokenA + withdrawnTokenB*priceTakerToMaker
-			priceTakerToMaker := dextypes.MustCalcPrice(-1 * tc.Tick)
+			price1To0 := dextypes.MustCalcPrice(tc.Tick)
 			s.Require().Equal(
 				toWithdraw,
 				TokenABalanceAfter.Sub(TokenABalanceBefore).Add(
-					priceTakerToMaker.MulInt(TokenBBalanceAfter.Sub(TokenBBalanceBefore)).TruncateInt(),
+					price1To0.MulInt(TokenBBalanceAfter.Sub(TokenBBalanceBefore)).TruncateInt(),
 				),
 			)
 			newExistingSharesOwned := balancesAfter.Creator.AmountOf(poolDenom)

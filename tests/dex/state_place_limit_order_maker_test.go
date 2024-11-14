@@ -229,11 +229,11 @@ func (s *DexStateTestSuite) expectedInOutTokensAmount(tokenA sdk.Coin, denomOut 
 		// t.ReservesMakerDenom - reserve TokenB we are going to get
 		// t.Price() - price taker -> maker => 1/t.Price() - maker -> taker
 		// maxSwap - max amount of tokenA (ReservesTakerDenom) tranche can consume us by changing ReservesMakerDenom -> ReservesTakerDenom
-		maxSwap := math_utils.NewPrecDecFromInt(t.ReservesMakerDenom).Quo(t.Price()).TruncateInt()
+		maxSwap := math_utils.NewPrecDecFromInt(t.ReservesMakerDenom).Mul(t.Price()).TruncateInt()
 		// we can swap full our tranche
 		if maxSwap.GTE(reserveA) {
 			// expected to get tokenB = tokenA*
-			amountOut = amountOut.Add(math_utils.NewPrecDecFromInt(reserveA).Mul(t.Price()).TruncateInt())
+			amountOut = amountOut.Add(math_utils.NewPrecDecFromInt(reserveA).Quo(t.Price()).TruncateInt())
 			break
 		}
 		reserveA = reserveA.Sub(maxSwap)

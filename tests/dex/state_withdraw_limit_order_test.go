@@ -109,7 +109,7 @@ func (s *DexStateTestSuite) setupWithdrawLimitOrderTest(params withdrawLimitOrde
 
 	req := dextypes.QueryGetLimitOrderTrancheRequest{
 		PairId:     params.PairID.CanonicalString(),
-		TickIndex:  -1 * tick,
+		TickIndex:  tick,
 		TokenIn:    params.PairID.Token0,
 		TrancheKey: res.TrancheKey,
 	}
@@ -214,9 +214,6 @@ func TestWithdrawLimitOrder(t *testing.T) {
 	// totalExpectedToSwap := math.ZeroInt()
 
 	for i, tc := range testCases {
-		// if i != 30 {
-		//	continue
-		//}
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			s.SetT(t)
 			tc.printTestInfo(t)
@@ -238,7 +235,5 @@ func TestWithdrawLimitOrder(t *testing.T) {
 			*/
 		})
 	}
-	// s.SetT(t)
-	//// check at least one `expectedSwapTakerDenom` > 0
-	// s.True(totalExpectedToSwap.GT(math.ZeroInt()))
+
 }
