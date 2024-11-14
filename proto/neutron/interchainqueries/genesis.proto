@@ -17,10 +17,13 @@ message RegisteredQuery {
   // The query type identifier: `kv` or `tx`.
   string query_type = 3;
   // The KV-storage keys for which to get values from the remote chain. Only applicable for the
-  // KV-typed Interchain Queries.
+  // KV Interchain Queries. Max amount of keys is limited by the module's `max_kv_query_keys_count`
+  // parameters. 
   repeated KVKey keys = 4;
-  // A stringified list of filters for remote transactions search. Only applicable for the TX-typed
+  // A stringified list of filters for remote transactions search. Only applicable for the TX
   // Interchain Queries. Example: "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+  // Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of filter conditions is limited
+  // by the module's `max_transactions_filters` parameters.
   string transactions_filter = 5;
   // The IBC connection ID to the remote chain (the source of querying data). Is used for getting
   // ConsensusState from the respective IBC client to verify query result proofs.
@@ -50,7 +53,7 @@ message KVKey {
   // The first half of the storage path. It is supposed to be a substore name for the query
   // (e.g. bank, staking, etc.).
   string path = 1;
-  // The second half of the storage path. The remaining part of a full path to an IAVL storage node.
+  // The second half of the storage path. The remaining part of the full path to an IAVL storage node.
   bytes key = 2;
 }
 

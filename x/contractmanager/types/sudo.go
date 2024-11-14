@@ -5,11 +5,11 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
-// MessageTxQueryResult is the model of the sudo message sent to a smart contract on a TX-typed
-// Interchain Query result submission. The owner of a TX-typed Interchain Query must define a
-// `sudo` entry_point for handling `tx_query_result` messages and place the needed logic there.
+// MessageTxQueryResult is the model of the sudo message sent to a smart contract on a TX
+// Interchain Query result submission. The owner of a TX Interchain Query must define a `sudo`
+// entry_point for handling `tx_query_result` messages and place the needed logic there.
 // The `tx_query_result` handler is treated by the interchainqueries module as a callback that is
-// called each time a TX-typed query result is submitted.
+// called each time a TX query result is submitted.
 type MessageTxQueryResult struct {
 	TxQueryResult struct {
 		// QueryID is the ID of the TX query which result is being submitted.
@@ -21,11 +21,11 @@ type MessageTxQueryResult struct {
 	} `json:"tx_query_result"`
 }
 
-// MessageKVQueryResult is the model of the sudo message sent to a smart contract on a KV-typed
-// Interchain Query result submission. If the owner of a KV-typed Interchain Query wants to handle
-// the query updates, it must define a `sudo` entry_point for handling `kv_query_result` messages
+// MessageKVQueryResult is the model of the sudo message sent to a smart contract on a KV
+// Interchain Query result submission. If the owner of a KV Interchain Query wants to handle the
+// query updates, it must define a `sudo` entry_point for handling `kv_query_result` messages
 // and place the needed logic there. The `kv_query_result` handler is treated by the
-// interchainqueries module as a callback that is called each time a KV-typed query result is
+// interchainqueries module as a callback that is called each time a KV query result is
 // submitted.
 //
 // Note that there is no query result sent, only the query ID. In order to access the actual
