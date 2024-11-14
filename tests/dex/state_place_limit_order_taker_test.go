@@ -159,7 +159,7 @@ func (s *DexStateTestSuite) setupLoTakerState(params placeLimitOrderTakerTestPar
 				TokenB: sdk.NewCoin(params.PairID.Token1, math.ZeroInt()),
 			}
 			// tick+DefaultFee to put liquidity the same tick as LO
-			_, err := s.makeDeposit(s.alice, liduidity, DefaultFee, tick+DefaultFee, true)
+			_, err := s.makeDeposit(s.alice, liduidity, DefaultFee, -tick+DefaultFee, true)
 			s.NoError(err)
 		}
 	}
@@ -169,18 +169,22 @@ func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 	if params.LiquidityType == None {
 		return math.ZeroInt(), math.ZeroInt()
 	}
-	LimitTick, err := dextypes.CalcTickIndexFromPrice(math_utils.OnePrecDec().Quo(params.LimitPrice))
+	limitSellTick, err := dextypes.CalcTickIndexFromPrice(params.LimitPrice)
 	if err != nil {
 		panic(err)
 	}
+
+	limitBuyTick := limitSellTick * -1
+
 	tickLiquidity := BaseTokenAmountInt.QuoRaw(int64(len(params.TicksDistribution)))
 	TotalIn := math.ZeroInt()
 	TotalOut := math.ZeroInt()
 	for _, tick := range params.TicksDistribution {
-		if LimitTick > tick {
+
+		if limitBuyTick < tick {
 			break
 		}
-		price := dextypes.MustCalcPrice(-1 * tick)
+		price := dextypes.MustCalcPrice(tick)
 		remainingIn := params.AmountIn.Amount.Sub(TotalIn)
 
 		if !remainingIn.IsPositive() {
@@ -188,7 +192,7 @@ func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 		}
 
 		availableLiquidity := tickLiquidity
-		outGivenIn := price.MulInt(remainingIn).TruncateInt()
+		outGivenIn := math_utils.NewPrecDecFromInt(remainingIn).Quo(price).TruncateInt()
 		amountOut := math.ZeroInt()
 		if params.MaxAmountOut != nil {
 			maxAmountOut := params.MaxAmountOut.Sub(TotalOut)
@@ -201,7 +205,7 @@ func ExpectedInOut(params placeLimitOrderTakerTestParams) (math.Int, math.Int) {
 
 		}
 
-		amountInRaw := math_utils.NewPrecDecFromInt(amountOut).Quo(price)
+		amountInRaw := price.MulInt(amountOut)
 
 		amountIn := math.ZeroInt()
 		if params.LiquidityType == LOLP {
