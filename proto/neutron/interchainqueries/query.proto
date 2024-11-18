@@ -26,11 +26,11 @@ service Query {
     option (google.api.http).get = "/neutron/interchainqueries/registered_query";
   }
   // Queries the last successfully submitted result of an Interchain Query.
-  rpc QueryResult(QueryQueryResultRequest) returns (QueryQueryResultResponse) {
+  rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/query_result";
   }
   // Queries the last height of a remote chain known to the IBC client behind a given connection ID.
-  rpc LastRemoteHeight(QueryLastRemoteHeightRequest) returns (QueryLastRemoteHeightResponse) {
+  rpc LastRemoteHeight(QueryLastRemoteHeight) returns (QueryLastRemoteHeightResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/remote_height";
   }
 }
@@ -81,19 +81,25 @@ message QueryRegisteredQueryResponse {
 }
 
 // Request type for the Query/QueryResult RPC method.
-message QueryQueryResultRequest {
+message QueryRegisteredQueryResultRequest {
   // ID of an Interchain Query.
   uint64 query_id = 1;
 }
 
 // Response type for the Query/QueryResult RPC method.
-message QueryQueryResultResponse {
+message QueryRegisteredQueryResultResponse {
   // The last successfully submitted result of an Interchain Query.
   QueryResult result = 1;
 }
 
+message Transaction {
+  uint64 id = 1;
+  uint64 height = 2;
+  bytes data = 3;
+}
+
 // Request type for the Query/LastRemoteHeight RPC method.
-message QueryLastRemoteHeightRequest {
+message QueryLastRemoteHeight {
   // Connection ID of an IBC connection to a remote chain. Determines the IBC client used in query
   // handling.
   string connection_id = 1;

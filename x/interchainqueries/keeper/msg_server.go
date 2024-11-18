@@ -92,7 +92,7 @@ func (m msgServer) RegisterInterchainQuery(goCtx context.Context, msg *types.Msg
 	return &types.MsgRegisterInterchainQueryResponse{Id: lastID}, nil
 }
 
-func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRemoveInterchainQuery) (*types.MsgRemoveInterchainQueryResponse, error) {
+func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRemoveInterchainQueryRequest) (*types.MsgRemoveInterchainQueryResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate MsgRemoveInterchainQueryRequest")
 	}
@@ -119,7 +119,7 @@ func (m msgServer) RemoveInterchainQuery(goCtx context.Context, msg *types.MsgRe
 	return &types.MsgRemoveInterchainQueryResponse{}, nil
 }
 
-func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUpdateInterchainQuery) (*types.MsgUpdateInterchainQueryResponse, error) {
+func (m msgServer) UpdateInterchainQuery(goCtx context.Context, msg *types.MsgUpdateInterchainQueryRequest) (*types.MsgUpdateInterchainQueryResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ctx.Logger().Debug("UpdateInterchainQuery", "msg", msg)
 	params := m.GetParams(ctx)
@@ -316,7 +316,7 @@ func (m msgServer) SubmitQueryResult(goCtx context.Context, msg *types.MsgSubmit
 // with the query type.
 func (m msgServer) validateUpdateInterchainQueryParams(
 	query *types.RegisteredQuery,
-	msg *types.MsgUpdateInterchainQuery,
+	msg *types.MsgUpdateInterchainQueryRequest,
 ) error {
 	queryType := types.InterchainQueryType(query.GetQueryType())
 	newKvKeysSet := len(msg.GetNewKeys()) != 0

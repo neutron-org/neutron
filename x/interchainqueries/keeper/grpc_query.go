@@ -75,7 +75,7 @@ func (k Keeper) GetRegisteredQueries(ctx sdk.Context, req *types.QueryRegistered
 	return &types.QueryRegisteredQueriesResponse{RegisteredQueries: queries, Pagination: pageRes}, nil
 }
 
-func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryQueryResultRequest) (*types.QueryQueryResultResponse, error) {
+func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryRegisteredQueryResultRequest) (*types.QueryRegisteredQueryResultResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	if !k.checkRegisteredQueryExists(ctx, request.QueryId) {
@@ -86,10 +86,10 @@ func (k Keeper) QueryResult(goCtx context.Context, request *types.QueryQueryResu
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get query result by query id: %v", err)
 	}
-	return &types.QueryQueryResultResponse{Result: result}, nil
+	return &types.QueryRegisteredQueryResultResponse{Result: result}, nil
 }
 
-func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLastRemoteHeightRequest) (*types.QueryLastRemoteHeightResponse, error) {
+func (k Keeper) LastRemoteHeight(goCtx context.Context, request *types.QueryLastRemoteHeight) (*types.QueryLastRemoteHeightResponse, error) {
 	req := contypes.QueryConnectionClientStateRequest{ConnectionId: request.ConnectionId}
 	r, err := k.ibcKeeper.ConnectionClientState(goCtx, &req)
 	if err != nil {

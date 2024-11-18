@@ -49,9 +49,8 @@ func TestMsgSubmitQueryResultGetSigners(t *testing.T) {
 			"valid_signer",
 			func() sdktypes.LegacyMsg {
 				return &iqtypes.MsgSubmitQueryResult{
-					QueryId:  1,
-					Sender:   TestAddress,
-					ClientId: "client-id",
+					QueryId: 1,
+					Sender:  TestAddress,
 					Result: &iqtypes.QueryResult{
 						KvResults: []*iqtypes.StorageValue{{
 							Key: []byte{10},
@@ -89,7 +88,7 @@ func TestMsgUpdateQueryGetSigners(t *testing.T) {
 		{
 			"valid_signer",
 			func() sdktypes.LegacyMsg {
-				return &iqtypes.MsgUpdateInterchainQuery{
+				return &iqtypes.MsgUpdateInterchainQueryRequest{
 					Sender: TestAddress,
 				}
 			},
@@ -111,7 +110,7 @@ func TestMsgRemoveQueryGetSigners(t *testing.T) {
 		{
 			"valid_signer",
 			func() sdktypes.LegacyMsg {
-				return &iqtypes.MsgRemoveInterchainQuery{
+				return &iqtypes.MsgRemoveInterchainQueryRequest{
 					Sender: TestAddress,
 				}
 			},

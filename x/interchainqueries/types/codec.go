@@ -17,8 +17,8 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&MsgRegisterInterchainQuery{},
 		&MsgSubmitQueryResult{},
-		&MsgUpdateInterchainQuery{},
-		&MsgRemoveInterchainQuery{},
+		&MsgUpdateInterchainQueryRequest{},
+		&MsgRemoveInterchainQueryRequest{},
 		&MsgUpdateParams{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

@@ -134,9 +134,9 @@ func (msg MsgRegisterInterchainQuery) GetSigners() []sdk.AccAddress {
 
 //----------------------------------------------------------------
 
-var _ sdk.Msg = &MsgUpdateInterchainQuery{}
+var _ sdk.Msg = &MsgUpdateInterchainQueryRequest{}
 
-func (msg MsgUpdateInterchainQuery) Validate(params Params) error {
+func (msg MsgUpdateInterchainQueryRequest) Validate(params Params) error {
 	if msg.GetQueryId() == 0 {
 		return errors.Wrap(ErrInvalidQueryID, "query_id cannot be empty or equal to 0")
 	}
@@ -179,11 +179,11 @@ func (msg MsgUpdateInterchainQuery) Validate(params Params) error {
 	return nil
 }
 
-func (msg MsgUpdateInterchainQuery) GetSignBytes() []byte {
+func (msg MsgUpdateInterchainQueryRequest) GetSignBytes() []byte {
 	return ModuleCdc.MustMarshalJSON(&msg)
 }
 
-func (msg MsgUpdateInterchainQuery) GetSigners() []sdk.AccAddress {
+func (msg MsgUpdateInterchainQueryRequest) GetSigners() []sdk.AccAddress {
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil { // should never happen as valid basic rejects invalid addresses
 		panic(err.Error())

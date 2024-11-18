@@ -66,7 +66,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/neutron.interchainqueries.Query/Params":            &interchainqueriestypes.QueryParamsResponse{},
 		"/neutron.interchainqueries.Query/RegisteredQueries": &interchainqueriestypes.QueryRegisteredQueriesResponse{},
 		"/neutron.interchainqueries.Query/RegisteredQuery":   &interchainqueriestypes.QueryRegisteredQueryResponse{},
-		"/neutron.interchainqueries.Query/QueryResult":       &interchainqueriestypes.QueryQueryResultResponse{},
+		"/neutron.interchainqueries.Query/QueryResult":       &interchainqueriestypes.QueryRegisteredQueryResultResponse{},
 		"/neutron.interchainqueries.Query/LastRemoteHeight":  &interchainqueriestypes.QueryLastRemoteHeightResponse{},
 
 		// feeburner

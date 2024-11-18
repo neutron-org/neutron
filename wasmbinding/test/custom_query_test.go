@@ -88,7 +88,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResult() {
 			QueryID: lastID,
 		},
 	}
-	resp := icqtypes.QueryQueryResultResponse{}
+	resp := icqtypes.QueryRegisteredQueryResultResponse{}
 	err = suite.queryCustom(ctx, contractAddress, query, &resp)
 	suite.Require().NoError(err)
 
@@ -121,7 +121,7 @@ func (suite *CustomQuerierTestSuite) TestInterchainQueryResultNotFound() {
 			QueryID: 1,
 		},
 	}
-	resp := icqtypes.QueryQueryResultResponse{}
+	resp := icqtypes.QueryRegisteredQueryResultResponse{}
 	err := suite.queryCustom(ctx, contractAddress, query, &resp)
 	expectedErrMsg := fmt.Sprintf("Generic error: Querier contract error: codespace: interchainqueries, code: %d: query wasm contract failed", icqtypes.ErrNoQueryResult.ABCICode())
 	suite.Require().ErrorContains(err, expectedErrMsg)

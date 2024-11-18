@@ -32,9 +32,9 @@ service Msg {
   // Removes a given Interchain Query and its results from the module. Can be removed only by the
   // owner of the query during the query's submit timeout, and by anyone after the query has been
   // timed out. The query deposit is returned to the caller on a success call.
-  rpc RemoveInterchainQuery(MsgRemoveInterchainQuery) returns (MsgRemoveInterchainQueryResponse);
+  rpc RemoveInterchainQuery(MsgRemoveInterchainQueryRequest) returns (MsgRemoveInterchainQueryResponse);
   // Updates parameters of a registered Interchain Query. Only callable by the owner of the query.
-  rpc UpdateInterchainQuery(MsgUpdateInterchainQuery) returns (MsgUpdateInterchainQueryResponse);
+  rpc UpdateInterchainQuery(MsgUpdateInterchainQueryRequest) returns (MsgUpdateInterchainQueryResponse);
   // Updates params of the interchainqueries module. Only callable by the module's authority.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
@@ -152,7 +152,7 @@ message TxValue {
 message MsgSubmitQueryResultResponse {}
 
 // Request type for the Msg/RemoveInterchainQuery RPC method.
-message MsgRemoveInterchainQuery {
+message MsgRemoveInterchainQueryRequest {
   option (cosmos.msg.v1.signer) = "sender";
   // The ID of the query to remove.
   uint64 query_id = 1;
@@ -164,7 +164,7 @@ message MsgRemoveInterchainQuery {
 message MsgRemoveInterchainQueryResponse {}
 
 // Request type for the Msg/UpdateInterchainQuery RPC method.
-message MsgUpdateInterchainQuery {
+message MsgUpdateInterchainQueryRequest {
   option (cosmos.msg.v1.signer) = "sender";
   // The ID of the query to update.
   uint64 query_id = 1;

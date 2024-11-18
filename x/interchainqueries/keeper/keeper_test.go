@@ -163,7 +163,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainQuery() {
 }
 
 func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
-	var msg iqtypes.MsgUpdateInterchainQuery
+	var msg iqtypes.MsgUpdateInterchainQueryRequest
 	originalKVQuery := iqtypes.MsgRegisterInterchainQuery{
 		QueryType: string(iqtypes.InterchainQueryTypeKV),
 		Keys: []*iqtypes.KVKey{
@@ -199,7 +199,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"valid update period for kv",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
 					NewKeys:         nil,
 					NewUpdatePeriod: 2,
@@ -215,7 +215,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"valid update period for tx",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
 					NewKeys:         nil,
 					NewUpdatePeriod: 2,
@@ -231,7 +231,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"valid kv query data",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
 					NewKeys: []*iqtypes.KVKey{
 						{
@@ -257,7 +257,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"valid tx filter",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:               1,
 					NewUpdatePeriod:       0,
 					NewTransactionsFilter: "[]",
@@ -273,7 +273,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"valid kv query both query keys and update period and ignore tx filter",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
 					NewKeys: []*iqtypes.KVKey{
 						{
@@ -299,7 +299,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"valid tx query both tx filter and update period and ignore query keys",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:               1,
 					NewUpdatePeriod:       2,
 					NewTransactionsFilter: "[]",
@@ -315,7 +315,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"must fail on update filter for a kv query",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:               1,
 					NewUpdatePeriod:       2,
 					NewTransactionsFilter: "[]",
@@ -331,7 +331,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"must fail on update keys for a tx query",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 1,
 					NewKeys: []*iqtypes.KVKey{
 						{
@@ -352,7 +352,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 		{
 			"invalid query id",
 			func(sender string) {
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId: 2,
 					NewKeys: []*iqtypes.KVKey{
 						{
@@ -380,7 +380,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 				codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
 				newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 				suite.Require().NotEmpty(newContractAddress)
-				msg = iqtypes.MsgUpdateInterchainQuery{
+				msg = iqtypes.MsgUpdateInterchainQueryRequest{
 					QueryId:         1,
 					NewKeys:         nil,
 					NewUpdatePeriod: 2,
@@ -449,7 +449,7 @@ func (suite *KeeperTestSuite) TestUpdateInterchainQuery() {
 func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 	suite.SetupTest()
 
-	var msg iqtypes.MsgRemoveInterchainQuery
+	var msg iqtypes.MsgRemoveInterchainQueryRequest
 	var query iqtypes.MsgRegisterInterchainQuery
 	var txQueryHashes [][]byte
 
@@ -461,7 +461,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		{
 			"valid TX remove",
 			func(sender string) {
-				msg = iqtypes.MsgRemoveInterchainQuery{
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  sender,
 				}
@@ -483,7 +483,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		{
 			"valid large TX remove",
 			func(sender string) {
-				msg = iqtypes.MsgRemoveInterchainQuery{
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  sender,
 				}
@@ -508,7 +508,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		{
 			"valid KV remove",
 			func(sender string) {
-				msg = iqtypes.MsgRemoveInterchainQuery{
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  sender,
 				}
@@ -526,7 +526,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 		{
 			"invalid query id",
 			func(sender string) {
-				msg = iqtypes.MsgRemoveInterchainQuery{
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 2,
 					Sender:  sender,
 				}
@@ -551,7 +551,7 @@ func (suite *KeeperTestSuite) TestRemoveInterchainQuery() {
 				codeID := suite.StoreTestCode(ctx, contractOwner, reflectContractPath)
 				newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 				suite.Require().NotEmpty(newContractAddress)
-				msg = iqtypes.MsgRemoveInterchainQuery{
+				msg = iqtypes.MsgRemoveInterchainQueryRequest{
 					QueryId: 1,
 					Sender:  newContractAddress.String(),
 				}
@@ -1723,7 +1723,7 @@ func (suite *KeeperTestSuite) TestRemoveFreshlyCreatedICQ() {
 
 	newContractAddress := suite.InstantiateTestContract(ctx, contractOwner, codeID)
 	suite.Require().NotEmpty(newContractAddress)
-	resp, err := msgSrv.RemoveInterchainQuery(ctx, &iqtypes.MsgRemoveInterchainQuery{
+	resp, err := msgSrv.RemoveInterchainQuery(ctx, &iqtypes.MsgRemoveInterchainQueryRequest{
 		QueryId: 1,
 		Sender:  newContractAddress.String(),
 	})

@@ -351,7 +351,7 @@ func (m *CustomMessenger) updateInterchainQuery(ctx sdk.Context, contractAddr sd
 }
 
 func (m *CustomMessenger) performUpdateInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.UpdateInterchainQuery) (*icqtypes.MsgUpdateInterchainQueryResponse, error) {
-	msg := icqtypes.MsgUpdateInterchainQuery{
+	msg := icqtypes.MsgUpdateInterchainQueryRequest{
 		QueryId:               updateQuery.QueryId,
 		NewKeys:               updateQuery.NewKeys,
 		NewUpdatePeriod:       updateQuery.NewUpdatePeriod,
@@ -402,7 +402,7 @@ func (m *CustomMessenger) removeInterchainQuery(ctx sdk.Context, contractAddr sd
 }
 
 func (m *CustomMessenger) performRemoveInterchainQuery(ctx sdk.Context, contractAddr sdk.AccAddress, updateQuery *bindings.RemoveInterchainQuery) (*icqtypes.MsgRemoveInterchainQueryResponse, error) {
-	msg := icqtypes.MsgRemoveInterchainQuery{
+	msg := icqtypes.MsgRemoveInterchainQueryRequest{
 		QueryId: updateQuery.QueryId,
 		Sender:  contractAddr.String(),
 	}
