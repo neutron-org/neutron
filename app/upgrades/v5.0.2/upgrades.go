@@ -13,8 +13,8 @@ import (
 )
 
 func CreateUpgradeHandler(
-	_ *module.Manager,
-	_ module.Configurator,
+	mm *module.Manager,
+	configurator module.Configurator,
 	_ *upgrades.UpgradeKeepers,
 	_ upgrades.StoreKeys,
 	_ codec.Codec,
@@ -23,6 +23,11 @@ func CreateUpgradeHandler(
 		ctx := sdk.UnwrapSDKContext(c)
 
 		ctx.Logger().Info("Starting module migrations...")
+
+		vm, err := mm.RunMigrations(ctx, configurator, vm)
+		if err != nil {
+			return vm, err
+		}
 
 		ctx.Logger().Info(fmt.Sprintf("Migration {%s} applied", UpgradeName))
 		return vm, nil
