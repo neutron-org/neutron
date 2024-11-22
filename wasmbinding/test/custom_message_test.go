@@ -18,6 +18,7 @@ import (
 	admintypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	appparams "github.com/neutron-org/neutron/v5/app/params"
 	keeper2 "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 	feeburnertypes "github.com/neutron-org/neutron/v5/x/feeburner/types"
 
@@ -65,6 +66,7 @@ type CustomMessengerTestSuite struct {
 }
 
 func (suite *CustomMessengerTestSuite) SetupTest() {
+	sdk.DefaultBondDenom = appparams.DefaultDenom
 	suite.IBCConnectionTestSuite.SetupTest()
 	suite.neutron = suite.GetNeutronZoneApp(suite.ChainA)
 	suite.ctx = suite.ChainA.GetContext()
@@ -557,7 +559,7 @@ func (suite *CustomMessengerTestSuite) TestSubmitTx() {
 	err = response.Unmarshal(data)
 	suite.NoError(err)
 	suite.Equal(uint64(1), response.SequenceId)
-	suite.Equal("channel-2", response.Channel)
+	suite.Equal("channel-0", response.Channel)
 }
 
 func (suite *CustomMessengerTestSuite) TestSubmitTxTooMuchTxs() {

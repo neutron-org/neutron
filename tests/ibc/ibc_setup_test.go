@@ -1,6 +1,8 @@
 package ibc_test
 
 import (
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -13,8 +15,7 @@ import (
 
 	icstestingutils "github.com/cosmos/interchain-security/v5/testutil/ibc_testing"
 	icstestutil "github.com/cosmos/interchain-security/v5/testutil/integration"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+
 	"github.com/stretchr/testify/suite"
 
 	appparams "github.com/neutron-org/neutron/v5/app/params"

@@ -10,13 +10,11 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
@@ -34,9 +32,7 @@ import (
 )
 
 func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
-	switch c := content.(type) {
-	case *proposal.ParameterChangeProposal:
-		return isConsumerParamChangeWhitelisted(c.Changes)
+	switch content.(type) {
 	case *ibcclienttypes.ClientUpdateProposal, //nolint:staticcheck
 		*ibcclienttypes.UpgradeProposal: //nolint:staticcheck
 		return true
@@ -44,16 +40,6 @@ func IsConsumerProposalAllowlisted(content govtypes.Content) bool {
 	default:
 		return false
 	}
-}
-
-func isConsumerParamChangeWhitelisted(paramChanges []proposal.ParamChange) bool {
-	for _, paramChange := range paramChanges {
-		_, found := WhitelistedParams[paramChangeKey{Subspace: paramChange.Subspace, Key: paramChange.Key}]
-		if !found {
-			return false
-		}
-	}
-	return true
 }
 
 // This function is designed to determine if a given message (of type sdk.Msg) belongs to
@@ -89,7 +75,6 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*marketmaptypes.MsgRemoveMarketAuthorities,
 		*marketmaptypes.MsgParams,
 		*authtypes.MsgUpdateParams,
-		*ccvconsumertypes.MsgUpdateParams,
 		*icahosttypes.MsgUpdateParams,
 		*feemarkettypes.MsgParams,
 		*dynamicfeestypes.MsgUpdateParams,
@@ -100,9 +85,3 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 	}
 	return false
 }
-
-type paramChangeKey struct {
-	Subspace, Key string
-}
-
-var WhitelistedParams = map[paramChangeKey]struct{}{}

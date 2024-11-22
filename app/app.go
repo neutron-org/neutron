@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/cosmos/interchain-security/v5/testutil/integration"
 	v400 "github.com/neutron-org/neutron/v5/app/upgrades/v4.0.1"
 	"io"
 	"io/fs"
@@ -50,7 +51,6 @@ import (
 	// globalfeetypes "github.com/cosmos/gaia/v11/x/globalfee/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
-	"github.com/cosmos/interchain-security/v5/testutil/integration"
 	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
