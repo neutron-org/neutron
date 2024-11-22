@@ -218,7 +218,6 @@ require (
 )
 
 replace (
-	cosmossdk.io/math => cosmossdk.io/math v1.4.0
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.53.0-neutron
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
