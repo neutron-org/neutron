@@ -65,7 +65,7 @@ func (suite *KeeperTestSuite) TestBeforeSendHook() {
 	}{
 		{
 			desc:     "should not allow sending 100 amount of *any* denom",
-			wasmFile: "./testdata/no100.wasm",
+			wasmFile: "./testdata/no100.wasm", // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/no100
 			sendMsgs: []SendMsgTestCase{
 				{
 					desc: "sending 1 of factorydenom should not error",
@@ -255,7 +255,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 	}{
 		{
 			name:            "sending tokenfactory denom from module to module with infinite contract should panic",
-			wasmFile:        "./testdata/infinite_track_beforesend.wasm",
+			wasmFile:        "./testdata/infinite_track_beforesend.wasm", // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/infinite-track-beforesend
 			useFactoryDenom: true,
 		},
 		{
@@ -272,7 +272,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 		},
 		{
 			name:            "Try using no 100",
-			wasmFile:        "./testdata/no100.wasm",
+			wasmFile:        "./testdata/no100.wasm", // https://github.com/neutron-org/neutron-dev-contracts/tree/chore/additional-tf-test-contracts/contracts/no100
 			useFactoryDenom: true,
 		},
 	} {

@@ -225,6 +225,7 @@ replace (
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.10-neutron
 	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
+	github.com/cosmos/interchain-security/v5 => github.com/cosmos/interchain-security/v5 v5.0.0-20240802125602-fa1e09444aae
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
