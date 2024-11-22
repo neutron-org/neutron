@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	v502 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.2"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
@@ -228,6 +229,7 @@ const (
 var (
 	Upgrades = []upgrades.Upgrade{
 		v500.Upgrade,
+		v502.Upgrade,
 	}
 
 	// DefaultNodeHome default home directories for the application daemon
