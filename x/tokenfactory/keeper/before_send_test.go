@@ -330,7 +330,7 @@ func (suite *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 				suite.Require().NoError(err)
 
 				// send should happen regardless of trackBeforeSend results
-				distributionModuleAddress := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress("dex")
+				distributionModuleAddress := suite.GetNeutronZoneApp(suite.ChainA).AccountKeeper.GetModuleAddress(dextypes.ModuleName)
 				distributionModuleBalances := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper.GetAllBalances(suite.ChainA.GetContext(), distributionModuleAddress)
 				suite.Require().True(distributionModuleBalances.Equal(tokenToSend))
 			}
