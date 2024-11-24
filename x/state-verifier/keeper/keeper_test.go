@@ -111,7 +111,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 					Proof:         resp.ProofOps,
 					Value:         resp.Value,
 					StoragePrefix: ibchost.StoreKey,
-				}}, resp.Height - 2, fmt.Errorf("Please ensure proof was submitted with correct proofHeight and to the correct chain.")
+				}}, resp.Height - 2, fmt.Errorf("Please ensure proof was submitted with correct proofHeight and to the correct chain.") //nolint:revive
 			},
 		},
 		{
@@ -132,7 +132,7 @@ func (suite *KeeperTestSuite) TestVerifyValue() {
 					Proof:         resp.ProofOps,
 					Value:         resp.Value,
 					StoragePrefix: "kekekek",
-				}}, resp.Height, fmt.Errorf("Please ensure the path and value are both correct.")
+				}}, resp.Height, fmt.Errorf("Please ensure the path and value are both correct.") //nolint:revive
 			},
 		},
 	}

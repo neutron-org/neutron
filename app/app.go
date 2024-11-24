@@ -11,7 +11,7 @@ import (
 	"time"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
-	state_verifier "github.com/neutron-org/neutron/v5/x/state-verifier"
+	stateverifier "github.com/neutron-org/neutron/v5/x/state-verifier"
 	svkeeper "github.com/neutron-org/neutron/v5/x/state-verifier/keeper"
 	stateverifiertypes "github.com/neutron-org/neutron/v5/x/state-verifier/types"
 
@@ -936,7 +936,7 @@ func New(
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
-		state_verifier.NewAppModule(appCodec, app.StateVerifierKeeper),
+		stateverifier.NewAppModule(appCodec, app.StateVerifierKeeper),
 	)
 
 	app.mm.SetOrderPreBlockers(

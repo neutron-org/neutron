@@ -101,13 +101,13 @@ func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*icqtypes.S
 		return errors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	for _, result := range values {
-		proof, err := ibccommitmenttypes.ConvertProofs(result.Proof)
+	for _, value := range values {
+		proof, err := ibccommitmenttypes.ConvertProofs(value.Proof)
 		if err != nil {
 			return errors.Wrapf(sdkerrors.ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
 		}
 
-		path := ibccommitmenttypes.NewMerklePath(result.StoragePrefix, string(result.Key))
+		path := ibccommitmenttypes.NewMerklePath(value.StoragePrefix, string(value.Key))
 		// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
 		// and call corresponding method to verify it
 		switch proof.GetProofs()[0].GetProof().(type) {
@@ -116,9 +116,9 @@ func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*icqtypes.S
 			if err := proof.VerifyNonMembership(ibccommitmenttypes.GetSDKSpecs(), cs.Root, path); err != nil {
 				return errors.Wrapf(icqtypes.ErrInvalidProof, "failed to verify proof: %v", err)
 			}
-			result.Value = nil
+			value.Value = nil
 		case *ics23.CommitmentProof_Exist:
-			if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), cs.Root, path, result.Value); err != nil {
+			if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), cs.Root, path, value.Value); err != nil {
 				return errors.Wrapf(icqtypes.ErrInvalidProof, "failed to verify proof: %v", err)
 			}
 		default:
