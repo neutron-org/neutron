@@ -23,6 +23,7 @@ import (
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	ethcryptocodec "github.com/neutron-org/neutron/v5/x/crypto/codec"
 
 	appconfig "github.com/neutron-org/neutron/v5/app/config"
 
@@ -475,6 +476,9 @@ func New(
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
+
+	ethcryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	ethcryptocodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
