@@ -12,24 +12,26 @@ option go_package = "github.com/neutron-org/neutron/v5/x/interchainqueries/types
 
 // Defines the Query interface of the module.
 service Query {
-  // Queries the current parameters of the module.
+  // Fetches the current parameters of the interchainqueries module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/params";
   }
-  // Queries all the registered Interchain Queries in the module with filtration by owner and/or
-  // connection ID.
+  // Retrieves all registered Interchain Queries in the module, with optional filtering by owner
+  // and/or connection ID.
   rpc RegisteredQueries(QueryRegisteredQueriesRequest) returns (QueryRegisteredQueriesResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/registered_queries";
   }
-  // Queries a registered Interchain Query by ID.
+  // Fetches details of a registered Interchain Query using its ID.
   rpc RegisteredQuery(QueryRegisteredQueryRequest) returns (QueryRegisteredQueryResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/registered_query";
   }
-  // Queries the last successfully submitted result of an Interchain Query.
+  // Retrieves the most recent successfully submitted result of an Interchain Query. This is only
+  // applicable for KV Interchain Queries.
   rpc QueryResult(QueryRegisteredQueryResultRequest) returns (QueryRegisteredQueryResultResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/query_result";
   }
-  // Queries the last height of a remote chain known to the IBC client behind a given connection ID.
+  // Retrieves the most recent height of a remote chain as known by the IBC client associated with
+  // a given connection ID.
   rpc LastRemoteHeight(QueryLastRemoteHeight) returns (QueryLastRemoteHeightResponse) {
     option (google.api.http).get = "/neutron/interchainqueries/remote_height";
   }

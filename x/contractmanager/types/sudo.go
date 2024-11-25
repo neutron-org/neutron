@@ -5,11 +5,11 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
-// MessageTxQueryResult is the model of the sudo message sent to a smart contract on a TX
-// Interchain Query result submission. The owner of a TX Interchain Query must define a `sudo`
-// entry_point for handling `tx_query_result` messages and place the needed logic there.
-// The `tx_query_result` handler is treated by the interchainqueries module as a callback that is
-// called each time a TX query result is submitted.
+// MessageTxQueryResult is the model of the `sudo` message sent to a smart contract when a TX
+// Interchain Query result is submitted. The owner of a TX Interchain Query must implement a `sudo`
+// entry point to handle `tx_query_result` messages and include the necessary logic in it. The
+// `tx_query_result` handler functions as a callback, triggered by the `interchainqueries` module
+// each time a TX query result is submitted.
 type MessageTxQueryResult struct {
 	TxQueryResult struct {
 		// QueryID is the ID of the TX query which result is being submitted.
@@ -21,15 +21,14 @@ type MessageTxQueryResult struct {
 	} `json:"tx_query_result"`
 }
 
-// MessageKVQueryResult is the model of the sudo message sent to a smart contract on a KV
-// Interchain Query result submission. If the owner of a KV Interchain Query wants to handle the
-// query updates, it must define a `sudo` entry_point for handling `kv_query_result` messages
-// and place the needed logic there. The `kv_query_result` handler is treated by the
-// interchainqueries module as a callback that is called each time a KV query result is
-// submitted.
+// MessageKvQueryResult is the model of the `sudo` message sent to a smart contract when a KV
+// Interchain Query result is submitted. If the owner of a KV Interchain Query wants to handle
+// updates, they must implement a `sudo` entry point to process `kv_query_result` messages and
+// include the necessary logic in it. The `kv_query_result` handler acts as a callback, triggered
+// by the interchainqueries module whenever a KV query result is submitted.
 //
-// Note that there is no query result sent, only the query ID. In order to access the actual
-// result, use the Query/QueryResult RPC of the interchainqueries module.
+// Note that the message does not include the actual query result, only the query ID. To access the
+// result data, use the `Query/QueryResult` RPC of the `interchainqueries` module.
 type MessageKVQueryResult struct {
 	KVQueryResult struct {
 		// QueryID is the ID of the KV query which result is being submitted.

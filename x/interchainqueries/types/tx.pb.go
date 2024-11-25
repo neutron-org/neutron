@@ -1018,26 +1018,28 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// Registers a new Interchain Query in the interchainqueries module. This message is supposed to
-	// be issued only by a smart contract. The caller contract is charged a query registration deposit
-	// automatically in the amount defined as the module's query deposit parameter. The deposit is
-	// paid back on the query removal. Make sure to have enough assets on the contract's account
-	// at the time of the message execution.
+	// Registers a new Interchain Query in the `interchainqueries` module. This message should only
+	// be issued by a smart contract. The calling contract is automatically charged a query
+	// registration deposit, based on the module's query deposit parameter. The deposit is refunded
+	// when the query is removed. Ensure the contract's account has sufficient assets at the time of
+	// message execution.
 	//
-	// Returns an ID assigned to the registered query. Handle this message response via a reply
-	// handler in order to make use of the ID.
+	// The response includes the ID assigned to the registered query. Use a reply handler to process
+	// this response and utilize the query ID.
 	RegisterInterchainQuery(ctx context.Context, in *MsgRegisterInterchainQuery, opts ...grpc.CallOption) (*MsgRegisterInterchainQueryResponse, error)
-	// Submits a result of an Interchain Query execution to the chain. This message handling may
-	// include passing of the result to the query's owner smart contract for processing which might
-	// be a pretty gas-consumable operation.
+	// Submits the result of an Interchain Query execution to the chain. Handling this message may
+	// involve forwarding the result to the smart contract that owns the query for processing, which
+	// could require significant gas usage.
 	SubmitQueryResult(ctx context.Context, in *MsgSubmitQueryResult, opts ...grpc.CallOption) (*MsgSubmitQueryResultResponse, error)
-	// Removes a given Interchain Query and its results from the module. Can be removed only by the
-	// owner of the query during the query's submit timeout, and by anyone after the query has been
-	// timed out. The query deposit is returned to the caller on a success call.
+	// Removes a specific Interchain Query and its results from the module. The query can only be
+	// removed by its owner during the query's submit timeout. After the timeout, anyone can remove
+	// it. Upon successful removal, the query deposit is refunded to the caller.
 	RemoveInterchainQuery(ctx context.Context, in *MsgRemoveInterchainQueryRequest, opts ...grpc.CallOption) (*MsgRemoveInterchainQueryResponse, error)
-	// Updates parameters of a registered Interchain Query. Only callable by the owner of the query.
+	// Updates the parameters of a registered Interchain Query. This action can only be performed by
+	// the query's owner.
 	UpdateInterchainQuery(ctx context.Context, in *MsgUpdateInterchainQueryRequest, opts ...grpc.CallOption) (*MsgUpdateInterchainQueryResponse, error)
-	// Updates params of the interchainqueries module. Only callable by the module's authority.
+	// Updates the parameters of the `interchainqueries` module. This action can only be performed
+	// by the module's authority.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
@@ -1096,26 +1098,28 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// Registers a new Interchain Query in the interchainqueries module. This message is supposed to
-	// be issued only by a smart contract. The caller contract is charged a query registration deposit
-	// automatically in the amount defined as the module's query deposit parameter. The deposit is
-	// paid back on the query removal. Make sure to have enough assets on the contract's account
-	// at the time of the message execution.
+	// Registers a new Interchain Query in the `interchainqueries` module. This message should only
+	// be issued by a smart contract. The calling contract is automatically charged a query
+	// registration deposit, based on the module's query deposit parameter. The deposit is refunded
+	// when the query is removed. Ensure the contract's account has sufficient assets at the time of
+	// message execution.
 	//
-	// Returns an ID assigned to the registered query. Handle this message response via a reply
-	// handler in order to make use of the ID.
+	// The response includes the ID assigned to the registered query. Use a reply handler to process
+	// this response and utilize the query ID.
 	RegisterInterchainQuery(context.Context, *MsgRegisterInterchainQuery) (*MsgRegisterInterchainQueryResponse, error)
-	// Submits a result of an Interchain Query execution to the chain. This message handling may
-	// include passing of the result to the query's owner smart contract for processing which might
-	// be a pretty gas-consumable operation.
+	// Submits the result of an Interchain Query execution to the chain. Handling this message may
+	// involve forwarding the result to the smart contract that owns the query for processing, which
+	// could require significant gas usage.
 	SubmitQueryResult(context.Context, *MsgSubmitQueryResult) (*MsgSubmitQueryResultResponse, error)
-	// Removes a given Interchain Query and its results from the module. Can be removed only by the
-	// owner of the query during the query's submit timeout, and by anyone after the query has been
-	// timed out. The query deposit is returned to the caller on a success call.
+	// Removes a specific Interchain Query and its results from the module. The query can only be
+	// removed by its owner during the query's submit timeout. After the timeout, anyone can remove
+	// it. Upon successful removal, the query deposit is refunded to the caller.
 	RemoveInterchainQuery(context.Context, *MsgRemoveInterchainQueryRequest) (*MsgRemoveInterchainQueryResponse, error)
-	// Updates parameters of a registered Interchain Query. Only callable by the owner of the query.
+	// Updates the parameters of a registered Interchain Query. This action can only be performed by
+	// the query's owner.
 	UpdateInterchainQuery(context.Context, *MsgUpdateInterchainQueryRequest) (*MsgUpdateInterchainQueryResponse, error)
-	// Updates params of the interchainqueries module. Only callable by the module's authority.
+	// Updates the parameters of the `interchainqueries` module. This action can only be performed
+	// by the module's authority.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 }
 
