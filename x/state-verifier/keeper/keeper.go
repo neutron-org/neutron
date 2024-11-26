@@ -9,14 +9,13 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibccommitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	ics23 "github.com/cosmos/ics23/go"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	"github.com/neutron-org/neutron/v5/utils/storageverification"
 	icqtypes "github.com/neutron-org/neutron/v5/x/interchainqueries/types"
 	"github.com/neutron-org/neutron/v5/x/state-verifier/types"
 )
@@ -100,29 +99,8 @@ func (k *Keeper) Verify(ctx sdk.Context, blockHeight int64, values []*icqtypes.S
 		return errors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	for _, value := range values {
-		proof, err := ibccommitmenttypes.ConvertProofs(value.Proof)
-		if err != nil {
-			return errors.Wrapf(sdkerrors.ErrInvalidType, "failed to convert crypto.ProofOps to MerkleProof: %v", err)
-		}
-
-		path := ibccommitmenttypes.NewMerklePath(value.StoragePrefix, string(value.Key))
-		// identify what kind proofs (non-existence proof always has *ics23.CommitmentProof_Nonexist as the first item) we got
-		// and call corresponding method to verify it
-		switch proof.GetProofs()[0].GetProof().(type) {
-		// we can get non-existence proof if someone queried some key which is not exists in the storage on remote chain
-		case *ics23.CommitmentProof_Nonexist:
-			if err := proof.VerifyNonMembership(ibccommitmenttypes.GetSDKSpecs(), cs.Root, path); err != nil {
-				return errors.Wrapf(icqtypes.ErrInvalidProof, "failed to verify proof: %v", err)
-			}
-			value.Value = nil
-		case *ics23.CommitmentProof_Exist:
-			if err := proof.VerifyMembership(ibccommitmenttypes.GetSDKSpecs(), cs.Root, path, value.Value); err != nil {
-				return errors.Wrapf(icqtypes.ErrInvalidProof, "failed to verify proof: %v", err)
-			}
-		default:
-			return errors.Wrapf(icqtypes.ErrInvalidProof, "unknown proof type %T", proof.GetProofs()[0].GetProof())
-		}
+	if err := storageverification.VerifyStorageValues(values, cs.Root, ibccommitmenttypes.GetSDKSpecs(), nil); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 
 	return nil
