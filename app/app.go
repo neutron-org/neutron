@@ -477,7 +477,7 @@ func New(
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	ethcryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	//ethcryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	ethcryptocodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)

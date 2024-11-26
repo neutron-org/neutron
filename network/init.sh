@@ -82,7 +82,7 @@ sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:'"$RPCPORT"'"#g' "$CHAIN_DIR
 sed -i -e 's#"tcp://localhost:1317"#"tcp://0.0.0.0:'"$RESTPORT"'"#g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's#"tcp://0.0.0.0:1317"#"tcp://0.0.0.0:'"$RESTPORT"'"#g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's#":8080"#":'"$ROSETTA_1"'"#g' "$CHAIN_DIR/config/app.toml"
-
+sed -i -e 's#cors_allowed_origins = \[\]#cors_allowed_origins = ["*"]#g' "$CHAIN_DIR/config/config.toml"
 
 sed -i -e 's/oracle_address = "localhost:8080"/oracle_address = '\""$ORACLE_ADDRESS"\"'/g' "$CHAIN_DIR/config/app.toml"
 sed -i -e 's/client_timeout = "2s"/client_timeout = '\""$ORACLE_CLIENT_TIMEOUT"\"'/g' "$CHAIN_DIR/config/app.toml"
