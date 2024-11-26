@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"strconv"
 
 	"cosmossdk.io/core/comet"
 	"cosmossdk.io/core/header"
@@ -143,11 +142,7 @@ func (k *Keeper) GetAllConsensusStates(ctx sdk.Context) ([]*types.ConsensusState
 	for ; iterator.Valid(); iterator.Next() {
 		cs := tendermint.ConsensusState{}
 		k.cdc.MustUnmarshal(iterator.Value(), &cs)
-		height, err := strconv.ParseInt(string(iterator.Key()), 10, 64)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to extract height from consensus state key")
-		}
-
+		height := int64(sdk.BigEndianToUint64(iterator.Key()))
 		states = append(states, &types.ConsensusState{
 			Height: height,
 			Cs:     &cs,

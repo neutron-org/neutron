@@ -1,6 +1,8 @@
 package types
 
-import "strconv"
+import (
+	"github.com/cosmos/cosmos-sdk/types"
+)
 
 const (
 	// ModuleName defines the module name
@@ -17,5 +19,5 @@ const (
 var ConsensusStateKey = []byte{prefixConsensusStateKey}
 
 func GetConsensusStateKey(height int64) []byte {
-	return append(ConsensusStateKey, []byte(strconv.FormatInt(height, 10))...)
+	return append(ConsensusStateKey, types.Uint64ToBigEndian(uint64(height))...)
 }
