@@ -56,8 +56,8 @@ type RegisteredQuery struct {
 	// Amount of coins paid for the Interchain Query registration. The deposit is paid back to the
 	// remover. The remover can be either the query owner (during the submit timeout) or anybody.
 	Deposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,10,rep,name=deposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"deposit"`
-	// Duration in blocks that is required to pass since the query registration/update for the
-	// query to become available for anybody to be removed.
+	// The duration, measured in blocks, that must pass since the query's registration or its last
+	// result submission before the query becomes eligible for removal by anyone.
 	SubmitTimeout uint64 `protobuf:"varint,11,opt,name=submit_timeout,json=submitTimeout,proto3" json:"submit_timeout,omitempty"`
 	// The local chain block height of the Interchain Query registration.
 	RegisteredAtHeight uint64 `protobuf:"varint,12,opt,name=registered_at_height,json=registeredAtHeight,proto3" json:"registered_at_height,omitempty"`

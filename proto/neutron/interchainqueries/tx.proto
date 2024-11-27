@@ -119,7 +119,8 @@ message StorageValue {
   bytes key = 2;
   // A base64-encoded value read from the given storage path.
   bytes value = 3;
-  // The Merkle Proof which proves existence of key-value pair in IAVL storage. Is used to verify
+  // The Merkle Proof which proves existence/nonexistence of key-value pair in IAVL storage. Is
+  // used to verify
   // the pair against the respective remote chain's header.
   tendermint.crypto.ProofOps Proof = 4;
 }

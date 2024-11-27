@@ -355,7 +355,8 @@ type StorageValue struct {
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 	// A base64-encoded value read from the given storage path.
 	Value []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
-	// The Merkle Proof which proves existence of key-value pair in IAVL storage. Is used to verify
+	// The Merkle Proof which proves existence/nonexistence of key-value pair in IAVL storage. Is
+	// used to verify
 	// the pair against the respective remote chain's header.
 	Proof *crypto.ProofOps `protobuf:"bytes,4,opt,name=Proof,proto3" json:"Proof,omitempty"`
 }

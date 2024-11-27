@@ -41,8 +41,8 @@ message RegisteredQuery {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable) = false
   ];
-  // Duration in blocks that is required to pass since the query registration/update for the
-  // query to become available for anybody to be removed.
+  // The duration, measured in blocks, that must pass since the query's registration or its last
+  // result submission before the query becomes eligible for removal by anyone.
   uint64 submit_timeout = 11;
   // The local chain block height of the Interchain Query registration.
   uint64 registered_at_height = 12;

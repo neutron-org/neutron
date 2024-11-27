@@ -9,8 +9,9 @@ option go_package = "github.com/neutron-org/neutron/v5/x/interchainqueries/types
 // The parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
-  // The amount of blocks required to pass since an Interchain Query registration/update for the
-  // query to become available for removal by anybody.
+  // The duration, measured in blocks, that must pass since the query's registration or its last
+  // result submission before the query becomes eligible for removal by anyone. Is used to set
+  // `submit_timeout` on Interchain Query registration.
   uint64 query_submit_timeout = 1;
   // Amount of coins required to be provided as deposit on Interchain Query registration.
   repeated cosmos.base.v1beta1.Coin query_deposit = 2 [

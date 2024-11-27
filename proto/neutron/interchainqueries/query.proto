@@ -42,7 +42,7 @@ message QueryParamsRequest {}
 
 // Response type for the Query/Params RPC method.
 message QueryParamsResponse {
-  // Stores all parameters of the module.
+  // Contains all parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
