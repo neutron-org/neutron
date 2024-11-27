@@ -1122,7 +1122,7 @@ func New(
 			HandlerOptions: ante.HandlerOptions{
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
-				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+				SigGasConsumer:  DefaultSigVerificationGasConsumer,
 			},
 			BankKeeper:            app.BankKeeper,
 			AccountKeeper:         app.AccountKeeper,
