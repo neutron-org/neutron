@@ -18611,8 +18611,8 @@ definitions:
     properties:
       key:
         description: >-
-          A hexadecimal-encoded byte array representing the key for specific
-          data in the module's storage.
+          A bytes field representing the key for specific data in the module's
+          storage.
         format: byte
         type: string
       path:
@@ -18829,8 +18829,8 @@ definitions:
                 properties:
                   key:
                     description: >-
-                      A hexadecimal-encoded byte array representing the key for
-                      specific data in the module's storage.
+                      A bytes field representing the key for specific data in
+                      the module's storage.
                     format: byte
                     type: string
                   path:
@@ -18970,8 +18970,8 @@ definitions:
               properties:
                 key:
                   description: >-
-                    A hexadecimal-encoded byte array representing the key for
-                    specific data in the module's storage.
+                    A bytes field representing the key for specific data in the
+                    module's storage.
                   format: byte
                   type: string
                 path:
@@ -19256,8 +19256,8 @@ definitions:
                   type: object
                 key:
                   description: >-
-                    Hexadecimal-encoded bytes representing the key of the data
-                    read from the module's storage.
+                    A bytes field representing the key of the data read from the
+                    module's storage.
                   format: byte
                   type: string
                 storage_prefix:
@@ -19504,8 +19504,8 @@ definitions:
               type: object
             key:
               description: >-
-                Hexadecimal-encoded bytes representing the key of the data read
-                from the module's storage.
+                A bytes field representing the key of the data read from the
+                module's storage.
               format: byte
               type: string
             storage_prefix:
@@ -19582,8 +19582,8 @@ definitions:
           properties:
             key:
               description: >-
-                A hexadecimal-encoded byte array representing the key for
-                specific data in the module's storage.
+                A bytes field representing the key for specific data in the
+                module's storage.
               format: byte
               type: string
             path:
@@ -19695,8 +19695,8 @@ definitions:
         type: object
       key:
         description: >-
-          Hexadecimal-encoded bytes representing the key of the data read from
-          the module's storage.
+          A bytes field representing the key of the data read from the module's
+          storage.
         format: byte
         type: string
       storage_prefix:
@@ -45122,8 +45122,8 @@ paths:
                           type: object
                         key:
                           description: >-
-                            Hexadecimal-encoded bytes representing the key of
-                            the data read from the module's storage.
+                            A bytes field representing the key of the data read
+                            from the module's storage.
                           format: byte
                           type: string
                         storage_prefix:
@@ -45357,8 +45357,8 @@ paths:
                         properties:
                           key:
                             description: >-
-                              A hexadecimal-encoded byte array representing the
-                              key for specific data in the module's storage.
+                              A bytes field representing the key for specific
+                              data in the module's storage.
                             format: byte
                             type: string
                           path:
@@ -45542,8 +45542,8 @@ paths:
                       properties:
                         key:
                           description: >-
-                            A hexadecimal-encoded byte array representing the
-                            key for specific data in the module's storage.
+                            A bytes field representing the key for specific data
+                            in the module's storage.
                           format: byte
                           type: string
                         path:
