@@ -18,6 +18,8 @@ import (
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 
+	ibcratelimittypes "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/types"
+
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
@@ -80,7 +82,8 @@ func isSdkMessageWhitelisted(msg sdk.Msg) bool {
 		*dynamicfeestypes.MsgUpdateParams,
 		*ibctransfertypes.MsgUpdateParams,
 		*stakingtypes.MsgUpdateParams,
-		*globalfeetypes.MsgUpdateParams:
+		*globalfeetypes.MsgUpdateParams,
+		*ibcratelimittypes.MsgUpdateParams:
 		return true
 	}
 	return false

@@ -1,9 +1,10 @@
 package ibc_test
 
 import (
+	"testing"
+
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
-	"testing"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"

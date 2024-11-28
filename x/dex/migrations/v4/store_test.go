@@ -49,9 +49,8 @@ func (suite *V4DexMigrationTestSuite) TestPriceUpdates() {
 		Fee:                   1,
 	}
 	poolReserves := &types.PoolReserves{
-		Key:                       poolKey,
-		PriceTakerToMaker:         math.ZeroPrecDec(),
-		PriceOppositeTakerToMaker: math.ZeroPrecDec(),
+		Key:               poolKey,
+		PriceTakerToMaker: math.ZeroPrecDec(),
 	}
 	app.DexKeeper.SetPoolReserves(ctx, poolReserves)
 
@@ -60,6 +59,7 @@ func (suite *V4DexMigrationTestSuite) TestPriceUpdates() {
 
 	// Check LimitOrderTranche has correct price
 	newTranche := app.DexKeeper.GetLimitOrderTranche(ctx, trancheKey)
+
 	suite.True(newTranche.PriceTakerToMaker.Equal(math.MustNewPrecDecFromStr("1.005012269623051203500693815")))
 
 	// check InactiveLimitOrderTranche has correct price
@@ -68,6 +68,5 @@ func (suite *V4DexMigrationTestSuite) TestPriceUpdates() {
 
 	// Check PoolReserves has the correct prices
 	newPool, _ := app.DexKeeper.GetPoolReserves(ctx, poolKey)
-	suite.True(newPool.PriceTakerToMaker.Equal(math.MustNewPrecDecFromStr("0.002479495864288162666675923")))
-	suite.True(newPool.PriceOppositeTakerToMaker.Equal(math.MustNewPrecDecFromStr("403.227141612124702272520931931")))
+	suite.True(newPool.PriceTakerToMaker.Equal(math.MustNewPrecDecFromStr("0.002479495864288162666675934")))
 }

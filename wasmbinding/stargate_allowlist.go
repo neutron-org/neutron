@@ -9,9 +9,12 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+
+	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
@@ -36,6 +39,7 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata": &tokenfactorytypes.QueryDenomAuthorityMetadataResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator":      &tokenfactorytypes.QueryDenomsFromCreatorResponse{},
 		"/osmosis.tokenfactory.v1beta1.Query/BeforeSendHookAddress":  &tokenfactorytypes.QueryBeforeSendHookAddressResponse{},
+		"/osmosis.tokenfactory.v1beta1.Query/FullDenom":              &tokenfactorytypes.QueryFullDenomResponse{},
 
 		// interchain accounts
 		"/ibc.applications.interchain_accounts.controller.v1.Query/InterchainAccount": &icacontrollertypes.QueryInterchainAccountResponse{},
@@ -107,14 +111,21 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/slinky.marketmap.v1.Query/MarketMap":   &marketmaptypes.MarketMapResponse{},
 		"/slinky.marketmap.v1.Query/LastUpdated": &marketmaptypes.LastUpdatedResponse{},
 		"/slinky.marketmap.v1.Query/Params":      &marketmaptypes.ParamsResponse{},
+		"/slinky.marketmap.v1.Query/Market":      &marketmaptypes.MarketResponse{},
 
 		// feemarket
-		"feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
-		"feemarket.feemarket.v1.Query/State":     &feemarkettypes.StateResponse{},
-		"feemarket.feemarket.v1.Query/GasPrice":  &feemarkettypes.GasPriceResponse{},
-		"feemarket.feemarket.v1.Query/GasPrices": &feemarkettypes.GasPricesResponse{},
+		"/feemarket.feemarket.v1.Query/Params":    &feemarkettypes.ParamsResponse{},
+		"/feemarket.feemarket.v1.Query/State":     &feemarkettypes.StateResponse{},
+		"/feemarket.feemarket.v1.Query/GasPrice":  &feemarkettypes.GasPriceResponse{},
+		"/feemarket.feemarket.v1.Query/GasPrices": &feemarkettypes.GasPricesResponse{},
 
 		// dynamicfees
-		"neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
+		"/neutron.dynamicfees.v1.Query/Params": &dynamicfeestypes.QueryParamsResponse{},
+
+		// globalfee
+		"/gaia.globalfee.v1beta1.Query/Params": &globalfeetypes.QueryParamsResponse{},
+
+		// consumer
+		"/interchain_security.ccv.consumer.v1.Query/QueryParams": &consumertypes.QueryParamsResponse{},
 	}
 }

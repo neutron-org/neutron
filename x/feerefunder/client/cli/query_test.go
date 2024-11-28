@@ -1,8 +1,9 @@
 package cli_test
 
 import (
-	appparams "github.com/neutron-org/neutron/v5/app/params"
 	"testing"
+
+	appparams "github.com/neutron-org/neutron/v5/app/params"
 
 	"github.com/neutron-org/neutron/v5/app/config"
 

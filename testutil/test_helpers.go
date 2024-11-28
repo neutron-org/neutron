@@ -3,12 +3,18 @@ package testutil
 import (
 	"encoding/json"
 	"fmt"
-	cometbfttypes "github.com/cometbft/cometbft/abci/types"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	"math/rand"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	cometbfttypes "github.com/cometbft/cometbft/abci/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/client"
+	types2 "github.com/cosmos/cosmos-sdk/crypto/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
@@ -58,7 +64,6 @@ var (
 )
 
 func init() {
-	// ibctesting.DefaultTestingAppInit = SetupTestingApp()
 	config.GetDefaultConfig()
 	// Disable cache since enabled cache triggers test errors when `AccAddress.String()`
 	// gets called before setting neutron bech32 prefix
@@ -73,9 +78,12 @@ type IBCConnectionTestSuite struct {
 	ChainProvider *ibctesting.TestChain
 	ChainA        *ibctesting.TestChain
 	ChainB        *ibctesting.TestChain
+	ChainC        *ibctesting.TestChain
 
 	Path         *ibctesting.Path
 	TransferPath *ibctesting.Path
+
+	TransferPathAC *ibctesting.Path
 }
 
 func (suite *IBCConnectionTestSuite) SetupTest() {
@@ -86,96 +94,22 @@ func (suite *IBCConnectionTestSuite) SetupTest() {
 	suite.ChainProvider = suite.Coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.ChainA = suite.Coordinator.GetChain(ibctesting.GetChainID(2))
 	suite.ChainB = suite.Coordinator.GetChain(ibctesting.GetChainID(3))
-	//suite.ProviderApp = suite.ChainProvider.App.(*appProvider.App)
-	//suite.ChainAApp = suite.ChainA.App.(*app.App)
-	//suite.ChainBApp = suite.ChainB.App.(*app.App)
+	suite.ChainC = suite.Coordinator.GetChain(ibctesting.GetChainID(4))
 
-	//providerKeeper := suite.ProviderApp.GetProviderKeeper()
-	//consumerKeeperA := suite.ChainAApp.GetConsumerKeeper()
-	//consumerKeeperB := suite.ChainBApp.GetConsumerKeeper()
-	//
-	//// valsets must match
-	//providerValUpdates := cmttypes.TM2PB.ValidatorUpdates(suite.ChainProvider.Vals)
-	//consumerAValUpdates := cmttypes.TM2PB.ValidatorUpdates(suite.ChainA.Vals)
-	//consumerBValUpdates := cmttypes.TM2PB.ValidatorUpdates(suite.ChainB.Vals)
-	//suite.Require().True(len(providerValUpdates) == len(consumerAValUpdates), "initial valset not matching")
-	//suite.Require().True(len(providerValUpdates) == len(consumerBValUpdates), "initial valset not matching")
-
-	//for i := 0; i < len(providerValUpdates); i++ {
-	//	addr1, _ := ccv.TMCryptoPublicKeyToConsAddr(providerValUpdates[i].PubKey)
-	//	addr2, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerAValUpdates[i].PubKey)
-	//	addr3, _ := ccv.TMCryptoPublicKeyToConsAddr(consumerBValUpdates[i].PubKey)
-	//	suite.Require().True(bytes.Equal(addr1, addr2), "validator mismatch")
-	//	suite.Require().True(bytes.Equal(addr1, addr3), "validator mismatch")
-	//}
-	//
-	//ct := suite.ChainProvider.GetContext()
-	//// move chains to the next block
-	//suite.ChainProvider.NextBlock()
-	//suite.ChainA.NextBlock()
-	//suite.ChainB.NextBlock()
-	//
-	//// create consumer client on provider chain and set as consumer client for consumer chainID in provider keeper.
-	//prop1 := GetTestConsumerAdditionProp(suite.ChainA)
-	//err := providerKeeper.CreateConsumerClient(
-	//	ct,
-	//	prop1,
-	//)
-	//suite.Require().NoError(err)
-	//
-	//prop2 := GetTestConsumerAdditionProp(suite.ChainB)
-	//err = providerKeeper.CreateConsumerClient(
-	//	ct,
-	//	prop2,
-	//)
-	//suite.Require().NoError(err)
-	//
-	//// move provider to next block to commit the state
-	//suite.ChainProvider.NextBlock()
-	//
-	//// initialize the consumer chain with the genesis state stored on the provider
-	//consumerGenesisA, found := providerKeeper.GetConsumerGenesis(
-	//	suite.ChainProvider.GetContext(),
-	//	suite.ChainA.ChainID,
-	//)
-	//suite.Require().True(found, "consumer genesis not found")
-	//
-	//genesisStateA := consumertypes.GenesisState{
-	//	Params:   consumerGenesisA.Params,
-	//	Provider: consumerGenesisA.Provider,
-	//	NewChain: consumerGenesisA.NewChain,
-	//}
-	//consumerKeeperA.InitGenesis(suite.ChainA.GetContext(), &genesisStateA)
-	//
-	//// initialize the consumer chain with the genesis state stored on the provider
-	//consumerGenesisB, found := providerKeeper.GetConsumerGenesis(
-	//	suite.ChainProvider.GetContext(),
-	//	suite.ChainB.ChainID,
-	//)
-	//suite.Require().True(found, "consumer genesis not found")
-
-	//genesisStateB := consumertypes.GenesisState{
-	//	Params:   consumerGenesisB.Params,
-	//	Provider: consumerGenesisB.Provider,
-	//	NewChain: consumerGenesisB.NewChain,
-	//}
-	//consumerKeeperB.InitGenesis(suite.ChainB.GetContext(), &genesisStateB)
-
-	// create paths for the CCV channel
-	//suite.CCVPathA = ibctesting.NewPath(suite.ChainA, suite.ChainProvider)
-	//suite.CCVPathB = ibctesting.NewPath(suite.ChainB, suite.ChainProvider)
-	//SetupCCVPath(suite.CCVPathA, suite)
-	//SetupCCVPath(suite.CCVPathB, suite)
-	//
-	//suite.SetupCCVChannels()
-
-	suite.Path = NewICAPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
+	suite.Path = NewICAPath(suite.ChainA, suite.ChainB)
 
 	suite.Coordinator.SetupConnections(suite.Path)
 }
 
+func (suite *IBCConnectionTestSuite) ConfigureTransferChannelAC() {
+	suite.TransferPathAC = NewTransferPath(suite.ChainA, suite.ChainC)
+	suite.Coordinator.SetupConnections(suite.TransferPathAC)
+	err := SetupTransferPath(suite.TransferPathAC)
+	suite.Require().NoError(err)
+}
+
 func (suite *IBCConnectionTestSuite) ConfigureTransferChannel() {
-	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB, suite.ChainProvider)
+	suite.TransferPath = NewTransferPath(suite.ChainA, suite.ChainB)
 	suite.Coordinator.SetupConnections(suite.TransferPath)
 	err := SetupTransferPath(suite.TransferPath)
 	suite.Require().NoError(err)
@@ -190,63 +124,14 @@ func (suite *IBCConnectionTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coi
 	suite.Require().NoError(err)
 }
 
-// update CCV path with correct info
-//func SetupCCVPath(path *ibctesting.Path, suite *IBCConnectionTestSuite) {
-//	// - set provider endpoint's clientID
-//	consumerClient, found := suite.ProviderApp.GetProviderKeeper().GetConsumerClientId(
-//		suite.ChainProvider.GetContext(),
-//		path.EndpointA.Chain.ChainID,
-//	)
-//
-//	suite.Require().True(found, "consumer client not found")
-//	path.EndpointB.ClientID = consumerClient
-//
-//	// - set consumer endpoint's clientID
-//	consumerKeeper := path.EndpointA.Chain.App.(*app.App).GetConsumerKeeper()
-//	providerClient, found := consumerKeeper.GetProviderClientID(path.EndpointA.Chain.GetContext())
-//	suite.Require().True(found, "provider client not found")
-//	path.EndpointA.ClientID = providerClient
-//
-//	// - client config
-//	trustingPeriodFraction := suite.ProviderApp.GetProviderKeeper().GetTrustingPeriodFraction(suite.ChainProvider.GetContext())
-//
-//	providerUnbondingPeriod, err := suite.ProviderApp.GetTestStakingKeeper().UnbondingTime(suite.ChainProvider.GetContext())
-//	suite.Require().NoError(err)
-//	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = providerUnbondingPeriod
-//	path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(providerUnbondingPeriod, trustingPeriodFraction)
-//	consumerUnbondingPeriod := consumerKeeper.GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
-//	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriod
-//	path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriod, trustingPeriodFraction)
-//	// - channel config
-//	path.EndpointA.ChannelConfig.PortID = ccv.ConsumerPortID
-//	path.EndpointB.ChannelConfig.PortID = ccv.ProviderPortID
-//	path.EndpointA.ChannelConfig.Version = ccv.Version
-//	path.EndpointB.ChannelConfig.Version = ccv.Version
-//	path.EndpointA.ChannelConfig.Order = channeltypes.ORDERED
-//	path.EndpointB.ChannelConfig.Order = channeltypes.ORDERED
-//}
-
-//func (suite *IBCConnectionTestSuite) SetupCCVChannels() {
-//	paths := []*ibctesting.Path{suite.CCVPathA, suite.CCVPathB}
-//	for _, path := range paths {
-//		suite.Coordinator.CreateConnections(path)
-//
-//		err := path.EndpointA.ChanOpenInit()
-//		suite.Require().NoError(err)
-//
-//		err = path.EndpointB.ChanOpenTry()
-//		suite.Require().NoError(err)
-//
-//		err = path.EndpointA.ChanOpenAck()
-//		suite.Require().NoError(err)
-//
-//		err = path.EndpointB.ChanOpenConfirm()
-//		suite.Require().NoError(err)
-//
-//		err = path.EndpointA.UpdateClient()
-//		suite.Require().NoError(err)
-//	}
-//}
+// FundModuleAcc funds target modules with specified amount.
+func (suite *IBCConnectionTestSuite) FundModuleAcc(moduleName string, amounts sdk.Coins) {
+	bankKeeper := suite.GetNeutronZoneApp(suite.ChainA).BankKeeper
+	err := bankKeeper.MintCoins(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, amounts)
+	suite.Require().NoError(err)
+	err = bankKeeper.SendCoinsFromModuleToModule(suite.ChainA.GetContext(), tokenfactorytypes.ModuleName, moduleName, amounts)
+	suite.Require().NoError(err)
+}
 
 func testHomeDir(chainID string) string {
 	projectRoot := utils.RootDir()
@@ -258,8 +143,7 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 	coordinator := ibctesting.NewCoordinator(t, 0)
 	chainID := ibctesting.GetChainID(1)
 
-	//ibctesting.DefaultTestingAppInit = icssimapp.ProviderAppIniter
-	ibctesting.DefaultTestingAppInit = SetupTestingApp(nil)
+	ibctesting.DefaultTestingAppInit = SetupTestingApp()
 	coordinator.Chains[chainID] = ibctesting.NewTestChain(t, coordinator, chainID)
 	providerChain := coordinator.GetChain(chainID)
 
@@ -270,6 +154,10 @@ func NewProviderConsumerCoordinator(t *testing.T) *ibctesting.Coordinator {
 		chainID, providerChain.Vals, providerChain.Signers)
 
 	chainID = ibctesting.GetChainID(3)
+	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
+		chainID, providerChain.Vals, providerChain.Signers)
+
+	chainID = ibctesting.GetChainID(4)
 	coordinator.Chains[chainID] = ibctesting.NewTestChainWithValSet(t, coordinator,
 		chainID, providerChain.Vals, providerChain.Signers)
 
@@ -306,7 +194,7 @@ func (suite *IBCConnectionTestSuite) InstantiateTestContract(ctx sdk.Context, fu
 	return addr
 }
 
-func NewICAPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting.Path {
+func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
 	path.EndpointA.ChannelConfig.PortID = icatypes.HostPortID
 	path.EndpointB.ChannelConfig.PortID = icatypes.HostPortID
@@ -315,7 +203,7 @@ func NewICAPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting
 	path.EndpointA.ChannelConfig.Version = TestVersion
 	path.EndpointB.ChannelConfig.Version = TestVersion
 
-	//trustingPeriodFraction := chainProvider.App.(*app.App).GetStakingKeeper().(stakingkeeper.Keeper).GetUnbonding(chainProvider.GetContext())
+	// trustingPeriodFraction := chainProvider.App.(*app.App).GetStakingKeeper().(stakingkeeper.Keeper).GetUnbonding(chainProvider.GetContext())
 	trustingPeriodFraction := 0.66
 	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointA.Chain.GetContext())
 	if err != nil {
@@ -393,7 +281,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 }
 
 // SetupTestingApp initializes the IBC-go testing application
-func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
+func SetupTestingApp() func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		sdk.DefaultBondDenom = appparams.DefaultDenom
 		encoding := app.MakeEncodingConfig()
@@ -419,25 +307,16 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 
 		genesisState := app.NewDefaultGenesisState(testApp.AppCodec())
 
-		// TODO: why isn't it in the `testApp.TestInitChainer`?
-
-		//stakingGen := stakingtypes.GenesisState{}
-		//encoding.Marshaler.MustUnmarshalJSON(genesisState[stakingtypes.ModuleName], &stakingGen)
-		//stakingGen.Params.BondDenom = sdk.DefaultBondDenom
-		//genesisState[stakingtypes.ModuleName] = encoding.Marshaler.MustMarshalJSON(
-		//	&stakingGen,
-		//)
-
 		return testApp, genesisState
 	}
 }
 
 // SetupValSetAppIniter is a simple wrapper for ICS e2e tests to satisfy interface
-func SetupValSetAppIniter(initValUpdates []cometbfttypes.ValidatorUpdate) icssimapp.AppIniter {
-	return SetupTestingApp(initValUpdates)
+func SetupValSetAppIniter(_ []cometbfttypes.ValidatorUpdate) icssimapp.AppIniter {
+	return SetupTestingApp()
 }
 
-func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibctesting.Path {
+func NewTransferPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
 	path.EndpointA.ChannelConfig.PortID = types.PortID
 	path.EndpointB.ChannelConfig.PortID = types.PortID
@@ -446,14 +325,6 @@ func NewTransferPath(chainA, chainB, chainProvider *ibctesting.TestChain) *ibcte
 	path.EndpointA.ChannelConfig.Version = types.Version
 	path.EndpointB.ChannelConfig.Version = types.Version
 
-	//trustingPeriodFraction := chainProvider.App.(*appProvider.App).GetProviderKeeper().GetTrustingPeriodFraction(chainProvider.GetContext())
-	//consumerUnbondingPeriodA := path.EndpointA.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointA.Chain.GetContext())
-	//path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodA
-	//path.EndpointA.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriodA, trustingPeriodFraction)
-	//
-	//consumerUnbondingPeriodB := path.EndpointB.Chain.App.(*app.App).GetConsumerKeeper().GetUnbondingPeriod(path.EndpointB.Chain.GetContext())
-	//path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).UnbondingPeriod = consumerUnbondingPeriodB
-	//path.EndpointB.ClientConfig.(*ibctesting.TendermintConfig).TrustingPeriod, _ = ccv.CalculateTrustPeriod(consumerUnbondingPeriodB, trustingPeriodFraction)
 	trustingPeriodFraction := 0.66
 	paramsA, err := path.EndpointA.Chain.App.(*app.App).GetStakingKeeper().(*stakingkeeper.Keeper).GetParams(path.EndpointA.Chain.GetContext())
 	if err != nil {
@@ -498,4 +369,115 @@ func SetupTransferPath(path *ibctesting.Path) error {
 	}
 
 	return path.EndpointB.ChanOpenConfirm()
+}
+
+// SendMsgsNoCheck is an alternative to ibctesting.TestChain.SendMsgs so that it doesn't check for errors. That should be handled by the caller
+func (suite *IBCConnectionTestSuite) SendMsgsNoCheck(chain *ibctesting.TestChain, msgs ...sdk.Msg) (*cometbfttypes.ExecTxResult, error) {
+	// ensure the suite has the latest time
+	suite.Coordinator.UpdateTimeForChain(chain)
+
+	// increment acc sequence regardless of success or failure tx execution
+	defer func() {
+		err := chain.SenderAccount.SetSequence(chain.SenderAccount.GetSequence() + 1)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	resp, err := SignAndDeliver(chain.TB, chain.TxConfig, chain.App.GetBaseApp(), msgs, chain.ChainID, []uint64{chain.SenderAccount.GetAccountNumber()}, []uint64{chain.SenderAccount.GetSequence()}, chain.CurrentHeader.GetTime(), chain.NextVals.Hash(), chain.SenderPrivKey)
+	if err != nil {
+		return nil, err
+	}
+
+	suite.commitBlock(resp, chain)
+
+	suite.Coordinator.IncrementTime()
+
+	suite.Require().Len(resp.TxResults, 1)
+	txResult := resp.TxResults[0]
+
+	if txResult.Code != 0 {
+		return txResult, fmt.Errorf("%s/%d: %q", txResult.Codespace, txResult.Code, txResult.Log)
+	}
+
+	suite.Coordinator.IncrementTime()
+
+	return txResult, nil
+}
+
+// SignAndDeliver signs and delivers a transaction without asserting the results. This overrides the function
+// from ibctesting
+func SignAndDeliver(
+	tb testing.TB,
+	txCfg client.TxConfig,
+	app *baseapp.BaseApp,
+	msgs []sdk.Msg,
+	chainID string,
+	accNums, accSeqs []uint64,
+	blockTime time.Time,
+	nextValHash []byte,
+	priv ...types2.PrivKey,
+) (res *cometbfttypes.ResponseFinalizeBlock, err error) {
+	tb.Helper()
+	tx, err := sims.GenSignedMockTx(
+		// #nosec G404 - math/rand is acceptable for non-cryptographic purposes
+		rand.New(rand.NewSource(time.Now().UnixNano())),
+		txCfg,
+		msgs,
+		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)},
+		sims.DefaultGenTxGas,
+		chainID,
+		accNums,
+		accSeqs,
+		priv...,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	txBytes, err := txCfg.TxEncoder()(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	return app.FinalizeBlock(&cometbfttypes.RequestFinalizeBlock{
+		Height:             app.LastBlockHeight() + 1,
+		Time:               blockTime,
+		NextValidatorsHash: nextValHash,
+		Txs:                [][]byte{txBytes},
+	})
+}
+
+func (suite *IBCConnectionTestSuite) ExecuteContract(contract, sender sdk.AccAddress, msg []byte, funds sdk.Coins) ([]byte, error) {
+	app := suite.GetNeutronZoneApp(suite.ChainA)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	return contractKeeper.Execute(suite.ChainA.GetContext(), contract, sender, msg, funds)
+}
+
+func (suite *IBCConnectionTestSuite) commitBlock(res *cometbfttypes.ResponseFinalizeBlock, chain *ibctesting.TestChain) {
+	_, err := chain.App.Commit()
+	suite.Require().NoError(err)
+
+	// set the last header to the current header
+	// use nil trusted fields
+	chain.LastHeader = chain.CurrentTMClientHeader()
+
+	// val set changes returned from previous block get applied to the next validators
+	// of this block. See tendermint spec for details.
+	chain.Vals = chain.NextVals
+
+	chain.NextVals = ibctesting.ApplyValSetChanges(chain, chain.Vals, res.ValidatorUpdates)
+
+	// increment the current header
+	chain.CurrentHeader = cmtproto.Header{
+		ChainID: chain.ChainID,
+		Height:  chain.App.LastBlockHeight() + 1,
+		AppHash: chain.App.LastCommitID().Hash,
+		// NOTE: the time is increased by the coordinator to maintain time synchrony amongst
+		// chains.
+		Time:               chain.CurrentHeader.Time,
+		ValidatorsHash:     chain.Vals.Hash(),
+		NextValidatorsHash: chain.NextVals.Hash(),
+		ProposerAddress:    chain.CurrentHeader.ProposerAddress,
+	}
 }

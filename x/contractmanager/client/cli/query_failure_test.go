@@ -3,10 +3,10 @@ package cli_test
 import (
 	"crypto/rand"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	appparams "github.com/neutron-org/neutron/v5/app/params"
 	"strconv"
 	"testing"
+
+	appparams "github.com/neutron-org/neutron/v5/app/params"
 
 	"github.com/neutron-org/neutron/v5/app/config"
 
@@ -28,7 +28,7 @@ import (
 )
 
 func networkWithFailureObjects(t *testing.T, n int) (*network.Network, []types.Failure) {
-	sdk.DefaultBondDenom = appparams.DefaultDenom
+	sdktypes.DefaultBondDenom = appparams.DefaultDenom
 
 	t.Helper()
 	cfg := network.DefaultConfig()

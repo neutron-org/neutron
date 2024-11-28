@@ -47,6 +47,6 @@ func (s *DexTestSuite) TestSimulateCancelLimitOrderFails() {
 	}
 
 	resp, err := s.App.DexKeeper.SimulateCancelLimitOrder(s.Ctx, req)
-	s.ErrorIs(err, types.ErrActiveLimitOrderNotFound)
+	s.ErrorIs(err, types.ErrValidLimitOrderTrancheNotFound)
 	s.Nil(resp)
 }
