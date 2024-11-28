@@ -14,4 +14,6 @@ const (
 	AttributeNewAdmin              = "new_admin"
 	AttributeDenomMetadata         = "denom_metadata"
 	AttributeBeforeSendHookAddress = "before_send_hook_address"
+	AttributeSudoErrorText         = "sudo_error_text"
+	EventFailedSudoCall            = "failed_sudo_call"
 )

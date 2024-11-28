@@ -3,8 +3,9 @@ package keeper
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
-	types2 "cosmossdk.io/store/types"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
@@ -103,8 +104,8 @@ func (h Hooks) BlockBeforeSend(ctx context.Context, from, to sdk.AccAddress, amo
 // If blockBeforeSend is true, sudoMsg wraps BlockBeforeSendMsg, otherwise sudoMsg wraps TrackBeforeSendMsg.
 // Note that we gas meter trackBeforeSend to prevent infinite contract calls.
 // CONTRACT: this should not be called in beginBlock or endBlock since out of gas will cause this method to panic.
-func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins, blockBeforeSend bool) (err error) {
-	c := sdk.UnwrapSDKContext(ctx)
+func (k Keeper) callBeforeSendListener(goCtx context.Context, from, to sdk.AccAddress, amount sdk.Coins, blockBeforeSend bool) (err error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -113,7 +114,7 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 	}()
 
 	for _, coin := range amount {
-		contractAddr := k.GetBeforeSendHook(ctx, coin.Denom)
+		contractAddr := k.GetBeforeSendHook(goCtx, coin.Denom)
 		if contractAddr != "" {
 			cwAddr, err := sdk.AccAddressFromBech32(contractAddr)
 			if err != nil {
@@ -124,8 +125,8 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 			// NOTE: hooks must already be whitelisted before they can be added, so under normal operation this check should never fail.
 			// It is here as an emergency override if we want to shutoff a hook. We do not return the error because once it is removed from the whitelist
 			// a hook should not be able to block a send.
-			if err := k.AssertIsHookWhitelisted(c, coin.Denom, cwAddr); err != nil {
-				c.Logger().Error(
+			if err := k.AssertIsHookWhitelisted(ctx, coin.Denom, cwAddr); err != nil {
+				ctx.Logger().Error(
 					"Skipped hook execution due to missing whitelist",
 					"err", err,
 					"denom", coin.Denom,
@@ -137,9 +138,6 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 			var msgBz []byte
 
 			// get msgBz, either BlockBeforeSend or TrackBeforeSend
-			// Note that for trackBeforeSend, we need to gas meter computations to prevent infinite loop
-			// specifically because module to module sends are not gas metered.
-			// We don't need to do this for blockBeforeSend since blockBeforeSend is not called during module to module sends.
 			if blockBeforeSend {
 				msg := types.BlockBeforeSendSudoMsg{
 					BlockBeforeSend: types.BlockBeforeSendMsg{
@@ -163,22 +161,36 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 				return err
 			}
 
-			// if its track before send, apply gas meter to prevent infinite loop
-			if blockBeforeSend {
-				_, err = k.contractKeeper.Sudo(c, cwAddr, msgBz)
-				if err != nil {
-					return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
-				}
-			} else {
-				childCtx := c.WithGasMeter(types2.NewGasMeter(types.TrackBeforeSendGasLimit))
-				_, err = k.contractKeeper.Sudo(childCtx, cwAddr, msgBz)
-				if err != nil {
-					return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
+			em := sdk.NewEventManager()
+
+			childCtx := ctx.WithGasMeter(storetypes.NewGasMeter(types.SudoHookGasLimit))
+			_, err = k.contractKeeper.Sudo(childCtx.WithEventManager(em), cwAddr, msgBz)
+			if err != nil {
+				k.Logger(ctx).Debug("TokenFactory hooks: failed to sudo",
+					"error", err, "contract_address", cwAddr)
+
+				ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventFailedSudoCall,
+					[]sdk.Attribute{sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+						sdk.NewAttribute(types.AttributeBeforeSendHookAddress, cwAddr.String()),
+						sdk.NewAttribute(types.AttributeSudoErrorText, err.Error()),
+					}...))
+
+				// don't block or prevent transfer if there is no contract for some reason
+				// It's not quite possible, but it's good to have such check just in case
+				if strings.Contains(err.Error(), "no such contract") {
+					return nil
 				}
 
-				// consume gas used for calling contract to the parent ctx
-				c.GasMeter().ConsumeGas(childCtx.GasMeter().GasConsumed(), "track before send gas")
+				// TF hooks should not block or prevent transfers from module accounts
+				if k.isModuleAccount(ctx, from) {
+					return nil
+				}
+
+				return errorsmod.Wrapf(err, "failed to call send hook for denom %s", coin.Denom)
 			}
+
+			// consume gas used for calling contract to the parent ctx
+			ctx.GasMeter().ConsumeGas(childCtx.GasMeter().GasConsumed(), "track before send gas")
 		}
 	}
 	return nil
