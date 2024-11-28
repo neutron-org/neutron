@@ -14,7 +14,7 @@ ARG GIT_COMMIT
 ARG BUILD_TAGS
 ARG ENABLED_PROPOSALS
 
-ENV GOTOOLCHAIN go1.22.6
+ENV GOTOOLCHAIN go1.22.9
 
 RUN apk add --no-cache \
     ca-certificates \
