@@ -112,12 +112,12 @@ message QueryResult {
 
 // A verifiable result of performing a single KVKey read.
 message StorageValue {
-  // The first half of the storage path. It is supposed to be a substore name for the query
-  // (e.g. bank, staking, etc.).
+  // The substore name used in the read operation. Typically, this corresponds to the keeper's
+  // storeKey, usually the module's name, such as "bank", "staking", etc.
   string storage_prefix = 1;
-  // The second half of the storage path. The remaining part of the full path to an IAVL storage node.
+  // Hexadecimal-encoded bytes representing the key of the data read from the module's storage.
   bytes key = 2;
-  // A base64-encoded value read from the given storage path.
+  // A bytes field containing the value associated with the key in the store.
   bytes value = 3;
   // The Merkle Proof which proves existence/nonexistence of key-value pair in IAVL storage. Is
   // used to verify

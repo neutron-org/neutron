@@ -348,12 +348,12 @@ func (m *QueryResult) GetAllowKvCallbacks() bool {
 
 // A verifiable result of performing a single KVKey read.
 type StorageValue struct {
-	// The first half of the storage path. It is supposed to be a substore name for the query
-	// (e.g. bank, staking, etc.).
+	// The substore name used in the read operation. Typically, this corresponds to the keeper's
+	// storeKey, usually the module's name, such as "bank", "staking", etc.
 	StoragePrefix string `protobuf:"bytes,1,opt,name=storage_prefix,json=storagePrefix,proto3" json:"storage_prefix,omitempty"`
-	// The second half of the storage path. The remaining part of the full path to an IAVL storage node.
+	// Hexadecimal-encoded bytes representing the key of the data read from the module's storage.
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
-	// A base64-encoded value read from the given storage path.
+	// A bytes field containing the value associated with the key in the store.
 	Value []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	// The Merkle Proof which proves existence/nonexistence of key-value pair in IAVL storage. Is
 	// used to verify
