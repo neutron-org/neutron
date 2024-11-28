@@ -18474,6 +18474,7 @@ definitions:
         type: object
     type: object
   neutron.interchainqueries.Block:
+    description: A single verifiable result of an Interchain Query of TX type.
     properties:
       header:
         properties:
@@ -18483,7 +18484,11 @@ definitions:
             format: byte
             type: string
         type: object
-        title: We need to know block X to verify inclusion of transaction for block X
+        description: >-
+          The header of the block the transaction is included in. It is needed
+          to know block header to
+
+          verify inclusion of the transaction.
       next_block_header:
         properties:
           type_url:
@@ -18492,26 +18497,27 @@ definitions:
             format: byte
             type: string
         type: object
-        title: >-
-          We need to know block X+1 to verify response of transaction for block
-          X
+        description: >-
+          The header of the block next to the block the transaction is included
+          in. It is needed to know
 
-          since LastResultsHash is root hash of all results from the txs from
-          the
+          block X+1 header to verify response of transaction for block X since
+          LastResultsHash is root
 
-          previous block
+          hash of all results of the txs from the previous block.
       tx:
+        description: The transaction matched by the Interchain Query's transaction filter.
         properties:
           data:
+            description: The arbitrary data typed body of the transaction.
             format: byte
-            title: is body of the transaction
             type: string
           delivery_proof:
-            title: >-
-              is the Merkle Proof which proves existence of response in block
-              with height
+            description: >-
+              The Merkle Proof which proves existence of response in the block
+              next to the block the
 
-              next_block_header.Height
+              transaction is included in.
             properties:
               aunts:
                 items:
@@ -18529,11 +18535,9 @@ definitions:
                 type: string
             type: object
           inclusion_proof:
-            title: >-
-              is the Merkle Proof which proves existence of data in block with
-              height
-
-              header.Height
+            description: >-
+              The Merkle Proof which proves inclusion of the transaction in the
+              block.
             properties:
               aunts:
                 items:
@@ -18551,13 +18555,7 @@ definitions:
                 type: string
             type: object
           response:
-            description: >-
-              ExecTxResult contains results of executing one individual
-              transaction.
-
-
-              * Its structure is equivalent to #ResponseDeliverTx which will be
-              deprecated/deleted
+            description: The result of the transaction execution.
             properties:
               code:
                 format: int64
@@ -18609,21 +18607,24 @@ definitions:
         type: object
     type: object
   neutron.interchainqueries.KVKey:
+    description: Represents a path to an IAVL storage node.
     properties:
       key:
+        description: >-
+          A hexadecimal-encoded byte array representing the key for specific
+          data in the module's storage.
         format: byte
-        title: Key you want to read from the storage
         type: string
       path:
-        title: >-
-          Path (storage prefix) to the storage where you want to read value by
-          key
+        description: >-
+          The substore name used in an Interchain Query. Typically, this
+          corresponds to the keeper's
 
-          (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+          storeKey, usually the module's name, such as "bank", "staking", etc.
         type: string
     type: object
   neutron.interchainqueries.Params:
-    description: Params defines the parameters for the module.
+    description: The parameters for the module.
     properties:
       max_kv_query_keys_count:
         format: uint64
@@ -18636,7 +18637,9 @@ definitions:
           in msgRegisterInterchainQuery
         type: string
       query_deposit:
-        description: Amount of coins deposited for the query.
+        description: >-
+          Amount of coins required to be provided as deposit on Interchain Query
+          registration.
         items:
           description: |-
             Coin defines a token with a denomination and an amount.
@@ -18651,34 +18654,43 @@ definitions:
           type: object
         type: array
       query_submit_timeout:
+        description: >-
+          The duration, measured in blocks, that must pass since the query's
+          registration or its last
+
+          result submission before the query becomes eligible for removal by
+          anyone. Is used to set
+
+          `submit_timeout` on Interchain Query registration.
         format: uint64
-        title: |-
-          Defines amount of blocks required before query becomes available for
-          removal by anybody
         type: string
       tx_query_removal_limit:
         description: >-
           Amount of tx hashes to be removed during a single EndBlock. Can vary
-          to
+          to balance between
 
-          balance between network cleaning speed and EndBlock duration. A zero
-          value
-
-          means no limit.
+          network cleaning speed and EndBlock duration. A zero value means no
+          limit.
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.QueryLastRemoteHeightResponse:
+    description: Response type for the Query/LastRemoteHeight RPC method.
     properties:
       height:
+        description: The height of the chain that the IBC client is currently on.
+        format: uint64
+        type: string
+      revision:
+        description: The revision of the chain that the IBC client is currently on.
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.QueryParamsResponse:
-    description: QueryParamsResponse is response type for the Query/Params RPC method.
+    description: Response type for the Query/Params RPC method.
     properties:
       params:
-        description: params holds all the parameters of this module.
+        description: Contains all parameters of the module.
         properties:
           max_kv_query_keys_count:
             format: uint64
@@ -18691,7 +18703,9 @@ definitions:
               filters in msgRegisterInterchainQuery
             type: string
           query_deposit:
-            description: Amount of coins deposited for the query.
+            description: >-
+              Amount of coins required to be provided as deposit on Interchain
+              Query registration.
             items:
               description: >-
                 Coin defines a token with a denomination and an amount.
@@ -18709,27 +18723,29 @@ definitions:
               type: object
             type: array
           query_submit_timeout:
-            format: uint64
-            title: >-
-              Defines amount of blocks required before query becomes available
-              for
+            description: >-
+              The duration, measured in blocks, that must pass since the query's
+              registration or its last
 
-              removal by anybody
+              result submission before the query becomes eligible for removal by
+              anyone. Is used to set
+
+              `submit_timeout` on Interchain Query registration.
+            format: uint64
             type: string
           tx_query_removal_limit:
             description: >-
               Amount of tx hashes to be removed during a single EndBlock. Can
-              vary to
+              vary to balance between
 
-              balance between network cleaning speed and EndBlock duration. A
-              zero value
-
-              means no limit.
+              network cleaning speed and EndBlock duration. A zero value means
+              no limit.
             format: uint64
             type: string
         type: object
     type: object
   neutron.interchainqueries.QueryRegisteredQueriesResponse:
+    description: Response type for the Query/RegisteredQueries RPC method.
     properties:
       pagination:
         description: |-
@@ -18758,15 +18774,27 @@ definitions:
             type: string
         type: object
       registered_queries:
+        description: A list of registered Interchain Queries.
         items:
+          description: >-
+            Information about an Interchain Query registered in the
+            interchainqueries module.
           properties:
             connection_id:
-              title: >-
-                The IBC connection ID for getting ConsensusState to verify
-                proofs
+              description: >-
+                The IBC connection ID to the remote chain (the source of
+                querying data). Is used for getting
+
+                ConsensusState from the respective IBC client to verify query
+                result proofs.
               type: string
             deposit:
-              description: Amount of coins deposited for the query.
+              description: >-
+                Amount of coins paid for the Interchain Query registration. The
+                deposit is paid back to the
+
+                remover. The remover can be either the query owner (during the
+                submit timeout) or anybody.
               items:
                 description: >-
                   Coin defines a token with a denomination and an amount.
@@ -18788,35 +18816,41 @@ definitions:
               format: uint64
               type: string
             keys:
+              description: >-
+                The KV-storage keys for which to get values from the remote
+                chain. Only applicable for the
+
+                KV Interchain Queries. Max amount of keys is limited by the
+                module's `max_kv_query_keys_count`
+
+                parameters.
               items:
+                description: Represents a path to an IAVL storage node.
                 properties:
                   key:
+                    description: >-
+                      A hexadecimal-encoded byte array representing the key for
+                      specific data in the module's storage.
                     format: byte
-                    title: Key you want to read from the storage
                     type: string
                   path:
-                    title: >-
-                      Path (storage prefix) to the storage where you want to
-                      read value by key
+                    description: >-
+                      The substore name used in an Interchain Query. Typically,
+                      this corresponds to the keeper's
 
-                      (usually name of cosmos-sdk module: 'staking', 'bank',
-                      etc.)
+                      storeKey, usually the module's name, such as "bank",
+                      "staking", etc.
                     type: string
                 type: object
-              title: >-
-                The KV-storage keys for which we want to get values from remote
-                chain
               type: array
             last_submitted_result_local_height:
-              description: >-
-                The local chain last block height when the query result was
-                updated.
+              description: The local chain block height of the last query results update.
               format: uint64
               type: string
             last_submitted_result_remote_height:
               description: >-
-                The remote chain last block height when the query result was
-                updated.
+                The remote chain block height that corresponds to the last query
+                result update.
               properties:
                 revision_height:
                   format: uint64
@@ -18835,38 +18869,73 @@ definitions:
                 freezing clients
               type: object
             owner:
-              description: The address that registered the query.
+              description: The address of the contract that registered the query.
               type: string
             query_type:
-              title: 'The query type identifier: `kv` or `tx` now'
+              description: 'The query type identifier: `kv` or `tx`.'
               type: string
             registered_at_height:
-              description: The local chain height when the query was registered.
+              description: >-
+                The local chain block height of the Interchain Query
+                registration.
               format: uint64
               type: string
             submit_timeout:
-              description: Timeout before query becomes available for everybody to remove.
+              description: >-
+                The duration, measured in blocks, that must pass since the
+                query's registration or its last
+
+                result submission before the query becomes eligible for removal
+                by anyone.
               format: uint64
               type: string
             transactions_filter:
-              title: The filter for transaction search ICQ
+              description: >-
+                A stringified list of filters for remote transactions search.
+                Only applicable for the TX
+
+                Interchain Queries. Example:
+                "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+                Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount
+                of filter conditions is limited
+
+                by the module's `max_transactions_filters` parameters.
               type: string
             update_period:
-              description: Parameter that defines how often the query must be updated.
+              description: >-
+                Parameter that defines the minimal delay between consecutive
+                query executions (i.e. the
+
+                minimal delay between query results update).
               format: uint64
               type: string
           type: object
         type: array
     type: object
   neutron.interchainqueries.QueryRegisteredQueryResponse:
+    description: Response type for the Query/RegisteredQuery RPC method.
     properties:
       registered_query:
+        description: >-
+          Information about an Interchain Query registered in the
+          interchainqueries module.
         properties:
           connection_id:
-            title: The IBC connection ID for getting ConsensusState to verify proofs
+            description: >-
+              The IBC connection ID to the remote chain (the source of querying
+              data). Is used for getting
+
+              ConsensusState from the respective IBC client to verify query
+              result proofs.
             type: string
           deposit:
-            description: Amount of coins deposited for the query.
+            description: >-
+              Amount of coins paid for the Interchain Query registration. The
+              deposit is paid back to the
+
+              remover. The remover can be either the query owner (during the
+              submit timeout) or anybody.
             items:
               description: >-
                 Coin defines a token with a denomination and an amount.
@@ -18888,34 +18957,41 @@ definitions:
             format: uint64
             type: string
           keys:
+            description: >-
+              The KV-storage keys for which to get values from the remote chain.
+              Only applicable for the
+
+              KV Interchain Queries. Max amount of keys is limited by the
+              module's `max_kv_query_keys_count`
+
+              parameters.
             items:
+              description: Represents a path to an IAVL storage node.
               properties:
                 key:
+                  description: >-
+                    A hexadecimal-encoded byte array representing the key for
+                    specific data in the module's storage.
                   format: byte
-                  title: Key you want to read from the storage
                   type: string
                 path:
-                  title: >-
-                    Path (storage prefix) to the storage where you want to read
-                    value by key
+                  description: >-
+                    The substore name used in an Interchain Query. Typically,
+                    this corresponds to the keeper's
 
-                    (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+                    storeKey, usually the module's name, such as "bank",
+                    "staking", etc.
                   type: string
               type: object
-            title: >-
-              The KV-storage keys for which we want to get values from remote
-              chain
             type: array
           last_submitted_result_local_height:
-            description: >-
-              The local chain last block height when the query result was
-              updated.
+            description: The local chain block height of the last query results update.
             format: uint64
             type: string
           last_submitted_result_remote_height:
             description: >-
-              The remote chain last block height when the query result was
-              updated.
+              The remote chain block height that corresponds to the last query
+              result update.
             properties:
               revision_height:
                 format: uint64
@@ -18934,35 +19010,69 @@ definitions:
               freezing clients
             type: object
           owner:
-            description: The address that registered the query.
+            description: The address of the contract that registered the query.
             type: string
           query_type:
-            title: 'The query type identifier: `kv` or `tx` now'
+            description: 'The query type identifier: `kv` or `tx`.'
             type: string
           registered_at_height:
-            description: The local chain height when the query was registered.
+            description: The local chain block height of the Interchain Query registration.
             format: uint64
             type: string
           submit_timeout:
-            description: Timeout before query becomes available for everybody to remove.
+            description: >-
+              The duration, measured in blocks, that must pass since the query's
+              registration or its last
+
+              result submission before the query becomes eligible for removal by
+              anyone.
             format: uint64
             type: string
           transactions_filter:
-            title: The filter for transaction search ICQ
+            description: >-
+              A stringified list of filters for remote transactions search. Only
+              applicable for the TX
+
+              Interchain Queries. Example:
+              "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+              Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of
+              filter conditions is limited
+
+              by the module's `max_transactions_filters` parameters.
             type: string
           update_period:
-            description: Parameter that defines how often the query must be updated.
+            description: >-
+              Parameter that defines the minimal delay between consecutive query
+              executions (i.e. the
+
+              minimal delay between query results update).
             format: uint64
             type: string
         type: object
     type: object
   neutron.interchainqueries.QueryRegisteredQueryResultResponse:
+    description: Response type for the Query/QueryResult RPC method.
     properties:
       result:
+        description: The last successfully submitted result of an Interchain Query.
         properties:
           allow_kv_callbacks:
+            description: >-
+              Whether to send the query result to the owner contract as a sudo
+              message. Only applicable for
+
+              KV type of Interchain Queries.
             type: boolean
           block:
+            description: >-
+              A TX Interchain Query execution result. Contains metainformation
+              about the blocks of the query
+
+              execution height. Only populated when submitting an Interchain
+              Query result for verification
+
+              and emptied when saving the result on chain.
             properties:
               header:
                 properties:
@@ -18972,9 +19082,11 @@ definitions:
                     format: byte
                     type: string
                 type: object
-                title: >-
-                  We need to know block X to verify inclusion of transaction for
-                  block X
+                description: >-
+                  The header of the block the transaction is included in. It is
+                  needed to know block header to
+
+                  verify inclusion of the transaction.
               next_block_header:
                 properties:
                   type_url:
@@ -18983,26 +19095,29 @@ definitions:
                     format: byte
                     type: string
                 type: object
-                title: >-
-                  We need to know block X+1 to verify response of transaction
-                  for block X
+                description: >-
+                  The header of the block next to the block the transaction is
+                  included in. It is needed to know
 
-                  since LastResultsHash is root hash of all results from the txs
-                  from the
+                  block X+1 header to verify response of transaction for block X
+                  since LastResultsHash is root
 
-                  previous block
+                  hash of all results of the txs from the previous block.
               tx:
+                description: >-
+                  The transaction matched by the Interchain Query's transaction
+                  filter.
                 properties:
                   data:
+                    description: The arbitrary data typed body of the transaction.
                     format: byte
-                    title: is body of the transaction
                     type: string
                   delivery_proof:
-                    title: >-
-                      is the Merkle Proof which proves existence of response in
-                      block with height
+                    description: >-
+                      The Merkle Proof which proves existence of response in the
+                      block next to the block the
 
-                      next_block_header.Height
+                      transaction is included in.
                     properties:
                       aunts:
                         items:
@@ -19020,11 +19135,9 @@ definitions:
                         type: string
                     type: object
                   inclusion_proof:
-                    title: >-
-                      is the Merkle Proof which proves existence of data in
-                      block with height
-
-                      header.Height
+                    description: >-
+                      The Merkle Proof which proves inclusion of the transaction
+                      in the block.
                     properties:
                       aunts:
                         items:
@@ -19042,13 +19155,7 @@ definitions:
                         type: string
                     type: object
                   response:
-                    description: >-
-                      ExecTxResult contains results of executing one individual
-                      transaction.
-
-
-                      * Its structure is equivalent to #ResponseDeliverTx which
-                      will be deprecated/deleted
+                    description: The result of the transaction execution.
                     properties:
                       code:
                         format: int64
@@ -19101,17 +19208,28 @@ definitions:
                 type: object
             type: object
           height:
+            description: >-
+              The height of the chain at the moment of the Interchain Query
+              execution.
             format: uint64
             type: string
           kv_results:
+            description: >-
+              A list of a KV Interchain Query execution results. Each result
+              contains query parameters, a
+
+              response value and a proof.
             items:
+              description: A verifiable result of performing a single KVKey read.
               properties:
                 Proof:
-                  title: >-
-                    is the Merkle Proof which proves existence of key-value pair
-                    in IAVL
+                  description: >-
+                    The Merkle Proof which proves existence/nonexistence of
+                    key-value pair in IAVL storage. Is
 
-                    storage
+                    used to verify
+
+                    the pair against the respective remote chain's header.
                   properties:
                     ops:
                       items:
@@ -19134,30 +19252,76 @@ definitions:
                           for example neighbouring node hash
                         type: object
                       type: array
+                  title: ProofOps is Merkle proof defined by the list of ProofOps
                   type: object
                 key:
+                  description: >-
+                    Hexadecimal-encoded bytes representing the key of the data
+                    read from the module's storage.
                   format: byte
-                  title: is the key in IAVL store
                   type: string
                 storage_prefix:
-                  title: is the substore name (acc, staking, etc.)
+                  description: >-
+                    The substore name used in the read operation. Typically,
+                    this corresponds to the keeper's
+
+                    storeKey, usually the module's name, such as "bank",
+                    "staking", etc.
                   type: string
                 value:
+                  description: >-
+                    A bytes field containing the value associated with the key
+                    in the store.
                   format: byte
-                  title: is the value in IAVL store
                   type: string
               type: object
             type: array
           revision:
+            description: >-
+              The revision number of the chain at the moment of the Interchain
+              Query execution.
             format: uint64
             type: string
         type: object
     type: object
   neutron.interchainqueries.QueryResult:
+    description: >-
+      Contains different information about a single Interchain Query execution
+      result. Currently,
+
+      this structure is used both in query result submission via an ICQ Relayer
+      and as a query result
+
+      storage for read/write operations to interchainqueries module, but the
+      structure fields are
+
+      populated in a bit different ways. When submitting a query result, all
+      fields are populated and
+
+      provided to the interchainqueries module in order to verify the result
+      against the IBC client's
+
+      state. But in order to lighten the chain state, the interchainqueries
+      module removes the block
+
+      field and proofs from the kv_results.
     properties:
       allow_kv_callbacks:
+        description: >-
+          Whether to send the query result to the owner contract as a sudo
+          message. Only applicable for
+
+          KV type of Interchain Queries.
         type: boolean
       block:
+        description: >-
+          A TX Interchain Query execution result. Contains metainformation about
+          the blocks of the query
+
+          execution height. Only populated when submitting an Interchain Query
+          result for verification
+
+          and emptied when saving the result on chain.
         properties:
           header:
             properties:
@@ -19167,9 +19331,11 @@ definitions:
                 format: byte
                 type: string
             type: object
-            title: >-
-              We need to know block X to verify inclusion of transaction for
-              block X
+            description: >-
+              The header of the block the transaction is included in. It is
+              needed to know block header to
+
+              verify inclusion of the transaction.
           next_block_header:
             properties:
               type_url:
@@ -19178,26 +19344,29 @@ definitions:
                 format: byte
                 type: string
             type: object
-            title: >-
-              We need to know block X+1 to verify response of transaction for
-              block X
+            description: >-
+              The header of the block next to the block the transaction is
+              included in. It is needed to know
 
-              since LastResultsHash is root hash of all results from the txs
-              from the
+              block X+1 header to verify response of transaction for block X
+              since LastResultsHash is root
 
-              previous block
+              hash of all results of the txs from the previous block.
           tx:
+            description: >-
+              The transaction matched by the Interchain Query's transaction
+              filter.
             properties:
               data:
+                description: The arbitrary data typed body of the transaction.
                 format: byte
-                title: is body of the transaction
                 type: string
               delivery_proof:
-                title: >-
-                  is the Merkle Proof which proves existence of response in
-                  block with height
+                description: >-
+                  The Merkle Proof which proves existence of response in the
+                  block next to the block the
 
-                  next_block_header.Height
+                  transaction is included in.
                 properties:
                   aunts:
                     items:
@@ -19215,11 +19384,9 @@ definitions:
                     type: string
                 type: object
               inclusion_proof:
-                title: >-
-                  is the Merkle Proof which proves existence of data in block
-                  with height
-
-                  header.Height
+                description: >-
+                  The Merkle Proof which proves inclusion of the transaction in
+                  the block.
                 properties:
                   aunts:
                     items:
@@ -19237,13 +19404,7 @@ definitions:
                     type: string
                 type: object
               response:
-                description: >-
-                  ExecTxResult contains results of executing one individual
-                  transaction.
-
-
-                  * Its structure is equivalent to #ResponseDeliverTx which will
-                  be deprecated/deleted
+                description: The result of the transaction execution.
                 properties:
                   code:
                     format: int64
@@ -19295,17 +19456,28 @@ definitions:
             type: object
         type: object
       height:
+        description: >-
+          The height of the chain at the moment of the Interchain Query
+          execution.
         format: uint64
         type: string
       kv_results:
+        description: >-
+          A list of a KV Interchain Query execution results. Each result
+          contains query parameters, a
+
+          response value and a proof.
         items:
+          description: A verifiable result of performing a single KVKey read.
           properties:
             Proof:
-              title: >-
-                is the Merkle Proof which proves existence of key-value pair in
-                IAVL
+              description: >-
+                The Merkle Proof which proves existence/nonexistence of
+                key-value pair in IAVL storage. Is
 
-                storage
+                used to verify
+
+                the pair against the respective remote chain's header.
               properties:
                 ops:
                   items:
@@ -19328,31 +19500,57 @@ definitions:
                       for example neighbouring node hash
                     type: object
                   type: array
+              title: ProofOps is Merkle proof defined by the list of ProofOps
               type: object
             key:
+              description: >-
+                Hexadecimal-encoded bytes representing the key of the data read
+                from the module's storage.
               format: byte
-              title: is the key in IAVL store
               type: string
             storage_prefix:
-              title: is the substore name (acc, staking, etc.)
+              description: >-
+                The substore name used in the read operation. Typically, this
+                corresponds to the keeper's
+
+                storeKey, usually the module's name, such as "bank", "staking",
+                etc.
               type: string
             value:
+              description: >-
+                A bytes field containing the value associated with the key in
+                the store.
               format: byte
-              title: is the value in IAVL store
               type: string
           type: object
         type: array
       revision:
+        description: >-
+          The revision number of the chain at the moment of the Interchain Query
+          execution.
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.RegisteredQuery:
+    description: >-
+      Information about an Interchain Query registered in the interchainqueries
+      module.
     properties:
       connection_id:
-        title: The IBC connection ID for getting ConsensusState to verify proofs
+        description: >-
+          The IBC connection ID to the remote chain (the source of querying
+          data). Is used for getting
+
+          ConsensusState from the respective IBC client to verify query result
+          proofs.
         type: string
       deposit:
-        description: Amount of coins deposited for the query.
+        description: >-
+          Amount of coins paid for the Interchain Query registration. The
+          deposit is paid back to the
+
+          remover. The remover can be either the query owner (during the submit
+          timeout) or anybody.
         items:
           description: |-
             Coin defines a token with a denomination and an amount.
@@ -19371,28 +19569,41 @@ definitions:
         format: uint64
         type: string
       keys:
+        description: >-
+          The KV-storage keys for which to get values from the remote chain.
+          Only applicable for the
+
+          KV Interchain Queries. Max amount of keys is limited by the module's
+          `max_kv_query_keys_count`
+
+          parameters.
         items:
+          description: Represents a path to an IAVL storage node.
           properties:
             key:
+              description: >-
+                A hexadecimal-encoded byte array representing the key for
+                specific data in the module's storage.
               format: byte
-              title: Key you want to read from the storage
               type: string
             path:
-              title: >-
-                Path (storage prefix) to the storage where you want to read
-                value by key
+              description: >-
+                The substore name used in an Interchain Query. Typically, this
+                corresponds to the keeper's
 
-                (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
+                storeKey, usually the module's name, such as "bank", "staking",
+                etc.
               type: string
           type: object
-        title: The KV-storage keys for which we want to get values from remote chain
         type: array
       last_submitted_result_local_height:
-        description: The local chain last block height when the query result was updated.
+        description: The local chain block height of the last query results update.
         format: uint64
         type: string
       last_submitted_result_remote_height:
-        description: The remote chain last block height when the query result was updated.
+        description: >-
+          The remote chain block height that corresponds to the last query
+          result update.
         properties:
           revision_height:
             format: uint64
@@ -19411,33 +19622,57 @@ definitions:
           freezing clients
         type: object
       owner:
-        description: The address that registered the query.
+        description: The address of the contract that registered the query.
         type: string
       query_type:
-        title: 'The query type identifier: `kv` or `tx` now'
+        description: 'The query type identifier: `kv` or `tx`.'
         type: string
       registered_at_height:
-        description: The local chain height when the query was registered.
+        description: The local chain block height of the Interchain Query registration.
         format: uint64
         type: string
       submit_timeout:
-        description: Timeout before query becomes available for everybody to remove.
+        description: >-
+          The duration, measured in blocks, that must pass since the query's
+          registration or its last
+
+          result submission before the query becomes eligible for removal by
+          anyone.
         format: uint64
         type: string
       transactions_filter:
-        title: The filter for transaction search ICQ
+        description: >-
+          A stringified list of filters for remote transactions search. Only
+          applicable for the TX
+
+          Interchain Queries. Example:
+          "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+          Supported operators: "eq", "lt", "gt", "lte", "gte". Max amount of
+          filter conditions is limited
+
+          by the module's `max_transactions_filters` parameters.
         type: string
       update_period:
-        description: Parameter that defines how often the query must be updated.
+        description: >-
+          Parameter that defines the minimal delay between consecutive query
+          executions (i.e. the
+
+          minimal delay between query results update).
         format: uint64
         type: string
     type: object
   neutron.interchainqueries.StorageValue:
+    description: A verifiable result of performing a single KVKey read.
     properties:
       Proof:
-        title: |-
-          is the Merkle Proof which proves existence of key-value pair in IAVL
-          storage
+        description: >-
+          The Merkle Proof which proves existence/nonexistence of key-value pair
+          in IAVL storage. Is
+
+          used to verify
+
+          the pair against the respective remote chain's header.
         properties:
           ops:
             items:
@@ -19456,31 +19691,41 @@ definitions:
                 for example neighbouring node hash
               type: object
             type: array
+        title: ProofOps is Merkle proof defined by the list of ProofOps
         type: object
       key:
+        description: >-
+          Hexadecimal-encoded bytes representing the key of the data read from
+          the module's storage.
         format: byte
-        title: is the key in IAVL store
         type: string
       storage_prefix:
-        title: is the substore name (acc, staking, etc.)
+        description: >-
+          The substore name used in the read operation. Typically, this
+          corresponds to the keeper's
+
+          storeKey, usually the module's name, such as "bank", "staking", etc.
         type: string
       value:
+        description: >-
+          A bytes field containing the value associated with the key in the
+          store.
         format: byte
-        title: is the value in IAVL store
         type: string
     type: object
   neutron.interchainqueries.TxValue:
+    description: Contains transaction body, response, and proofs of inclusion and delivery.
     properties:
       data:
+        description: The arbitrary data typed body of the transaction.
         format: byte
-        title: is body of the transaction
         type: string
       delivery_proof:
-        title: >-
-          is the Merkle Proof which proves existence of response in block with
-          height
+        description: >-
+          The Merkle Proof which proves existence of response in the block next
+          to the block the
 
-          next_block_header.Height
+          transaction is included in.
         properties:
           aunts:
             items:
@@ -19498,11 +19743,9 @@ definitions:
             type: string
         type: object
       inclusion_proof:
-        title: >-
-          is the Merkle Proof which proves existence of data in block with
-          height
-
-          header.Height
+        description: >-
+          The Merkle Proof which proves inclusion of the transaction in the
+          block.
         properties:
           aunts:
             items:
@@ -19520,12 +19763,7 @@ definitions:
             type: string
         type: object
       response:
-        description: >-
-          ExecTxResult contains results of executing one individual transaction.
-
-
-          * Its structure is equivalent to #ResponseDeliverTx which will be
-          deprecated/deleted
+        description: The result of the transaction execution.
         properties:
           code:
             format: int64
@@ -44580,12 +44818,10 @@ paths:
         '200':
           description: A successful response.
           schema:
-            description: >-
-              QueryParamsResponse is response type for the Query/Params RPC
-              method.
+            description: Response type for the Query/Params RPC method.
             properties:
               params:
-                description: params holds all the parameters of this module.
+                description: Contains all parameters of the module.
                 properties:
                   max_kv_query_keys_count:
                     format: uint64
@@ -44598,7 +44834,9 @@ paths:
                       tx filters in msgRegisterInterchainQuery
                     type: string
                   query_deposit:
-                    description: Amount of coins deposited for the query.
+                    description: >-
+                      Amount of coins required to be provided as deposit on
+                      Interchain Query registration.
                     items:
                       description: >-
                         Coin defines a token with a denomination and an amount.
@@ -44616,21 +44854,22 @@ paths:
                       type: object
                     type: array
                   query_submit_timeout:
-                    format: uint64
-                    title: >-
-                      Defines amount of blocks required before query becomes
-                      available for
+                    description: >-
+                      The duration, measured in blocks, that must pass since the
+                      query's registration or its last
 
-                      removal by anybody
+                      result submission before the query becomes eligible for
+                      removal by anyone. Is used to set
+
+                      `submit_timeout` on Interchain Query registration.
+                    format: uint64
                     type: string
                   tx_query_removal_limit:
                     description: >-
                       Amount of tx hashes to be removed during a single
-                      EndBlock. Can vary to
+                      EndBlock. Can vary to balance between
 
-                      balance between network cleaning speed and EndBlock
-                      duration. A zero value
-
+                      network cleaning speed and EndBlock duration. A zero value
                       means no limit.
                     format: uint64
                     type: string
@@ -44658,14 +44897,15 @@ paths:
               message:
                 type: string
             type: object
-      summary: Parameters queries the parameters of the module.
+      summary: Fetches the current parameters of the interchainqueries module.
       tags:
         - Query
   /neutron/interchainqueries/query_result:
     get:
       operationId: QueryResult
       parameters:
-        - format: uint64
+        - description: ID of an Interchain Query.
+          format: uint64
           in: query
           name: query_id
           required: false
@@ -44674,12 +44914,27 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/QueryResult RPC method.
             properties:
               result:
+                description: The last successfully submitted result of an Interchain Query.
                 properties:
                   allow_kv_callbacks:
+                    description: >-
+                      Whether to send the query result to the owner contract as
+                      a sudo message. Only applicable for
+
+                      KV type of Interchain Queries.
                     type: boolean
                   block:
+                    description: >-
+                      A TX Interchain Query execution result. Contains
+                      metainformation about the blocks of the query
+
+                      execution height. Only populated when submitting an
+                      Interchain Query result for verification
+
+                      and emptied when saving the result on chain.
                     properties:
                       header:
                         properties:
@@ -44689,9 +44944,11 @@ paths:
                             format: byte
                             type: string
                         type: object
-                        title: >-
-                          We need to know block X to verify inclusion of
-                          transaction for block X
+                        description: >-
+                          The header of the block the transaction is included
+                          in. It is needed to know block header to
+
+                          verify inclusion of the transaction.
                       next_block_header:
                         properties:
                           type_url:
@@ -44700,26 +44957,30 @@ paths:
                             format: byte
                             type: string
                         type: object
-                        title: >-
-                          We need to know block X+1 to verify response of
-                          transaction for block X
+                        description: >-
+                          The header of the block next to the block the
+                          transaction is included in. It is needed to know
 
-                          since LastResultsHash is root hash of all results from
-                          the txs from the
+                          block X+1 header to verify response of transaction for
+                          block X since LastResultsHash is root
 
-                          previous block
+                          hash of all results of the txs from the previous
+                          block.
                       tx:
+                        description: >-
+                          The transaction matched by the Interchain Query's
+                          transaction filter.
                         properties:
                           data:
+                            description: The arbitrary data typed body of the transaction.
                             format: byte
-                            title: is body of the transaction
                             type: string
                           delivery_proof:
-                            title: >-
-                              is the Merkle Proof which proves existence of
-                              response in block with height
+                            description: >-
+                              The Merkle Proof which proves existence of
+                              response in the block next to the block the
 
-                              next_block_header.Height
+                              transaction is included in.
                             properties:
                               aunts:
                                 items:
@@ -44737,11 +44998,9 @@ paths:
                                 type: string
                             type: object
                           inclusion_proof:
-                            title: >-
-                              is the Merkle Proof which proves existence of data
-                              in block with height
-
-                              header.Height
+                            description: >-
+                              The Merkle Proof which proves inclusion of the
+                              transaction in the block.
                             properties:
                               aunts:
                                 items:
@@ -44759,14 +45018,7 @@ paths:
                                 type: string
                             type: object
                           response:
-                            description: >-
-                              ExecTxResult contains results of executing one
-                              individual transaction.
-
-
-                              * Its structure is equivalent to
-                              #ResponseDeliverTx which will be
-                              deprecated/deleted
+                            description: The result of the transaction execution.
                             properties:
                               code:
                                 format: int64
@@ -44819,17 +45071,29 @@ paths:
                         type: object
                     type: object
                   height:
+                    description: >-
+                      The height of the chain at the moment of the Interchain
+                      Query execution.
                     format: uint64
                     type: string
                   kv_results:
+                    description: >-
+                      A list of a KV Interchain Query execution results. Each
+                      result contains query parameters, a
+
+                      response value and a proof.
                     items:
+                      description: A verifiable result of performing a single KVKey read.
                       properties:
                         Proof:
-                          title: >-
-                            is the Merkle Proof which proves existence of
-                            key-value pair in IAVL
+                          description: >-
+                            The Merkle Proof which proves existence/nonexistence
+                            of key-value pair in IAVL storage. Is
 
-                            storage
+                            used to verify
+
+                            the pair against the respective remote chain's
+                            header.
                           properties:
                             ops:
                               items:
@@ -44852,21 +45116,36 @@ paths:
                                   for example neighbouring node hash
                                 type: object
                               type: array
+                          title: >-
+                            ProofOps is Merkle proof defined by the list of
+                            ProofOps
                           type: object
                         key:
+                          description: >-
+                            Hexadecimal-encoded bytes representing the key of
+                            the data read from the module's storage.
                           format: byte
-                          title: is the key in IAVL store
                           type: string
                         storage_prefix:
-                          title: is the substore name (acc, staking, etc.)
+                          description: >-
+                            The substore name used in the read operation.
+                            Typically, this corresponds to the keeper's
+
+                            storeKey, usually the module's name, such as "bank",
+                            "staking", etc.
                           type: string
                         value:
+                          description: >-
+                            A bytes field containing the value associated with
+                            the key in the store.
                           format: byte
-                          title: is the value in IAVL store
                           type: string
                       type: object
                     type: array
                   revision:
+                    description: >-
+                      The revision number of the chain at the moment of the
+                      Interchain Query execution.
                     format: uint64
                     type: string
                 type: object
@@ -44893,6 +45172,11 @@ paths:
               message:
                 type: string
             type: object
+      summary: >-
+        Retrieves the most recent successfully submitted result of an Interchain
+        Query. This is only
+
+        applicable for KV Interchain Queries.
       tags:
         - Query
   /neutron/interchainqueries/registered_queries:
@@ -44900,13 +45184,29 @@ paths:
       operationId: RegisteredQueries
       parameters:
         - collectionFormat: multi
+          description: >-
+            A list of owners of Interchain Queries. Query response will contain
+            only Interchain Queries
+
+            that are owned by one of the owners in the list. If none, Interchain
+            Queries are not filtered
+
+            out by the owner field.
           in: query
           items:
             type: string
           name: owners
           required: false
           type: array
-        - in: query
+        - description: >-
+            IBC connection ID. Query response will contain only Interchain
+            Queries that have the same IBC
+
+            connection ID parameter. If none, Interchain Queries are not
+            filtered out by the connection ID
+
+            field.
+          in: query
           name: connection_id
           required: false
           type: string
@@ -44970,6 +45270,7 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/RegisteredQueries RPC method.
             properties:
               pagination:
                 description: >-
@@ -45000,15 +45301,27 @@ paths:
                     type: string
                 type: object
               registered_queries:
+                description: A list of registered Interchain Queries.
                 items:
+                  description: >-
+                    Information about an Interchain Query registered in the
+                    interchainqueries module.
                   properties:
                     connection_id:
-                      title: >-
-                        The IBC connection ID for getting ConsensusState to
-                        verify proofs
+                      description: >-
+                        The IBC connection ID to the remote chain (the source of
+                        querying data). Is used for getting
+
+                        ConsensusState from the respective IBC client to verify
+                        query result proofs.
                       type: string
                     deposit:
-                      description: Amount of coins deposited for the query.
+                      description: >-
+                        Amount of coins paid for the Interchain Query
+                        registration. The deposit is paid back to the
+
+                        remover. The remover can be either the query owner
+                        (during the submit timeout) or anybody.
                       items:
                         description: >-
                           Coin defines a token with a denomination and an
@@ -45031,35 +45344,43 @@ paths:
                       format: uint64
                       type: string
                     keys:
+                      description: >-
+                        The KV-storage keys for which to get values from the
+                        remote chain. Only applicable for the
+
+                        KV Interchain Queries. Max amount of keys is limited by
+                        the module's `max_kv_query_keys_count`
+
+                        parameters.
                       items:
+                        description: Represents a path to an IAVL storage node.
                         properties:
                           key:
+                            description: >-
+                              A hexadecimal-encoded byte array representing the
+                              key for specific data in the module's storage.
                             format: byte
-                            title: Key you want to read from the storage
                             type: string
                           path:
-                            title: >-
-                              Path (storage prefix) to the storage where you
-                              want to read value by key
+                            description: >-
+                              The substore name used in an Interchain Query.
+                              Typically, this corresponds to the keeper's
 
-                              (usually name of cosmos-sdk module: 'staking',
-                              'bank', etc.)
+                              storeKey, usually the module's name, such as
+                              "bank", "staking", etc.
                             type: string
                         type: object
-                      title: >-
-                        The KV-storage keys for which we want to get values from
-                        remote chain
                       type: array
                     last_submitted_result_local_height:
                       description: >-
-                        The local chain last block height when the query result
-                        was updated.
+                        The local chain block height of the last query results
+                        update.
                       format: uint64
                       type: string
                     last_submitted_result_remote_height:
                       description: >-
-                        The remote chain last block height when the query result
-                        was updated.
+                        The remote chain block height that corresponds to the
+                        last query result update.
                       properties:
                         revision_height:
                           format: uint64
@@ -45078,28 +45399,45 @@ paths:
                         freezing clients
                       type: object
                     owner:
-                      description: The address that registered the query.
+                      description: The address of the contract that registered the query.
                       type: string
                     query_type:
-                      title: 'The query type identifier: `kv` or `tx` now'
+                      description: 'The query type identifier: `kv` or `tx`.'
                       type: string
                     registered_at_height:
-                      description: The local chain height when the query was registered.
+                      description: >-
+                        The local chain block height of the Interchain Query
+                        registration.
                       format: uint64
                       type: string
                     submit_timeout:
                       description: >-
-                        Timeout before query becomes available for everybody to
-                        remove.
+                        The duration, measured in blocks, that must pass since
+                        the query's registration or its last
+
+                        result submission before the query becomes eligible for
+                        removal by anyone.
                       format: uint64
                       type: string
                     transactions_filter:
-                      title: The filter for transaction search ICQ
+                      description: >-
+                        A stringified list of filters for remote transactions
+                        search. Only applicable for the TX
+
+                        Interchain Queries. Example:
+                        "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+                        Supported operators: "eq", "lt", "gt", "lte", "gte". Max
+                        amount of filter conditions is limited
+
+                        by the module's `max_transactions_filters` parameters.
                       type: string
                     update_period:
                       description: >-
-                        Parameter that defines how often the query must be
-                        updated.
+                        Parameter that defines the minimal delay between
+                        consecutive query executions (i.e. the
+
+                        minimal delay between query results update).
                       format: uint64
                       type: string
                   type: object
@@ -45127,13 +45465,19 @@ paths:
               message:
                 type: string
             type: object
+      summary: >-
+        Retrieves all registered Interchain Queries in the module, with optional
+        filtering by owner
+
+        and/or connection ID.
       tags:
         - Query
   /neutron/interchainqueries/registered_query:
     get:
       operationId: RegisteredQuery
       parameters:
-        - format: uint64
+        - description: ID of an Interchain Query.
+          format: uint64
           in: query
           name: query_id
           required: false
@@ -45142,16 +45486,28 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/RegisteredQuery RPC method.
             properties:
               registered_query:
+                description: >-
+                  Information about an Interchain Query registered in the
+                  interchainqueries module.
                 properties:
                   connection_id:
-                    title: >-
-                      The IBC connection ID for getting ConsensusState to verify
-                      proofs
+                    description: >-
+                      The IBC connection ID to the remote chain (the source of
+                      querying data). Is used for getting
+
+                      ConsensusState from the respective IBC client to verify
+                      query result proofs.
                     type: string
                   deposit:
-                    description: Amount of coins deposited for the query.
+                    description: >-
+                      Amount of coins paid for the Interchain Query
+                      registration. The deposit is paid back to the
+
+                      remover. The remover can be either the query owner (during
+                      the submit timeout) or anybody.
                     items:
                       description: >-
                         Coin defines a token with a denomination and an amount.
@@ -45173,35 +45529,43 @@ paths:
                     format: uint64
                     type: string
                   keys:
+                    description: >-
+                      The KV-storage keys for which to get values from the
+                      remote chain. Only applicable for the
+
+                      KV Interchain Queries. Max amount of keys is limited by
+                      the module's `max_kv_query_keys_count`
+
+                      parameters.
                     items:
+                      description: Represents a path to an IAVL storage node.
                       properties:
                         key:
+                          description: >-
+                            A hexadecimal-encoded byte array representing the
+                            key for specific data in the module's storage.
                           format: byte
-                          title: Key you want to read from the storage
                           type: string
                         path:
-                          title: >-
-                            Path (storage prefix) to the storage where you want
-                            to read value by key
+                          description: >-
+                            The substore name used in an Interchain Query.
+                            Typically, this corresponds to the keeper's
 
-                            (usually name of cosmos-sdk module: 'staking',
-                            'bank', etc.)
+                            storeKey, usually the module's name, such as "bank",
+                            "staking", etc.
                           type: string
                       type: object
-                    title: >-
-                      The KV-storage keys for which we want to get values from
-                      remote chain
                     type: array
                   last_submitted_result_local_height:
                     description: >-
-                      The local chain last block height when the query result
-                      was updated.
+                      The local chain block height of the last query results
+                      update.
                     format: uint64
                     type: string
                   last_submitted_result_remote_height:
                     description: >-
-                      The remote chain last block height when the query result
-                      was updated.
+                      The remote chain block height that corresponds to the last
+                      query result update.
                     properties:
                       revision_height:
                         format: uint64
@@ -45220,28 +45584,45 @@ paths:
                       freezing clients
                     type: object
                   owner:
-                    description: The address that registered the query.
+                    description: The address of the contract that registered the query.
                     type: string
                   query_type:
-                    title: 'The query type identifier: `kv` or `tx` now'
+                    description: 'The query type identifier: `kv` or `tx`.'
                     type: string
                   registered_at_height:
-                    description: The local chain height when the query was registered.
+                    description: >-
+                      The local chain block height of the Interchain Query
+                      registration.
                     format: uint64
                     type: string
                   submit_timeout:
                     description: >-
-                      Timeout before query becomes available for everybody to
-                      remove.
+                      The duration, measured in blocks, that must pass since the
+                      query's registration or its last
+
+                      result submission before the query becomes eligible for
+                      removal by anyone.
                     format: uint64
                     type: string
                   transactions_filter:
-                    title: The filter for transaction search ICQ
+                    description: >-
+                      A stringified list of filters for remote transactions
+                      search. Only applicable for the TX
+
+                      Interchain Queries. Example:
+                      "[{\"field\":\"tx.height\",\"op\":\"Gte\",\"value\":2644737}]".
+
+                      Supported operators: "eq", "lt", "gt", "lte", "gte". Max
+                      amount of filter conditions is limited
+
+                      by the module's `max_transactions_filters` parameters.
                     type: string
                   update_period:
                     description: >-
-                      Parameter that defines how often the query must be
-                      updated.
+                      Parameter that defines the minimal delay between
+                      consecutive query executions (i.e. the
+
+                      minimal delay between query results update).
                     format: uint64
                     type: string
                 type: object
@@ -45268,13 +45649,19 @@ paths:
               message:
                 type: string
             type: object
+      summary: Fetches details of a registered Interchain Query using its ID.
       tags:
         - Query
   /neutron/interchainqueries/remote_height:
     get:
       operationId: LastRemoteHeight
       parameters:
-        - in: query
+        - description: >-
+            Connection ID of an IBC connection to a remote chain. Determines the
+            IBC client used in query
+
+            handling.
+          in: query
           name: connection_id
           required: false
           type: string
@@ -45282,8 +45669,14 @@ paths:
         '200':
           description: A successful response.
           schema:
+            description: Response type for the Query/LastRemoteHeight RPC method.
             properties:
               height:
+                description: The height of the chain that the IBC client is currently on.
+                format: uint64
+                type: string
+              revision:
+                description: The revision of the chain that the IBC client is currently on.
                 format: uint64
                 type: string
             type: object
@@ -45309,6 +45702,11 @@ paths:
               message:
                 type: string
             type: object
+      summary: >-
+        Retrieves the most recent height of a remote chain as known by the IBC
+        client associated with
+
+        a given connection ID.
       tags:
         - Query
   /neutron/interchaintxs/params:
