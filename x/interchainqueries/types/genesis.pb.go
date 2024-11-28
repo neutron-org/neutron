@@ -185,7 +185,7 @@ type KVKey struct {
 	// The substore name used in an Interchain Query. Typically, this corresponds to the keeper's
 	// storeKey, usually the module's name, such as "bank", "staking", etc.
 	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	// A hexadecimal-encoded byte array representing the key for specific data in the module's storage.
+	// A bytes field representing the key for specific data in the module's storage.
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 

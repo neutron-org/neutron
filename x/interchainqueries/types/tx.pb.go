@@ -351,7 +351,7 @@ type StorageValue struct {
 	// The substore name used in the read operation. Typically, this corresponds to the keeper's
 	// storeKey, usually the module's name, such as "bank", "staking", etc.
 	StoragePrefix string `protobuf:"bytes,1,opt,name=storage_prefix,json=storagePrefix,proto3" json:"storage_prefix,omitempty"`
-	// Hexadecimal-encoded bytes representing the key of the data read from the module's storage.
+	// A bytes field representing the key of the data read from the module's storage.
 	Key []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 	// A bytes field containing the value associated with the key in the store.
 	Value []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`

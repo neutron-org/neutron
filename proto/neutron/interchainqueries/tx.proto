@@ -115,7 +115,7 @@ message StorageValue {
   // The substore name used in the read operation. Typically, this corresponds to the keeper's
   // storeKey, usually the module's name, such as "bank", "staking", etc.
   string storage_prefix = 1;
-  // Hexadecimal-encoded bytes representing the key of the data read from the module's storage.
+  // A bytes field representing the key of the data read from the module's storage.
   bytes key = 2;
   // A bytes field containing the value associated with the key in the store.
   bytes value = 3;

@@ -53,7 +53,7 @@ message KVKey {
   // The substore name used in an Interchain Query. Typically, this corresponds to the keeper's
   // storeKey, usually the module's name, such as "bank", "staking", etc.
   string path = 1;
-  // A hexadecimal-encoded byte array representing the key for specific data in the module's storage.
+  // A bytes field representing the key for specific data in the module's storage.
   bytes key = 2;
 }
 
