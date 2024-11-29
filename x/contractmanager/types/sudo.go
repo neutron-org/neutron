@@ -23,9 +23,10 @@ type MessageTxQueryResult struct {
 
 // MessageKvQueryResult is the model of the `sudo` message sent to a smart contract when a KV
 // Interchain Query result is submitted. If the owner of a KV Interchain Query wants to handle
-// updates, they must implement a `sudo` entry point to process `kv_query_result` messages and
-// include the necessary logic in it. The `kv_query_result` handler acts as a callback, triggered
-// by the interchainqueries module whenever a KV query result is submitted.
+// query updates as part of the result submission transaction, they must implement a `sudo` entry
+// point to process `kv_query_result` messages and include the necessary logic in it. The
+// `kv_query_result` handler acts as a callback, triggered by the interchainqueries module whenever
+// a KV query result is submitted.
 //
 // Note that the message does not include the actual query result, only the query ID. To access the
 // result data, use the `Query/QueryResult` RPC of the `interchainqueries` module.
