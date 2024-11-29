@@ -2,6 +2,7 @@ package params
 
 import (
 	"cosmossdk.io/x/tx/signing"
+	"cosmossdk.io/x/tx/signing/aminojson"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -9,6 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/gogoproto/proto"
+	neutrontx "github.com/neutron-org/neutron/v5/tx"
 )
 
 // EncodingConfig specifies the concrete encoding types to use for a given app.
@@ -20,7 +22,7 @@ type EncodingConfig struct {
 	Amino             *codec.LegacyAmino
 }
 
-// makeEncodingConfig creates an EncodingConfig for an amino based test configuration.
+// MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.
 func MakeEncodingConfig() EncodingConfig {
 	amino := codec.NewLegacyAmino()
 	reg, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
@@ -38,7 +40,18 @@ func MakeEncodingConfig() EncodingConfig {
 		panic(err)
 	}
 	marshaler := codec.NewProtoCodec(reg)
-	txCfg := tx.NewTxConfig(marshaler, tx.DefaultSignModes)
+
+	signingOptions, err := tx.NewDefaultSigningOptions()
+	if err != nil {
+		panic(err)
+	}
+	txCfg := tx.NewTxConfig(
+		marshaler,
+		tx.DefaultSignModes,
+		neutrontx.NewSignModeEIP191Handler(aminojson.SignModeHandlerOptions{
+			FileResolver: signingOptions.FileResolver,
+			TypeResolver: signingOptions.TypeResolver,
+		}))
 
 	return EncodingConfig{
 		InterfaceRegistry: reg,
