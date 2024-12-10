@@ -11,4 +11,27 @@ option go_package = "github.com/neutron-org/neutron/v5/x/revenue/types";
 // GenesisState defines the revenue module's genesis state.
 message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
+
+  State state = 2 [(gogoproto.nullable) = false];
+
+  repeated Validator validators = 3;
+}
+
+message Validator {
+  string operator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  uint32 missed_blocks_in_month = 2;
+}
+
+message State {
+  // WorkingMonth defines a month
+  uint32 working_month = 1;
+
+  uint64 total_compensation_progress = 2;
+
+//  // LearningRate is the current learning rate.
+//  string learning_rate = 2 [
+//    (cosmos_proto.scalar) = "cosmos.Dec",
+//    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+//    (gogoproto.nullable) = false
+//  ];
 }
