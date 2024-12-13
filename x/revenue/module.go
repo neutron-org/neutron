@@ -26,10 +26,9 @@ import (
 )
 
 var (
-	_ appmodule.AppModule       = AppModule{}
-	_ module.AppModuleBasic     = AppModuleBasic{}
-	_ appmodule.HasBeginBlocker = AppModule{}
-	_ appmodule.HasEndBlocker   = AppModule{}
+	_ appmodule.AppModule     = AppModule{}
+	_ module.AppModuleBasic   = AppModuleBasic{}
+	_ appmodule.HasEndBlocker = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -103,12 +102,12 @@ var _ appmodule.AppModule = AppModule{}
 type AppModule struct {
 	AppModuleBasic
 
-	keeper keeper.Keeper
+	keeper *keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
-	keeper keeper.Keeper,
+	keeper *keeper.Keeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
@@ -123,9 +122,6 @@ func (am AppModule) IsOnePerModuleType() { // marker
 // IsAppModule implements the appmodule.AppModule interface.
 func (am AppModule) IsAppModule() { // marker
 }
-
-// Deprecated: use RegisterServices
-func (AppModule) QuerierRoute() string { return types.RouterKey }
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
 func (am AppModule) RegisterServices(cfg module.Configurator) {
@@ -156,14 +152,12 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // ConsensusVersion is a sequence number for state-breaking change of the module. It should be incremented on each consensus-breaking change introduced by the module. To avoid wrong/empty versions, the initial version should be set to 1
 func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 
-// BeginBlock contains the logic that is automatically triggered at the beginning of each block
-func (am AppModule) BeginBlock(ctx context.Context) error {
-	am.keeper.ExecuteReadySchedules(sdk.UnwrapSDKContext(ctx), types.ExecutionStage_EXECUTION_STAGE_BEGIN_BLOCKER)
-	return nil
-}
-
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx context.Context) error {
-	am.keeper.ExecuteReadySchedules(sdk.UnwrapSDKContext(ctx), types.ExecutionStage_EXECUTION_STAGE_END_BLOCKER)
+	sCtx := sdk.UnwrapSDKContext(ctx)
+	err := am.keeper.EndBlocker(sCtx)
+	if err != nil {
+		am.keeper.Logger(sCtx).Error("", "error", err)
+	}
 	return nil
 }

@@ -10,12 +10,11 @@ import (
 	"github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
-// GetQueryCmd returns the cli query commands for this module
-func GetQueryCmd(_ string) *cobra.Command {
-	// Group cron queries under a subcommand
+// GetTxCmd returns the transaction commands for this module
+func GetTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
+		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
