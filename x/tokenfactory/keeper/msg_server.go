@@ -246,14 +246,14 @@ func (server msgServer) SetBeforeSendHook(goCtx context.Context, msg *types.MsgS
 		return nil, types.ErrUnauthorized
 	}
 
-	// If we are not removing a hook make sure it has been already whitelisted
-	if msg.ContractAddr != "" {
-		// msg.ContractAddr has already been validated
-		cwAddr := sdk.MustAccAddressFromBech32(msg.ContractAddr)
-		if err := server.Keeper.AssertIsHookWhitelisted(ctx, msg.Denom, cwAddr); err != nil {
-			return nil, err
-		}
-	}
+	//// If we are not removing a hook make sure it has been already whitelisted
+	//if msg.ContractAddr != "" {
+	//	// msg.ContractAddr has already been validated
+	//	cwAddr := sdk.MustAccAddressFromBech32(msg.ContractAddr)
+	//	if err := server.Keeper.AssertIsHookWhitelisted(ctx, msg.Denom, cwAddr); err != nil {
+	//		return nil, err
+	//	}
+	//}
 
 	err = server.Keeper.setBeforeSendHook(ctx, msg.Denom, msg.ContractAddr)
 	if err != nil {
