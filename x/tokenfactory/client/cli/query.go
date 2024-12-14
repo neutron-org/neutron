@@ -67,6 +67,8 @@ func GetCmdDenomAuthorityMetadata() *cobra.Command {
 		Short: "Get the authority metadata for a specific denom",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println(">>> TEST")
+
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
