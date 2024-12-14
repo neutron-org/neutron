@@ -124,15 +124,15 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 			// NOTE: hooks must already be whitelisted before they can be added, so under normal operation this check should never fail.
 			// It is here as an emergency override if we want to shutoff a hook. We do not return the error because once it is removed from the whitelist
 			// a hook should not be able to block a send.
-			if err := k.AssertIsHookWhitelisted(c, coin.Denom, cwAddr); err != nil {
-				c.Logger().Error(
-					"Skipped hook execution due to missing whitelist",
-					"err", err,
-					"denom", coin.Denom,
-					"contract", cwAddr.String(),
-				)
-				continue
-			}
+			//if err := k.AssertIsHookWhitelisted(c, coin.Denom, cwAddr); err != nil {
+			//	c.Logger().Error(
+			//		"Skipped hook execution due to missing whitelist",
+			//		"err", err,
+			//		"denom", coin.Denom,
+			//		"contract", cwAddr.String(),
+			//	)
+			//	continue
+			//}
 
 			var msgBz []byte
 
@@ -172,7 +172,13 @@ func (k Keeper) callBeforeSendListener(ctx context.Context, from, to sdk.AccAddr
 			} else {
 				childCtx := c.WithGasMeter(types2.NewGasMeter(types.TrackBeforeSendGasLimit))
 				_, err = k.contractKeeper.Sudo(childCtx, cwAddr, msgBz)
+				c.Logger().Debug(">>> Track before send handler gas consumption", "gas",
+					childCtx.GasMeter().GasConsumed())
 				if err != nil {
+					c.Logger().Error(
+						">>> Track before send hook failed",
+						"err", err,
+					)
 					return errorsmod.Wrapf(err, "failed to call before send hook for denom %s", coin.Denom)
 				}
 
