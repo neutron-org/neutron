@@ -477,8 +477,8 @@ func New(
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	//ethcryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
-	ethcryptocodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	ethcryptocodec.RegisterLegacyAminoCodec(legacyAmino)
+	ethcryptocodec.RegisterInterfaces(interfaceRegistry)
 
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
