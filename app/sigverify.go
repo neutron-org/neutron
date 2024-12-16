@@ -497,7 +497,6 @@ func VerifySignature(
 	switch data := signatureData.(type) {
 	case *signing.SingleSignatureData:
 		signMode, err := internalSignModeToAPI(data.SignMode)
-		//fmt.Printf("TODO: SignMode: %v\n", signMode)
 		if err != nil {
 			return err
 		}
@@ -505,8 +504,6 @@ func VerifySignature(
 		if err != nil {
 			return err
 		}
-		//fmt.Printf("TODO: SignBytesLen: %v\n", len(signBytes))
-		//fmt.Printf("TODO: SignatureLen: %v\n", len(data.Signature))
 		if !pubKey.VerifySignature(signBytes, data.Signature) {
 			return fmt.Errorf("unable to verify single signer signature")
 		}

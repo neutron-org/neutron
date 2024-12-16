@@ -4,7 +4,6 @@ import (
 	"bytes"
 	errorsmod "cosmossdk.io/errors"
 	"crypto/subtle"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/cometbft/cometbft/crypto"
@@ -240,70 +239,29 @@ func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 //
 // CONTRACT: The signature should be in [R || S] format.
 func (pubKey PubKey) VerifySignature(msg, sig []byte) bool {
-	// TODO: logger
-	fmt.Printf("TODO: ethsecp256k1.go#VerifySignature()\n")
-	fmt.Printf("TODO: Msg: %s\n", string(msg))
-	fmt.Printf("TODO: Msg length: %v\n", len(msg))
 	return pubKey.verifySignatureECDSA(msg, sig)
 }
 
 // Perform standard ECDSA signature verification for the given raw bytes and signature.
 func (pubKey PubKey) verifySignatureECDSA(msg, sigStr []byte) bool {
-	fmt.Printf("TODO: verifySignatureECDSA()\n")
 	if len(sigStr) == SignatureSize {
 		// remove recovery ID (V) if contained in the signature
 		sigStr = sigStr[:len(sigStr)-1]
 	}
 
-	fmt.Printf("TODO: After stripping signature\n")
-
-	if len(sigStr) != 64 {
-		fmt.Printf("TODO: Sig str size is not 64\n")
-		fmt.Printf("TODO: sigStr length: %v", len(sigStr))
-	}
 	if len(sigStr) != 64 {
 		return false
 	}
-
-	fmt.Printf("TODO: After checking signature length\n")
-
 	pub, err := secp256k1.ParsePubKey(pubKey.Key)
-	fmt.Printf("TODO: Pubkey: %s", base64.StdEncoding.EncodeToString(pubKey.Key))
 	if err != nil {
-		fmt.Printf("TODO: ethsecp256k1.go#VerifySignature() err1: %s\n", err.Error())
 		return false
 	}
-
-	fmt.Printf("TODO: After parsing pub key")
 
 	// parse the signature, will return error if it is not in lower-S form
 	signature, err := signatureFromBytes(sigStr)
 	if err != nil {
-		fmt.Printf("TODO: ethsecp256k1.go#VerifySignature() err2: %s\n", err.Error())
 		return false
 	}
-
-	//const domain = []string{
-	//	name: "Neutron",
-	//	version: "0.0.1",
-	//	chainId: "0x1",
-	//	salt: "0",
-	//	verifyingContract: "cosmos",
-	//}
-	//const domainHash = "{\"name\":\"Neutron\",\"version\":\"0.0.1\",\"chainId\":\"0x1\",\"salt\":\"0\",\"verifyingContract\":\"cosmos\"}"
-	//const domainTypes = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,string salt)";
-
-	//
-	//const EIP191DomainSeparatorPrefix = "\x19\x01"
-	//// repeat metamask signing method
-	//srvBz := append(append(
-	//	[]byte(EIP191DomainSeparatorPrefix),
-	//	keccak256()
-	//	keccak256(msg)...,
-	//), aminoJSONBz...)
-
-	fmt.Printf("TODO: After getting signature from bytes\n")
-	fmt.Printf("TODO: KeccakHash: %s\n", base64.StdEncoding.EncodeToString(keccak256(msg)))
 	return signature.Verify(keccak256(msg), pub)
 }
 

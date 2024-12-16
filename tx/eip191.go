@@ -2,7 +2,6 @@ package tx
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
@@ -40,15 +39,6 @@ func (h SignModeEIP191Handler) GetSignBytes(
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("TODO: aminoJsonBz: %s", string(aminoJSONBz))
-
-	//srvBz := append(append(
-	//	[]byte(EIP191MessagePrefix),
-	//	[]byte(strconv.Itoa(len(aminoJSONBz)))...,
-	//), aminoJSONBz...)
-
-	//"\x19\x01" ‖ domainSeparator ‖ hashStruct(message)
 
 	srvBz := append(append(
 		[]byte(EIP191MessagePrefix),
