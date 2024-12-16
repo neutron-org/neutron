@@ -34,9 +34,9 @@ const (
 // Amino encoding names
 const (
 	// PrivKeyName defines the amino encoding name for the EthSecp256k1 private key
-	PrivKeyName = "neutron/PrivKeyEthSecp256k1"
+	PrivKeyName = "eth/PrivKeyEthSecp256k1"
 	// PubKeyName defines the amino encoding name for the EthSecp256k1 public key
-	PubKeyName = "neutron/PubKeyEthSecp256k1"
+	PubKeyName = "eth/PubKeyEthSecp256k1"
 )
 
 // ----------------------------------------------------------------------------
