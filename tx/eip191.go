@@ -10,7 +10,6 @@ import (
 )
 
 const EIP191MessagePrefix = "\x19Ethereum Signed Message:\n"
-const EIP191DomainSeparatorPrefix = "\x19\x01\""
 
 // SignModeEIP191Handler defines the SIGN_MODE_DIRECT SignModeHandler
 type SignModeEIP191Handler struct {
