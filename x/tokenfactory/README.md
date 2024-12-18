@@ -1,6 +1,6 @@
 # Token Factory (by Osmosis Labs)
 
-> This module was taken from Osmosis chain codebase (commit: https://github.com/osmosis-labs/osmosis/commit/9e178a631f91ffc91c51f3665ed915c9f15e1807). The reason of this action was to adopt module and tests to our codebase because it was not possible to import it without code modification
+> This module was taken from Osmosis chain codebase (commit: https://github.com/osmosis-labs/osmosis/commit/9e178a631f91ffc91c51f3665ed915c9f15e1807). The reason for this action was to adopt module and tests to our codebase because it was not possible to import it without code modification
 > that was made by Osmosis team to the original Cosmos SDK. These changes made it not possible (without deep modifications of the whole code) to import module to our code.
 > Also support of the creation fee was removed at the moment because we do not have community pool in the Neutron. 
 
@@ -73,7 +73,7 @@ message MsgBurn {
 ```
 
 **State Modifications:**
-- Saftey check the following
+- Safety check check the following
   - Check that the denom minting is created via `tokenfactory` module
   - Check that the sender of the message is the admin of the denom
 - Burn designated amount of tokens for the denom via `bank` module
