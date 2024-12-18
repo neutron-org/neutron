@@ -1,7 +1,7 @@
 # IBC Rate Limit
 
 The IBC Rate Limit module is responsible for adding a governance-configurable rate limit to IBC transfers.
-This is a safety control, intended to protect assets on Neutron in event of:
+This is a safety control, intended to protect assets on Neutron in the event of:
 
 * a bug/hack on Neutron
 * a bug/hack on the counter-party chain
