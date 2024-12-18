@@ -216,7 +216,7 @@ is built on the `relay.SendTransfer()` in the transfer module and then passed to
 
 ##### Receives
 
-This behaves slightly different if the asset is an Neutron asset that was sent to the counterparty and is being
+This behaves slightly different if the asset is a Neutron asset that was sent to the counterparty and is being
 returned to the chain, or if the asset is being received by the chain and originates on the counterparty. In ibc this
 is called being a "source" or a "sink" respectively.
 
