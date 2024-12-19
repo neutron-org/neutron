@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 
 	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
@@ -25,7 +24,7 @@ type (
 		bankKeeper     types.BankKeeper
 		contractKeeper types.ContractKeeper
 		authority      string
-		channelKeeper  channelkeeper.Keeper
+		channelKeeper  types.ChannelKeeper
 	}
 )
 
@@ -38,7 +37,7 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	contractKeeper types.ContractKeeper,
 	authority string,
-	channelKeeper channelkeeper.Keeper,
+	channelKeeper types.ChannelKeeper,
 ) Keeper {
 	sortedKnownModules := make([]string, 0, len(maccPerms))
 	for moduleName := range maccPerms {
