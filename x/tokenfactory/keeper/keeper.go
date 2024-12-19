@@ -104,7 +104,7 @@ func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
 func (k Keeper) GetAllIBCEscrowAccounts(ctx sdk.Context) map[string]bool {
 	escrowAddresses := make(map[string]bool)
 
-	transferChannels := k.channelKeeper.GetAllChannels(ctx)
+	transferChannels := k.channelKeeper.GetAllChannelsWithPortPrefix(ctx, transfertypes.PortID)
 	for _, channel := range transferChannels {
 		escrowAddress := transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId)
 		escrowAddresses[escrowAddress.String()] = true
