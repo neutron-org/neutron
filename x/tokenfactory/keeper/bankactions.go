@@ -50,7 +50,7 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 		return status.Errorf(codes.Internal, "burning from module accounts is forbidden")
 	}
 
-	escrowAccounts := k.GetAllEscrowAccounts(ctx)
+	escrowAccounts := k.GetAllIBCEscrowAccounts(ctx)
 
 	if _, ok := escrowAccounts[burnFromAcc.String()]; ok {
 		return status.Errorf(codes.Internal, "burning from escrow accounts is forbidden")
@@ -92,7 +92,7 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 		return status.Errorf(codes.Internal, "force transfer to module accounts is forbidden")
 	}
 
-	escrowAccounts := k.GetAllEscrowAccounts(ctx)
+	escrowAccounts := k.GetAllIBCEscrowAccounts(ctx)
 
 	if _, ok := escrowAccounts[transferFromAcc.String()]; ok {
 		return status.Errorf(codes.Internal, "force transfer from IBC escrow accounts is forbidden")
@@ -113,16 +113,6 @@ func (k Keeper) isModuleAccount(ctx sdk.Context, addr sdk.AccAddress) bool {
 		}
 
 		if account.GetAddress().Equals(addr) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (k Keeper) isEscrowAccount(escrowAccounts []sdk.AccAddress, addr sdk.AccAddress) bool {
-	for _, escrowAccount := range escrowAccounts {
-		if escrowAccount.Equals(addr) {
 			return true
 		}
 	}

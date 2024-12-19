@@ -102,7 +102,7 @@ func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
 	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 }
 
-func (k Keeper) GetAllEscrowAccounts(ctx sdk.Context) map[string]bool {
+func (k Keeper) GetAllIBCEscrowAccounts(ctx sdk.Context) map[string]bool {
 	escrowAddresses := make(map[string]bool)
 
 	transferChannels := k.channelKeeper.GetAllChannels(ctx)
