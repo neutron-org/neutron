@@ -697,6 +697,7 @@ func New(
 		&app.WasmKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		app.IBCKeeper.ChannelKeeper,
+		app.TransferKeeper.Keeper,
 	)
 	app.TokenFactoryKeeper = &tokenFactoryKeeper
 

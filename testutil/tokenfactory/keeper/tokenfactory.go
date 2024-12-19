@@ -25,6 +25,7 @@ func TokenFactoryKeeper(
 	bankKeeper types.BankKeeper,
 	contractKeeper types.ContractKeeper,
 	channelKeeper types.ChannelKeeper,
+	transferKeeper types.TransferKeeper,
 ) (keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
@@ -47,6 +48,7 @@ func TokenFactoryKeeper(
 		contractKeeper,
 		testutil.TestOwnerAddress,
 		channelKeeper,
+		transferKeeper,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

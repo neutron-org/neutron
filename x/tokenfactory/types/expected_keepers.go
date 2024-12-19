@@ -45,3 +45,8 @@ type ContractKeeper interface {
 type ChannelKeeper interface {
 	GetAllChannelsWithPortPrefix(ctx sdk.Context, portPrefix string) (channels []channeltypes.IdentifiedChannel)
 }
+
+// TransferKeeper defines the expected IBC Transfer keeper
+type TransferKeeper interface {
+	GetPort(ctx sdk.Context) string
+}
