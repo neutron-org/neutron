@@ -102,12 +102,13 @@ func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
 	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 }
 
-func (k Keeper) GetAllEscrowAccounts(ctx sdk.Context) []sdk.AccAddress {
-	var escrowAddresses []sdk.AccAddress
+func (k Keeper) GetAllEscrowAccounts(ctx sdk.Context) map[string]bool {
+	escrowAddresses := make(map[string]bool)
 
 	transferChannels := k.channelKeeper.GetAllChannels(ctx)
 	for _, channel := range transferChannels {
-		escrowAddresses = append(escrowAddresses, transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId))
+		escrowAddress := transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId)
+		escrowAddresses[escrowAddress.String()] = true
 	}
 
 	return escrowAddresses

@@ -52,7 +52,7 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 
 	escrowAccounts := k.GetAllEscrowAccounts(ctx)
 
-	if k.isEscrowAccount(escrowAccounts, burnFromAcc) {
+	if _, ok := escrowAccounts[burnFromAcc.String()]; ok {
 		return status.Errorf(codes.Internal, "burning from escrow accounts is forbidden")
 	}
 
@@ -94,11 +94,11 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 
 	escrowAccounts := k.GetAllEscrowAccounts(ctx)
 
-	if k.isEscrowAccount(escrowAccounts, transferFromAcc) {
+	if _, ok := escrowAccounts[transferFromAcc.String()]; ok {
 		return status.Errorf(codes.Internal, "force transfer from IBC escrow accounts is forbidden")
 	}
 
-	if k.isEscrowAccount(escrowAccounts, transferToAcc) {
+	if _, ok := escrowAccounts[transferToAcc.String()]; ok {
 		return status.Errorf(codes.Internal, "force transfer to IBC escrow accounts is forbidden")
 	}
 

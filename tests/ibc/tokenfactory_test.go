@@ -51,7 +51,7 @@ func (s *TokenfactoryTestSuite) TestForceTransferFromIBCEscrow() {
 	// Transfer tokens out of escrow address
 	forceTransferMsg := tftypes.NewMsgForceTransfer(s.neutronAddr.String(), sdk.NewCoin(amount.Denom, amount.Amount), escrowAddress.String(), s.neutronAddr.String())
 	_, err = s.neutronChain.SendMsgs(forceTransferMsg)
-	s.Assert().Error(err)
+	s.Assert().ErrorContains(err, "force transfer from IBC escrow accounts is forbidden")
 }
 
 func (s *TokenfactoryTestSuite) TestBurnFromIBCEscrow() {
@@ -86,5 +86,5 @@ func (s *TokenfactoryTestSuite) TestBurnFromIBCEscrow() {
 	// Burn tokens from escrow address
 	burnMsg := tftypes.NewMsgBurnFrom(s.neutronAddr.String(), amount, escrowAddress.String())
 	_, err = s.neutronChain.SendMsgs(burnMsg)
-	s.Assert().Error(err)
+	s.Assert().ErrorContains(err, "burning from escrow accounts is forbidden")
 }
