@@ -10,6 +10,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 
 	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
@@ -23,6 +25,7 @@ type (
 		bankKeeper     types.BankKeeper
 		contractKeeper types.ContractKeeper
 		authority      string
+		channelKeeper  channelkeeper.Keeper
 	}
 )
 
@@ -35,6 +38,7 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	contractKeeper types.ContractKeeper,
 	authority string,
+	channelKeeper channelkeeper.Keeper,
 ) Keeper {
 	sortedKnownModules := make([]string, 0, len(maccPerms))
 	for moduleName := range maccPerms {
@@ -50,6 +54,7 @@ func NewKeeper(
 		bankKeeper:     bankKeeper,
 		contractKeeper: contractKeeper,
 		authority:      authority,
+		channelKeeper:  channelKeeper,
 	}
 }
 
@@ -95,4 +100,15 @@ func (k *Keeper) SetContractKeeper(contractKeeper types.ContractKeeper) {
 func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
 	// GetModuleAccount creates new module account if not present under the hood
 	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+}
+
+func (k Keeper) GetAllEscrowAccounts(ctx sdk.Context) []sdk.AccAddress {
+	var escrowAddresses []sdk.AccAddress
+
+	transferChannels := k.channelKeeper.GetAllChannels(ctx)
+	for _, channel := range transferChannels {
+		escrowAddresses = append(escrowAddresses, transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId))
+	}
+
+	return escrowAddresses
 }
