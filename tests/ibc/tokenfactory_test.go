@@ -54,6 +54,41 @@ func (s *TokenfactoryTestSuite) TestForceTransferFromIBCEscrow() {
 	s.Assert().ErrorContains(err, "force transfer from IBC escrow accounts is forbidden")
 }
 
+func (s *TokenfactoryTestSuite) TestForceTransferToIBCEscrow() {
+	// Create token factory denom
+	createDenomMsg := tftypes.NewMsgCreateDenom(s.neutronAddr.String(), "testtest")
+	_, err := s.neutronChain.SendMsgs(createDenomMsg)
+	s.Assert().NoError(err)
+
+	// Derive full token factory denom
+	denom := fmt.Sprintf("factory/%s/%s", createDenomMsg.Sender, createDenomMsg.Subdenom)
+
+	// Mint denom to sender
+	amount := sdk.NewCoin(denom, math.NewInt(10000000))
+	mintMsg := tftypes.NewMsgMint(createDenomMsg.Sender, amount)
+	_, err = s.neutronChain.SendMsgs(mintMsg)
+	s.Assert().NoError(err)
+
+	// Send IBC transfer
+	s.IBCTransfer(
+		s.neutronTransferPath,
+		s.neutronTransferPath.EndpointA,
+		s.neutronAddr,
+		s.providerAddr,
+		amount.Denom,
+		amount.Amount,
+		"",
+	)
+
+	// Derive IBC escrow address for channel
+	escrowAddress := transfertypes.GetEscrowAddress("transfer", s.neutronTransferPath.EndpointA.ChannelID)
+
+	// Transfer tokens out of escrow address
+	forceTransferMsg := tftypes.NewMsgForceTransfer(s.neutronAddr.String(), sdk.NewCoin(amount.Denom, amount.Amount), s.neutronAddr.String(), escrowAddress.String())
+	_, err = s.neutronChain.SendMsgs(forceTransferMsg)
+	s.Assert().ErrorContains(err, "force transfer to IBC escrow accounts is forbidden")
+}
+
 func (s *TokenfactoryTestSuite) TestBurnFromIBCEscrow() {
 	// Create token factory denom
 	createDenomMsg := tftypes.NewMsgCreateDenom(s.neutronAddr.String(), "testtest")
