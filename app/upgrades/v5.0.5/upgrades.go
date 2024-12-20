@@ -33,6 +33,8 @@ func CreateUpgradeHandler(
 		transferChannels := keepers.ChannelKeeper.GetAllChannelsWithPortPrefix(ctx, keepers.TransferKeeper.GetPort(ctx))
 		for _, channel := range transferChannels {
 			escrowAddress := transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId)
+			ctx.Logger().Info("Saving escrow address", "port_id", channel.PortId, "channel_id",
+				channel.ChannelId, "address", escrowAddress.String())
 			keepers.TokenFactoryKeeper.StoreEscrowAddress(ctx, escrowAddress)
 		}
 

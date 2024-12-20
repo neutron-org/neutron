@@ -50,7 +50,7 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 		return status.Errorf(codes.Internal, "burning from module accounts is forbidden")
 	}
 
-	if k.isEscrowAddress(ctx, burnFromAcc) {
+	if k.IsEscrowAddress(ctx, burnFromAcc) {
 		return status.Errorf(codes.Internal, "burning from escrow accounts is forbidden")
 	}
 
@@ -90,11 +90,11 @@ func (k Keeper) forceTransfer(ctx sdk.Context, amount sdk.Coin, fromAddr, toAddr
 		return status.Errorf(codes.Internal, "force transfer to module accounts is forbidden")
 	}
 
-	if k.isEscrowAddress(ctx, transferFromAcc) {
+	if k.IsEscrowAddress(ctx, transferFromAcc) {
 		return status.Errorf(codes.Internal, "force transfer from IBC escrow accounts is forbidden")
 	}
 
-	if k.isEscrowAddress(ctx, transferToAcc) {
+	if k.IsEscrowAddress(ctx, transferToAcc) {
 		return status.Errorf(codes.Internal, "force transfer to IBC escrow accounts is forbidden")
 	}
 

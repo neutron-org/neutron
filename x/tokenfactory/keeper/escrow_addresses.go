@@ -13,7 +13,7 @@ func (k Keeper) StoreEscrowAddress(ctx sdk.Context, address sdk.AccAddress) {
 	prefixStore.Set(address.Bytes(), []byte{0})
 }
 
-func (k Keeper) isEscrowAddress(ctx sdk.Context, address sdk.AccAddress) bool {
+func (k Keeper) IsEscrowAddress(ctx sdk.Context, address sdk.AccAddress) bool {
 	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.EscrowAddressKey)
 	bz := prefixStore.Get(address.Bytes())
 

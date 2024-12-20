@@ -1,6 +1,8 @@
 package v505_test
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"testing"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -23,7 +25,7 @@ func (suite *UpgradeTestSuite) SetupTest() {
 	suite.IBCConnectionTestSuite.SetupTest()
 }
 
-func (suite *UpgradeTestSuite) TestOracleUpgrade() {
+func (suite *UpgradeTestSuite) TestUpgrade() {
 	app := suite.GetNeutronZoneApp(suite.ChainA)
 	ctx := suite.ChainA.GetContext().WithChainID("neutron-1")
 	t := suite.T()
@@ -33,5 +35,17 @@ func (suite *UpgradeTestSuite) TestOracleUpgrade() {
 		Info:   "some text here",
 		Height: 100,
 	}
+
+	var escrowAddresses []sdk.AccAddress
+	transferChannels := app.IBCKeeper.ChannelKeeper.GetAllChannelsWithPortPrefix(ctx, app.TransferKeeper.GetPort(ctx))
+	for _, channel := range transferChannels {
+		escrowAddresses = append(escrowAddresses, transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId))
+	}
+	require.Greater(t, len(escrowAddresses), 0)
 	require.NoError(t, app.UpgradeKeeper.ApplyUpgrade(ctx, upgrade))
+
+	for _, escrowAddress := range escrowAddresses {
+		require.True(t, app.TokenFactoryKeeper.IsEscrowAddress(ctx, escrowAddress))
+	}
+	require.False(t, app.TokenFactoryKeeper.IsEscrowAddress(ctx, []byte{1, 2, 3, 4, 5}))
 }
