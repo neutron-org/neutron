@@ -24,6 +24,10 @@ func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {
 		return status.Errorf(codes.Internal, "minting to module accounts is forbidden")
 	}
 
+	if k.IsEscrowAddress(ctx, mintToAcc) {
+		return status.Errorf(codes.Internal, "minting to IBC escrow accounts is forbidden")
+	}
+
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(amount))
 	if err != nil {
 		return err
@@ -51,7 +55,7 @@ func (k Keeper) burnFrom(ctx sdk.Context, amount sdk.Coin, burnFrom string) erro
 	}
 
 	if k.IsEscrowAddress(ctx, burnFromAcc) {
-		return status.Errorf(codes.Internal, "burning from escrow accounts is forbidden")
+		return status.Errorf(codes.Internal, "burning from IBC escrow accounts is forbidden")
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx,

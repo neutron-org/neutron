@@ -121,5 +121,5 @@ func (s *TokenfactoryTestSuite) TestBurnFromIBCEscrow() {
 	// Burn tokens from escrow address
 	burnMsg := tftypes.NewMsgBurnFrom(s.neutronAddr.String(), amount, escrowAddress.String())
 	_, err = s.neutronChain.SendMsgs(burnMsg)
-	s.Assert().ErrorContains(err, "burning from escrow accounts is forbidden")
+	s.Assert().ErrorContains(err, "burning from IBC escrow accounts is forbidden")
 }
