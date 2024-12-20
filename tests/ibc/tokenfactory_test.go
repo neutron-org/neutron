@@ -15,7 +15,7 @@ type TokenfactoryTestSuite struct {
 	IBCTestSuite
 }
 
-func TestPocTestSuite(t *testing.T) {
+func TestTokenfactoryTestSuite(t *testing.T) {
 	suite.Run(t, new(TokenfactoryTestSuite))
 }
 
@@ -121,5 +121,51 @@ func (s *TokenfactoryTestSuite) TestBurnFromIBCEscrow() {
 	// Burn tokens from escrow address
 	burnMsg := tftypes.NewMsgBurnFrom(s.neutronAddr.String(), amount, escrowAddress.String())
 	_, err = s.neutronChain.SendMsgs(burnMsg)
+	s.Assert().ErrorContains(err, "burning from IBC escrow accounts is forbidden")
+}
+
+func (s *TokenfactoryTestSuite) TestBurnFromIBCEscrowReverse() {
+	// Create token factory denom
+	createDenomMsg := tftypes.NewMsgCreateDenom(s.neutronAddr.String(), "testtest")
+	_, err := s.neutronChain.SendMsgs(createDenomMsg)
+	s.Assert().NoError(err)
+
+	// Derive full token factory denom
+	denom := fmt.Sprintf("factory/%s/%s", createDenomMsg.Sender, createDenomMsg.Subdenom)
+
+	// Mint denom to sender
+	amount := sdk.NewCoin(denom, math.NewInt(10000000))
+	mintMsg := tftypes.NewMsgMint(createDenomMsg.Sender, amount)
+	_, err = s.neutronChain.SendMsgs(mintMsg)
+	s.Assert().NoError(err)
+
+	// Send IBC transfer
+	s.IBCTransfer(
+		s.neutronChainBPath,
+		s.neutronChainBPath.EndpointA,
+		s.neutronAddr,
+		s.neutronAddr,
+		amount.Denom,
+		amount.Amount,
+		"",
+	)
+
+	// Create token factory denom
+	createDenomMsg = tftypes.NewMsgCreateDenom(s.bundleB.Chain.SenderAccount.GetAddress().String(), "testtest")
+	_, err = s.bundleB.Chain.SendMsgs(createDenomMsg)
+	s.Assert().NoError(err)
+
+	// Derive IBC escrow address for channel
+	escrowAddress := transfertypes.GetEscrowAddress("transfer", s.neutronChainBPath.EndpointB.ChannelID)
+
+	// Derive full token factory denom
+	denom = fmt.Sprintf("factory/%s/%s", s.bundleB.Chain.SenderAccount.GetAddress().String(), createDenomMsg.Subdenom)
+
+	// Mint denom to sender
+	amount = sdk.NewCoin(denom, math.NewInt(10000000))
+
+	// Burn tokens from escrow address
+	burnMsg := tftypes.NewMsgBurnFrom(s.bundleB.Chain.SenderAccount.GetAddress().String(), amount, escrowAddress.String())
+	_, err = s.bundleB.Chain.SendMsgs(burnMsg)
 	s.Assert().ErrorContains(err, "burning from IBC escrow accounts is forbidden")
 }
