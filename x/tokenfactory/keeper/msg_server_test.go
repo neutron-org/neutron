@@ -23,7 +23,7 @@ const (
 )
 
 func TestMsgCreateDenomValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -68,7 +68,7 @@ func TestMsgCreateDenomValidate(t *testing.T) {
 }
 
 func TestMsgMintValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -162,7 +162,7 @@ func TestMsgMintValidate(t *testing.T) {
 }
 
 func TestMsgBurnValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -256,7 +256,7 @@ func TestMsgBurnValidate(t *testing.T) {
 }
 
 func TestMsgForceTransferValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -375,7 +375,7 @@ func TestMsgForceTransferValidate(t *testing.T) {
 }
 
 func TestMsgChangeAdminValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -450,7 +450,7 @@ func TestMsgChangeAdminValidate(t *testing.T) {
 }
 
 func TestMsgSetDenomMetadataValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -781,7 +781,7 @@ func TestMsgSetDenomMetadataValidate(t *testing.T) {
 }
 
 func TestMsgSetBeforeSendHookValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 	msgServer := keeper.NewMsgServerImpl(k)
 
 	tests := []struct {
@@ -847,7 +847,7 @@ func TestMsgSetBeforeSendHookValidate(t *testing.T) {
 }
 
 func TestMsgUpdateParamsValidate(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 
 	tests := []struct {
 		name        string
@@ -913,7 +913,7 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 }
 
 func TestMsgUpdateParamsWhitelistedHooks(t *testing.T) {
-	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil, nil, nil)
+	k, ctx := testkeeper.TokenFactoryKeeper(t, nil, nil, nil)
 
 	tests := []struct {
 		name   string

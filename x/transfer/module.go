@@ -1,10 +1,10 @@
 package transfer
 
 import (
-	"fmt"
-
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
+	"fmt"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -25,19 +25,21 @@ import (
 */
 
 type IBCModule struct {
-	wrappedKeeper wrapkeeper.KeeperTransferWrapper
-	keeper        keeper.Keeper
-	sudoKeeper    neutrontypes.WasmKeeper
+	wrappedKeeper      wrapkeeper.KeeperTransferWrapper
+	keeper             keeper.Keeper
+	sudoKeeper         neutrontypes.WasmKeeper
+	tokenfactoryKeeper neutrontypes.TokenfactoryKeeper
 	transfer.IBCModule
 }
 
 // NewIBCModule creates a new IBCModule given the keeper
-func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper) IBCModule {
+func NewIBCModule(k wrapkeeper.KeeperTransferWrapper, sudoKeeper neutrontypes.WasmKeeper, tokenfactoryKeeper neutrontypes.TokenfactoryKeeper) IBCModule {
 	return IBCModule{
-		wrappedKeeper: k,
-		keeper:        k.Keeper,
-		sudoKeeper:    sudoKeeper,
-		IBCModule:     transfer.NewIBCModule(k.Keeper),
+		wrappedKeeper:      k,
+		keeper:             k.Keeper,
+		sudoKeeper:         sudoKeeper,
+		IBCModule:          transfer.NewIBCModule(k.Keeper),
+		tokenfactoryKeeper: tokenfactoryKeeper,
 	}
 }
 
@@ -67,6 +69,41 @@ func (im IBCModule) OnTimeoutPacket(
 		return errors.Wrap(err, "failed to process original OnTimeoutPacket")
 	}
 	return im.HandleTimeout(ctx, packet, relayer)
+}
+
+func (im IBCModule) OnChanOpenAck(
+	ctx sdk.Context,
+	portID,
+	channelID string,
+	_ string,
+	counterpartyVersion string,
+) error {
+	err := im.IBCModule.OnChanOpenAck(ctx, portID, channelID, "", counterpartyVersion)
+	if err != nil {
+		return errors.Wrap(err, "failed to process original OnChanOpenAck")
+	}
+
+	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
+	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+
+	return nil
+}
+
+// OnChanOpenConfirm implements the IBCModule interface
+func (im IBCModule) OnChanOpenConfirm(
+	ctx sdk.Context,
+	portID,
+	channelID string,
+) error {
+	err := im.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
+	if err != nil {
+		return errors.Wrap(err, "failed to process original OnChanOpenConfirm")
+	}
+
+	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
+	im.tokenfactoryKeeper.StoreEscrowAddress(ctx, escrowAddress.Bytes())
+
+	return nil
 }
 
 var _ appmodule.AppModule = AppModule{}

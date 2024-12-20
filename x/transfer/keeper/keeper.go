@@ -2,10 +2,8 @@ package transfer
 
 import (
 	"context"
-
 	"cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

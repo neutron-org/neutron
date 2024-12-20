@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"fmt"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"sort"
 
 	"cosmossdk.io/log"
@@ -23,8 +22,6 @@ type (
 		bankKeeper     types.BankKeeper
 		contractKeeper types.ContractKeeper
 		authority      string
-		channelKeeper  types.ChannelKeeper
-		transferKeeper types.TransferKeeper
 	}
 )
 
@@ -37,8 +34,6 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	contractKeeper types.ContractKeeper,
 	authority string,
-	channelKeeper types.ChannelKeeper,
-	transferKeeper types.TransferKeeper,
 ) Keeper {
 	sortedKnownModules := make([]string, 0, len(maccPerms))
 	for moduleName := range maccPerms {
@@ -54,8 +49,6 @@ func NewKeeper(
 		bankKeeper:     bankKeeper,
 		contractKeeper: contractKeeper,
 		authority:      authority,
-		channelKeeper:  channelKeeper,
-		transferKeeper: transferKeeper,
 	}
 }
 
@@ -101,16 +94,4 @@ func (k *Keeper) SetContractKeeper(contractKeeper types.ContractKeeper) {
 func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
 	// GetModuleAccount creates new module account if not present under the hood
 	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-}
-
-func (k Keeper) GetAllIBCEscrowAccounts(ctx sdk.Context) map[string]bool {
-	escrowAddresses := make(map[string]bool)
-
-	transferChannels := k.channelKeeper.GetAllChannelsWithPortPrefix(ctx, k.transferKeeper.GetPort(ctx))
-	for _, channel := range transferChannels {
-		escrowAddress := transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId)
-		escrowAddresses[escrowAddress.String()] = true
-	}
-
-	return escrowAddresses
 }
