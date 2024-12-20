@@ -1,9 +1,10 @@
 package transfer
 
 import (
+	"fmt"
+
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/errors"
-	"fmt"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -12,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	wrapkeeper "github.com/neutron-org/neutron/v5/x/transfer/keeper"
@@ -131,25 +131,25 @@ func (am AppModule) IsAppModule() { // marker
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	transfertypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 	neutrontypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 
 	cfg.MsgServer().RegisterService(&neutrontypes.MsgServiceDescOrig, am.keeper)
 
 	m := keeper.NewMigrator(am.keeper.Keeper)
-	if err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateTraces); err != nil {
+	if err := cfg.RegisterMigration(transfertypes.ModuleName, 1, m.MigrateTraces); err != nil {
 		panic(fmt.Sprintf("failed to migrate transfer app from version 1 to 2: %v", err))
 	}
 
-	if err := cfg.RegisterMigration(types.ModuleName, 2, m.MigrateTotalEscrowForDenom); err != nil {
+	if err := cfg.RegisterMigration(transfertypes.ModuleName, 2, m.MigrateTotalEscrowForDenom); err != nil {
 		panic(fmt.Sprintf("failed to migrate transfer app from version 2 to 3: %v", err))
 	}
 
-	if err := cfg.RegisterMigration(types.ModuleName, 3, m.MigrateParams); err != nil {
+	if err := cfg.RegisterMigration(transfertypes.ModuleName, 3, m.MigrateParams); err != nil {
 		panic(fmt.Sprintf("failed to migrate transfer app version 3 to 4: %v", err))
 	}
 
-	if err := cfg.RegisterMigration(types.ModuleName, 4, m.MigrateDenomMetadata); err != nil {
+	if err := cfg.RegisterMigration(transfertypes.ModuleName, 4, m.MigrateDenomMetadata); err != nil {
 		panic(fmt.Sprintf("failed to migrate transfer app from version 4 to 5: %v", err))
 	}
 }
