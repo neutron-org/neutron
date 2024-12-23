@@ -44,6 +44,7 @@ import (
 	globalfeetypes "github.com/neutron-org/neutron/v5/x/globalfee/types"
 
 	"cosmossdk.io/log"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 
@@ -814,9 +815,37 @@ func New(
 		app.MarketMapKeeper,
 	), wasmOpts...)
 
+	tq := func(acceptList wasmkeeper.AcceptedQueries, queryRouter wasmkeeper.GRPCQueryRouter, codec codec.Codec) func(ctx sdk.Context, request *wasmvmtypes.StargateQuery) ([]byte, error) {
+		return func(ctx sdk.Context, request *wasmvmtypes.StargateQuery) ([]byte, error) {
+			app.Logger().Error("GOT WASM QUERY", "query", fmt.Sprintf("%v", request))
+			protoResponse, accepted := acceptList[request.Path]
+			if !accepted {
+				return nil, wasmvmtypes.UnsupportedRequest{Kind: fmt.Sprintf("'%s' path is not allowed from the contract", request.Path)}
+			}
+
+			route := queryRouter.Route(request.Path)
+			if route == nil {
+				return nil, wasmvmtypes.UnsupportedRequest{Kind: fmt.Sprintf("No route to query '%s'", request.Path)}
+			}
+
+			res, err := route(ctx, &abci.RequestQuery{
+				Data: request.Data,
+				Path: request.Path,
+			})
+			if err != nil {
+				return nil, err
+			}
+			req, err := wasmkeeper.ConvertProtoToJSONMarshal(codec, protoResponse, res.Value)
+
+			app.Logger().Error("GOT WASM unpack", "query", fmt.Sprintf("%v", req), "err", fmt.Sprintf("%v", err))
+
+			return req, err
+		}
+	}
+
 	queryPlugins := wasmkeeper.WithQueryPlugins(
 		&wasmkeeper.QueryPlugins{
-			Stargate: wasmkeeper.AcceptListStargateQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec),
+			Stargate: tq(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec),
 			Grpc:     wasmkeeper.AcceptListGrpcQuerier(wasmbinding.AcceptedStargateQueries(), app.GRPCQueryRouter(), appCodec),
 		})
 	wasmOpts = append(wasmOpts, queryPlugins)
