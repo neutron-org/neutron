@@ -2,15 +2,18 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
+// TODO: better errors msgs
+
 // SetParams sets the x/revenue module parameters.
-// CONTRACT: This method performs no validation of the parameters.
 func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := k.cdc.Marshal(&params)
 	if err != nil {
+
 		return err
 	}
 	return store.Set(types.ParamsKey, bz)

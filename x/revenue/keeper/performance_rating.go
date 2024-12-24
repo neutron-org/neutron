@@ -7,6 +7,7 @@ import (
 
 // PerformanceRating calculates rating like a superlinearly function, e.g
 // `f(a+b) > f(a) + f(b)`
+// TODO: describe returned value: [0.0; 1.0]?
 func PerformanceRating(
 	params types.Params,
 	missedBlocks uint64,

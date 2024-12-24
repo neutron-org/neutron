@@ -155,7 +155,7 @@ func (AppModule) ConsensusVersion() uint64 { return types.ConsensusVersion }
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx context.Context) error {
 	sCtx := sdk.UnwrapSDKContext(ctx)
-	err := am.keeper.EndBlocker(sCtx)
+	err := am.keeper.EndBlock(sCtx)
 	if err != nil {
 		am.keeper.Logger(sCtx).Error("", "error", err)
 	}

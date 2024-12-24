@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"fmt"
+
 	"cosmossdk.io/core/comet"
 	coretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
@@ -31,18 +32,18 @@ func NewKeeper(
 	bankKeeper bankkeeper.Keeper,
 ) *Keeper {
 	// ensure bonded and not bonded module accounts are set
-	//if addr := ak.GetModuleAddress(types.BondedPoolName); addr == nil {
+	// if addr := ak.GetModuleAddress(types.BondedPoolName); addr == nil {
 	//	panic(fmt.Sprintf("%s module account has not been set", types.BondedPoolName))
-	//}
+	// }
 	//
-	//if addr := ak.GetModuleAddress(types.NotBondedPoolName); addr == nil {
+	// if addr := ak.GetModuleAddress(types.NotBondedPoolName); addr == nil {
 	//	panic(fmt.Sprintf("%s module account has not been set", types.NotBondedPoolName))
-	//}
+	// }
 	//
-	//// ensure that authority is a valid AccAddress
-	//if _, err := ak.AddressCodec().StringToBytes(authority); err != nil {
+	// ensure that authority is a valid AccAddress
+	// if _, err := ak.AddressCodec().StringToBytes(authority); err != nil {
 	//	panic("authority is not a valid acc address")
-	//}
+	// }
 	return &Keeper{
 		cdc:           cdc,
 		storeService:  storeService,
@@ -106,6 +107,7 @@ func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []types.ValidatorIn
 func (k *Keeper) getOrCreateValidatorInfo(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
+	// TODO: move blocksPassed out of this func params and set outside by SetValidatorInfo
 	blocksPassed uint64,
 ) (info types.ValidatorInfo, err error) {
 	store := k.storeService.OpenKVStore(ctx)
@@ -118,8 +120,11 @@ func (k *Keeper) getOrCreateValidatorInfo(
 		if err != nil {
 			// TODO: should actually never happen, but try fill OperatorAddress later if stakingVal not found
 			k.Logger(ctx).Error(err.Error())
+			// TODO: handle error
 		}
 
+		// TODO: refactor the ValidatorInfo so it stores signed (not missed) blocks count.
+		// also refactor reward calc given this new approach
 		info = types.ValidatorInfo{
 			// GetOperator might return empty string if validator in staking module not found by ConsAddress
 			OperatorAddress:          stakingVal.GetOperator(),
@@ -152,14 +157,15 @@ func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info ty
 	return err
 }
 
-func (k *Keeper) EndBlocker(ctx sdk.Context) error {
+// TODO: cognizant actions on EACH possible error case in EndBlock
+func (k *Keeper) EndBlock(ctx sdk.Context) error {
 	state, err := k.GetState(ctx)
 	if err != nil {
 		return err
 	}
 	// if the first block of the next month
 	if state.WorkingMonth != int32(ctx.BlockTime().Month()) {
-		// TODO: pause revenue processing in case if any error during endblocker ???
+		// TODO: pause revenue processing in case if any error during EndBlock ???
 		k.ProcessRevenue(ctx)
 		k.ResetValidators(ctx)
 		state.WorkingMonth = int32(ctx.BlockTime().Month())
@@ -191,11 +197,15 @@ func (k *Keeper) ResetValidators(ctx sdk.Context) {
 	// TODO:
 }
 
+// TODO: merge ProcessSignatures and ProcessOracleVotes to one function to reduce code duplication
+// and state reading
 func (k *Keeper) ProcessSignatures(ctx sdk.Context, blocksProgress uint64) error {
 	for _, info := range ctx.VoteInfos() {
 		if comet.BlockIDFlag(info.BlockIdFlag) == comet.BlockIDFlagAbsent {
-			// missed
-			k.Logger(ctx).Debug("missed signature", "validator", info.Validator.Address)
+			k.Logger(ctx).Debug("missed signature",
+				"validator", info.Validator.Address,
+				"height", ctx.BlockHeight(),
+			)
 
 			valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
 			if err != nil {
@@ -218,8 +228,11 @@ func (k *Keeper) ProcessOracleVotes(ctx sdk.Context, blocksProgress uint64) erro
 		addr := sdk.ConsAddress(info.Validator.Address)
 		prices := k.va.GetPriceForValidator(addr)
 		if len(prices) == 0 {
-			//missed oracle
-			k.Logger(ctx).Debug("missed oracle vote", "validator", info.Validator.Address)
+			// missed oracle
+			k.Logger(ctx).Debug("missed oracle vote",
+				"validator", info.Validator.Address,
+				"height", ctx.BlockHeight(),
+			)
 
 			valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
 			if err != nil {
@@ -240,6 +253,7 @@ func (k *Keeper) ProcessOracleVotes(ctx sdk.Context, blocksProgress uint64) erro
 func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 	infos, err := k.GetAllValidatorInfo(ctx)
 	if err != nil {
+		// TODO: better errors msgs
 		return err
 	}
 	params, err := k.GetParams(ctx)
@@ -262,6 +276,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 		_, addr, err := bech32.DecodeAndConvert(info.OperatorAddress)
 		if err != nil {
 			k.Logger(ctx).Error(err.Error())
+			// TODO: handle error
 		}
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(
 			ctx,
@@ -273,6 +288,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 		)
 		if err != nil {
 			k.Logger(ctx).Error(err.Error())
+			// TODO: handle error
 		}
 	}
 	return nil
@@ -280,5 +296,7 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 
 func (k *Keeper) GetBaseNTRNAmount(ctx sdk.Context) int64 {
 	// TODO: implement calculation of base compensation
+	// TODO: think about price obsolescence case (if the price is too old, should we use it for
+	// payments?)
 	return 10_000_000
 }

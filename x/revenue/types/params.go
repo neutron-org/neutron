@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// TODO: comments for default values
 var (
 	DefaultDenomCompensation      = params.DefaultDenom
 	DefaultOracleLegacyVoteWeight = math.LegacyOneDec()
