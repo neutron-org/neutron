@@ -588,6 +588,7 @@ func New(
 	app.HarpoonKeeper = *harpoonkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
+		app.AccountKeeper,
 		logger,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)

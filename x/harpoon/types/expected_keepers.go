@@ -10,7 +10,8 @@ import (
 
 // AccountKeeper defines the expected interface for the Account module.
 type AccountKeeper interface {
-	GetAccount(context.Context, sdk.AccAddress) sdk.AccountI // only used for simulation
+	//GetAccount(context.Context, sdk.AccAddress) sdk.AccountI // only used for simulation // TODO: remove if unused
+	GetModuleAddress(moduleName string) sdk.AccAddress
 	// Methods imported from account should be defined here
 }
 
@@ -45,4 +46,6 @@ type StakingHooks interface {
 	BeforeDelegationRemoved(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error        // Must be called when a delegation is removed
 	AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error
 	BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error
+
+	//AfterUnbondingInitiated//TODO: need it?
 }
