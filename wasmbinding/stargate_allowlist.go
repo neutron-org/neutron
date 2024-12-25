@@ -139,5 +139,8 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/cosmos.staking.v1beta1.Query/Validator":                     &stakingtypes.QueryValidatorResponse{},
 		"/cosmos.staking.v1beta1.Query/DelegatorDelegations":          &stakingtypes.QueryDelegatorDelegationsResponse{},
 		"/cosmos.staking.v1beta1.Query/DelegatorUnbondingDelegations": &stakingtypes.QueryDelegatorUnbondingDelegationsResponse{},
+
+		// harpoon
+		// TODO: add queries if any
 	}
 }

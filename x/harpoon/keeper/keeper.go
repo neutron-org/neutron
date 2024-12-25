@@ -1,48 +1,45 @@
 package keeper
 
 import (
-	"fmt"
-
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-    
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
 type (
 	Keeper struct {
+		WasmMsgServer types.WasmMsgServer
+
 		cdc          codec.BinaryCodec
 		storeService store.KVStoreService
 		logger       log.Logger
 
-        // the address capable of executing a MsgUpdateParams message. Typically, this
-        // should be the x/gov module account.
-        authority string
-        
-		
+		// the address capable of executing a MsgUpdateParams message. Typically, this
+		// should be the x/gov module account.
+		authority string
 	}
 )
 
 func NewKeeper(
-    cdc codec.BinaryCodec,
+	cdc codec.BinaryCodec,
 	storeService store.KVStoreService,
-    logger log.Logger,
+	logger log.Logger,
 	authority string,
-    
-) Keeper {
+) *Keeper {
 	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
 		panic(fmt.Sprintf("invalid authority address: %s", authority))
 	}
 
-	return Keeper{
+	return &Keeper{
 		cdc:          cdc,
 		storeService: storeService,
 		authority:    authority,
 		logger:       logger,
-		
 	}
 }
 
@@ -56,4 +53,7 @@ func (k Keeper) Logger() log.Logger {
 	return k.logger.With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-
+// Hooks returns implemented StakingHooks that will be called by the staking module
+func (k Keeper) Hooks() stakingtypes.StakingHooks {
+	return Hooks{k}
+}

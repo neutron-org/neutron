@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+
 	"io"
 	"io/fs"
 	"net/http"
@@ -225,6 +226,10 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
+	harpoonkeeper "github.com/neutron-org/neutron/v5/x/harpoon/keeper"
+	harpoon "github.com/neutron-org/neutron/v5/x/harpoon/module"
+	harpoontypes "github.com/neutron-org/neutron/v5/x/harpoon/types"
+
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 )
 
@@ -293,6 +298,7 @@ var (
 		marketmap.AppModuleBasic{},
 		dynamicfees.AppModuleBasic{},
 		consensus.AppModuleBasic{},
+		harpoon.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -313,6 +319,7 @@ var (
 		oracletypes.ModuleName:                  nil,
 		marketmaptypes.ModuleName:               nil,
 		feemarkettypes.FeeCollectorName:         nil,
+		harpoontypes.ModuleName:                 nil,
 	}
 )
 
@@ -383,6 +390,7 @@ type App struct {
 	PFMKeeper           *pfmkeeper.Keeper
 	DexKeeper           dexkeeper.Keeper
 	GlobalFeeKeeper     globalfeekeeper.Keeper
+	HarpoonKeeper       harpoonkeeper.Keeper
 
 	PFMModule packetforward.AppModule
 
@@ -498,6 +506,7 @@ func New(
 		feeburnertypes.StoreKey, adminmoduletypes.StoreKey, ccvconsumertypes.StoreKey, tokenfactorytypes.StoreKey, pfmtypes.StoreKey,
 		crontypes.StoreKey, ibchookstypes.StoreKey, consensusparamtypes.StoreKey, crisistypes.StoreKey, dextypes.StoreKey, auctiontypes.StoreKey,
 		oracletypes.StoreKey, marketmaptypes.StoreKey, feemarkettypes.StoreKey, dynamicfeestypes.StoreKey, globalfeetypes.StoreKey, stakingtypes.StoreKey, ibcratelimittypes.ModuleName,
+		harpoontypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, dextypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, feetypes.MemStoreKey)
@@ -575,6 +584,14 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 		address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 	)
+
+	app.HarpoonKeeper = *harpoonkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
+		logger,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	app.HarpoonKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
 	app.UpgradeKeeper = *upgradekeeper.NewKeeper(
@@ -691,9 +708,12 @@ func New(
 		address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
-	app.StakingKeeper.SetHooks(app.SlashingKeeper.Hooks())
+
 	// consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
+
+	multiStakingHooks := stakingtypes.NewMultiStakingHooks(app.SlashingKeeper.Hooks(), app.HarpoonKeeper.Hooks())
+	app.StakingKeeper.SetHooks(multiStakingHooks)
 
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		appCodec,
@@ -941,6 +961,7 @@ func New(
 		oracleModule,
 		auction.NewAppModule(appCodec, app.AuctionKeeper),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		harpoon.NewAppModule(appCodec, app.HarpoonKeeper, app.AccountKeeper, app.BankKeeper),
 		// always be last to make sure that it checks for all invariants and not only part of them
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 	)
@@ -987,6 +1008,7 @@ func New(
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
 		dextypes.ModuleName,
+		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
 
@@ -1024,6 +1046,7 @@ func New(
 		globalfee.ModuleName,
 		feemarkettypes.ModuleName,
 		dextypes.ModuleName,
+		harpoontypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
 
@@ -1066,6 +1089,7 @@ func New(
 		oracletypes.ModuleName,
 		marketmaptypes.ModuleName,
 		dextypes.ModuleName,
+		harpoontypes.ModuleName,
 		dynamicfeestypes.ModuleName,
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,

@@ -5,26 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 
-    "cosmossdk.io/core/appmodule"
-    "cosmossdk.io/core/store"
-	"cosmossdk.io/depinject"
-	"cosmossdk.io/log"
+	"cosmossdk.io/core/appmodule"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	
 
 	// this line is used by starport scaffolding # 1
 
-	modulev1 "github.com/neutron-org/neutron/v5/api/neutron/harpoon/module"
 	"github.com/neutron-org/neutron/v5/x/harpoon/keeper"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
-	
 )
 
 var (
@@ -37,7 +29,6 @@ var (
 	_ appmodule.AppModule       = (*AppModule)(nil)
 	_ appmodule.HasBeginBlocker = (*AppModule)(nil)
 	_ appmodule.HasEndBlocker   = (*AppModule)(nil)
-	
 )
 
 // ----------------------------------------------------------------------------
@@ -90,8 +81,6 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 	}
 }
 
-
-
 // ----------------------------------------------------------------------------
 // AppModule
 // ----------------------------------------------------------------------------
@@ -109,7 +98,7 @@ func NewAppModule(
 	cdc codec.Codec,
 	keeper keeper.Keeper,
 	accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper,
+	bankKeeper types.BankKeeper, // TODO: remove if unused
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
@@ -121,8 +110,8 @@ func NewAppModule(
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-    types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
-    types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 // RegisterInvariants registers the invariants of the module. If an invariant deviates from its predicted value, the InvariantRegistry triggers appropriate logic (most often the chain will be halted)
@@ -165,57 +154,3 @@ func (am AppModule) IsOnePerModuleType() {}
 
 // IsAppModule implements the appmodule.AppModule interface.
 func (am AppModule) IsAppModule() {}
-
-// ----------------------------------------------------------------------------
-// App Wiring Setup
-// ----------------------------------------------------------------------------
-
-func init() {
-	appmodule.Register(
-	    &modulev1.Module{},
-		appmodule.Provide(ProvideModule),
-	)
-}
-
-type ModuleInputs struct {
-	depinject.In
-
-	StoreService store.KVStoreService
-	Cdc          codec.Codec
-	Config       *modulev1.Module
-	Logger       log.Logger
-
-	AccountKeeper types.AccountKeeper
-	BankKeeper    types.BankKeeper
-
-    
-}
-
-type ModuleOutputs struct {
-	depinject.Out
-
-	HarpoonKeeper keeper.Keeper
-	Module appmodule.AppModule
-}
-
-func ProvideModule(in ModuleInputs) ModuleOutputs {
-	// default to governance authority if not provided
-	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
-	if in.Config.Authority != "" {
-		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
-	}
-	k := keeper.NewKeeper(
-	    in.Cdc,
-		in.StoreService,
-	    in.Logger,
-	    authority.String(), 
-	)
-	m := NewAppModule(
-	    in.Cdc,
-	    k,
-	    in.AccountKeeper,
-	    in.BankKeeper,
-	)
-
-	return ModuleOutputs{HarpoonKeeper: k, Module: m}
-}

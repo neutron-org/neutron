@@ -8,7 +8,6 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/neutron-org/neutron/v5/testutil/sample"
 	harpoonsimulation "github.com/neutron-org/neutron/v5/x/harpoon/simulation"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
@@ -17,13 +16,12 @@ import (
 var (
 	_ = harpoonsimulation.FindAccount
 	_ = rand.Rand{}
-	_ = sample.AccAddress
 	_ = sdk.AccAddress{}
 	_ = simulation.MsgEntryKind
 )
 
 const (
-    // this line is used by starport scaffolding # simapp/module/const
+// this line is used by starport scaffolding # simapp/module/const
 )
 
 // GenerateGenesisState creates a randomized GenState of the module.
@@ -33,7 +31,7 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 		accs[i] = acc.Address.String()
 	}
 	harpoonGenesis := types.GenesisState{
-		Params:	types.DefaultParams(),
+		Params: types.DefaultParams(),
 		// this line is used by starport scaffolding # simapp/module/genesisState
 	}
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&harpoonGenesis)
@@ -54,6 +52,6 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // ProposalMsgs returns msgs used for governance proposals for simulations.
 func (am AppModule) ProposalMsgs(simState module.SimulationState) []simtypes.WeightedProposalMsg {
 	return []simtypes.WeightedProposalMsg{
-	    // this line is used by starport scaffolding # simapp/module/OpMsg
+		// this line is used by starport scaffolding # simapp/module/OpMsg
 	}
 }
