@@ -1,0 +1,15 @@
+syntax = "proto3";
+package v5.harpoon;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "neutron/x/harpoon/Params";
+  option (gogoproto.equal) = true;
+
+  
+}
