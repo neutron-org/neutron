@@ -48,13 +48,22 @@ message MsgManageHookSubscription {
   option (cosmos.msg.v1.signer) = "authority";
   option (amino.name) = "neutron/x/harpoon/MsgManageHookSubscription";
 
-  string contract_address = 1;          // Address of the contract to manage hooks for
-  repeated HookType hooks = 2;          // List of hooks to subscribe/unsubscribe. Pass empty to remove subscription.
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // TODO: comment
+  HookSubscription hook_subscription = 2;
 }
 
 // MsgManageHookSubscriptionResponse defines the response structure for executing a
 // MsgManageHookSubscription message.
 message MsgManageHookSubscriptionResponse {}
+
+message HookSubscription {
+  // TODO: describe better
+  string contract_address = 2;          // Address of the contract to manage hooks for
+  repeated HookType hooks = 3;          // List of hooks to subscribe/unsubscribe. Pass empty to remove subscription.
+}
 
 // HookType specifies to what concrete hooks we are subscribing to.
 enum HookType {

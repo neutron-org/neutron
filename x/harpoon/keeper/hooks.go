@@ -17,7 +17,11 @@ type Hooks struct {
 
 // AfterValidatorBonded updates the signing info start height or create a new signing info
 func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
-	//sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// TODO: find a way to unify this, since it's gonna be the same for all hooks
+	// TODO: more efficient system of storage? since we need to filter out needed subscriptions often
+	subscriptions := h.k.GetSubscribedAddressesForHookType(sdkCtx, types.HookType_AfterValidatorBonded)
+
 	return nil
 }
 

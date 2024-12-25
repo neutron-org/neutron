@@ -31,6 +31,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// HookType specifies to what concrete hooks we are subscribing to.
 type HookType int32
 
 const (
@@ -137,59 +138,6 @@ func (m *MsgUpdateParams) GetParams() Params {
 	return Params{}
 }
 
-// Message for adding, updating, or removing hook subscriptions for a contract
-type MsgManageHookSubscription struct {
-	ContractAddress string     `protobuf:"bytes,1,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
-	Hooks           []HookType `protobuf:"varint,2,rep,packed,name=hooks,proto3,enum=v5.harpoon.HookType" json:"hooks,omitempty"`
-}
-
-func (m *MsgManageHookSubscription) Reset()         { *m = MsgManageHookSubscription{} }
-func (m *MsgManageHookSubscription) String() string { return proto.CompactTextString(m) }
-func (*MsgManageHookSubscription) ProtoMessage()    {}
-func (*MsgManageHookSubscription) Descriptor() ([]byte, []int) {
-	return fileDescriptor_94a1e4561f349256, []int{1}
-}
-func (m *MsgManageHookSubscription) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgManageHookSubscription) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgManageHookSubscription.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgManageHookSubscription) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgManageHookSubscription.Merge(m, src)
-}
-func (m *MsgManageHookSubscription) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgManageHookSubscription) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgManageHookSubscription.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgManageHookSubscription proto.InternalMessageInfo
-
-func (m *MsgManageHookSubscription) GetContractAddress() string {
-	if m != nil {
-		return m.ContractAddress
-	}
-	return ""
-}
-
-func (m *MsgManageHookSubscription) GetHooks() []HookType {
-	if m != nil {
-		return m.Hooks
-	}
-	return nil
-}
-
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
 type MsgUpdateParamsResponse struct {
@@ -199,7 +147,7 @@ func (m *MsgUpdateParamsResponse) Reset()         { *m = MsgUpdateParamsResponse
 func (m *MsgUpdateParamsResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgUpdateParamsResponse) ProtoMessage()    {}
 func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_94a1e4561f349256, []int{2}
+	return fileDescriptor_94a1e4561f349256, []int{1}
 }
 func (m *MsgUpdateParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -228,53 +176,204 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
+// MsgManageHookSubscription is the Msg/ManageHookSubscription request type.
+type MsgManageHookSubscription struct {
+	// authority is the address that controls the module (defaults to x/gov unless overwritten).
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// TODO: comment
+	HookSubscription *HookSubscription `protobuf:"bytes,2,opt,name=hook_subscription,json=hookSubscription,proto3" json:"hook_subscription,omitempty"`
+}
+
+func (m *MsgManageHookSubscription) Reset()         { *m = MsgManageHookSubscription{} }
+func (m *MsgManageHookSubscription) String() string { return proto.CompactTextString(m) }
+func (*MsgManageHookSubscription) ProtoMessage()    {}
+func (*MsgManageHookSubscription) Descriptor() ([]byte, []int) {
+	return fileDescriptor_94a1e4561f349256, []int{2}
+}
+func (m *MsgManageHookSubscription) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgManageHookSubscription) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgManageHookSubscription.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgManageHookSubscription) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgManageHookSubscription.Merge(m, src)
+}
+func (m *MsgManageHookSubscription) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgManageHookSubscription) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgManageHookSubscription.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgManageHookSubscription proto.InternalMessageInfo
+
+func (m *MsgManageHookSubscription) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *MsgManageHookSubscription) GetHookSubscription() *HookSubscription {
+	if m != nil {
+		return m.HookSubscription
+	}
+	return nil
+}
+
+// MsgManageHookSubscriptionResponse defines the response structure for executing a
+// MsgManageHookSubscription message.
+type MsgManageHookSubscriptionResponse struct {
+}
+
+func (m *MsgManageHookSubscriptionResponse) Reset()         { *m = MsgManageHookSubscriptionResponse{} }
+func (m *MsgManageHookSubscriptionResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgManageHookSubscriptionResponse) ProtoMessage()    {}
+func (*MsgManageHookSubscriptionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_94a1e4561f349256, []int{3}
+}
+func (m *MsgManageHookSubscriptionResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgManageHookSubscriptionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgManageHookSubscriptionResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgManageHookSubscriptionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgManageHookSubscriptionResponse.Merge(m, src)
+}
+func (m *MsgManageHookSubscriptionResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgManageHookSubscriptionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgManageHookSubscriptionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgManageHookSubscriptionResponse proto.InternalMessageInfo
+
+type HookSubscription struct {
+	// TODO: describe better
+	ContractAddress string     `protobuf:"bytes,2,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
+	Hooks           []HookType `protobuf:"varint,3,rep,packed,name=hooks,proto3,enum=v5.harpoon.HookType" json:"hooks,omitempty"`
+}
+
+func (m *HookSubscription) Reset()         { *m = HookSubscription{} }
+func (m *HookSubscription) String() string { return proto.CompactTextString(m) }
+func (*HookSubscription) ProtoMessage()    {}
+func (*HookSubscription) Descriptor() ([]byte, []int) {
+	return fileDescriptor_94a1e4561f349256, []int{4}
+}
+func (m *HookSubscription) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *HookSubscription) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_HookSubscription.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *HookSubscription) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HookSubscription.Merge(m, src)
+}
+func (m *HookSubscription) XXX_Size() int {
+	return m.Size()
+}
+func (m *HookSubscription) XXX_DiscardUnknown() {
+	xxx_messageInfo_HookSubscription.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HookSubscription proto.InternalMessageInfo
+
+func (m *HookSubscription) GetContractAddress() string {
+	if m != nil {
+		return m.ContractAddress
+	}
+	return ""
+}
+
+func (m *HookSubscription) GetHooks() []HookType {
+	if m != nil {
+		return m.Hooks
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterEnum("v5.harpoon.HookType", HookType_name, HookType_value)
 	proto.RegisterType((*MsgUpdateParams)(nil), "v5.harpoon.MsgUpdateParams")
-	proto.RegisterType((*MsgManageHookSubscription)(nil), "v5.harpoon.MsgManageHookSubscription")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "v5.harpoon.MsgUpdateParamsResponse")
+	proto.RegisterType((*MsgManageHookSubscription)(nil), "v5.harpoon.MsgManageHookSubscription")
+	proto.RegisterType((*MsgManageHookSubscriptionResponse)(nil), "v5.harpoon.MsgManageHookSubscriptionResponse")
+	proto.RegisterType((*HookSubscription)(nil), "v5.harpoon.HookSubscription")
 }
 
 func init() { proto.RegisterFile("neutron/harpoon/tx.proto", fileDescriptor_94a1e4561f349256) }
 
 var fileDescriptor_94a1e4561f349256 = []byte{
-	// 569 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x93, 0x41, 0x6f, 0xd3, 0x3e,
-	0x14, 0xc0, 0x9b, 0xed, 0xbf, 0xfd, 0x57, 0x83, 0x58, 0xb0, 0x0a, 0x6b, 0xbb, 0x29, 0x8c, 0x72,
-	0x29, 0x45, 0x6b, 0xb4, 0x42, 0x39, 0xec, 0x80, 0xb4, 0xc2, 0x01, 0x09, 0x55, 0x9a, 0x52, 0xc6,
-	0x81, 0x03, 0x93, 0x5b, 0xbb, 0x4e, 0xb4, 0xc6, 0x2f, 0xb2, 0xdd, 0x6a, 0xbd, 0x21, 0x8e, 0x9c,
-	0xf8, 0x18, 0x1c, 0x2b, 0x84, 0xf8, 0x0c, 0x3b, 0x4e, 0x9c, 0x38, 0x21, 0xd4, 0x1e, 0xfa, 0x35,
-	0x50, 0x9a, 0xa4, 0xed, 0xb2, 0x8a, 0x4b, 0x62, 0xbf, 0x9f, 0xfd, 0xde, 0xef, 0xc5, 0x0e, 0xca,
-	0x0b, 0xd6, 0xd7, 0x12, 0x84, 0xed, 0x12, 0x19, 0x00, 0x08, 0x5b, 0x5f, 0x54, 0x03, 0x09, 0x1a,
-	0x30, 0x1a, 0xd4, 0xab, 0x71, 0xb0, 0x78, 0x97, 0xf8, 0x9e, 0x00, 0x7b, 0xf6, 0x8c, 0x70, 0x71,
-	0xa7, 0x03, 0xca, 0x07, 0x65, 0xfb, 0x8a, 0xdb, 0x83, 0xc3, 0xf0, 0x15, 0x83, 0x42, 0x04, 0xce,
-	0x66, 0x33, 0x3b, 0x9a, 0xc4, 0x28, 0xc7, 0x81, 0x43, 0x14, 0x0f, 0x47, 0x71, 0x74, 0x2f, 0xad,
-	0x10, 0x10, 0x49, 0xfc, 0x78, 0x4f, 0xe9, 0x87, 0x81, 0xb6, 0x9b, 0x8a, 0x9f, 0x06, 0x94, 0x68,
-	0x76, 0x32, 0x23, 0xf8, 0x39, 0xca, 0x92, 0xbe, 0x76, 0x41, 0x7a, 0x7a, 0x98, 0x37, 0xf6, 0x8d,
-	0x72, 0xb6, 0x91, 0xff, 0xf9, 0xfd, 0x20, 0x17, 0x17, 0x3b, 0xa6, 0x54, 0x32, 0xa5, 0x5a, 0x5a,
-	0x7a, 0x82, 0x3b, 0x8b, 0xa5, 0xb8, 0x8e, 0x36, 0xa3, 0xdc, 0xf9, 0xb5, 0x7d, 0xa3, 0x7c, 0xab,
-	0x86, 0xab, 0x8b, 0x1e, 0xab, 0x51, 0xee, 0x46, 0xf6, 0xf2, 0xf7, 0x83, 0xcc, 0xd7, 0xe9, 0xa8,
-	0x62, 0x38, 0xf1, 0xe2, 0xa3, 0x67, 0x9f, 0xa6, 0xa3, 0xca, 0x22, 0xcd, 0xe7, 0xe9, 0xa8, 0xf2,
-	0x30, 0x71, 0xbe, 0x98, 0x5b, 0xa7, 0x24, 0x4b, 0xdf, 0x0c, 0x54, 0x68, 0x2a, 0xde, 0x24, 0x82,
-	0x70, 0xf6, 0x1a, 0xe0, 0xbc, 0xd5, 0x6f, 0xab, 0x8e, 0xf4, 0x02, 0xed, 0x81, 0xc0, 0x8f, 0x91,
-	0xd9, 0x01, 0xa1, 0x25, 0xe9, 0xe8, 0x33, 0x12, 0xf9, 0x46, 0x9d, 0x38, 0xdb, 0x49, 0x3c, 0x6e,
-	0x03, 0x57, 0xd0, 0x86, 0x0b, 0x70, 0x1e, 0x4a, 0xaf, 0x97, 0xef, 0xd4, 0x72, 0xcb, 0xd2, 0x61,
-	0xde, 0xb7, 0xc3, 0x80, 0x39, 0xd1, 0x92, 0xa3, 0x17, 0x37, 0x55, 0x9f, 0xac, 0x54, 0x5d, 0xad,
-	0x55, 0x2a, 0xa0, 0x9d, 0x54, 0x1f, 0x0e, 0x53, 0x01, 0x08, 0xc5, 0x2a, 0xa3, 0x35, 0xb4, 0x95,
-	0x94, 0xc3, 0x05, 0x74, 0xef, 0xb8, 0xab, 0x99, 0x7c, 0x47, 0x7a, 0x1e, 0x25, 0x1a, 0xe4, 0x4b,
-	0xc9, 0x88, 0x66, 0xd4, 0xcc, 0xe0, 0x5d, 0xb4, 0xd3, 0x60, 0x5d, 0x90, 0x6c, 0xce, 0x9a, 0x40,
-	0xbd, 0xae, 0xc7, 0xa8, 0x69, 0xdc, 0xdc, 0xe7, 0x30, 0x1f, 0x06, 0x8c, 0x9a, 0x6b, 0x38, 0x8f,
-	0x72, 0xd7, 0x51, 0x03, 0x04, 0x65, 0xd4, 0x5c, 0xc7, 0xfb, 0x68, 0x2f, 0x45, 0x18, 0xf7, 0xc4,
-	0xa9, 0x68, 0x83, 0xa0, 0x9e, 0xe0, 0xe6, 0x7f, 0x8b, 0x9a, 0xaf, 0x58, 0x8f, 0x71, 0x12, 0xb6,
-	0x92, 0x08, 0x6d, 0xe0, 0x12, 0xb2, 0xd2, 0xb0, 0xe5, 0x12, 0xc9, 0xd4, 0xdc, 0x6b, 0x73, 0x55,
-	0x82, 0xc4, 0xec, 0xff, 0x10, 0xce, 0xea, 0x2f, 0xd8, 0x7c, 0xe7, 0x16, 0x2e, 0xa2, 0xfb, 0xa9,
-	0x76, 0x5b, 0x3d, 0xa2, 0x5c, 0x46, 0xcd, 0x6c, 0xed, 0x03, 0x5a, 0x6f, 0x2a, 0x8e, 0x4f, 0xd0,
-	0xed, 0x6b, 0xd7, 0x77, 0x77, 0xf9, 0x04, 0x53, 0x9f, 0xbb, 0xf8, 0xe8, 0x1f, 0x30, 0x39, 0x8b,
-	0xe2, 0xc6, 0xc7, 0xf0, 0x82, 0x36, 0xde, 0x5c, 0x8e, 0x2d, 0xe3, 0x6a, 0x6c, 0x19, 0x7f, 0xc6,
-	0x96, 0xf1, 0x65, 0x62, 0x65, 0xae, 0x26, 0x56, 0xe6, 0xd7, 0xc4, 0xca, 0xbc, 0x3f, 0xe4, 0x9e,
-	0x76, 0xfb, 0xed, 0x6a, 0x07, 0x7c, 0x3b, 0x3e, 0xff, 0x03, 0x90, 0x3c, 0x19, 0xdb, 0x83, 0xfa,
-	0xd2, 0x75, 0xd0, 0xc3, 0x80, 0xa9, 0xf6, 0xe6, 0xec, 0x7f, 0x7b, 0xfa, 0x37, 0x00, 0x00, 0xff,
-	0xff, 0xd5, 0x56, 0xf7, 0xd3, 0x12, 0x04, 0x00, 0x00,
+	// 624 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0x4f, 0x4f, 0x13, 0x4f,
+	0x18, 0xee, 0xd2, 0x1f, 0xfc, 0xe8, 0x68, 0x64, 0x99, 0x54, 0x68, 0x0b, 0x59, 0x4b, 0x89, 0x09,
+	0xd6, 0xd0, 0x0d, 0x28, 0x1e, 0x38, 0x98, 0x50, 0x3d, 0x68, 0x4c, 0x13, 0xb2, 0x15, 0x0f, 0x5e,
+	0xc8, 0xb4, 0x33, 0xcc, 0x4e, 0xa0, 0xf3, 0x6e, 0x66, 0xa6, 0x0d, 0xdc, 0x8c, 0x47, 0x4f, 0x7e,
+	0x0c, 0x8f, 0x3d, 0x18, 0x3f, 0x03, 0x27, 0x43, 0x3c, 0x79, 0x22, 0x06, 0x0e, 0x7c, 0x0d, 0xd3,
+	0xfd, 0xd3, 0x96, 0xa5, 0x18, 0xe3, 0x65, 0x77, 0xe6, 0x79, 0xde, 0x3f, 0xcf, 0x33, 0xfb, 0xce,
+	0xa2, 0x82, 0x64, 0x5d, 0xa3, 0x40, 0xba, 0x3e, 0x51, 0x01, 0x80, 0x74, 0xcd, 0x71, 0x2d, 0x50,
+	0x60, 0x00, 0xa3, 0xde, 0x56, 0x2d, 0x06, 0x4b, 0xf3, 0xa4, 0x23, 0x24, 0xb8, 0xe1, 0x33, 0xa2,
+	0x4b, 0x8b, 0x6d, 0xd0, 0x1d, 0xd0, 0x6e, 0x47, 0x73, 0xb7, 0xb7, 0x31, 0x78, 0xc5, 0x44, 0x31,
+	0x22, 0xf6, 0xc3, 0x9d, 0x1b, 0x6d, 0x62, 0x2a, 0xcf, 0x81, 0x43, 0x84, 0x0f, 0x56, 0x31, 0xba,
+	0x9c, 0x96, 0x10, 0x10, 0x45, 0x3a, 0x71, 0x4e, 0xe5, 0x9b, 0x85, 0xe6, 0x1a, 0x9a, 0xef, 0x05,
+	0x94, 0x18, 0xb6, 0x1b, 0x32, 0xf8, 0x19, 0xca, 0x91, 0xae, 0xf1, 0x41, 0x09, 0x73, 0x52, 0xb0,
+	0xca, 0xd6, 0x5a, 0xae, 0x5e, 0xf8, 0xf1, 0x75, 0x3d, 0x1f, 0x37, 0xdb, 0xa1, 0x54, 0x31, 0xad,
+	0x9b, 0x46, 0x09, 0xc9, 0xbd, 0x51, 0x28, 0xde, 0x42, 0x33, 0x51, 0xed, 0xc2, 0x54, 0xd9, 0x5a,
+	0xbb, 0xb3, 0x89, 0x6b, 0x23, 0x8f, 0xb5, 0xa8, 0x76, 0x3d, 0x77, 0x7a, 0xfe, 0x20, 0xf3, 0xe5,
+	0xaa, 0x5f, 0xb5, 0xbc, 0x38, 0x78, 0xfb, 0xe9, 0xc7, 0xab, 0x7e, 0x75, 0x54, 0xe6, 0xd3, 0x55,
+	0xbf, 0xba, 0x92, 0x68, 0x3e, 0x1e, 0xaa, 0x4e, 0x89, 0xac, 0x14, 0xd1, 0x62, 0x0a, 0xf2, 0x98,
+	0x0e, 0x40, 0x6a, 0x56, 0x39, 0xb7, 0x50, 0xb1, 0xa1, 0x79, 0x83, 0x48, 0xc2, 0xd9, 0x2b, 0x80,
+	0xc3, 0x66, 0xb7, 0xa5, 0xdb, 0x4a, 0x04, 0x46, 0x80, 0xfc, 0x67, 0x77, 0xaf, 0xd1, 0xbc, 0x0f,
+	0x70, 0xb8, 0xaf, 0xc7, 0x8a, 0xc5, 0x46, 0x97, 0xc7, 0x8d, 0xa6, 0x1b, 0x7a, 0xb6, 0x9f, 0x42,
+	0xb6, 0x9f, 0xdf, 0x74, 0xfc, 0x78, 0xa2, 0xe3, 0xc9, 0x16, 0x2a, 0xab, 0x68, 0xe5, 0x56, 0x72,
+	0x78, 0x0a, 0x02, 0xd9, 0x37, 0xbc, 0x3f, 0x42, 0x76, 0x1b, 0xa4, 0x51, 0xa4, 0x6d, 0xf6, 0x49,
+	0x64, 0x34, 0xb4, 0x90, 0xf3, 0xe6, 0x12, 0x3c, 0xf6, 0x8f, 0xab, 0x68, 0x7a, 0xa0, 0x5b, 0x17,
+	0xb2, 0xe5, 0xec, 0xda, 0xbd, 0xcd, 0x7c, 0xda, 0xe2, 0xdb, 0x93, 0x80, 0x79, 0x51, 0x48, 0xb5,
+	0x3f, 0x85, 0x66, 0x13, 0x0c, 0x17, 0xd1, 0xfd, 0x9d, 0x03, 0xc3, 0xd4, 0x3b, 0x72, 0x24, 0x28,
+	0x31, 0xa0, 0x5e, 0x28, 0x46, 0x0c, 0xa3, 0x76, 0x06, 0x2f, 0xa1, 0xc5, 0x3a, 0x3b, 0x00, 0xc5,
+	0x86, 0x5c, 0x03, 0xa8, 0x38, 0x10, 0x8c, 0xda, 0xd6, 0xcd, 0x3c, 0x8f, 0x75, 0xa0, 0xc7, 0xa8,
+	0x3d, 0x85, 0x0b, 0x28, 0x7f, 0x9d, 0xaa, 0x83, 0xa4, 0x8c, 0xda, 0x59, 0x5c, 0x46, 0xcb, 0x29,
+	0x86, 0x71, 0x21, 0xf7, 0x64, 0x0b, 0x24, 0x15, 0x92, 0xdb, 0xff, 0x8d, 0x7a, 0xbe, 0x64, 0x47,
+	0x8c, 0x93, 0xc1, 0x31, 0x24, 0x82, 0xa6, 0x71, 0x05, 0x39, 0x69, 0xb2, 0xe9, 0x13, 0xc5, 0xf4,
+	0x50, 0xd7, 0xcc, 0xa4, 0x02, 0x89, 0xb2, 0xff, 0x07, 0x64, 0xd8, 0x7f, 0xc4, 0x0d, 0x33, 0x67,
+	0x71, 0x09, 0x2d, 0xa4, 0xec, 0x36, 0x8f, 0x88, 0xf6, 0x19, 0xb5, 0x73, 0x9b, 0xdf, 0x2d, 0x94,
+	0x6d, 0x68, 0x8e, 0x77, 0xd1, 0xdd, 0x6b, 0x77, 0x6f, 0x69, 0xfc, 0x9c, 0x53, 0x03, 0x5e, 0x5a,
+	0xfd, 0x03, 0x99, 0x7c, 0x77, 0x2c, 0xd1, 0xc2, 0x2d, 0x93, 0xff, 0x30, 0x95, 0x3e, 0x39, 0xac,
+	0xb4, 0xfe, 0x57, 0x61, 0x49, 0xbf, 0xd2, 0xf4, 0x87, 0xc1, 0x6d, 0xae, 0xbf, 0x39, 0xbd, 0x70,
+	0xac, 0xb3, 0x0b, 0xc7, 0xfa, 0x75, 0xe1, 0x58, 0x9f, 0x2f, 0x9d, 0xcc, 0xd9, 0xa5, 0x93, 0xf9,
+	0x79, 0xe9, 0x64, 0xde, 0x6f, 0x70, 0x61, 0xfc, 0x6e, 0xab, 0xd6, 0x86, 0x8e, 0x1b, 0x4f, 0xf9,
+	0x3a, 0x28, 0x9e, 0xac, 0xdd, 0xde, 0xd6, 0xd8, 0xd0, 0x9b, 0x93, 0x80, 0xe9, 0xd6, 0x4c, 0xf8,
+	0x73, 0x7a, 0xf2, 0x3b, 0x00, 0x00, 0xff, 0xff, 0xaa, 0xc4, 0xee, 0x03, 0x3f, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -292,6 +391,9 @@ type MsgClient interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	// ManageHookSubscription updates hook subscription for given contract_address.
+	// Pass empty array to `hooks` to remove subscription from this contract_address.
+	ManageHookSubscription(ctx context.Context, in *MsgManageHookSubscription, opts ...grpc.CallOption) (*MsgManageHookSubscriptionResponse, error)
 }
 
 type msgClient struct {
@@ -311,11 +413,23 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) ManageHookSubscription(ctx context.Context, in *MsgManageHookSubscription, opts ...grpc.CallOption) (*MsgManageHookSubscriptionResponse, error) {
+	out := new(MsgManageHookSubscriptionResponse)
+	err := c.cc.Invoke(ctx, "/v5.harpoon.Msg/ManageHookSubscription", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
+	// ManageHookSubscription updates hook subscription for given contract_address.
+	// Pass empty array to `hooks` to remove subscription from this contract_address.
+	ManageHookSubscription(context.Context, *MsgManageHookSubscription) (*MsgManageHookSubscriptionResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -324,6 +438,9 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
+}
+func (*UnimplementedMsgServer) ManageHookSubscription(ctx context.Context, req *MsgManageHookSubscription) (*MsgManageHookSubscriptionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ManageHookSubscription not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -348,6 +465,24 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_ManageHookSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgManageHookSubscription)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ManageHookSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v5.harpoon.Msg/ManageHookSubscription",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ManageHookSubscription(ctx, req.(*MsgManageHookSubscription))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "v5.harpoon.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -355,6 +490,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "ManageHookSubscription",
+			Handler:    _Msg_ManageHookSubscription_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -401,54 +540,6 @@ func (m *MsgUpdateParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgManageHookSubscription) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgManageHookSubscription) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgManageHookSubscription) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Hooks) > 0 {
-		dAtA3 := make([]byte, len(m.Hooks)*10)
-		var j2 int
-		for _, num := range m.Hooks {
-			for num >= 1<<7 {
-				dAtA3[j2] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j2++
-			}
-			dAtA3[j2] = uint8(num)
-			j2++
-		}
-		i -= j2
-		copy(dAtA[i:], dAtA3[:j2])
-		i = encodeVarintTx(dAtA, i, uint64(j2))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.ContractAddress) > 0 {
-		i -= len(m.ContractAddress)
-		copy(dAtA[i:], m.ContractAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ContractAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *MsgUpdateParamsResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -469,6 +560,119 @@ func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	_ = i
 	var l int
 	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgManageHookSubscription) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgManageHookSubscription) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgManageHookSubscription) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.HookSubscription != nil {
+		{
+			size, err := m.HookSubscription.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgManageHookSubscriptionResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgManageHookSubscriptionResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgManageHookSubscriptionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *HookSubscription) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *HookSubscription) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *HookSubscription) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Hooks) > 0 {
+		dAtA4 := make([]byte, len(m.Hooks)*10)
+		var j3 int
+		for _, num := range m.Hooks {
+			for num >= 1<<7 {
+				dAtA4[j3] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j3++
+			}
+			dAtA4[j3] = uint8(num)
+			j3++
+		}
+		i -= j3
+		copy(dAtA[i:], dAtA4[:j3])
+		i = encodeVarintTx(dAtA, i, uint64(j3))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ContractAddress) > 0 {
+		i -= len(m.ContractAddress)
+		copy(dAtA[i:], m.ContractAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ContractAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -498,7 +702,42 @@ func (m *MsgUpdateParams) Size() (n int) {
 	return n
 }
 
+func (m *MsgUpdateParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *MsgManageHookSubscription) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.HookSubscription != nil {
+		l = m.HookSubscription.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgManageHookSubscriptionResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *HookSubscription) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -515,15 +754,6 @@ func (m *MsgManageHookSubscription) Size() (n int) {
 		}
 		n += 1 + sovTx(uint64(l)) + l
 	}
-	return n
-}
-
-func (m *MsgUpdateParamsResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
 	return n
 }
 
@@ -648,6 +878,56 @@ func (m *MsgUpdateParams) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateParamsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *MsgManageHookSubscription) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -679,6 +959,174 @@ func (m *MsgManageHookSubscription) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HookSubscription", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.HookSubscription == nil {
+				m.HookSubscription = &HookSubscription{}
+			}
+			if err := m.HookSubscription.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgManageHookSubscriptionResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgManageHookSubscriptionResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgManageHookSubscriptionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *HookSubscription) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: HookSubscription: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: HookSubscription: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 2:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ContractAddress", wireType)
 			}
 			var stringLen uint64
@@ -709,7 +1157,7 @@ func (m *MsgManageHookSubscription) Unmarshal(dAtA []byte) error {
 			}
 			m.ContractAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 2:
+		case 3:
 			if wireType == 0 {
 				var v HookType
 				for shift := uint(0); ; shift += 7 {
@@ -778,56 +1226,6 @@ func (m *MsgManageHookSubscription) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field Hooks", wireType)
 			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateParamsResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
