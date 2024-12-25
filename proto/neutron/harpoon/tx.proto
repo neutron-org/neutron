@@ -16,6 +16,10 @@ service Msg {
   // UpdateParams defines a (governance) operation for updating the module
   // parameters. The authority defaults to the x/gov module account.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // ManageHookSubscription updates hook subscription for given contract_address.
+  // Pass empty array to `hooks` to remove subscription from this contract_address.
+  rpc ManageHookSubscription(MsgManageHookSubscription) returns (MsgManageHookSubscriptionResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -38,3 +42,30 @@ message MsgUpdateParams {
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
 message MsgUpdateParamsResponse {}
+
+// MsgManageHookSubscription is the Msg/ManageHookSubscription request type.
+message MsgManageHookSubscription {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "neutron/x/harpoon/MsgManageHookSubscription";
+
+  string contract_address = 1;          // Address of the contract to manage hooks for
+  repeated HookType hooks = 2;          // List of hooks to subscribe/unsubscribe. Pass empty to remove subscription.
+}
+
+// MsgManageHookSubscriptionResponse defines the response structure for executing a
+// MsgManageHookSubscription message.
+message MsgManageHookSubscriptionResponse {}
+
+// HookType specifies to what concrete hooks we are subscribing to.
+enum HookType {
+  AfterValidatorCreated = 0; // Called when a validator is created
+  BeforeValidatorModified = 1; // Called when a validator is modified
+  AfterValidatorRemoved  = 2; // Called when a validator is deleted
+  AfterValidatorBonded = 3; // Called when a validator is bonded
+  AfterValidatorBeginUnbonding = 4; // Called when a validator begins unbonding
+  BeforeDelegationCreated = 5; // Called when a delegation is created
+  BeforeDelegationSharesModified = 6; // Called when a delegation's shares are modified
+  BeforeDelegationRemoved = 7; // Called when a delegation is removed
+  AfterDelegationModified = 8;
+  BeforeValidatorSlashed = 9;
+}
