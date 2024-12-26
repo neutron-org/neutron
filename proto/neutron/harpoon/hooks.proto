@@ -1,0 +1,9 @@
+syntax = "proto3";
+package v5.harpoon;
+
+option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
+
+// HookSubscription is a structure that we store in KV store under each hook kind
+message HookSubscriptions {
+  repeated string contract_addresses = 1; // all contract_addresses that are subscribed to the hook kind
+}

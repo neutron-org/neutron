@@ -20,9 +20,6 @@ func GetHookSubscriptionKeyPrefix() []byte {
 	return HookSubscriptionKey
 }
 
-// GetHookSubscriptionKey returns the store key for the hooks for the contractAddress
-func GetHookSubscriptionKey(
-	contractAddress string,
-) []byte {
-	return append(GetHookSubscriptionKeyPrefix(), []byte(contractAddress)...)
+func GetHookSubscriptionKey(hookType string) []byte {
+	return append(GetHookSubscriptionKeyPrefix(), []byte(hookType)...)
 }

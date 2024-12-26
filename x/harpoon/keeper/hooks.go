@@ -41,13 +41,25 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, consAddr sdk.ConsAddre
 
 // AfterValidatorCreated adds the address-pubkey relation when a validator is created.
 func (h Hooks) AfterValidatorCreated(ctx context.Context, valAddr sdk.ValAddress) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorCreated)
+	message := types.SudoAfterValidatorCreated{
+		ValAddr: valAddr,
+	}
+	h.k.CallSudoForSubscriptions(ctx, subscriptions, message)
 	return nil
 }
 
 func (h Hooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorBeginUnbonding)
+	message := types.SudoAfterValidatorBeginUnbonding{
+		ConsAddr: consAddr,
+		ValAddr:  valAddr,
+	}
+	h.k.CallSudoForSubscriptions(ctx, subscriptions, message)
 	return nil
 }
 
+// TODO: implement all other methods
 func (h Hooks) BeforeValidatorModified(ctx context.Context, valAddr sdk.ValAddress) error {
 	return nil
 }

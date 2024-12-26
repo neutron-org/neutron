@@ -2,6 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/errors"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -14,7 +15,7 @@ func (msg *MsgManageHookSubscription) Route() string {
 }
 
 func (msg *MsgManageHookSubscription) Type() string {
-	return "update-params"
+	return "manage-hook-subscription"
 }
 
 func (msg *MsgManageHookSubscription) GetSigners() []sdk.AccAddress {
@@ -34,9 +35,27 @@ func (msg *MsgManageHookSubscription) Validate() error {
 		return errors.Wrap(err, "authority is invalid")
 	}
 
-	// TODO: unique check on msg.Hooks
+	if _, err := sdk.AccAddressFromBech32(msg.HookSubscription.ContractAddress); err != nil {
+		return errors.Wrap(err, "hook subscription contractAddress is invalid")
+	}
+
+	if !msg.areHooksUnique() {
+		return fmt.Errorf("subscription hooks are not unique")
+	}
 
 	return nil
+}
+
+func (msg *MsgManageHookSubscription) areHooksUnique() bool {
+	cache := make(map[string]bool)
+	for _, item := range msg.HookSubscription.Hooks {
+		if cache[item.String()] {
+			return false
+		}
+		cache[item.String()] = true
+	}
+
+	return true
 }
 
 //----------------------------------------------------------------
