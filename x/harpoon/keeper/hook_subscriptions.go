@@ -104,14 +104,9 @@ func (k Keeper) CallSudoForSubscriptions(ctx context.Context, contractAddresses 
 
 	msgJsonBz, err := json.Marshal(msg)
 	if err != nil {
-		return fmt.Errorf("failed to marshal msg: %v", err)
+		return fmt.Errorf("failed to marshal sudo subscription msg: %v", err)
 	}
 
-	// TODO: probably use custom gas meter here
-	cacheCtx, writeFn := sdkCtx.CacheContext()
-
-	// TODO: decide how errors are handled
-	// TODO: decide how gas is handled: what is limit?
 	for _, contractAddress := range contractAddresses {
 		executeMsg := wasmtypes.MsgExecuteContract{
 			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
@@ -119,19 +114,25 @@ func (k Keeper) CallSudoForSubscriptions(ctx context.Context, contractAddresses 
 			Msg:      msgJsonBz,
 			Funds:    sdk.NewCoins(),
 		}
-		_, err := k.WasmMsgServer.ExecuteContract(cacheCtx, &executeMsg)
+		// NOTE: as we're using sdkCtx here, all hooks that are triggered by Tx user actions such as Delegate.
+		// will consume gas for executing this contract.
+		// This also means it can breach gas limit if call was too heavy.
+		// And if it happens, we may return prematurely to avoid more computations.
+		// BUT: We also want to continue on other errors, since simple contract hook errors should not stop execution.
+		// For EndBlocker, there is no counting gas.
+		_, err := k.WasmMsgServer.ExecuteContract(sdkCtx, &executeMsg)
+		if sdkCtx.GasMeter().IsPastLimit() {
+			return fmt.Errorf("not enough gas when executed sudo contract: %v", err)
+		}
 		if err != nil {
-			sdkCtx.Logger().Info("executeSchedule: failed to execute contract msg",
+			sdkCtx.Logger().Error("execute subscription hook error: failed to execute contract msg",
 				"contract_address", contractAddress,
 				"error", err,
 			)
-			// TODO: check that correct behaviour
 			continue
 		}
 	}
 
-	// only save state if all the messages in a schedule were executed successfully
-	writeFn()
 	return nil
 }
 
