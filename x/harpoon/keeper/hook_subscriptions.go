@@ -8,11 +8,13 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 	"golang.org/x/exp/maps"
 )
 
-// UpdateHookSubscription updates hook subscription for given contractAddress, removes it if `Hooks` passed were empty
+// UpdateHookSubscription sets hook subscription for given contractAddress
+// All previously subscribed hooks that are not in `subscriptionUpdate.hooks` will be removed.
 func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate *types.HookSubscription) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
@@ -68,7 +70,10 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate
 	return nil
 }
 
-// TODO: description
+// CallSudoForSubscriptionType calls sudo for all contracts subscribed to given `hookType`.
+// Returns error in cases where marshalling error occurred (should never happen, since we control it) or
+// when out of gas on sudo call. That can happen when callback triggered during transaction (not BeginBlocker/EndBlocker).
+// Ignores sudo contract errors.
 func (k Keeper) CallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
 	if err := k.DoCallSudoForSubscriptionType(ctx, hookType, msg); err != nil {
 		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", hookType)
@@ -106,10 +111,10 @@ func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType type
 		// For EndBlocker, there is no counting gas.
 		_, err := k.WasmMsgServer.ExecuteContract(sdkCtx, &executeMsg)
 		if sdkCtx.GasMeter().IsPastLimit() {
-			return fmt.Errorf("not enough gas when executed sudo contract: %v", err)
+			return errors.Wrapf(sdkerrors.ErrOutOfGas, "not enough gas when executed sudo contract: %v", err)
 		}
 		if err != nil {
-			sdkCtx.Logger().Error("execute subscription hook error: failed to execute contract msg",
+			sdkCtx.Logger().Error("execute harpoon subscription hook error: failed to execute contract msg",
 				"contract_address", contractAddress,
 				"error", err,
 			)
@@ -120,6 +125,7 @@ func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType type
 	return nil
 }
 
+// GetSubscribedAddressesForHookType returns all subscribed contracts for a given `hookType`
 func (k Keeper) GetSubscribedAddressesForHookType(goCtx context.Context, hookType types.HookType) []string {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
