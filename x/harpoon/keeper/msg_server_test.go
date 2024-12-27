@@ -6,14 +6,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-    keepertest "github.com/neutron-org/neutron/v5/testutil/keeper"
-    "github.com/neutron-org/neutron/v5/x/harpoon/types"
-    "github.com/neutron-org/neutron/v5/x/harpoon/keeper"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/harpoon/keeper"
+	"github.com/neutron-org/neutron/v5/x/harpoon/keeper"
+	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
 func setupMsgServer(t testing.TB) (keeper.Keeper, types.MsgServer, context.Context) {
 	k, ctx := keepertest.HarpoonKeeper(t)
-	return k, keeper.NewMsgServerImpl(k), ctx
+	return *k, keeper.NewMsgServerImpl(*k), ctx
 }
 
 func TestMsgServer(t *testing.T) {

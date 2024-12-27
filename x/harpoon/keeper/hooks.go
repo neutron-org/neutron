@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 
@@ -17,14 +18,14 @@ type Hooks struct {
 
 // AfterValidatorBonded updates the signing info start height or create a new signing info
 func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
-	// TODO: find a way to unify this, since it's gonna be the same for all hooks
-	// TODO: more efficient system of storage? since we need to filter out needed subscriptions often
 	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterValidatorBonded)
 	message := types.SudoAfterValidatorBonded{
 		ConsAddr: consAddr,
 		ValAddr:  valAddr,
 	}
-	h.k.CallSudoForSubscriptions(ctx, subscriptions, message)
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_AfterValidatorBonded)
+	}
 	return nil
 }
 
@@ -35,7 +36,9 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, consAddr sdk.ConsAddre
 		ConsAddr: consAddr,
 		ValAddr:  valAddr,
 	}
-	h.k.CallSudoForSubscriptions(ctx, subscriptions, message)
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_AfterValidatorRemoved)
+	}
 	return nil
 }
 
@@ -45,7 +48,9 @@ func (h Hooks) AfterValidatorCreated(ctx context.Context, valAddr sdk.ValAddress
 	message := types.SudoAfterValidatorCreated{
 		ValAddr: valAddr,
 	}
-	h.k.CallSudoForSubscriptions(ctx, subscriptions, message)
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_AfterValidatorCreated)
+	}
 	return nil
 }
 
@@ -55,36 +60,90 @@ func (h Hooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr sdk.Co
 		ConsAddr: consAddr,
 		ValAddr:  valAddr,
 	}
-	h.k.CallSudoForSubscriptions(ctx, subscriptions, message)
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_AfterValidatorBeginUnbonding)
+	}
 	return nil
 }
 
-// TODO: implement all other methods
 func (h Hooks) BeforeValidatorModified(ctx context.Context, valAddr sdk.ValAddress) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeValidatorModified)
+	message := types.SudoBeforeValidatorModified{
+		ValAddr: valAddr,
+	}
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_BeforeValidatorModified)
+	}
 	return nil
 }
 
 func (h Hooks) BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeDelegationCreated)
+	message := types.SudoBeforeDelegationCreated{
+		DelAddr: delAddr,
+		ValAddr: valAddr,
+	}
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_BeforeDelegationCreated)
+	}
 	return nil
 }
 
 func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeDelegationSharesModified)
+	message := types.SudoBeforeDelegationSharesModified{
+		DelAddr: delAddr,
+		ValAddr: valAddr,
+	}
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_BeforeDelegationSharesModified)
+	}
 	return nil
 }
 
 func (h Hooks) BeforeDelegationRemoved(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeDelegationRemoved)
+	message := types.SudoBeforeDelegationRemoved{
+		DelAddr: delAddr,
+		ValAddr: valAddr,
+	}
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_BeforeDelegationRemoved)
+	}
 	return nil
 }
 
 func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterDelegationModified)
+	message := types.SudoAfterDelegationModified{
+		DelAddr: delAddr,
+		ValAddr: valAddr,
+	}
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_AfterDelegationModified)
+	}
 	return nil
 }
 
 func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction sdkmath.LegacyDec) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeValidatorSlashed)
+	message := types.SudoBeforeValidatorSlashed{
+		ValAddr:  valAddr,
+		Fraction: fraction,
+	}
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_BeforeValidatorSlashed)
+	}
 	return nil
 }
 
-// TODO: what is this and is it in the current main of cosmos-sdk? why removed?
-func (h Hooks) AfterUnbondingInitiated(ctx context.Context, _ uint64) error {
+func (h Hooks) AfterUnbondingInitiated(ctx context.Context, id uint64) error {
+	subscriptions := h.k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterUnbondingInitiated)
+	message := types.SudoAfterUnbondingInitiated{
+		Id: id,
+	}
+	if err := h.k.CallSudoForSubscriptions(ctx, subscriptions, message); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", types.HookType_AfterUnbondingInitiated)
+	}
 	return nil
 }

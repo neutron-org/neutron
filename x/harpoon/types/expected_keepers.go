@@ -10,7 +10,6 @@ import (
 
 // AccountKeeper defines the expected interface for the Account module.
 type AccountKeeper interface {
-	//GetAccount(context.Context, sdk.AccAddress) sdk.AccountI // only used for simulation // TODO: remove if unused
 	GetModuleAddress(moduleName string) sdk.AccAddress
 	// Methods imported from account should be defined here
 }
@@ -29,7 +28,6 @@ type ParamSubspace interface {
 
 type WasmMsgServer interface {
 	ExecuteContract(context.Context, *wasmtypes.MsgExecuteContract) (*wasmtypes.MsgExecuteContractResponse, error)
-	// Methods imported from account should be defined here
 }
 
 // StakingHooks event hooks for staking validator object (noalias)
@@ -44,8 +42,8 @@ type StakingHooks interface {
 	BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error        // Must be called when a delegation is created
 	BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error // Must be called when a delegation's shares are modified
 	BeforeDelegationRemoved(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error        // Must be called when a delegation is removed
-	AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error
-	BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error
+	AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error        // Must be called after a delegation is modified
+	BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error        // Must be called before validator is slashed
 
-	//AfterUnbondingInitiated//TODO: need it?
+	AfterUnbondingInitiated(ctx context.Context, id uint64) error // Must be called after unbonding operation is initiated
 }

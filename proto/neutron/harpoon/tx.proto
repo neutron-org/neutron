@@ -75,6 +75,7 @@ enum HookType {
   BeforeDelegationCreated = 5; // Called when a delegation is created
   BeforeDelegationSharesModified = 6; // Called when a delegation's shares are modified
   BeforeDelegationRemoved = 7; // Called when a delegation is removed
-  AfterDelegationModified = 8;
-  BeforeValidatorSlashed = 9;
+  AfterDelegationModified = 8; // Called when a delegation is modified
+  BeforeValidatorSlashed = 9; // Called before validator is slashed
+  AfterUnbondingInitiated = 10; // TODO
 }

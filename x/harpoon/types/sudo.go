@@ -1,5 +1,7 @@
 package types
 
+import "cosmossdk.io/math"
+
 // TODO: can these types be autogeneratable? this will help to avoid duplication for neutron-std library
 type SudoAfterValidatorBonded struct {
 	ConsAddr []byte `json:"cons_addr"` // TODO: can we make type a string or an address of some kind?
@@ -45,10 +47,10 @@ type SudoAfterDelegationModified struct {
 }
 
 type SudoBeforeValidatorSlashed struct {
-	DelAddr  []byte `json:"del_addr"` // TODO: can we make type a string or an address of some kind?
-	Fraction string `json:"fraction"` // TODO: how to serialize LegacyDec?
+	ValAddr  []byte         `json:"val_addr"` // TODO: can we make type a string or an address of some kind?
+	Fraction math.LegacyDec `json:"fraction"` // TODO: how to serialize LegacyDec?
 }
 
-// type SudoAfterUnbondingInitiated struct {
-//
-//}
+type SudoAfterUnbondingInitiated struct {
+	Id uint64 `json:"id"`
+}

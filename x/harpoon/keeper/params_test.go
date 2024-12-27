@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-    keepertest "github.com/neutron-org/neutron/v5/testutil/keeper"
-    "github.com/neutron-org/neutron/v5/x/harpoon/types"
+	keepertest "github.com/neutron-org/neutron/v5/testutil/harpoon/keeper"
+	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
 func TestGetParams(t *testing.T) {
