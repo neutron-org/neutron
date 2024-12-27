@@ -183,7 +183,7 @@ var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 type MsgManageHookSubscription struct {
 	// authority is the address that controls the module (defaults to x/gov unless overwritten).
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// TODO: comment
+	// hook_subscription describes what new subscription is going to be.
 	HookSubscription *HookSubscription `protobuf:"bytes,2,opt,name=hook_subscription,json=hookSubscription,proto3" json:"hook_subscription,omitempty"`
 }
 
@@ -272,10 +272,12 @@ func (m *MsgManageHookSubscriptionResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgManageHookSubscriptionResponse proto.InternalMessageInfo
 
+// HookSubscription describes new hook subscriptions for contract_address
 type HookSubscription struct {
-	// TODO: describe better
-	ContractAddress string     `protobuf:"bytes,2,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
-	Hooks           []HookType `protobuf:"varint,3,rep,packed,name=hooks,proto3,enum=neutron.harpoon.HookType" json:"hooks,omitempty"`
+	// hook_subscription specifies for which contract_address modify the subscriptions.
+	ContractAddress string `protobuf:"bytes,2,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
+	// hooks specifies what hooks are we gonna subscribe to. Existing hooks not specified here will be removed.
+	Hooks []HookType `protobuf:"varint,3,rep,packed,name=hooks,proto3,enum=neutron.harpoon.HookType" json:"hooks,omitempty"`
 }
 
 func (m *HookSubscription) Reset()         { *m = HookSubscription{} }

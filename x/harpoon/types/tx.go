@@ -43,6 +43,10 @@ func (msg *MsgManageHookSubscription) Validate() error {
 		return fmt.Errorf("subscription hooks are not unique")
 	}
 
+	if !msg.allHooksExist() {
+		return fmt.Errorf("non-existing hook type")
+	}
+
 	return nil
 }
 
@@ -53,6 +57,17 @@ func (msg *MsgManageHookSubscription) areHooksUnique() bool {
 			return false
 		}
 		cache[item.String()] = true
+	}
+
+	return true
+}
+
+func (msg *MsgManageHookSubscription) allHooksExist() bool {
+	for _, item := range msg.HookSubscription.Hooks {
+		_, ok := HookType_name[int32(item)]
+		if !ok {
+			return false
+		}
 	}
 
 	return true

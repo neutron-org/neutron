@@ -50,6 +50,17 @@ func TestManageHookSubscription(t *testing.T) {
 			"subscription hooks are not unique",
 		},
 		{
+			"non existing hook type",
+			types.MsgManageHookSubscription{
+				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				HookSubscription: &types.HookSubscription{
+					ContractAddress: testutil.TestOwnerAddress,
+					Hooks:           []types.HookType{types.HookType(100)},
+				},
+			},
+			"non-existing hook type",
+		},
+		{
 			"good case",
 			types.MsgManageHookSubscription{
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
