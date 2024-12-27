@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"fmt"
 	"github.com/neutron-org/neutron/v5/testutil"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -57,13 +56,12 @@ func TestMsgManageHookSubscriptionValidate(t *testing.T) {
 					Hooks:           []types.HookType{types.HookType_BeforeDelegationRemoved},
 				},
 			},
-			"=",
+			"",
 		},
 	}
 
 	for _, tt := range tests {
 		err := tt.manageHookSubscriptionMsg.Validate()
-		fmt.Printf(tt.name)
 
 		if tt.expectedErr == "" {
 			require.NoError(t, err, tt.expectedErr)
