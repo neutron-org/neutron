@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -67,35 +68,18 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate
 	return nil
 }
 
-//func (k Keeper) GetAllHookSubscriptions(ctx sdk.Context) []types.HookSubscription {
-//	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-//	res := make([]types.HookSubscription, 0)
-//
-//	iterator := storetypes.KVStorePrefixIterator(store, types.GetHookSubscriptionKeyPrefix())
-//	defer iterator.Close()
-//
-//	for ; iterator.Valid(); iterator.Next() {
-//		var subscription types.HookSubscription
-//		k.cdc.MustUnmarshal(iterator.Value(), &subscription)
-//		res = append(res, subscription)
-//	}
-//	return res
-//}
-
-func (k Keeper) GetSubscribedAddressesForHookType(goCtx context.Context, hookType types.HookType) []string {
-	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
-
-	key := types.GetHookSubscriptionKey(hookType.String())
-	if store.Has(key) {
-		subscriptions := types.HookSubscriptions{}
-		k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
-		return subscriptions.ContractAddresses
-	} else {
-		return []string{}
+// TODO: description
+func (k Keeper) CallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
+	if err := k.DoCallSudoForSubscriptionType(ctx, hookType, msg); err != nil {
+		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", hookType)
 	}
+
+	return nil
 }
 
-func (k Keeper) CallSudoForSubscriptions(ctx context.Context, contractAddresses []string, msg any) error {
+func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
+	contractAddresses := k.GetSubscribedAddressesForHookType(ctx, hookType)
+
 	if len(contractAddresses) == 0 {
 		return nil
 	}
@@ -136,7 +120,19 @@ func (k Keeper) CallSudoForSubscriptions(ctx context.Context, contractAddresses 
 	return nil
 }
 
-// TODO: check
+func (k Keeper) GetSubscribedAddressesForHookType(goCtx context.Context, hookType types.HookType) []string {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
+
+	key := types.GetHookSubscriptionKey(hookType.String())
+	if store.Has(key) {
+		subscriptions := types.HookSubscriptions{}
+		k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
+		return subscriptions.ContractAddresses
+	} else {
+		return []string{}
+	}
+}
+
 // diff calculates difference between set slice1 and slice2, returns (slice2 converted to []string, slicesDifference)
 func diff(slice1 []string, slice2HookType []types.HookType) ([]string, []string) {
 	// convert slice2HookType to string namings
