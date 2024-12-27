@@ -1,5 +1,5 @@
 syntax = "proto3";
-package v5.harpoon;
+package neutron.harpoon;
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 

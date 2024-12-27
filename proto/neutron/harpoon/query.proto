@@ -1,5 +1,5 @@
 syntax = "proto3";
-package v5.harpoon;
+package neutron.harpoon;
 
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";

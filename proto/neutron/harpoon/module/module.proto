@@ -1,5 +1,5 @@
 syntax = "proto3";
-package v5.harpoon.module;
+package neutron.harpoon.module;
 
 import "cosmos/app/v1alpha1/module.proto";
 
