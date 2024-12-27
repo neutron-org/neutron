@@ -9,27 +9,24 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
-	"github.com/skip-mev/slinky/abci/strategies/aggregator"
+	bech32types "github.com/cosmos/cosmos-sdk/types/bech32"
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 type Keeper struct {
-	cdc           codec.BinaryCodec
-	storeService  coretypes.KVStoreService
-	va            aggregator.VoteAggregator
-	stakingKeeper *stakingkeeper.Keeper
-	bankKeeper    bankkeeper.Keeper
+	cdc            codec.BinaryCodec
+	storeService   coretypes.KVStoreService
+	voteAggregator revenuetypes.VoteAggregator
+	stakingKeeper  revenuetypes.StakingKeeper
+	bankKeeper     revenuetypes.BankKeeper
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService coretypes.KVStoreService,
-	va aggregator.VoteAggregator,
-	stakingKeeper *stakingkeeper.Keeper,
-	bankKeeper bankkeeper.Keeper,
+	voteAggregator revenuetypes.VoteAggregator,
+	stakingKeeper revenuetypes.StakingKeeper,
+	bankKeeper revenuetypes.BankKeeper,
 ) *Keeper {
 	// ensure bonded and not bonded module accounts are set
 	// if addr := ak.GetModuleAddress(types.BondedPoolName); addr == nil {
@@ -45,21 +42,21 @@ func NewKeeper(
 	//	panic("authority is not a valid acc address")
 	// }
 	return &Keeper{
-		cdc:           cdc,
-		storeService:  storeService,
-		va:            va,
-		stakingKeeper: stakingKeeper,
-		bankKeeper:    bankKeeper,
+		cdc:            cdc,
+		storeService:   storeService,
+		voteAggregator: voteAggregator,
+		stakingKeeper:  stakingKeeper,
+		bankKeeper:     bankKeeper,
 	}
 }
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", revenuetypes.ModuleName))
 }
 
-func (k *Keeper) GetState(ctx sdk.Context) (state types.State, err error) {
+func (k *Keeper) GetState(ctx sdk.Context) (state revenuetypes.State, err error) {
 	store := k.storeService.OpenKVStore(ctx)
-	bz, err := store.Get(types.StateKey)
+	bz, err := store.Get(revenuetypes.StateKey)
 	if err != nil {
 		return state, err
 	}
@@ -71,30 +68,30 @@ func (k *Keeper) GetState(ctx sdk.Context) (state types.State, err error) {
 	return state, err
 }
 
-func (k *Keeper) SetState(ctx sdk.Context, state types.State) error {
+func (k *Keeper) SetState(ctx sdk.Context, state revenuetypes.State) error {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := k.cdc.Marshal(&state)
 	if err != nil {
 		return err
 	}
-	err = store.Set(types.StateKey, bz)
+	err = store.Set(revenuetypes.StateKey, bz)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []types.ValidatorInfo, err error) {
+func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []revenuetypes.ValidatorInfo, err error) {
 	store := k.storeService.OpenKVStore(ctx)
-	iter, err := store.Iterator(types.PrefixValidatorInfoKey, storetypes.PrefixEndBytes(types.PrefixValidatorInfoKey))
+	iter, err := store.Iterator(revenuetypes.PrefixValidatorInfoKey, storetypes.PrefixEndBytes(revenuetypes.PrefixValidatorInfoKey))
 	if err != nil {
 		return nil, err
 	}
 	defer iter.Close()
 
-	infos = make([]types.ValidatorInfo, 0)
+	infos = make([]revenuetypes.ValidatorInfo, 0)
 	for ; iter.Valid(); iter.Next() {
-		var info types.ValidatorInfo
+		var info revenuetypes.ValidatorInfo
 		err = k.cdc.Unmarshal(iter.Value(), &info)
 		if err != nil {
 			return nil, err
@@ -109,9 +106,9 @@ func (k *Keeper) getOrCreateValidatorInfo(
 	addr sdk.ConsAddress,
 	// TODO: move blocksPassed out of this func params and set outside by SetValidatorInfo
 	blocksPassed uint64,
-) (info types.ValidatorInfo, err error) {
+) (info revenuetypes.ValidatorInfo, err error) {
 	store := k.storeService.OpenKVStore(ctx)
-	bz, err := store.Get(types.GetValidatorInfoKey(addr))
+	bz, err := store.Get(revenuetypes.GetValidatorInfoKey(addr))
 	if err != nil {
 		return info, err
 	}
@@ -125,7 +122,7 @@ func (k *Keeper) getOrCreateValidatorInfo(
 
 		// TODO: refactor the ValidatorInfo so it stores signed (not missed) blocks count.
 		// also refactor reward calc given this new approach
-		info = types.ValidatorInfo{
+		info = revenuetypes.ValidatorInfo{
 			// GetOperator might return empty string if validator in staking module not found by ConsAddress
 			OperatorAddress:          stakingVal.GetOperator(),
 			ConsensusAddress:         addr.String(),
@@ -136,7 +133,7 @@ func (k *Keeper) getOrCreateValidatorInfo(
 		if err != nil {
 			return info, err
 		}
-		err = store.Set(types.GetValidatorInfoKey(addr), infoBz)
+		err = store.Set(revenuetypes.GetValidatorInfoKey(addr), infoBz)
 		if err != nil {
 			return info, err
 		}
@@ -147,13 +144,13 @@ func (k *Keeper) getOrCreateValidatorInfo(
 	return info, err
 }
 
-func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info types.ValidatorInfo) error {
+func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info revenuetypes.ValidatorInfo) error {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := k.cdc.Marshal(&info)
 	if err != nil {
 		return nil
 	}
-	err = store.Set(types.GetValidatorInfoKey(addr), bz)
+	err = store.Set(revenuetypes.GetValidatorInfoKey(addr), bz)
 	return err
 }
 
@@ -201,16 +198,16 @@ func (k *Keeper) ResetValidators(ctx sdk.Context) {
 // and state reading
 func (k *Keeper) ProcessSignatures(ctx sdk.Context, blocksProgress uint64) error {
 	for _, info := range ctx.VoteInfos() {
+		valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
+		if err != nil {
+			return err
+		}
+
 		if comet.BlockIDFlag(info.BlockIdFlag) == comet.BlockIDFlagAbsent {
 			k.Logger(ctx).Debug("missed signature",
 				"validator", info.Validator.Address,
 				"height", ctx.BlockHeight(),
 			)
-
-			valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
-			if err != nil {
-				return err
-			}
 
 			valInfo.MissedBlocksInMonth++
 
@@ -226,18 +223,18 @@ func (k *Keeper) ProcessSignatures(ctx sdk.Context, blocksProgress uint64) error
 func (k *Keeper) ProcessOracleVotes(ctx sdk.Context, blocksProgress uint64) error {
 	for _, info := range ctx.VoteInfos() {
 		addr := sdk.ConsAddress(info.Validator.Address)
-		prices := k.va.GetPriceForValidator(addr)
+		valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
+		if err != nil {
+			return err
+		}
+
+		prices := k.voteAggregator.GetPriceForValidator(addr)
 		if len(prices) == 0 {
 			// missed oracle
 			k.Logger(ctx).Debug("missed oracle vote",
 				"validator", info.Validator.Address,
 				"height", ctx.BlockHeight(),
 			)
-
-			valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
-			if err != nil {
-				return err
-			}
 
 			valInfo.MissedOracleVotesInMonth++
 
@@ -273,22 +270,25 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 			state.BlockCounter,
 		)
 		valCompensation := rating.MulInt64(baseCompensation).TruncateInt()
-		_, addr, err := bech32.DecodeAndConvert(info.OperatorAddress)
+		_, addr, err := bech32types.DecodeAndConvert(info.OperatorAddress)
 		if err != nil {
 			k.Logger(ctx).Error(err.Error())
 			// TODO: handle error
 		}
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(
-			ctx,
-			types.RevenueTreasuryPoolName,
-			addr,
-			sdk.NewCoins(sdk.NewCoin(
-				params.DenomCompensation, valCompensation,
-			)),
-		)
-		if err != nil {
-			k.Logger(ctx).Error(err.Error())
-			// TODO: handle error
+
+		if valCompensation.IsPositive() {
+			err = k.bankKeeper.SendCoinsFromModuleToAccount(
+				ctx,
+				revenuetypes.RevenueTreasuryPoolName,
+				addr,
+				sdk.NewCoins(sdk.NewCoin(
+					params.DenomCompensation, valCompensation,
+				)),
+			)
+			if err != nil {
+				k.Logger(ctx).Error(err.Error())
+				// TODO: handle error
+			}
 		}
 	}
 	return nil
