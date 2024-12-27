@@ -12,7 +12,7 @@ import (
 )
 
 func setupMsgServer(t testing.TB) (keeper.Keeper, types.MsgServer, context.Context) {
-	k, ctx := keepertest.HarpoonKeeper(t)
+	k, ctx := keepertest.HarpoonKeeper(t, nil, nil)
 	return *k, keeper.NewMsgServerImpl(*k), ctx
 }
 

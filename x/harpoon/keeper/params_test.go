@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetParams(t *testing.T) {
-	k, ctx := keepertest.HarpoonKeeper(t)
+	k, ctx := keepertest.HarpoonKeeper(t, nil, nil)
 	params := types.DefaultParams()
 
 	require.NoError(t, k.SetParams(ctx, params))

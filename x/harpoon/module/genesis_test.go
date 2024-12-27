@@ -17,7 +17,7 @@ func TestGenesis(t *testing.T) {
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
-	k, ctx := keepertest.HarpoonKeeper(t)
+	k, ctx := keepertest.HarpoonKeeper(t, nil, nil)
 	harpoon.InitGenesis(ctx, *k, genesisState)
 	got := harpoon.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)
