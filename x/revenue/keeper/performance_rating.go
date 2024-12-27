@@ -2,14 +2,14 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 // PerformanceRating calculates rating like a superlinearly function, e.g
 // `f(a+b) > f(a) + f(b)`
 // TODO: describe returned value: [0.0; 1.0]?
 func PerformanceRating(
-	params types.Params,
+	params revenuetypes.Params,
 	missedBlocks uint64,
 	missedOracleVotes uint64,
 	totalBlocks uint64,

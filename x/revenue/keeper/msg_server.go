@@ -2,7 +2,8 @@ package keeper
 
 import (
 	"context"
-	"github.com/neutron-org/neutron/v5/x/revenue/types"
+
+	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
 type msgServer struct {
@@ -11,13 +12,13 @@ type msgServer struct {
 
 // NewMsgServerImpl returns an implementation of the MsgServer interface
 // for the provided Keeper.
-func NewMsgServerImpl(keeper *Keeper) types.MsgServer {
+func NewMsgServerImpl(keeper *Keeper) revenuetypes.MsgServer {
 	return &msgServer{keeper: keeper}
 }
 
-var _ types.MsgServer = msgServer{}
+var _ revenuetypes.MsgServer = msgServer{}
 
-func (s msgServer) UpdateParams(context context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+func (s msgServer) UpdateParams(context context.Context, msg *revenuetypes.MsgUpdateParams) (*revenuetypes.MsgUpdateParamsResponse, error) {
 	// TODO: implement
 	return nil, nil
 }
