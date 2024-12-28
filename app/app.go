@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	v400 "github.com/neutron-org/neutron/v5/app/upgrades/v4.0.1"
@@ -646,6 +647,7 @@ func New(
 		app.AccountKeeper,
 		&app.BankKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		revenuetypes.RevenueFeeRedistributePoolName,
 	)
 	feeBurnerModule := feeburner.NewAppModule(appCodec, *app.FeeBurnerKeeper)
 
