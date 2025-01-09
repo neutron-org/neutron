@@ -29,7 +29,9 @@ type Params struct {
 	Paused                bool     `protobuf:"varint,3,opt,name=paused,proto3" json:"paused"`
 	MaxJitsPerBlock       uint64   `protobuf:"varint,4,opt,name=max_jits_per_block,json=maxJitsPerBlock,proto3" json:"max_jits_per_block,omitempty"`
 	GoodTilPurgeAllowance uint64   `protobuf:"varint,5,opt,name=good_til_purge_allowance,json=goodTilPurgeAllowance,proto3" json:"good_til_purge_allowance,omitempty"`
-	WhitelistedLps        []string `protobuf:"bytes,6,rep,name=whitelisted_lps,json=whitelistedLps,proto3" json:"whitelisted_lps,omitempty"`
+	// Whitelisted_lps have special LP privileges;
+	// currently, the only such privilege is depositing outside of the allowed fee_tiers.
+	WhitelistedLps []string `protobuf:"bytes,6,rep,name=whitelisted_lps,json=whitelistedLps,proto3" json:"whitelisted_lps,omitempty"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }

@@ -15,5 +15,7 @@ message Params {
   ];
   uint64 max_jits_per_block = 4;
   uint64 good_til_purge_allowance = 5;
+  // Whitelisted_lps have special LP privileges;
+  // currently, the only such privilege is depositing outside of the allowed fee_tiers.
   repeated string whitelisted_lps = 6;
 }
