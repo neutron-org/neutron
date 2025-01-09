@@ -5,7 +5,7 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params: DefaultParams(),
 		State: State{
-			WorkingMonth: 0,
+			CurrentMonth: 0,
 			BlockCounter: 0,
 		},
 		Validators: nil,

@@ -8,22 +8,22 @@ import (
 
 // TODO: comments for default values
 var (
-	DefaultDenomCompensation      = params.DefaultDenom
-	DefaultOracleLegacyVoteWeight = math.LegacyOneDec()
-	DefaultPerformanceThreshold   = math.LegacyNewDecWithPrec(1, 1)
-	DefaultAllowedMissed          = math.LegacyNewDecWithPrec(5, 3)
+	DefaultDenomCompensation           = params.DefaultDenom
+	DefaultBaseCompensation     uint64 = 1500
+	DefaultPerformanceThreshold        = math.LegacyNewDecWithPrec(1, 1)
+	DefaultAllowedMissed               = math.LegacyNewDecWithPrec(5, 3)
 )
 
 // NewParams creates a new Params instance
 func NewParams(
 	denomCompensation string,
-	oracleVoteWeight math.LegacyDec,
+	baseCompensation uint64,
 	performanceThreshold math.LegacyDec,
 	allowedMissed math.LegacyDec,
 ) Params {
 	return Params{
 		DenomCompensation:    denomCompensation,
-		OracleVoteWeight:     oracleVoteWeight,
+		BaseCompensation:     baseCompensation,
 		PerformanceThreshold: performanceThreshold,
 		AllowedMissed:        allowedMissed,
 	}
@@ -33,7 +33,7 @@ func NewParams(
 func DefaultParams() Params {
 	return NewParams(
 		DefaultDenomCompensation,
-		DefaultOracleLegacyVoteWeight,
+		DefaultBaseCompensation,
 		DefaultPerformanceThreshold,
 		DefaultAllowedMissed,
 	)

@@ -104,8 +104,6 @@ func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []revenuetypes.Vali
 func (k *Keeper) getOrCreateValidatorInfo(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
-	// TODO: move blocksPassed out of this func params and set outside by SetValidatorInfo
-	blocksPassed uint64,
 ) (info revenuetypes.ValidatorInfo, err error) {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := store.Get(revenuetypes.GetValidatorInfoKey(addr))
@@ -120,14 +118,10 @@ func (k *Keeper) getOrCreateValidatorInfo(
 			// TODO: handle error
 		}
 
-		// TODO: refactor the ValidatorInfo so it stores signed (not missed) blocks count.
-		// also refactor reward calc given this new approach
 		info = revenuetypes.ValidatorInfo{
 			// GetOperator might return empty string if validator in staking module not found by ConsAddress
-			OperatorAddress:          stakingVal.GetOperator(),
-			ConsensusAddress:         addr.String(),
-			MissedBlocksInMonth:      blocksPassed,
-			MissedOracleVotesInMonth: blocksPassed,
+			OperatorAddress:  stakingVal.GetOperator(),
+			ConsensusAddress: addr.String(),
 		}
 		infoBz, err := k.cdc.Marshal(&info)
 		if err != nil {
@@ -160,33 +154,25 @@ func (k *Keeper) EndBlock(ctx sdk.Context) error {
 	if err != nil {
 		return err
 	}
-	// if the first block of the next month
-	if state.WorkingMonth != int32(ctx.BlockTime().Month()) {
+
+	// if the current month has changed
+	if state.CurrentMonth != int32(ctx.BlockTime().Month()) {
 		// TODO: pause revenue processing in case if any error during EndBlock ???
 		k.ProcessRevenue(ctx)
 		k.ResetValidators(ctx)
-		state.WorkingMonth = int32(ctx.BlockTime().Month())
+		state.CurrentMonth = int32(ctx.BlockTime().Month())
 		state.BlockCounter = 0
 
 	}
 
-	err = k.ProcessSignatures(ctx, state.BlockCounter)
-	if err != nil {
-		return err
-	}
-
-	err = k.ProcessOracleVotes(ctx, state.BlockCounter)
-	if err != nil {
+	if err := k.RecordValidatorsParticipation(ctx); err != nil {
 		return err
 	}
 
 	state.BlockCounter++
-
-	err = k.SetState(ctx, state)
-	if err != nil {
+	if err := k.SetState(ctx, state); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -194,54 +180,46 @@ func (k *Keeper) ResetValidators(ctx sdk.Context) {
 	// TODO:
 }
 
-// TODO: merge ProcessSignatures and ProcessOracleVotes to one function to reduce code duplication
-// and state reading
-func (k *Keeper) ProcessSignatures(ctx sdk.Context, blocksProgress uint64) error {
+func (k *Keeper) RecordValidatorsParticipation(ctx sdk.Context) error {
 	for _, info := range ctx.VoteInfos() {
-		valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
-		if err != nil {
-			return err
-		}
+		var blockVote bool  // whether the validator has voted for the block
+		var oracleVote bool // whether the validator has voted for the oracle prices
 
+		// BlockIDFlagAbsent means that no block vote has been received from the validator
 		if comet.BlockIDFlag(info.BlockIdFlag) == comet.BlockIDFlagAbsent {
-			k.Logger(ctx).Debug("missed signature",
+			k.Logger(ctx).Debug("missing validator's block signature",
 				"validator", info.Validator.Address,
 				"height", ctx.BlockHeight(),
 			)
-
-			valInfo.MissedBlocksInMonth++
-
-			err = k.SetValidatorInfo(ctx, info.Validator.Address, valInfo)
-			if err != nil {
-				return err
-			}
+		} else {
+			blockVote = true
 		}
-	}
-	return nil
-}
+		// empty oracle prices means that no prices vote has been received from the validator
+		if len(k.voteAggregator.GetPriceForValidator(sdk.ConsAddress(info.Validator.Address))) == 0 {
+			k.Logger(ctx).Debug("missing validator's oracle prices",
+				"validator", info.Validator.Address,
+				"height", ctx.BlockHeight(),
+			)
+		} else {
+			oracleVote = true
+		}
+		if !oracleVote && !blockVote {
+			continue // nothing to update for the validator
+		}
 
-func (k *Keeper) ProcessOracleVotes(ctx sdk.Context, blocksProgress uint64) error {
-	for _, info := range ctx.VoteInfos() {
-		addr := sdk.ConsAddress(info.Validator.Address)
-		valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address, blocksProgress)
+		// record votes in the state
+		valInfo, err := k.getOrCreateValidatorInfo(ctx, info.Validator.Address)
 		if err != nil {
 			return err
 		}
-
-		prices := k.voteAggregator.GetPriceForValidator(addr)
-		if len(prices) == 0 {
-			// missed oracle
-			k.Logger(ctx).Debug("missed oracle vote",
-				"validator", info.Validator.Address,
-				"height", ctx.BlockHeight(),
-			)
-
-			valInfo.MissedOracleVotesInMonth++
-
-			err = k.SetValidatorInfo(ctx, info.Validator.Address, valInfo)
-			if err != nil {
-				return err
-			}
+		if oracleVote {
+			valInfo.CommitedOracleVotesInMonth++
+		}
+		if blockVote {
+			valInfo.CommitedBlocksInMonth++
+		}
+		if err := k.SetValidatorInfo(ctx, info.Validator.Address, valInfo); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -265,8 +243,8 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 	for _, info := range infos {
 		rating := PerformanceRating(
 			params,
-			info.GetMissedBlocksInMonth(),
-			info.GetMissedOracleVotesInMonth(),
+			state.BlockCounter-info.GetCommitedBlocksInMonth(),
+			state.BlockCounter-info.GetCommitedOracleVotesInMonth(),
 			state.BlockCounter,
 		)
 		valCompensation := rating.MulInt64(baseCompensation).TruncateInt()

@@ -39,7 +39,7 @@ func TestParams(t *testing.T) {
 	params, err = keeper.GetParams(ctx)
 	require.Nil(t, err)
 	require.Equal(t, "uibcatom", params.DenomCompensation)
-	require.Equal(t, revenuetypes.DefaultParams().OracleVoteWeight, params.OracleVoteWeight)
+	require.Equal(t, revenuetypes.DefaultParams().BaseCompensation, params.BaseCompensation)
 	require.Equal(t, revenuetypes.DefaultParams().PerformanceThreshold, params.PerformanceThreshold)
 	require.Equal(t, revenuetypes.DefaultParams().AllowedMissed, params.AllowedMissed)
 }
@@ -55,12 +55,12 @@ func TestValidatorInfo(t *testing.T) {
 	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
 
 	val1Info := val1Info()
-	val1Info.MissedBlocksInMonth = 1
-	val1Info.MissedOracleVotesInMonth = 2
+	val1Info.CommitedBlocksInMonth = 1
+	val1Info.CommitedOracleVotesInMonth = 2
 
 	val2Info := val2Info()
-	val1Info.MissedBlocksInMonth = 100
-	val1Info.MissedOracleVotesInMonth = 200
+	val1Info.CommitedBlocksInMonth = 100
+	val1Info.CommitedOracleVotesInMonth = 200
 
 	// set validator infos
 	err := keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
@@ -87,6 +87,8 @@ func TestProcessRevenue(t *testing.T) {
 	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
 
 	val1Info := val1Info()
+	val1Info.CommitedBlocksInMonth = 1000
+	val1Info.CommitedOracleVotesInMonth = 1000
 
 	// prepare keeper state
 	err := keeper.SetState(ctx, revenuetypes.State{BlockCounter: 1000})
@@ -118,10 +120,8 @@ func TestProcessRevenueNoReward(t *testing.T) {
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
 
-	// set val1 info as if they have missed all blocks and prices
+	// set val1 info as if they haven't committed any blocks and prices
 	val1Info := val1Info()
-	val1Info.MissedBlocksInMonth = 1000
-	val1Info.MissedOracleVotesInMonth = 1000
 
 	// prepare keeper state
 	err := keeper.SetState(ctx, revenuetypes.State{BlockCounter: 1000})
@@ -160,10 +160,12 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 
 	// set val1 info as if they have missed 0.15 blocks and prices
 	val1Info := val1Info()
-	val1Info.MissedBlocksInMonth = 150
-	val1Info.MissedOracleVotesInMonth = 150
+	val1Info.CommitedBlocksInMonth = 850
+	val1Info.CommitedOracleVotesInMonth = 850
 	// val2 haven't missed a thing
 	val2Info := val2Info()
+	val2Info.CommitedBlocksInMonth = 1000
+	val2Info.CommitedOracleVotesInMonth = 1000
 
 	// prepare keeper state
 	err = keeper.SetState(ctx, revenuetypes.State{BlockCounter: 1000})
@@ -208,15 +210,18 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
 
-	val1Info := val1Info() // known validator (set in keeper below) with 100% performance
-	val2Info := val2Info() // new validator (doesn't exist in keeper state)
+	// known validator (set in keeper below) with 100% performance
+	val1Info := val1Info()
+	val1Info.CommitedBlocksInMonth = 1000
+	val1Info.CommitedOracleVotesInMonth = 1000
+	// new validator (doesn't exist in keeper state)
+	val2Info := val2Info()
+
 	ca1 := mustConsAddressFromBech32(t, val1Info.ConsensusAddress)
 	ca2 := mustConsAddressFromBech32(t, val2Info.ConsensusAddress)
 
 	// prepare keeper state
-	err := keeper.SetState(ctx, revenuetypes.State{BlockCounter: 1000})
-	require.Nil(t, err)
-	err = keeper.SetValidatorInfo(ctx, ca1, val1Info)
+	err := keeper.SetValidatorInfo(ctx, ca1, val1Info)
 	require.Nil(t, err)
 
 	// add vote info from the validator
@@ -248,9 +253,7 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 		ca2,
 	).Return(stakingtypes.Validator{OperatorAddress: val2Info.OperatorAddress}, nil)
 
-	err = keeper.ProcessSignatures(ctx, 1000)
-	require.Nil(t, err)
-	err = keeper.ProcessOracleVotes(ctx, 1000)
+	err = keeper.RecordValidatorsParticipation(ctx)
 	require.Nil(t, err)
 
 	// make sure that the validator votes are processed and keeper's state is updated
@@ -261,12 +264,12 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 
 	// known val
 	require.Equal(t, val1Info.ConsensusAddress, valInfos[1].ConsensusAddress)
-	require.Equal(t, uint64(1), valInfos[1].MissedBlocksInMonth)      // never missed a block but the last one
-	require.Equal(t, uint64(1), valInfos[1].MissedOracleVotesInMonth) // never missed a block but the last one
+	require.Equal(t, uint64(1000), valInfos[1].CommitedBlocksInMonth)      // never missed a block but the last one
+	require.Equal(t, uint64(1000), valInfos[1].CommitedOracleVotesInMonth) // never missed a block but the last one
 	// new val
 	require.Equal(t, val2Info.ConsensusAddress, valInfos[0].ConsensusAddress)
-	require.Equal(t, uint64(1000), valInfos[0].MissedBlocksInMonth)      // all but the last one are missed
-	require.Equal(t, uint64(1000), valInfos[0].MissedOracleVotesInMonth) // all but the last one are missed
+	require.Equal(t, uint64(1), valInfos[0].CommitedBlocksInMonth)      // all but the last one are missed
+	require.Equal(t, uint64(1), valInfos[0].CommitedOracleVotesInMonth) // all but the last one are missed
 }
 
 func val1Info() revenuetypes.ValidatorInfo {

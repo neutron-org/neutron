@@ -11,7 +11,7 @@ import (
 func TestPerformanceRating(t *testing.T) {
 	params := types.Params{
 		DenomCompensation:    "untrn",
-		OracleVoteWeight:     math.LegacyDec{},
+		BaseCompensation:     1500,
 		PerformanceThreshold: math.LegacyNewDecWithPrec(1, 1), // 0.1
 		AllowedMissed:        math.LegacyNewDecWithPrec(5, 3), // 0.005
 	}

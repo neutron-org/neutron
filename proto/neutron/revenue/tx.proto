@@ -13,7 +13,7 @@ import "tendermint/crypto/proof.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/revenue/types";
 
-// TODO: comprehensively describe all definitions in proto files 
+// TODO: comprehensively describe all definitions in proto files
 
 // Msg defines the Msg service.
 service Msg {
