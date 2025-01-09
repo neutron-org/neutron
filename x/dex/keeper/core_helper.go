@@ -75,6 +75,15 @@ func (k Keeper) ValidateFee(ctx sdk.Context, fee uint64) error {
 	return nil
 }
 
+func (k Keeper) GetWhitelistedLPs(ctx sdk.Context) []string {
+	return k.GetParams(ctx).WhitelistedLps
+}
+
+func (k Keeper) IsWhitelistedLP(ctx sdk.Context, addr sdk.AccAddress) bool {
+	whitelistedLPs := k.GetWhitelistedLPs(ctx)
+	return slices.Contains(whitelistedLPs, addr.String())
+}
+
 func (k Keeper) GetMaxJITsPerBlock(ctx sdk.Context) uint64 {
 	return k.GetParams(ctx).MaxJitsPerBlock
 }

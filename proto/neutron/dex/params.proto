@@ -15,4 +15,5 @@ message Params {
   ];
   uint64 max_jits_per_block = 4;
   uint64 good_til_purge_allowance = 5;
+  repeated string whitelisted_lps = 6;
 }
