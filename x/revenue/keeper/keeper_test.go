@@ -40,8 +40,8 @@ func TestParams(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, "uibcatom", params.DenomCompensation)
 	require.Equal(t, revenuetypes.DefaultParams().BaseCompensation, params.BaseCompensation)
-	require.Equal(t, revenuetypes.DefaultParams().PerformanceThreshold, params.PerformanceThreshold)
-	require.Equal(t, revenuetypes.DefaultParams().AllowedMissed, params.AllowedMissed)
+	require.Equal(t, revenuetypes.DefaultParams().BlocksPerformanceRequirement, params.BlocksPerformanceRequirement)
+	require.Equal(t, revenuetypes.DefaultParams().OracleVotesPerformanceRequirement, params.OracleVotesPerformanceRequirement)
 }
 
 func TestValidatorInfo(t *testing.T) {
@@ -153,8 +153,14 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 
 	// set test specific inactivity params
 	newParams := revenuetypes.DefaultParams()
-	newParams.AllowedMissed = math.LegacyNewDecWithPrec(1, 1)        // 0.1 allowed to miss without a fine
-	newParams.PerformanceThreshold = math.LegacyNewDecWithPrec(2, 1) // not more than 0.2 allowed to miss to get rewards
+	newParams.BlocksPerformanceRequirement = &revenuetypes.PerformanceRequirement{
+		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
+		RequiredAtLeast: math.LegacyNewDecWithPrec(8, 1), // not more than 0.2 allowed to miss to get rewards
+	}
+	newParams.OracleVotesPerformanceRequirement = &revenuetypes.PerformanceRequirement{
+		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
+		RequiredAtLeast: math.LegacyNewDecWithPrec(8, 1), // not more than 0.2 allowed to miss to get rewards
+	}
 	err := keeper.SetParams(ctx, newParams)
 	require.Nil(t, err)
 

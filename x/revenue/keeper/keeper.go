@@ -243,9 +243,9 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 	for _, info := range infos {
 		rating := PerformanceRating(
 			params,
-			state.BlockCounter-info.GetCommitedBlocksInMonth(),
-			state.BlockCounter-info.GetCommitedOracleVotesInMonth(),
-			state.BlockCounter,
+			int64(state.BlockCounter-info.GetCommitedBlocksInMonth()),
+			int64(state.BlockCounter-info.GetCommitedOracleVotesInMonth()),
+			int64(state.BlockCounter),
 		)
 		valCompensation := rating.MulInt64(baseCompensation).TruncateInt()
 		_, addr, err := bech32types.DecodeAndConvert(info.OperatorAddress)

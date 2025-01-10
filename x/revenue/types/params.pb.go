@@ -32,10 +32,12 @@ type Params struct {
 	DenomCompensation string `protobuf:"bytes,1,opt,name=denom_compensation,json=denomCompensation,proto3" json:"denom_compensation,omitempty"`
 	// The compensation amount in USDC.
 	BaseCompensation uint64 `protobuf:"varint,2,opt,name=base_compensation,json=baseCompensation,proto3" json:"base_compensation,omitempty"`
-	// TODO: reconsider naming for allowed_missed and performance_threshold
-	PerformanceThreshold cosmossdk_io_math.LegacyDec `protobuf:"bytes,3,opt,name=performance_threshold,json=performanceThreshold,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"performance_threshold"`
-	// TODO: split allow missed into two parts: for blocks and for slinky prices
-	AllowedMissed cosmossdk_io_math.LegacyDec `protobuf:"bytes,4,opt,name=allowed_missed,json=allowedMissed,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"allowed_missed"`
+	// Specifies performance requirements for validators in scope of blocks signing and creation. If
+	// not met, the validator is not rewarded.
+	BlocksPerformanceRequirement *PerformanceRequirement `protobuf:"bytes,3,opt,name=blocks_performance_requirement,json=blocksPerformanceRequirement,proto3" json:"blocks_performance_requirement,omitempty"`
+	// Specifies performance requirements for validators in scope of the oracle price votes. If not
+	// met, the validator is not rewarded.
+	OracleVotesPerformanceRequirement *PerformanceRequirement `protobuf:"bytes,4,opt,name=oracle_votes_performance_requirement,json=oracleVotesPerformanceRequirement,proto3" json:"oracle_votes_performance_requirement,omitempty"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }
@@ -84,36 +86,100 @@ func (m *Params) GetBaseCompensation() uint64 {
 	return 0
 }
 
+func (m *Params) GetBlocksPerformanceRequirement() *PerformanceRequirement {
+	if m != nil {
+		return m.BlocksPerformanceRequirement
+	}
+	return nil
+}
+
+func (m *Params) GetOracleVotesPerformanceRequirement() *PerformanceRequirement {
+	if m != nil {
+		return m.OracleVotesPerformanceRequirement
+	}
+	return nil
+}
+
+// Specifies a performance criteria that validators must meet to qualify for network rewards.
+type PerformanceRequirement struct {
+	// The fraction of the total performance a validator can miss without affecting their reward.
+	// Represented as a decimal value.
+	AllowedToMiss cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=allowed_to_miss,json=allowedToMiss,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"allowed_to_miss"`
+	// The minimum fraction of the total performance a validator must achieve to be eligible for
+	// network rewards. Validators falling below this threshold will not receive any rewards.
+	// Represented as a decimal value.
+	RequiredAtLeast cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=required_at_least,json=requiredAtLeast,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"required_at_least"`
+}
+
+func (m *PerformanceRequirement) Reset()         { *m = PerformanceRequirement{} }
+func (m *PerformanceRequirement) String() string { return proto.CompactTextString(m) }
+func (*PerformanceRequirement) ProtoMessage()    {}
+func (*PerformanceRequirement) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e318e374514628b, []int{1}
+}
+func (m *PerformanceRequirement) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *PerformanceRequirement) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PerformanceRequirement.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *PerformanceRequirement) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PerformanceRequirement.Merge(m, src)
+}
+func (m *PerformanceRequirement) XXX_Size() int {
+	return m.Size()
+}
+func (m *PerformanceRequirement) XXX_DiscardUnknown() {
+	xxx_messageInfo_PerformanceRequirement.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PerformanceRequirement proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*Params)(nil), "neutron.revenue.Params")
+	proto.RegisterType((*PerformanceRequirement)(nil), "neutron.revenue.PerformanceRequirement")
 }
 
 func init() { proto.RegisterFile("neutron/revenue/params.proto", fileDescriptor_7e318e374514628b) }
 
 var fileDescriptor_7e318e374514628b = []byte{
-	// 349 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x91, 0x4f, 0x4b, 0xeb, 0x40,
-	0x10, 0xc0, 0x93, 0xbe, 0x52, 0x78, 0x81, 0xf7, 0xa7, 0xa1, 0x0f, 0xfa, 0xaa, 0xa4, 0xc5, 0x53,
-	0x41, 0x9a, 0x25, 0x88, 0x17, 0x8f, 0xb5, 0x37, 0x15, 0xa4, 0x78, 0x10, 0x2f, 0x61, 0xb3, 0x99,
-	0x26, 0xc1, 0xee, 0x4e, 0xd8, 0xdd, 0x56, 0xfb, 0x2d, 0x3c, 0x7a, 0xf4, 0x03, 0x78, 0xf4, 0x43,
-	0xf4, 0x58, 0x3c, 0x89, 0x87, 0x22, 0xed, 0x17, 0x91, 0xfc, 0xa9, 0xb4, 0x57, 0x6f, 0x33, 0xf3,
-	0x9b, 0xfd, 0xcd, 0x2c, 0x63, 0xed, 0x0b, 0x98, 0x68, 0x89, 0x82, 0x48, 0x98, 0x82, 0x98, 0x00,
-	0x49, 0xa9, 0xa4, 0x5c, 0xb9, 0xa9, 0x44, 0x8d, 0xf6, 0x9f, 0x92, 0xba, 0x25, 0x6d, 0x39, 0x0c,
-	0x15, 0x47, 0x45, 0x02, 0xaa, 0x80, 0x4c, 0xbd, 0x00, 0x34, 0xf5, 0x08, 0xc3, 0x44, 0x14, 0x0f,
-	0x5a, 0xff, 0x0b, 0xee, 0xe7, 0x19, 0x29, 0x92, 0x12, 0x35, 0x22, 0x8c, 0xb0, 0xa8, 0x67, 0x51,
-	0x51, 0x3d, 0x78, 0xae, 0x58, 0xb5, 0xcb, 0x7c, 0xa4, 0xdd, 0xb3, 0xec, 0x10, 0x04, 0x72, 0x9f,
-	0x21, 0x4f, 0x41, 0x28, 0xaa, 0x13, 0x14, 0x4d, 0xb3, 0x63, 0x76, 0x7f, 0x0e, 0xeb, 0x39, 0x39,
-	0xdd, 0x02, 0xf6, 0xa1, 0x55, 0xcf, 0xb6, 0xd8, 0xed, 0xae, 0x74, 0xcc, 0x6e, 0x75, 0xf8, 0x37,
-	0x03, 0x3b, 0xcd, 0x23, 0xeb, 0x5f, 0x0a, 0x72, 0x84, 0x92, 0x53, 0xc1, 0xc0, 0xd7, 0xb1, 0x04,
-	0x15, 0xe3, 0x38, 0x6c, 0xfe, 0xc8, 0xf4, 0x7d, 0x6f, 0xbe, 0x6c, 0x1b, 0xef, 0xcb, 0xf6, 0x5e,
-	0xb1, 0xb1, 0x0a, 0x6f, 0xdd, 0x04, 0x09, 0xa7, 0x3a, 0x76, 0xcf, 0x21, 0xa2, 0x6c, 0x36, 0x00,
-	0xf6, 0xfa, 0xd2, 0xb3, 0xca, 0x0f, 0x0d, 0x80, 0x0d, 0x1b, 0x5b, 0xbe, 0xab, 0x8d, 0xce, 0xbe,
-	0xb6, 0x7e, 0xd3, 0xf1, 0x18, 0xef, 0x20, 0xf4, 0x79, 0xa2, 0x14, 0x84, 0xcd, 0xea, 0x77, 0x07,
-	0xfc, 0x2a, 0x45, 0x17, 0xb9, 0xe7, 0xa4, 0xfa, 0xf8, 0xd4, 0x36, 0xfa, 0x67, 0xf3, 0x95, 0x63,
-	0x2e, 0x56, 0x8e, 0xf9, 0xb1, 0x72, 0xcc, 0x87, 0xb5, 0x63, 0x2c, 0xd6, 0x8e, 0xf1, 0xb6, 0x76,
-	0x8c, 0x1b, 0x2f, 0x4a, 0x74, 0x3c, 0x09, 0x5c, 0x86, 0x9c, 0x94, 0x57, 0xeb, 0xa1, 0x8c, 0x36,
-	0x31, 0x99, 0x1e, 0x93, 0xfb, 0xaf, 0x23, 0xeb, 0x59, 0x0a, 0x2a, 0xa8, 0xe5, 0x27, 0x38, 0xfa,
-	0x0c, 0x00, 0x00, 0xff, 0xff, 0x9f, 0x27, 0x47, 0xef, 0x04, 0x02, 0x00, 0x00,
+	// 427 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0x4f, 0x6b, 0x14, 0x31,
+	0x18, 0xc6, 0x27, 0x75, 0x29, 0x18, 0x91, 0x75, 0x07, 0x91, 0x5a, 0x4b, 0x76, 0x2d, 0x82, 0x0b,
+	0xb2, 0x13, 0x56, 0xf1, 0xe2, 0xcd, 0xda, 0x9b, 0x15, 0xca, 0x20, 0x82, 0x82, 0x84, 0x4c, 0xf6,
+	0x75, 0x3a, 0x74, 0x92, 0x77, 0x4c, 0xb2, 0x6b, 0xfb, 0x2d, 0x3c, 0x7a, 0xf4, 0x43, 0xf8, 0x21,
+	0x7a, 0x2c, 0xf5, 0x22, 0x1e, 0x8a, 0xec, 0x7e, 0x11, 0x99, 0xc9, 0xd4, 0x5a, 0xe9, 0x1e, 0xec,
+	0x2d, 0xc9, 0xef, 0xc9, 0xf3, 0xfe, 0xa5, 0x1b, 0x06, 0xa6, 0xde, 0xa2, 0xe1, 0x16, 0x66, 0x60,
+	0xa6, 0xc0, 0x2b, 0x69, 0xa5, 0x76, 0x49, 0x65, 0xd1, 0x63, 0xdc, 0x6d, 0x69, 0xd2, 0xd2, 0x75,
+	0xa6, 0xd0, 0x69, 0x74, 0x3c, 0x93, 0x0e, 0xf8, 0x6c, 0x9c, 0x81, 0x97, 0x63, 0xae, 0xb0, 0x30,
+	0xe1, 0xc3, 0xfa, 0xdd, 0xc0, 0x45, 0x73, 0xe3, 0xe1, 0xd2, 0xa2, 0xdb, 0x39, 0xe6, 0x18, 0xde,
+	0xeb, 0x53, 0x78, 0xdd, 0xfc, 0xbe, 0x42, 0x57, 0x77, 0x9b, 0x90, 0xf1, 0x88, 0xc6, 0x13, 0x30,
+	0xa8, 0x85, 0x42, 0x5d, 0x81, 0x71, 0xd2, 0x17, 0x68, 0xd6, 0xc8, 0x80, 0x0c, 0xaf, 0xa7, 0xbd,
+	0x86, 0xbc, 0xf8, 0x0b, 0xc4, 0x8f, 0x68, 0xaf, 0xce, 0xe2, 0xa2, 0x7a, 0x65, 0x40, 0x86, 0x9d,
+	0xf4, 0x56, 0x0d, 0x2e, 0x88, 0x35, 0x65, 0x59, 0x89, 0x6a, 0xdf, 0x89, 0x0a, 0xec, 0x07, 0xb4,
+	0x5a, 0x1a, 0x05, 0xc2, 0xc2, 0xc7, 0x69, 0x61, 0x41, 0x83, 0xf1, 0x6b, 0xd7, 0x06, 0x64, 0x78,
+	0xe3, 0xf1, 0xc3, 0xe4, 0x9f, 0x8a, 0x93, 0xdd, 0x73, 0x7d, 0x7a, 0x2e, 0x4f, 0x37, 0x82, 0xdd,
+	0xe5, 0x34, 0x3e, 0xa0, 0x0f, 0xd0, 0x4a, 0x55, 0x82, 0x98, 0xa1, 0x87, 0xe5, 0x41, 0x3b, 0xff,
+	0x17, 0xf4, 0x7e, 0x30, 0x7d, 0x53, 0x7b, 0x5e, 0x2e, 0x79, 0xd6, 0xf9, 0xf2, 0xb5, 0x1f, 0x6d,
+	0x9e, 0x10, 0x7a, 0x67, 0x49, 0x6a, 0x6f, 0x69, 0x57, 0x96, 0x25, 0x7e, 0x82, 0x89, 0xf0, 0x28,
+	0x74, 0xe1, 0x5c, 0x68, 0xf1, 0xd6, 0xf8, 0xe8, 0xb4, 0x1f, 0xfd, 0x3c, 0xed, 0xdf, 0x0b, 0x53,
+	0x73, 0x93, 0xfd, 0xa4, 0x40, 0xae, 0xa5, 0xdf, 0x4b, 0x76, 0x20, 0x97, 0xea, 0x70, 0x1b, 0xd4,
+	0xc9, 0xb7, 0x11, 0x6d, 0x87, 0xba, 0x0d, 0x2a, 0xbd, 0xd9, 0x3a, 0xbd, 0xc6, 0x57, 0x85, 0x73,
+	0xf1, 0x7b, 0xda, 0x6b, 0x8b, 0x9b, 0x08, 0xe9, 0x45, 0x09, 0xd2, 0xf9, 0x66, 0x22, 0x57, 0x32,
+	0xef, 0x9e, 0x79, 0x3d, 0xf7, 0x3b, 0xb5, 0xd3, 0xd6, 0xcb, 0xa3, 0x39, 0x23, 0xc7, 0x73, 0x46,
+	0x7e, 0xcd, 0x19, 0xf9, 0xbc, 0x60, 0xd1, 0xf1, 0x82, 0x45, 0x3f, 0x16, 0x2c, 0x7a, 0x37, 0xce,
+	0x0b, 0xbf, 0x37, 0xcd, 0x12, 0x85, 0x9a, 0xb7, 0xad, 0x1c, 0xa1, 0xcd, 0xcf, 0xce, 0x7c, 0xf6,
+	0x94, 0x1f, 0xfc, 0x59, 0x70, 0x7f, 0x58, 0x81, 0xcb, 0x56, 0x9b, 0xf5, 0x7b, 0xf2, 0x3b, 0x00,
+	0x00, 0xff, 0xff, 0x0b, 0xf5, 0xa1, 0x05, 0x00, 0x03, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -136,26 +202,30 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.AllowedMissed.Size()
-		i -= size
-		if _, err := m.AllowedMissed.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if m.OracleVotesPerformanceRequirement != nil {
+		{
+			size, err := m.OracleVotesPerformanceRequirement.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintParams(dAtA, i, uint64(size))
 		}
-		i = encodeVarintParams(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x22
 	}
-	i--
-	dAtA[i] = 0x22
-	{
-		size := m.PerformanceThreshold.Size()
-		i -= size
-		if _, err := m.PerformanceThreshold.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if m.BlocksPerformanceRequirement != nil {
+		{
+			size, err := m.BlocksPerformanceRequirement.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintParams(dAtA, i, uint64(size))
 		}
-		i = encodeVarintParams(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x1a
 	}
-	i--
-	dAtA[i] = 0x1a
 	if m.BaseCompensation != 0 {
 		i = encodeVarintParams(dAtA, i, uint64(m.BaseCompensation))
 		i--
@@ -168,6 +238,49 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *PerformanceRequirement) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *PerformanceRequirement) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PerformanceRequirement) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.RequiredAtLeast.Size()
+		i -= size
+		if _, err := m.RequiredAtLeast.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	{
+		size := m.AllowedToMiss.Size()
+		i -= size
+		if _, err := m.AllowedToMiss.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -195,9 +308,26 @@ func (m *Params) Size() (n int) {
 	if m.BaseCompensation != 0 {
 		n += 1 + sovParams(uint64(m.BaseCompensation))
 	}
-	l = m.PerformanceThreshold.Size()
+	if m.BlocksPerformanceRequirement != nil {
+		l = m.BlocksPerformanceRequirement.Size()
+		n += 1 + l + sovParams(uint64(l))
+	}
+	if m.OracleVotesPerformanceRequirement != nil {
+		l = m.OracleVotesPerformanceRequirement.Size()
+		n += 1 + l + sovParams(uint64(l))
+	}
+	return n
+}
+
+func (m *PerformanceRequirement) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.AllowedToMiss.Size()
 	n += 1 + l + sovParams(uint64(l))
-	l = m.AllowedMissed.Size()
+	l = m.RequiredAtLeast.Size()
 	n += 1 + l + sovParams(uint64(l))
 	return n
 }
@@ -290,9 +420,9 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PerformanceThreshold", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BlocksPerformanceRequirement", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowParams
@@ -302,29 +432,117 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthParams
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthParams
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.PerformanceThreshold.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if m.BlocksPerformanceRequirement == nil {
+				m.BlocksPerformanceRequirement = &PerformanceRequirement{}
+			}
+			if err := m.BlocksPerformanceRequirement.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AllowedMissed", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OracleVotesPerformanceRequirement", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.OracleVotesPerformanceRequirement == nil {
+				m.OracleVotesPerformanceRequirement = &PerformanceRequirement{}
+			}
+			if err := m.OracleVotesPerformanceRequirement.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipParams(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthParams
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *PerformanceRequirement) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowParams
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: PerformanceRequirement: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: PerformanceRequirement: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AllowedToMiss", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -352,7 +570,41 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.AllowedMissed.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.AllowedToMiss.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RequiredAtLeast", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RequiredAtLeast.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
