@@ -1,7 +1,6 @@
 package types
 
 import (
-	"errors"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -74,21 +73,6 @@ func TickIndexToBytes(tickTakerToMaker int64) []byte {
 	}
 
 	return key
-}
-
-func BytesToTickIndex(bz []byte) (int64, error) {
-	if len(bz) != 9 {
-		return 0, errors.New("input should be 9 bytes long")
-	}
-
-	isNegative := bz[0] == 0
-	tickTakerToMaker := sdk.BigEndianToUint64(bz[1:])
-
-	if isNegative {
-		return int64(-tickTakerToMaker), nil
-	}
-	// else
-	return int64(tickTakerToMaker), nil
 }
 
 // LimitOrderTrancheUserKey returns the store key to retrieve a LimitOrderTrancheUser from the index fields
