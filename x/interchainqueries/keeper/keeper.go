@@ -269,7 +269,7 @@ func (k Keeper) saveKVQueryResult(ctx sdk.Context, query *types.RegisteredQuery,
 	store.Set(types.GetRegisteredQueryResultByIDKey(query.Id), bz)
 
 	k.updateLastRemoteHeight(ctx, query, ibcclienttypes.NewHeight(result.Revision, result.Height))
-	k.updateLastLocalHeight(ctx, query, uint64(ctx.BlockHeight()))
+	k.updateLastLocalHeight(ctx, query, uint64(ctx.BlockHeight())) //nolint:gosec
 	if err := k.SaveQuery(ctx, query); err != nil {
 		return errors.Wrapf(err, "failed to save query %d: %v", query.Id, err)
 	}
