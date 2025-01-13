@@ -17,5 +17,8 @@ message Params {
   uint64 good_til_purge_allowance = 5;
   // Whitelisted_lps have special LP privileges;
   // currently, the only such privilege is depositing outside of the allowed fee_tiers.
-  repeated string whitelisted_lps = 6;
+  repeated string whitelisted_lps = 6 [
+    // Adding jsontag prevents protoc from adding `omitempty` tag
+    (gogoproto.jsontag) = "whitelisted_lps"
+  ];
 }
