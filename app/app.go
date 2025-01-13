@@ -1583,8 +1583,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
 	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
-	paramsKeeper.Subspace(pfmtypes.ModuleName).WithKeyTable(pfmtypes.ParamKeyTable())
-
 	paramsKeeper.Subspace(globalfee.ModuleName).WithKeyTable(globalfeetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(ccvconsumertypes.ModuleName).WithKeyTable(ccv.ParamKeyTable())
@@ -1676,7 +1674,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.keys[pfmtypes.StoreKey],
 		app.TransferKeeper.Keeper, // set later
 		app.IBCKeeper.ChannelKeeper,
-		app.FeeBurnerKeeper,
 		&app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
@@ -1731,7 +1728,6 @@ func (app *App) WireICS20PreWasmKeeper(
 		app.PFMKeeper,
 		0,
 		pfmkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
 	ibcStack = gmpmiddleware.NewIBCMiddleware(ibcStack)
