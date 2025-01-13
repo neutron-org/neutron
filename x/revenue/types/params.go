@@ -6,21 +6,25 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// TODO: comments for default values
 var (
-	DefaultDenomCompensation                   = params.DefaultDenom
-	DefaultBaseCompensation             uint64 = 1500
-	DefaultBlocksPerformanceRequirement        = &PerformanceRequirement{
+	// DefaultDenomCompensation represents the default denom compensation.
+	DefaultDenomCompensation = params.DefaultDenom
+	// DefaultBaseCompensation represents the default compensation amount in USD.
+	DefaultBaseCompensation uint64 = 2500
+	// DefaultBlocksPerformanceRequirement represents the default blocks performance requirement.
+	DefaultBlocksPerformanceRequirement = &PerformanceRequirement{
 		AllowedToMiss:   math.LegacyNewDecWithPrec(5, 3), // 0.005
 		RequiredAtLeast: math.LegacyNewDecWithPrec(9, 1), // 0.9
 	}
+	// DefaultOracleVotesPerformanceRequirement represents the default oracle votes performance
+	// requirement.
 	DefaultOracleVotesPerformanceRequirement = &PerformanceRequirement{
 		AllowedToMiss:   math.LegacyNewDecWithPrec(5, 3), // 0.005
 		RequiredAtLeast: math.LegacyNewDecWithPrec(9, 1), // 0.9
 	}
 )
 
-// NewParams creates a new Params instance
+// NewParams creates a new Params instance.
 func NewParams(
 	denomCompensation string,
 	baseCompensation uint64,
@@ -35,7 +39,7 @@ func NewParams(
 	}
 }
 
-// DefaultParams returns a default set of parameters
+// DefaultParams returns the default set of parameters.
 func DefaultParams() Params {
 	return NewParams(
 		DefaultDenomCompensation,
