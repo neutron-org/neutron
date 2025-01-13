@@ -1,15 +1,23 @@
 package keeper
 
 import (
-	"log"
-
 	"cosmossdk.io/math"
 	revenuetypes "github.com/neutron-org/neutron/v5/x/revenue/types"
 )
 
-// PerformanceRating calculates rating like a superlinearly function, e.g
-// `f(a+b) > f(a) + f(b)`
-// TODO: describe returned value: [0.0; 1.0]?
+// PerformanceRating evaluates the performance of a validator based on its participation in block
+// signing and oracle price voting. The function returns a normalized performance score, expressed
+// as a decimal value between 0.0 and 1.0, where:
+//
+// 1.0 (100% performance): The validator meets or exceeds the performance requirements for both
+// block signing and oracle price voting.
+//
+// 0.0 (0% performance): The validator fails to meet the minimum performance thresholds for either
+// block signing or oracle price voting.
+//
+// A value between 0.0 and 1.0: The validator's performance partially meets the defined requirements,
+// and the rating is calculated based on the extent to which the validator's performance deviates
+// from the optimal values.
 func PerformanceRating(
 	params revenuetypes.Params,
 	missedBlocks int64,
@@ -19,44 +27,37 @@ func PerformanceRating(
 	blocksPerfThreshold := math.LegacyOneDec().Sub(params.BlocksPerformanceRequirement.RequiredAtLeast)
 	oracleVotesPerfThreshold := math.LegacyOneDec().Sub(params.OracleVotesPerformanceRequirement.RequiredAtLeast)
 
-	log.Printf("params: %+v", params)
-	log.Printf("missed: blocks %d, votes %d; total: %d", missedBlocks, missedOracleVotes, totalBlocks)
-	log.Printf("thresholds: blocks %s, votes %s", blocksPerfThreshold, oracleVotesPerfThreshold)
-
 	// if a validator has signed less blocks than required, the rating is zero
 	missedBlocksShare := math.LegacyNewDec(missedBlocks).QuoInt64(totalBlocks)
-	log.Printf("missed blocks share: %s", missedBlocksShare)
 	if missedBlocksShare.GTE(blocksPerfThreshold) {
 		return math.LegacyZeroDec()
 	}
 	// if a validator has provided less oracle prices than required, the rating is zero
 	missedOracleVotesShare := math.LegacyNewDec(missedOracleVotes).QuoInt64(totalBlocks)
-	log.Printf("missed votes share: %s", missedOracleVotesShare)
 	if missedOracleVotesShare.GTE(oracleVotesPerfThreshold) {
 		return math.LegacyZeroDec()
 	}
 
-	// if a validator has missed less blocks and prices than allowed, they get the max rating
-	if missedBlocksShare.LT(params.BlocksPerformanceRequirement.AllowedToMiss) &&
-		missedOracleVotesShare.LT(params.OracleVotesPerformanceRequirement.AllowedToMiss) {
+	// if a validator's performance is within the allowed bounds, they get the max rating
+	if missedBlocksShare.LTE(params.BlocksPerformanceRequirement.AllowedToMiss) &&
+		missedOracleVotesShare.LTE(params.OracleVotesPerformanceRequirement.AllowedToMiss) {
 		return math.LegacyOneDec()
 	}
 
+	// how much blocks/votes missed over the allowed value
 	finedMissedBlocksShare := missedBlocksShare.Sub(params.BlocksPerformanceRequirement.AllowedToMiss)
 	finedMissedOracleVotesShare := missedOracleVotesShare.Sub(params.OracleVotesPerformanceRequirement.AllowedToMiss)
-	finedMissedShareAvg := finedMissedBlocksShare.Add(finedMissedOracleVotesShare).Quo(math.LegacyNewDec(2))
-	log.Printf("fined shares: blocks %s, votes %s, avg %s", finedMissedBlocksShare, finedMissedOracleVotesShare, finedMissedShareAvg)
+	// the missed blocks/votes span for (0.0;1.1) performance rating values
+	blocksPerfEvalWindow := blocksPerfThreshold.Sub(params.BlocksPerformanceRequirement.AllowedToMiss)
+	oracleVotesPerfEvalWindow := oracleVotesPerfThreshold.Sub(params.OracleVotesPerformanceRequirement.AllowedToMiss)
+	// calculated as how much blocks/votes missed in the eval window
+	missedBlocksPerfQuo := finedMissedBlocksShare.Quo(blocksPerfEvalWindow)
+	missedOracleVotesPerfQuo := finedMissedOracleVotesShare.Quo(oracleVotesPerfEvalWindow)
 
-	// use parabolic function as superlinear at range [0;Threshold-Allowed],
-	// TODO:
-	a := math.LegacyOneDec().Quo(
-		blocksPerfThreshold.Sub(params.BlocksPerformanceRequirement.AllowedToMiss).Mul(
-			oracleVotesPerfThreshold.Sub(params.OracleVotesPerformanceRequirement.AllowedToMiss),
-		),
+	// rating = 0.5 * ((1 - missedBlocksPerfQuo^2) + (1 - missedOracleVotesPerfQuo^2))
+	rating := math.LegacyNewDecWithPrec(5, 1).Mul(
+		math.LegacyOneDec().Sub(missedBlocksPerfQuo.Mul(missedBlocksPerfQuo)).
+			Add(math.LegacyOneDec().Sub(missedOracleVotesPerfQuo.Mul(missedOracleVotesPerfQuo))),
 	)
-	log.Printf("a: %s", a)
-	log.Printf("a = 1 / (%s * %s)", blocksPerfThreshold.Sub(params.BlocksPerformanceRequirement.AllowedToMiss), oracleVotesPerfThreshold.Sub(params.OracleVotesPerformanceRequirement.AllowedToMiss))
-	rating := math.LegacyOneDec().Sub(finedMissedShareAvg.Mul(finedMissedShareAvg).Mul(a))
-	log.Printf("result rating: %s", rating)
 	return rating
 }

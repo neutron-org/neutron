@@ -38,9 +38,9 @@ func TestPerformanceRating(t *testing.T) {
 	rating = PerformanceRating(params, 100, 0, 1000)
 	require.Equal(t, math.LegacyZeroDec(), rating)
 
-	// when missed 70% of fined threshold (threshold - allowed), perf rating ~45%
+	// when missed 70/95 of evaluation window, perf rating is about 46%
 	rating = PerformanceRating(params, 75, 75, 1000)
-	require.Equal(t, rating, math.LegacyNewDecWithPrec(457063711911357341, 18))
+	require.Equal(t, math.LegacyNewDecWithPrec(457063711911357340, 18), rating)
 
 	// define new performance requirements
 	params = types.Params{
@@ -60,8 +60,13 @@ func TestPerformanceRating(t *testing.T) {
 	rating = PerformanceRating(params, 5, 50, 1000)
 	require.Equal(t, math.LegacyOneDec(), rating)
 
-	// 10%-1 blocks missed, 20%-1 votes missed => some rewards
+	// all but one block and votes missed (10%-1 blocks, 20%-1 votes) => perf rating is close to zero (1.7%)
 	rating = PerformanceRating(params, 99, 199, 1000)
-	require.True(t, math.LegacyOneDec().GT(rating))
-	require.True(t, math.LegacyZeroDec().LT(rating))
+	require.Equal(t, math.LegacyNewDecWithPrec(17115358571868268, 18), rating)
+
+	// 3% of missed blocks (2.5% greater than allowed to miss, at least 90% required) and
+	// 10% of missed votes (5% greater than allowed to miss, at least 80% required)
+	// result in a pretty decent performance rating of 91% due to quadratic function
+	rating = PerformanceRating(params, 30, 100, 1000)
+	require.Equal(t, math.LegacyNewDecWithPrec(909818405663281010, 18), rating)
 }
