@@ -587,6 +587,7 @@ func New(
 		app.AccountKeeper,
 		app.DynamicFeesKeeper,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+		revenuetypes.RevenueFeeRedistributePoolName,
 	)
 
 	// ... other modules keepers
