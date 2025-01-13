@@ -242,7 +242,8 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 	baseCompensation := k.GetBaseNTRNAmount(ctx)
 	for _, info := range infos {
 		rating := PerformanceRating(
-			params,
+			params.BlocksPerformanceRequirement,
+			params.OracleVotesPerformanceRequirement,
 			int64(state.BlockCounter-info.GetCommitedBlocksInMonth()),
 			int64(state.BlockCounter-info.GetCommitedOracleVotesInMonth()),
 			int64(state.BlockCounter),

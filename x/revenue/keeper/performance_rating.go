@@ -19,13 +19,14 @@ import (
 // and the rating is calculated based on the extent to which the validator's performance deviates
 // from the optimal values.
 func PerformanceRating(
-	params revenuetypes.Params,
+	blocksPR *revenuetypes.PerformanceRequirement,
+	oracleVotesPR *revenuetypes.PerformanceRequirement,
 	missedBlocks int64,
 	missedOracleVotes int64,
 	totalBlocks int64,
 ) math.LegacyDec {
-	blocksPerfThreshold := math.LegacyOneDec().Sub(params.BlocksPerformanceRequirement.RequiredAtLeast)
-	oracleVotesPerfThreshold := math.LegacyOneDec().Sub(params.OracleVotesPerformanceRequirement.RequiredAtLeast)
+	blocksPerfThreshold := math.LegacyOneDec().Sub(blocksPR.RequiredAtLeast)
+	oracleVotesPerfThreshold := math.LegacyOneDec().Sub(oracleVotesPR.RequiredAtLeast)
 
 	// if a validator has signed less blocks than required, the rating is zero
 	missedBlocksShare := math.LegacyNewDec(missedBlocks).QuoInt64(totalBlocks)
@@ -39,17 +40,19 @@ func PerformanceRating(
 	}
 
 	// if a validator's performance is within the allowed bounds, they get the max rating
-	if missedBlocksShare.LTE(params.BlocksPerformanceRequirement.AllowedToMiss) &&
-		missedOracleVotesShare.LTE(params.OracleVotesPerformanceRequirement.AllowedToMiss) {
+	if missedBlocksShare.LTE(blocksPR.AllowedToMiss) &&
+		missedOracleVotesShare.LTE(oracleVotesPR.AllowedToMiss) {
 		return math.LegacyOneDec()
 	}
 
 	// how much blocks/votes missed over the allowed value
-	finedMissedBlocksShare := missedBlocksShare.Sub(params.BlocksPerformanceRequirement.AllowedToMiss)
-	finedMissedOracleVotesShare := missedOracleVotesShare.Sub(params.OracleVotesPerformanceRequirement.AllowedToMiss)
+	finedMissedBlocksShare := missedBlocksShare.Sub(blocksPR.AllowedToMiss)
+	finedMissedOracleVotesShare := missedOracleVotesShare.Sub(oracleVotesPR.AllowedToMiss)
+
 	// the missed blocks/votes span for (0.0;1.1) performance rating values
-	blocksPerfEvalWindow := blocksPerfThreshold.Sub(params.BlocksPerformanceRequirement.AllowedToMiss)
-	oracleVotesPerfEvalWindow := oracleVotesPerfThreshold.Sub(params.OracleVotesPerformanceRequirement.AllowedToMiss)
+	blocksPerfEvalWindow := blocksPerfThreshold.Sub(blocksPR.AllowedToMiss)
+	oracleVotesPerfEvalWindow := oracleVotesPerfThreshold.Sub(oracleVotesPR.AllowedToMiss)
+
 	// calculated as how much blocks/votes missed in the eval window
 	missedBlocksPerfQuo := finedMissedBlocksShare.Quo(blocksPerfEvalWindow)
 	missedOracleVotesPerfQuo := finedMissedOracleVotesShare.Quo(oracleVotesPerfEvalWindow)
