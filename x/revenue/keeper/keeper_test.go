@@ -103,7 +103,7 @@ func TestProcessRevenue(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val1Info.OperatorAddress, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.NewInt(keeper.GetBaseNTRNAmount(ctx)))),
+			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
 	).Times(1).Return(nil)
 
 	err = keeper.ProcessRevenue(ctx)
@@ -151,7 +151,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 
 	keeper, ctx := testkeeper.RevenueKeeper(t, voteAggregator, stakingKeeper, bankKeeper)
 
-	// set test specific inactivity params
+	// set test specific performance requirements
 	newParams := revenuetypes.DefaultParams()
 	newParams.BlocksPerformanceRequirement = &revenuetypes.PerformanceRequirement{
 		AllowedToMiss:   math.LegacyNewDecWithPrec(1, 1), // 0.1 allowed to miss without a fine
@@ -188,7 +188,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val1Info.OperatorAddress, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.LegacyNewDecWithPrec(75, 2).MulInt(math.NewInt(keeper.GetBaseNTRNAmount(ctx))).RoundInt(),
+			math.LegacyNewDecWithPrec(75, 2).MulInt(math.NewInt(keeper.CalcBaseRevenueAmount(ctx))).RoundInt(),
 		)),
 	).Times(1).Return(nil)
 
@@ -199,7 +199,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 		sdktypes.AccAddress(mustGetFromBech32(t, val2Info.OperatorAddress, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
-			math.NewInt(keeper.GetBaseNTRNAmount(ctx)))),
+			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
 	).Times(1).Return(nil)
 
 	err = keeper.ProcessRevenue(ctx)
