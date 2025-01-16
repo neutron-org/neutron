@@ -2,11 +2,9 @@ package keeper
 
 import (
 	"context"
-
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/neutron-org/neutron/v5/x/tokenfactory/types"
 )
 
@@ -28,6 +26,8 @@ func (server msgServer) CreateDenom(goCtx context.Context, msg *types.MsgCreateD
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	//ctx.GasMeter().ConsumeGas(uint64(rand.Int31n(1000)), "")
 
 	denom, err := server.Keeper.CreateDenom(ctx, msg.Sender, msg.Subdenom)
 	if err != nil {

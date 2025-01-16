@@ -2,4 +2,4 @@
 
 package app
 
-const SkipCcvMsgFilter = false
+const SkipCcvMsgFilter = true

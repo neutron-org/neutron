@@ -242,13 +242,13 @@ proto-format:
 	test-sim-import-export \
 
 init: kill-dev install-test-binary
-	@echo "Building gaiad binary..."
-	@cd ./../gaia/ && make install
+#	@echo "Building gaiad binary..."
+#	@cd ./../gaia/ && make install
 	@echo "Initializing both blockchains..."
 	./network/init-and-start-both.sh
-	@echo "Initializing relayer..."
-	./network/hermes/restore-keys.sh
-	./network/hermes/create-conn.sh
+#	@echo "Initializing relayer..."
+#	./network/hermes/restore-keys.sh
+#	./network/hermes/create-conn.sh
 
 start: kill-dev install-test-binary
 	@echo "Starting up neutrond alone..."
