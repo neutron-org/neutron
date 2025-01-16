@@ -54,6 +54,35 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", revenuetypes.ModuleName))
 }
 
+// EndBlock records validators' participation in block creation and oracle price provisioning,
+// ensuring the module's state remains up to date. At the start of each month, it calculates and
+// distributes rewards to all validators based on their performance during the previous period.
+func (k *Keeper) EndBlock(ctx sdk.Context) error {
+	state, err := k.GetState(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get module state: %w", err)
+	}
+
+	// process revenue each first block of the month and start new accounting period
+	if state.CurrentMonth != int32(ctx.BlockTime().Month()) {
+		if err := k.ProcessRevenue(ctx); err != nil {
+			return fmt.Errorf("failed to process revenue: %w", err)
+		}
+		state.CurrentMonth = int32(ctx.BlockTime().Month())
+		state.BlockCounter = 0
+	}
+
+	if err := k.RecordValidatorsParticipation(ctx); err != nil {
+		return fmt.Errorf("failed to record validators participation for current block: %w", err)
+	}
+
+	state.BlockCounter++
+	if err := k.SetState(ctx, state); err != nil {
+		return fmt.Errorf("failed to set module state: %w", err)
+	}
+	return nil
+}
+
 func (k *Keeper) GetState(ctx sdk.Context) (state revenuetypes.State, err error) {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := store.Get(revenuetypes.StateKey)
@@ -102,45 +131,6 @@ func (k *Keeper) GetAllValidatorInfo(ctx sdk.Context) (infos []revenuetypes.Vali
 	return infos, nil
 }
 
-func (k *Keeper) getOrCreateValidatorInfo(
-	ctx sdk.Context,
-	addr sdk.ConsAddress,
-) (info revenuetypes.ValidatorInfo, err error) {
-	store := k.storeService.OpenKVStore(ctx)
-	bz, err := store.Get(revenuetypes.GetValidatorInfoKey(addr))
-	if err != nil {
-		return info, fmt.Errorf("failed to read validator info from the store: %w", err)
-	}
-
-	// means there is a validator info entry in the store. otherwise fallback to creation
-	if bz != nil {
-		if err := k.cdc.Unmarshal(bz, &info); err != nil {
-			return info, fmt.Errorf("failed to unmarshal a validator info: %w", err)
-		}
-		return info, nil
-	}
-
-	stakingVal, err := k.stakingKeeper.GetValidatorByConsAddr(ctx, addr)
-	if err != nil {
-		return info, fmt.Errorf("failed to get validator by cons addr from staking keeper: %w", err)
-	}
-
-	info = revenuetypes.ValidatorInfo{
-		OperatorAddress:  stakingVal.GetOperator(),
-		ConsensusAddress: addr.String(),
-	}
-	infoBz, err := k.cdc.Marshal(&info)
-	if err != nil {
-		return info, fmt.Errorf("failed to marshal validator info: %w", err)
-	}
-
-	if err := store.Set(revenuetypes.GetValidatorInfoKey(addr), infoBz); err != nil {
-		return info, fmt.Errorf("failed to write validator info to store: %w", err)
-	}
-	k.Logger(ctx).Debug("new validator info created", "info", info)
-	return info, nil
-}
-
 func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info revenuetypes.ValidatorInfo) error {
 	store := k.storeService.OpenKVStore(ctx)
 	bz, err := k.cdc.Marshal(&info)
@@ -150,32 +140,6 @@ func (k *Keeper) SetValidatorInfo(ctx sdk.Context, addr sdk.ConsAddress, info re
 
 	if err := store.Set(revenuetypes.GetValidatorInfoKey(addr), bz); err != nil {
 		return fmt.Errorf("failed to write validator info to the store: %w", err)
-	}
-	return nil
-}
-
-func (k *Keeper) EndBlock(ctx sdk.Context) error {
-	state, err := k.GetState(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get module state: %w", err)
-	}
-
-	// process revenue each first block of the month and start new accounting period
-	if state.CurrentMonth != int32(ctx.BlockTime().Month()) {
-		if err := k.ProcessRevenue(ctx); err != nil {
-			return fmt.Errorf("failed to process revenue: %w", err)
-		}
-		state.CurrentMonth = int32(ctx.BlockTime().Month())
-		state.BlockCounter = 0
-	}
-
-	if err := k.RecordValidatorsParticipation(ctx); err != nil {
-		return fmt.Errorf("failed to record validators participation for current block: %w", err)
-	}
-
-	state.BlockCounter++
-	if err := k.SetState(ctx, state); err != nil {
-		return fmt.Errorf("failed to set module state: %w", err)
 	}
 	return nil
 }
@@ -292,4 +256,43 @@ func (k *Keeper) CalcBaseRevenueAmount(_ sdk.Context) int64 {
 	// TODO: think about price obsolescence case (if the price is too old, should we use it for
 	// payments?)
 	return 10_000_000
+}
+
+func (k *Keeper) getOrCreateValidatorInfo(
+	ctx sdk.Context,
+	addr sdk.ConsAddress,
+) (info revenuetypes.ValidatorInfo, err error) {
+	store := k.storeService.OpenKVStore(ctx)
+	bz, err := store.Get(revenuetypes.GetValidatorInfoKey(addr))
+	if err != nil {
+		return info, fmt.Errorf("failed to read validator info from the store: %w", err)
+	}
+
+	// means there is a validator info entry in the store. otherwise fallback to creation
+	if bz != nil {
+		if err := k.cdc.Unmarshal(bz, &info); err != nil {
+			return info, fmt.Errorf("failed to unmarshal a validator info: %w", err)
+		}
+		return info, nil
+	}
+
+	stakingVal, err := k.stakingKeeper.GetValidatorByConsAddr(ctx, addr)
+	if err != nil {
+		return info, fmt.Errorf("failed to get validator by cons addr from staking keeper: %w", err)
+	}
+
+	info = revenuetypes.ValidatorInfo{
+		OperatorAddress:  stakingVal.GetOperator(),
+		ConsensusAddress: addr.String(),
+	}
+	infoBz, err := k.cdc.Marshal(&info)
+	if err != nil {
+		return info, fmt.Errorf("failed to marshal validator info: %w", err)
+	}
+
+	if err := store.Set(revenuetypes.GetValidatorInfoKey(addr), infoBz); err != nil {
+		return info, fmt.Errorf("failed to write validator info to store: %w", err)
+	}
+	k.Logger(ctx).Debug("new validator info created", "info", info)
+	return info, nil
 }
