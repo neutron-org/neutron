@@ -1,0 +1,15 @@
+syntax = "proto3";
+package neutron.freelane;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/freelane/types";
+
+// Defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  // Relative percentage of block space that can be used by the lane
+  double block_space = 1;
+  // Limit of gasless transactions
+  uint64 sequence_number = 2;
+}

@@ -21,6 +21,7 @@ import (
 	ibcratelimitkeeper "github.com/neutron-org/neutron/v5/x/ibc-rate-limit/keeper"
 
 	dynamicfeeskeeper "github.com/neutron-org/neutron/v5/x/dynamicfees/keeper"
+	freelanekeeper "github.com/neutron-org/neutron/v5/x/freelane/keeper"
 
 	contractmanagerkeeper "github.com/neutron-org/neutron/v5/x/contractmanager/keeper"
 	cronkeeper "github.com/neutron-org/neutron/v5/x/cron/keeper"
@@ -67,6 +68,7 @@ type UpgradeKeepers struct {
 	MarketmapKeeper    *marketmapkeeper.Keeper
 	FeeMarketKeeper    *feemarketkeeper.Keeper
 	DynamicfeesKeeper  *dynamicfeeskeeper.Keeper
+	FreeLaneKeeper     *freelanekeeper.Keeper
 	DexKeeper          *dexkeeper.Keeper
 	IbcRateLimitKeeper *ibcratelimitkeeper.Keeper
 	// subspaces

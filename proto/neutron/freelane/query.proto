@@ -1,0 +1,25 @@
+syntax = "proto3";
+package neutron.freelane;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "neutron/freelane/params.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/freelane/types";
+
+// Defines the gRPC querier service.
+service Query {
+  // Queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/neutron/freelane/params";
+  }
+}
+
+// The request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// The response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // Holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}

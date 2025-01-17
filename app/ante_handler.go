@@ -14,6 +14,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	blocksdk "github.com/skip-mev/block-sdk/v2/block"
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 
 	globalfeeante "github.com/neutron-org/neutron/v5/x/globalfee/ante"
@@ -33,6 +34,8 @@ type HandlerOptions struct {
 	WasmConfig            *wasmTypes.WasmConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 	FeeMarketKeeper       feemarketante.FeeMarketKeeper
+
+	FreeLane blocksdk.Lane
 }
 
 func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler, error) {
@@ -71,12 +74,15 @@ func NewAnteHandler(options HandlerOptions, logger log.Logger) (sdk.AnteHandler,
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		feemarketante.NewFeeMarketCheckDecorator(
-			options.AccountKeeper,
-			options.BankKeeper,
-			options.FeegrantKeeper,
-			options.FeeMarketKeeper,
-			NewFeeDecoratorWithSwitch(options),
+		blocksdk.NewIgnoreDecorator(
+			feemarketante.NewFeeMarketCheckDecorator(
+				options.AccountKeeper,
+				options.BankKeeper,
+				options.FeegrantKeeper,
+				options.FeeMarketKeeper,
+				NewFeeDecoratorWithSwitch(options),
+			),
+			options.FreeLane,
 		),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),

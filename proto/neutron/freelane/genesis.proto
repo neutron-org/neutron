@@ -1,0 +1,12 @@
+syntax = "proto3";
+package neutron.freelane;
+
+import "gogoproto/gogo.proto";
+import "neutron/freelane/params.proto";
+
+option go_package = "github.com/neutron-org/neutron/v5/x/freelane/types";
+
+// Defines the freelane module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
