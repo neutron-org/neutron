@@ -12,6 +12,7 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	harpoontypes "github.com/neutron-org/neutron/v5/x/harpoon/types"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
@@ -141,6 +142,6 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/cosmos.staking.v1beta1.Query/DelegatorUnbondingDelegations": &stakingtypes.QueryDelegatorUnbondingDelegationsResponse{},
 
 		// harpoon
-		// TODO: add queries if any
+		"/neutron.harpoon.Query/SubscribedContracts": &harpoontypes.QuerySubscribedContractsResponse{},
 	}
 }

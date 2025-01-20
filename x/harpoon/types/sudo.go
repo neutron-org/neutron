@@ -2,14 +2,13 @@ package types
 
 import "cosmossdk.io/math"
 
-// TODO: can these types be autogeneratable? this will help to avoid duplication for neutron-std library
 type SudoAfterValidatorBonded struct {
-	ConsAddr []byte `json:"cons_addr"` // TODO: can we make type a string or an address of some kind?
+	ConsAddr []byte `json:"cons_addr"`
 	ValAddr  []byte `json:"val_addr"`
 }
 
 type SudoAfterValidatorRemoved struct {
-	ConsAddr []byte `json:"cons_addr"` // TODO: can we make type a string or an address of some kind?
+	ConsAddr []byte `json:"cons_addr"`
 	ValAddr  []byte `json:"val_addr"`
 }
 
@@ -18,7 +17,7 @@ type SudoAfterValidatorCreated struct {
 }
 
 type SudoAfterValidatorBeginUnbonding struct {
-	ConsAddr []byte `json:"cons_addr"` // TODO: can we make type a string or an address of some kind?
+	ConsAddr []byte `json:"cons_addr"`
 	ValAddr  []byte `json:"val_addr"`
 }
 
@@ -27,28 +26,28 @@ type SudoBeforeValidatorModified struct {
 }
 
 type SudoBeforeDelegationCreated struct {
-	DelAddr []byte `json:"del_addr"` // TODO: can we make type a string or an address of some kind?
+	DelAddr []byte `json:"del_addr"`
 	ValAddr []byte `json:"val_addr"`
 }
 
 type SudoBeforeDelegationSharesModified struct {
-	DelAddr []byte `json:"del_addr"` // TODO: can we make type a string or an address of some kind?
+	DelAddr []byte `json:"del_addr"`
 	ValAddr []byte `json:"val_addr"`
 }
 
 type SudoBeforeDelegationRemoved struct {
-	DelAddr []byte `json:"del_addr"` // TODO: can we make type a string or an address of some kind?
+	DelAddr []byte `json:"del_addr"`
 	ValAddr []byte `json:"val_addr"`
 }
 
 type SudoAfterDelegationModified struct {
-	DelAddr []byte `json:"del_addr"` // TODO: can we make type a string or an address of some kind?
+	DelAddr []byte `json:"del_addr"`
 	ValAddr []byte `json:"val_addr"`
 }
 
 type SudoBeforeValidatorSlashed struct {
-	ValAddr  []byte         `json:"val_addr"` // TODO: can we make type a string or an address of some kind?
-	Fraction math.LegacyDec `json:"fraction"` // TODO: how to serialize LegacyDec?
+	ValAddr  []byte         `json:"val_addr"`
+	Fraction math.LegacyDec `json:"fraction"`
 }
 
 type SudoAfterUnbondingInitiated struct {
