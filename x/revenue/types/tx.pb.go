@@ -34,13 +34,11 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// MsgUpdateParams is the MsgUpdateParams request type.
+// Request type for the Msg/UpdateParams RPC method.
 type MsgUpdateParams struct {
-	// Authority is the address of the governance account.
+	// The address of the authority of the module.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/revenue parameters to update.
-	//
-	// NOTE: All parameters must be supplied.
+	// The new parameters of the module. All parameters must be supplied.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
 
@@ -91,8 +89,7 @@ func (m *MsgUpdateParams) GetParams() Params {
 	return Params{}
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
+// Response type for the Msg/UpdateParams RPC method.
 type MsgUpdateParamsResponse struct {
 }
 
@@ -129,41 +126,119 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
+// Request type for the Msg/FundTreasury RPC method.
+type MsgFundTreasury struct {
+}
+
+func (m *MsgFundTreasury) Reset()         { *m = MsgFundTreasury{} }
+func (m *MsgFundTreasury) String() string { return proto.CompactTextString(m) }
+func (*MsgFundTreasury) ProtoMessage()    {}
+func (*MsgFundTreasury) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fcc0035b798668d4, []int{2}
+}
+func (m *MsgFundTreasury) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgFundTreasury) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgFundTreasury.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgFundTreasury) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgFundTreasury.Merge(m, src)
+}
+func (m *MsgFundTreasury) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgFundTreasury) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgFundTreasury.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgFundTreasury proto.InternalMessageInfo
+
+// Response type for the Msg/FundTreasury RPC method.
+type MsgFundTreasuryResponse struct {
+}
+
+func (m *MsgFundTreasuryResponse) Reset()         { *m = MsgFundTreasuryResponse{} }
+func (m *MsgFundTreasuryResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgFundTreasuryResponse) ProtoMessage()    {}
+func (*MsgFundTreasuryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fcc0035b798668d4, []int{3}
+}
+func (m *MsgFundTreasuryResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgFundTreasuryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgFundTreasuryResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgFundTreasuryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgFundTreasuryResponse.Merge(m, src)
+}
+func (m *MsgFundTreasuryResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgFundTreasuryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgFundTreasuryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgFundTreasuryResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgUpdateParams)(nil), "neutron.revenue.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "neutron.revenue.MsgUpdateParamsResponse")
+	proto.RegisterType((*MsgFundTreasury)(nil), "neutron.revenue.MsgFundTreasury")
+	proto.RegisterType((*MsgFundTreasuryResponse)(nil), "neutron.revenue.MsgFundTreasuryResponse")
 }
 
 func init() { proto.RegisterFile("neutron/revenue/tx.proto", fileDescriptor_fcc0035b798668d4) }
 
 var fileDescriptor_fcc0035b798668d4 = []byte{
-	// 402 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x92, 0xcf, 0xaa, 0xd3, 0x40,
-	0x14, 0xc6, 0x33, 0x8a, 0x85, 0x46, 0xa1, 0x18, 0x0a, 0x49, 0xa3, 0x8d, 0xa5, 0xab, 0x12, 0x68,
-	0x86, 0x56, 0x74, 0xd1, 0x9d, 0xdd, 0x4a, 0x41, 0x2a, 0x6e, 0xba, 0x91, 0xfc, 0x99, 0x4e, 0x03,
-	0x66, 0x4e, 0x98, 0x99, 0x94, 0x66, 0x27, 0x2e, 0x5d, 0xf9, 0x18, 0x2e, 0x2b, 0xf8, 0x10, 0x5d,
-	0x16, 0x57, 0xae, 0x44, 0xda, 0x45, 0x5f, 0xe3, 0x92, 0x64, 0x42, 0xef, 0xcd, 0x5d, 0xdc, 0x4d,
-	0x32, 0x67, 0x7e, 0xe7, 0x7c, 0xe7, 0x3b, 0x39, 0xd1, 0x2d, 0x46, 0x32, 0xc9, 0x81, 0x61, 0x4e,
-	0xb6, 0x84, 0x65, 0x04, 0xcb, 0x9d, 0x97, 0x72, 0x90, 0x60, 0x74, 0x14, 0xf1, 0x14, 0xb1, 0x9f,
-	0xfb, 0x49, 0xcc, 0x00, 0x97, 0xcf, 0x2a, 0xc7, 0x36, 0x43, 0x10, 0x09, 0x08, 0x9c, 0x08, 0x8a,
-	0xb7, 0x93, 0xe2, 0xa5, 0x40, 0xaf, 0x02, 0x9f, 0xcb, 0x08, 0x57, 0x81, 0x42, 0x5d, 0x0a, 0x14,
-	0xaa, 0xfb, 0xe2, 0x54, 0x17, 0x50, 0x00, 0xfa, 0x85, 0xe0, 0x32, 0x0a, 0xb2, 0x35, 0xf6, 0x59,
-	0xae, 0x50, 0xbf, 0x69, 0x91, 0x12, 0x46, 0x44, 0x5c, 0xeb, 0xbd, 0x6c, 0xe2, 0xd4, 0xe7, 0x7e,
-	0x52, 0xd3, 0x17, 0x92, 0xb0, 0x88, 0xf0, 0x24, 0x66, 0x12, 0xfb, 0x41, 0x18, 0x63, 0x99, 0xa7,
-	0xa4, 0x86, 0xfd, 0x5b, 0x30, 0xe4, 0x79, 0x2a, 0xa1, 0xe8, 0x0f, 0xeb, 0x0a, 0x0f, 0x7f, 0x21,
-	0xbd, 0xb3, 0x10, 0xf4, 0x53, 0x1a, 0xf9, 0x92, 0x7c, 0x28, 0x55, 0x8d, 0xb7, 0x7a, 0xdb, 0xcf,
-	0xe4, 0x06, 0x78, 0x2c, 0x73, 0x0b, 0x0d, 0xd0, 0xa8, 0x3d, 0xb7, 0xfe, 0xfc, 0x1e, 0x77, 0xd5,
-	0x88, 0xef, 0xa2, 0x88, 0x13, 0x21, 0x3e, 0x4a, 0x1e, 0x33, 0xba, 0xbc, 0xa6, 0x1a, 0x33, 0xbd,
-	0x55, 0xf9, 0xb2, 0x1e, 0x0d, 0xd0, 0xe8, 0xe9, 0xd4, 0xf4, 0x1a, 0x9f, 0xd7, 0xab, 0x1a, 0xcc,
-	0xdb, 0x87, 0x7f, 0xaf, 0xb4, 0x9f, 0x97, 0xbd, 0x8b, 0x96, 0xaa, 0x62, 0xe6, 0x7e, 0xbb, 0xec,
-	0xdd, 0xab, 0xd6, 0xf7, 0xcb, 0xde, 0x35, 0xeb, 0x61, 0x1b, 0xfe, 0x86, 0x3d, 0xdd, 0x6c, 0x5c,
-	0x2d, 0x89, 0x48, 0x81, 0x09, 0x32, 0xdd, 0xe8, 0x8f, 0x17, 0x82, 0x1a, 0x2b, 0xfd, 0xd9, 0x9d,
-	0x89, 0x06, 0xf7, 0x9c, 0x34, 0x04, 0xec, 0xd1, 0x43, 0x19, 0x75, 0x0b, 0xfb, 0xc9, 0xd7, 0xc2,
-	0xf8, 0xfc, 0xfd, 0xe1, 0xe4, 0xa0, 0xe3, 0xc9, 0x41, 0xff, 0x4f, 0x0e, 0xfa, 0x71, 0x76, 0xb4,
-	0xe3, 0xd9, 0xd1, 0xfe, 0x9e, 0x1d, 0x6d, 0x35, 0xa1, 0xb1, 0xdc, 0x64, 0x81, 0x17, 0x42, 0x82,
-	0x95, 0xe8, 0x18, 0x38, 0xad, 0xcf, 0x78, 0xfb, 0x06, 0xef, 0xae, 0xbf, 0x62, 0xb1, 0xaa, 0xa0,
-	0x55, 0x2e, 0xe3, 0xf5, 0x4d, 0x00, 0x00, 0x00, 0xff, 0xff, 0xca, 0x0a, 0x99, 0x87, 0xaa, 0x02,
-	0x00, 0x00,
+	// 438 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0x4f, 0x8b, 0xd3, 0x40,
+	0x18, 0xc6, 0x33, 0x8a, 0x0b, 0x8d, 0xc2, 0xb2, 0x61, 0x21, 0xd9, 0xe8, 0xc6, 0xd2, 0x53, 0x09,
+	0x6c, 0x86, 0x5d, 0xd1, 0xc3, 0xde, 0xec, 0xc1, 0x8b, 0x2c, 0x48, 0xd5, 0xcb, 0x5e, 0x64, 0x92,
+	0xcc, 0xce, 0x06, 0xcc, 0xbc, 0x61, 0x66, 0x52, 0x9a, 0x9b, 0x78, 0xf4, 0xe4, 0xc7, 0xf0, 0x58,
+	0xc1, 0x8f, 0xe0, 0xa1, 0xc7, 0xe2, 0xc9, 0x93, 0x48, 0x7b, 0xe8, 0xd7, 0x90, 0x24, 0x33, 0x34,
+	0xc6, 0x82, 0x97, 0x76, 0xde, 0xf7, 0xf7, 0xcc, 0xf3, 0xfe, 0x61, 0x62, 0x7b, 0x9c, 0x96, 0x4a,
+	0x00, 0xc7, 0x82, 0xce, 0x28, 0x2f, 0x29, 0x56, 0xf3, 0xa8, 0x10, 0xa0, 0xc0, 0x39, 0xd4, 0x24,
+	0xd2, 0xc4, 0x3f, 0x22, 0x79, 0xc6, 0x01, 0x37, 0xbf, 0xad, 0xc6, 0x77, 0x13, 0x90, 0x39, 0x48,
+	0x9c, 0x4b, 0x86, 0x67, 0xe7, 0xf5, 0x9f, 0x06, 0x27, 0x2d, 0x78, 0xd7, 0x44, 0xb8, 0x0d, 0x34,
+	0x3a, 0x66, 0xc0, 0xa0, 0xcd, 0xd7, 0x27, 0x73, 0x81, 0x01, 0xb0, 0xf7, 0x14, 0x37, 0x51, 0x5c,
+	0xde, 0x60, 0xc2, 0x2b, 0x8d, 0x4e, 0xfb, 0x2d, 0x32, 0xca, 0xa9, 0xcc, 0x8c, 0xdf, 0xa3, 0x3e,
+	0x2e, 0x88, 0x20, 0xb9, 0xa1, 0x0f, 0x15, 0xe5, 0x29, 0x15, 0x79, 0xc6, 0x15, 0x26, 0x71, 0x92,
+	0x61, 0x55, 0x15, 0xd4, 0xc0, 0xd3, 0x0e, 0x4c, 0x44, 0x55, 0x28, 0xa8, 0xeb, 0xc3, 0x4d, 0x8b,
+	0x47, 0x5f, 0x91, 0x7d, 0x78, 0x25, 0xd9, 0xdb, 0x22, 0x25, 0x8a, 0xbe, 0x6a, 0x5c, 0x9d, 0x67,
+	0xf6, 0x80, 0x94, 0xea, 0x16, 0x44, 0xa6, 0x2a, 0x0f, 0x0d, 0xd1, 0x78, 0x30, 0xf1, 0x7e, 0x7c,
+	0x3b, 0x3b, 0xd6, 0x23, 0x3e, 0x4f, 0x53, 0x41, 0xa5, 0x7c, 0xad, 0x44, 0xc6, 0xd9, 0x74, 0x27,
+	0x75, 0x2e, 0xed, 0x83, 0xb6, 0x2f, 0xef, 0xce, 0x10, 0x8d, 0xef, 0x5f, 0xb8, 0x51, 0x6f, 0xbd,
+	0x51, 0x5b, 0x60, 0x32, 0x58, 0xfe, 0x7a, 0x6c, 0x7d, 0xd9, 0x2e, 0x42, 0x34, 0xd5, 0x37, 0x2e,
+	0xc3, 0x8f, 0xdb, 0x45, 0xb8, 0xf3, 0xfa, 0xb4, 0x5d, 0x84, 0xae, 0x19, 0xb6, 0xd7, 0xdf, 0xe8,
+	0xc4, 0x76, 0x7b, 0xa9, 0x29, 0x95, 0x05, 0x70, 0x49, 0x47, 0x47, 0xcd, 0x34, 0x2f, 0x4a, 0x9e,
+	0xbe, 0x11, 0x94, 0xc8, 0x52, 0x54, 0x5a, 0xdd, 0x4d, 0x19, 0xf5, 0xc5, 0x77, 0x64, 0xdf, 0xbd,
+	0x92, 0xcc, 0xb9, 0xb6, 0x1f, 0xfc, 0xb5, 0x80, 0xe1, 0x3f, 0x8d, 0xf7, 0xea, 0xf9, 0xe3, 0xff,
+	0x29, 0x4c, 0x8d, 0xda, 0xbb, 0x5b, 0x7b, 0xbf, 0x77, 0x57, 0xb1, 0xdf, 0x7b, 0x5f, 0xff, 0xfe,
+	0xbd, 0x0f, 0xf5, 0x0e, 0x27, 0x2f, 0x97, 0xeb, 0x00, 0xad, 0xd6, 0x01, 0xfa, 0xbd, 0x0e, 0xd0,
+	0xe7, 0x4d, 0x60, 0xad, 0x36, 0x81, 0xf5, 0x73, 0x13, 0x58, 0xd7, 0xe7, 0x2c, 0x53, 0xb7, 0x65,
+	0x1c, 0x25, 0x90, 0x63, 0x6d, 0x7a, 0x06, 0x82, 0x99, 0x33, 0x9e, 0x3d, 0xc5, 0xf3, 0xdd, 0x57,
+	0x51, 0xbf, 0x9a, 0xf8, 0xa0, 0x79, 0x17, 0x4f, 0xfe, 0x04, 0x00, 0x00, 0xff, 0xff, 0x9b, 0x89,
+	0x9b, 0x68, 0x35, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -178,7 +253,12 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
+	// Updates the parameters of the revenue module. This action can only be performed by the
+	// module's authority.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	// FundTreasury funds the revenue treasury module account with the specified amount.
+	// TODO: describe the access limitations (authority? specific set of addresses?)
+	FundTreasury(ctx context.Context, in *MsgFundTreasury, opts ...grpc.CallOption) (*MsgFundTreasuryResponse, error)
 }
 
 type msgClient struct {
@@ -198,9 +278,23 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) FundTreasury(ctx context.Context, in *MsgFundTreasury, opts ...grpc.CallOption) (*MsgFundTreasuryResponse, error) {
+	out := new(MsgFundTreasuryResponse)
+	err := c.cc.Invoke(ctx, "/neutron.revenue.Msg/FundTreasury", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
+	// Updates the parameters of the revenue module. This action can only be performed by the
+	// module's authority.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
+	// FundTreasury funds the revenue treasury module account with the specified amount.
+	// TODO: describe the access limitations (authority? specific set of addresses?)
+	FundTreasury(context.Context, *MsgFundTreasury) (*MsgFundTreasuryResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -209,6 +303,9 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
+}
+func (*UnimplementedMsgServer) FundTreasury(ctx context.Context, req *MsgFundTreasury) (*MsgFundTreasuryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FundTreasury not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -233,6 +330,24 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_FundTreasury_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgFundTreasury)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).FundTreasury(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/neutron.revenue.Msg/FundTreasury",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).FundTreasury(ctx, req.(*MsgFundTreasury))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "neutron.revenue.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -240,6 +355,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "FundTreasury",
+			Handler:    _Msg_FundTreasury_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -309,6 +428,52 @@ func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgFundTreasury) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgFundTreasury) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgFundTreasury) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgFundTreasuryResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgFundTreasuryResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgFundTreasuryResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -336,6 +501,24 @@ func (m *MsgUpdateParams) Size() (n int) {
 }
 
 func (m *MsgUpdateParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgFundTreasury) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgFundTreasuryResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -492,6 +675,106 @@ func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgFundTreasury) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgFundTreasury: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgFundTreasury: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgFundTreasuryResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgFundTreasuryResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgFundTreasuryResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

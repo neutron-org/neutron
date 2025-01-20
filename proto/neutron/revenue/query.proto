@@ -2,6 +2,7 @@ syntax = "proto3";
 package neutron.revenue;
 
 import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "neutron/revenue/genesis.proto";
@@ -10,19 +11,85 @@ import "neutron/revenue/tx.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/revenue/types";
 
-// Query defines the gRPC querier service.
+// Defines the Query interface of the module.
 service Query {
-  // Parameters queries the parameters of the module.
+  // Fetches the current parameters of the revenue module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/neutron/revenue/params";
   }
+
+  // Fetches the current state of the revenue module.
+  rpc State(QueryStateRequest) returns (QueryStateResponse) {
+    option (google.api.http).get = "/neutron/revenue/state";
+  }
+
+  // Fetches a given validator's stats from the revenue module's state.
+  rpc ValidatorStats(QueryValidatorStatsRequest) returns (QueryValidatorStatsResponse) {
+    option (google.api.http).get = "/neutron/revenue/validator_stats";
+  }
+
+  // Fetches all validators' stats from the revenue module's state.
+  rpc ValidatorsStats(QueryValidatorsStatsRequest) returns (QueryValidatorsStatsResponse) {
+    option (google.api.http).get = "/neutron/revenue/validators_stats";
+  }
 }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// Request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// Response type for the Query/Params RPC method.
 message QueryParamsResponse {
-  // params holds all the parameters of this module.
+  // Contains all parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// Request type for the Query/State RPC method.
+message QueryStateRequest {}
+
+// Response type for the Query/State RPC method.
+message QueryStateResponse {
+  // Contains the current state of the revenue module.
+  State state = 1 [(gogoproto.nullable) = false];
+}
+
+// Request type for the Query/ValidatorStats RPC method.
+message QueryValidatorStatsRequest {
+  // The validator's consensus node address.
+  string consensus_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// Response type for the Query/ValidatorStats RPC method.
+message QueryValidatorStatsResponse {
+  // Contains the validator's information.
+  ValidatorStats stats = 1 [(gogoproto.nullable) = false];
+}
+
+// Request type for the Query/ValidatorsStats RPC method.
+message QueryValidatorsStatsRequest {
+  // Pagination parameters for the request. Use values from previous response in the next request
+  // in consecutive requests with paginated responses.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// Response type for the Query/ValidatorsStats RPC method.
+message QueryValidatorsStatsResponse {
+  // Contains the validators' information.
+  repeated ValidatorStats stats = 1 [(gogoproto.nullable) = false];
+
+  // Current page information. Use values from previous response in the next request in consecutive
+  // requests with paginated responses.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// Contains validator's info and their performance rating.
+message ValidatorStats {
+  // Contains the validator's information.
+  ValidatorInfo validator_info = 1 [(gogoproto.nullable) = false];
+
+  // The validator's performance rating. Represented as a decimal value.
+  string performance_rating = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
 }

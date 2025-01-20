@@ -14,7 +14,7 @@ message Params {
   // The denom to be used for compensation.
   string denom_compensation = 1;
 
-  // The compensation amount in USDC.
+  // The compensation amount in USD.
   uint64 base_compensation = 2;
 
   // Specifies performance requirements for validators in scope of blocks signing and creation. If

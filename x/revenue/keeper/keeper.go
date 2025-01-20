@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/core/comet"
@@ -81,6 +82,33 @@ func (k *Keeper) EndBlock(ctx sdk.Context) error {
 		return fmt.Errorf("failed to set module state: %w", err)
 	}
 	return nil
+}
+
+// GetParams gets the revenue module parameters.
+func (k *Keeper) GetParams(ctx context.Context) (params revenuetypes.Params, err error) {
+	store := k.storeService.OpenKVStore(ctx)
+	bz, err := store.Get(revenuetypes.ParamsKey)
+	if err != nil {
+		return params, fmt.Errorf("failed to read params from the store: %w", err)
+	}
+	if bz == nil {
+		return params, nil
+	}
+
+	if err = k.cdc.Unmarshal(bz, &params); err != nil {
+		return params, fmt.Errorf("failed to unmarshal params: %w", err)
+	}
+	return params, nil
+}
+
+// SetParams sets the revenue module parameters.
+func (k *Keeper) SetParams(ctx context.Context, params revenuetypes.Params) error {
+	store := k.storeService.OpenKVStore(ctx)
+	bz, err := k.cdc.Marshal(&params)
+	if err != nil {
+		return fmt.Errorf("failed to marshal params: %w", err)
+	}
+	return store.Set(revenuetypes.ParamsKey, bz)
 }
 
 func (k *Keeper) GetState(ctx sdk.Context) (state revenuetypes.State, err error) {
@@ -221,21 +249,31 @@ func (k *Keeper) ProcessRevenue(ctx sdk.Context) error {
 		valCompensation := rating.MulInt64(baseCompensation).TruncateInt()
 
 		if valCompensation.IsPositive() {
-			_, addr, err := bech32types.DecodeAndConvert(info.OperatorAddress)
+			valConsAddr, err := sdk.ConsAddressFromBech32(info.ConsensusAddress)
 			if err != nil {
-				return fmt.Errorf("failed to convert valoper address %s to bytes: %w", info.OperatorAddress, err)
+				return fmt.Errorf("failed to create valcons addr from bech32 %s: %w", info.ConsensusAddress, err)
+			}
+
+			validator, err := k.stakingKeeper.GetValidatorByConsAddr(ctx, valConsAddr)
+			if err != nil {
+				return fmt.Errorf("failed to get validator by cons addr %s from staking keeper: %w", valConsAddr, err)
+			}
+
+			_, valOperAddr, err := bech32types.DecodeAndConvert(validator.OperatorAddress)
+			if err != nil {
+				return fmt.Errorf("failed to convert valoper address %s to bytes: %w", validator.OperatorAddress, err)
 			}
 
 			err = k.bankKeeper.SendCoinsFromModuleToAccount(
 				ctx,
 				revenuetypes.RevenueTreasuryPoolName,
-				addr,
+				valOperAddr,
 				sdk.NewCoins(sdk.NewCoin(
 					params.DenomCompensation, valCompensation,
 				)),
 			)
 			if err != nil {
-				return fmt.Errorf("failed to send revenue to validator %s: %w", info.OperatorAddress, err)
+				return fmt.Errorf("failed to send revenue to validator %s: %w", validator.OperatorAddress, err)
 			}
 		}
 
@@ -276,13 +314,7 @@ func (k *Keeper) getOrCreateValidatorInfo(
 		return info, nil
 	}
 
-	stakingVal, err := k.stakingKeeper.GetValidatorByConsAddr(ctx, addr)
-	if err != nil {
-		return info, fmt.Errorf("failed to get validator by cons addr from staking keeper: %w", err)
-	}
-
 	info = revenuetypes.ValidatorInfo{
-		OperatorAddress:  stakingVal.GetOperator(),
 		ConsensusAddress: addr.String(),
 	}
 	infoBz, err := k.cdc.Marshal(&info)

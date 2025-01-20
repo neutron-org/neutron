@@ -23,17 +23,14 @@ message GenesisState {
 
 // Contains information about a validator.
 message ValidatorInfo {
-  // The validator's operator address.
-  string operator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-
   // The validator's consensus node address.
-  string consensus_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string consensus_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   // The number of blocks commited by the validator in the current month.
-  uint64 commited_blocks_in_month = 3;
+  uint64 commited_blocks_in_month = 2;
 
   // The number of oracle votes commited by the validator in the current month.
-  uint64 commited_oracle_votes_in_month = 4;
+  uint64 commited_oracle_votes_in_month = 3;
 }
 
 // Contains information about the current state of the revenue module.

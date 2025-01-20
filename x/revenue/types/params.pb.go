@@ -30,7 +30,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type Params struct {
 	// The denom to be used for compensation.
 	DenomCompensation string `protobuf:"bytes,1,opt,name=denom_compensation,json=denomCompensation,proto3" json:"denom_compensation,omitempty"`
-	// The compensation amount in USDC.
+	// The compensation amount in USD.
 	BaseCompensation uint64 `protobuf:"varint,2,opt,name=base_compensation,json=baseCompensation,proto3" json:"base_compensation,omitempty"`
 	// Specifies performance requirements for validators in scope of blocks signing and creation. If
 	// not met, the validator is not rewarded.

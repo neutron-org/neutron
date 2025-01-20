@@ -18,6 +18,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	val1OperAddr = "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70"
+	val1ConsAddr = "neutronvalcons18zawa74y4xv6xg3zv0cstmfl9y38ecurucx9jw"
+
+	val2OperAddr = "neutronvaloper1x6hw4rnkj4ag97jkdz4srlxzkr7w6pny54qmda"
+	val2ConsAddr = "neutronvalcons1x6hw4rnkj4ag97jkdz4srlxzkr7w6pnyqxn8pu"
+)
+
 func TestParams(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	voteAggregator := mock_types.NewMockVoteAggregator(ctrl)
@@ -96,11 +104,16 @@ func TestProcessRevenue(t *testing.T) {
 	err = keeper.SetValidatorInfo(ctx, []byte(val1Info.ConsensusAddress), val1Info)
 	require.Nil(t, err)
 
+	stakingKeeper.EXPECT().GetValidatorByConsAddr(
+		ctx,
+		mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
+	).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
+
 	// expect one successful SendCoinsFromModuleToAccount call
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 		ctx,
 		revenuetypes.RevenueTreasuryPoolName,
-		sdktypes.AccAddress(mustGetFromBech32(t, val1Info.OperatorAddress, "neutronvaloper")),
+		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
 			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
@@ -181,11 +194,20 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	err = keeper.SetValidatorInfo(ctx, []byte(val2Info.ConsensusAddress), val2Info)
 	require.Nil(t, err)
 
+	stakingKeeper.EXPECT().GetValidatorByConsAddr(
+		ctx,
+		mustConsAddressFromBech32(t, val1Info.ConsensusAddress),
+	).Return(stakingtypes.Validator{OperatorAddress: val1OperAddr}, nil)
+	stakingKeeper.EXPECT().GetValidatorByConsAddr(
+		ctx,
+		mustConsAddressFromBech32(t, val2Info.ConsensusAddress),
+	).Return(stakingtypes.Validator{OperatorAddress: val2OperAddr}, nil)
+
 	// expect one successful SendCoinsFromModuleToAccount call for val1 75% of rewards
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 		ctx,
 		revenuetypes.RevenueTreasuryPoolName,
-		sdktypes.AccAddress(mustGetFromBech32(t, val1Info.OperatorAddress, "neutronvaloper")),
+		sdktypes.AccAddress(mustGetFromBech32(t, val1OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
 			math.LegacyNewDecWithPrec(75, 2).MulInt(math.NewInt(keeper.CalcBaseRevenueAmount(ctx))).RoundInt(),
@@ -196,7 +218,7 @@ func TestProcessRevenueMultipleValidators(t *testing.T) {
 	bankKeeper.EXPECT().SendCoinsFromModuleToAccount(
 		ctx,
 		revenuetypes.RevenueTreasuryPoolName,
-		sdktypes.AccAddress(mustGetFromBech32(t, val2Info.OperatorAddress, "neutronvaloper")),
+		sdktypes.AccAddress(mustGetFromBech32(t, val2OperAddr, "neutronvaloper")),
 		sdktypes.NewCoins(sdktypes.NewCoin(
 			revenuetypes.DefaultDenomCompensation,
 			math.NewInt(keeper.CalcBaseRevenueAmount(ctx)))),
@@ -254,11 +276,6 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 	// new validator commits oracle prices (content doesn't matter, the len of the map does)
 	voteAggregator.EXPECT().GetPriceForValidator(ca2).Return(map[slinkytypes.CurrencyPair]*big.Int{{}: big.NewInt(0)})
 
-	stakingKeeper.EXPECT().GetValidatorByConsAddr(
-		ctx,
-		ca2,
-	).Return(stakingtypes.Validator{OperatorAddress: val2Info.OperatorAddress}, nil)
-
 	err = keeper.RecordValidatorsParticipation(ctx)
 	require.Nil(t, err)
 
@@ -280,15 +297,13 @@ func TestProcessSignaturesAndPrices(t *testing.T) {
 
 func val1Info() revenuetypes.ValidatorInfo {
 	return revenuetypes.ValidatorInfo{
-		OperatorAddress:  "neutronvaloper18zawa74y4xv6xg3zv0cstmfl9y38ecurgt4e70",
-		ConsensusAddress: "neutronvalcons18zawa74y4xv6xg3zv0cstmfl9y38ecurucx9jw",
+		ConsensusAddress: val1ConsAddr,
 	}
 }
 
 func val2Info() revenuetypes.ValidatorInfo {
 	return revenuetypes.ValidatorInfo{
-		OperatorAddress:  "neutronvaloper1x6hw4rnkj4ag97jkdz4srlxzkr7w6pny54qmda",
-		ConsensusAddress: "neutronvalcons1x6hw4rnkj4ag97jkdz4srlxzkr7w6pnyqxn8pu",
+		ConsensusAddress: val2ConsAddr,
 	}
 }
 

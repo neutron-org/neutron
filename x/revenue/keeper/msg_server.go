@@ -19,6 +19,11 @@ func NewMsgServerImpl(keeper *Keeper) revenuetypes.MsgServer {
 var _ revenuetypes.MsgServer = msgServer{}
 
 func (s msgServer) UpdateParams(context context.Context, msg *revenuetypes.MsgUpdateParams) (*revenuetypes.MsgUpdateParamsResponse, error) {
-	// TODO: implement
-	return nil, nil
+	// TODO implement me
+	panic("implement me")
+}
+
+func (s msgServer) FundTreasury(context context.Context, msg *revenuetypes.MsgFundTreasury) (*revenuetypes.MsgFundTreasuryResponse, error) {
+	// TODO implement me
+	panic("implement me")
 }
