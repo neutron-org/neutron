@@ -588,10 +588,10 @@ func New(
 		appCodec,
 		runtime.NewKVStoreService(keys[harpoontypes.StoreKey]),
 		app.AccountKeeper,
+		app.WasmKeeper,
 		logger,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	app.HarpoonKeeper.WasmMsgServer = wasmkeeper.NewMsgServerImpl(&app.WasmKeeper)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
 	app.UpgradeKeeper = *upgradekeeper.NewKeeper(

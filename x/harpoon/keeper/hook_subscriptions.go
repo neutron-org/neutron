@@ -2,15 +2,8 @@ package keeper
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
-	"cosmossdk.io/errors"
-
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"golang.org/x/exp/maps"
 
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
@@ -67,61 +60,6 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate
 			subscriptions.ContractAddresses = newContractAddresses
 			bz := k.cdc.MustMarshal(&subscriptions)
 			store.Set(key, bz)
-		}
-	}
-
-	return nil
-}
-
-// CallSudoForSubscriptionType calls sudo for all contracts subscribed to given `hookType`.
-// Returns error in cases where marshalling error occurred (should never happen, since we control it) or
-// when out of gas on sudo call. That can happen when callback triggered during transaction (not BeginBlocker/EndBlocker).
-// Ignores sudo contract errors.
-func (k Keeper) CallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
-	if err := k.DoCallSudoForSubscriptionType(ctx, hookType, msg); err != nil {
-		return errors.Wrapf(err, "failed to call sudo for subscriptions for hookType=%s", hookType)
-	}
-
-	return nil
-}
-
-func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType types.HookType, msg any) error {
-	contractAddresses := k.GetSubscribedAddressesForHookType(ctx, hookType)
-
-	if len(contractAddresses) == 0 {
-		return nil
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	msgJsonBz, err := json.Marshal(msg)
-	if err != nil {
-		return fmt.Errorf("failed to marshal sudo subscription msg: %v", err)
-	}
-
-	for _, contractAddress := range contractAddresses {
-		executeMsg := wasmtypes.MsgExecuteContract{
-			Sender:   k.accountKeeper.GetModuleAddress(types.ModuleName).String(),
-			Contract: contractAddress,
-			Msg:      msgJsonBz,
-			Funds:    sdk.NewCoins(),
-		}
-		// NOTE: as we're using sdkCtx here, all hooks that are triggered by Tx user actions such as Delegate.
-		// will consume gas for executing this contract.
-		// This also means it can breach gas limit if call was too heavy.
-		// And if it happens, we may return prematurely to avoid more computations.
-		// BUT: We also want to continue on other errors, since simple contract hook errors should not stop execution.
-		// For EndBlocker, there is no counting gas.
-		_, err := k.WasmMsgServer.ExecuteContract(sdkCtx, &executeMsg)
-		if sdkCtx.GasMeter().IsPastLimit() {
-			return errors.Wrapf(sdkerrors.ErrOutOfGas, "not enough gas when executed sudo contract: %v", err)
-		}
-		if err != nil {
-			sdkCtx.Logger().Error("execute harpoon subscription hook error: failed to execute contract msg",
-				"contract_address", contractAddress,
-				"error", err,
-			)
-			continue
 		}
 	}
 

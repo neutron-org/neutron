@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/math"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -27,8 +25,8 @@ type ParamSubspace interface {
 	Set(context.Context, []byte, interface{})
 }
 
-type WasmMsgServer interface {
-	ExecuteContract(context.Context, *wasmtypes.MsgExecuteContract) (*wasmtypes.MsgExecuteContractResponse, error)
+type WasmKeeper interface {
+	Sudo(ctx context.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
 
 // StakingHooks event hooks for staking validator object (noalias)

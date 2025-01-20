@@ -9,8 +9,7 @@ import (
 	reflect "reflect"
 
 	math "cosmossdk.io/math"
-	types "github.com/CosmWasm/wasmd/x/wasm/types"
-	types0 "github.com/cosmos/cosmos-sdk/types"
+	types "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -38,10 +37,10 @@ func (m *MockAccountKeeper) EXPECT() *MockAccountKeeperMockRecorder {
 }
 
 // GetModuleAddress mocks base method.
-func (m *MockAccountKeeper) GetModuleAddress(moduleName string) types0.AccAddress {
+func (m *MockAccountKeeper) GetModuleAddress(moduleName string) types.AccAddress {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetModuleAddress", moduleName)
-	ret0, _ := ret[0].(types0.AccAddress)
+	ret0, _ := ret[0].(types.AccAddress)
 	return ret0
 }
 
@@ -75,10 +74,10 @@ func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 }
 
 // SpendableCoins mocks base method.
-func (m *MockBankKeeper) SpendableCoins(arg0 context.Context, arg1 types0.AccAddress) types0.Coins {
+func (m *MockBankKeeper) SpendableCoins(arg0 context.Context, arg1 types.AccAddress) types.Coins {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpendableCoins", arg0, arg1)
-	ret0, _ := ret[0].(types0.Coins)
+	ret0, _ := ret[0].(types.Coins)
 	return ret0
 }
 
@@ -135,42 +134,42 @@ func (mr *MockParamSubspaceMockRecorder) Set(arg0, arg1, arg2 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockParamSubspace)(nil).Set), arg0, arg1, arg2)
 }
 
-// MockWasmMsgServer is a mock of WasmMsgServer interface.
-type MockWasmMsgServer struct {
+// MockWasmKeeper is a mock of WasmKeeper interface.
+type MockWasmKeeper struct {
 	ctrl     *gomock.Controller
-	recorder *MockWasmMsgServerMockRecorder
+	recorder *MockWasmKeeperMockRecorder
 }
 
-// MockWasmMsgServerMockRecorder is the mock recorder for MockWasmMsgServer.
-type MockWasmMsgServerMockRecorder struct {
-	mock *MockWasmMsgServer
+// MockWasmKeeperMockRecorder is the mock recorder for MockWasmKeeper.
+type MockWasmKeeperMockRecorder struct {
+	mock *MockWasmKeeper
 }
 
-// NewMockWasmMsgServer creates a new mock instance.
-func NewMockWasmMsgServer(ctrl *gomock.Controller) *MockWasmMsgServer {
-	mock := &MockWasmMsgServer{ctrl: ctrl}
-	mock.recorder = &MockWasmMsgServerMockRecorder{mock}
+// NewMockWasmKeeper creates a new mock instance.
+func NewMockWasmKeeper(ctrl *gomock.Controller) *MockWasmKeeper {
+	mock := &MockWasmKeeper{ctrl: ctrl}
+	mock.recorder = &MockWasmKeeperMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockWasmMsgServer) EXPECT() *MockWasmMsgServerMockRecorder {
+func (m *MockWasmKeeper) EXPECT() *MockWasmKeeperMockRecorder {
 	return m.recorder
 }
 
-// ExecuteContract mocks base method.
-func (m *MockWasmMsgServer) ExecuteContract(arg0 context.Context, arg1 *types.MsgExecuteContract) (*types.MsgExecuteContractResponse, error) {
+// Sudo mocks base method.
+func (m *MockWasmKeeper) Sudo(ctx context.Context, contractAddress types.AccAddress, msg []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExecuteContract", arg0, arg1)
-	ret0, _ := ret[0].(*types.MsgExecuteContractResponse)
+	ret := m.ctrl.Call(m, "Sudo", ctx, contractAddress, msg)
+	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExecuteContract indicates an expected call of ExecuteContract.
-func (mr *MockWasmMsgServerMockRecorder) ExecuteContract(arg0, arg1 interface{}) *gomock.Call {
+// Sudo indicates an expected call of Sudo.
+func (mr *MockWasmKeeperMockRecorder) Sudo(ctx, contractAddress, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteContract", reflect.TypeOf((*MockWasmMsgServer)(nil).ExecuteContract), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sudo", reflect.TypeOf((*MockWasmKeeper)(nil).Sudo), ctx, contractAddress, msg)
 }
 
 // MockStakingHooks is a mock of StakingHooks interface.
@@ -197,7 +196,7 @@ func (m *MockStakingHooks) EXPECT() *MockStakingHooksMockRecorder {
 }
 
 // AfterDelegationModified mocks base method.
-func (m *MockStakingHooks) AfterDelegationModified(ctx context.Context, delAddr types0.AccAddress, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) AfterDelegationModified(ctx context.Context, delAddr types.AccAddress, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AfterDelegationModified", ctx, delAddr, valAddr)
 	ret0, _ := ret[0].(error)
@@ -225,7 +224,7 @@ func (mr *MockStakingHooksMockRecorder) AfterUnbondingInitiated(ctx, id interfac
 }
 
 // AfterValidatorBeginUnbonding mocks base method.
-func (m *MockStakingHooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr types0.ConsAddress, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr types.ConsAddress, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AfterValidatorBeginUnbonding", ctx, consAddr, valAddr)
 	ret0, _ := ret[0].(error)
@@ -239,7 +238,7 @@ func (mr *MockStakingHooksMockRecorder) AfterValidatorBeginUnbonding(ctx, consAd
 }
 
 // AfterValidatorBonded mocks base method.
-func (m *MockStakingHooks) AfterValidatorBonded(ctx context.Context, consAddr types0.ConsAddress, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) AfterValidatorBonded(ctx context.Context, consAddr types.ConsAddress, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AfterValidatorBonded", ctx, consAddr, valAddr)
 	ret0, _ := ret[0].(error)
@@ -253,7 +252,7 @@ func (mr *MockStakingHooksMockRecorder) AfterValidatorBonded(ctx, consAddr, valA
 }
 
 // AfterValidatorCreated mocks base method.
-func (m *MockStakingHooks) AfterValidatorCreated(ctx context.Context, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) AfterValidatorCreated(ctx context.Context, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AfterValidatorCreated", ctx, valAddr)
 	ret0, _ := ret[0].(error)
@@ -267,7 +266,7 @@ func (mr *MockStakingHooksMockRecorder) AfterValidatorCreated(ctx, valAddr inter
 }
 
 // AfterValidatorRemoved mocks base method.
-func (m *MockStakingHooks) AfterValidatorRemoved(ctx context.Context, consAddr types0.ConsAddress, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) AfterValidatorRemoved(ctx context.Context, consAddr types.ConsAddress, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AfterValidatorRemoved", ctx, consAddr, valAddr)
 	ret0, _ := ret[0].(error)
@@ -281,7 +280,7 @@ func (mr *MockStakingHooksMockRecorder) AfterValidatorRemoved(ctx, consAddr, val
 }
 
 // BeforeDelegationCreated mocks base method.
-func (m *MockStakingHooks) BeforeDelegationCreated(ctx context.Context, delAddr types0.AccAddress, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) BeforeDelegationCreated(ctx context.Context, delAddr types.AccAddress, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BeforeDelegationCreated", ctx, delAddr, valAddr)
 	ret0, _ := ret[0].(error)
@@ -295,7 +294,7 @@ func (mr *MockStakingHooksMockRecorder) BeforeDelegationCreated(ctx, delAddr, va
 }
 
 // BeforeDelegationRemoved mocks base method.
-func (m *MockStakingHooks) BeforeDelegationRemoved(ctx context.Context, delAddr types0.AccAddress, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) BeforeDelegationRemoved(ctx context.Context, delAddr types.AccAddress, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BeforeDelegationRemoved", ctx, delAddr, valAddr)
 	ret0, _ := ret[0].(error)
@@ -309,7 +308,7 @@ func (mr *MockStakingHooksMockRecorder) BeforeDelegationRemoved(ctx, delAddr, va
 }
 
 // BeforeDelegationSharesModified mocks base method.
-func (m *MockStakingHooks) BeforeDelegationSharesModified(ctx context.Context, delAddr types0.AccAddress, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) BeforeDelegationSharesModified(ctx context.Context, delAddr types.AccAddress, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BeforeDelegationSharesModified", ctx, delAddr, valAddr)
 	ret0, _ := ret[0].(error)
@@ -323,7 +322,7 @@ func (mr *MockStakingHooksMockRecorder) BeforeDelegationSharesModified(ctx, delA
 }
 
 // BeforeValidatorModified mocks base method.
-func (m *MockStakingHooks) BeforeValidatorModified(ctx context.Context, valAddr types0.ValAddress) error {
+func (m *MockStakingHooks) BeforeValidatorModified(ctx context.Context, valAddr types.ValAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BeforeValidatorModified", ctx, valAddr)
 	ret0, _ := ret[0].(error)
@@ -337,7 +336,7 @@ func (mr *MockStakingHooksMockRecorder) BeforeValidatorModified(ctx, valAddr int
 }
 
 // BeforeValidatorSlashed mocks base method.
-func (m *MockStakingHooks) BeforeValidatorSlashed(ctx context.Context, valAddr types0.ValAddress, fraction math.LegacyDec) error {
+func (m *MockStakingHooks) BeforeValidatorSlashed(ctx context.Context, valAddr types.ValAddress, fraction math.LegacyDec) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BeforeValidatorSlashed", ctx, valAddr, fraction)
 	ret0, _ := ret[0].(error)

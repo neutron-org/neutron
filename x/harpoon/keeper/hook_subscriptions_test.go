@@ -22,8 +22,8 @@ func TestUpdateHookSubscription(t *testing.T) {
 	defer ctrl.Finish()
 
 	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
-	wasmMsgServer := mock_types.NewMockWasmMsgServer(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmMsgServer, accountKeeper)
+	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
 
 	// empty update on empty subscription should work
 	err := k.UpdateHookSubscription(ctx, &types.HookSubscription{

@@ -22,7 +22,7 @@ import (
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
-func HarpoonKeeper(t testing.TB, wasmMsgServer types.WasmMsgServer, accountKeeper types.AccountKeeper) (*keeper.Keeper, sdk.Context) {
+func HarpoonKeeper(t testing.TB, wasmKeeper types.WasmKeeper, accountKeeper types.AccountKeeper) (*keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 
 	db := db2.NewMemDB()
@@ -37,10 +37,10 @@ func HarpoonKeeper(t testing.TB, wasmMsgServer types.WasmMsgServer, accountKeepe
 		cdc,
 		runtime.NewKVStoreService(storeKey),
 		accountKeeper,
+		wasmKeeper,
 		nil,
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
-	k.WasmMsgServer = wasmMsgServer
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 

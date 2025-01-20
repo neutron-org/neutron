@@ -19,8 +19,8 @@ func TestManageHookSubscription(t *testing.T) {
 
 	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
 
-	wasmMsgServer := mock_types.NewMockWasmMsgServer(ctrl)
-	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmMsgServer, accountKeeper)
+	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
 
 	msgServer := keeper.NewMsgServerImpl(*k)
 

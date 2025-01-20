@@ -15,7 +15,7 @@ import (
 
 type (
 	Keeper struct {
-		WasmMsgServer types.WasmMsgServer
+		wasmKeeper    types.WasmKeeper
 		accountKeeper types.AccountKeeper
 
 		cdc          codec.BinaryCodec
@@ -32,6 +32,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService store.KVStoreService,
 	accountKeeper types.AccountKeeper,
+	wasmKeeper types.WasmKeeper,
 	logger log.Logger,
 	authority string,
 ) *Keeper {
@@ -43,6 +44,7 @@ func NewKeeper(
 		cdc:           cdc,
 		storeService:  storeService,
 		accountKeeper: accountKeeper,
+		wasmKeeper:    wasmKeeper,
 		authority:     authority,
 		logger:        logger,
 	}
