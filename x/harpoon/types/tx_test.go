@@ -1,9 +1,11 @@
 package types_test
 
 import (
-	"github.com/neutron-org/neutron/v5/testutil"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/neutron-org/neutron/v5/testutil"
 
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )

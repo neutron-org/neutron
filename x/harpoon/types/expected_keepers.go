@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 

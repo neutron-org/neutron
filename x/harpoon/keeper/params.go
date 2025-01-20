@@ -5,9 +5,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/runtime"
 
-    "github.com/neutron-org/neutron/v5/x/harpoon/types"
+	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
-
 
 // GetParams get all parameters as types.Params
 func (k Keeper) GetParams(ctx context.Context) (params types.Params) {

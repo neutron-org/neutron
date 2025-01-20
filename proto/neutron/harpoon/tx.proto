@@ -62,17 +62,17 @@ message MsgManageHookSubscriptionResponse {}
 // HookSubscription describes new hook subscriptions for contract_address
 message HookSubscription {
   // hook_subscription specifies for which contract_address modify the subscriptions.
-  string contract_address = 2;          // Address of the contract to manage hooks for
+  string contract_address = 2; // Address of the contract to manage hooks for
 
   // hooks specifies what hooks are we gonna subscribe to. Existing hooks not specified here will be removed.
-  repeated HookType hooks = 3;          // List of hooks to subscribe/unsubscribe. Pass empty to remove subscription.
+  repeated HookType hooks = 3; // List of hooks to subscribe/unsubscribe. Pass empty to remove subscription.
 }
 
 // HookType specifies to what concrete hooks we are subscribing to.
 enum HookType {
   AfterValidatorCreated = 0; // Called when a validator is created
   BeforeValidatorModified = 1; // Called when a validator is modified
-  AfterValidatorRemoved  = 2; // Called when a validator is deleted
+  AfterValidatorRemoved = 2; // Called when a validator is deleted
   AfterValidatorBonded = 3; // Called when a validator is bonded
   AfterValidatorBeginUnbonding = 4; // Called when a validator begins unbonding
   BeforeDelegationCreated = 5; // Called when a delegation is created

@@ -10,6 +10,4 @@ option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 message Params {
   option (amino.name) = "neutron/x/harpoon/Params";
   option (gogoproto.equal) = true;
-
-  
 }

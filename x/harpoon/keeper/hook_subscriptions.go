@@ -2,15 +2,18 @@ package keeper
 
 import (
 	"context"
-	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/errors"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 	"golang.org/x/exp/maps"
+
+	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
 // UpdateHookSubscription sets hook subscription for given contractAddress

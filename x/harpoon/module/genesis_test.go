@@ -3,11 +3,12 @@ package harpoon_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/v5/testutil/common/nullify"
 	keepertest "github.com/neutron-org/neutron/v5/testutil/harpoon/keeper"
 	harpoon "github.com/neutron-org/neutron/v5/x/harpoon/module"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {

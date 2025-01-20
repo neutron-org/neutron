@@ -2,9 +2,9 @@ syntax = "proto3";
 package neutron.harpoon;
 
 import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "neutron/harpoon/params.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
@@ -40,5 +40,5 @@ message QuerySubscribedContracts {
 
 // QuerySubscribedContractsResponse is response type for the Query/SubscribedContracts RPC method.
 message QuerySubscribedContractsResponse {
-    repeated string contract_addresses = 1;
+  repeated string contract_addresses = 1;
 }

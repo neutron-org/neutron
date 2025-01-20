@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-    "github.com/neutron-org/neutron/v5/x/harpoon/types"
+	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
 func TestMsgUpdateParams(t *testing.T) {

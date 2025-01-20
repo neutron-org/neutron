@@ -1,14 +1,16 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/neutron-org/neutron/v5/testutil"
 	testutil_keeper "github.com/neutron-org/neutron/v5/testutil/harpoon/keeper"
 	mock_types "github.com/neutron-org/neutron/v5/testutil/mocks/harpoon/types"
 	"github.com/neutron-org/neutron/v5/x/harpoon/keeper"
 	"github.com/neutron-org/neutron/v5/x/harpoon/types"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestManageHookSubscription(t *testing.T) {
