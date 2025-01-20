@@ -39,7 +39,6 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/rs/zerolog v1.33.0
 	github.com/skip-mev/block-sdk/v2 v2.1.5
-	github.com/skip-mev/connect/v2 v2.2.1
 	github.com/skip-mev/feemarket v1.1.1
 	github.com/skip-mev/slinky v1.0.13-0.20241114205023-22fefb0864ba
 	github.com/spf13/cast v1.7.0
