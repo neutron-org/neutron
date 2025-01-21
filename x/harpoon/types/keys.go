@@ -12,8 +12,7 @@ const (
 )
 
 var (
-	ParamsKey           = []byte("harpoon_params")
-	HookSubscriptionKey = []byte("harpoon_subscriptions")
+	HookSubscriptionKey = []byte("subscriptions")
 )
 
 func GetHookSubscriptionKeyPrefix() []byte {

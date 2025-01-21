@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -10,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.StakingHooks = Hooks{}
+var _ stakingtypes.StakingHooks = Hooks{}
 
 // Hooks wrapper struct for harpoon keeper.
 // These hooks are called by the staking module.
