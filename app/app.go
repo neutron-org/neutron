@@ -17,6 +17,8 @@ import (
 	sovereignUpgrade "github.com/neutron-org/neutron/v5/app/upgrades/sovereign"
 
 	v502 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.2"
+	v504 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.4"
+	v505 "github.com/neutron-org/neutron/v5/app/upgrades/v5.0.5"
 	dynamicfeestypes "github.com/neutron-org/neutron/v5/x/dynamicfees/types"
 
 	"github.com/skip-mev/feemarket/x/feemarket"
@@ -240,6 +242,8 @@ var (
 	Upgrades = []upgrades.Upgrade{
 		v500.Upgrade,
 		v502.Upgrade,
+		v504.Upgrade,
+		v505.Upgrade,
 		sovereignUpgrade.Upgrade,
 	}
 
@@ -648,6 +652,17 @@ func New(
 		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
 	)
 
+	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
+		appCodec,
+		app.keys[tokenfactorytypes.StoreKey],
+		maccPerms,
+		app.AccountKeeper,
+		&app.BankKeeper,
+		&app.WasmKeeper,
+		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
+	)
+	app.TokenFactoryKeeper = &tokenFactoryKeeper
+
 	app.WireICS20PreWasmKeeper(appCodec)
 	app.PFMModule = packetforward.NewAppModule(app.PFMKeeper, app.GetSubspace(pfmtypes.ModuleName))
 
@@ -709,22 +724,11 @@ func New(
 		address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
 
-	// consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
-	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
-
 	multiStakingHooks := stakingtypes.NewMultiStakingHooks(app.SlashingKeeper.Hooks(), app.HarpoonKeeper.Hooks())
 	app.StakingKeeper.SetHooks(multiStakingHooks)
 
-	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
-		appCodec,
-		app.keys[tokenfactorytypes.StoreKey],
-		maccPerms,
-		app.AccountKeeper,
-		&app.BankKeeper,
-		&app.WasmKeeper,
-		authtypes.NewModuleAddress(adminmoduletypes.ModuleName).String(),
-	)
-	app.TokenFactoryKeeper = &tokenFactoryKeeper
+	// consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
+	stakingModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, nil) // newly create module, can set legacysubspace a nil
 
 	app.BankKeeper.BaseSendKeeper = app.BankKeeper.BaseSendKeeper.SetHooks(
 		banktypes.NewMultiBankHooks(
@@ -1410,6 +1414,8 @@ func (app *App) setupUpgradeHandlers() {
 					StakingKeeper:       app.StakingKeeper,
 					DexKeeper:           &app.DexKeeper,
 					IbcRateLimitKeeper:  app.RateLimitingICS4Wrapper.IbcratelimitKeeper,
+					ChannelKeeper:       &app.IBCKeeper.ChannelKeeper,
+					TransferKeeper:      app.TransferKeeper.Keeper,
 					GlobalFeeSubspace:   app.GetSubspace(globalfee.ModuleName),
 					CcvConsumerSubspace: app.GetSubspace(ccvconsumertypes.ModuleName),
 				},
@@ -1759,6 +1765,7 @@ func (app *App) WireICS20PreWasmKeeper(
 		transferSudo.NewIBCModule(
 			app.TransferKeeper,
 			contractmanager.NewSudoLimitWrapper(app.ContractManagerKeeper, &app.WasmKeeper),
+			app.TokenFactoryKeeper,
 		),
 		app.PFMKeeper,
 		0,
