@@ -8,12 +8,12 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 
-// Defines the Msg service.
+// Defines the Msg interface of the module.
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // Defines a operation for updating hook subscriptions for a given contract_address.
-  // Pass empty array to `hooks` to remove subscription from this contract_address.
+  // Updates hook subscriptions for a given contract address.
+  // Pass empty array to `hook_subscription.hooks` to remove subscription from this contract_address.
   // Only executable by governance.
   rpc ManageHookSubscription(MsgManageHookSubscription) returns (MsgManageHookSubscriptionResponse);
 }
@@ -23,10 +23,10 @@ message MsgManageHookSubscription {
   option (cosmos.msg.v1.signer) = "authority";
   option (amino.name) = "neutron/x/harpoon/MsgManageHookSubscription";
 
-  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  // The address of the governance account.
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
-  // hook_subscription describes what new subscription is going to be.
+  // Hook subscription to update.
   HookSubscription hook_subscription = 2;
 }
 
@@ -35,24 +35,35 @@ message MsgManageHookSubscriptionResponse {}
 
 // Describes new hook subscriptions for contract_address
 message HookSubscription {
-  // hook_subscription specifies for which contract_address modify the subscriptions.
-  string contract_address = 2; // Address of the contract to manage hooks for
+  // Contract address for which subscriptions will be updated.
+  string contract_address = 2;
 
-  // hooks specifies what hooks are we gonna subscribe to. Existing hooks not specified here will be removed.
-  repeated HookType hooks = 3; // List of hooks to subscribe/unsubscribe. Pass empty to remove subscription.
+  // List of hooks to subscribe to. Existing hooks not specified here will be removed.
+  repeated HookType hooks = 3;
 }
 
-// Specifies concrete hooks that can be subscribed to.
+// Hook types that can be subscribed to.
 enum HookType {
-  AfterValidatorCreated = 0; // Called when a validator is created
-  BeforeValidatorModified = 1; // Called when a validator is modified
-  AfterValidatorRemoved = 2; // Called when a validator is deleted
-  AfterValidatorBonded = 3; // Called when a validator is bonded
-  AfterValidatorBeginUnbonding = 4; // Called when a validator begins unbonding
-  BeforeDelegationCreated = 5; // Called when a delegation is created
-  BeforeDelegationSharesModified = 6; // Called when a delegation's shares are modified
-  BeforeDelegationRemoved = 7; // Called when a delegation is removed
-  AfterDelegationModified = 8; // Called when a delegation is modified
-  BeforeValidatorSlashed = 9; // Called before validator is slashed
-  AfterUnbondingInitiated = 10; // Called after unbonding is initiated
+  // Called after validator is created
+  AfterValidatorCreated = 0;
+  // Called before validator is modified
+  BeforeValidatorModified = 1;
+  // Called after validator is removed
+  AfterValidatorRemoved = 2;
+  // Called after validator is bonded
+  AfterValidatorBonded = 3;
+  // Called after validator begins unbonding
+  AfterValidatorBeginUnbonding = 4;
+  // Called before delegation is created
+  BeforeDelegationCreated = 5;
+  // Called before delegation's shares are modified
+  BeforeDelegationSharesModified = 6;
+  // Called before delegation is removed
+  BeforeDelegationRemoved = 7;
+  // Called after delegation is modified
+  AfterDelegationModified = 8;
+  // Called before validator is slashed
+  BeforeValidatorSlashed = 9;
+  // Called after unbonding is initiated
+  AfterUnbondingInitiated = 10;
 }

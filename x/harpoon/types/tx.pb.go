@@ -31,21 +31,32 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Specifies concrete hooks that can be subscribed to.
+// Hook types that can be subscribed to.
 type HookType int32
 
 const (
-	HookType_AfterValidatorCreated          HookType = 0
-	HookType_BeforeValidatorModified        HookType = 1
-	HookType_AfterValidatorRemoved          HookType = 2
-	HookType_AfterValidatorBonded           HookType = 3
-	HookType_AfterValidatorBeginUnbonding   HookType = 4
-	HookType_BeforeDelegationCreated        HookType = 5
+	// Called after validator is created
+	HookType_AfterValidatorCreated HookType = 0
+	// Called before validator is modified
+	HookType_BeforeValidatorModified HookType = 1
+	// Called after validator is removed
+	HookType_AfterValidatorRemoved HookType = 2
+	// Called after validator is bonded
+	HookType_AfterValidatorBonded HookType = 3
+	// Called after validator begins unbonding
+	HookType_AfterValidatorBeginUnbonding HookType = 4
+	// Called before delegation is created
+	HookType_BeforeDelegationCreated HookType = 5
+	// Called before delegation's shares are modified
 	HookType_BeforeDelegationSharesModified HookType = 6
-	HookType_BeforeDelegationRemoved        HookType = 7
-	HookType_AfterDelegationModified        HookType = 8
-	HookType_BeforeValidatorSlashed         HookType = 9
-	HookType_AfterUnbondingInitiated        HookType = 10
+	// Called before delegation is removed
+	HookType_BeforeDelegationRemoved HookType = 7
+	// Called after delegation is modified
+	HookType_AfterDelegationModified HookType = 8
+	// Called before validator is slashed
+	HookType_BeforeValidatorSlashed HookType = 9
+	// Called after unbonding is initiated
+	HookType_AfterUnbondingInitiated HookType = 10
 )
 
 var HookType_name = map[int32]string{
@@ -86,9 +97,9 @@ func (HookType) EnumDescriptor() ([]byte, []int) {
 
 // Defines the Msg/ManageHookSubscription request type.
 type MsgManageHookSubscription struct {
-	// authority is the address that controls the module (defaults to x/gov unless overwritten).
+	// The address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// hook_subscription describes what new subscription is going to be.
+	// Hook subscription to update.
 	HookSubscription *HookSubscription `protobuf:"bytes,2,opt,name=hook_subscription,json=hookSubscription,proto3" json:"hook_subscription,omitempty"`
 }
 
@@ -178,9 +189,9 @@ var xxx_messageInfo_MsgManageHookSubscriptionResponse proto.InternalMessageInfo
 
 // Describes new hook subscriptions for contract_address
 type HookSubscription struct {
-	// hook_subscription specifies for which contract_address modify the subscriptions.
+	// Contract address for which subscriptions will be updated.
 	ContractAddress string `protobuf:"bytes,2,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
-	// hooks specifies what hooks are we gonna subscribe to. Existing hooks not specified here will be removed.
+	// List of hooks to subscribe to. Existing hooks not specified here will be removed.
 	Hooks []HookType `protobuf:"varint,3,rep,packed,name=hooks,proto3,enum=neutron.harpoon.HookType" json:"hooks,omitempty"`
 }
 
@@ -291,8 +302,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// Defines a operation for updating hook subscriptions for a given contract_address.
-	// Pass empty array to `hooks` to remove subscription from this contract_address.
+	// Updates hook subscriptions for a given contract address.
+	// Pass empty array to `hook_subscription.hooks` to remove subscription from this contract_address.
 	// Only executable by governance.
 	ManageHookSubscription(ctx context.Context, in *MsgManageHookSubscription, opts ...grpc.CallOption) (*MsgManageHookSubscriptionResponse, error)
 }
@@ -316,8 +327,8 @@ func (c *msgClient) ManageHookSubscription(ctx context.Context, in *MsgManageHoo
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// Defines a operation for updating hook subscriptions for a given contract_address.
-	// Pass empty array to `hooks` to remove subscription from this contract_address.
+	// Updates hook subscriptions for a given contract address.
+	// Pass empty array to `hook_subscription.hooks` to remove subscription from this contract_address.
 	// Only executable by governance.
 	ManageHookSubscription(context.Context, *MsgManageHookSubscription) (*MsgManageHookSubscriptionResponse, error)
 }

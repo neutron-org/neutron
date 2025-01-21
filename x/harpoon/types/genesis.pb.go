@@ -24,7 +24,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Defines the harpoon module's genesis state.
+// Harpoon module genesis state.
 type GenesisState struct {
 }
 

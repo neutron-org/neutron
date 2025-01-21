@@ -8,20 +8,22 @@ import "google/api/annotations.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 
-// Query defines the gRPC querier service.
+// Defines the Query interface of the module.
 service Query {
-  // Returns subscribed contracts to a specified hook type.
-  rpc SubscribedContracts(QuerySubscribedContracts) returns (QuerySubscribedContractsResponse) {
+  // Fetches subscribed contracts to a given hook type.
+  rpc SubscribedContracts(QuerySubscribedContractsRequest) returns (QuerySubscribedContractsResponse) {
     option (google.api.http).get = "/neutron/v5/harpoon/params";
   }
 }
 
 // Request type for the Query/SubscribedContracts RPC method.
-message QuerySubscribedContracts {
+message QuerySubscribedContractsRequest {
+  // Response will only contain contract addresses for this hook type.
   string hookType = 1;
 }
 
 // Response type for the Query/SubscribedContracts RPC method.
 message QuerySubscribedContractsResponse {
+  // List of contract addresses that are subscribed to a given hook.
   repeated string contract_addresses = 1;
 }

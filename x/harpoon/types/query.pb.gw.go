@@ -38,7 +38,7 @@ var (
 )
 
 func request_Query_SubscribedContracts_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QuerySubscribedContracts
+	var protoReq QuerySubscribedContractsRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -54,7 +54,7 @@ func request_Query_SubscribedContracts_0(ctx context.Context, marshaler runtime.
 }
 
 func local_request_Query_SubscribedContracts_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QuerySubscribedContracts
+	var protoReq QuerySubscribedContractsRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {

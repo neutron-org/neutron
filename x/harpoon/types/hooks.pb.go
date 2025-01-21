@@ -22,9 +22,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Defines structure for subscribed contract_addresses that are stored in KV store under each hook kind
+// Defines how subscribed contract_addresses are stored in KV store under each hook kind.
 type HookSubscriptions struct {
-	// All contract addresses that are subscribed to the hook kind
+	// Contract addresses that are subscribed to the hook kind.
 	ContractAddresses []string `protobuf:"bytes,1,rep,name=contract_addresses,json=contractAddresses,proto3" json:"contract_addresses,omitempty"`
 }
 
