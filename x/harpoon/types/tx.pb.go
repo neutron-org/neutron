@@ -31,7 +31,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// HookType specifies to what concrete hooks we are subscribing to.
+// Specifies concrete hooks that can be subscribed to.
 type HookType int32
 
 const (
@@ -84,7 +84,7 @@ func (HookType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_94a1e4561f349256, []int{0}
 }
 
-// MsgManageHookSubscription is the Msg/ManageHookSubscription request type.
+// Defines the Msg/ManageHookSubscription request type.
 type MsgManageHookSubscription struct {
 	// authority is the address that controls the module (defaults to x/gov unless overwritten).
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
@@ -139,8 +139,7 @@ func (m *MsgManageHookSubscription) GetHookSubscription() *HookSubscription {
 	return nil
 }
 
-// MsgManageHookSubscriptionResponse defines the response structure for executing a
-// MsgManageHookSubscription message.
+// Defines the response structure for executing a MsgManageHookSubscription message.
 type MsgManageHookSubscriptionResponse struct {
 }
 
@@ -177,7 +176,7 @@ func (m *MsgManageHookSubscriptionResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgManageHookSubscriptionResponse proto.InternalMessageInfo
 
-// HookSubscription describes new hook subscriptions for contract_address
+// Describes new hook subscriptions for contract_address
 type HookSubscription struct {
 	// hook_subscription specifies for which contract_address modify the subscriptions.
 	ContractAddress string `protobuf:"bytes,2,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
@@ -292,9 +291,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// ManageHookSubscription defines a (governance) operation for updating hook subscriptions for a given contract_address.
+	// Defines a operation for updating hook subscriptions for a given contract_address.
 	// Pass empty array to `hooks` to remove subscription from this contract_address.
-	// The authority defaults to the adminmodule module account.
+	// Only executable by governance.
 	ManageHookSubscription(ctx context.Context, in *MsgManageHookSubscription, opts ...grpc.CallOption) (*MsgManageHookSubscriptionResponse, error)
 }
 
@@ -317,9 +316,9 @@ func (c *msgClient) ManageHookSubscription(ctx context.Context, in *MsgManageHoo
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// ManageHookSubscription defines a (governance) operation for updating hook subscriptions for a given contract_address.
+	// Defines a operation for updating hook subscriptions for a given contract_address.
 	// Pass empty array to `hooks` to remove subscription from this contract_address.
-	// The authority defaults to the adminmodule module account.
+	// Only executable by governance.
 	ManageHookSubscription(context.Context, *MsgManageHookSubscription) (*MsgManageHookSubscriptionResponse, error)
 }
 

@@ -8,17 +8,17 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 
-// Msg defines the Msg service.
+// Defines the Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // ManageHookSubscription defines a (governance) operation for updating hook subscriptions for a given contract_address.
+  // Defines a operation for updating hook subscriptions for a given contract_address.
   // Pass empty array to `hooks` to remove subscription from this contract_address.
-  // The authority defaults to the adminmodule module account.
+  // Only executable by governance.
   rpc ManageHookSubscription(MsgManageHookSubscription) returns (MsgManageHookSubscriptionResponse);
 }
 
-// MsgManageHookSubscription is the Msg/ManageHookSubscription request type.
+// Defines the Msg/ManageHookSubscription request type.
 message MsgManageHookSubscription {
   option (cosmos.msg.v1.signer) = "authority";
   option (amino.name) = "neutron/x/harpoon/MsgManageHookSubscription";
@@ -30,11 +30,10 @@ message MsgManageHookSubscription {
   HookSubscription hook_subscription = 2;
 }
 
-// MsgManageHookSubscriptionResponse defines the response structure for executing a
-// MsgManageHookSubscription message.
+// Defines the response structure for executing a MsgManageHookSubscription message.
 message MsgManageHookSubscriptionResponse {}
 
-// HookSubscription describes new hook subscriptions for contract_address
+// Describes new hook subscriptions for contract_address
 message HookSubscription {
   // hook_subscription specifies for which contract_address modify the subscriptions.
   string contract_address = 2; // Address of the contract to manage hooks for
@@ -43,7 +42,7 @@ message HookSubscription {
   repeated HookType hooks = 3; // List of hooks to subscribe/unsubscribe. Pass empty to remove subscription.
 }
 
-// HookType specifies to what concrete hooks we are subscribing to.
+// Specifies concrete hooks that can be subscribed to.
 enum HookType {
   AfterValidatorCreated = 0; // Called when a validator is created
   BeforeValidatorModified = 1; // Called when a validator is modified

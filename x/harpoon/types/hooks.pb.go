@@ -22,8 +22,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// HookSubscription is a structure that we store in KV store under each hook kind
+// Defines structure for subscribed contract_addresses that are stored in KV store under each hook kind
 type HookSubscriptions struct {
+	// All contract addresses that are subscribed to the hook kind
 	ContractAddresses []string `protobuf:"bytes,1,rep,name=contract_addresses,json=contractAddresses,proto3" json:"contract_addresses,omitempty"`
 }
 

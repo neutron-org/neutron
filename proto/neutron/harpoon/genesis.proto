@@ -6,5 +6,5 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 
-// GenesisState defines the harpoon module's genesis state.
+// Defines the harpoon module's genesis state.
 message GenesisState {}

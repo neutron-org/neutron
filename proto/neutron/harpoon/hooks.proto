@@ -3,7 +3,8 @@ package neutron.harpoon;
 
 option go_package = "github.com/neutron-org/neutron/v5/x/harpoon/types";
 
-// HookSubscription is a structure that we store in KV store under each hook kind
+// Defines structure for subscribed contract_addresses that are stored in KV store under each hook kind
 message HookSubscriptions {
-  repeated string contract_addresses = 1; // all contract_addresses that are subscribed to the hook kind
+  // All contract addresses that are subscribed to the hook kind
+  repeated string contract_addresses = 1;
 }
