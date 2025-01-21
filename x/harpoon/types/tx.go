@@ -41,36 +41,36 @@ func (msg *MsgManageHookSubscription) Validate() error {
 		return errors.Wrap(err, "hook subscription contractAddress is invalid")
 	}
 
-	if !msg.areHooksUnique() {
-		return fmt.Errorf("subscription hooks are not unique")
+	if err := msg.checkHooksUnique(); err != nil {
+		return fmt.Errorf("subscription hooks are not unique: %v", err)
 	}
 
-	if !msg.allHooksExist() {
-		return fmt.Errorf("non-existing hook type")
+	if err := msg.checkHooksExist(); err != nil {
+		return fmt.Errorf("non-existing hook type: %v", err)
 	}
 
 	return nil
 }
 
-func (msg *MsgManageHookSubscription) areHooksUnique() bool {
+func (msg *MsgManageHookSubscription) checkHooksUnique() error {
 	cache := make(map[string]bool)
 	for _, item := range msg.HookSubscription.Hooks {
 		if cache[item.String()] {
-			return false
+			return fmt.Errorf("non-unique hook=%s", item.String())
 		}
 		cache[item.String()] = true
 	}
 
-	return true
+	return nil
 }
 
-func (msg *MsgManageHookSubscription) allHooksExist() bool {
+func (msg *MsgManageHookSubscription) checkHooksExist() error {
 	for _, item := range msg.HookSubscription.Hooks {
 		_, ok := HookType_name[int32(item)]
 		if !ok {
-			return false
+			return fmt.Errorf("non-existing hook=%d", int32(item))
 		}
 	}
 
-	return true
+	return nil
 }

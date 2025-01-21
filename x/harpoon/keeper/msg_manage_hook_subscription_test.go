@@ -63,12 +63,23 @@ func TestManageHookSubscription(t *testing.T) {
 			"non-existing hook type",
 		},
 		{
-			"good case",
+			"good case - empty hooks",
 			types.MsgManageHookSubscription{
 				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
 				HookSubscription: &types.HookSubscription{
 					ContractAddress: testutil.TestOwnerAddress,
 					Hooks:           []types.HookType{},
+				},
+			},
+			"",
+		},
+		{
+			"good case - some hooks present",
+			types.MsgManageHookSubscription{
+				Authority: "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+				HookSubscription: &types.HookSubscription{
+					ContractAddress: testutil.TestOwnerAddress,
+					Hooks:           []types.HookType{types.HookType_AfterValidatorCreated, types.HookType_AfterDelegationModified},
 				},
 			},
 			"",
