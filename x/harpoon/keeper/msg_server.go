@@ -2,14 +2,17 @@ package keeper
 
 import (
 	"context"
-	"cosmossdk.io/errors"
-	errorsmod "cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/errors"
+	errorsmod "cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 	"golang.org/x/exp/maps"
+
+	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 )
 
 type msgServer struct {

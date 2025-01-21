@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	sdkmath "cosmossdk.io/math"

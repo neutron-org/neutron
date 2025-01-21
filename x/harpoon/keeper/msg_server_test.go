@@ -2,8 +2,9 @@ package keeper_test
 
 import (
 	"context"
-	"github.com/neutron-org/neutron/v5/testutil"
 	"testing"
+
+	"github.com/neutron-org/neutron/v5/testutil"
 
 	"github.com/stretchr/testify/require"
 

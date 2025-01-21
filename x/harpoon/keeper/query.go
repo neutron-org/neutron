@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 	"google.golang.org/grpc/codes"
 
-	"context"
+	"github.com/neutron-org/neutron/v5/x/harpoon/types"
 
 	"google.golang.org/grpc/status"
 )

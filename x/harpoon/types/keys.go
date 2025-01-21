@@ -11,9 +11,7 @@ const (
 	RouterKey = ModuleName
 )
 
-var (
-	HookSubscriptionKey = []byte("subscriptions")
-)
+var HookSubscriptionKey = []byte("subscriptions")
 
 func GetHookSubscriptionKeyPrefix() []byte {
 	return HookSubscriptionKey
