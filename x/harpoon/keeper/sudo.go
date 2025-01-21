@@ -43,15 +43,11 @@ func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType type
 		// This means it can potentially halt the chain OR abort the transactions depending on where hook was called from.
 		accContractAddress, err := sdk.AccAddressFromBech32(contractAddress)
 		if err != nil {
-			return errors.Wrapf(err, "could not parse acc address from bech32 for harpoon sudo call")
+			return errors.Wrapf(err, "could not parse acc address from bech32 for harpoon sudo call, contract_address=%s", contractAddress)
 		}
 		_, err = k.wasmKeeper.Sudo(sdkCtx, accContractAddress, msgJsonBz)
 		if err != nil {
-			sdkCtx.Logger().Error("execute harpoon subscription hook error: failed to execute contract msg",
-				"contract_address", contractAddress,
-				"error", err,
-			)
-			return err
+			return errors.Wrapf(err, "could not execute sudo call successfully for hook_type=%s, msg=%s, contract_address=%s", hookType.String(), string(msgJsonBz), contractAddress)
 		}
 	}
 

@@ -18,11 +18,10 @@ func TestSubscribedContractsQuery(t *testing.T) {
 	require.Equal(t, &types.QuerySubscribedContractsResponse{ContractAddresses: []string{}}, response)
 
 	// add hook
-	err = keeper.UpdateHookSubscription(ctx, &types.HookSubscription{
+	keeper.UpdateHookSubscription(ctx, &types.HookSubscription{
 		ContractAddress: ContractAddress1,
 		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
 	})
-	require.NoError(t, err)
 
 	// after adding returns hook
 	response, err = keeper.SubscribedContracts(ctx, &types.QuerySubscribedContracts{HookType: types.HookType_AfterValidatorCreated.String()})

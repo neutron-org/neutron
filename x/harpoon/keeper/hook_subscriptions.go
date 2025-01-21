@@ -11,7 +11,7 @@ import (
 
 // UpdateHookSubscription sets hook subscription for given contractAddress
 // All previously subscribed hooks that are not in `subscriptionUpdate.hooks` will be removed.
-func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate *types.HookSubscription) error {
+func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate *types.HookSubscription) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
 	allHooks := maps.Values(types.HookType_name)
@@ -29,6 +29,7 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate
 		for _, address := range subscriptions.ContractAddresses {
 			if address == subscriptionUpdate.ContractAddress {
 				hasAddress = true
+				break
 			}
 		}
 
@@ -62,8 +63,6 @@ func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate
 			store.Set(key, bz)
 		}
 	}
-
-	return nil
 }
 
 // GetSubscribedAddressesForHookType returns all subscribed contracts for a given `hookType`

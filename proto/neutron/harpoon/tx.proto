@@ -14,11 +14,12 @@ service Msg {
   option (cosmos.msg.v1.service) = true;
 
   // UpdateParams defines a (governance) operation for updating the module
-  // parameters. The authority defaults to the x/gov module account.
+  // parameters. The authority defaults to the adminmodule module account.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  // ManageHookSubscription updates hook subscription for given contract_address.
+  // ManageHookSubscription defines a (governance) operation for updating hook subscriptions for a given contract_address.
   // Pass empty array to `hooks` to remove subscription from this contract_address.
+  // The authority defaults to the adminmodule module account.
   rpc ManageHookSubscription(MsgManageHookSubscription) returns (MsgManageHookSubscriptionResponse);
 }
 

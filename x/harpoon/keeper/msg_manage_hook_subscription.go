@@ -19,9 +19,7 @@ func (k msgServer) ManageHookSubscription(goCtx context.Context, req *types.MsgM
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.UpdateHookSubscription(ctx, req.HookSubscription); err != nil {
-		return nil, err
-	}
+	k.UpdateHookSubscription(ctx, req.HookSubscription)
 
 	return &types.MsgManageHookSubscriptionResponse{}, nil
 }
