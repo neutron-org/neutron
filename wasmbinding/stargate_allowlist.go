@@ -143,7 +143,6 @@ func AcceptedStargateQueries() wasmkeeper.AcceptedQueries {
 		"/cosmos.staking.v1beta1.Query/DelegatorUnbondingDelegations": &stakingtypes.QueryDelegatorUnbondingDelegationsResponse{},
 
 		// harpoon
-		"/neutron.harpoon.Query/Params":              &harpoontypes.QueryParamsResponse{},
 		"/neutron.harpoon.Query/SubscribedContracts": &harpoontypes.QuerySubscribedContractsResponse{},
 	}
 }

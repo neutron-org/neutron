@@ -12,9 +12,7 @@ import (
 )
 
 func TestGenesis(t *testing.T) {
-	genesisState := types.GenesisState{
-		Params: types.DefaultParams(),
-	}
+	genesisState := types.GenesisState{}
 
 	k, ctx := keepertest.HarpoonKeeper(t, nil, nil)
 	harpoon.InitGenesis(ctx, *k, genesisState)

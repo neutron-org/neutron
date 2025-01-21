@@ -87,53 +87,6 @@ func (mr *MockBankKeeperMockRecorder) SpendableCoins(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendableCoins", reflect.TypeOf((*MockBankKeeper)(nil).SpendableCoins), arg0, arg1)
 }
 
-// MockParamSubspace is a mock of ParamSubspace interface.
-type MockParamSubspace struct {
-	ctrl     *gomock.Controller
-	recorder *MockParamSubspaceMockRecorder
-}
-
-// MockParamSubspaceMockRecorder is the mock recorder for MockParamSubspace.
-type MockParamSubspaceMockRecorder struct {
-	mock *MockParamSubspace
-}
-
-// NewMockParamSubspace creates a new mock instance.
-func NewMockParamSubspace(ctrl *gomock.Controller) *MockParamSubspace {
-	mock := &MockParamSubspace{ctrl: ctrl}
-	mock.recorder = &MockParamSubspaceMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockParamSubspace) EXPECT() *MockParamSubspaceMockRecorder {
-	return m.recorder
-}
-
-// Get mocks base method.
-func (m *MockParamSubspace) Get(arg0 context.Context, arg1 []byte, arg2 interface{}) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Get", arg0, arg1, arg2)
-}
-
-// Get indicates an expected call of Get.
-func (mr *MockParamSubspaceMockRecorder) Get(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockParamSubspace)(nil).Get), arg0, arg1, arg2)
-}
-
-// Set mocks base method.
-func (m *MockParamSubspace) Set(arg0 context.Context, arg1 []byte, arg2 interface{}) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Set", arg0, arg1, arg2)
-}
-
-// Set indicates an expected call of Set.
-func (mr *MockParamSubspaceMockRecorder) Set(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockParamSubspace)(nil).Set), arg0, arg1, arg2)
-}
-
 // MockWasmKeeper is a mock of WasmKeeper interface.
 type MockWasmKeeper struct {
 	ctrl     *gomock.Controller
