@@ -49,7 +49,7 @@ func (s *KeeperTestHelper) Setup() {
 	}
 }
 
-// setupAddr takes a balance, prefix, and address number. Then returns the respective account address byte array.
+// SetupAddr takes a balance, prefix, and address number. Then returns the respective account address byte array.
 // If prefix is left blank, it will be replaced with a random prefix.
 func SetupAddr(index int) sdk.AccAddress {
 	prefixBz := make([]byte, 8)
