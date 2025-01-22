@@ -13,7 +13,7 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
-func (k Keeper) SubscribedContracts(goCtx context.Context, req *types.QuerySubscribedContracts) (*types.QuerySubscribedContractsResponse, error) {
+func (k Keeper) SubscribedContracts(goCtx context.Context, req *types.QuerySubscribedContractsRequest) (*types.QuerySubscribedContractsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
