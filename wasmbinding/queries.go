@@ -231,8 +231,6 @@ func (qp *QueryPlugin) MarketMapQuery(ctx sdk.Context, query bindings.MarketMapQ
 		return processResponse(marketMapQueryServer.Params(ctx, query.Params))
 	case query.LastUpdated != nil:
 		return processResponse(marketMapQueryServer.LastUpdated(ctx, query.LastUpdated))
-	case query.MarketMap != nil:
-		return processResponse(marketMapQueryServer.MarketMap(ctx, query.MarketMap))
 	case query.Market != nil:
 		return processResponse(marketMapQueryServer.Market(ctx, query.Market))
 	default:

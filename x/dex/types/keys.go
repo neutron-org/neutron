@@ -66,7 +66,7 @@ func KeyPrefix(p string) []byte {
 func TickIndexToBytes(tickTakerToMaker int64) []byte {
 	key := make([]byte, 9)
 	if tickTakerToMaker < 0 {
-		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker)))
+		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker))) //nolint:gosec
 	} else {
 		copy(key[:1], []byte{0x01})
 		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker)))

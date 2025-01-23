@@ -477,6 +477,7 @@ func New(
 	overrideWasmVariables()
 
 	appCodec := encodingConfig.Marshaler
+
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
