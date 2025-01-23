@@ -107,7 +107,6 @@ func (k Keeper) ExecuteDeposit(
 
 		if option.SwapOnDeposit {
 			amount0, amount1, err = k.SwapOnDeposit(ctx, pairID, tickIndex, fee, amount0, amount1)
-
 			if err != nil {
 				return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
 			}
@@ -192,7 +191,6 @@ func (k Keeper) SwapOnDeposit(
 		tradePairID := types.MustNewTradePairID(pairID.Token0, pairID.Token1)
 
 		token0In, token1Out, _, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice0)
-
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), err
 		}
@@ -212,7 +210,6 @@ func (k Keeper) SwapOnDeposit(
 		tradePairID := types.MustNewTradePairID(pairID.Token1, pairID.Token0)
 
 		token1In, token0Out, _, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice1)
-
 		if err != nil {
 			return math.ZeroInt(), math.ZeroInt(), err
 		}
@@ -231,5 +228,4 @@ func (k Keeper) SwapOnDeposit(
 	}
 
 	return newAmount0, newAmount1, nil
-
 }
