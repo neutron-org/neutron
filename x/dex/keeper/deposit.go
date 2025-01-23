@@ -112,6 +112,7 @@ func (k Keeper) ExecuteDeposit(
 			}
 		}
 
+		// This check is redundant when using SwapOnDepsit. But we leave it as an extra check.
 		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, amount0, amount1) {
 			err = sdkerrors.Wrapf(types.ErrDepositBehindEnemyLines,
 				"deposit failed at tick %d fee %d", tickIndex, fee)
