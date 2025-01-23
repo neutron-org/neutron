@@ -216,8 +216,6 @@ func (qp *QueryPlugin) OracleQuery(ctx sdk.Context, query bindings.OracleQuery) 
 		return processResponse(oracleQueryServer.GetAllCurrencyPairs(ctx, query.GetAllCurrencyPairs))
 	case query.GetPrice != nil:
 		return processResponse(oracleQueryServer.GetPrice(ctx, query.GetPrice))
-	case query.GetPrices != nil:
-		return processResponse(oracleQueryServer.GetPrices(ctx, query.GetPrices))
 	default:
 		return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown neutron.oracle query type"}
 	}
