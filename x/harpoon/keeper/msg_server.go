@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"golang.org/x/exp/slices"
+
 	"cosmossdk.io/errors"
 	errorsmod "cosmossdk.io/errors"
 
@@ -44,57 +46,48 @@ func (k msgServer) ManageHookSubscription(goCtx context.Context, req *types.MsgM
 
 // UpdateHookSubscription sets hook subscription for given contractAddress
 // All previously subscribed hooks that are not in `subscriptionUpdate.hooks` will be removed.
-func (k Keeper) UpdateHookSubscription(goCtx context.Context, subscriptionUpdate *types.HookSubscription) {
+func (k Keeper) UpdateHookSubscription(goCtx context.Context, update *types.HookSubscription) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(goCtx))
 
 	allHooks := maps.Values(types.HookType_name)
 
-	hooksAdded, hooksRemoved := splitAddedAndRemovedHooks(allHooks, subscriptionUpdate.Hooks)
+	// First we understand which hooks should be added and which should be removed
+	hooksToAdd, hooksToRemove := splitAddedAndRemovedHooks(allHooks, update.Hooks)
 
-	for _, toAdd := range hooksAdded {
-		key := types.GetHookSubscriptionKey(toAdd)
+	// As the contract addresses are stored grouped by hooks, we need to iterate each hook
+	// to understand which addresses to remove, which to add, and which are already there.
+
+	for _, item := range hooksToAdd {
+		key := types.GetHookSubscriptionKey(item)
 		subscriptions := types.HookSubscriptions{}
 		if store.Has(key) {
 			k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
 		}
 
-		hasAddress := false
-		for _, address := range subscriptions.ContractAddresses {
-			if address == subscriptionUpdate.ContractAddress {
-				hasAddress = true
-				break
-			}
-		}
-
-		if !hasAddress {
-			subscriptions.ContractAddresses = append(subscriptions.ContractAddresses, subscriptionUpdate.ContractAddress)
+		// add contract address if it's not already in the list
+		if !slices.Contains(subscriptions.ContractAddresses, update.ContractAddress) {
+			subscriptions.ContractAddresses = append(subscriptions.ContractAddresses, update.ContractAddress)
 		}
 
 		bz := k.cdc.MustMarshal(&subscriptions)
 		store.Set(key, bz)
 	}
 
-	for _, toRemove := range hooksRemoved {
-		key := types.GetHookSubscriptionKey(toRemove)
+	for _, item := range hooksToRemove {
+		key := types.GetHookSubscriptionKey(item)
 		subscriptions := types.HookSubscriptions{}
 		if store.Has(key) {
 			k.cdc.MustUnmarshal(store.Get(key), &subscriptions)
 		}
 
-		newContractAddresses := make([]string, 0)
-		for _, address := range subscriptions.ContractAddresses {
-			if address != subscriptionUpdate.ContractAddress {
-				newContractAddresses = append(newContractAddresses, address)
-			}
-		}
+		// remove contract address if it's present in the list
+		newContractAddresses := slices.DeleteFunc(subscriptions.ContractAddresses, func(addr string) bool {
+			return addr == update.ContractAddress
+		})
 
-		if len(newContractAddresses) == 0 {
-			store.Delete(key)
-		} else {
-			subscriptions.ContractAddresses = newContractAddresses
-			bz := k.cdc.MustMarshal(&subscriptions)
-			store.Set(key, bz)
-		}
+		subscriptions.ContractAddresses = newContractAddresses
+		bz := k.cdc.MustMarshal(&subscriptions)
+		store.Set(key, bz)
 	}
 }
 
@@ -156,27 +149,27 @@ func (k Keeper) DoCallSudoForSubscriptionType(ctx context.Context, hookType type
 
 // splitAddedAndRemovedHooks splits all hooks on which ones to add and which ones to remove.
 func splitAddedAndRemovedHooks(allHooks []string, subscribedHooks []types.HookType) ([]string, []string) {
-	// convert subscribedHooks to string namings
-	slice2 := make([]string, len(subscribedHooks))
+	// Convert subscribedHooks to string namings
+	hooksToAdd := make([]string, len(subscribedHooks))
 	for _, item := range subscribedHooks {
-		slice2 = append(slice2, types.HookType_name[int32(item)])
+		hooksToAdd = append(hooksToAdd, types.HookType_name[int32(item)])
 	}
 
-	// splitAddedAndRemovedHooks
-	var slice3 []string
+	// Calculate difference between allHooks and hooksToAdd. It will be hooksToRemove.
+	var hooksToRemove []string
 	itemMap := make(map[string]bool)
 
-	// Add all items from slice2 to the map
-	for _, item := range slice2 {
+	// Add all items from hooksToAdd to the map
+	for _, item := range hooksToAdd {
 		itemMap[item] = true
 	}
 
-	// Check each item in allHooks and add to slice3 if not in the map
+	// Check each item in allHooks and add to hooksToRemove if not in the map
 	for _, item := range allHooks {
 		if !itemMap[item] {
-			slice3 = append(slice3, item)
+			hooksToRemove = append(hooksToRemove, item)
 		}
 	}
 
-	return slice2, slice3
+	return hooksToAdd, hooksToRemove
 }
