@@ -2,7 +2,11 @@ package keeper_test
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
+
+	types2 "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/neutron-org/neutron/v5/testutil"
 
@@ -185,4 +189,48 @@ func TestUpdateHookSubscription(t *testing.T) {
 	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_AfterUnbondingInitiated), []string{ContractAddress2})
 	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeValidatorModified), []string{ContractAddress2})
 	require.EqualValues(t, k.GetSubscribedAddressesForHookType(ctx, types.HookType_BeforeDelegationRemoved), []string{ContractAddress2})
+}
+
+func TestCallSudoForSubscriptionType(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	accountKeeper := mock_types.NewMockAccountKeeper(ctrl)
+	wasmKeeper := mock_types.NewMockWasmKeeper(ctrl)
+	k, ctx := testutil_keeper.HarpoonKeeper(t, wasmKeeper, accountKeeper)
+
+	k.UpdateHookSubscription(ctx, &types.HookSubscription{
+		ContractAddress: ContractAddress1,
+		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
+	})
+
+	msg := types.SudoAfterValidatorCreated{
+		ValAddr: []byte("test"),
+	}
+	msgBz, err := json.Marshal(msg)
+	require.NoError(t, err)
+
+	// Returning no error and no calls when not subscribed to hook
+	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterDelegationModified, msg)
+	require.NoError(t, err)
+
+	// Returning no error and call when subscribed to hook
+	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress1), msgBz).Times(1).Return(nil, nil)
+	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorCreated, msg)
+	require.NoError(t, err)
+
+	// Returning error when the only one subscribed hook is erroring
+	returnedError := fmt.Errorf("error")
+	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress1), msgBz).Times(1).Return(nil, returnedError)
+	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorCreated, msg)
+	require.ErrorIs(t, err, returnedError)
+
+	// Returning errors when one of the subscribed hooks is erroring
+	k.UpdateHookSubscription(ctx, &types.HookSubscription{
+		ContractAddress: ContractAddress2,
+		Hooks:           []types.HookType{types.HookType_AfterValidatorCreated},
+	})
+	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress1), msgBz).Times(1).Return(nil, nil)
+	wasmKeeper.EXPECT().Sudo(ctx, types2.MustAccAddressFromBech32(ContractAddress2), msgBz).Times(1).Return(nil, returnedError)
+	err = k.CallSudoForSubscriptionType(ctx, types.HookType_AfterValidatorCreated, msg)
+	require.ErrorIs(t, err, returnedError)
 }
