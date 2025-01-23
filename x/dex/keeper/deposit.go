@@ -9,6 +9,7 @@ import (
 
 	"github.com/neutron-org/neutron/v5/utils"
 	"github.com/neutron-org/neutron/v5/x/dex/types"
+	dexutils "github.com/neutron-org/neutron/v5/x/dex/utils"
 )
 
 // DepositCore handles core logic for MsgDeposit including bank operations and event emissions
@@ -104,6 +105,14 @@ func (k Keeper) ExecuteDeposit(
 			return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
 		}
 
+		if option.SwapOnDeposit {
+			amount0, amount1, err = k.SwapOnDeposit(ctx, pairID, tickIndex, fee, amount0, amount1)
+
+			if err != nil {
+				return nil, nil, math.ZeroInt(), math.ZeroInt(), nil, nil, nil, err
+			}
+		}
+
 		if k.IsPoolBehindEnemyLines(ctx, pairID, tickIndex, fee, amount0, amount1) {
 			err = sdkerrors.Wrapf(types.ErrDepositBehindEnemyLines,
 				"deposit failed at tick %d fee %d", tickIndex, fee)
@@ -164,4 +173,63 @@ func (k Keeper) ExecuteDeposit(
 	// we must sanitize to convert it to a valid set of coins
 	sharesIssued = utils.SanitizeCoins(sharesIssued)
 	return amounts0Deposited, amounts1Deposited, totalAmountReserve0, totalAmountReserve1, sharesIssued, events, failedDeposits, nil
+}
+
+func (k Keeper) SwapOnDeposit(
+	ctx sdk.Context,
+	pairID *types.PairID,
+	tickIndex int64,
+	fee uint64,
+	amount0, amount1 math.Int,
+) (newAmount0, newAmount1 math.Int, err error) {
+	feeInt64 := dexutils.MustSafeUint64ToInt64(fee)
+	newAmount0, newAmount1 = amount0, amount1
+	swappedToken0 := false
+	if amount0.IsPositive() {
+		// Swap any Token1 ticks < -depositTick0
+		depositTickToken0 := -tickIndex + feeInt64
+		limitPrice0 := types.MustCalcPrice(-depositTickToken0)
+		tradePairID := types.MustNewTradePairID(pairID.Token0, pairID.Token1)
+
+		token0In, token1Out, _, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice0)
+
+		if err != nil {
+			return math.ZeroInt(), math.ZeroInt(), err
+		}
+
+		if token0In.IsPositive() {
+			newAmount0 = newAmount0.Sub(token0In.Amount)
+			newAmount1 = newAmount0.Add(token1Out.Amount)
+			swappedToken0 = true
+		}
+
+	}
+
+	if amount1.IsPositive() {
+		// Swap any Token0 ticks < -depositTick1
+		depositTickToken1 := tickIndex + feeInt64
+		limitPrice1 := types.MustCalcPrice(-depositTickToken1)
+		tradePairID := types.MustNewTradePairID(pairID.Token1, pairID.Token0)
+
+		token1In, token0Out, _, err := k.Swap(ctx, tradePairID, amount0, nil, &limitPrice1)
+
+		if err != nil {
+			return math.ZeroInt(), math.ZeroInt(), err
+		}
+
+		if token1In.IsPositive() {
+
+			if swappedToken0 {
+				// This should be impossible, but leaving this as an extra precaution
+				return math.ZeroInt(), math.ZeroInt(), types.ErrDoubleSidedSwapOnDeposit
+			}
+
+			newAmount0 = newAmount0.Add(token0Out.Amount)
+			newAmount1 = newAmount0.Sub(token1In.Amount)
+		}
+
+	}
+
+	return newAmount0, newAmount1, nil
+
 }

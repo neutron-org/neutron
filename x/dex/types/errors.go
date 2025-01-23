@@ -229,4 +229,9 @@ var (
 		1165,
 		"MinAverageSellPrice must be nil or > 0.",
 	)
+	ErrDoubleSidedSwapOnDeposit = sdkerrors.Register(
+		ModuleName,
+		1166,
+		"Swap on deposit cannot be performed for Token0 and Token1",
+	)
 )
