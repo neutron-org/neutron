@@ -29,7 +29,7 @@ var (
 	image = ibc.DockerImage{
 		Repository: "neutron-node",
 		Version:    "latest",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	numValidators = 4
@@ -40,7 +40,7 @@ var (
 	oracleImage = ibc.DockerImage{
 		Repository: "ghcr.io/skip-mev/slinky-sidecar",
 		Version:    "v1.0.0",
-		UidGid:     "1000:1000",
+		UIDGID:     "1000:1000",
 	}
 	encodingConfig = testutil.MakeTestEncodingConfig(
 		bank.AppModuleBasic{},
