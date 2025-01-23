@@ -80,7 +80,7 @@ func (suite *KeeperTestSuite) TestBeforeSendHook() {
 				},
 				{
 					desc: "sending 1 of non-factorydenom should not error",
-					msg: func(factorydenom string) *banktypes.MsgSend {
+					msg: func(_ string) *banktypes.MsgSend {
 						return banktypes.NewMsgSend(
 							suite.TestAccs[0],
 							suite.TestAccs[1],
@@ -102,7 +102,7 @@ func (suite *KeeperTestSuite) TestBeforeSendHook() {
 				},
 				{
 					desc: "sending 100 of non-factorydenom should work",
-					msg: func(factorydenom string) *banktypes.MsgSend {
+					msg: func(_ string) *banktypes.MsgSend {
 						return banktypes.NewMsgSend(
 							suite.TestAccs[0],
 							suite.TestAccs[1],

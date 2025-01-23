@@ -55,7 +55,7 @@ func NewPairIDFromCanonicalString(pairIDStr string) (*PairID, error) {
 		return NewPairID(tokens[0], tokens[1])
 	}
 
-	return &PairID{}, sdkerrors.Wrapf(ErrInvalidPairIDStr, pairIDStr)
+	return &PairID{}, sdkerrors.Wrap(ErrInvalidPairIDStr, pairIDStr)
 }
 
 func SortTokens(tokenA, tokenB string) (string, string) {

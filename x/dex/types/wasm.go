@@ -29,7 +29,7 @@ func (t LimitOrderTranche) ToBinding() LimitOrderTrancheBinding {
 		LimitOrderTranche: t,
 	}
 	if t.ExpirationTime != nil && t.ExpirationTime.Unix() >= 0 {
-		ut := uint64(t.ExpirationTime.Unix())
+		ut := uint64(t.ExpirationTime.Unix()) //nolint:gosec
 		lo.ExpirationTime = &ut
 	}
 	return lo

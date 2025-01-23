@@ -1,6 +1,5 @@
 run:
   tests: true
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 5m
 
 linters:
@@ -8,7 +7,6 @@ linters:
   enable:
     - dogsled
     - errcheck
-    - exportloopref
     - goconst
     - gocritic
     - gofumpt
@@ -30,14 +28,19 @@ linters:
 issues:
   max-issues-per-linter: 10000
   max-same-issues: 10000
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - gosec
 
 linters-settings:
   gofumpt:
-    # Choose whether to use the extra rules.
-    # Default: false
     extra-rules: true
+
   nolintlint:
     allow-unused: true
     allow-leading-space: true
     require-explanation: false
     require-specific: false
+

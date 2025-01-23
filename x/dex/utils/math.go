@@ -56,7 +56,7 @@ func Uint64ToSortableString(i uint64) string {
 }
 
 func SafeUint64ToInt64(in uint64) (out int64, overflow bool) {
-	return int64(in), in > math.MaxInt64
+	return int64(in), in > math.MaxInt64 //nolint:gosec
 }
 
 func MustSafeUint64ToInt64(in uint64) (out int64) {

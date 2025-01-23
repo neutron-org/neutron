@@ -67,10 +67,10 @@ func KeyPrefix(p string) []byte {
 func TickIndexToBytes(tickTakerToMaker int64) []byte {
 	key := make([]byte, 9)
 	if tickTakerToMaker < 0 {
-		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker)))
+		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker))) //nolint:gosec
 	} else {
 		copy(key[:1], []byte{0x01})
-		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker)))
+		copy(key[1:], sdk.Uint64ToBigEndian(uint64(tickTakerToMaker))) //nolint:gosec
 	}
 
 	return key
@@ -85,10 +85,10 @@ func BytesToTickIndex(bz []byte) (int64, error) {
 	tickTakerToMaker := sdk.BigEndianToUint64(bz[1:])
 
 	if isNegative {
-		return int64(-tickTakerToMaker), nil
+		return int64(-tickTakerToMaker), nil //nolint:gosec
 	}
 	// else
-	return int64(tickTakerToMaker), nil
+	return int64(tickTakerToMaker), nil //nolint:gosec
 }
 
 // LimitOrderTrancheUserKey returns the store key to retrieve a LimitOrderTrancheUser from the index fields
@@ -119,7 +119,7 @@ func TimeBytes(timestamp time.Time) []byte {
 	var unixSecs uint64
 	// If timestamp is 0 use that instead of returning long negative number for unix time
 	if !timestamp.IsZero() {
-		unixSecs = uint64(timestamp.Unix())
+		unixSecs = uint64(timestamp.Unix()) //nolint:gosec
 	}
 
 	str := utils.Uint64ToSortableString(unixSecs)
